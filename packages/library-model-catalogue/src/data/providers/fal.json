@@ -8,6 +8,14 @@
       "model": "qwen/qwen-image",
       "matchingModel": "fal-ai/qwen-image",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "strengths": [
           "creative",
           "image"

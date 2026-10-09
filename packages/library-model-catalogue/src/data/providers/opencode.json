@@ -248,8 +248,10 @@
       "model": "glm/glm-5",
       "matchingModel": "glm-5",
       "overrides": {
+        "name": "GLM-5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 11, 2026",
@@ -748,6 +750,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
@@ -1189,6 +1193,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

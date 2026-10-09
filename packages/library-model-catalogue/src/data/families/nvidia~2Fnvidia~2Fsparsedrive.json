@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 18, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The nvidia/nvidia/sparsedrive family includes models that produce text.",
+  "models": {
+    "sparsedrive": {
+      "defaults": {
+        "name": "sparsedrive",
+        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows"
+      }
+    }
+  }
+}

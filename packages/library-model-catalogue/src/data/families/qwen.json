@@ -636,14 +636,6 @@
       "defaults": {
         "name": "Qwen Image",
         "description": "Qwen Image is a large-scale image generation model capable of generating high-quality images from text descriptions.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
         "reliability": 3,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -661,6 +653,28 @@
             }
           ]
         }
+      }
+    },
+    "qwen-image-edit": {
+      "defaults": {
+        "name": "Qwen Image Edit",
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "August 19, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
       }
     },
     "qwen-image-edit-2511": {

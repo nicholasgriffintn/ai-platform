@@ -135,6 +135,18 @@
         ]
       }
     },
+    "flux-1-dev": {
+      "defaults": {
+        "name": "FLUX.1-dev",
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 4096,
+        "maxTokens": 0,
+        "knowledgeCutoffDate": "August 2024",
+        "releaseDate": "August 1, 2024",
+        "supportsResponseFormat": true
+      }
+    },
     "flux-1-fill-pro": {
       "defaults": {
         "name": "FLUX.1 Fill [pro]",
@@ -143,6 +155,28 @@
         "contextWindow": 512,
         "maxTokens": 0,
         "releaseDate": "October 1, 2024"
+      }
+    },
+    "flux-1-kontext-dev": {
+      "defaults": {
+        "name": "FLUX.1-Kontext-dev",
+        "openWeights": true,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "August 12, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     },
     "flux-1-kontext-max": {
@@ -207,6 +241,19 @@
         }
       }
     },
+    "flux-1-schnell": {
+      "defaults": {
+        "name": "FLUX.1-schnell",
+        "openWeights": true,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 77,
+        "maxTokens": 0,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "August 1, 2024",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false
+      }
+    },
     "flux-2-dev": {
       "defaults": {
         "name": "FLUX 2 Dev",
@@ -259,8 +306,13 @@
     },
     "flux-2-klein-4b": {
       "defaults": {
+        "name": "FLUX.2 Klein 4B",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 40960,
+        "maxTokens": 40960,
         "reliability": 3,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "January 14, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

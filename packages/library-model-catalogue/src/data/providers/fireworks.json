@@ -26,7 +26,8 @@
       },
       "unset": [
         "openWeights",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "reasoningConfig"
       ]
     },
     "openai/gpt-oss-20b": {
@@ -207,7 +208,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "accounts/fireworks/models/glm-4p7",
       "overrides": {
-        "name": "GLM 4.7",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 198000,
         "maxTokens": 198000,
@@ -345,6 +345,7 @@
         "name": "GLM 5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -542,6 +543,7 @@
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 1048575,
+        "maxTokens": 131072,
         "releaseDate": "June 26, 2026",
         "lastUpdated": "June 26, 2026",
         "costPer1kInputTokens": 0.0021,
@@ -623,6 +625,7 @@
       "model": "nemotron/nemotron-3-ultra-550b-a55b",
       "matchingModel": "accounts/fireworks/models/nemotron-3-ultra-nvfp4",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 128000,
         "speed": 4,
         "lastUpdated": "June 4, 2026",
@@ -771,6 +774,7 @@
       "matchingModel": "accounts/fireworks/models/deepseek-v4p1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,

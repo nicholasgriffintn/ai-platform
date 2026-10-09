@@ -230,6 +230,27 @@
         "supportsAttachments": true
       }
     },
+    "openai-gpt-120b": {
+      "defaults": {
+        "name": "OpenAI GPT 120B",
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "contextWindow": 128072,
+        "maxTokens": 128072,
+        "knowledgeCutoffDate": "August 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "safety-gpt-oss-20b": {
       "defaults": {
         "name": "Safety GPT OSS 20B",

@@ -801,9 +801,6 @@
       "model": "flux/flux-2-klein-4b",
       "matchingModel": "black-forest-labs/flux.2-klein-4b",
       "overrides": {
-        "name": "FLUX.2 Klein 4B",
-        "contextWindow": 40960,
-        "maxTokens": 40960,
         "modalities": {
           "input": [
             "image",
@@ -819,8 +816,6 @@
           "image"
         ],
         "contextComplexity": 3,
-        "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "January 14, 2026",
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1689,7 +1684,6 @@
       "model": "mistral-medium/mistral-medium-3",
       "matchingModel": "mistralai/mistral-medium-3",
       "overrides": {
-        "contextWindow": 131072,
         "maxTokens": 104857,
         "modalities": {
           "input": [
@@ -1830,15 +1824,6 @@
       "matchingModel": "moonshotai/kimi-k2.5",
       "overrides": {
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -3006,7 +2991,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "z-ai/glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 4,
@@ -3863,6 +3847,7 @@
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.000287274,
@@ -4583,6 +4568,17 @@
       "model": "llama/llama-guard-4-12b",
       "matchingModel": "meta-llama/llama-guard-4-12b",
       "overrides": {
+        "contextWindow": 163840,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "releaseDate": "April 30, 2025",
         "lastUpdated": "April 30, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00018,
@@ -4852,15 +4848,6 @@
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -6955,6 +6942,7 @@
       "model": "nemotron/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 4,
@@ -7646,6 +7634,16 @@
       "overrides": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -8320,6 +8318,7 @@
       "model": "nemotron/nemotron-3-5-content-safety",
       "matchingModel": "nvidia/nemotron-3.5-content-safety",
       "overrides": {
+        "maxTokens": 117964,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002,

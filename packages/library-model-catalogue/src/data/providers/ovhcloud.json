@@ -10,7 +10,6 @@
       "model": "gpt/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "openWeights": true,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
         "strengths": [
@@ -21,15 +20,7 @@
         "releaseDate": "August 28, 2025",
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.00009,
-        "costPer1kOutputTokens": 0.00047,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00047
       }
     },
     "qwen3-32b": {

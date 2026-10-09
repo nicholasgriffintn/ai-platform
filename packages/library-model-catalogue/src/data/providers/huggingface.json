@@ -339,8 +339,10 @@
       "model": "glm/glm-5",
       "matchingModel": "zai-org/GLM-5",
       "overrides": {
+        "name": "GLM-5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -1281,6 +1283,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 384000,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,

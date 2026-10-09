@@ -1,0 +1,427 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "deepseek-ai/DeepSeek-V4-Flash-0731": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "overrides": {
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.00013,
+        "costPer1kOutputTokens": 0.00026,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Pro": {
+      "model": "deepseek-thinking/deepseek-v4-pro",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "lastUpdated": "April 24, 2026",
+        "costPer1kInputTokens": 0.00174,
+        "costPer1kOutputTokens": 0.00348,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "overrides": {
+        "maxTokens": 32768,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash-Fast": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-fast",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-Fast",
+      "overrides": {
+        "maxTokens": 32768,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai/Kimi-K2.5": {
+      "model": "kimi-k2/kimi-k2-5",
+      "matchingModel": "moonshotai/Kimi-K2.5",
+      "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "contextWindow": 262000,
+        "maxTokens": 262000,
+        "knowledgeCutoffDate": "December 2025",
+        "releaseDate": "January 30, 2026",
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.003
+      }
+    },
+    "moonshotai/Kimi-K2.6": {
+      "model": "kimi-k2/kimi-k2-6",
+      "matchingModel": "moonshotai/Kimi-K2.6",
+      "overrides": {
+        "contextWindow": 262000,
+        "maxTokens": 262000,
+        "lastUpdated": "April 21, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "moonshotai/Kimi-K2.7-Code": {
+      "model": "kimi-k2/kimi-k2-7-code",
+      "matchingModel": "moonshotai/Kimi-K2.7-Code",
+      "overrides": {
+        "contextWindow": 262000,
+        "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "June 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004
+      }
+    },
+    "moonshotai/Kimi-K3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "moonshotai/Kimi-K3",
+      "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "maxTokens": 262144,
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia/Nemotron-120B-A12B": {
+      "model": "nemotron/nemotron-super",
+      "matchingModel": "nvidia/Nemotron-120B-A12B",
+      "overrides": {
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.00075,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
+      "model": "nemotron/nemotron-ultra",
+      "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
+      "overrides": {
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "supportsAttachments": false
+      }
+    },
+    "openai/gpt-oss-120b": {
+      "model": "gpt-oss/openai-gpt-120b",
+      "matchingModel": "openai/gpt-oss-120b",
+      "overrides": {
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": false
+      }
+    },
+    "thinkingmachines/inkling": {
+      "model": "ling/inkling",
+      "matchingModel": "thinkingmachines/inkling",
+      "overrides": {
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.00405,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "thinkingmachines/inkling-small": {
+      "model": "ling/inkling-small",
+      "matchingModel": "thinkingmachines/inkling-small",
+      "overrides": {
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 30, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "zai-org/GLM-4.7": {
+      "model": "glm/glm-4-7",
+      "matchingModel": "zai-org/GLM-4.7",
+      "overrides": {
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 200000,
+        "maxTokens": 200000,
+        "lastUpdated": "December 22, 2025",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022,
+        "supportsAttachments": false
+      }
+    },
+    "zai-org/GLM-5": {
+      "model": "glm/glm-5",
+      "matchingModel": "zai-org/GLM-5",
+      "overrides": {
+        "name": "GLM 5",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 202800,
+        "maxTokens": 202800,
+        "knowledgeCutoffDate": "January 2026",
+        "lastUpdated": "February 12, 2026",
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.00315,
+        "supportsAttachments": false
+      }
+    },
+    "zai-org/GLM-5.1": {
+      "model": "glm/glm-5-1",
+      "matchingModel": "zai-org/GLM-5.1",
+      "overrides": {
+        "name": "GLM 5.1",
+        "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
+        "contextWindow": 202800,
+        "maxTokens": 202800,
+        "lastUpdated": "April 7, 2026",
+        "costPer1kInputTokens": 0.0013,
+        "costPer1kOutputTokens": 0.0043,
+        "supportsAttachments": false
+      }
+    },
+    "zai-org/GLM-5.2": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "zai-org/GLM-5.2",
+      "overrides": {
+        "name": "GLM 5.2",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "zai-org/GLM-5.2-Fast": {
+      "model": "glm/glm-5-2-fast",
+      "matchingModel": "zai-org/GLM-5.2-Fast",
+      "overrides": {
+        "description": "Open flagship GLM for long-horizon coding agents and million-token context work",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 13, 2026",
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.0021,
+        "costPer1kOutputTokens": 0.0066,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "zai-org/GLM-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "zai-org/GLM-5.3",
+      "overrides": {
+        "name": "GLM 5.3",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "zai-org/GLM-5.3-Fast": {
+      "model": "glm/glm-5-3-fast",
+      "matchingModel": "zai-org/GLM-5.3-Fast",
+      "overrides": {
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0021,
+        "costPer1kOutputTokens": 0.0066,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "zai-org/GLM-5.3-Flash": {
+      "model": "glm-flash/glm-5-3-flash",
+      "matchingModel": "zai-org/GLM-5.3-Flash",
+      "overrides": {
+        "name": "GLM 5.3 Flash",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005
+      }
+    }
+  }
+}

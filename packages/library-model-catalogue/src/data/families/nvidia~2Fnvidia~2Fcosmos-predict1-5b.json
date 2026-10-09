@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "releaseDate": "March 18, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/cosmos predict1 5b family includes models that produce video.",
+  "models": {
+    "cosmos-predict1-5b": {
+      "defaults": {
+        "name": "cosmos-predict1-5b",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+      }
+    }
+  }
+}

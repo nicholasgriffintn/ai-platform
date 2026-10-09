@@ -2,6 +2,7 @@ import { AlibabaProvider } from "../capabilities/chat/providers/alibaba.js";
 import { AnthropicProvider } from "../capabilities/chat/providers/anthropic.js";
 import { AzureOpenAIProvider } from "../capabilities/chat/providers/azure.js";
 import type { AIProvider } from "../capabilities/chat/providers/base.js";
+import { BasetenProvider } from "../capabilities/chat/providers/baseten.js";
 import { BedrockMantleProvider } from "../capabilities/chat/providers/bedrock-mantle.js";
 import { BedrockProvider } from "../capabilities/chat/providers/bedrock.js";
 import { CerebrasProvider } from "../capabilities/chat/providers/cerebras.js";
@@ -35,7 +36,9 @@ import { MiniMaxProvider } from "../capabilities/chat/providers/minimax.js";
 import { MistralProvider } from "../capabilities/chat/providers/mistral.js";
 import { MoonshotProvider } from "../capabilities/chat/providers/moonshot.js";
 import { MorphProvider } from "../capabilities/chat/providers/morph.js";
+import { NebiusProvider } from "../capabilities/chat/providers/nebius.js";
 import { AmazonNovaProvider } from "../capabilities/chat/providers/nova.js";
+import { NvidiaProvider } from "../capabilities/chat/providers/nvidia.js";
 import { OllamaCloudProvider } from "../capabilities/chat/providers/ollama-cloud.js";
 import { OpenAIProvider } from "../capabilities/chat/providers/openai.js";
 import { OpencodeGoProvider } from "../capabilities/chat/providers/opencode-go.js";
@@ -368,6 +371,22 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       name: "kilo",
       create: () => new KiloProvider(runtime),
       metadata: { vendor: "Kilo", categories: ["chat"] },
+    },
+    {
+      name: "nebius",
+      create: () => new NebiusProvider(runtime),
+      metadata: { vendor: "Nebius", categories: ["chat"] },
+    },
+    {
+      name: "baseten",
+      create: () => new BasetenProvider(runtime),
+      metadata: { vendor: "Baseten", categories: ["chat"] },
+    },
+    {
+      name: "nvidia",
+      aliases: ["nvidia-nim"],
+      create: () => new NvidiaProvider(runtime),
+      metadata: { vendor: "NVIDIA", categories: ["chat"] },
     },
     {
       name: "thinkingmachines",

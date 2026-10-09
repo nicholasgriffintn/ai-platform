@@ -223,16 +223,6 @@
         "openWeights": true,
         "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
         "contextWindow": 524288,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "July 30, 2026",
         "supportsAttachments": true
       }

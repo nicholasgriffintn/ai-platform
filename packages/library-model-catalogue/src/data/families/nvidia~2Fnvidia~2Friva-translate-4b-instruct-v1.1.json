@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 12, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/riva translate 4b instruct v1.1 family includes models that produce text.",
+  "models": {
+    "riva-translate-4b-instruct-v1-1": {
+      "defaults": {
+        "name": "riva-translate-4b-instruct-v1_1",
+        "description": "Translation model for multilingual conversion, localization, and cross-language workflows"
+      }
+    }
+  }
+}

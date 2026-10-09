@@ -1524,6 +1524,7 @@
     "gpt-oss-120b": {
       "defaults": {
         "name": "GPT OSS 120B",
+        "openWeights": true,
         "description": "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
         "contextWindow": 131072,
         "modalities": {
@@ -1536,6 +1537,14 @@
         },
         "reliability": 1,
         "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 23.8,
           "codingIndex": 30.4,

@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "November 2025",
+    "releaseDate": "January 30, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The nebius/NousResearch/Hermes 4 405B family includes models that produce text.",
+  "models": {
+    "hermes-4-405b": {
+      "defaults": {
+        "name": "Hermes-4-405B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    }
+  }
+}

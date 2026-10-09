@@ -1602,15 +1602,6 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 7, 2025",
@@ -1755,7 +1746,10 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nvidia/nemotron-nano-9b-v2": {
       "model": "nemotron/nvidia-nemotron-nano-9b-v2",
@@ -1776,7 +1770,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/codex-mini": {
       "model": "vercel/openai/codex-mini/codex-mini",
@@ -2691,7 +2688,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "zai/glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "contextWindow": 200000,
         "maxTokens": 120000,
         "speed": 4,
@@ -2938,6 +2934,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
@@ -3272,8 +3270,8 @@
         }
       },
       "unset": [
-        "strengths",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths"
       ]
     },
     "openai/gpt-5.3-chat": {
@@ -3738,6 +3736,7 @@
       "model": "glm/glm-5",
       "matchingModel": "zai/glm-5",
       "overrides": {
+        "name": "GLM-5",
         "contextWindow": 202800,
         "maxTokens": 131100,
         "speed": 3,
@@ -4084,7 +4083,10 @@
           "agenticIndex": 27.4,
           "intelligenceIndexVersion": 4.1
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "stepfun/step-3.5-flash": {
       "model": "step/stepfun-3-5-flash",
@@ -4185,7 +4187,10 @@
         "releaseDate": "January 15, 2026",
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "bfl/flux-2-klein-9b": {
       "model": "flux/flux-2-klein-9b",
@@ -4825,8 +4830,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "supportsResponseFormat",
         "knowledgeCutoffDate",
+        "supportsResponseFormat",
         "contextComplexity",
         "reliability"
       ]
@@ -4985,6 +4990,7 @@
       "matchingModel": "zai/glm-5.2-fast",
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 1000000,
         "maxTokens": 128000,
         "releaseDate": "June 13, 2026",
         "lastUpdated": "June 13, 2026",
@@ -7082,8 +7088,6 @@
       "model": "glm/glm-5-3-fast",
       "matchingModel": "zai/glm-5.3-fast",
       "overrides": {
-        "contextWindow": 1048576,
-        "releaseDate": "August 14, 2026",
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0021,
         "costPer1kOutputTokens": 0.0066,
@@ -7963,10 +7967,20 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-fast",
       "matchingModel": "deepseek/deepseek-v4.1-flash-fast",
       "overrides": {
+        "maxTokens": 1000000,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "bfl/flux-3-image": {

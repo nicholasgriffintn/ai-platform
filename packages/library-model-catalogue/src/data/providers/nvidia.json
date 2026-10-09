@@ -1,0 +1,763 @@
+{
+  "defaults": {
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "baai/bge-m3": {
+      "model": "bge/bge-m3",
+      "matchingModel": "baai/bge-m3",
+      "overrides": {
+        "lastUpdated": "April 30, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "black-forest-labs/flux_1-kontext-dev": {
+      "model": "flux/flux-1-kontext-dev",
+      "matchingModel": "black-forest-labs/flux_1-kontext-dev",
+      "overrides": {
+        "lastUpdated": "August 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "black-forest-labs/flux_1-schnell": {
+      "model": "flux/flux-1-schnell",
+      "matchingModel": "black-forest-labs/flux_1-schnell",
+      "overrides": {
+        "lastUpdated": "February 4, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "black-forest-labs/flux_2-klein-4b": {
+      "model": "flux/flux-2-klein-4b",
+      "matchingModel": "black-forest-labs/flux_2-klein-4b",
+      "overrides": {
+        "openWeights": true,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "lastUpdated": "January 31, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "black-forest-labs/flux.1-dev": {
+      "model": "flux/flux-1-dev",
+      "matchingModel": "black-forest-labs/flux.1-dev",
+      "overrides": {
+        "lastUpdated": "September 5, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "deepseek-ai/deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-ai/deepseek-v4.1-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google/diffusiongemma-26b-a4b-it": {
+      "model": "gemma/diffusiongemma-26b-a4b-it",
+      "matchingModel": "google/diffusiongemma-26b-a4b-it",
+      "overrides": {
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "google/gemma-3-12b-it": {
+      "model": "gemma/gemma-3-12b-it",
+      "matchingModel": "google/gemma-3-12b-it",
+      "overrides": {
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "maxTokens": 16384,
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "google/gemma-3-4b-it": {
+      "model": "gemma/gemma-3-4b-it",
+      "matchingModel": "google/gemma-3-4b-it",
+      "overrides": {
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "maxTokens": 16384,
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "google/gemma-4-31b-it": {
+      "model": "gemma/gemma-4-31b-it",
+      "matchingModel": "google/gemma-4-31b-it",
+      "overrides": {
+        "name": "Gemma-4-31B-IT",
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "contextWindow": 256000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "google/google-paligemma": {
+      "model": "gemma/paligemma",
+      "matchingModel": "google/google-paligemma",
+      "overrides": {
+        "lastUpdated": "August 26, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "meta/esm2-650m": {
+      "model": "nvidia/meta/esm2-650m/esm2-650m",
+      "matchingModel": "meta/esm2-650m",
+      "overrides": {
+        "lastUpdated": "March 10, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "meta/esmfold": {
+      "model": "nvidia/meta/esmfold/esmfold",
+      "matchingModel": "meta/esmfold",
+      "overrides": {
+        "lastUpdated": "June 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "meta/llama-3.2-11b-vision-instruct": {
+      "model": "llama/llama-3-2-11b-vision-instruct",
+      "matchingModel": "meta/llama-3.2-11b-vision-instruct",
+      "overrides": {
+        "name": "Llama 3.2 11b Vision Instruct",
+        "maxTokens": 4096,
+        "releaseDate": "September 18, 2024",
+        "lastUpdated": "September 18, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "meta/llama-3.2-90b-vision-instruct": {
+      "model": "llama/llama-3-2-90b-vision-instruct",
+      "matchingModel": "meta/llama-3.2-90b-vision-instruct",
+      "overrides": {
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "lastUpdated": "September 25, 2024",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "meta/llama-guard-4-12b": {
+      "model": "llama/llama-guard-4-12b",
+      "matchingModel": "meta/llama-guard-4-12b",
+      "overrides": {
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 5, 2025",
+        "lastUpdated": "April 30, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "meta/muse-glimmer-30b": {
+      "model": "muse/muse-glimmer-30b",
+      "matchingModel": "meta/muse-glimmer-30b",
+      "overrides": {
+        "maxTokens": 131072,
+        "lastUpdated": "August 10, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mistralai/magistral-small-2506": {
+      "model": "mistral/magistral-small-2506",
+      "matchingModel": "mistralai/magistral-small-2506",
+      "overrides": {
+        "lastUpdated": "September 25, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "mistralai/mistral-7b-instruct-v0.3": {
+      "model": "mistral/mistral-7b-instruct-v0-3",
+      "matchingModel": "mistralai/mistral-7b-instruct-v0.3",
+      "overrides": {
+        "openWeights": true,
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "lastUpdated": "April 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "mistralai/mistral-medium-3-instruct": {
+      "model": "mistral-medium/mistral-medium-3",
+      "matchingModel": "mistralai/mistral-medium-3-instruct",
+      "overrides": {
+        "maxTokens": 32768,
+        "releaseDate": "September 25, 2025",
+        "lastUpdated": "September 25, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false
+      }
+    },
+    "moonshotai/kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "moonshotai/kimi-k3",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/active-speaker-detection": {
+      "model": "nvidia/nvidia/active-speaker-detection/active-speaker-detection",
+      "matchingModel": "nvidia/active-speaker-detection",
+      "overrides": {
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/bevformer": {
+      "model": "nvidia/nvidia/bevformer/bevformer",
+      "matchingModel": "nvidia/bevformer",
+      "overrides": {
+        "lastUpdated": "July 20, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "nvidia/cosmos-predict1-5b": {
+      "model": "nvidia/nvidia/cosmos-predict1-5b/cosmos-predict1-5b",
+      "matchingModel": "nvidia/cosmos-predict1-5b",
+      "overrides": {
+        "lastUpdated": "March 18, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/cosmos-reason2-8b": {
+      "model": "nvidia/nvidia/cosmos-reason2-8b/cosmos-reason2-8b",
+      "matchingModel": "nvidia/cosmos-reason2-8b",
+      "overrides": {
+        "lastUpdated": "December 1, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "nvidia/cosmos-transfer1-7b": {
+      "model": "nvidia/nvidia/cosmos-transfer1-7b/cosmos-transfer1-7b",
+      "matchingModel": "nvidia/cosmos-transfer1-7b",
+      "overrides": {
+        "lastUpdated": "June 30, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/cosmos-transfer2_5-2b": {
+      "model": "nvidia/nvidia/cosmos-transfer2_5-2b/cosmos-transfer2-5-2b",
+      "matchingModel": "nvidia/cosmos-transfer2_5-2b",
+      "overrides": {
+        "lastUpdated": "February 26, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/llama-3_2-nemoretriever-300m-embed-v1": {
+      "model": "llama/llama-3-2-nemoretriever-300m-embed-v1",
+      "matchingModel": "nvidia/llama-3_2-nemoretriever-300m-embed-v1",
+      "overrides": {
+        "lastUpdated": "July 24, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/llama-3.1-nemotron-70b-instruct": {
+      "model": "nemotron/llama-3-1-nemotron-70b-instruct",
+      "matchingModel": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "overrides": {
+        "lastUpdated": "April 15, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/llama-3.1-nemotron-safety-guard-8b-v3": {
+      "model": "nemotron/llama-3-1-nemotron-safety-guard-8b-v3",
+      "matchingModel": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
+      "overrides": {
+        "lastUpdated": "October 28, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/llama-3.1-nemotron-ultra-253b-v1": {
+      "model": "nemotron/llama-3-1-nemotron-ultra-253b",
+      "matchingModel": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "overrides": {
+        "lastUpdated": "April 7, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/llama-nemotron-embed-vl-1b-v2": {
+      "model": "nemotron/llama-nemotron-embed-vl-1b-v2",
+      "matchingModel": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "overrides": {
+        "lastUpdated": "February 10, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/llama-nemotron-rerank-vl-1b-v2": {
+      "model": "nemotron/llama-nemotron-rerank-vl-1b-v2",
+      "matchingModel": "nvidia/llama-nemotron-rerank-vl-1b-v2",
+      "overrides": {
+        "lastUpdated": "March 31, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/magpie-tts-zeroshot": {
+      "model": "nvidia/nvidia/magpie-tts-zeroshot/magpie-tts-zeroshot",
+      "matchingModel": "nvidia/magpie-tts-zeroshot",
+      "overrides": {
+        "lastUpdated": "June 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+      "model": "nemotron/nemotron-3-nano-omni",
+      "matchingModel": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "overrides": {
+        "name": "Nemotron 3 Nano Omni",
+        "description": "Open Nemotron omni model combining reasoning with text, vision, and audio",
+        "contextWindow": 256000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 28, 2026",
+        "lastUpdated": "April 28, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "model": "nemotron/nemotron-3-super",
+      "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
+      "overrides": {
+        "name": "Nemotron 3 Super",
+        "maxTokens": 262144,
+        "knowledgeCutoffDate": "April 2024",
+        "lastUpdated": "March 11, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0008,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/nemotron-3-ultra-550b-a55b": {
+      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsToolCalls": true,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia/nemotron-3.5-content-safety": {
+      "model": "nemotron/nemotron-3-5-content-safety",
+      "matchingModel": "nvidia/nemotron-3.5-content-safety",
+      "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia/nemotron-3.5-lightning-30b-a3b": {
+      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "matchingModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "overrides": {
+        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+        "maxTokens": 262144,
+        "lastUpdated": "August 11, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia/nemotron-voicechat": {
+      "model": "nemotron/nemotron-voicechat",
+      "matchingModel": "nvidia/nemotron-voicechat",
+      "overrides": {
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    },
+    "nvidia/nv-embed-v1": {
+      "model": "nvidia/nvidia/nv-embed-v1/nv-embed-v1",
+      "matchingModel": "nvidia/nv-embed-v1",
+      "overrides": {
+        "lastUpdated": "July 22, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/nv-embedcode-7b-v1": {
+      "model": "nvidia/nvidia/nv-embedcode-7b-v1/nv-embedcode-7b-v1",
+      "matchingModel": "nvidia/nv-embedcode-7b-v1",
+      "overrides": {
+        "lastUpdated": "May 29, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/rerank-qa-mistral-4b": {
+      "model": "mistral/rerank-qa-mistral-4b",
+      "matchingModel": "nvidia/rerank-qa-mistral-4b",
+      "overrides": {
+        "lastUpdated": "January 17, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/riva-translate-4b-instruct-v1.1": {
+      "model": "nvidia/nvidia/riva-translate-4b-instruct-v1.1/riva-translate-4b-instruct-v1-1",
+      "matchingModel": "nvidia/riva-translate-4b-instruct-v1.1",
+      "overrides": {
+        "lastUpdated": "December 12, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nvidia/sparsedrive": {
+      "model": "nvidia/nvidia/sparsedrive/sparsedrive",
+      "matchingModel": "nvidia/sparsedrive",
+      "overrides": {
+        "lastUpdated": "July 20, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "nvidia/streampetr": {
+      "model": "nvidia/nvidia/streampetr/streampetr",
+      "matchingModel": "nvidia/streampetr",
+      "overrides": {
+        "lastUpdated": "November 13, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "nvidia/studiovoice": {
+      "model": "nvidia/nvidia/studiovoice/studiovoice",
+      "matchingModel": "nvidia/studiovoice",
+      "overrides": {
+        "lastUpdated": "June 13, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/synthetic-video-detector": {
+      "model": "nvidia/nvidia/synthetic-video-detector/synthetic-video-detector",
+      "matchingModel": "nvidia/synthetic-video-detector",
+      "overrides": {
+        "lastUpdated": "April 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "nvidia/usdcode": {
+      "model": "nvidia/nvidia/usdcode/usdcode",
+      "matchingModel": "nvidia/usdcode",
+      "overrides": {
+        "lastUpdated": "January 1, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "nvidia/usdvalidate": {
+      "model": "nvidia/nvidia/usdvalidate/usdvalidate",
+      "matchingModel": "nvidia/usdvalidate",
+      "overrides": {
+        "lastUpdated": "January 8, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai/gpt-oss-20b",
+      "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "maxTokens": 32768,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "openai/whisper-large-v3": {
+      "model": "whisper/whisper-large-v3",
+      "matchingModel": "openai/whisper-large-v3",
+      "overrides": {
+        "lastUpdated": "September 5, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "poolside/laguna-xs-2.1": {
+      "model": "laguna/laguna-xs-2-1",
+      "matchingModel": "poolside/laguna-xs-2.1",
+      "overrides": {
+        "maxTokens": 16384,
+        "lastUpdated": "July 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "qwen/qwen-image": {
+      "model": "qwen/qwen-image",
+      "matchingModel": "qwen/qwen-image",
+      "overrides": {
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "August 7, 2025",
+        "lastUpdated": "August 7, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false
+      }
+    },
+    "qwen/qwen-image-edit": {
+      "model": "qwen/qwen-image-edit",
+      "matchingModel": "qwen/qwen-image-edit",
+      "overrides": {
+        "lastUpdated": "August 19, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false
+      }
+    },
+    "z-ai/glm-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "z-ai/glm-5.3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true,
+        "supportsAttachments": false
+      }
+    },
+    "z-ai/glm-5.3-flash": {
+      "model": "glm-flash/glm-5-3-flash",
+      "matchingModel": "z-ai/glm-5.3-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": true
+      }
+    }
+  }
+}

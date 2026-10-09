@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "audio"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "releaseDate": "May 22, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/magpie tts zeroshot family includes models that produce audio.",
+  "models": {
+    "magpie-tts-zeroshot": {
+      "defaults": {
+        "name": "magpie-tts-zeroshot",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

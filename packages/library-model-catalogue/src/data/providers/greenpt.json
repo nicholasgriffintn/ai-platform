@@ -294,15 +294,6 @@
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -582,6 +573,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,

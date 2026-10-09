@@ -764,6 +764,16 @@
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -1023,6 +1033,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
+        "maxTokens": 384000,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,

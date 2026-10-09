@@ -1726,6 +1726,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
         "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -2046,6 +2047,8 @@
       "overrides": {
         "name": "glm-5.2-fast",
         "openWeights": false,
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
         "releaseDate": "July 13, 2026",
         "lastUpdated": "July 13, 2026",
         "costPer1kInputTokens": 0.0021,
@@ -2962,10 +2965,25 @@
       "model": "nemotron/nemotron-3-nano-omni",
       "matchingModel": "nemotron-3-nano-omni",
       "overrides": {
+        "name": "nemotron-3-nano-omni",
+        "openWeights": false,
+        "contextWindow": 300000,
+        "maxTokens": 300000,
+        "releaseDate": "May 20, 2026",
         "lastUpdated": "May 20, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"

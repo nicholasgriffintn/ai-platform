@@ -13,6 +13,7 @@
         "speed": 3
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -26,6 +27,7 @@
         "speed": 3
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -37,6 +39,7 @@
         "speed": 4
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -58,15 +61,6 @@
         "name": "Moonshot Kimi K2.6",
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",

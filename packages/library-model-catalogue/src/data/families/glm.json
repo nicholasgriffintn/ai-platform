@@ -288,6 +288,7 @@
     },
     "glm-4-7": {
       "defaults": {
+        "name": "GLM 4.7",
         "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "strengths": [
           "tool_use"
@@ -366,9 +367,7 @@
     },
     "glm-5": {
       "defaults": {
-        "name": "GLM-5",
         "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -587,9 +586,7 @@
     "glm-5-2-fast": {
       "defaults": {
         "name": "GLM 5.2 Fast",
-        "description": "GLM-5.2 introduces a robust 1M-token context and advanced, multi-effort coding capabilities to significantly enhance performance on long-horizon tasks. Its new IndexShare architecture and improved MTP layer simultaneously boost efficiency by reducing per-token FLOPs and increasing speculative decoding lengths. A 743B-parameter model in Zhipu AI's GLM series, designed to plan, execute, and iterate autonomously on extended, engineering-grade tasks.",
-        "contextWindow": 1000000,
-        "maxTokens": 131072
+        "description": "GLM-5.2 introduces a robust 1M-token context and advanced, multi-effort coding capabilities to significantly enhance performance on long-horizon tasks. Its new IndexShare architecture and improved MTP layer simultaneously boost efficiency by reducing per-token FLOPs and increasing speculative decoding lengths. A 743B-parameter model in Zhipu AI's GLM series, designed to plan, execute, and iterate autonomously on extended, engineering-grade tasks."
       }
     },
     "glm-5-2-free": {
@@ -809,7 +806,9 @@
       "defaults": {
         "name": "GLM 5.3 Fast",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
-        "maxTokens": 262144
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "releaseDate": "August 14, 2026"
       }
     },
     "glm-5-3-fast-latest": {

@@ -144,6 +144,18 @@
         "releaseDate": "February 13, 2025"
       }
     },
+    "magistral-small-2506": {
+      "defaults": {
+        "name": "Magistral Small 2506",
+        "openWeights": false,
+        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "releaseDate": "September 25, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
     "mistral-7b-instruct-free": {
       "defaults": {
         "name": "Mistral 7B Instruct (free)",
@@ -195,8 +207,6 @@
       "defaults": {
         "name": "Mistral-7B-Instruct-v0.3",
         "description": "Mistral-7B-Instruct-v0.3 model is a fine-tuned version of the Mistral 7B base model, optimized for instruction-following tasks. Released in 2023, it is intended for demonstration purposes and does not include built-in guardrails or moderation features.",
-        "contextWindow": 127000,
-        "maxTokens": 127000,
         "releaseDate": "April 1, 2025",
         "supportsResponseFormat": true
       }
@@ -626,6 +636,19 @@
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
         }
+      }
+    },
+    "rerank-qa-mistral-4b": {
+      "defaults": {
+        "name": "rerank-qa-mistral-4b",
+        "openWeights": true,
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "releaseDate": "March 17, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsTemperature": false
       }
     },
     "saba": {

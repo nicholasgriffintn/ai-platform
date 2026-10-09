@@ -1061,6 +1061,7 @@
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1024000,
+        "maxTokens": 384000,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0016,
         "costPer1kOutputTokens": 0.0032,
@@ -2465,15 +2466,6 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.0006,
@@ -2492,15 +2484,6 @@
       "matchingModel": "moonshotai/kimi-k2.6",
       "overrides": {
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0004344,
         "costPer1kOutputTokens": 0.00245,
@@ -2697,6 +2680,7 @@
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
       "overrides": {
         "description": "NVIDIA Nemotron 3 Ultra is an open frontier-reasoning and orchestration model from NVIDIA, with 55B active parameters out of 550B total (MoE). Built on a hybrid Transformer-Mamba mixture-of-experts architecture, it...",
+        "contextWindow": 262144,
         "maxTokens": 16384,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -2728,6 +2712,7 @@
       "matchingModel": "nvidia/nemotron-3.5-content-safety",
       "overrides": {
         "description": "NVIDIA Nemotron 3.5 Content Safety is a compact 4B-parameter multimodal guardrail model from NVIDIA, fine-tuned from Google Gemma-3-4B. It moderates both inputs to and responses from LLMs and VLMs, accepting...",
+        "maxTokens": 117964,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002,
@@ -5045,6 +5030,16 @@
       "overrides": {
         "description": "Inkling Small is an open-weight multimodal mixture-of-experts model from Thinking Machines Lab, with 12B active parameters out of 276B total. It is positioned as the smaller, more efficient member of...",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -5526,6 +5521,7 @@
       "model": "glm/glm-5",
       "matchingModel": "z-ai/glm-5",
       "overrides": {
+        "name": "GLM-5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 198000,
         "maxTokens": 128000,

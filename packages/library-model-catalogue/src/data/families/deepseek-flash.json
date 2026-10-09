@@ -55,7 +55,6 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "maxTokens": 384000,
         "releaseDate": "September 10, 2026"
       }
     },
@@ -81,17 +80,7 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash Fast",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "maxTokens": 1000000,
-        "releaseDate": "September 10, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "September 10, 2026"
       }
     },
     "deepseek-v4-flash": {

@@ -10,11 +10,48 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The nemotron family includes models that produce text.",
   "models": {
+    "llama-3-1-nemotron-70b-instruct": {
+      "defaults": {
+        "name": "Llama 3.1 Nemotron 70B Instruct",
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "releaseDate": "April 15, 2025"
+      }
+    },
+    "llama-3-1-nemotron-safety-guard-8b-v3": {
+      "defaults": {
+        "name": "llama-3.1-nemotron-safety-guard-8b-v3",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "releaseDate": "October 28, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "llama-3-1-nemotron-ultra-253b": {
+      "defaults": {
+        "name": "Llama 3.1 Nemotron Ultra 253B",
+        "description": "Flagship Nemotron model for high-throughput reasoning and complex agents",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "releaseDate": "April 7, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "llama-3-3-nemotron-super-49b-v1-5": {
       "defaults": {
         "name": "Llama 3.3 Nemotron Super 49B V1.5",
@@ -33,12 +70,53 @@
         }
       }
     },
+    "llama-nemotron-embed-vl-1b-v2": {
+      "defaults": {
+        "name": "llama-nemotron-embed-vl-1b-v2",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 32768,
+        "maxTokens": 2048,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 10, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "llama-nemotron-rerank-vl-1b-v2": {
+      "defaults": {
+        "name": "llama-nemotron-rerank-vl-1b-v2",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 31, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
     "nemotron-3-5-content-safety": {
       "defaults": {
         "name": "Nemotron 3.5 Content Safety",
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
         "contextWindow": 131072,
-        "maxTokens": 117964,
         "modalities": {
           "input": [
             "text",
@@ -89,7 +167,6 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -104,8 +181,7 @@
         "name": "Nemotron 3.5 Lightning 30B A3B",
         "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
         "contextWindow": 262144,
-        "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": true
+        "releaseDate": "August 11, 2026"
       }
     },
     "nemotron-3-5-lightning-30b-free": {
@@ -115,7 +191,6 @@
         "contextWindow": 1000000,
         "maxTokens": 32768,
         "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -166,7 +241,6 @@
         "maxTokens": 235929,
         "reliability": 1,
         "releaseDate": "December 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -202,23 +276,7 @@
     },
     "nemotron-3-nano-omni": {
       "defaults": {
-        "name": "nemotron-3-nano-omni",
-        "openWeights": false,
-        "description": "The most open, efficient, and accurate omni modal reasoning model for agentic AI.",
-        "contextWindow": 300000,
-        "maxTokens": 300000,
-        "releaseDate": "May 20, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "The most open, efficient, and accurate omni modal reasoning model for agentic AI."
       }
     },
     "nemotron-3-nano-omni-30b-a3b-reasoning": {
@@ -286,7 +344,6 @@
         "contextWindow": 300000,
         "maxTokens": 300000,
         "releaseDate": "May 20, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -330,10 +387,8 @@
     },
     "nemotron-3-super": {
       "defaults": {
-        "name": "nemotron-3-super",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
         "contextWindow": 262144,
-        "maxTokens": 65536,
         "releaseDate": "March 11, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -351,7 +406,6 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -378,7 +432,6 @@
         "maxTokens": 235929,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -398,14 +451,12 @@
       "defaults": {
         "name": "Nemotron 3 Ultra 550B A55B",
         "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
-        "contextWindow": 262144,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 4, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 37.8,
           "codingIndex": 49.3,
@@ -460,7 +511,6 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "releaseDate": "August 15, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -539,7 +589,6 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 18, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -566,7 +615,6 @@
           ]
         },
         "releaseDate": "October 31, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -576,6 +624,58 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "nemotron-super": {
+      "defaults": {
+        "name": "Nemotron Super",
+        "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
+        "contextWindow": 202800,
+        "maxTokens": 202800,
+        "knowledgeCutoffDate": "February 2026",
+        "releaseDate": "March 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-ultra": {
+      "defaults": {
+        "name": "Nemotron Ultra",
+        "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+        "contextWindow": 202800,
+        "maxTokens": 202800,
+        "releaseDate": "June 4, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-voicechat": {
+      "defaults": {
+        "name": "nemotron-voicechat",
+        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 16, 2026",
+        "supportsAttachments": true
       }
     },
     "nvidia-nemotron-3-5-content-safety-free": {
@@ -636,7 +736,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "January 12, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -659,8 +758,7 @@
         "description": "NVIDIA Nemotron 3 Nano 30B A3B BF16 accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "releaseDate": "December 29, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "December 29, 2025"
       }
     },
     "nvidia-nemotron-3-nano-omni": {
@@ -671,7 +769,6 @@
         "contextWindow": 300000,
         "maxTokens": 65536,
         "releaseDate": "April 29, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -722,7 +819,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 25.4,
           "codingIndex": 37.7,
@@ -738,7 +834,6 @@
         "contextWindow": 262144,
         "maxTokens": 235929,
         "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -845,7 +940,6 @@
           ]
         },
         "releaseDate": "October 28, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
@@ -856,7 +950,6 @@
         "contextWindow": 262144,
         "maxTokens": 8192,
         "releaseDate": "December 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

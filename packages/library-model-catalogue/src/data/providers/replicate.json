@@ -2514,7 +2514,10 @@
           ],
           "reference": "https://replicate.com/turian/insanely-fast-whisper-with-video"
         }
-      }
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
     },
     "replicate-tencent-hunyuan-video": {
       "model": "replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405/hunyuan-video",

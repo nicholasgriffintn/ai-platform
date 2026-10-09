@@ -171,15 +171,6 @@
         "name": "kimi-k2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -204,15 +195,6 @@
       "overrides": {
         "name": "kimi-k2.6",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -343,8 +325,8 @@
       "unset": [
         "contextComplexity",
         "reliability",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "nemotron-3-nano:30b": {
@@ -354,16 +336,24 @@
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nemotron-3-super": {
       "model": "nemotron/nemotron-3-super",
       "matchingModel": "nemotron-3-super",
       "overrides": {
+        "name": "nemotron-3-super",
+        "maxTokens": 65536,
         "lastUpdated": "March 12, 2026",
         "costPer1kInputTokens": 0.000015,
         "costPer1kOutputTokens": 0.0006
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nemotron-3-ultra": {
       "model": "nemotron/nemotron-3-ultra",
@@ -382,7 +372,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.5:397b": {
       "model": "qwen/qwen3-5-397b",
@@ -412,6 +405,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
+        "maxTokens": 384000,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,

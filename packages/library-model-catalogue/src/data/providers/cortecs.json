@@ -230,6 +230,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0017,
@@ -338,7 +340,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
         "maxTokens": 202752,
@@ -537,15 +538,6 @@
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "tool_use",
@@ -1556,6 +1548,8 @@
       "overrides": {
         "name": "Mistral 7B Instruct V0.3",
         "openWeights": false,
+        "contextWindow": 127000,
+        "maxTokens": 127000,
         "releaseDate": "May 26, 2025",
         "lastUpdated": "May 26, 2025",
         "costPer1kInputTokens": 0.000111,

@@ -16,6 +16,27 @@
   },
   "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
   "models": {
+    "qwen3-embedding-8b": {
+      "defaults": {
+        "name": "Qwen3-Embedding-8B",
+        "openWeights": true,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 40960,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2025",
+        "releaseDate": "January 10, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false
+      }
+    },
     "text-embedding-005": {
       "defaults": {
         "name": "Text Embedding 005",

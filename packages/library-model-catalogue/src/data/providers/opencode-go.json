@@ -410,6 +410,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,

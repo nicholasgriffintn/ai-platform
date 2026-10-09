@@ -54,6 +54,7 @@ function createContext(options?: {
           latest: options?.latest ?? 5,
         }),
         listEvents: vi.fn().mockResolvedValue(options?.events ?? [event(4), event(5)]),
+        getPartialContent: vi.fn().mockResolvedValue(null),
       },
       messages: {
         getRunMessages: vi.fn().mockResolvedValue([

@@ -9,7 +9,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "name": "GLM 4.7",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -30,6 +29,7 @@
       "overrides": {
         "name": "GLM 5",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "coding",
           "reasoning",

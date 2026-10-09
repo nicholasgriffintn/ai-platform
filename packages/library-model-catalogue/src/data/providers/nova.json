@@ -48,10 +48,10 @@
         "supportsAudio": true
       },
       "unset": [
+        "openWeights",
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "openWeights"
+        "supportsTemperature"
       ]
     },
     "nova-micro-v1": {
@@ -103,11 +103,11 @@
         "supportsAudio": true
       },
       "unset": [
+        "openWeights",
+        "contextWindow",
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature",
-        "openWeights",
-        "contextWindow"
+        "supportsTemperature"
       ]
     },
     "nova-premier-v1": {

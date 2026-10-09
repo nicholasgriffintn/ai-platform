@@ -182,4 +182,8 @@ export const PROVIDER_ICONS: Record<string, string> = {
   "twilio-sms": "twilio",
   vectorize: "vectorize",
   kilo: "kilo",
+  nebius: "nebius",
+  baseten: "baseten",
+  nvidia: "nvidia",
+  "nvidia-nim": "nvidia",
 };
