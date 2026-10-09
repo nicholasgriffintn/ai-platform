@@ -70,7 +70,7 @@ export async function loadCapabilityDiscoverySources(
   const mode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
   const catalogue = listFunctionToolDefinitions().map((tool) => ({
     tool,
-    activation: permissionChecker.checkToolAccess({
+    activation: permissionChecker.checkToolActivation({
       toolName: tool.name,
       mode,
       user,

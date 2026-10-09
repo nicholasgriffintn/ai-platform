@@ -4,8 +4,15 @@ import { eq } from "drizzle-orm";
 import { AUTH_SESSION_TTL_MS } from "~/config/app";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { session } from "~/infrastructure/database/schema";
+import type { User } from "~/types";
 
 import { toAuthSessionRecord, type StoredSessionRecord } from "./sessionRecord";
+
+type SessionUserRow = Omit<User, "id"> & {
+  id: number | null;
+  session_user_id: number;
+  session_expires_at: string;
+};
 
 interface ConsumeNativeAuthCodeOptions {
   jti: string;
@@ -41,6 +48,32 @@ export class SessionRepository extends BaseRepository implements SessionStore {
     }
 
     return toAuthSessionRecord(record, AUTH_SESSION_TTL_MS);
+  }
+
+  public async findWithUserByTokenHash(
+    tokenHash: string,
+  ): Promise<{ session: AuthSessionRecord; user: User | null } | null> {
+    const row = await this.runQuery<SessionUserRow>(
+      `SELECT session.user_id AS session_user_id, session.expires_at AS session_expires_at, user.*
+       FROM session
+       LEFT JOIN user ON user.id = session.user_id
+       WHERE session.id = ?
+       LIMIT 1`,
+      [tokenHash],
+      true,
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    const { session_user_id, session_expires_at, id, ...user } = row;
+    const session = toAuthSessionRecord(
+      { id: tokenHash, userId: session_user_id, expiresAt: session_expires_at },
+      AUTH_SESSION_TTL_MS,
+    );
+
+    return { session, user: id === null ? null : { ...user, id } };
   }
 
   public async deleteByTokenHash(tokenHash: string): Promise<void> {

@@ -106,7 +106,7 @@ export const executeModelGeneration = async (
   }
 
   const serviceContext = resolveServiceContext({ context, env, user });
-  const modelConfig = await getModelConfigByModel(params.modelId, serviceContext.env);
+  const modelConfig = await getModelConfigByModel(params.modelId);
 
   if (!modelConfig) {
     throw new AssistantError(

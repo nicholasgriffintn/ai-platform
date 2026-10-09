@@ -1,4 +1,4 @@
-import { authorise } from "@ngriffin_uk/polychat-library-policy";
+import { authorise, createAuthorisationPass } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_MODEL_TIER,
   getModelDisplayName,
@@ -23,17 +23,18 @@ export function getExecutableModelsForAccount(
   models: ModelConfig,
   user?: AccountPlan,
 ): ModelConfig {
+  const canExecute = createAuthorisationPass("model.execute");
+
   return Object.fromEntries(
-    Object.entries(models).filter(
-      ([, model]) =>
-        authorise("model.execute", {
-          plan: user?.plan_id ?? "",
-          active: isActiveModel(model),
-          free: model.isFree === true,
-          byok: model.isByokEnabled === true,
-          onDevice: model.runsOn === "device",
-          platformEnabled: model.isPlatformEnabled !== false,
-        }).allowed,
+    Object.entries(models).filter(([, model]) =>
+      canExecute({
+        plan: user?.plan_id ?? "",
+        active: isActiveModel(model),
+        free: model.isFree === true,
+        byok: model.isByokEnabled === true,
+        onDevice: model.runsOn === "device",
+        platformEnabled: model.isPlatformEnabled !== false,
+      }),
     ),
   );
 }

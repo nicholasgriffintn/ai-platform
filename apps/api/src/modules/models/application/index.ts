@@ -68,14 +68,9 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
         isDefault: id === defaultModel,
         isExecutable: executableModelIds.has(id),
       };
+      const readiness = resolveModelReadiness(enrichedModel, user);
 
-      return [
-        id,
-        {
-          ...enrichedModel,
-          readiness: resolveModelReadiness(enrichedModel, user),
-        },
-      ];
+      return [id, readiness.state === "ready" ? enrichedModel : { ...enrichedModel, readiness }];
     }),
   );
 }

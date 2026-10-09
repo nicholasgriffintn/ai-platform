@@ -138,13 +138,19 @@ export class ConversationRepository extends BaseRepository {
            ORDER BY message.created_at DESC, message.id DESC
            LIMIT 1
          )) AS model_id,
-         EXISTS (
-         SELECT 1 FROM conversation related
-         WHERE (related.id = c.parent_conversation_id OR related.parent_conversation_id = c.id)
-           AND related.id != c.id
-           AND related.project_id IS c.project_id
-           AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
-       ) AS has_threads
+         (EXISTS (
+           SELECT 1 FROM conversation related
+           WHERE related.id = c.parent_conversation_id
+             AND related.id != c.id
+             AND +related.project_id IS c.project_id
+             AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
+         ) OR EXISTS (
+           SELECT 1 FROM conversation related
+           WHERE related.parent_conversation_id = c.id
+             AND related.id != c.id
+             AND +related.project_id IS c.project_id
+             AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
+         )) AS has_threads
        FROM conversation c WHERE c.id = ?`,
       [conversationId],
       true,
@@ -162,7 +168,7 @@ export class ConversationRepository extends BaseRepository {
     return this.runQuery(
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation
-         WHERE project_id IS ? AND (? IS NOT NULL OR user_id = ?)
+         WHERE +project_id IS ? AND (? IS NOT NULL OR user_id = ?)
            AND type IN (${listedConversationTypesSql})
            AND NOT EXISTS (
              SELECT 1 FROM teammate_context tc
@@ -268,15 +274,6 @@ export class ConversationRepository extends BaseRepository {
         ON state.conversation_id = c.id AND state.user_id = ?
       WHERE ${whereClause}`;
 
-    const countResult = await this.runQuery<{ total: number }>(
-      countQuery,
-      [userId, ...values],
-      true,
-    );
-
-    const total = countResult?.total || 0;
-    const totalPages = Math.ceil(total / safeLimit);
-
     const listQuery =
       sortBy === "title"
         ? `
@@ -356,7 +353,13 @@ export class ConversationRepository extends BaseRepository {
 
     const queryValues =
       sortBy === "title" ? [userId, ...values] : [userId, ...values, safeLimit, offset];
-    const results = await this.runQuery<Record<string, unknown>>(listQuery, queryValues);
+    const [countResult, listResult] = await this.executeBatch<Record<string, unknown>>([
+      this.env.DB.prepare(countQuery).bind(userId, ...values),
+      this.env.DB.prepare(listQuery).bind(...queryValues),
+    ]);
+    const total = Number(countResult?.results[0]?.total ?? 0);
+    const totalPages = Math.ceil(total / safeLimit);
+    const results = listResult?.results ?? [];
     const conversations =
       sortBy === "title"
         ? sortCopy(

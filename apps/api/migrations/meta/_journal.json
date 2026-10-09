@@ -36,6 +36,20 @@
       "when": 1791420971788,
       "tag": "0004_chat_run_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791504801797,
+      "tag": "0005_drop_low_cardinality_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791547477318,
+      "tag": "0006_tasks_user_type_status_index",
+      "breakpoints": true
     }
   ]
 }

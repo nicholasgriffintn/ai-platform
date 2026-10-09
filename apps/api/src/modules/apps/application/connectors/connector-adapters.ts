@@ -2,6 +2,7 @@ import {
   connectorProviders,
   executeDevinOperation,
   executeNetlifyOperation,
+  type ComposioConnectedAccount,
   type ConnectorProviderConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
@@ -68,4 +69,16 @@ export function getRecipeConnectorProviderConfig(
   providerId: RecipeConnectorProvider,
 ): ConnectorProviderConfig | undefined {
   return getRecipeConnectorAdapter(providerId)?.provider;
+}
+
+export function findComposioAccountProvider(
+  account: Pick<ComposioConnectedAccount, "toolkitSlug" | "authConfigId">,
+): ConnectorProviderConfig | undefined {
+  return connectorProviders.find(
+    (provider) =>
+      provider.auth.authType === "composio" &&
+      provider.auth.toolkitSlug === account.toolkitSlug &&
+      account.authConfigId != null &&
+      provider.auth.authConfigs.some((config) => config.id === account.authConfigId),
+  );
 }

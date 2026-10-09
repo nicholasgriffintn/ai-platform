@@ -4,6 +4,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import { z } from "zod";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { markComposioAccountExpired } from "~/modules/apps/application/connectors/composio-account-mirror";
 import { evaluateRecipeEventCondition } from "~/modules/apps/application/recipes/event-condition";
 import { parseStoredRecipeInstallationData } from "~/modules/apps/application/recipes/installation-persistence";
 import { createRecipeExecutionTaskData } from "~/modules/apps/application/recipes/task-data";
@@ -287,10 +288,13 @@ export async function handleComposioWebhook(request: Request, env: IEnv): Promis
   if (result.data.type === "composio.connected_account.expired") {
     const context = createServiceContext({ env });
 
-    await context.repositories.recipeComposioTriggers.markConnectedAccountError(
-      result.data.data.id,
-      "Connected account expired",
-    );
+    await Promise.all([
+      context.repositories.recipeComposioTriggers.markConnectedAccountError(
+        result.data.data.id,
+        "Connected account expired",
+      ),
+      markComposioAccountExpired(context, result.data.data.id),
+    ]);
 
     return Response.json({ accepted: true });
   }

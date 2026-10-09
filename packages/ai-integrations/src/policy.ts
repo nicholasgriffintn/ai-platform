@@ -1,4 +1,4 @@
-import { authorise } from "@ngriffin_uk/polychat-library-policy";
+import { createAuthorisationPass } from "@ngriffin_uk/polychat-library-policy";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -9,6 +9,8 @@ import {
   type ConnectorOperationConfig,
   type ConnectorProviderConfig,
 } from "./providers.js";
+
+const isUnattendedOperation = createAuthorisationPass("connector.unattended");
 
 export const recipeConnectorOperationIds = Array.from(
   new Set(
@@ -43,11 +45,11 @@ export function connectorOperationRequiresApproval(
 ): boolean {
   const config = getConnectorOperationConfig(providerId, operation);
 
-  return !authorise("connector.unattended", {
+  return !isUnattendedOperation({
     supported: Boolean(config),
     access: config?.access ?? "",
     destructive: config?.destructive === true,
-  }).allowed;
+  });
 }
 
 export function getConnectorProviderOperationAccess(

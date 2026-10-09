@@ -50,6 +50,8 @@ export interface PermissionCheckResult {
   permissions: ToolPermission[];
 }
 
+export type ToolActivationResult = Pick<PermissionCheckResult, "allowed" | "reason">;
+
 export interface RequestPermissionCheckResult extends PermissionCheckResult {
   approved: boolean;
 }
@@ -91,6 +93,40 @@ export function resolveModeMaxSteps(mode?: string | null, requestedMaxSteps?: nu
   return Math.max(1, Math.min(Math.floor(requestedMaxSteps), modeMax));
 }
 
+function buildToolPolicyContext(input: PermissionCheckInput): {
+  context: ToolPolicyContext;
+  mode: AgentMode;
+  permissions: ToolPermission[];
+} {
+  const mode = resolveAgentModeFromChatMode(input.mode);
+  const config = AGENT_MODE_CONFIGS[mode];
+  const configured = resolveToolPermissions(input.toolName, input.toolPermissions);
+  const permissions = configured.length > 0 ? configured : DEFAULT_TOOL_PERMISSIONS;
+
+  return {
+    mode,
+    permissions,
+    context: {
+      toolName: input.toolName,
+      toolType: input.toolType ?? "normal",
+      plan: input.user?.plan_id ?? "",
+      signedIn: Boolean(input.user?.id),
+      enforceMode: input.enforceModePolicy !== false,
+      permissions,
+      deniedTools: [...(input.deniedTools ?? [])],
+      modeDeniedTools: config.deniedTools,
+      modeAllowedTools: config.allowedTools,
+      modeDeniedPermissions: config.deniedPermissions,
+      modeAllowedPermissions: config.allowedPermissions,
+      requiredApprovalPermissions: [...(input.requireApprovalFor ?? [])],
+      modeApprovalPermissions: config.requiresApprovalFor,
+      effectClass: input.effectClass ?? "",
+      autonomyLevel: input.autonomyLevel ?? "",
+      standingApproval: input.standingApproval ?? false,
+    },
+  };
+}
+
 export class PermissionChecker {
   checkRequestToolAccess(input: RequestPermissionCheckInput): RequestPermissionCheckResult {
     const access = this.checkToolAccess(input);
@@ -108,29 +144,17 @@ export class PermissionChecker {
     };
   }
 
+  checkToolActivation(input: PermissionCheckInput): ToolActivationResult {
+    const { context, mode } = buildToolPolicyContext(input);
+    const decision = authorise("tool.use", context);
+
+    return decision.allowed
+      ? { allowed: true }
+      : { allowed: false, reason: toolDenialReason(decision.policyIds, context, mode) };
+  }
+
   checkToolAccess(input: PermissionCheckInput): PermissionCheckResult {
-    const mode = resolveAgentModeFromChatMode(input.mode);
-    const config = AGENT_MODE_CONFIGS[mode];
-    const configured = resolveToolPermissions(input.toolName, input.toolPermissions);
-    const permissions = configured.length > 0 ? configured : DEFAULT_TOOL_PERMISSIONS;
-    const context: ToolPolicyContext = {
-      toolName: input.toolName,
-      toolType: input.toolType ?? "normal",
-      plan: input.user?.plan_id ?? "",
-      signedIn: Boolean(input.user?.id),
-      enforceMode: input.enforceModePolicy !== false,
-      permissions,
-      deniedTools: [...(input.deniedTools ?? [])],
-      modeDeniedTools: config.deniedTools,
-      modeAllowedTools: config.allowedTools,
-      modeDeniedPermissions: config.deniedPermissions,
-      modeAllowedPermissions: config.allowedPermissions,
-      requiredApprovalPermissions: [...(input.requireApprovalFor ?? [])],
-      modeApprovalPermissions: config.requiresApprovalFor,
-      effectClass: input.effectClass ?? "",
-      autonomyLevel: input.autonomyLevel ?? "",
-      standingApproval: input.standingApproval ?? false,
-    };
+    const { context, mode, permissions } = buildToolPolicyContext(input);
     const decision = authorise("tool.use", context);
 
     if (!decision.allowed) {

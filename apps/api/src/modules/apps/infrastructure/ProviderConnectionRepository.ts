@@ -122,6 +122,19 @@ export class ProviderConnectionRepository extends BaseRepository {
     return this.runQuery<ProviderConnectionRecord>(query, values, true);
   }
 
+  async markExternalConnectionInvalid(
+    kind: string,
+    externalId: string,
+    metadataPatch: Record<string, unknown>,
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE provider_connection
+       SET status = 'invalid', metadata = json_patch(metadata, ?), updated_at = CURRENT_TIMESTAMP
+       WHERE kind = ? AND external_id = ?`,
+      [JSON.stringify(metadataPatch), kind, externalId],
+    );
+  }
+
   async listConnections(userId: number, provider?: string): Promise<ProviderConnectionRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "provider_connection",

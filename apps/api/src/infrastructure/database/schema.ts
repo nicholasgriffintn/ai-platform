@@ -1222,11 +1222,8 @@ export const conversation = sqliteTable(
   (table) => ({
     groupIdx: index("conversation_group_idx").on(table.group_id),
     titleIdx: index("conversation_title_idx").on(table.title),
-    archivedIdx: index("conversation_archived_idx").on(table.is_archived),
-    publicIdx: index("conversation_public_idx").on(table.is_public),
     shareIdIdx: index("conversation_share_id_idx").on(table.share_id),
     userIdIdx: index("conversation_user_id_idx").on(table.user_id),
-    typeIdx: index("conversation_type_idx").on(table.type),
     parentConversationIdIdx: index("conversation_parent_conversation_id_idx").on(
       table.parent_conversation_id,
     ),
@@ -1559,9 +1556,7 @@ export const message = sqliteTable(
   },
   (table) => ({
     conversationIdx: index("message_conversation_id_idx").on(table.conversation_id),
-    archivedIdx: index("message_archived_idx").on(table.is_archived),
     parentMessageIdx: index("message_parent_message_id_idx").on(table.parent_message_id),
-    roleIdx: index("message_role_idx").on(table.role),
     runIdx: index("message_run_id_idx").on(table.run_id),
   }),
 );
@@ -2400,7 +2395,11 @@ export const tasks = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    userIdIdx: index("tasks_user_id_idx").on(table.user_id),
+    userTypeStatusIdx: index("tasks_user_type_status_idx").on(
+      table.user_id,
+      table.task_type,
+      table.status,
+    ),
     projectIdIdx: index("tasks_project_id_idx").on(table.project_id),
     statusIdx: index("tasks_status_idx").on(table.status),
     taskTypeIdx: index("tasks_task_type_idx").on(table.task_type),

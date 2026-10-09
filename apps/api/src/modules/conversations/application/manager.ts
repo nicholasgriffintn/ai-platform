@@ -833,6 +833,15 @@ export class ConversationManager {
       );
     }
 
+    return this.loadVisibleMessagesBefore(conversation_id, limit, before, options);
+  }
+
+  private loadVisibleMessagesBefore(
+    conversation_id: string,
+    limit: number,
+    before: string | undefined,
+    options: { includeArchived?: boolean; includeSnapshots?: boolean },
+  ): Promise<Message[]> {
     return loadVisibleConversationMessagePage({
       conversationId: conversation_id,
       limit,
@@ -1032,22 +1041,35 @@ export class ConversationManager {
   ): Promise<ConversationDetails> {
     const conversation = await this.getConversationMetadata(conversation_id);
 
-    const storedConversationId =
-      typeof conversation.id === "string" ? conversation.id : conversation_id;
+    return {
+      ...conversation,
+      ...(await this.getAuthorisedConversationMessages(conversation, options)),
+    };
+  }
+
+  async getAuthorisedConversationMessages(
+    conversation: Record<string, unknown>,
+    options: {
+      includeArchived?: boolean;
+      includeSnapshots?: boolean;
+      messageLimit?: number;
+    } = {},
+  ): Promise<{
+    messages: Message[];
+    has_more_messages?: boolean;
+    oldest_message_id?: string | null;
+  }> {
+    const conversationId = String(conversation.id);
     const messageLimit = options.messageLimit;
 
     if (messageLimit && messageLimit > 0) {
-      const page = await this.getVisibleMessagesBefore(
-        storedConversationId,
-        messageLimit + 1,
-        undefined,
-        options,
-      );
+      const page = this.store
+        ? await this.loadVisibleMessagesBefore(conversationId, messageLimit + 1, undefined, options)
+        : [];
       const hasMoreMessages = page.length > messageLimit;
       const messages = hasMoreMessages ? page.slice(-messageLimit) : page;
 
       return {
-        ...conversation,
         messages,
         has_more_messages: hasMoreMessages,
         oldest_message_id: messages[0]?.id ?? null,
@@ -1055,21 +1077,16 @@ export class ConversationManager {
     }
 
     const dbMessages = await this.database.repositories.messages.getConversationMessages(
-      storedConversationId,
+      conversationId,
       0,
       undefined,
-      {
-        includeArchived: options.includeArchived ?? true,
-      },
+      { includeArchived: options.includeArchived ?? true },
     );
 
-    const messages = dbMessages
-      .map(formatStoredMessage)
-      .filter((message) => options.includeSnapshots || !hasSnapshotPart(message));
-
     return {
-      ...conversation,
-      messages,
+      messages: dbMessages
+        .map(formatStoredMessage)
+        .filter((message) => options.includeSnapshots || !hasSnapshotPart(message)),
     };
   }
 

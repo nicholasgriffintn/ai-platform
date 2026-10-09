@@ -6,12 +6,13 @@ import {
   type PermissionCheckResult,
   type RequestPermissionCheckInput as SharedRequestPermissionCheckInput,
   type RequestPermissionCheckResult,
+  type ToolActivationResult,
 } from "@ngriffin_uk/polychat-library-tools";
 import type { ToolPermission } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatMode, IUser } from "~/types";
 
-export type { PermissionCheckResult, RequestPermissionCheckResult };
+export type { PermissionCheckResult, RequestPermissionCheckResult, ToolActivationResult };
 
 export interface PermissionCheckInput extends Omit<SharedPermissionCheckInput, "mode" | "user"> {
   mode?: ChatMode;
@@ -38,6 +39,10 @@ export function resolveModeMaxSteps(mode?: ChatMode, requestedMaxSteps?: number)
 }
 
 export class PermissionChecker extends SharedPermissionChecker {
+  override checkToolActivation(input: PermissionCheckInput): ToolActivationResult {
+    return super.checkToolActivation(input);
+  }
+
   override checkToolAccess(input: PermissionCheckInput): PermissionCheckResult {
     return super.checkToolAccess(input);
   }

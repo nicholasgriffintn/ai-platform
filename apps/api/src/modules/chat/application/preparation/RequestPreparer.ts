@@ -235,6 +235,37 @@ export class RequestPreparer {
     });
   }
 
+  private async resolveBriefMemoryScope(scope: RequestScope) {
+    const { options, repositories, memoryScope } = scope;
+
+    if (!options.context || options.store === false) {
+      return memoryScope;
+    }
+
+    const storedConversation = await repositories.conversations.getConversation(
+      options.completion_id,
+    );
+
+    if (!storedConversation) {
+      return memoryScope;
+    }
+
+    const { document: briefDocument } = await getConversationBrief(
+      options.context,
+      options.completion_id,
+    );
+
+    return briefDocument
+      ? bindRunMemoryDocument(memoryScope, {
+          documentId: briefDocument.id,
+          access: "read-write",
+          scopeType: briefDocument.scopeType,
+          scopeId: briefDocument.scopeId,
+          conversationId: options.completion_id,
+        })
+      : memoryScope;
+  }
+
   private resolveConnectedConnectorProviders(scope: RequestScope) {
     const { options, user, projectContext } = scope;
     const enabledFunctionTools = resolveEnabledFunctionToolNames(
@@ -331,7 +362,7 @@ export class RequestPreparer {
     }
 
     const scope = await this.resolveScope(options);
-    const { user, database, repositories, projectContext, memoryScope, platform, mode } = scope;
+    const { user, database, repositories, projectContext, platform, mode } = scope;
 
     const modelConfigsPromise = buildModelConfigs(scope.options, validationContext);
     const userSettingsPromise = this.resolveUserSettings(scope);
@@ -343,6 +374,8 @@ export class RequestPreparer {
       user?.id,
     );
     const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
+    const activeGoalPromise = loadActiveGoal(scope.options);
+    const effectiveMemoryScopePromise = this.resolveBriefMemoryScope(scope);
 
     const finalMessage = this.resolveMessageText(validationContext);
 
@@ -448,31 +481,8 @@ export class RequestPreparer {
           scopedSkillCatalog?.listDefinitions(),
         );
 
-    const activeGoal = await loadActiveGoal(scope.options);
-    let effectiveMemoryScope = memoryScope;
-
-    if (scope.options.context && scope.options.store !== false) {
-      const storedConversation = await repositories.conversations.getConversation(
-        scope.options.completion_id,
-      );
-
-      if (storedConversation) {
-        const { document: briefDocument } = await getConversationBrief(
-          scope.options.context,
-          scope.options.completion_id,
-        );
-
-        if (briefDocument) {
-          effectiveMemoryScope = bindRunMemoryDocument(memoryScope, {
-            documentId: briefDocument.id,
-            access: "read-write",
-            scopeType: briefDocument.scopeType,
-            scopeId: briefDocument.scopeId,
-            conversationId: scope.options.completion_id,
-          });
-        }
-      }
-    }
+    const activeGoal = await activeGoalPromise;
+    const effectiveMemoryScope = await effectiveMemoryScopePromise;
 
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,

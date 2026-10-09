@@ -1,5 +1,4 @@
 import {
-  emitInfraUsage,
   createRequestInfraMeter,
   drainRequestInfraMeter,
   runWithRequestInfraMeter,
@@ -7,7 +6,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { Context, Next } from "hono";
 
-import { createUsageRuntime } from "~/modules/usage/application/runtime";
+import { meterRequestInfraUsage } from "~/modules/usage/application/infra-usage-queue";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "middleware/infraMetering" });
@@ -24,11 +23,11 @@ export const infraMeteringMiddleware = async (c: Context, next: Next) => {
     const quantities = drainRequestInfraMeter(meter);
 
     if (user?.id && requestId && env?.DB && quantities.length > 0) {
-      const emission = emitInfraUsage(createUsageRuntime({ env }), {
+      const emission = meterRequestInfraUsage(env, {
         userId: user.id,
         scopeKey: requestId,
+        occurredAt: new Date().toISOString(),
         quantities,
-        delivery: "inline",
       }).catch((error) => {
         logger.warn("Failed to emit per-request infrastructure usage", { error, requestId });
       });

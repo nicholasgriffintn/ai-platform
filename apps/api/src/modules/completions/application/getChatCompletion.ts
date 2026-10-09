@@ -62,6 +62,33 @@ async function refreshPendingMessages(
   return refreshed ?? messages;
 }
 
+async function loadConversationMessages(
+  context: ServiceContext,
+  conversationManager: ConversationManager,
+  conversation: Record<string, unknown>,
+  user: ReturnType<ServiceContext["requireUser"]>,
+  options: GetChatCompletionOptions,
+) {
+  const page = await conversationManager.getAuthorisedConversationMessages(conversation, {
+    includeArchived: true,
+    includeSnapshots: false,
+    messageLimit: options.messageLimit,
+  });
+  const completionId = String(conversation.id);
+  const messages = options.refreshPending
+    ? await refreshPendingMessages(context, completionId, page.messages, user)
+    : page.messages;
+
+  return {
+    ...page,
+    messages: await hydrateConnectorApprovalMessageState({
+      messages,
+      userId: user.id,
+      approvals: context.repositories.connectorOperationApprovals,
+    }),
+  };
+}
+
 async function loadLatestRun(context: ServiceContext, completionId: string) {
   const latestRunRecord =
     await context.repositories.conversationRuns.getLatestForConversation(completionId);
@@ -90,17 +117,10 @@ export const handleGetChatCompletion = async (
     env: context.env,
   });
 
-  const conversation = await conversationManager.getConversationDetails(completion_id, {
-    includeArchived: true,
-    includeSnapshots: false,
-    messageLimit: options.messageLimit,
-  });
-
-  const [activeOperation, latestRun, family] = await Promise.all([
-    getActiveThreadOperation({
-      env: context.env,
-      conversationId: completion_id,
-    }),
+  const conversation = await conversationManager.getConversationMetadata(completion_id);
+  const [details, activeOperation, latestRun, family] = await Promise.all([
+    loadConversationMessages(context, conversationManager, conversation, user, options),
+    getActiveThreadOperation({ env: context.env, conversationId: completion_id }),
     loadLatestRun(context, completion_id),
     context.repositories.conversations.listConversationThreads(
       completion_id,
@@ -109,32 +129,13 @@ export const handleGetChatCompletion = async (
       2,
     ),
   ]);
-  const hasBranches = family.length > 1;
-
-  if (!Array.isArray(conversation.messages)) {
-    return {
-      ...conversation,
-      is_archived: Boolean(conversation.is_archived),
-      active_operation: activeOperation,
-      latest_run: latestRun,
-      has_branches: hasBranches,
-    };
-  }
-
-  const refreshedMessages = options.refreshPending
-    ? await refreshPendingMessages(context, completion_id, conversation.messages, user)
-    : conversation.messages;
 
   return {
     ...conversation,
+    ...details,
     is_archived: Boolean(conversation.is_archived),
     active_operation: activeOperation,
     latest_run: latestRun,
-    has_branches: hasBranches,
-    messages: await hydrateConnectorApprovalMessageState({
-      messages: refreshedMessages,
-      userId: user.id,
-      approvals: context.repositories.connectorOperationApprovals,
-    }),
+    has_branches: family.length > 1,
   };
 };

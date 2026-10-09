@@ -38,6 +38,7 @@ import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/o
 import { QueueExecutor } from "./modules/tasks/application/QueueExecutor";
 import { workflows } from "./modules/tasks/application/registry";
 import type { TaskMessage } from "./modules/tasks/application/types";
+import type { InfraUsageQueueMessage } from "./modules/usage/application/infra-usage-queue";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
@@ -315,7 +316,7 @@ const handler = {
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
     await QueueExecutor.respondToCronQueue(env, {
       ...batch,
-      messages: batch.messages as Message<TaskMessage>[],
+      messages: batch.messages as Message<TaskMessage | InfraUsageQueueMessage>[],
     });
   },
 } satisfies ExportedHandler<IEnv>;

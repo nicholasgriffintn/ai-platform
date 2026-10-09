@@ -3,6 +3,7 @@ import { readdir } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import {
+  getBuiltInSkillCatalogue,
   builtInSkillDocuments,
   getBuiltInSkillResource,
   listBuiltInSkillDefinitions,
@@ -88,5 +89,21 @@ describe("skill documents", () => {
     expect(
       parseUserSkillDocument("---\nname: test\ndescription: A test\n---\nBody").frontmatter.name,
     ).toBe("test");
+  });
+
+  it("extends the built-in catalogue without changing it", () => {
+    const extended = getBuiltInSkillCatalogue().extend([
+      {
+        directory: "release-notes",
+        rawContent: "---\nname: release-notes\ndescription: Draft release notes\n---\nBody",
+        trust: "user-authored",
+      },
+    ]);
+
+    expect(extended.getDefinition("release-notes")?.source).toBe("user-authored");
+    expect(extended.getDefinition("artifacts")).toEqual(
+      getBuiltInSkillCatalogue().getDefinition("artifacts"),
+    );
+    expect(getBuiltInSkillCatalogue().getDefinition("release-notes")).toBeUndefined();
   });
 });

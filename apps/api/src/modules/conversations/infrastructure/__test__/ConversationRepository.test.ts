@@ -12,7 +12,13 @@ function createMockD1(
   ],
 ) {
   const calls: { params: unknown[]; query: string }[] = [];
-  const batch = vi.fn(async () => []);
+  const batch = vi.fn(async (statements: { query: string }[]) =>
+    statements.map((statement) => ({
+      success: true,
+      meta: {},
+      results: statement.query.includes("COUNT(*)") ? [{ total: results.length }] : results,
+    })),
+  );
 
   const db = {
     batch,
@@ -21,6 +27,7 @@ function createMockD1(
         calls.push({ query, params });
 
         return {
+          query,
           first: vi.fn(async () => ({ allowed: 1, total: results.length })),
           run: vi.fn(async () => ({ success: true, meta: { changes: 2 } })),
           all: vi.fn(async () => ({ results })),

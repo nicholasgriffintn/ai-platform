@@ -10,7 +10,6 @@ import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
-import { KVCache } from "~/infrastructure/cache";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
@@ -22,57 +21,15 @@ const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const BOT_CACHE_TTL = 86400; // 24 hours
 
-let botCache: KVCache | null = null;
-
-function getBotCache(kv: any): KVCache | null {
-  if (!kv) {
-    return null;
-  }
-
-  if (!botCache) {
-    botCache = new KVCache(kv, BOT_CACHE_TTL);
-  }
-
-  return botCache;
-}
-
-async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
-  const cache = getBotCache(kv);
-
-  if (!cache) {
-    try {
-      return isbot(userAgent);
-    } catch (error) {
-      logger.error("Failed to check if user is a bot:", { error });
-
-      return true;
-    }
-  }
-
-  const cacheKey = KVCache.createKey("bot", userAgent);
-
-  const cached = await cache.get<boolean>(cacheKey);
-
-  if (cached !== null) {
-    return cached;
-  }
-
-  let isBotUser: boolean;
-
+function isBotUserAgent(userAgent: string): boolean {
   try {
-    isBotUser = isbot(userAgent);
+    return isbot(userAgent);
   } catch (error) {
     logger.error("Failed to check if user is a bot:", { error });
-    isBotUser = true;
+
+    return true;
   }
-
-  cache.set(cacheKey, isBotUser).catch((error) => {
-    logger.error("Failed to cache bot detection result", { error, userAgent });
-  });
-
-  return isBotUser;
 }
 
 /**
@@ -149,14 +106,7 @@ export async function authMiddleware(context: Context, next: Next) {
     authPromises.push(
       (async () => {
         try {
-          const repo = getRepositories();
-          const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
-
-          if (userId) {
-            return repo.users.getUserById(userId);
-          }
-
-          return null;
+          return await getRepositories().apiKeys.findUserByApiKey(authToken);
         } catch (error) {
           logger.error("API Key authentication check failed:", { error });
 
@@ -203,7 +153,7 @@ export async function authMiddleware(context: Context, next: Next) {
   const shouldSkipBotCheck = Boolean(user);
 
   if (!shouldSkipBotCheck) {
-    isBot = await isBotCached(userAgent, context.env.CACHE);
+    isBot = isBotUserAgent(userAgent);
   }
 
   if (isBot && !isProUser) {

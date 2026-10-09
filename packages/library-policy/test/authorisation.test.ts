@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   actionSchema,
+  authorisationBundle,
   authorise,
+  createAuthorisationPass,
   createAuthorizer,
   ownsResource,
   stringAttribute,
@@ -154,5 +156,74 @@ describe("Cedar authorisation", () => {
     expect(decide({ ...request, action: { type: "Polychat::Action", id: "delete" } }).allowed).toBe(
       false,
     );
+  });
+
+  it("keeps per-context decisions distinct within an authorisation pass", () => {
+    const canExecute = createAuthorisationPass("model.execute");
+    const model = {
+      plan: "",
+      active: true,
+      free: true,
+      byok: false,
+      onDevice: false,
+      platformEnabled: true,
+    };
+    const contexts = [
+      model,
+      { ...model, free: false },
+      { ...model, active: false },
+      { ...model, free: false, plan: "pro" },
+      model,
+    ];
+
+    expect(contexts.map((context) => canExecute(context))).toEqual(
+      contexts.map((context) => authorise("model.execute", context).allowed),
+    );
+    expect(new Set(contexts.map((context) => canExecute(context))).size).toBe(2);
+  });
+
+  it("decides each action with its own policies exactly as the full policy set does", () => {
+    const partitioned = createAuthorizer(authorisationBundle(), { preparse: true });
+    const full = createAuthorizer(authorisationBundle());
+    const requests = [
+      [
+        "resource.write",
+        { actorId: "7", ownerId: "8", scope: "project", member: true, role: "admin" },
+      ],
+      [
+        "resource.read",
+        { actorId: "7", ownerId: "8", scope: "project", member: false, role: "member" },
+      ],
+      ["entitlement.pro", { plan: "pro" }],
+      ["entitlement.pro", { plan: "free" }],
+      ["connector.unattended", { supported: true, access: "read", destructive: false }],
+      ["connector.unattended", { supported: true, access: "write", destructive: false }],
+      [
+        "model.execute",
+        { plan: "", active: true, free: true, byok: false, onDevice: false, platformEnabled: true },
+      ],
+      [
+        "model.execute",
+        {
+          plan: "",
+          active: true,
+          free: false,
+          byok: false,
+          onDevice: false,
+          platformEnabled: true,
+        },
+      ],
+    ] as const;
+
+    for (const [action, context] of requests) {
+      const request = {
+        principal: { type: "Polychat::Actor", id: "request" },
+        action: { type: "Polychat::Action", id: action },
+        resource: { type: "Polychat::Resource", id: "request" },
+        context: { ...context },
+      };
+
+      expect(partitioned(request)).toEqual(full(request));
+    }
   });
 });

@@ -3,12 +3,14 @@ import type {
   Context,
   Entities,
   EntityUid,
+  Policy,
   PolicySet,
   Schema,
 } from "@cedar-policy/cedar-wasm/nodejs";
 import {
   isAuthorized,
   policySetTextToParts,
+  policyToJson,
   preparsePolicySet,
   preparseSchema,
   statefulIsAuthorized,
@@ -86,6 +88,46 @@ export function validatePolicyBundle(bundle: PolicyBundle): void {
 
 let cachedBundleSequence = 0;
 
+function entityKey(entity: EntityUid): string {
+  return "__entity" in entity
+    ? `${entity.__entity.type}::${entity.__entity.id}`
+    : `${entity.type}::${entity.id}`;
+}
+
+function partitionPoliciesByAction(policies: PolicySet): (action: EntityUid) => PolicySet {
+  const { staticPolicies } = policies;
+
+  if (
+    !staticPolicies ||
+    typeof staticPolicies === "string" ||
+    Array.isArray(staticPolicies) ||
+    policies.templates ||
+    policies.templateLinks
+  ) {
+    return () => policies;
+  }
+
+  const scoped = new Map<string, Record<string, Policy>>();
+  const unscoped: Record<string, Policy> = {};
+
+  for (const [id, policy] of Object.entries(staticPolicies)) {
+    const parsed = policyToJson(policy);
+    const constraint = parsed.type === "success" ? parsed.json.action : undefined;
+
+    if (constraint?.op === "==" && "entity" in constraint) {
+      const key = entityKey(constraint.entity);
+
+      scoped.set(key, { ...scoped.get(key), [id]: policy });
+    } else {
+      unscoped[id] = policy;
+    }
+  }
+
+  return (action) => ({
+    staticPolicies: { ...unscoped, ...scoped.get(entityKey(action)) },
+  });
+}
+
 export function createAuthorizer(
   bundle: PolicyBundle,
   { preparse = false }: { preparse?: boolean } = {},
@@ -94,19 +136,33 @@ export function createAuthorizer(
 
   validatePolicyBundle(snapshot);
   const cacheId = preparse ? `polychat-${++cachedBundleSequence}` : undefined;
+  const policiesForAction = cacheId ? partitionPoliciesByAction(snapshot.policies) : undefined;
+  const preparsedActions = new Set<string>();
+
+  const requirePreparsed = (result: { type: string; errors?: { message: string }[] }) => {
+    if (result.type === "failure") {
+      throw new InvalidPolicyError((result.errors ?? []).map((error) => error.message));
+    }
+  };
 
   if (cacheId) {
-    const results = [
-      preparseSchema(cacheId, snapshot.schema),
-      preparsePolicySet(cacheId, snapshot.policies),
-    ];
-
-    for (const result of results) {
-      if (result.type === "failure") {
-        throw new InvalidPolicyError(result.errors.map((error) => error.message));
-      }
-    }
+    requirePreparsed(preparseSchema(cacheId, snapshot.schema));
   }
+
+  const preparsedPolicySetId = (action: EntityUid): string | undefined => {
+    if (!cacheId || !policiesForAction) {
+      return undefined;
+    }
+
+    const id = `${cacheId}:${entityKey(action)}`;
+
+    if (!preparsedActions.has(id)) {
+      requirePreparsed(preparsePolicySet(id, policiesForAction(action)));
+      preparsedActions.add(id);
+    }
+
+    return id;
+  };
 
   return (request: PolicyRequest): PolicyDecision => {
     try {
@@ -117,15 +173,17 @@ export function createAuthorizer(
         policies: snapshot.policies,
         validateRequest: true,
       };
-      const result = cacheId
-        ? statefulIsAuthorized({
-            ...request,
-            entities: call.entities,
-            validateRequest: true,
-            preparsedSchemaName: cacheId,
-            preparsedPolicySetId: cacheId,
-          })
-        : isAuthorized(call);
+      const policySetId = preparsedPolicySetId(request.action);
+      const result =
+        cacheId && policySetId
+          ? statefulIsAuthorized({
+              ...request,
+              entities: call.entities,
+              validateRequest: true,
+              preparsedSchemaName: cacheId,
+              preparsedPolicySetId: policySetId,
+            })
+          : isAuthorized(call);
 
       if (result.type === "failure") {
         return {

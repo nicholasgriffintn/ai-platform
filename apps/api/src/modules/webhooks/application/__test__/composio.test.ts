@@ -65,6 +65,7 @@ describe("Composio webhook", () => {
   const createTaskIfAbsent = vi.fn();
   const updateTask = vi.fn();
   const markConnectedAccountError = vi.fn();
+  const markExternalConnectionInvalid = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -91,6 +92,7 @@ describe("Composio webhook", () => {
           claimEvent: async () => ({ status: "execute", executionToken: "lease_1" }),
           settleEvent: async () => true,
         },
+        providerConnections: { markExternalConnectionInvalid },
         templates: {
           getTemplateById: vi.fn().mockResolvedValue({
             id: "installation_1",
@@ -141,7 +143,7 @@ describe("Composio webhook", () => {
     expect(send).toHaveBeenCalledOnce();
   });
 
-  it("marks trigger mappings when Composio reports an expired account", async () => {
+  it("marks trigger mappings and mirrored accounts when Composio reports an expired account", async () => {
     const event = {
       id: "event_expired",
       type: "composio.connected_account.expired",
@@ -156,6 +158,11 @@ describe("Composio webhook", () => {
     expect(markConnectedAccountError).toHaveBeenCalledWith(
       "ca_expired",
       "Connected account expired",
+    );
+    expect(markExternalConnectionInvalid).toHaveBeenCalledWith(
+      "recipe_connector_account",
+      "ca_expired",
+      { status: "EXPIRED" },
     );
   });
 });

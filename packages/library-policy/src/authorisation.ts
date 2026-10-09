@@ -256,6 +256,27 @@ export function authorise<Action extends keyof AuthorisationContexts>(
   });
 }
 
+export function createAuthorisationPass<Action extends keyof AuthorisationContexts>(
+  action: Action,
+): (context: AuthorisationContexts[Action]) => boolean {
+  const decisions = new Map<string, boolean>();
+
+  return (context) => {
+    const key = JSON.stringify(context);
+    const known = decisions.get(key);
+
+    if (known !== undefined) {
+      return known;
+    }
+
+    const { allowed } = authorise(action, context);
+
+    decisions.set(key, allowed);
+
+    return allowed;
+  };
+}
+
 export function ownsResource(
   actorId: number | string | null | undefined,
   ownerId: unknown,

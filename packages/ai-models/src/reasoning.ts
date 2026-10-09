@@ -85,14 +85,6 @@ export function usesBudgetThinkingApi(modelConfig: ModelConfigItem | undefined):
   return modelConfig?.reasoningConfig?.thinkingApi === "budget";
 }
 
-export function supportsAdaptiveThinkingEffort(modelConfig: ModelConfigItem | undefined): boolean {
-  return (
-    modelConfig?.reasoningConfig?.supportedEffortLevels?.some((level) =>
-      ADAPTIVE_THINKING_EFFORTS.has(level),
-    ) ?? false
-  );
-}
-
 export function resolveAdaptiveThinkingEffort(
   modelConfig: ModelConfigItem | undefined,
   reasoningEffort: ReasoningEffortLevel | undefined,

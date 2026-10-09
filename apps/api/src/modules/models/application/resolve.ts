@@ -215,25 +215,9 @@ export async function getModelConfig(
     return undefined;
   }
 
-  const key = model;
-  const resolvedProvider = provider;
-  const cacheParts = resolvedProvider ? [key, resolvedProvider] : [key];
+  const staticConfig = findStaticModelConfig(model, provider);
 
-  const staticConfig = await withCache(env, "model-config", cacheParts, () => {
-    const config = getModelConfigById(key);
-
-    if (config && (!resolvedProvider || config.provider === resolvedProvider)) {
-      return config;
-    }
-
-    if (resolvedProvider) {
-      return findModelConfigByMatchingModel(key, resolvedProvider) ?? undefined;
-    }
-
-    return config;
-  });
-
-  if (staticConfig || !model) {
+  if (staticConfig) {
     return staticConfig;
   }
 
@@ -248,8 +232,22 @@ export async function getModelConfig(
   return platform && (!provider || platform.provider === provider) ? platform : null;
 }
 
-export async function getModelConfigByModel(model: string, env?: IEnv) {
-  return withCache(env, "model-by-model", [model], () => getModelConfigById(model));
+function findStaticModelConfig(model: string, provider?: string): ModelConfigItem | undefined {
+  const config = getModelConfigById(model);
+
+  if (config && (!provider || config.provider === provider)) {
+    return config;
+  }
+
+  if (provider) {
+    return findModelConfigByMatchingModel(model, provider) ?? undefined;
+  }
+
+  return config;
+}
+
+export async function getModelConfigByModel(model: string) {
+  return getModelConfigById(model);
 }
 
 export async function getModelConfigByMatchingModel(
@@ -258,14 +256,7 @@ export async function getModelConfigByMatchingModel(
   provider?: string,
   userId?: number,
 ) {
-  const resolvedProvider = provider;
-  const cacheParts = resolvedProvider ? [matchingModel, resolvedProvider] : [matchingModel];
-  const staticConfig = await withCache(
-    env,
-    "model-by-matching",
-    cacheParts,
-    () => findModelConfigByMatchingModel(matchingModel, resolvedProvider) ?? null,
-  );
+  const staticConfig = findModelConfigByMatchingModel(matchingModel, provider);
 
   if (staticConfig) {
     return staticConfig;
@@ -273,9 +264,7 @@ export async function getModelConfigByMatchingModel(
 
   const platform = await findPlatformChatModel(matchingModel, env, userId);
 
-  return platform && (!resolvedProvider || platform.provider === resolvedProvider)
-    ? platform
-    : null;
+  return platform && (!provider || platform.provider === provider) ? platform : null;
 }
 
 export async function findModelConfig(
@@ -314,7 +303,7 @@ export async function resolveModelProvider({
 }: ResolveModelProviderOptions): Promise<string> {
   if (model) {
     const matchedModel =
-      (await getModelConfigByModel(model, env)) ||
+      (await getModelConfigByModel(model)) ||
       (await getModelConfigByMatchingModel(model, env, provider));
 
     if (matchedModel?.provider) {

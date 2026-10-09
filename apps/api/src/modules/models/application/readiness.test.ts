@@ -55,13 +55,15 @@ describe("resolveModelReadiness", () => {
     });
   });
 
-  it("attaches readiness to every model returned by the existing catalogue", async () => {
+  it("only attaches readiness to models that are not ready to use", async () => {
     const env: IEnv = Object.create(null);
 
     const models = await listModels(env);
 
     expect(Object.keys(models).length).toBeGreaterThan(0);
-    expect(Object.values(models).every((entry) => entry.readiness)).toBe(true);
+    expect(
+      Object.values(models).every((entry) => !entry.readiness || entry.readiness.state !== "ready"),
+    ).toBe(true);
   });
 
   it("reports current executable policy with a bounded freshness window", () => {

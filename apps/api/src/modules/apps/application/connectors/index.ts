@@ -30,6 +30,12 @@ import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/Pro
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
 import {
+  beginLiveComposioAccountWindow,
+  listMirroredComposioAccounts,
+  syncComposioAccountMirror,
+} from "./composio-account-mirror";
+import {
+  findComposioAccountProvider,
   getRecipeConnectorProviderConfig,
   getRecipeConnectorProviderConfigs,
 } from "./connector-adapters";
@@ -129,6 +135,16 @@ async function readStoredToken(
     providerId,
     RECIPE_CONNECTOR_CONNECTION_KIND,
   );
+
+  return decryptStoredToken(context, userId, providerId, record);
+}
+
+async function decryptStoredToken(
+  context: ServiceContext,
+  userId: number,
+  providerId: RecipeConnectorProvider,
+  record: ProviderConnectionRecord | null,
+): Promise<{ record: ProviderConnectionRecord; token: ConnectorTokenPayload } | null> {
   const stored = parseStoredConnector(record ?? undefined);
 
   if (!record || !stored?.encrypted) {
@@ -190,7 +206,8 @@ async function getConnectorStatus(
   context: ServiceContext,
   userId: number,
   provider: ConnectorProviderConfig,
-  composioAccounts?: ComposioConnectedAccount[],
+  composioAccounts: readonly ComposioConnectedAccount[],
+  connections: readonly ProviderConnectionRecord[],
 ): Promise<{
   status: RecipeConnectorStatus;
   connectedAt?: string;
@@ -203,15 +220,7 @@ async function getConnectorStatus(
 
     const toolkitSlug = provider.auth.toolkitSlug;
     const authConfigIds = provider.auth.authConfigs.map((config) => config.id);
-    const accounts =
-      composioAccounts ??
-      (await listComposioConnectedAccounts({
-        env: context.env,
-        userId,
-        toolkitSlugs: [toolkitSlug],
-        authConfigIds,
-      }));
-    const account = accounts.find(
+    const account = composioAccounts.find(
       (item) =>
         item.toolkitSlug === toolkitSlug &&
         item.authConfigId != null &&
@@ -225,7 +234,17 @@ async function getConnectorStatus(
       : { status: "disconnected" };
   }
 
-  const stored = await readStoredToken(context, userId, provider.id);
+  const stored = await decryptStoredToken(
+    context,
+    userId,
+    provider.id,
+    connections.find(
+      (connection) =>
+        connection.provider === provider.id &&
+        connection.kind === RECIPE_CONNECTOR_CONNECTION_KIND &&
+        connection.external_id === "",
+    ) ?? null,
+  );
 
   return stored
     ? {
@@ -242,23 +261,28 @@ export async function listRecipeConnectors(params: {
   requestUrl?: string;
 }): Promise<{ connectors: RecipeConnectorManifest[] }> {
   params.context.ensureDatabase();
+  const connections = await params.context.repositories.providerConnections.listConnections(
+    params.userId,
+  );
   const composioAccounts = isComposioConfigured(params.context.env)
-    ? await listComposioConnectedAccounts({
-        env: params.context.env,
-        userId: params.userId,
-      })
+    ? await listMirroredComposioAccounts(params.context, params.userId, connections)
     : [];
+  const states = await Promise.all(
+    getRecipeConnectorProviderConfigs().map(async (provider) => ({
+      provider,
+      state: await getConnectorStatus(
+        params.context,
+        params.userId,
+        provider,
+        composioAccounts,
+        connections,
+      ),
+    })),
+  );
 
   const connectors: RecipeConnectorManifest[] = [];
 
-  for (const provider of getRecipeConnectorProviderConfigs()) {
-    const state = await getConnectorStatus(
-      params.context,
-      params.userId,
-      provider,
-      composioAccounts,
-    );
-
+  for (const { provider, state } of states) {
     connectors.push({
       id: provider.id,
       name: provider.name,
@@ -377,6 +401,8 @@ export async function startRecipeConnectorAuthorization(params: {
       }
     }
 
+    await beginLiveComposioAccountWindow(params.context, params.userId);
+
     return { provider: params.provider, authorizationUrl: link.redirectUrl };
   }
 
@@ -432,13 +458,7 @@ export async function verifyComposioConnectorAuthorization(params: {
     );
   }
 
-  const provider = getRecipeConnectorProviderConfigs().find(
-    (item) =>
-      item.auth.authType === "composio" &&
-      item.auth.toolkitSlug === completedAccount.toolkitSlug &&
-      completedAccount?.authConfigId != null &&
-      item.auth.authConfigs.some((config) => config.id === completedAccount.authConfigId),
-  );
+  const provider = findComposioAccountProvider(completedAccount);
 
   if (!provider || provider.auth.authType !== "composio") {
     throw new AssistantError(
@@ -497,6 +517,8 @@ export async function deleteRecipeConnectorConnection(params: {
           account.status !== "REVOKED",
       });
     }
+
+    await syncComposioAccountMirror(params.context, params.userId);
 
     return { success: true };
   }

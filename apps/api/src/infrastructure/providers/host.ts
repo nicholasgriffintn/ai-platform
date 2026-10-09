@@ -62,8 +62,7 @@ export const providerHost: ProviderHost = {
   models: {
     getModelConfig: (model, env, provider, userId) =>
       getModelConfig(model, env ? asEnv(env) : undefined, provider, userId),
-    getModelConfigByModel: (model, env) =>
-      getModelConfigByModel(model, env ? asEnv(env) : undefined),
+    getModelConfigByModel: (model) => getModelConfigByModel(model),
     getModelConfigByMatchingModel: (matchingModel, env, provider, userId) =>
       getModelConfigByMatchingModel(matchingModel, env ? asEnv(env) : undefined, provider, userId),
     findModelConfig: (model, env, provider, userId) =>

@@ -1,5 +1,5 @@
 export {
-  builtInSkillCatalogue,
+  getBuiltInSkillCatalogue,
   builtInSkillDocuments,
   getBuiltInSkillDefinition,
   getBuiltInSkillResource,

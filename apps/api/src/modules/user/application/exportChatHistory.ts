@@ -71,7 +71,7 @@ async function collectConversationRows(
     }
 
     after = endCursor;
-    if (++iterations >= MAX_MESSAGE_PAGES) {
+    if (messages.length < MESSAGE_PAGE_SIZE || ++iterations >= MAX_MESSAGE_PAGES) {
       break;
     }
   }

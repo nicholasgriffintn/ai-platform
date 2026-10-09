@@ -28,12 +28,7 @@ export async function ensureRecipeConnectorAccountReference(params: {
   context: ServiceContext;
   userId: number;
   providerId: RecipeConnectorProvider;
-  account: {
-    id: string;
-    authConfigId?: string;
-    status: string;
-    isDisabled: boolean;
-  };
+  account: ComposioConnectedAccount;
 }): Promise<ProviderConnectionRecord> {
   return params.context.repositories.providerConnections.upsertConnection({
     userId: params.userId,
@@ -44,9 +39,14 @@ export async function ensureRecipeConnectorAccountReference(params: {
       params.account.status === "ACTIVE" && !params.account.isDisabled ? "connected" : "invalid",
     encryptedData: {},
     metadata: {
+      composioUserId: params.account.userId,
+      toolkitSlug: params.account.toolkitSlug,
       authConfigId: params.account.authConfigId,
       status: params.account.status,
+      statusReason: params.account.statusReason,
       isDisabled: params.account.isDisabled,
+      createdAt: params.account.createdAt,
+      updatedAt: params.account.updatedAt,
     },
   });
 }

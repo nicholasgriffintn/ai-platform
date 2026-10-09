@@ -5,6 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import type { User } from "~/types";
 
 const logger = getLogger({ prefix: "repositories/ApiKeyRepository" });
 
@@ -202,20 +203,21 @@ export class ApiKeyRepository extends BaseRepository {
     }
   }
 
-  public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
+  public async findUserByApiKey(apiKey: string): Promise<User | null> {
     if (!apiKey) {
       return null;
     }
 
     try {
       const hashedKey = await this.hashApiKey(apiKey);
-      const result = await this.runQuery<{ user_id: number }>(
-        "SELECT user_id FROM user_credential WHERE kind = 'api_key' AND token_hash = ?",
+
+      return await this.runQuery<User>(
+        `SELECT user.* FROM user_credential
+         JOIN user ON user.id = user_credential.user_id
+         WHERE user_credential.kind = 'api_key' AND user_credential.token_hash = ?`,
         [hashedKey],
         true,
       );
-
-      return result?.user_id ?? null;
     } catch (error) {
       logger.error("Error finding user by API key hash:", { error });
 

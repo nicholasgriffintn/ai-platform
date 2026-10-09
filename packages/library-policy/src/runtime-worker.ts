@@ -29,6 +29,12 @@ export const policySetTextToParts: typeof cedar.policySetTextToParts = (source) 
   return cedar.policySetTextToParts(source);
 };
 
+export const policyToJson: typeof cedar.policyToJson = (policy) => {
+  initialiseCedar();
+
+  return cedar.policyToJson(policy);
+};
+
 export const preparsePolicySet: typeof cedar.preparsePolicySet = (id, policies) => {
   initialiseCedar();
 

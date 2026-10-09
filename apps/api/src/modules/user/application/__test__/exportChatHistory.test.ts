@@ -34,7 +34,7 @@ function createContext() {
 
   const getConversationMessages = async (
     conversationId: string,
-    _limit: number,
+    limit: number,
     after?: string,
   ): Promise<Record<string, unknown>[]> => {
     inFlight += 1;
@@ -46,12 +46,9 @@ function createContext() {
       await new Promise((resolve) => setTimeout(resolve, (index % 5) * 2));
 
       const pageIndex = after ? Number(after.split("-").at(-1)) + 1 : 0;
+      const remaining = MESSAGE_PAGES_PER_CONVERSATION * MESSAGES_PER_PAGE - pageIndex;
 
-      if (pageIndex >= MESSAGE_PAGES_PER_CONVERSATION * MESSAGES_PER_PAGE) {
-        return [];
-      }
-
-      return Array.from({ length: MESSAGES_PER_PAGE }, (_, offset) => ({
+      return Array.from({ length: Math.max(0, Math.min(limit, remaining)) }, (_, offset) => ({
         id: `${conversationId}-message-${pageIndex + offset}`,
         role: "user",
         content: `Message ${pageIndex + offset}`,

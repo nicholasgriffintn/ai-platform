@@ -2,6 +2,7 @@ export {
   checkParsePolicySet,
   isAuthorized,
   policySetTextToParts,
+  policyToJson,
   preparsePolicySet,
   preparseSchema,
   statefulIsAuthorized,

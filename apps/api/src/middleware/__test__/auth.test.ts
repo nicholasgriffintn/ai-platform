@@ -11,7 +11,7 @@ import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
 const mockRepositories = {
   apiKeys: {
-    findUserIdByApiKey: vi.fn(),
+    findUserByApiKey: vi.fn(),
   },
   users: {
     getUserById: vi.fn(),
@@ -35,14 +35,6 @@ vi.mock("~/infrastructure/database/repositoryManager", () => ({
 
       return repositoryFactory();
     }
-  },
-}));
-
-vi.mock("~/infrastructure/cache", () => ({
-  KVCache: class MockKVCache {
-    static createKey = vi.fn();
-    get = vi.fn();
-    set = vi.fn();
   },
 }));
 
@@ -107,12 +99,10 @@ describe("Auth Middleware", () => {
     vi.clearAllMocks();
     repositoryCtor.mockClear();
 
-    const { KVCache } = await import("~/infrastructure/cache");
     const { getUserByJwtToken } = await import("~/modules/auth/application/jwt");
     const { isbot } = await import("isbot");
 
     repositoryFactory = () => mockRepositories;
-    vi.mocked(KVCache.createKey).mockReturnValue("bot:user-agent");
     vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
     vi.mocked(isbot).mockImplementation(mockIsbot);
 
@@ -202,7 +192,7 @@ describe("Auth Middleware", () => {
 
       await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
 
-      expect(mockRepositories.apiKeys.findUserIdByApiKey).not.toHaveBeenCalled();
+      expect(mockRepositories.apiKeys.findUserByApiKey).not.toHaveBeenCalled();
       expect(mockIsbot).toHaveBeenCalledWith("Googlebot");
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -226,7 +216,7 @@ describe("Auth Middleware", () => {
 
         return null;
       });
-      mockRepositories.apiKeys.findUserIdByApiKey.mockResolvedValue(null);
+      mockRepositories.apiKeys.findUserByApiKey.mockResolvedValue(null);
       mockIsbot.mockReturnValue(true);
 
       await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
@@ -344,13 +334,11 @@ describe("Auth Middleware", () => {
         return null;
       });
 
-      mockRepositories.apiKeys.findUserIdByApiKey.mockResolvedValue("user-123");
-      mockRepositories.users.getUserById.mockResolvedValue(mockUser);
+      mockRepositories.apiKeys.findUserByApiKey.mockResolvedValue(mockUser);
 
       await authMiddleware(context, mockNext);
 
-      expect(mockRepositories.apiKeys.findUserIdByApiKey).toHaveBeenCalledWith("ak_test123");
-      expect(mockRepositories.users.getUserById).toHaveBeenCalledWith("user-123");
+      expect(mockRepositories.apiKeys.findUserByApiKey).toHaveBeenCalledWith("ak_test123");
       expect(context.set).toHaveBeenCalledWith("user", mockUser);
       expect(mockNext).toHaveBeenCalled();
       expect(mockIsbot).not.toHaveBeenCalled();
@@ -471,7 +459,7 @@ describe("Auth Middleware", () => {
         return null;
       });
 
-      mockRepositories.apiKeys.findUserIdByApiKey.mockRejectedValue(new Error("Database error"));
+      mockRepositories.apiKeys.findUserByApiKey.mockRejectedValue(new Error("Database error"));
 
       await authMiddleware(context, mockNext);
 

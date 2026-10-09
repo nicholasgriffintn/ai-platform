@@ -143,7 +143,7 @@ export async function generateCanvasBatch(
 
   const generations = await Promise.all(
     uniqueModelIds.map(async (modelId) => {
-      const modelConfig = await getModelConfigByModel(modelId, runtimeEnv);
+      const modelConfig = await getModelConfigByModel(modelId);
 
       if (!modelConfig) {
         return createFailedCanvasResult({

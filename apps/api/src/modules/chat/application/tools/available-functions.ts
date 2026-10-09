@@ -55,7 +55,7 @@ export function resolveAvailableFunctions(
     .filter((func) => enabledTools.has(func.name))
     .filter(
       (func) =>
-        permissionChecker.checkToolAccess({
+        permissionChecker.checkToolActivation({
           toolName: func.name,
           mode: toolPolicyMode,
           user,

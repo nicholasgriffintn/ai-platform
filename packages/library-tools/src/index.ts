@@ -37,6 +37,7 @@ export {
   type PermissionCheckResult,
   type RequestPermissionCheckInput,
   type RequestPermissionCheckResult,
+  type ToolActivationResult,
   type ToolAccessSubject,
 } from "./permissions.js";
 export {

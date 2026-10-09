@@ -20,6 +20,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
 
+import { processSandboxRunDispatch } from "~/modules/apps/application/sandbox/dispatch";
 import { createSandboxSyncNotifier } from "~/modules/apps/application/sandbox/sync-events";
 import type { IEnv } from "~/types";
 
@@ -383,8 +384,6 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     stash("running");
     try {
-      const { processSandboxRunDispatch } = await import("../../../application/sandbox/dispatch");
-
       await processSandboxRunDispatch({
         env: this.env,
         message,

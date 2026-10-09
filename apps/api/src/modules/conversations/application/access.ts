@@ -9,14 +9,14 @@ export async function requireConversationAccess(
   conversationId: string,
 ): Promise<Record<string, unknown>> {
   const user = context.requireUser();
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const [conversation, teammateContext] = await Promise.all([
+    context.repositories.conversations.getConversation(conversationId),
+    context.repositories.teammateContexts.getByHomeConversationId(conversationId),
+  ]);
 
   if (!conversation) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
-
-  const teammateContext =
-    await context.repositories.teammateContexts.getByHomeConversationId(conversationId);
 
   if (teammateContext && !ownsResource(user.id, teammateContext.actorUserId)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
