@@ -96,7 +96,7 @@ export const recipeExecutionTaskDataSchema = z.object({
   projectId: z.string().min(1).nullable().optional(),
   input: z.string().optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .optional(),
   configuration: recipeConfigurationSchema.optional(),
   notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),

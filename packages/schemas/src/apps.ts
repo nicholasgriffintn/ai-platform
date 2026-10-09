@@ -1143,7 +1143,7 @@ export const recipeChatRequestOptionsSchema = z.object({
   id: z.string(),
   installationId: z.string().optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .optional(),
   allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
@@ -1184,7 +1184,7 @@ export const assistantRecipesResponseSchema = z.object({
 });
 
 export const assistantRecipeInstallRequestSchema = z.object({
-  channel: z.enum(["web", "ios", "sms", "slack", "telegram"]).default("web"),
+  channel: z.enum(["web", "ios", "sms", "slack", "telegram", "email"]).default("web"),
   projectId: z.string().min(1).optional(),
   triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
   configuration: z.lazy(() => recipeConfigurationSchema).optional(),
@@ -1423,7 +1423,7 @@ export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
   projectId: z.string().min(1).optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .default("web"),
 });
 
@@ -1433,7 +1433,7 @@ export const recipeInvocationResponseSchema = z.object({
   installationId: z.string().optional(),
   projectId: z.string().nullable().optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .default("web"),
   status: z.enum(["ready", "queued", "blocked", "paused", "not_installed"]),
   conversationStarter: z.string(),

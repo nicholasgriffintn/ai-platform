@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("~/modules/channels/infrastructure/adapters", () => ({
-  getChannelAdapter: () => ({ sendReply: mocks.sendReply }),
+  getChannelAdapter: () => ({ isReplyConfigured: () => true, sendReply: mocks.sendReply }),
 }));
 vi.mock("~/modules/delivery/application/outbound", () => ({
   deliverOutboundOperation: mocks.deliver,
@@ -68,7 +68,7 @@ describe("sendPolyNotificationToChannels", () => {
     expect(mocks.deliver).toHaveBeenCalledTimes(1);
     expect(mocks.sendReply).toHaveBeenCalledWith(
       { externalId: "chat_7", body: "Routine needs attention: Invoices", threadId: "direct" },
-      expect.any(String),
+      expect.objectContaining({ TELEGRAM_BOT_TOKEN: "telegram-secret" }),
     );
   });
 

@@ -12,7 +12,7 @@ export function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
   return btoa(binary);
 }
 
-export function base64ToBuffer(base64: string): Uint8Array {
+export function base64ToBuffer(base64: string): Uint8Array<ArrayBuffer> {
   const binString = atob(base64.replace(/\s/g, ""));
 
   return Uint8Array.from(binString, (char) => char.charCodeAt(0));

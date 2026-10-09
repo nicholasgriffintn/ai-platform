@@ -425,6 +425,9 @@ importers:
       isbot:
         specifier: 5.2.2
         version: 5.2.2
+      postal-mime:
+        specifier: 2.7.6
+        version: 2.7.6
       stripe:
         specifier: 22.6.2
         version: 22.6.2(@types/node@26.6.4)

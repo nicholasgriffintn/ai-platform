@@ -4,7 +4,6 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/channel-adapter";
-import { getChannelSecrets } from "~/modules/channels/application/secrets";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import type { IUser } from "~/types";
@@ -33,9 +32,8 @@ export async function sendPolyNotificationToChannels(params: {
 
   for (const binding of polyBindings) {
     const adapter = getChannelAdapter(binding.channel);
-    const secret = getChannelSecrets(binding.channel, params.context.env).reply;
 
-    if (!adapter || !secret) {
+    if (!adapter?.isReplyConfigured(params.context.env)) {
       continue;
     }
 
@@ -53,7 +51,7 @@ export async function sendPolyNotificationToChannels(params: {
         send: () =>
           adapter.sendReply(
             { externalId: binding.external_id, body, threadId: CHANNEL_TOP_LEVEL_THREAD },
-            secret,
+            params.context.env,
           ),
       });
     } catch (error) {

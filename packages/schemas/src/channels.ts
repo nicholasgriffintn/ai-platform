@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { inboundChannelIdSchema } from "./chat-mode.js";
 
 export const slackChannelAddressSchema = z.string().regex(/^T[A-Z0-9]+:[CDG][A-Z0-9]+$/);
+export const emailChannelAddressSchema = z.email().max(200);
 
 export const channelBindingScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
@@ -21,6 +22,7 @@ export const channelBindingSchema = z.object({
   enabled: z.boolean(),
   createdAt: z.string(),
   canManage: z.boolean(),
+  contactAddress: z.string().nullable(),
 });
 
 export const createChannelBindingSchema = z
@@ -32,7 +34,7 @@ export const createChannelBindingSchema = z
       .min(1)
       .max(200)
       .describe(
-        "Slack workspace and channel IDs joined by a colon, or a Telegram private chat ID.",
+        "Slack workspace and channel IDs joined by a colon, a Telegram private chat ID, or the email address you send from.",
       ),
     projectId: z.string().min(1).optional(),
     label: z.string().trim().min(1).max(120).optional(),
@@ -47,6 +49,12 @@ export const createChannelBindingSchema = z
       message: "Enter the Slack workspace and channel IDs as T…:C… (or T…:D… for a direct message)",
       path: ["externalId"],
     },
+  )
+  .refine(
+    (binding) =>
+      binding.channel !== "email" ||
+      emailChannelAddressSchema.safeParse(binding.externalId).success,
+    { message: "Enter the email address you will send from", path: ["externalId"] },
   );
 
 export const listChannelBindingsResponseSchema = z.object({
@@ -56,8 +64,9 @@ export const listChannelBindingsResponseSchema = z.object({
 export const channelMessageContextSchema = z
   .object({
     externalId: z.string().min(1).max(200),
-    threadId: z.string().min(1).max(200),
+    threadId: z.string().min(1).max(998),
     isDirect: z.boolean(),
+    subject: z.string().max(998).optional(),
   })
   .strict();
 

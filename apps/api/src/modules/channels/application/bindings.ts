@@ -10,10 +10,15 @@ import {
   requireTeammateAccess,
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import type { IEnv } from "~/types";
 
 import { requireChannelBindingAccess } from "./access";
 
-function toBinding(row: ChannelBindingRow, canManage: boolean): ChannelBinding {
+function toBinding(
+  row: ChannelBindingRow,
+  canManage: boolean,
+  env: Pick<IEnv, "EMAIL_INBOUND_ADDRESS">,
+): ChannelBinding {
   return {
     id: row.id,
     channel: row.channel,
@@ -26,6 +31,7 @@ function toBinding(row: ChannelBindingRow, canManage: boolean): ChannelBinding {
     enabled: Number(row.enabled) === 1,
     createdAt: row.created_at,
     canManage,
+    contactAddress: row.channel === "email" ? (env.EMAIL_INBOUND_ADDRESS ?? null) : null,
   };
 }
 
@@ -45,6 +51,8 @@ export async function createChannelBinding(
     );
   }
 
+  const externalId =
+    input.channel === "email" ? input.externalId.trim().toLowerCase() : input.externalId;
   const scopeType = input.projectId ? "project" : "personal";
 
   if (!adapter.scopes.includes(scopeType)) {
@@ -69,7 +77,7 @@ export async function createChannelBinding(
 
   const existing = await context.repositories.channelBindings.getByExternalId(
     input.channel,
-    input.externalId,
+    externalId,
   );
 
   if (existing) {
@@ -84,7 +92,7 @@ export async function createChannelBinding(
     channel: input.channel,
     scopeType,
     scopeId: input.projectId ?? String(user.id),
-    externalId: input.externalId,
+    externalId,
     label: input.label ?? null,
     teammateId: input.teammateId ?? null,
     interactionMode: input.interactionMode ?? "automated",
@@ -95,7 +103,7 @@ export async function createChannelBinding(
     throw new AssistantError("Could not connect that channel", ErrorType.DATABASE_ERROR);
   }
 
-  return toBinding(created, true);
+  return toBinding(created, true, context.env);
 }
 
 export async function listChannelBindings(
@@ -112,7 +120,7 @@ export async function listChannelBindings(
     accessibleRows.map(async (row) => {
       const { canManage } = await requireChannelBindingAccess(context, row.id);
 
-      return toBinding(row, canManage);
+      return toBinding(row, canManage, context.env);
     }),
   );
 

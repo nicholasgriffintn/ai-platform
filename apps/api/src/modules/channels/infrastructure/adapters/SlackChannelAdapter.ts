@@ -4,11 +4,13 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import {
   CHANNEL_TOP_LEVEL_THREAD,
-  type ChannelAdapter,
   type ChannelIncoming,
   type ChannelReply,
   type ChannelVerification,
+  type WebhookChannelAdapter,
 } from "~/modules/channels/application/ports/channel-adapter";
+import { getChannelSecrets } from "~/modules/channels/application/secrets";
+import type { IEnv } from "~/types";
 
 import { parseSlackMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
@@ -23,7 +25,7 @@ const encoder = new TextEncoder();
  * Slack signs every request with a timestamp and an HMAC over the raw body. Both are checked
  * before anything reaches a conversation, and a replayed request is refused on its timestamp.
  */
-export class SlackChannelAdapter implements ChannelAdapter {
+export class SlackChannelAdapter implements WebhookChannelAdapter {
   readonly id = "slack" as const;
   readonly label = "Slack";
   readonly scopes = ["project", "personal"] as const;
@@ -69,7 +71,20 @@ export class SlackChannelAdapter implements ChannelAdapter {
     return parseSlackMessage(rawBody);
   }
 
-  async sendReply(reply: ChannelReply, secret: string): Promise<void> {
+  isReplyConfigured(env: IEnv): boolean {
+    return Boolean(getChannelSecrets(this.id, env).reply);
+  }
+
+  async sendReply(reply: ChannelReply, env: IEnv): Promise<void> {
+    const secret = getChannelSecrets(this.id, env).reply;
+
+    if (!secret) {
+      throw new AssistantError(
+        "Slack has no reply credential configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
     const parsed = slackChannelAddressSchema.safeParse(reply.externalId);
     const channelId = parsed.success ? parsed.data.split(":")[1] : null;
 

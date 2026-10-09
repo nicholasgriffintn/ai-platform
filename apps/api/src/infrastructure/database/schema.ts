@@ -985,7 +985,7 @@ export const channelBinding = sqliteTable(
   "channel_binding",
   {
     id: text().primaryKey(),
-    channel: text({ enum: ["sms", "slack", "telegram"] }).notNull(),
+    channel: text({ enum: ["sms", "slack", "telegram", "email"] }).notNull(),
     scope_type: text({ enum: ["personal", "project"] }).notNull(),
     scope_id: text().notNull(),
     external_id: text().notNull(),

@@ -47,6 +47,21 @@
       "types": "./dist/crypto.d.ts",
       "import": "./dist/crypto.js"
     },
+    "./dkim": {
+      "polychat-source": "./src/dkim.ts",
+      "types": "./dist/dkim.d.ts",
+      "import": "./dist/dkim.js"
+    },
+    "./dns": {
+      "polychat-source": "./src/dns.ts",
+      "types": "./dist/dns.d.ts",
+      "import": "./dist/dns.js"
+    },
+    "./email-text": {
+      "polychat-source": "./src/email-text.ts",
+      "types": "./dist/email-text.d.ts",
+      "import": "./dist/email-text.js"
+    },
     "./embeddings": {
       "polychat-source": "./src/embeddings.ts",
       "types": "./dist/embeddings.d.ts",

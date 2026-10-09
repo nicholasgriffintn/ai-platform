@@ -5,7 +5,7 @@ export function useChannelConnectionForm(
   onCreate: (input: CreateChannelBindingInput) => Promise<unknown>,
   projectId?: string,
 ) {
-  const [channel, setChannel] = useState<"slack" | "telegram">("slack");
+  const [channel, setChannel] = useState<"slack" | "telegram" | "email">("slack");
   const [externalId, setExternalId] = useState("");
   const [label, setLabel] = useState("");
   const [teammateId, setTeammateId] = useState("");

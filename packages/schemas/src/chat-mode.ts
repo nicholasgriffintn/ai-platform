@@ -2,7 +2,7 @@ import z from "zod/v4";
 
 export const homeChatModeIdSchema = z.enum(["chat", "live", "sms"]);
 
-export const INBOUND_CHANNEL_IDS = ["sms", "slack", "telegram"] as const;
+export const INBOUND_CHANNEL_IDS = ["sms", "slack", "telegram", "email"] as const;
 
 export const inboundChannelIdSchema = z.enum(INBOUND_CHANNEL_IDS);
 

@@ -5,10 +5,17 @@ import {
   useChannelSenders,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ChannelBinding } from "@ngriffin_uk/polychat-schemas";
-import { Hash, Link2, Send, Unplug } from "lucide-react";
+import { Hash, Link2, Mail, Send, Unplug } from "lucide-react";
 import { useState } from "react";
 
 import { CopyButton } from "../Content/CopyButton.js";
+
+const CHANNEL_LABELS: Record<ChannelBinding["channel"], string> = {
+  slack: "Slack",
+  telegram: "Telegram",
+  email: "Email",
+  sms: "SMS",
+};
 
 export function ChannelBindingCard({
   binding,
@@ -34,6 +41,8 @@ export function ChannelBindingCard({
           <div className="shrink-0 rounded-lg bg-selection p-2 text-muted-foreground">
             {binding.channel === "slack" ? (
               <Hash size={17} aria-hidden="true" />
+            ) : binding.channel === "email" ? (
+              <Mail size={17} aria-hidden="true" />
             ) : (
               <Send size={17} aria-hidden="true" />
             )}
@@ -43,12 +52,17 @@ export function ChannelBindingCard({
               {binding.label ?? binding.externalId}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {binding.channel === "slack" ? "Slack" : "Telegram"} ·{" "}
+              {CHANNEL_LABELS[binding.channel]} ·{" "}
               {binding.interactionMode === "automated"
                 ? "Replies when needed"
                 : "Replies to each message"}
             </p>
             <p className="text-xs break-all text-muted-foreground">{binding.externalId}</p>
+            {binding.contactAddress && (
+              <p className="text-xs break-all text-muted-foreground">
+                Write to {binding.contactAddress}
+              </p>
+            )}
           </div>
         </div>
         <Badge variant={binding.enabled ? "success" : "warning"}>
@@ -90,8 +104,9 @@ export function ChannelBindingCard({
       {challenge && (
         <div className="space-y-3 rounded-lg bg-selection p-3">
           <p className="text-sm">
-            Send this command in a private direct message to the bot from your own account. It
-            expires in ten minutes. Sending it to a group invalidates it.
+            {binding.channel === "email"
+              ? `Email this command as the subject, from ${binding.externalId} to ${binding.contactAddress ?? "Polychat"}. It expires in ten minutes.`
+              : "Send this command in a private direct message to the bot from your own account. It expires in ten minutes. Sending it to a group invalidates it."}
           </p>
           <div className="flex items-start gap-2 rounded-md border border-border bg-surface p-3">
             <code className="min-w-0 flex-1 text-xs break-all">{challenge.command}</code>

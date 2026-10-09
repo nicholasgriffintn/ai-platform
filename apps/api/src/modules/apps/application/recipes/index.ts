@@ -93,7 +93,7 @@ interface RecipeListOptions {
 }
 
 interface RecipeInstallOptions extends RecipeListOptions {
-  channel: "web" | "ios" | "sms" | "slack" | "telegram";
+  channel: "web" | "ios" | "sms" | "slack" | "telegram" | "email";
   projectId?: string;
   teammateContextId?: string;
   triggers?: RecipeInstallationTrigger[];
@@ -766,7 +766,16 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 export async function invokeAssistantRecipe(
   id: string,
   options: RecipeListOptions & {
-    channel: "web" | "ios" | "sms" | "slack" | "telegram" | "scheduled" | "event" | "tool";
+    channel:
+      | "web"
+      | "ios"
+      | "sms"
+      | "slack"
+      | "telegram"
+      | "email"
+      | "scheduled"
+      | "event"
+      | "tool";
     input?: string;
     configuration?: RecipeConfiguration;
     queue?: boolean;

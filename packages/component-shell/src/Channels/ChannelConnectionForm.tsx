@@ -3,6 +3,24 @@ import type { CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
 
 import { useChannelConnectionForm } from "./useChannelConnectionForm.js";
 
+const EXTERNAL_ID_FIELDS = {
+  slack: {
+    label: "Workspace and channel IDs",
+    description: "Enter the Slack workspace ID and channel ID, separated by a colon.",
+    placeholder: "T012345:C012345",
+  },
+  telegram: {
+    label: "Private chat ID",
+    description: "Enter the ID of your private conversation with the Telegram bot.",
+    placeholder: "123456789",
+  },
+  email: {
+    label: "Your email address",
+    description: "Enter the address you will write from. Its mail provider must sign with DKIM.",
+    placeholder: "you@example.com",
+  },
+} as const;
+
 export function ChannelConnectionForm({
   projectId,
   teammates,
@@ -32,7 +50,7 @@ export function ChannelConnectionForm({
       description={
         projectId
           ? "Bring a Slack channel into this project. Each person links their own account to join in."
-          : "Continue your conversations in Slack or Telegram. Personal channels support direct messages only."
+          : "Continue your conversations in Slack, Telegram or email. Personal channels support direct messages only."
       }
       submitText="Connect channel"
       isLoading={isPending}
@@ -45,7 +63,7 @@ export function ChannelConnectionForm({
         onClose();
       }}
     >
-      <FormSelect<"slack" | "telegram">
+      <FormSelect<"slack" | "telegram" | "email">
         label="Service"
         value={form.channel}
         disabled={isPending}
@@ -56,19 +74,17 @@ export function ChannelConnectionForm({
             : [
                 { value: "slack", label: "Slack" },
                 { value: "telegram", label: "Telegram" },
+                { value: "email", label: "Email" },
               ]
         }
       />
       <FormInput
-        label={form.channel === "slack" ? "Workspace and channel IDs" : "Private chat ID"}
-        description={
-          form.channel === "slack"
-            ? "Enter the Slack workspace ID and channel ID, separated by a colon."
-            : "Enter the ID of your private conversation with the Telegram bot."
-        }
+        label={EXTERNAL_ID_FIELDS[form.channel].label}
+        description={EXTERNAL_ID_FIELDS[form.channel].description}
         required
         maxLength={200}
-        placeholder={form.channel === "slack" ? "T012345:C012345" : "123456789"}
+        type={form.channel === "email" ? "email" : "text"}
+        placeholder={EXTERNAL_ID_FIELDS[form.channel].placeholder}
         value={form.externalId}
         disabled={isPending}
         onChange={(event) => form.setExternalId(event.target.value)}

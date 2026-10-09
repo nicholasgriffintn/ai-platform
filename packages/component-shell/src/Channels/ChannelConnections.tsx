@@ -34,7 +34,7 @@ export function ChannelConnections({
       );
   const description = projectId
     ? "Continue project conversations in Slack."
-    : "Continue your conversations in Slack or Telegram direct messages.";
+    : "Continue your conversations in Slack or Telegram direct messages, or by email.";
   const connectAction = canManage ? (
     <Button
       size="sm"

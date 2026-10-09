@@ -47,7 +47,6 @@ import { requireChannelSenderMapping } from "./access";
 import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
-import { getChannelSecrets } from "./secrets";
 
 export interface InboundChannelMessage {
   messageId: string;
@@ -461,13 +460,12 @@ async function resolveBindingDelivery(params: {
   }
 
   const adapter = getChannelAdapter(params.data.channel);
-  const { reply: replySecret } = getChannelSecrets(params.data.channel, params.env);
 
   if (!adapter) {
     return { status: "channel_unavailable" };
   }
 
-  if (!replySecret) {
+  if (!adapter.isReplyConfigured(params.env)) {
     throw new AssistantError(
       `${adapter.label} has no reply credential configured`,
       ErrorType.CONFIGURATION_ERROR,
@@ -569,8 +567,10 @@ async function resolveBindingDelivery(params: {
           externalId: binding.external_id,
           body: reply.body,
           threadId: params.data.messageContext.threadId,
+          inReplyTo: params.data.message.messageId,
+          subject: params.data.messageContext.subject,
         },
-        replySecret,
+        params.env,
       );
     },
   };

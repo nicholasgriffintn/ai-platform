@@ -1,3 +1,4 @@
+import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -6,7 +7,7 @@ import type { ChannelBindingRow } from "~/infrastructure/database/schema";
 import { CHANNEL_ADMIN_GUARD, CHANNEL_MEMBER_GUARD } from "./channel-access";
 
 export interface CreateChannelBindingRecord {
-  channel: "sms" | "slack" | "telegram";
+  channel: InboundChannelId;
   scopeType: "personal" | "project";
   scopeId: string;
   externalId: string;

@@ -32,6 +32,7 @@ import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
 import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { SandboxRunCoordinator } from "./modules/apps/infrastructure/sandbox/run-coordinator/object";
+import { receiveChannelEmail } from "./modules/channels/application/email-intake";
 import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
 import { handleGetMetrics } from "./modules/metrics/application/getMetrics";
@@ -313,6 +314,9 @@ const handler = {
     }
 
     return app.fetch(request, withRequestDatabase(env), ctx);
+  },
+  async email(message: ForwardableEmailMessage, env: IEnv): Promise<void> {
+    await receiveChannelEmail(withRequestDatabase(env), message);
   },
   async scheduled(event: ScheduledController, env: IEnv): Promise<void> {
     await workflows.runCron(env, event);

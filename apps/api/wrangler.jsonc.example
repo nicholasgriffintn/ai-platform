@@ -49,6 +49,7 @@
     "APPLE_IOS_CLIENT_ID": "<REPLACE_ME>",
     "APPLE_WEB_CLIENT_ID": "<REPLACE_ME>",
     "SES_EMAIL_FROM": "<REPLACE_ME>",
+    "EMAIL_INBOUND_ADDRESS": "<REPLACE_ME>",
     "PUBLIC_ASSETS_URL": "<REPLACE_ME>",
     "PRIVATE_ASSETS_BUCKET_NAME": "assistant-private-assets",
     "PUBLIC_ASSETS_BUCKET": "assistant-assets",
