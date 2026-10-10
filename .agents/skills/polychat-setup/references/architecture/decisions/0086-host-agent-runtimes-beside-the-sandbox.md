@@ -14,7 +14,7 @@ Run Hermes as a server agent driver beside `polychat-sandbox`. Selecting Hermes 
 
 Keep every credential outside the container. The container starts with `enableInternet = false` and only reaches two places. Package registries are read-only through the ADR 0085 egress policy. `polychat.internal` is intercepted by a Worker handler that adds a member-owned API key named "Hosted Hermes" and calls `/chat/completions` with `store: false`, no Polychat tools and the member's default tier. Hermes chooses neither the model nor the effort. Its tool calls come back to it unexecuted, and the member's plan meters every token. Revoking the key under API keys cuts the host off.
 
-Checkpoint `HERMES_HOME` to R2 after each finished run, excluding locks, pids, sockets, logs and caches, and restore it on a cold start. The Hermes API server key lives in Durable Object storage and the process environment, never on disk. Schedules stay in recipes (ADR 0019) and channels stay Polychat's, so Hermes cron and messaging platforms are not configured.
+Checkpoint `HERMES_HOME` to R2 after each finished run, excluding locks, pids, sockets, logs and caches, and restore it on a cold start. Choosing Hermes in the model picker wakes the host, so the first turn does not pay for the boot. The Hermes API server key lives in Durable Object storage and the process environment, never on disk. Schedules stay in recipes (ADR 0019) and channels stay Polychat's, so Hermes cron and messaging platforms are not configured.
 
 Hermes approvals have no Polychat surface yet. The provider declines each approval request once and tells the person what Hermes asked to do. The driver therefore offers only Auto, which hands review to the agent, and reports that it cannot answer approvals.
 
