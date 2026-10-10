@@ -743,8 +743,8 @@ importers:
   apps/computer-worker:
     dependencies:
       '@cloudflare/sandbox':
-        specifier: 0.12.10
-        version: 0.12.10
+        specifier: 1.0.0
+        version: 1.0.0
       '@ngriffin_uk/polychat-library-sandbox':
         specifier: workspace:^
         version: link:../../packages/library-sandbox
@@ -879,8 +879,8 @@ importers:
   apps/sandbox-worker:
     dependencies:
       '@cloudflare/sandbox':
-        specifier: 0.12.10
-        version: 0.12.10
+        specifier: 1.0.0
+        version: 1.0.0
       '@ngriffin_uk/auth-jwt':
         specifier: ^2.0.0
         version: 2.0.0(@ngriffin_uk/auth-crypto@1.1.1)(@ngriffin_uk/auth-encoding@0.2.4)(@ngriffin_uk/auth-request@0.2.4)
@@ -3234,26 +3234,12 @@ packages:
     resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@cloudflare/containers@0.3.7':
-    resolution: {integrity: sha512-DM9dm3FnIBSyiSJ1FLavKwl/lk3oAmTaynCzZQ9pZR0ncRPquSxkxd8Nu2MFILxmDDsPkxKsSNEh9mHHMty4Fw==}
-
   '@cloudflare/kv-asset-handler@0.5.0':
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/sandbox@0.12.10':
-    resolution: {integrity: sha512-245s6xEdR1v0Jti0YYd8ORWcTG/f/ksjJfpubvnbky0KxFC/ZDOpbpNKdtyiRBYZqmJGtEncYW7Cwge47tDrpg==}
-    peerDependencies:
-      '@openai/agents': ^0.3.3
-      '@opencode-ai/sdk': ^1.1.40
-      '@xterm/xterm': '>=5.0.0'
-    peerDependenciesMeta:
-      '@openai/agents':
-        optional: true
-      '@opencode-ai/sdk':
-        optional: true
-      '@xterm/xterm':
-        optional: true
+  '@cloudflare/sandbox@1.0.0':
+    resolution: {integrity: sha512-+TZVuCey6OBDTvPLWisq4Ie7/R5Zy3zFyYOFCNRpdEIyQsKq3xwzpctonE43DfZ+wYZvvu6QYpR138PayDjF+A==}
 
   '@cloudflare/unenv-preset@2.16.2':
     resolution: {integrity: sha512-JBP1+Z7ZSNG/d4mRP+y8VC5dka3tZVMLEZRvS+rzQ4DGV1EoxRFQckcJTTkXbHSQiTj0DtNI01Zwb/V2fX0mvQ==}
@@ -7486,9 +7472,6 @@ packages:
   capnweb@0.12.0:
     resolution: {integrity: sha512-jgZ/LMtMVTi+RVlooIslH78Gg23XbDTdvcLghWx3oz17D6u5GuJARt+uhZk/wcTo+f81eeabfnow4d3zLBj+JQ==}
 
-  capnweb@0.8.0:
-    resolution: {integrity: sha512-BK/TuXUiyfLSKsmjojn70yN7oYG/JJzoURZ3tckjg5Zj2KcygPm0A5jyOlswK7SYB4f0Gh9tt+RZ132b80iLfA==}
-
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
 
@@ -8364,16 +8347,8 @@ packages:
     peerDependencies:
       hono: ^4.11.2
 
-  hono@4.13.10:
-    resolution: {integrity: sha512-dQuLsa5oO+47QVMVMaaD9cIv8ctmVtK1iRvwWngkfloFJMeFeuoUFDswIqZGxmGX3hrRzREgEArjkK9OgsQEhA==}
-    engines: {node: '>=16.9.0'}
-
   hono@4.13.12:
     resolution: {integrity: sha512-6E2QDAc9Ick9Sq77ZrGS/dk2WUYni91aufTw6LJKpV7w8kW5/GxVUc650FOADOmlwg3K+f7Pun6XlV+pYmW6gw==}
-    engines: {node: '>=16.9.0'}
-
-  hono@4.13.9:
-    resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -10623,6 +10598,9 @@ packages:
     peerDependencies:
       zod: ^3.25.28 || ^4
 
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+
   zod@4.6.5:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
@@ -11085,16 +11063,12 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@cloudflare/containers@0.3.7': {}
-
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/sandbox@0.12.10':
+  '@cloudflare/sandbox@1.0.0':
     dependencies:
-      '@cloudflare/containers': 0.3.7
       aws4fetch: 1.0.20
-      capnweb: 0.8.0
-      hono: 4.13.9
+      zod: 4.5.4
 
   '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20260926.1)':
     dependencies:
@@ -11681,9 +11655,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@hono/node-server@2.1.3(hono@4.13.10)':
+  '@hono/node-server@2.1.3(hono@4.13.12)':
     dependencies:
-      hono: 4.13.10
+      hono: 4.13.12
 
   '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.12)':
     dependencies:
@@ -12062,7 +12036,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)':
     dependencies:
-      '@hono/node-server': 2.1.3(hono@4.13.10)
+      '@hono/node-server': 2.1.3(hono@4.13.12)
       ajv: 8.20.0
       ajv-formats: 3.0.1
       content-type: 1.0.5
@@ -12072,7 +12046,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.10
+      hono: 4.13.12
       jose: 6.2.12
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -14559,8 +14533,6 @@ snapshots:
 
   capnweb@0.12.0: {}
 
-  capnweb@0.8.0: {}
-
   ccount@2.0.1: {}
 
   chai@6.3.0: {}
@@ -15494,11 +15466,7 @@ snapshots:
       - zod-openapi
       - zod-to-json-schema
 
-  hono@4.13.10: {}
-
   hono@4.13.12: {}
-
-  hono@4.13.9: {}
 
   hookified@1.15.1: {}
 
@@ -18212,6 +18180,8 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@4.6.5):
     dependencies:
       zod: 4.6.5
+
+  zod@4.5.4: {}
 
   zod@4.6.5: {}
 
