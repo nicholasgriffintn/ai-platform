@@ -44,6 +44,29 @@ export function parseTeammateStandingApprovals(value: unknown): TeammateStanding
   return parsed.success ? parsed.data : [];
 }
 
+export const TEAMMATE_STANDING_OFFER_STREAK = 5;
+
+export const TEAMMATE_OWNER_ABSENCE_DAYS = 7;
+
+export const teammateApprovalStreakSchema = z.object({
+  toolName: z.string().min(1),
+  destination: z.string().min(1),
+  approvals: z.number().int().positive(),
+  lastInteractionId: z.string().min(1),
+  lastApprovedAt: z.iso.datetime(),
+});
+
+export type TeammateApprovalStreak = z.infer<typeof teammateApprovalStreakSchema>;
+
+const teammateApprovalStreakListSchema = z.array(teammateApprovalStreakSchema);
+
+export function parseTeammateApprovalStreaks(value: unknown): TeammateApprovalStreak[] {
+  const candidate: unknown = typeof value === "string" ? safeParseJson(value) : value;
+  const parsed = teammateApprovalStreakListSchema.safeParse(candidate);
+
+  return parsed.success ? parsed.data : [];
+}
+
 export const teammateContextSchema = z.object({
   id: z.string().min(1),
   teammateId: z.string().min(1),
@@ -54,6 +77,8 @@ export const teammateContextSchema = z.object({
   status: teammateContextStatusSchema,
   autonomyLevel: teammateAutonomyLevelSchema.nullable(),
   standingApprovals: z.array(teammateStandingApprovalSchema),
+  approvalStreaks: z.array(teammateApprovalStreakSchema),
+  ownerSeenAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });

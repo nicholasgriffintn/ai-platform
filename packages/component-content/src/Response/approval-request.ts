@@ -16,6 +16,7 @@ export interface ApprovalRequestData {
     interactionId?: string;
     toolName?: string;
   };
+  approvedInARow?: number;
   authoritativeState: ApprovalAuthoritativeState;
 }
 
@@ -73,6 +74,10 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
   const toolName = readNonEmptyString(approval?.toolName);
   const expiresAt =
     readNonEmptyString(data.expiresAt) ?? readNonEmptyString(humanInTheLoop?.expiresAt);
+  const approvedInARow =
+    typeof approval?.approvedInARow === "number" && approval.approvedInARow > 0
+      ? approval.approvedInARow
+      : undefined;
   const options = Array.isArray(data.options)
     ? data.options.filter((option): option is string => typeof option === "string")
     : undefined;
@@ -91,6 +96,7 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
           },
         }
       : {}),
+    ...(approvedInARow ? { approvedInARow } : {}),
     authoritativeState: readAuthoritativeState(data, approval, humanInTheLoop, expiresAt),
   };
 }

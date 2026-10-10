@@ -36,6 +36,7 @@ Read the relevant record before changing any durable boundary.
 - [0045: Make decisions a provider category, starting with TypeSafe Jev](decisions/0045-make-decisions-a-provider-category.md)
 - [0071: Tools declare what they change](decisions/0071-tools-declare-what-they-change.md)
 - [0073: Teammate autonomy is a dial over effects](decisions/0073-teammate-autonomy-is-a-dial-over-effects.md)
+- [0086: Earn standing approvals and brake when the owner is away](decisions/0086-earn-standing-approvals-and-brake-when-the-owner-is-away.md)
 
 ## Model governance
 

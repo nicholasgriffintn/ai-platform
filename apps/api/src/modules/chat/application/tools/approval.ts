@@ -3,6 +3,7 @@ import { STANDING_APPROVAL_OPTION } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { formatToolErrorResponse } from "~/modules/chat/application/tools/tool-responses";
+import { hasEarnedStandingOffer } from "~/modules/poly/domain/earned-trust";
 import type { Message, Platform } from "~/types";
 
 export function createPendingToolApprovalMessage(params: {
@@ -15,7 +16,10 @@ export function createPendingToolApprovalMessage(params: {
   model: string;
   platform: Platform;
   standingEligible?: boolean;
+  approvedInARow?: number;
 }): Message {
+  const approvedInARow = params.standingEligible ? (params.approvedInARow ?? 0) : 0;
+
   const approvalError = formatToolErrorResponse(
     params.toolName,
     params.reason,
@@ -31,9 +35,11 @@ export function createPendingToolApprovalMessage(params: {
       ...approvalError.data,
       renderer: "approval_request",
       message: params.reason,
-      options: params.standingEligible
-        ? ["Approve", STANDING_APPROVAL_OPTION, "Reject"]
-        : ["Approve", "Reject"],
+      options: !params.standingEligible
+        ? ["Approve", "Reject"]
+        : hasEarnedStandingOffer(approvedInARow)
+          ? [STANDING_APPROVAL_OPTION, "Approve", "Reject"]
+          : ["Approve", STANDING_APPROVAL_OPTION, "Reject"],
       approvalRequired: true,
       approval: {
         toolName: params.toolName,
@@ -41,6 +47,7 @@ export function createPendingToolApprovalMessage(params: {
         interactionId: params.toolCallId,
         reason: params.reason,
         standingEligible: params.standingEligible === true,
+        approvedInARow,
       },
       humanInTheLoop: pendingApproval({
         interactionId: params.toolCallId,
