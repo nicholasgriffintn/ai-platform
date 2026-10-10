@@ -450,6 +450,7 @@ export async function prepareSandboxEnvironment(params: {
   abortSignal?: AbortSignal;
   checkpoint: (abortMessage: string) => Promise<void>;
   emit: (event: TaskEvent) => Promise<void>;
+  allowNetworkHosts?: (hosts: readonly string[]) => Promise<void>;
 }): Promise<SandboxEnvironmentPreparationResult> {
   if (!params.setup) {
     return {};
@@ -478,6 +479,10 @@ export async function prepareSandboxEnvironment(params: {
     });
 
     throw error;
+  }
+
+  if (resolved.definition.networkHosts.length > 0) {
+    await params.allowNetworkHosts?.(resolved.definition.networkHosts);
   }
 
   const generation = params.environmentCacheGeneration ?? 0;

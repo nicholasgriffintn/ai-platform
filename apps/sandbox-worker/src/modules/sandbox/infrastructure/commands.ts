@@ -26,7 +26,7 @@ interface RepoInfo {
   displayName: string;
   targetDir: string;
   checkoutUrl: string;
-  checkoutAuthHeader?: string;
+  brokered: boolean;
 }
 
 export async function runSandboxCommand(
@@ -133,24 +133,7 @@ export async function execOrThrow(sandbox: SandboxExecInstance, command: string,
   }
 }
 
-export async function execOrThrowRedacted(
-  sandbox: SandboxExecInstance,
-  command: string,
-  logs: string[],
-  redactedCommand: string,
-) {
-  const result = await runSandboxCommand(sandbox, command);
-
-  logs.push(formatCommandResult(redactedCommand, result));
-  if (!result.success) {
-    throw new Error(result.stderr || `Command failed (${result.exitCode})`);
-  }
-}
-
-export function resolveGitHubRepo(
-  repo: string,
-  credentialBroker: { baseUrl: string; grant: string },
-): RepoInfo {
+export function resolveGitHubRepo(repo: string, credentialBroker: { baseUrl: string }): RepoInfo {
   const trimmedRepo = repo.trim();
 
   if (!trimmedRepo) {
@@ -178,15 +161,12 @@ export function resolveGitHubRepo(
   const checkoutUrl = usesLocalFixture
     ? `https://github.com/${displayName}.git`
     : `${credentialBroker.baseUrl}/git`;
-  const checkoutAuthHeader = usesLocalFixture
-    ? undefined
-    : `AUTHORIZATION: Bearer ${credentialBroker.grant}`;
 
   return {
     displayName,
     targetDir,
     checkoutUrl,
-    checkoutAuthHeader,
+    brokered: !usesLocalFixture,
   };
 }
 

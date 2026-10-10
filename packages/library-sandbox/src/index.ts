@@ -51,11 +51,15 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
+  decideContainerEgress,
   decideOutbound,
   isHostAllowed,
   outboundNeedsGateway,
   parseToolRequest,
+  SANDBOX_PACKAGE_REGISTRY_HOSTS,
   TOOLS_ORIGIN,
+  type ContainerEgressDecision,
+  type ContainerEgressPolicy,
   type OutboundAllowlist,
   type OutboundDecision,
   type OutboundGatewayProps,

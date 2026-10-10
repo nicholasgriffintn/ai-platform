@@ -74,6 +74,7 @@ Read the relevant record before changing any durable boundary.
 - [0038: Spawn only programs the core was compiled knowing](decisions/0038-spawn-only-compiled-agent-programs.md)
 - [0041: Carry live updates on one-per-user socket](decisions/0041-carry-live-updates-on-one-per-user-socket.md)
 - [0042: An agent session is a long-lived handle, not a one-shot process](decisions/0042-an-agent-session-is-a-long-lived-handle.md)
+- [0085: Bound sandbox egress at the network](decisions/0085-bound-sandbox-egress-at-the-network.md)
 
 ## Maintenance
 

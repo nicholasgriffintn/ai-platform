@@ -24,7 +24,9 @@ The project delivery policy selects an uncommitted result, local custom preparat
 
 The API resolves a fresh GitHub App installation token for the runner and configured repository before dispatch. Keep that credential authority, project policy and command approval separate. Record the branch and commit before attempting delivery, and preserve partial push or pull-request failures in terminal Proof.
 
-Environment preparation uses the shared versioned definition. Polychat-owned configuration is snapshotted into the run; repository-owned configuration is read only from `.polychat/environment.json` at the cloned revision. The definition accepts `version: 1`, `setupCommands`, optional `resumeCommands`, `runtimes`, an optional `packageManager`, `setupTimeoutSeconds` and optional run-scoped `services`.
+Environment preparation uses the shared versioned definition. Polychat-owned configuration is snapshotted into the run; repository-owned configuration is read only from `.polychat/environment.json` at the cloned revision. The definition accepts `version: 1`, `setupCommands`, optional `resumeCommands`, `runtimes`, an optional `packageManager`, `setupTimeoutSeconds`, `networkHosts` and optional run-scoped `services`.
+
+Containers start without internet access ([ADR 0085](../architecture/decisions/0085-bound-sandbox-egress-at-the-network.md)). The Worker's outbound handlers allow read-only package registries, the backup endpoint and declared `networkHosts`, and inject the broker grant into repository git traffic so it never enters the container. Export `ContainerProxy` from the entry point or interception fails.
 
 Run setup commands sequentially through the existing command policy. Check declared versions through fixed internal commands, bound setup time and output, and redact persisted evidence. Do not put secret values in project or repository setup; a referenced environment variable does not grant or mount a credential. Activity owns detailed setup output, while Proof records the configuration source and revision, effective mode, requirements, duration and terminal status.
 
