@@ -36,6 +36,7 @@ Read the relevant record before changing any durable boundary.
 - [0045: Make decisions a provider category, starting with TypeSafe Jev](decisions/0045-make-decisions-a-provider-category.md)
 - [0071: Tools declare what they change](decisions/0071-tools-declare-what-they-change.md)
 - [0073: Teammate autonomy is a dial over effects](decisions/0073-teammate-autonomy-is-a-dial-over-effects.md)
+- [0086: Earn standing approvals and brake when the owner is away](decisions/0086-earn-standing-approvals-and-brake-when-the-owner-is-away.md)
 
 ## Model governance
 
@@ -53,10 +54,12 @@ Read the relevant record before changing any durable boundary.
 
 - [0018: Run project tasks through governed flows](decisions/0018-project-tasks-run-through-governed-flows.md)
 - [0040: Delegate to a teammate in its own conversation](decisions/0040-delegate-to-a-teammate-in-its-own-conversation.md)
+- [0080: Resume interrupted delegations without repeating an unsettled effect](decisions/0080-resume-interrupted-delegations.md)
 - [0019: Keep repeatable scheduling in recipes](decisions/0019-keep-repeatable-scheduling-in-recipes.md)
 - [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
 - [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
+- [0088: Dependent tasks start when their dependencies finish](decisions/0088-dependent-tasks-start-when-their-dependencies-finish.md)
 
 ## Clients, runtime and lifecycle
 

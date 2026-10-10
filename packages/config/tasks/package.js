@@ -6,8 +6,10 @@ export const packageTaskConfig = {
       build: {
         command: "tsup",
         dependsOn: dependencyBuilds,
-        input: [{ auto: true }, "!dist/**"],
-        output: ["dist/**"],
+        cache: {
+          input: [{ auto: true }, "!dist/**"],
+          output: ["dist/**"],
+        },
       },
     },
   },

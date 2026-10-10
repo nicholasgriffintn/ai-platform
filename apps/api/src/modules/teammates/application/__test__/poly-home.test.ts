@@ -2,7 +2,7 @@ import { POLY_TEAMMATE_ID, type TeammateContext } from "@ngriffin_uk/polychat-sc
 import { describe, expect, it } from "vitest";
 
 import type { ResolvedTeammateInvocation } from "../execution";
-import { requirePolyHomeRun } from "../poly-home";
+import { admitTeammateContextAuthority, requirePolyHomeRun } from "../poly-home";
 
 const polyContext: TeammateContext = {
   id: "teammate_context_poly",
@@ -14,6 +14,8 @@ const polyContext: TeammateContext = {
   status: "active",
   autonomyLevel: "assistant",
   standingApprovals: [],
+  approvalStreaks: [],
+  ownerSeenAt: "2026-10-06T09:00:00.000Z",
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: null,
 };
@@ -75,5 +77,54 @@ describe("requirePolyHomeRun", () => {
       ),
     ).toThrow();
     expect(() => requirePolyHomeRun(undefined, "teammate_home_poly")).toThrow();
+  });
+});
+
+describe("admitTeammateContextAuthority", () => {
+  const standing = {
+    toolName: "call_api",
+    destination: "https://api.example.com",
+    grantedAt: "2026-10-01T09:00:00.000Z",
+    expiresAt: "2026-10-31T09:00:00.000Z",
+  };
+  const partner: TeammateContext = {
+    ...polyContext,
+    autonomyLevel: "partner",
+    standingApprovals: [standing],
+    ownerSeenAt: "2026-10-01T09:00:00.000Z",
+  };
+  const eightDaysLater = Date.parse("2026-10-09T09:00:00.000Z");
+
+  it("drops a background run to asking before writes once the owner has been away a week", () => {
+    expect(
+      admitTeammateContextAuthority({
+        context: partner,
+        trigger: "schedule",
+        now: eightDaysLater,
+      }),
+    ).toMatchObject({ autonomy_level: "assistant", standing_approvals: [] });
+  });
+
+  it("leaves the dial alone when the owner starts the turn or has been around", () => {
+    expect(
+      admitTeammateContextAuthority({ context: partner, trigger: "user", now: eightDaysLater }),
+    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
+    expect(
+      admitTeammateContextAuthority({
+        context: partner,
+        trigger: "schedule",
+        now: Date.parse("2026-10-05T09:00:00.000Z"),
+      }),
+    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
+  });
+
+  it("never brakes a teammate other than Poly", () => {
+    expect(
+      admitTeammateContextAuthority({
+        context: { ...partner, teammateId: "teammate_research" },
+        trigger: "schedule",
+        now: eightDaysLater,
+      }),
+    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
   });
 });

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b8244af9-6a9b-4674-8541-1c227270fac0",
+  "id": "17c57fdd-5242-4e66-aa98-3e4683e40f93",
   "prevId": "822f42b0-0541-4c4a-bc51-6de662a5374e",
   "tables": {
     "activity_record": {
@@ -1259,13 +1259,6 @@
         "share_id": {
           "name": "share_id",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shared_through": {
-          "name": "shared_through",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -9210,6 +9203,21 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'[]'"
+        },
+        "approval_streaks": {
+          "name": "approval_streaks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "owner_seen_at": {
+          "name": "owner_seen_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",

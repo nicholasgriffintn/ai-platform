@@ -69,9 +69,9 @@
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
     "@scalar/hono-api-reference": "0.12.9",
-    "@sentry/cloudflare": "10.75.3",
+    "@sentry/cloudflare": "10.76.0",
     "@tsndr/cloudflare-worker-jwt": "3.2.3",
-    "agents": "0.24.0",
+    "agents": "0.26.0",
     "aws4fetch": "1.0.20",
     "drizzle-orm": "0.45.3",
     "hono": "4.13.12",
@@ -79,7 +79,7 @@
     "hyparquet": "1.31.2",
     "isbot": "5.2.2",
     "postal-mime": "2.7.6",
-    "stripe": "22.6.2",
+    "stripe": "23.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {

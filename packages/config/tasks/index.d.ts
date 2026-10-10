@@ -8,8 +8,10 @@ export interface PackageTaskConfig {
       build: {
         command: string | string[];
         dependsOn: Array<{ task: string; from: string[] }>;
-        input: Array<string | { auto: boolean }>;
-        output: string[];
+        cache: {
+          input: Array<string | { auto: boolean }>;
+          output: string[];
+        };
       };
     };
   };

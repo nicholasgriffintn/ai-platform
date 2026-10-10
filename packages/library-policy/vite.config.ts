@@ -2,7 +2,7 @@ import { packageTaskConfig } from "@ngriffin_uk/polychat-config/tasks";
 
 const config = packageTaskConfig({ build: "tsc -p tsconfig.json && pnpm build:runtime" });
 
-config.run.tasks.build.input.push(
+config.run.tasks.build.cache.input.push(
   "src/**",
   "scripts/**",
   "vite.config.ts",
