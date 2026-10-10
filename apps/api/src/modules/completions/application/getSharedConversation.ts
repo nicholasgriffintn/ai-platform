@@ -7,7 +7,7 @@ export async function handleGetSharedConversation(
   share_id: string,
   limit = 50,
   after?: string,
-): Promise<{ messages: Message[]; share_id: string }> {
+): Promise<{ messages: Message[]; share_id: string; shared_through: number | null }> {
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
@@ -15,12 +15,13 @@ export async function handleGetSharedConversation(
     env: context.env,
   });
 
-  const messages = await conversationManager.getPublicConversation(share_id, limit, after, {
+  const page = await conversationManager.getPublicConversation(share_id, limit, after, {
     includeArchived: true,
   });
 
   return {
-    messages,
+    messages: page.messages,
     share_id,
+    shared_through: page.sharedThrough,
   };
 }

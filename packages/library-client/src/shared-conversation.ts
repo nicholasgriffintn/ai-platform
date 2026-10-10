@@ -9,6 +9,12 @@ const MAX_SHARED_CONVERSATION_PAGES = 10_000;
 export interface SharedConversationHistory {
   messages: Message[];
   share_id: string;
+  shared_through?: number | null;
+}
+
+export interface ConversationShare {
+  share_id: string;
+  shared_through: number;
 }
 
 export async function fetchSharedConversationHistory(

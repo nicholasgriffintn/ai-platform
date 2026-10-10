@@ -5,6 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
+import { messagesSharedThrough } from "~/modules/conversations/domain/share-cutoff";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import type { Message, User } from "~/types";
 
@@ -43,10 +44,21 @@ async function loadOwnedConversation(
   return conversation;
 }
 
+export interface ConversationShare {
+  share_id: string;
+  shared_through: number;
+}
+
+export interface PublicConversationPage {
+  messages: Message[];
+  sharedThrough: number | null;
+}
+
 export async function shareConversation(
   scope: ConversationSharingScope,
   conversationId: string,
-): Promise<{ share_id: string }> {
+  now = Date.now(),
+): Promise<ConversationShare> {
   const conversation = await loadOwnedConversation(scope, conversationId, "share");
 
   if (
@@ -75,13 +87,14 @@ export async function shareConversation(
   const updated = await scope.repositories.conversations.updateConversation(conversationId, {
     is_public: 1,
     share_id,
+    shared_through: now,
   });
 
   if (!updated) {
     throw new AssistantError("Failed to share conversation", ErrorType.UNKNOWN_ERROR);
   }
 
-  return { share_id };
+  return { share_id, shared_through: now };
 }
 
 export async function unshareConversation(
@@ -92,6 +105,8 @@ export async function unshareConversation(
   await scope.assertWriteOwnership();
   const updated = await scope.repositories.conversations.updateConversation(conversationId, {
     is_public: 0,
+    share_id: null,
+    shared_through: null,
   });
 
   if (!updated) {
@@ -105,7 +120,7 @@ export async function getPublicConversation(
   limit = 50,
   after?: string,
   options?: { includeArchived?: boolean },
-): Promise<Message[]> {
+): Promise<PublicConversationPage> {
   const conversation = await repositories.conversations.getConversationByShareId(shareId);
 
   if (!conversation || conversation.project_id) {
@@ -125,7 +140,9 @@ export async function getPublicConversation(
     throw new AssistantError("Shared conversation not found", ErrorType.NOT_FOUND);
   }
 
-  return loadVisibleConversationMessagePage({
+  const sharedThrough =
+    typeof conversation.shared_through === "number" ? conversation.shared_through : null;
+  const messages = await loadVisibleConversationMessagePage({
     conversationId: conversation.id,
     limit,
     after,
@@ -135,4 +152,6 @@ export async function getPublicConversation(
     formatMessage: formatStoredMessage,
     isHiddenMessage: hasSnapshotPart,
   });
+
+  return { messages: messagesSharedThrough(messages, sharedThrough), sharedThrough };
 }

@@ -1191,6 +1191,7 @@ export const conversation = sqliteTable(
     is_archived: integer({ mode: "boolean" }).default(false),
     is_public: integer({ mode: "boolean" }).default(false),
     share_id: text().unique(),
+    shared_through: integer(),
     last_message_id: text(),
     last_message_at: text(),
     message_count: integer().default(0),
