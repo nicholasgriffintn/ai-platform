@@ -12,6 +12,7 @@ export const PROVIDER_DRIVERS = [
   "opencode",
   "antigravity",
   "polychat-sandbox",
+  "hermes",
 ] as const;
 
 export const providerDriverSchema = z.enum(PROVIDER_DRIVERS);
@@ -89,14 +90,17 @@ export type ProviderAdapter = z.infer<typeof providerAdapterSchema>;
 export function resolveEffectivePermissionMode(
   requested: PermissionMode | undefined,
   stored: unknown,
+  supportedModes?: readonly PermissionMode[],
 ): PermissionMode {
   if (requested) {
     return requested;
   }
 
   const parsed = permissionModeSchema.safeParse(stored);
+  const resolved = parsed.success ? parsed.data : DEFAULT_PERMISSION_MODE;
+  const fallback = supportedModes?.[0];
 
-  return parsed.success ? parsed.data : DEFAULT_PERMISSION_MODE;
+  return fallback && !supportedModes.includes(resolved) ? fallback : resolved;
 }
 
 const PERMISSION_MODE_LABELS: Record<PermissionMode, string> = {
@@ -212,6 +216,12 @@ const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
     ...AGENT_CAPABILITIES,
     picksOwnModel: false,
     runsUnattended: true,
+  },
+  hermes: {
+    ...AGENT_CAPABILITIES,
+    picksOwnModel: false,
+    reportsApprovals: false,
+    rollsBack: false,
   },
 };
 

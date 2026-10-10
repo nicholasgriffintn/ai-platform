@@ -1,5 +1,8 @@
 import {
+  containerEgressBlockedResponse,
   decideContainerEgress,
+  parseContainerEgressPolicy,
+  resolveBackupStorageHost,
   SANDBOX_PACKAGE_REGISTRY_HOSTS,
   type ContainerEgressPolicy,
 } from "@ngriffin_uk/polychat-library-sandbox";
@@ -25,12 +28,6 @@ const FORWARDED_GIT_HEADERS = [
   "git-protocol",
 ] as const;
 
-const egressPolicySchema = z.object({
-  mode: z.enum(["all", "list"]),
-  hosts: z.array(z.string()),
-  readOnlyHosts: z.array(z.string()),
-});
-
 const brokeredGitParamsSchema = z.object({
   grant: z.string().min(1),
   pathPrefix: z.string().startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`),
@@ -49,9 +46,9 @@ export interface SandboxEgressControl {
 }
 
 function blockedResponse(reason: string): Response {
-  return new Response(
-    `Polychat blocked this request: ${reason}. Add the host to networkHosts in the project's environment configuration if the run needs it.\n`,
-    { status: 403, headers: { "Content-Type": "text/plain; charset=utf-8" } },
+  return containerEgressBlockedResponse(
+    reason,
+    "Add the host to networkHosts in the project's environment configuration if the run needs it.",
   );
 }
 
@@ -71,10 +68,10 @@ export async function egressPolicyOutbound(
   env: Env,
   ctx: OutboundContext,
 ): Promise<Response> {
-  const policy = egressPolicySchema.safeParse(ctx.params);
+  const policy = parseContainerEgressPolicy(ctx.params);
   const url = new URL(request.url);
-  const decision = policy.success
-    ? decideContainerEgress(policy.data, { url, method: request.method })
+  const decision = policy
+    ? decideContainerEgress(policy, { url, method: request.method })
     : { kind: "block" as const, reason: "the run has no network policy" };
 
   if (decision.kind === "allow") {
@@ -125,20 +122,6 @@ export async function brokeredGitOutbound(
   );
 }
 
-function backupStorageHost(env: Env): string | undefined {
-  if (env.BACKUP_BUCKET_ENDPOINT) {
-    try {
-      return new URL(env.BACKUP_BUCKET_ENDPOINT).hostname;
-    } catch {
-      return undefined;
-    }
-  }
-
-  const accountId = env.CLOUDFLARE_R2_ACCOUNT_ID ?? env.CLOUDFLARE_ACCOUNT_ID;
-
-  return accountId ? `${accountId}.r2.cloudflarestorage.com` : undefined;
-}
-
 export function buildSandboxEgressPolicy(params: {
   env: Env;
   trustLevel: SandboxTrustLevel;
@@ -149,7 +132,7 @@ export function buildSandboxEgressPolicy(params: {
     return { mode: "all", hosts: [], readOnlyHosts: [] };
   }
 
-  const storageHost = backupStorageHost(params.env);
+  const storageHost = resolveBackupStorageHost(params.env);
 
   return {
     mode: "list",

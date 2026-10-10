@@ -1,5 +1,6 @@
 import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
 
+import { handleAgentHostRequest, isAgentHostPath } from "./agent-host/routes";
 import { INTERNAL_COMPUTER_ORIGIN } from "./config/app";
 import { handleComputerRequest } from "./lifecycle";
 import { handleScreenRequest } from "./screen";
@@ -14,12 +15,16 @@ export default {
       return handleScreenRequest(request, env);
     }
 
-    if (!url.pathname.startsWith("/computer/")) {
-      return errorResponse(404, "Not found");
-    }
-
     if (request.method !== "POST") {
       return errorResponse(405, "Method not allowed");
+    }
+
+    if (isAgentHostPath(url.pathname)) {
+      return handleAgentHostRequest(request, env);
+    }
+
+    if (!url.pathname.startsWith("/computer/")) {
+      return errorResponse(404, "Not found");
     }
 
     if (url.pathname === "/computer/site-verify") {
@@ -30,4 +35,5 @@ export default {
   },
 };
 
-export { Sandbox as Computer } from "@cloudflare/sandbox";
+export { ContainerProxy, Sandbox as Computer } from "@cloudflare/sandbox";
+export { AgentHost } from "./agent-host/agent-host-container";

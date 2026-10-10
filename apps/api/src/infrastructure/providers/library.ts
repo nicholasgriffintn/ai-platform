@@ -6,6 +6,7 @@ import { withAvailableFunctions } from "~/modules/chat/application/tools/availab
 import { withCapabilityMetering } from "~/modules/usage/application/capabilityMetering";
 import type { ChatCompletionParameters } from "~/types";
 
+import { HostedHermesChatProvider } from "./capabilities/agent-host/HostedHermesChatProvider";
 import { DeploymentChatProvider } from "./capabilities/model-platform/DeploymentChatProvider";
 import { PolychatSandboxChatProvider } from "./capabilities/sandbox/providers/PolychatSandboxChatProvider";
 import { providerHost } from "./host";
@@ -24,6 +25,11 @@ function registerHostChatProviders(registry: ProviderRegistry): void {
     name: "polychat-sandbox",
     create: () => new PolychatSandboxChatProvider(),
     metadata: { vendor: "Polychat", categories: ["chat"], tags: ["coding"] },
+  });
+  registry.register("chat", {
+    name: "hermes",
+    create: () => new HostedHermesChatProvider(),
+    metadata: { vendor: "Nous Research", categories: ["chat"], tags: ["agent"] },
   });
   registry.register("chat", {
     name: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,

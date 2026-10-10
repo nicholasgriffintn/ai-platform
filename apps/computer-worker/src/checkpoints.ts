@@ -5,7 +5,7 @@ import { startComputer, stopComputer } from "./browser";
 import { PROFILE_DIRECTORY } from "./config/app";
 import type { ComputerSandbox } from "./types";
 
-function parseCheckpointReference(value: string): DirectoryBackup {
+export function parseCheckpointReference(value: string): DirectoryBackup {
   const parsed: unknown = JSON.parse(value);
 
   if (

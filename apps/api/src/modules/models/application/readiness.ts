@@ -125,7 +125,11 @@ export function resolveModelReadiness(
     );
   }
 
-  if (model.kind === "agent" && !options.agentWorkspaceConfigured) {
+  if (
+    model.kind === "agent" &&
+    model.agent?.workspace?.kind !== "none" &&
+    !options.agentWorkspaceConfigured
+  ) {
     const workspaceAction =
       model.agent?.workspace?.kind === "repository"
         ? { kind: "connect_repository" as const, label: "Connect a repository" }

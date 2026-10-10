@@ -131,6 +131,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   "aws-sms": "aws",
   opencode: "opencode",
   "opencode-go": "opencode",
+  hermes: "nous-research",
   openclaw: "openclaw",
   zai: "zai",
   alibaba: "qwen",
