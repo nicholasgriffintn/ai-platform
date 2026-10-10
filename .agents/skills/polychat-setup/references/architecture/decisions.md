@@ -57,6 +57,7 @@ Read the relevant record before changing any durable boundary.
 - [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
 - [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
+- [0088: Dependent tasks start when their dependencies finish](decisions/0088-dependent-tasks-start-when-their-dependencies-finish.md)
 
 ## Clients, runtime and lifecycle
 
