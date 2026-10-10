@@ -71,7 +71,7 @@
     "@scalar/hono-api-reference": "0.12.9",
     "@sentry/cloudflare": "10.76.0",
     "@tsndr/cloudflare-worker-jwt": "3.2.3",
-    "agents": "0.24.0",
+    "agents": "0.26.0",
     "aws4fetch": "1.0.20",
     "drizzle-orm": "0.45.3",
     "hono": "4.13.12",
