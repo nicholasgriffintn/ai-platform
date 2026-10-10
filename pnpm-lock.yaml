@@ -616,8 +616,8 @@ importers:
         specifier: 1.51.0
         version: 1.51.0(@types/react@19.3.0)(react@19.3.0)
       posthog-js:
-        specifier: 1.434.17
-        version: 1.434.17(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.435.8
+        version: 1.435.8(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -2577,8 +2577,8 @@ importers:
         specifier: 1.51.0
         version: 1.51.0(@types/react@19.3.0)(react@19.3.0)
       posthog-js:
-        specifier: 1.434.17
-        version: 1.434.17(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.435.8
+        version: 1.435.8(@types/react@19.3.0)(react@19.3.0)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
@@ -9423,8 +9423,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.434.17:
-    resolution: {integrity: sha512-R5Tb+YrDnZLVtMKXASXklXpfPwzwJ6YJKvcdL/UWV8OHigLm+ZveXtSsz3zwfidMpmSXHI0g2PJkeArO51qnAA==}
+  posthog-js@1.435.8:
+    resolution: {integrity: sha512-rUrv0kKhD72Wfu++pBlupvrpt1Z60uTAgNUChAH232a05bbRBzV0P4JqbuZEAaaUXumhuB3a8r+iFMzm/2l1Ow==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -16799,7 +16799,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  posthog-js@1.434.17(@types/react@19.3.0)(react@19.3.0):
+  posthog-js@1.435.8(@types/react@19.3.0)(react@19.3.0):
     dependencies:
       '@posthog/browser-common': 0.9.1
       '@posthog/core': 1.55.3
