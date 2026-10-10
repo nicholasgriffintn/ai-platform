@@ -41,7 +41,7 @@ import { approveLatestProjectTaskCompletion } from "./completions";
 import { getProjectTaskInteraction } from "./interactions";
 import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./plan-evidence";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
-import { queueProjectTaskRun } from "./runner";
+import { queueProjectTaskRun, releaseReadyDependentTasks } from "./runner";
 import { assertTaskSourcesAvailable } from "./source-context";
 import { assertProjectTaskTransition } from "./transitions";
 
@@ -503,6 +503,10 @@ export async function updateProjectTask(
 
   await reconcileTaskNotifications(context, updated);
 
+  if (input.status === "done" && task.status !== "done") {
+    await releaseReadyDependentTasks(context, projectId);
+  }
+
   return { task: updated };
 }
 
@@ -564,7 +568,11 @@ export async function startProjectTask(
       status: "blocked",
       blockedReason: "dependencies_unmet",
       blockedDetail:
-        `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(0, 500),
+        `Starts when these finish: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(
+          0,
+          500,
+        ),
+      runnerIdentityUserId: user.id,
     });
 
     if (blocked) {
@@ -572,7 +580,7 @@ export async function startProjectTask(
     }
 
     throw new AssistantError(
-      `This task depends on work that is not done yet: ${unmet
+      `This task will start when its dependencies are done: ${unmet
         .map((dependency) => dependency.objective)
         .join("; ")}`,
       ErrorType.CONFLICT_ERROR,
@@ -667,6 +675,10 @@ export async function acceptProjectTask(
   });
 
   await reconcileTaskNotifications(context, updated);
+
+  if (!nextStage) {
+    await releaseReadyDependentTasks(context, projectId);
+  }
 
   return { task: updated };
 }

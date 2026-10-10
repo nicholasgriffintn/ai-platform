@@ -819,6 +819,7 @@ describe("task dependencies", () => {
       expect.objectContaining({
         status: "blocked",
         blockedReason: "dependencies_unmet",
+        runnerIdentityUserId: 7,
       }),
     );
   });
