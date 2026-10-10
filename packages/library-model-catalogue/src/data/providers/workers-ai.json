@@ -901,6 +901,16 @@
         "costPer1kOutputTokens": 0,
         "supportsTemperature": false
       }
+    },
+    "@cf/cloudflare/clef-omni": {
+      "model": "workers-ai/@cf/cloudflare/clef-omni/clef-omni",
+      "matchingModel": "@cf/cloudflare/clef-omni",
+      "overrides": {
+        "lastUpdated": "October 9, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      }
     }
   }
 }

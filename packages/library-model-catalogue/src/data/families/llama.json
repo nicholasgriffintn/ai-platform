@@ -941,18 +941,6 @@
         "multimodal": true
       }
     },
-    "meta-llama-3-2-1b-instruct": {
-      "defaults": {
-        "name": "Meta: Llama 3.2 1B Instruct",
-        "openWeights": false,
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 60000,
-        "maxTokens": 54000,
-        "releaseDate": "September 25, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false
-      }
-    },
     "meta-llama-3-2-3b-instruct": {
       "defaults": {
         "name": "Meta: Llama 3.2 3B Instruct",
@@ -1065,9 +1053,22 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "April 5, 2025",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.3,
+          "codingIndex": 16.3,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "meta-llama-4-scout": {
@@ -1086,9 +1087,22 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "April 5, 2025",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 10,
+          "codingIndex": 8.2,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "meta-llama-guard-4-12b": {

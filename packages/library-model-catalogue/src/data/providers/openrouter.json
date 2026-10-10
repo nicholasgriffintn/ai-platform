@@ -439,7 +439,7 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "moonshotai/kimi-k2-thinking",
       "overrides": {
-        "maxTokens": 235929,
+        "maxTokens": 98304,
         "strengths": [
           "coding",
           "analysis",
@@ -815,7 +815,6 @@
           "vision",
           "image"
         ],
-        "contextComplexity": 3,
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2277,7 +2276,11 @@
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "openrouter/sherlock-dash-alpha": {
       "model": "openrouter/openrouter/sherlock-dash-alpha/sherlock-dash-alpha",
@@ -2395,6 +2398,7 @@
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 3,
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -2425,12 +2429,12 @@
       "model": "qwen/qwen3-235b-a22b-thinking-2507",
       "matchingModel": "qwen/qwen3-235b-a22b-thinking-2507",
       "overrides": {
-        "contextWindow": 131072,
-        "maxTokens": 117964,
+        "contextWindow": 128000,
+        "maxTokens": 16384,
         "knowledgeCutoffDate": "June 30, 2025",
         "lastUpdated": "July 25, 2025",
-        "costPer1kInputTokens": 0.00023,
-        "costPer1kOutputTokens": 0.0023,
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.0035,
         "supportsResponseFormat": false,
         "supportsAttachments": false
       }
@@ -2597,10 +2601,10 @@
       "matchingModel": "qwen/qwen3-next-80b-a3b-instruct",
       "overrides": {
         "name": "Qwen3 Next 80B A3B Instruct",
-        "maxTokens": 16384,
+        "maxTokens": 235929,
         "speed": 4,
         "lastUpdated": "September 2025",
-        "costPer1kInputTokens": 0.00009,
+        "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0011,
         "supportsAttachments": false
       }
@@ -2623,8 +2627,7 @@
       "overrides": {
         "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
+        "maxTokens": 235929,
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "September 2025",
@@ -2762,8 +2765,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "tngtech/deepseek-r1t2-chimera:free": {
@@ -2963,12 +2966,10 @@
       "overrides": {
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
-        "maxTokens": 16384,
-        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
-        "costPer1kInputTokens": 0.00043,
-        "costPer1kOutputTokens": 0.00175,
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.002,
         "supportsAttachments": false
       }
     },
@@ -2983,8 +2984,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "z-ai/glm-4.7": {
@@ -3110,8 +3111,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.00081,
-        "costPer1kOutputTokens": 0.013
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.015
       }
     },
     "~openai/gpt-latest": {
@@ -3754,15 +3755,15 @@
         "name": "DeepSeek V3",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 163840,
-        "maxTokens": 16000,
+        "maxTokens": 16384,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 3,
         "reliability": 1,
         "lastUpdated": "February 28, 2026",
-        "costPer1kInputTokens": 0.0002574,
-        "costPer1kOutputTokens": 0.0010287,
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.00089,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 10.4,
@@ -3816,7 +3817,7 @@
         "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0000173,
+        "costPer1kInputTokens": 0.0000078,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -3850,8 +3851,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000287274,
-        "costPer1kOutputTokens": 0.000574548,
+        "costPer1kInputTokens": 0.0009483,
+        "costPer1kOutputTokens": 0.0018966,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4020,13 +4021,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -4158,8 +4152,8 @@
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0000765,
-        "costPer1kOutputTokens": 0.000255,
+        "costPer1kInputTokens": 0.0000675,
+        "costPer1kOutputTokens": 0.000225,
         "artificialAnalysis": {
           "intelligenceIndex": 20.1,
           "codingIndex": null,
@@ -4506,8 +4500,8 @@
         "contextWindow": 131072,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00032,
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": false
       }
     },
@@ -4765,7 +4759,6 @@
       "model": "mistral-nemo/mistral-nemo",
       "matchingModel": "mistralai/mistral-nemo",
       "overrides": {
-        "contextWindow": 131072,
         "maxTokens": 16384,
         "releaseDate": "July 1, 2024",
         "lastUpdated": "July 1, 2024",
@@ -4855,7 +4848,7 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.0004344,
+        "costPer1kInputTokens": 0.000465,
         "costPer1kOutputTokens": 0.00245
       }
     },
@@ -4951,10 +4944,6 @@
       "model": "nemotron/nemotron-3-nano-30b-a3b",
       "matchingModel": "nvidia/nemotron-3-nano-30b-a3b",
       "overrides": {
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
@@ -4979,11 +4968,6 @@
       "overrides": {
         "name": "Nemotron 3 Super",
         "maxTokens": 235929,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
         "speed": 4,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "March 11, 2026",
@@ -4996,12 +4980,6 @@
             "medium"
           ],
           "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 25.4,
-          "codingIndex": 37.7,
-          "agenticIndex": 8.7,
-          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -5845,37 +5823,14 @@
       "matchingModel": "qwen/qwen3-14b",
       "overrides": {
         "openWeights": true,
-        "contextWindow": 131072,
-        "maxTokens": 16384,
+        "maxTokens": 36864,
         "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",
-        "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.00024,
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00022,
         "supportsAttachments": false
-      }
-    },
-    "qwen/qwen3-235b-a22b": {
-      "model": "qwen/qwen3-235b-a22b",
-      "matchingModel": "qwen/qwen3-235b-a22b",
-      "overrides": {
-        "name": "Qwen3 235B A22B",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "speed": 3,
-        "lastUpdated": "April 2025",
-        "costPer1kInputTokens": 0.000455,
-        "costPer1kOutputTokens": 0.00182,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
       }
     },
     "qwen/qwen3-30b-a3b": {
@@ -5883,7 +5838,6 @@
       "matchingModel": "qwen/qwen3-30b-a3b",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 131072,
         "speed": 4,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "April 28, 2025",
@@ -5985,8 +5939,10 @@
       "model": "qwen/qwen3-vl-30b-a3b-instruct",
       "matchingModel": "qwen/qwen3-vl-30b-a3b-instruct",
       "overrides": {
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 16384,
         "speed": 4,
-        "lastUpdated": "October 6, 2025",
+        "lastUpdated": "October 4, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
@@ -5996,8 +5952,8 @@
       "matchingModel": "qwen/qwen3-vl-30b-a3b-thinking",
       "overrides": {
         "lastUpdated": "October 6, 2025",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0024
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.001
       }
     },
     "qwen/qwen3-vl-32b-instruct": {
@@ -6016,8 +5972,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 14, 2025",
-        "costPer1kInputTokens": 0.000117,
-        "costPer1kOutputTokens": 0.000455
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00075
       }
     },
     "qwen/qwen3-vl-8b-thinking": {
@@ -6089,7 +6045,7 @@
       "matchingModel": "qwen/qwen3.5-35b-a3b",
       "overrides": {
         "name": "Qwen3.5-35B-A3B",
-        "maxTokens": 235929,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -6108,8 +6064,8 @@
         ],
         "speed": 4,
         "lastUpdated": "February 23, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.00075
       }
     },
     "qwen/qwen3.5-397b-a17b": {
@@ -6209,6 +6165,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -6227,8 +6184,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.002
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.0032
       }
     },
     "qwen/qwen3.6-35b-a3b": {
@@ -6284,12 +6241,6 @@
       "model": "qwen/qwen3-6-plus",
       "matchingModel": "qwen/qwen3.6-plus",
       "overrides": {
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.000325,
@@ -7057,8 +7008,8 @@
         "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.000069,
-        "costPer1kOutputTokens": 0.0043,
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.007,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7281,8 +7232,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.0000825,
-        "costPer1kOutputTokens": 0.00033,
+        "costPer1kInputTokens": 0.000132,
+        "costPer1kOutputTokens": 0.000528,
         "supportsAttachments": false
       }
     },
@@ -7468,7 +7419,7 @@
         "maxTokens": 943718,
         "isFeatured": false,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.00082,
+        "costPer1kInputTokens": 0.00064,
         "costPer1kOutputTokens": 0.0135
       }
     },
@@ -7666,8 +7617,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.00001096,
-        "costPer1kOutputTokens": 0.000532795,
+        "costPer1kInputTokens": 0.0000047,
+        "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false
       }
     },
@@ -7803,8 +7754,8 @@
       "overrides": {
         "maxTokens": 131072,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.000049,
-        "costPer1kOutputTokens": 0.00014,
+        "costPer1kInputTokens": 0.0000469,
+        "costPer1kOutputTokens": 0.000134,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7961,7 +7912,7 @@
         "maxTokens": 943718,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.000039,
-        "costPer1kOutputTokens": 0.00339,
+        "costPer1kOutputTokens": 0.0048,
         "supportsAttachments": false
       }
     },
@@ -7970,11 +7921,11 @@
       "matchingModel": "~z-ai/glm-latest",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "lastUpdated": "August 19, 2026",
-        "costPer1kInputTokens": 0.0000312,
-        "costPer1kOutputTokens": 0.0044,
+        "costPer1kInputTokens": 0.000039,
+        "costPer1kOutputTokens": 0.0048,
         "supportsAttachments": false
       }
     },
@@ -8183,8 +8134,8 @@
       "overrides": {
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "lastUpdated": "August 28, 2026",
-        "costPer1kInputTokens": 0.0007506,
-        "costPer1kOutputTokens": 0.0022509,
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -8233,8 +8184,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.000032,
-        "costPer1kOutputTokens": 0.002798391
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8280,6 +8231,7 @@
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.000042,
         "costPer1kOutputTokens": 0.0001232,
+        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },
@@ -8613,8 +8565,8 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000012,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kInputTokens": 0.0000101,
+        "costPer1kOutputTokens": 0.0006
       }
     },
     "~deepseek/deepseek-pro-latest": {
@@ -8622,11 +8574,11 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 393216,
+        "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000108,
-        "costPer1kOutputTokens": 0.008,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.005,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -9175,6 +9127,26 @@
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0027
+      }
+    },
+    "qwen/qwen3-235b-a22b-2507": {
+      "model": "qwen/qwen3-235b-a22b-instruct-2507",
+      "matchingModel": "qwen/qwen3-235b-a22b-2507",
+      "overrides": {
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "maxTokens": 16384,
+        "speed": 3,
+        "knowledgeCutoffDate": "June 30, 2025",
+        "lastUpdated": "July 21, 2025",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00055,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     }
   }

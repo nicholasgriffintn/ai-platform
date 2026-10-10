@@ -32,6 +32,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.0035,
@@ -97,6 +98,8 @@
             "text"
           ]
         },
+        "contextComplexity": 5,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -115,6 +118,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -185,6 +193,7 @@
       "overrides": {
         "name": "Nemotron-3-Super-120B-A12B",
         "maxTokens": 32768,
+        "speed": 4,
         "knowledgeCutoffDate": "February 2026",
         "lastUpdated": "March 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -204,6 +213,8 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "contextComplexity": 5,
+        "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003,
@@ -223,6 +234,7 @@
         "name": "gpt-oss-120b",
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 8192,
+        "speed": 5,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "January 10, 2026",
         "lastUpdated": "February 4, 2026",
@@ -238,6 +250,7 @@
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 8192,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "October 4, 2025",
@@ -286,6 +299,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 15, 2025",
         "lastUpdated": "May 7, 2026",
@@ -335,6 +353,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,

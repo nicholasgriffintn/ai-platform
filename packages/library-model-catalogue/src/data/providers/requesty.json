@@ -1231,6 +1231,7 @@
       "matchingModel": "claude-sonnet-4-6",
       "overrides": {
         "maxTokens": 64000,
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -1879,13 +1880,6 @@
       "matchingModel": "gemini-3.1-flash-lite",
       "overrides": {
         "maxTokens": 65535,
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -2739,10 +2733,6 @@
       "model": "mimo/mimo-v2-5-pro",
       "matchingModel": "mimo-v2.5-pro",
       "overrides": {
-        "strengths": [
-          "tool_use",
-          "coding"
-        ],
         "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
@@ -3034,7 +3024,13 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "nemotron-3-ultra-550b-a55b": {
       "model": "nemotron/nemotron-3-ultra-550b-a55b",
@@ -3269,12 +3265,6 @@
       "model": "qwen/qwen3-6-plus",
       "matchingModel": "qwen3.6-plus",
       "overrides": {
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -4176,6 +4166,7 @@
       "model": "kimi-k2/kimi-k2-5-eu",
       "matchingModel": "kimi-k2.5@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.0036,

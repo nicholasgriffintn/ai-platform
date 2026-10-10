@@ -535,7 +535,6 @@
       "overrides": {
         "name": "GLM-4.6",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0005,
@@ -558,6 +557,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "September 30, 2025",
         "lastUpdated": "September 30, 2025",
@@ -565,8 +569,8 @@
         "costPer1kOutputTokens": 0.0009
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "zai-org/GLM-5.2": {
@@ -613,18 +617,6 @@
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00028,
-        "supportsAttachments": false
-      }
-    },
-    "Qwen/Qwen3-Max": {
-      "model": "qwen/qwen3-max",
-      "matchingModel": "Qwen/Qwen3-Max",
-      "overrides": {
-        "contextWindow": 256000,
-        "speed": 3,
-        "lastUpdated": "September 23, 2025",
-        "costPer1kInputTokens": 0.0012,
-        "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false
       }
     },
@@ -693,6 +685,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -834,16 +827,12 @@
       "overrides": {
         "name": "Qwen3 235B-A22B Instruct 2507",
         "maxTokens": 16384,
-        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00055,
         "supportsAttachments": false
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "ByteDance/Seed-2.0-code": {
       "model": "seed/seed-2-0-code",
@@ -1153,6 +1142,17 @@
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501,
         "supportsAttachments": false
+      }
+    },
+    "Qwen/Qwen3-VL-30B-A3B-Instruct": {
+      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "matchingModel": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+      "overrides": {
+        "maxTokens": 32768,
+        "speed": 4,
+        "lastUpdated": "October 4, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
       }
     }
   }

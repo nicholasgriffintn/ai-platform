@@ -12,9 +12,6 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 4,
         "speed": 5,
         "releaseDate": "August 28, 2025",
@@ -203,6 +200,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00012,
@@ -235,6 +237,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "isFeatured": true,
         "releaseDate": "June 1, 2026",

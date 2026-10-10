@@ -30,6 +30,10 @@
         "description": "Sonar search model for current answers, retrieval, and citation-backed chat",
         "contextWindow": 127072,
         "maxTokens": 114364,
+        "strengths": [
+          "vision",
+          "document"
+        ],
         "releaseDate": "January 27, 2025",
         "supportsResponseFormat": false
       }

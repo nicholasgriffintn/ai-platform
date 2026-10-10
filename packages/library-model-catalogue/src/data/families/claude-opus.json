@@ -1089,6 +1089,12 @@
       "defaults": {
         "name": "Stealth: Claude Opus 4.6 (20% off)",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1101,6 +1107,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -1108,6 +1120,13 @@
       "defaults": {
         "name": "Stealth: Claude Opus 4.7 (20% off)",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1120,6 +1139,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.5,
+          "codingIndex": 73.6,
+          "agenticIndex": 44.4,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -1127,6 +1152,13 @@
       "defaults": {
         "name": "Stealth: Claude Opus 4.8 (20% off)",
         "description": "Your prompts and completions may be retained and used to train or improve the provider's services. This third-party-served variant of Claude Opus 4.8 is offered at 20% lower cost than standard Claude Opus 4.8 pricing and is not served by Anthropic or Kilo Code.",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1139,6 +1171,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.7,
+          "codingIndex": 74.3,
+          "agenticIndex": 47.2,
+          "intelligenceIndexVersion": 4.1
         }
       }
     }

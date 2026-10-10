@@ -683,7 +683,11 @@
         }
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "nova-pro-v1": {
@@ -733,6 +737,7 @@
         "maxTokens": 262000,
         "contextComplexity": 4,
         "speed": 3,
+        "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000199,
         "costPer1kOutputTokens": 0.000598,
@@ -768,8 +773,8 @@
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "April 2025",
-        "costPer1kInputTokens": 0.000067,
-        "costPer1kOutputTokens": 0.000245,
+        "costPer1kInputTokens": 0.000179,
+        "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -910,6 +915,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000446,
@@ -1217,8 +1227,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "knowledgeCutoffDate"
       ]
     },
@@ -1396,7 +1406,11 @@
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "ministral-8b-2512": {
       "model": "cortecs/ministral-8b-2512/ministral-8b-2512",
