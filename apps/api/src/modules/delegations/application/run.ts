@@ -12,7 +12,10 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
+import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import { revalidateDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
+import { buildDelegationResumeInstruction } from "~/modules/delegations/application/resume";
+import { delegationRunCommandId } from "~/modules/delegations/application/run-identity";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
@@ -237,11 +240,18 @@ export async function runDelegationTask(
       };
     }
 
-    const commandId = `delegation_run_${delegation.id}`;
+    const commandId = delegationRunCommandId(delegation.id, payload.resume?.attempt);
     const body = createChatCompletionsJsonSchema.parse({
       completion_id: delegation.childConversationId,
       command_id: commandId,
-      messages: [{ role: "user", content: delegation.goal }],
+      messages: [
+        {
+          role: "user",
+          content: payload.resume
+            ? buildDelegationResumeInstruction(delegation.goal, payload.resume)
+            : delegation.goal,
+        },
+      ],
       stream: false,
       store: true,
       enabled_tools: enabledTools,
@@ -268,10 +278,10 @@ export async function runDelegationTask(
       signal: AbortSignal.timeout(
         Math.min(2_147_483_647, Math.max(1, Date.parse(delegation.budget.deadline) - Date.now())),
       ),
-      maxStepsOverride: delegation.budget.maxSteps,
+      maxStepsOverride: payload.resume?.maxSteps ?? delegation.budget.maxSteps,
       durableExecution: {
         kind: "delegation",
-        maxCreditMicros: delegation.budget.maxCreditMicros,
+        maxCreditMicros: payload.resume?.maxCreditMicros ?? delegation.budget.maxCreditMicros,
       },
       invocation: { source: "delegation", delegationId: delegation.id },
     });
@@ -302,6 +312,10 @@ export async function runDelegationTask(
     };
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Delegate run failed.";
+
+    if (isThreadLeaseOwnershipLostError(error)) {
+      return { status: "error", detail: summary };
+    }
 
     await transitionDelegation(
       context,

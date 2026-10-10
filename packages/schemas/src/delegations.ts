@@ -160,10 +160,21 @@ export const DELEGATION_RUN_EVENT_TYPES = [
 export const delegationRunEventTypeSchema = z.enum(DELEGATION_RUN_EVENT_TYPES);
 export type DelegationRunEventType = z.infer<typeof delegationRunEventTypeSchema>;
 
+export const MAX_DELEGATION_RUN_RESUMES = 2;
+
+export const delegationRunResumeSchema = z.object({
+  attempt: z.number().int().min(1).max(MAX_DELEGATION_RUN_RESUMES),
+  unknownOutcomes: z.array(z.string().min(1)).max(32),
+  maxSteps: z.number().int().positive(),
+  maxCreditMicros: z.number().int().positive(),
+});
+export type DelegationRunResume = z.infer<typeof delegationRunResumeSchema>;
+
 export const delegationRunTaskDataSchema = z.object({
   delegationId: z.string().min(1),
   projectId: z.string().min(1).nullable(),
   enabledTools: z.array(z.string()),
+  resume: delegationRunResumeSchema.optional(),
 });
 export type DelegationRunTaskData = z.infer<typeof delegationRunTaskDataSchema>;
 

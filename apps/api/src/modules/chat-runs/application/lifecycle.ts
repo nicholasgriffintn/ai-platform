@@ -9,7 +9,6 @@ import type {
   ChatRunStatus,
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
@@ -29,7 +28,6 @@ import {
   publishRunChanged,
 } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
-import { TaskService } from "~/modules/tasks/application/TaskService";
 import {
   reconcileTeammateRun,
   teammateRunNeedsReconciliation,
@@ -41,6 +39,7 @@ import { buildChatRunCommandPayload } from "./command-payload";
 import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
+import { settleTeammateRun } from "./teammate-settlement";
 
 const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
 
@@ -227,39 +226,7 @@ export class ChatRunLifecycle {
       });
     }
 
-    if (!teammateRunNeedsReconciliation(this.run)) {
-      return;
-    }
-
-    try {
-      await reconcileTeammateRun(this.serviceContext, this.run, result);
-    } catch (error) {
-      logger.warn("Immediate teammate run reconciliation failed", {
-        runId: this.run.id,
-        attempt: this.run.attempt,
-        error: getErrorMessage(error),
-      });
-    }
-
-    try {
-      await new TaskService(
-        this.serviceContext.env,
-        this.serviceContext.repositories.tasks,
-      ).enqueueTask({
-        id: `teammate_run_reconciliation_${this.run.id}_${this.run.attempt}`,
-        task_type: TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
-        user_id: this.run.initiatorUserId,
-        ...(this.run.projectId ? { project_id: this.run.projectId } : {}),
-        priority: 4,
-        task_data: { runId: this.run.id, attempt: this.run.attempt },
-      });
-    } catch (error) {
-      logger.warn("Teammate run reconciliation remains pending", {
-        runId: this.run.id,
-        attempt: this.run.attempt,
-        error: getErrorMessage(error),
-      });
-    }
+    await settleTeammateRun(this.serviceContext, this.run, result);
   }
 
   async isCancellationRequested(): Promise<boolean> {

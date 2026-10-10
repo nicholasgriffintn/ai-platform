@@ -201,6 +201,17 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
+  async countInterruptedForConversation(conversationId: string): Promise<number> {
+    const row = await this.runQuery<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM conversation_run
+       WHERE conversation_id = ? AND status = 'interrupted'`,
+      [conversationId],
+      true,
+    );
+
+    return row?.count ?? 0;
+  }
+
   async getLatestForConversation(conversationId: string): Promise<ChatRun | null> {
     const row = await this.runQuery<ConversationRunRow>(
       `SELECT * FROM conversation_run
