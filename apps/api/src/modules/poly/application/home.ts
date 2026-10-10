@@ -7,6 +7,8 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ensureActiveTeammateContext } from "~/modules/teammates/application/contexts";
 
+const OWNER_SEEN_RESOLUTION_MS = 60 * 60 * 1000;
+
 export function requirePolyContext(context: ServiceContext): Promise<TeammateContext> {
   const user = context.requireUser();
 
@@ -28,6 +30,22 @@ export function toPolyHome(polyContext: TeammateContext, now = Date.now()): Poly
   };
 }
 
+export async function markPolyOwnerSeen(
+  context: ServiceContext,
+  polyContext: TeammateContext,
+  now = Date.now(),
+): Promise<void> {
+  await context.repositories.teammateContexts.markOwnerSeen(
+    polyContext.id,
+    new Date(now).toISOString(),
+    new Date(now - OWNER_SEEN_RESOLUTION_MS).toISOString(),
+  );
+}
+
 export async function openPolyHome(context: ServiceContext): Promise<PolyHome> {
-  return toPolyHome(await requirePolyContext(context));
+  const polyContext = await requirePolyContext(context);
+
+  await markPolyOwnerSeen(context, polyContext);
+
+  return toPolyHome(polyContext);
 }

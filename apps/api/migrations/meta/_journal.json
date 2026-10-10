@@ -57,6 +57,13 @@
       "when": 1791566622535,
       "tag": "0007_task_recovery_count",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791648425892,
+      "tag": "0008_teammate_earned_trust",
+      "breakpoints": true
     }
   ]
 }

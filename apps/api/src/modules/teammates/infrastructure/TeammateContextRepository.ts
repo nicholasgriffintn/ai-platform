@@ -1,6 +1,8 @@
 import {
+  parseTeammateApprovalStreaks,
   parseTeammateStandingApprovals,
   teammateConnectionGrantSchema,
+  type TeammateApprovalStreak,
   type TeammateAutonomyLevel,
   type TeammateConnectionGrant,
   type TeammateContext,
@@ -28,6 +30,8 @@ function formatContext(row: TeammateContextRow): TeammateContext {
     status: row.status,
     autonomyLevel: row.autonomy_level ?? null,
     standingApprovals: parseTeammateStandingApprovals(row.standing_approvals),
+    approvalStreaks: parseTeammateApprovalStreaks(row.approval_streaks),
+    ownerSeenAt: row.owner_seen_at ?? row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -97,8 +101,8 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
       this.env.DB.prepare(
         `INSERT INTO teammate_context (
            id, teammate_id, actor_user_id, scope_type, scope_id, home_conversation_id,
-           memory_document_id, autonomy_level
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+           memory_document_id, autonomy_level, owner_seen_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         params.id,
         params.teammateId,
@@ -108,6 +112,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
         params.homeConversationId,
         params.memoryDocumentId,
         params.autonomyLevel,
+        new Date().toISOString(),
       ),
     ];
 
@@ -232,6 +237,24 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     );
 
     return this.getById(id);
+  }
+
+  async updateApprovalStreaks(
+    id: string,
+    streaks: readonly TeammateApprovalStreak[],
+  ): Promise<void> {
+    await this.executeRun("UPDATE teammate_context SET approval_streaks = ? WHERE id = ?", [
+      JSON.stringify(streaks),
+      id,
+    ]);
+  }
+
+  async markOwnerSeen(id: string, seenAt: string, staleBefore: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE teammate_context SET owner_seen_at = ?
+       WHERE id = ? AND (owner_seen_at IS NULL OR owner_seen_at < ?)`,
+      [seenAt, id, staleBefore],
+    );
   }
 
   async updateStatus(

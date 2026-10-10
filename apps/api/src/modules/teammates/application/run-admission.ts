@@ -21,6 +21,7 @@ import { readToolInteractionId } from "~/modules/chat-runs/application/interacti
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
+import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { CoreChatOptions, IEnv, IUser } from "~/types";
 
@@ -29,7 +30,7 @@ import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
 import { resolveTeammateMcpServers } from "./mcp-servers";
-import { requirePolyHomeRun } from "./poly-home";
+import { admitTeammateContextAuthority, requirePolyHomeRun } from "./poly-home";
 import { prepareTeammateRunResume } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -278,11 +279,11 @@ export async function enqueueTeammateRun({
       ...(trigger ? { trigger } : {}),
       ...(durableExecution ? { durable_execution: durableExecution } : {}),
       ...(preparedInvocation?.resolution.context
-        ? {
-            teammate_context_id: preparedInvocation.resolution.context.id,
-            autonomy_level: preparedInvocation.resolution.context.autonomyLevel,
-            standing_approvals: preparedInvocation.resolution.context.standingApprovals,
-          }
+        ? admitTeammateContextAuthority({
+            context: preparedInvocation.resolution.context,
+            trigger,
+            now: Date.now(),
+          })
         : {}),
       ...(teammateComputer ? { computer_id: teammateComputer.id } : {}),
       ...(resolvedInvocation?.source === "delegation"
@@ -350,6 +351,16 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     input.body.completion_id,
     interactionId,
   );
+
+  if (isPolyTeammateId(input.teammateId)) {
+    await recordPolyApprovalOutcome({
+      context: serviceContext,
+      conversationId: input.body.completion_id,
+      interactionId,
+      options: input.body.options,
+    });
+  }
+
   const resume = await prepareTeammateRunResume({
     context: serviceContext,
     run,
