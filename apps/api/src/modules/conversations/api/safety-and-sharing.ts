@@ -121,9 +121,10 @@ export function registerConversationSafetyAndSharingRoutes(app: Hono): void {
     paramSchema: shareConversationParamsSchema,
     responses: {
       200: {
-        description: "Share ID for accessing the conversation",
+        description: "Share ID and the time the shared view stops at",
         schema: z.object({
           share_id: z.string(),
+          shared_through: z.number().int(),
         }),
       },
       400: {
@@ -194,6 +195,7 @@ export function registerConversationSafetyAndSharingRoutes(app: Hono): void {
         schema: z.object({
           messages: z.array(messageSchema),
           share_id: z.string(),
+          shared_through: z.number().int().nullable(),
         }),
       },
       400: {
@@ -217,6 +219,10 @@ export function registerConversationSafetyAndSharingRoutes(app: Hono): void {
         const serviceContext = getServiceContext(context);
 
         const result = await handleGetSharedConversation(serviceContext, share_id, limit, after);
+
+        context.header("Cache-Control", "no-store");
+        context.header("Referrer-Policy", "no-referrer");
+        context.header("X-Robots-Tag", "noindex, nofollow");
 
         return ResponseFactory.success(context, result);
       })(raw),

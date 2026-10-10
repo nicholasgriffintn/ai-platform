@@ -1,10 +1,11 @@
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import type { ConversationShare } from "~/modules/conversations/application/sharing";
 
 export async function handleShareConversation(
   context: ServiceContext,
   completion_id: string,
-): Promise<{ share_id: string }> {
+): Promise<ConversationShare> {
   const user = context.requireUser();
 
   context.ensureDatabase();
@@ -14,9 +15,5 @@ export async function handleShareConversation(
     user,
   });
 
-  const result = await conversationManager.shareConversation(completion_id);
-
-  return {
-    share_id: result.share_id,
-  };
+  return conversationManager.shareConversation(completion_id);
 }

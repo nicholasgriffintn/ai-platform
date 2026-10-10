@@ -435,6 +435,7 @@ export class ConversationRepository extends BaseRepository {
       "message_count",
       "is_public",
       "share_id",
+      "shared_through",
       "model_id",
       "model_tier",
       "permission_mode",

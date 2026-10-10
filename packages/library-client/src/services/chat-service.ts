@@ -68,6 +68,7 @@ import { parseCompactConversationResponse } from "../compact-conversation-respon
 import { normaliseConversationResponse } from "../conversation-response.js";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper.js";
 import { ApiError, createApiErrorFromResponse, returnFetchedData } from "../http.js";
+import type { ConversationShare } from "../shared-conversation.js";
 import { getSandboxTaskToolNames } from "../task-tools.js";
 import { yieldToMainThread } from "../yield-to-main-thread.js";
 
@@ -582,7 +583,7 @@ export class ChatService {
     }
   }
 
-  async shareConversation(completion_id: string): Promise<{ share_id: string }> {
+  async shareConversation(completion_id: string): Promise<ConversationShare> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -604,7 +605,7 @@ export class ChatService {
       throw new Error(`Failed to share conversation: ${response.statusText}`);
     }
 
-    return await returnFetchedData<{ share_id: string }>(response);
+    return await returnFetchedData<ConversationShare>(response);
   }
 
   async cancelChatCompletion(completion_id: string): Promise<void> {
