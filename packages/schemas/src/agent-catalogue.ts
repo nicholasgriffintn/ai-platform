@@ -63,6 +63,15 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
     runsOn: "server",
     permissionModes: ["supervised", "auto_accept_edits", "full_access"],
   },
+  {
+    driver: "hermes",
+    name: "Hermes",
+    description:
+      "Nous Research's agent with its own memory and skills, hosted for you by Polychat.",
+    workspace: { kind: "none" },
+    runsOn: "server",
+    permissionModes: ["auto"],
+  },
 ];
 
 export const agentModelConfig: ModelConfig = Object.fromEntries(
@@ -76,7 +85,7 @@ export const agentModelConfig: ModelConfig = Object.fromEntries(
       provider: driver,
       modalities: { input: ["text"], output: ["text"] },
       runsOn,
-      isFree: driver !== "polychat-sandbox",
+      isFree: driver !== "polychat-sandbox" && driver !== "hermes",
       agent: {
         capabilities: getProviderCapabilities(driver),
         workspace,

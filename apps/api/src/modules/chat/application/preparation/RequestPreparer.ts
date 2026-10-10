@@ -397,6 +397,7 @@ export class RequestPreparer {
       permissionMode = resolveEffectivePermissionMode(
         scope.options.permission_mode,
         await this.resolveStoredPermissionMode(scope),
+        primaryModelConfig.agent.permissionModes,
       );
 
       const unavailableReason = getPermissionModeUnavailableReason(

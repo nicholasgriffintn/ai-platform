@@ -1,4 +1,5 @@
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
+import { isRecord, isStringArray } from "@ngriffin_uk/polychat-utility-core";
 
 export const TOOLS_ORIGIN = "https://tools.polychat.invalid";
 
@@ -141,4 +142,42 @@ export function decideContainerEgress(
   return hostMatchesPatterns(url.hostname, policy.readOnlyHosts)
     ? { kind: "block", reason: `${method} requests to ${url.hostname} are not allowed` }
     : { kind: "block", reason: `Network access to ${url.hostname} is not allowed` };
+}
+
+export function parseContainerEgressPolicy(value: unknown): ContainerEgressPolicy | null {
+  if (
+    !isRecord(value) ||
+    (value.mode !== "all" && value.mode !== "list") ||
+    !isStringArray(value.hosts) ||
+    !isStringArray(value.readOnlyHosts)
+  ) {
+    return null;
+  }
+
+  return { mode: value.mode, hosts: value.hosts, readOnlyHosts: value.readOnlyHosts };
+}
+
+export function containerEgressBlockedResponse(reason: string, remedy: string): Response {
+  return new Response(`Polychat blocked this request: ${reason}. ${remedy}\n`, {
+    status: 403,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
+export function resolveBackupStorageHost(env: {
+  BACKUP_BUCKET_ENDPOINT?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  CLOUDFLARE_R2_ACCOUNT_ID?: string;
+}): string | undefined {
+  if (env.BACKUP_BUCKET_ENDPOINT) {
+    try {
+      return new URL(env.BACKUP_BUCKET_ENDPOINT).hostname;
+    } catch {
+      return undefined;
+    }
+  }
+
+  const accountId = env.CLOUDFLARE_R2_ACCOUNT_ID ?? env.CLOUDFLARE_ACCOUNT_ID;
+
+  return accountId ? `${accountId}.r2.cloudflarestorage.com` : undefined;
 }
