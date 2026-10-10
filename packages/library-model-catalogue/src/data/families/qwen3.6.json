@@ -89,6 +89,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "August 26, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -99,6 +106,12 @@
             "xhigh"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.6,
+          "codingIndex": 54.5,
+          "agenticIndex": 27.6,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

@@ -21,7 +21,7 @@
         "none",
         "low",
         "medium",
-        "high"
+        "xhigh"
       ],
       "defaultEffort": "none"
     }

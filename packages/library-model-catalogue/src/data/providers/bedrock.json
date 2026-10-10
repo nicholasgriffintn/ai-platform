@@ -162,7 +162,11 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "openai.gpt-oss-safeguard-20b": {
       "model": "gpt-oss/gpt-oss-safeguard-20b",
@@ -179,7 +183,11 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "minimax.minimax-m2": {
       "model": "minimax/minimax-m2",

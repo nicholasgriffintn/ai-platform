@@ -248,7 +248,11 @@
         "costPer1kInputTokens": 0.000399,
         "costPer1kOutputTokens": 0.001083,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "green-r-raw": {
       "model": "gpt-oss/green-r-raw",
@@ -258,7 +262,11 @@
         "costPer1kInputTokens": 0.000399,
         "costPer1kOutputTokens": 0.001083,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "green-s-pro": {
       "model": "greenpt/green-s-pro/green-s-pro",
@@ -461,8 +469,8 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "contextComplexity": 3,
         "speed": 3,
+        "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
         "costPer1kOutputTokens": 0.003078

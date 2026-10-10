@@ -270,7 +270,6 @@
       "matchingModel": "Qwen/Qwen3-Next-80B-A3B-Thinking",
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Thinking",
-        "contextWindow": 262144,
         "maxTokens": 131072,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "September 11, 2025",
@@ -640,9 +639,10 @@
       "model": "qwen/qwen3-235b-a22b",
       "matchingModel": "Qwen/Qwen3-235B-A22B",
       "overrides": {
+        "openWeights": true,
         "contextWindow": 40960,
-        "maxTokens": 16384,
         "speed": 3,
+        "releaseDate": "April 2025",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008,
@@ -769,6 +769,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.00017,
         "costPer1kOutputTokens": 0.00025,
@@ -836,7 +841,6 @@
         "name": "GLM-4.6",
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.00055,
@@ -871,6 +875,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -880,6 +885,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00047,
@@ -905,10 +915,6 @@
       "model": "mimo/mimo-v2-5-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.5-Pro",
       "overrides": {
-        "strengths": [
-          "tool_use",
-          "coding"
-        ],
         "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.001,
@@ -1097,15 +1103,11 @@
         "name": "Qwen3 235B-A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000855,
         "costPer1kOutputTokens": 0.002565
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "meta-llama/Llama-3.1-8B-Instruct": {
       "model": "llama/llama-3-1-8b-instruct",
@@ -1347,6 +1349,40 @@
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501
+      }
+    },
+    "MiniMaxAI/MiniMax-M1-80k": {
+      "model": "minimax/minimax-m1-80k",
+      "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
+      "overrides": {
+        "lastUpdated": "June 17, 2025",
+        "costPer1kInputTokens": 0.00055,
+        "costPer1kOutputTokens": 0.0022
+      }
+    },
+    "Qwen/Qwen3-VL-30B-A3B-Instruct": {
+      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "matchingModel": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+      "overrides": {
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "speed": 4,
+        "lastUpdated": "October 4, 2025",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0007,
+        "supportsAttachments": true
+      }
+    },
+    "zai-org/AutoGLM-Phone-9B-Multilingual": {
+      "model": "glm/autoglm-phone-9b-multilingual",
+      "matchingModel": "zai-org/AutoGLM-Phone-9B-Multilingual",
+      "overrides": {
+        "lastUpdated": "December 10, 2025",
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.000138,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     }
   }

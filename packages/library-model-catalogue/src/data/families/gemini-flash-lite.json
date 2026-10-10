@@ -168,6 +168,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "artificialAnalysis": {

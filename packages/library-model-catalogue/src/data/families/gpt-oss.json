@@ -10,6 +10,10 @@
         "text"
       ]
     },
+    "strengths": [
+      "tool_use"
+    ],
+    "reliability": 1,
     "releaseDate": "August 5, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -30,11 +34,7 @@
       "defaults": {
         "name": "GPT OSS 120B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 4,
-        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 23.8,
           "codingIndex": 30.4,
@@ -48,11 +48,7 @@
         "name": "gpt-oss-120b (free)",
         "description": "gpt-oss-120b (free) accepts text and produces text.",
         "maxTokens": 131072,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -76,11 +72,7 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
-        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 23.8,
           "codingIndex": 30.4,
@@ -108,11 +100,7 @@
       "defaults": {
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
-        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 14.9,
           "codingIndex": 20.7,
@@ -126,11 +114,7 @@
         "name": "gpt-oss-20b (free)",
         "description": "gpt-oss-20b (free) accepts text and produces text.",
         "maxTokens": 32768,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
-        "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -153,11 +137,7 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
-        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 14.9,
           "codingIndex": 20.7,
@@ -236,6 +216,7 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128072,
         "maxTokens": 128072,
+        "contextComplexity": 4,
         "knowledgeCutoffDate": "August 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -248,6 +229,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.8,
+          "codingIndex": 30.4,
+          "agenticIndex": 13.2,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

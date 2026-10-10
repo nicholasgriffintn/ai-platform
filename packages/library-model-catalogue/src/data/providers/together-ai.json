@@ -227,8 +227,8 @@
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -248,8 +248,8 @@
         "costPer1kOutputTokens": 0.002
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -475,6 +475,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "March 3, 2026",
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00017,

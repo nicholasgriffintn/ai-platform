@@ -314,9 +314,10 @@
       "model": "qwen/qwen3-235b-a22b",
       "matchingModel": "qwen3-235b-a22b",
       "overrides": {
+        "openWeights": true,
         "contextWindow": 131072,
-        "maxTokens": 16384,
         "speed": 3,
+        "releaseDate": "April 2025",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0028,
@@ -647,6 +648,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen3.6-27b",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

@@ -1533,6 +1533,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
         "releaseDate": "March 31, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -1542,6 +1549,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 37,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

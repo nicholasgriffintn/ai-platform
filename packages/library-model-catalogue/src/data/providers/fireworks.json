@@ -17,7 +17,6 @@
           "multilingual",
           "tool_use"
         ],
-        "contextComplexity": 3,
         "speed": 5,
         "releaseDate": "August 5, 2025",
         "lastUpdated": "August 5, 2025",
@@ -70,7 +69,6 @@
       "overrides": {
         "description": "Large-scale Qwen3 model with 235B parameters, offering strong reasoning and language understanding.",
         "contextWindow": 128000,
-        "maxTokens": 16384,
         "strengths": [
           "reasoning",
           "analysis",
@@ -83,10 +81,7 @@
         "lastUpdated": "April 29, 2025",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "deepseek/deepseek-v3-0324": {
       "model": "deepseek/deepseek-v3-03-24",
@@ -166,8 +161,8 @@
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -182,8 +177,8 @@
         "costPer1kOutputTokens": 0.00088
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/glm-4p6": {
@@ -199,8 +194,8 @@
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -217,8 +212,8 @@
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -353,8 +348,8 @@
         "costPer1kOutputTokens": 0.0032
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },

@@ -426,7 +426,6 @@
       "overrides": {
         "name": "Qwen3-14B",
         "openWeights": false,
-        "contextWindow": 40960,
         "maxTokens": 16384,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
@@ -443,8 +442,8 @@
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "contextComplexity": 3,
         "speed": 3,
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.00022,
@@ -562,7 +561,6 @@
       "matchingModel": "alibaba/qwen3-embedding-8b",
       "overrides": {
         "name": "Qwen3 Embedding 8B",
-        "openWeights": false,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -635,7 +633,6 @@
       "overrides": {
         "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
@@ -1626,13 +1623,12 @@
       "overrides": {
         "openWeights": false,
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "contextWindow": 60288,
-        "maxTokens": 16000,
+        "maxTokens": 131072,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "July 18, 2024",
         "lastUpdated": "July 1, 2024",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00017
+        "costPer1kInputTokens": 0.000029,
+        "costPer1kOutputTokens": 0.00003
       }
     },
     "moonshotai/kimi-k2-thinking": {
@@ -1734,7 +1730,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths"
       ]
     },
     "nvidia/nemotron-nano-12b-v2-vl": {
@@ -2142,7 +2139,11 @@
         "lastUpdated": "October 29, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "openai/o3-deep-research": {
       "model": "o/o3-deep-research",
@@ -2662,6 +2663,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "December 8, 2025",
@@ -4189,7 +4195,8 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "contextComplexity"
       ]
     },
     "bfl/flux-2-klein-9b": {
@@ -6793,7 +6800,11 @@
         "lastUpdated": "October 29, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "alibaba/qwen3.8-flash": {
       "model": "qwen/qwen-3-8-flash",
@@ -6860,10 +6871,11 @@
       "model": "ling/ling-3-0-flash-fin",
       "matchingModel": "inclusionai/ling-3.0-flash-fin",
       "overrides": {
+        "openWeights": true,
         "description": "Finance-enhanced model for financial research, multi-step investment workflows, and long-horizon planning and execution",
         "contextWindow": 256000,
         "maxTokens": 32000,
-        "lastUpdated": "August 27, 2026",
+        "lastUpdated": "September 3, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.00022
       },
@@ -8030,16 +8042,7 @@
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -8117,6 +8120,15 @@
       "overrides": {
         "lastUpdated": "February 26, 2026",
         "supportsToolCalls": false
+      }
+    },
+    "heygen/heygen-video-1": {
+      "model": "vercel/heygen/heygen-video-1/heygen-video",
+      "matchingModel": "heygen/heygen-video-1",
+      "overrides": {
+        "lastUpdated": "October 9, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     }
   }

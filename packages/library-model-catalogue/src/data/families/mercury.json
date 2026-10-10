@@ -31,7 +31,18 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 50000,
-        "releaseDate": "March 4, 2026"
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "March 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "inception-mercury-2-5": {

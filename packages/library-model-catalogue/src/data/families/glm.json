@@ -16,6 +16,26 @@
   },
   "description": "The glm family includes models that produce text.",
   "models": {
+    "autoglm-phone-9b-multilingual": {
+      "defaults": {
+        "name": "AutoGLM Phone 9B Multilingual",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 10, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
     "glm-4-32b": {
       "defaults": {
         "name": "GLM 4 32B ",
@@ -167,6 +187,7 @@
       "defaults": {
         "name": "GLM 4.6",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -232,11 +253,6 @@
       "defaults": {
         "name": "GLM-4.6V",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1063,7 +1079,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest GLM model from Z.ai.",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

@@ -45,7 +45,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest model in the DeepSeek Pro family.",
         "contextWindow": 1048576,
-        "maxTokens": 393216,
+        "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -95,6 +95,11 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 163840,
         "maxTokens": 147456,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "September 22, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -103,6 +108,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -113,6 +124,11 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 163840,
         "maxTokens": 147456,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "September 29, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -121,6 +137,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

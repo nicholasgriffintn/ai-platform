@@ -188,6 +188,27 @@
         "supportsResponseFormat": false
       }
     },
+    "minimax-m1-80k": {
+      "defaults": {
+        "name": "MiniMax M1 80K",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 80000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "June 17, 2025",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 17.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "minimax-m2": {
       "defaults": {
         "name": "MiniMax M2",
