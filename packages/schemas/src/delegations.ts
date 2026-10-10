@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { chatRunIdSchema } from "./chat-runs.js";
+import { delegationStateSchema } from "./delegation-state.js";
 import { outputStatusSchema } from "./outputs.js";
 import { creditMicrosFromCredits } from "./pricing/constants.js";
 import { userQuestionSchema } from "./user-questions.js";
@@ -14,37 +15,16 @@ export const DELEGATION_WAKE_TASK_TYPE = "delegation_wake" as const;
 export const DELEGATION_MESSAGE_TASK_TYPE = "delegation_message" as const;
 export const DELEGATION_EXPIRY_TASK_TYPE = "delegation_expiry" as const;
 
+export function delegationRunCommandId(delegationId: string): string {
+  return `delegation_run_${delegationId}`;
+}
+
 export function resolveDelegationCreditCeiling(remainingCreditMicros: number): number {
   return Math.max(0, Math.floor(remainingCreditMicros * DELEGATION_MAX_CREDIT_SHARE));
 }
 
 export const delegationWaitForSchema = z.enum(["all", "any", "none"]);
 export type DelegationWaitFor = z.infer<typeof delegationWaitForSchema>;
-
-export const delegationStateSchema = z.enum([
-  "queued",
-  "running",
-  "awaiting_input",
-  "awaiting_approval",
-  "awaiting_takeover",
-  "done",
-  "failed",
-  "cancelled",
-  "expired",
-]);
-export type DelegationState = z.infer<typeof delegationStateSchema>;
-
-export const LIVE_DELEGATION_STATES: readonly DelegationState[] = [
-  "queued",
-  "running",
-  "awaiting_input",
-  "awaiting_approval",
-  "awaiting_takeover",
-];
-
-export function isLiveDelegationState(state: DelegationState): boolean {
-  return LIVE_DELEGATION_STATES.includes(state);
-}
 
 export const delegationBudgetSchema = z.object({
   maxCreditMicros: z.number().int().positive(),

@@ -1,6 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   creditsFromCreditMicros,
+  totalChatRunCredits,
   type ChatContextOmission,
   type ChatContextSnapshot,
   type ChatRunUsage,
@@ -48,6 +49,41 @@ function ReferenceLink({
     >
       <ExternalLink className="h-3 w-3" aria-hidden="true" />
     </a>
+  );
+}
+
+function formatCredits(creditMicros: number): string {
+  return `${creditsFromCreditMicros(creditMicros).toLocaleString()} credits`;
+}
+
+function DelegatedUsage({ usage }: { usage: ChatRunUsage }) {
+  const total = totalChatRunCredits(usage);
+
+  return (
+    <>
+      <h4 className="mt-3 font-medium text-foreground">Delegated work</h4>
+      <ul className="mt-2 space-y-1.5">
+        {usage.delegated?.map((delegated) => (
+          <li key={delegated.delegationId} className="flex min-w-0 items-center gap-2">
+            <span className="min-w-0 flex-1 truncate">
+              {delegated.teammateName ?? "Teammate"} · {delegated.state.replaceAll("_", " ")}
+            </span>
+            <span className="shrink-0 text-muted-foreground">
+              {delegated.creditMicros === null
+                ? delegated.consumptionStatus === "processing"
+                  ? "usage processing"
+                  : "usage not reported"
+                : formatCredits(delegated.creditMicros)}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-foreground">
+        {total.complete
+          ? `Run total: ${formatCredits(total.recordedCreditMicros)}`
+          : `Run total so far: at least ${formatCredits(total.recordedCreditMicros)}`}
+      </p>
+    </>
   );
 }
 
@@ -123,6 +159,7 @@ export function ContextDetailsPanel({
             </li>
             <li>Settlement: {usage.settlement.status}</li>
           </ul>
+          {usage.delegated?.length ? <DelegatedUsage usage={usage} /> : null}
         </section>
       ) : null}
 

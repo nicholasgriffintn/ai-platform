@@ -1,5 +1,6 @@
 import {
   createChatCompletionsJsonSchema,
+  delegationRunCommandId,
   delegationRunTaskDataSchema,
   projectCodingEnvironmentSchema,
   resolveSandboxDeliveryPolicy,
@@ -237,7 +238,7 @@ export async function runDelegationTask(
       };
     }
 
-    const commandId = `delegation_run_${delegation.id}`;
+    const commandId = delegationRunCommandId(delegation.id);
     const body = createChatCompletionsJsonSchema.parse({
       completion_id: delegation.childConversationId,
       command_id: commandId,

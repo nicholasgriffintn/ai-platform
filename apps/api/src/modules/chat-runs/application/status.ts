@@ -15,6 +15,7 @@ import { formatStoredMessage } from "~/modules/conversations/application/stored-
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { Message } from "~/types";
 
+import { hydrateDelegatedUsage } from "./delegated-usage";
 import { reconcileInactiveChatRun } from "./recovery";
 import { hydrateChatRunUsage } from "./usage";
 
@@ -76,7 +77,7 @@ export async function handleGetChatRun(context: ServiceContext, runId: string) {
   const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [run]);
 
   return {
-    run: hydratedRun,
+    run: await hydrateDelegatedUsage(context, hydratedRun),
     messages: await withRunPartialMessage(context, run, messages.map(formatStoredMessage)),
   };
 }
@@ -90,7 +91,8 @@ export async function handleGetChatRunSnapshot(
     context,
     await requireChatRunAccess(context, runId),
   );
-  const [run] = await hydrateChatRunUsage(context.repositories, [authoritativeRun]);
+  const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [authoritativeRun]);
+  const run = await hydrateDelegatedUsage(context, hydratedRun);
   const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
   const withPartial = await withRunPartialMessage(context, run, messages.map(formatStoredMessage));
 

@@ -76,6 +76,7 @@ export * from "./chat-retries.js";
 export * from "./artifact-bindings.js";
 export * from "./chat-queue.js";
 export * from "./chat-runs.js";
+export * from "./delegation-state.js";
 export * from "./delegations.js";
 export * from "./device-sync.js";
 export * from "./automations.js";

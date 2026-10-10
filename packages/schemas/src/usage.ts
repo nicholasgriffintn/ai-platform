@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { computeSiteSchema } from "./compute-sites.js";
+import { delegationStateSchema, isLiveDelegationState } from "./delegation-state.js";
 import { usageUnitSchema } from "./pricing/units.js";
 import { runProvenanceSchema } from "./run-provenance.js";
 
@@ -58,6 +59,21 @@ export const chatRunUsageAttemptSchema = z.object({
   estimatedPriceEventCount: z.number().int().nonnegative(),
 });
 
+const chatRunConsumptionStatusSchema = z.enum(["recorded", "processing", "unknown"]);
+
+export const chatRunDelegatedUsageSchema = z.object({
+  delegationId: z.string().min(1),
+  teammateId: z.string().min(1),
+  teammateName: z.string().min(1).nullable(),
+  state: delegationStateSchema,
+  runId: z.string().min(1).nullable(),
+  measurement: chatRunUsageMeasurementSchema,
+  consumptionStatus: chatRunConsumptionStatusSchema,
+  creditMicros: z.number().int().nonnegative().nullable(),
+});
+
+export type ChatRunDelegatedUsage = z.infer<typeof chatRunDelegatedUsageSchema>;
+
 export const chatRunUsageSchema = z.object({
   protocolVersion: z.literal(1),
   runId: z.string().min(1),
@@ -73,7 +89,7 @@ export const chatRunUsageSchema = z.object({
     })
     .nullable(),
   consumption: z.object({
-    status: z.enum(["recorded", "processing", "unknown"]),
+    status: chatRunConsumptionStatusSchema,
     eventCount: z.number().int().nonnegative(),
     costMicros: z.number().int().nonnegative().nullable(),
     creditMicros: z.number().int().nonnegative().nullable(),
@@ -85,9 +101,31 @@ export const chatRunUsageSchema = z.object({
     status: z.enum(["pending", "settled", "released", "missing"]),
     at: z.string().nullable(),
   }),
+  delegated: z.array(chatRunDelegatedUsageSchema).optional(),
 });
 
 export type ChatRunUsage = z.infer<typeof chatRunUsageSchema>;
+
+export interface ChatRunCreditTotal {
+  recordedCreditMicros: number;
+  complete: boolean;
+}
+
+export function totalChatRunCredits(usage: ChatRunUsage): ChatRunCreditTotal {
+  const parts = [
+    usage.consumption.creditMicros,
+    ...(usage.delegated ?? []).map((delegated) => delegated.creditMicros),
+  ];
+  const settled = (usage.delegated ?? []).every(
+    (delegated) =>
+      delegated.consumptionStatus === "recorded" && !isLiveDelegationState(delegated.state),
+  );
+
+  return {
+    recordedCreditMicros: parts.reduce<number>((total, part) => total + (part ?? 0), 0),
+    complete: usage.consumption.status === "recorded" && settled,
+  };
+}
 
 export const USAGE_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 

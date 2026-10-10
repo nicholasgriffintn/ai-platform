@@ -3,6 +3,7 @@ import { settleWithin } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateConnectorApprovalMessageState } from "~/modules/apps/application/connectors/approval-message-state";
+import { hydrateDelegatedUsage } from "~/modules/chat-runs/application/delegated-usage";
 import { hydrateChatRunUsage } from "~/modules/chat-runs/application/usage";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import {
@@ -110,7 +111,7 @@ async function loadLatestRun(context: ServiceContext, completionId: string) {
 
   const [latestRun] = await hydrateChatRunUsage(context.repositories, [latestRunRecord]);
 
-  return latestRun ?? null;
+  return latestRun ? hydrateDelegatedUsage(context, latestRun) : null;
 }
 
 export const handleGetChatCompletion = async (
