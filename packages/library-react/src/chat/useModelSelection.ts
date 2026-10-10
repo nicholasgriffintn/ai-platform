@@ -1,6 +1,6 @@
 import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useChatStore, wakeHostedHermes } from "@ngriffin_uk/polychat-library-client";
 import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
@@ -459,6 +459,11 @@ export function useModelSelection({
       setSelectedMachineId(nextModel.machineId);
       selectModelWithDefaults(newModel);
       onModelChange?.(newModel, nextModel);
+
+      if (nextModel.kind === "agent" && nextModel.provider === "hermes") {
+        void wakeHostedHermes().catch(() => undefined);
+      }
+
       rememberLastUsed({
         modelId: newModel,
         name: nextModel.name || newModel,

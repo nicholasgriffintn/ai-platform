@@ -87,6 +87,8 @@ export const agentHostRunStartedSchema = z
   })
   .passthrough();
 
+export const agentHostWakeResponseSchema = z.object({ ready: z.literal(true) }).strict();
+
 export type AgentHostProvisionRequest = z.infer<typeof agentHostProvisionRequestSchema>;
 export type AgentHostRunRequest = z.infer<typeof agentHostRunRequestSchema>;
 export type AgentHostRunReference = z.infer<typeof agentHostRunReferenceSchema>;

@@ -70,6 +70,25 @@ async function startHostedRun(
   }
 }
 
+export async function prepareHostedHermes(
+  context: ServiceContext,
+  client: AgentHostClient,
+  userId: number,
+): Promise<void> {
+  const hostId = hostedHermesHostId(userId);
+
+  try {
+    await client.wake(hostId);
+  } catch (error) {
+    if (!(error instanceof AgentHostUnprovisionedError)) {
+      throw error;
+    }
+
+    await provisionHostedHermes(context, client, hostId);
+    await client.wake(hostId);
+  }
+}
+
 function describeDeniedAction(approval: { command?: string; description?: string }): string {
   return approval.description || approval.command || "an action Hermes flagged for approval";
 }

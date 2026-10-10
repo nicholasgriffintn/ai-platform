@@ -50,6 +50,10 @@ export class AgentHostClient {
     await this.request("provision", input);
   }
 
+  async wake(hostId: string): Promise<void> {
+    await this.request("wake", { hostId });
+  }
+
   async destroy(hostId: string): Promise<void> {
     await this.request("destroy", { hostId });
   }

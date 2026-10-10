@@ -172,6 +172,10 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
     }
 
     switch (action) {
+      case "wake":
+        await ensureHermesGateway(sandbox, state);
+
+        return Response.json({ ready: true });
       case "run": {
         const input = agentHostRunRequestSchema.safeParse(body);
 

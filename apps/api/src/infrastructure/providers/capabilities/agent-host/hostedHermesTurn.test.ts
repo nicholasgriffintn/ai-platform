@@ -5,7 +5,11 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import type { AgentHostClient } from "./AgentHostClient";
 import { AgentHostUnprovisionedError } from "./AgentHostUnprovisionedError";
-import { HOSTED_HERMES_KEY_NAME, runHostedHermesTurn } from "./hostedHermesTurn";
+import {
+  HOSTED_HERMES_KEY_NAME,
+  prepareHostedHermes,
+  runHostedHermesTurn,
+} from "./hostedHermesTurn";
 
 const apiKeys = vi.hoisted(() => ({
   getUserApiKeys: vi.fn(),
@@ -23,9 +27,17 @@ const RUN_ID = `run_${"a".repeat(32)}`;
 
 function fakeClient(snapshots: AgentHostRunSnapshot[], unprovisioned = false) {
   let starts = 0;
+  let wakes = 0;
 
   return {
     provision: vi.fn(async () => undefined),
+    wake: vi.fn(async () => {
+      wakes += 1;
+
+      if (unprovisioned && wakes === 1) {
+        throw new AgentHostUnprovisionedError();
+      }
+    }),
     startRun: vi.fn(async () => {
       starts += 1;
 
@@ -104,5 +116,18 @@ describe("runHostedHermesTurn", () => {
     const client = fakeClient([{ run_id: RUN_ID, status: "failed", error: "model unavailable" }]);
 
     await expect(turn(client)).rejects.toThrow("model unavailable");
+  });
+});
+
+describe("prepareHostedHermes", () => {
+  it("provisions an unprovisioned host before waking it", async () => {
+    apiKeys.getUserApiKeys.mockResolvedValue([]);
+    apiKeys.createUserApiKey.mockResolvedValue({ plaintextKey: "ak_new", metadata: {} });
+    const client = fakeClient([], true);
+
+    await prepareHostedHermes(context, client as unknown as AgentHostClient, 7);
+
+    expect(client.provision).toHaveBeenCalledWith({ hostId: "hermes-7", apiKey: "ak_new" });
+    expect(client.wake).toHaveBeenCalledTimes(2);
   });
 });
