@@ -151,6 +151,9 @@ export function buildHostedSandboxExecutionPlan(params: {
     allowedDomains: [
       new URL(params.credentialBroker.baseUrl).hostname,
       ...HOSTED_SANDBOX_NETWORK_DOMAINS,
+      ...(params.environmentSetup?.source === "polychat"
+        ? params.environmentSetup.definition.networkHosts
+        : []),
     ],
     environment: {
       POLYCHAT_BROKER_GRANT: params.credentialBroker.grant,

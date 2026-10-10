@@ -85,6 +85,7 @@ export const PROVIDER_PLATFORM_ENV_KEYS: Record<string, PlatformEnvKeyGroups> = 
     ["BEDROCK_AWS_ACCESS_KEY", "BEDROCK_AWS_SECRET_KEY"],
   ],
   "polychat-sandbox": EMPTY_GROUPS,
+  hermes: EMPTY_GROUPS,
   poolside: single("POOLSIDE_API_KEY"),
   "regolo-ai": single("REGOLO_API_KEY"),
   regolo: single("REGOLO_API_KEY"),

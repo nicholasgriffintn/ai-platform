@@ -51,11 +51,18 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
+  containerEgressBlockedResponse,
+  decideContainerEgress,
   decideOutbound,
   isHostAllowed,
   outboundNeedsGateway,
+  parseContainerEgressPolicy,
   parseToolRequest,
+  resolveBackupStorageHost,
+  SANDBOX_PACKAGE_REGISTRY_HOSTS,
   TOOLS_ORIGIN,
+  type ContainerEgressDecision,
+  type ContainerEgressPolicy,
   type OutboundAllowlist,
   type OutboundDecision,
   type OutboundGatewayProps,
@@ -74,3 +81,10 @@ export {
   type EvaluationLogLevel,
   type EvaluationOutcome,
 } from "./evaluation-result.js";
+export {
+  toOpenAICompletion,
+  toOpenAICompletionStream,
+  toPolychatCompletionRequest,
+  type BridgedCompletionRequest,
+  type OpenAICompletion,
+} from "./chat-completion-bridge.js";

@@ -16,42 +16,53 @@ const EMPTY_DEFINITION: SandboxEnvironmentDefinition = {
   resumeCommands: [],
   runtimes: [],
   environment: [],
+  networkHosts: [],
   setupTimeoutSeconds: 600,
   services: [],
 };
 
-function EnvironmentCommandFields({
+function EnvironmentListFields({
   label,
-  commands,
+  itemLabel,
+  items,
+  placeholder,
+  maxItems,
+  maxLength,
+  addLabel,
   onChange,
 }: {
   label: string;
-  commands: string[];
-  onChange: (commands: string[]) => void;
+  itemLabel: string;
+  items: string[];
+  placeholder: string;
+  maxItems: number;
+  maxLength: number;
+  addLabel: string;
+  onChange: (items: string[]) => void;
 }) {
   return (
     <fieldset className="space-y-2">
       <legend className="text-sm font-medium text-foreground">{label}</legend>
-      {commands.map((command, index) => (
-        // oxlint-disable-next-line react/no-array-index-key -- setup commands can repeat verbatim (multiple empty rows), so position is the only unique key
+      {items.map((item, index) => (
+        // oxlint-disable-next-line react/no-array-index-key -- rows can repeat verbatim (multiple empty rows), so position is the only unique key
         <div key={index} className="flex items-end gap-2">
           <FormInput
-            label={`Command ${index + 1}`}
-            value={command}
+            label={`${itemLabel} ${index + 1}`}
+            value={item}
             onChange={(event) =>
               onChange(
-                commands.map((existing, commandIndex) =>
-                  commandIndex === index ? event.target.value : existing,
+                items.map((existing, itemIndex) =>
+                  itemIndex === index ? event.target.value : existing,
                 ),
               )
             }
-            placeholder={label === "Full setup" ? "pnpm install" : "Optional resume command"}
-            maxLength={500}
+            placeholder={placeholder}
+            maxLength={maxLength}
           />
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onChange(commands.filter((_, commandIndex) => commandIndex !== index))}
+            onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
             Remove
           </Button>
@@ -60,10 +71,10 @@ function EnvironmentCommandFields({
       <Button
         variant="secondary"
         size="sm"
-        disabled={commands.length >= (label === "Full setup" ? 20 : 10)}
-        onClick={() => onChange([...commands, ""])}
+        disabled={items.length >= maxItems}
+        onClick={() => onChange([...items, ""])}
       >
-        Add command
+        {addLabel}
       </Button>
     </fieldset>
   );
@@ -137,14 +148,24 @@ export function ProjectEnvironmentSetupFields({
 
       {value?.source === "polychat" ? (
         <div className="space-y-4">
-          <EnvironmentCommandFields
+          <EnvironmentListFields
             label="Full setup"
-            commands={definition.setupCommands}
+            itemLabel="Command"
+            items={definition.setupCommands}
+            placeholder="pnpm install"
+            maxItems={20}
+            maxLength={500}
+            addLabel="Add command"
             onChange={(setupCommands) => updateDefinition({ setupCommands })}
           />
-          <EnvironmentCommandFields
+          <EnvironmentListFields
             label="Lightweight resume"
-            commands={definition.resumeCommands}
+            itemLabel="Command"
+            items={definition.resumeCommands}
+            placeholder="Optional resume command"
+            maxItems={10}
+            maxLength={500}
+            addLabel="Add command"
             onChange={(resumeCommands) => updateDefinition({ resumeCommands })}
           />
           <div className="grid gap-3 sm:grid-cols-2">
@@ -224,6 +245,20 @@ export function ProjectEnvironmentSetupFields({
               updateDefinition({ setupTimeoutSeconds: Number(event.target.value) })
             }
           />
+          <EnvironmentListFields
+            label="Network hosts"
+            itemLabel="Host"
+            items={definition.networkHosts}
+            placeholder="api.example.com or *.example.com"
+            maxItems={32}
+            maxLength={253}
+            addLabel="Add host"
+            onChange={(networkHosts) => updateDefinition({ networkHosts })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Runs can read the common package registries. Add any other host that setup, tests or
+            services need to reach.
+          </p>
           <ProjectServiceManifestFields
             services={definition.services ?? []}
             onChange={(services) => updateDefinition({ services })}

@@ -15,6 +15,8 @@ describe("provider contracts", () => {
     expect(resolveEffectivePermissionMode("full_access", "supervised")).toBe("full_access");
     expect(resolveEffectivePermissionMode(undefined, undefined)).toBe("auto_accept_edits");
     expect(resolveEffectivePermissionMode(undefined, "nonsense")).toBe("auto_accept_edits");
+    expect(resolveEffectivePermissionMode(undefined, undefined, ["auto"])).toBe("auto");
+    expect(resolveEffectivePermissionMode("full_access", undefined, ["auto"])).toBe("full_access");
   });
 
   it("offers Supervised only to agents that can answer approvals", () => {

@@ -1,5 +1,6 @@
 import { availableModalities } from "@ngriffin_uk/polychat-ai-models";
 import {
+  agentHostWakeResponseSchema,
   capabilitiesResponseSchema,
   capabilityParamsSchema,
   artificialAnalysisModelsQuerySchema,
@@ -27,6 +28,7 @@ import {
   listModelsByModality,
   listModelsByOutputModality,
 } from "~/modules/models/application";
+import { wakeHostedHermes } from "~/modules/models/application/hosted-agents";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
 import { resolveTierLineup } from "~/modules/models/application/tiers";
 
@@ -215,6 +217,20 @@ addRoute(app, "get", "/tiers", {
 
     return resolveTierLineup(models, user);
   },
+});
+
+addRoute(app, "post", "/agents/hermes/wake", {
+  tags: ["models"],
+  summary: "Wake hosted Hermes",
+  description:
+    "Provisions the caller's hosted Hermes when needed and starts its gateway so the next turn skips the cold start.",
+  auth: true,
+  responses: {
+    200: { description: "Hosted Hermes is ready", schema: agentHostWakeResponseSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+    403: { description: "Hosted Hermes needs a paid plan", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext }) => wakeHostedHermes(serviceContext),
 });
 
 addRoute(app, "get", "/:id", {

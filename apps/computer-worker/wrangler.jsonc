@@ -30,10 +30,21 @@
       "remote": true,
     },
   ],
+  "services": [
+    {
+      "binding": "POLYCHAT_API",
+      "service": "assistant",
+    },
+  ],
   "containers": [
     {
       "class_name": "Computer",
       "image": "./Dockerfile",
+      "instance_type": "standard-1",
+    },
+    {
+      "class_name": "AgentHost",
+      "image": "./agent-host/Dockerfile",
       "instance_type": "standard-1",
     },
   ],
@@ -43,12 +54,20 @@
         "class_name": "Computer",
         "name": "Computer",
       },
+      {
+        "class_name": "AgentHost",
+        "name": "AgentHost",
+      },
     ],
   },
   "migrations": [
     {
       "tag": "v1",
       "new_sqlite_classes": ["Computer"],
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["AgentHost"],
     },
   ],
 }

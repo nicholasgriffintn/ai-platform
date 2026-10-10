@@ -35,6 +35,16 @@ const requirementVersionSchema = z
     "Use an exact version or version prefix",
   );
 
+export const sandboxNetworkHostSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(253)
+  .regex(
+    /^(?:\*\.)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/,
+    "Use a hostname such as api.example.com or *.example.com",
+  );
+
 export const sandboxRuntimeRequirementSchema = z
   .object({
     name: sandboxRuntimeNameSchema,
@@ -58,6 +68,7 @@ export const sandboxEnvironmentDefinitionSchema = z
     packageManager: sandboxPackageManagerRequirementSchema.optional(),
     setupTimeoutSeconds: z.number().int().min(30).max(1800).default(600),
     environment: z.array(sandboxEnvironmentVariableNameSchema).max(32).default([]),
+    networkHosts: z.array(sandboxNetworkHostSchema).max(32).default([]),
     services: sandboxServiceManifestSchema.optional(),
   })
   .strict();
