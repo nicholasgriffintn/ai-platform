@@ -39,6 +39,9 @@ const binding: Ai = {
   gateway: () => {
     throw new Error("Unexpected gateway call");
   },
+  websearch: () => {
+    throw new Error("Unexpected websearch call");
+  },
   aiSearch: () => {
     throw new Error("Unexpected search call");
   },
