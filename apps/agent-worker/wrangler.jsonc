@@ -2,11 +2,16 @@
   "name": "assistant-agent-worker",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-28",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": false,
   "preview_urls": false,
   "vars": {
     "SANDBOX_TRANSPORT": "rpc",
+  },
+  "dev": {
+    "port": 8789
   },
   "observability": {
     "enabled": true,
@@ -44,7 +49,9 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["AgentHost"],
+      "new_sqlite_classes": [
+        "AgentHost"
+      ],
     },
   ],
 }
