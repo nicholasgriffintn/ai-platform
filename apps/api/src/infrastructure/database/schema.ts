@@ -12,6 +12,7 @@ import type {
   ToolPermission,
   MachineCapability,
   MachineRuntime,
+  CouncilReviewSeat,
   DatasetGovernance,
   DatasetMapping,
   DatasetStats,
@@ -287,6 +288,39 @@ export const correction = sqliteTable(
 );
 
 export type CorrectionRow = typeof correction.$inferSelect;
+
+export const outputReview = sqliteTable(
+  "output_review",
+  {
+    id: text().primaryKey(),
+    output_id: text()
+      .notNull()
+      .references(() => resource.output_id, { onDelete: "cascade" }),
+    output_revision: integer().notNull(),
+    output_kind: text().notNull(),
+    reviewed_by_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text(),
+    verdict: text({ enum: ["ship", "revise", "hold"] }).notNull(),
+    brief: text().notNull(),
+    dissent: text({ mode: "json" }).$type<string[]>().notNull(),
+    seats: text({ mode: "json" }).$type<CouncilReviewSeat[]>().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    outputIdx: index("output_review_output_idx").on(table.output_id, table.created_at),
+    kindIdx: index("output_review_kind_idx").on(
+      table.reviewed_by_user_id,
+      table.output_kind,
+      table.created_at,
+    ),
+  }),
+);
+
+export type OutputReviewRow = typeof outputReview.$inferSelect;
 
 export const delivery = sqliteTable(
   "delivery",

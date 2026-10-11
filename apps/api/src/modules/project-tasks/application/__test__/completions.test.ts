@@ -136,4 +136,32 @@ describe("project task completions", () => {
     expect(projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), "build")).toBe("review");
     expect(projectTaskStatusAfterCompletedGoal(stage("on_human_accept"), null)).toBe("review");
   });
+
+  it("advances a council stage only when every reviewed output ships", () => {
+    const council = stage("on_council_ship");
+    const shipped = { shipped: true, reviewIds: ["review-1"] };
+    const held = { shipped: false, reviewIds: ["review-1"] };
+
+    expect(
+      createProjectTaskCompletion({
+        stage: council,
+        conversationId: "conversation-1",
+        goal,
+        output: "Done.",
+        council: shipped,
+      }),
+    ).toMatchObject({ councilReviewIds: ["review-1"], approval: { mode: "automated" } });
+    expect(projectTaskStatusAfterCompletedGoal(council, null, shipped)).toBe("done");
+
+    expect(
+      createProjectTaskCompletion({
+        stage: council,
+        conversationId: "conversation-1",
+        goal,
+        output: "Done.",
+        council: held,
+      }),
+    ).toMatchObject({ approval: { mode: "human", status: "pending" } });
+    expect(projectTaskStatusAfterCompletedGoal(council, null, held)).toBe("review");
+  });
 });

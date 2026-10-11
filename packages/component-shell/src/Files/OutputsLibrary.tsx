@@ -27,6 +27,7 @@ import { Puzzle } from "lucide-react";
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../Content/ResponseRenderer.js";
 import { DocumentOutputWorkbench } from "./DocumentOutputWorkbench.js";
+import { OutputCouncilReviews } from "./OutputCouncilReviews.js";
 import { useOutputSharing } from "./useOutputSharing.js";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
@@ -108,6 +109,7 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
             {describeDocument.error.message}
           </p>
         ) : null}
+        <OutputCouncilReviews output={output} />
         {outputHistory ? (
           <OutputRevisionReview
             history={outputHistory}

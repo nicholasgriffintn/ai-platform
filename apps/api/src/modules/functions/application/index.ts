@@ -25,7 +25,7 @@ import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
 import { configure_knowledge_sync } from "./configure_knowledge_sync";
-import { run_council, select_council_members } from "./council";
+import { review_output, run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
 import { decide } from "./decide";
@@ -136,6 +136,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   process_recording,
   propose_correction,
   save_skill,
+  review_output,
   run_council,
   select_council_members,
   second_opinion,
