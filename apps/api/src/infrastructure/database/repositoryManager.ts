@@ -46,6 +46,7 @@ import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/Mod
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputReviewRepository } from "~/modules/outputs/infrastructure/OutputReviewRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
@@ -362,6 +363,10 @@ export class RepositoryManager {
 
   public get outputs(): OutputRepository {
     return this.resolve("outputs", (env) => new OutputRepository(env));
+  }
+
+  public get outputReviews(): OutputReviewRepository {
+    return this.resolve("outputReviews", (env) => new OutputReviewRepository(env));
   }
 
   public get providerConnections(): ProviderConnectionRepository {

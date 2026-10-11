@@ -151,6 +151,7 @@ export const projectTaskCompletionSchema = z.object({
   outputIds: z.array(z.string().min(1)).optional(),
   output: z.string(),
   evidence: z.array(goalEvidenceEntrySchema).default([]),
+  councilReviewIds: z.array(z.string().min(1)).optional(),
   approval: z.object({
     mode: z.enum(["human", "automated"]),
     status: z.enum(["pending", "approved", "rejected"]),
@@ -225,6 +226,14 @@ export function isProjectTaskAwaitingInput(
   return task.status === "blocked" && task.blockedReason === "awaiting_input";
 }
 
+export const projectFlowAdvanceSchema = z.enum([
+  "on_goal_complete",
+  "on_human_accept",
+  "on_council_ship",
+]);
+
+export type ProjectFlowAdvance = z.infer<typeof projectFlowAdvanceSchema>;
+
 export const projectFlowStageSchema = z
   .object({
     id: z
@@ -239,7 +248,7 @@ export const projectFlowStageSchema = z
     skillIds: z.array(z.string().trim().min(1)).default([]),
     mode: agentModeSchema.nullable().default(null),
     requiresApprovalFor: z.array(toolPermissionSchema).default([]),
-    advance: z.enum(["on_goal_complete", "on_human_accept"]),
+    advance: projectFlowAdvanceSchema,
   })
   .refine((stage) => new Set(stage.skillIds).size === stage.skillIds.length, {
     error: "Stage skills must be unique",

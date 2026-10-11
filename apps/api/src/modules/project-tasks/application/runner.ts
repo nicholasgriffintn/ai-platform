@@ -47,7 +47,12 @@ import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
-import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
+import {
+  createProjectTaskCompletion,
+  projectTaskStatusAfterCompletedGoal,
+  stageAdvancesOnCompletion,
+} from "./completions";
+import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
@@ -909,8 +914,26 @@ export async function runProjectTaskDispatch(params: {
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
   const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
+  const completedOutputIds =
+    goal?.status === "completed" && completedRun
+      ? (
+          await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
+            completedRun.id,
+          ])
+        ).map((output) => output.id)
+      : [];
+  const council =
+    goal?.status === "completed" && runtime.stage?.advance === "on_council_ship"
+      ? await reviewStageOutputs(context, {
+          taskId,
+          conversationId,
+          outputIds: completedOutputIds,
+          runId: completedRun?.id,
+          runAttempt: completedRun?.attempt,
+        })
+      : null;
   const nextStageId =
-    goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
+    goal?.status === "completed" && stageAdvancesOnCompletion(runtime.stage, council)
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
   const completion =
@@ -921,19 +944,14 @@ export async function runProjectTaskDispatch(params: {
           goal,
           run: completedRun,
           dispatchTaskId: params.dispatchTaskId,
-          outputIds: completedRun
-            ? (
-                await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
-                  completedRun.id,
-                ])
-              ).map((output) => output.id)
-            : [],
+          outputIds: completedOutputIds,
           output: responseOutput,
+          council,
         })
       : null;
   const nextStatus =
     goal?.status === "completed"
-      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
       : projection.status;
 
   await updateOwnedProjectTask({
