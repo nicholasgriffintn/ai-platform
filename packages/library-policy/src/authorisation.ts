@@ -160,6 +160,13 @@ const actionShapes = {
     risky: boolean,
   },
   "sandbox.network": { protocolAllowed: boolean, mode: string, hostMatched: boolean },
+  "sandbox.egress": {
+    protocolAllowed: boolean,
+    mode: string,
+    hostMatched: boolean,
+    readOnlyHostMatched: boolean,
+    safeMethod: boolean,
+  },
   "sandbox.tool": { attached: boolean },
   "governance.cover": {
     evaluationFailed: boolean,

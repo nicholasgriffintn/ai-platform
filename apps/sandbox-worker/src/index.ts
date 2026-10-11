@@ -370,4 +370,5 @@ export default {
   },
 };
 
-export { Sandbox } from "@cloudflare/sandbox";
+export { ContainerProxy } from "@cloudflare/sandbox";
+export { Sandbox } from "./modules/sandbox/infrastructure/sandbox-container";

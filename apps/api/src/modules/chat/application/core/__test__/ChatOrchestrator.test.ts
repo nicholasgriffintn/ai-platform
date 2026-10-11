@@ -629,6 +629,69 @@ describe("ChatOrchestrator", () => {
         );
       });
 
+      it("allows approval interactions from providers that report approvals", async () => {
+        mockPreparer.prepare.mockResolvedValue({
+          modelConfigs: [{ model: "model-1" }],
+          primaryModel: "model-1",
+          primaryProvider: "future-agent",
+          primaryModelConfig: {
+            agent: { capabilities: { reportsApprovals: true } },
+          },
+          conversationManager: mockConversationManager,
+          messages: [{ role: "user", content: "Hello" }],
+          systemPrompt: "Test system prompt",
+          messageWithContext: "Hello with context",
+          userSettings: {},
+          currentMode: "chat",
+          enabledTools: ["run_code"],
+        });
+        mockGetAIResponse.mockResolvedValue({
+          response: "",
+          tool_calls: [
+            {
+              id: "approval-1",
+              type: "function",
+              function: {
+                name: "request_approval",
+                arguments: JSON.stringify({ message: "Approve this action?" }),
+              },
+            },
+          ],
+        });
+        mockHandleToolCalls.mockResolvedValueOnce([
+          {
+            role: "tool",
+            name: "request_approval",
+            content: "Awaiting approval",
+            status: "pending",
+            tool_call_id: "approval-1",
+            data: { humanInTheLoop: { type: "approval" } },
+          },
+        ]);
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+        mockConversationManager.add.mockResolvedValue(undefined);
+
+        await orchestrator.process(mockOptions);
+
+        expect(mockHandleToolCalls).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            tool_calls: expect.arrayContaining([
+              expect.objectContaining({
+                function: expect.objectContaining({ name: "request_approval" }),
+              }),
+            ]),
+          }),
+          expect.anything(),
+          expect.objectContaining({
+            request: expect.objectContaining({
+              enabled_tools: ["run_code", "request_approval"],
+            }),
+          }),
+          expect.anything(),
+        );
+      });
+
       it("streams guarded output live, retracts it when blocked, and stops blocked tool calls", async () => {
         mockPreparer.prepare.mockResolvedValue({
           modelConfigs: [{ model: "test-model" }],

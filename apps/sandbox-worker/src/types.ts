@@ -15,8 +15,13 @@ export interface TaskSecrets {
 
 export interface Env {
   APP_BASE_URL?: string;
-  Sandbox: DurableObjectNamespace<import("./index").Sandbox>;
+  Sandbox: DurableObjectNamespace<
+    import("./modules/sandbox/infrastructure/sandbox-container").Sandbox
+  >;
   BACKUP_BUCKET: R2Bucket;
+  BACKUP_BUCKET_ENDPOINT?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  CLOUDFLARE_R2_ACCOUNT_ID?: string;
   SANDBOX_TRANSPORT?: "http" | "rpc";
   SANDBOX_INSTANCE_TYPE?: string;
   SANDBOX_PREVIEW_HOST?: string;

@@ -25,7 +25,6 @@ import type {
 } from "../../../../types";
 import {
   execOrThrow,
-  execOrThrowRedacted,
   resolveGitHubRepo,
   buildSummary,
   quoteForShell,
@@ -51,6 +50,11 @@ import {
 import { runStoryTracker } from "../../infrastructure/feature-implementation/story-tracker";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../infrastructure/github-delivery";
 import { waitForInspectionWindow } from "../../infrastructure/inspection-window";
+import {
+  applySandboxEgress,
+  buildSandboxEgressPolicy,
+  takeBlockedEgressRisks,
+} from "../../infrastructure/network-egress";
 import { PolychatClient } from "../../infrastructure/polychat-client";
 import { RunControlClient } from "../../infrastructure/run-control-client";
 import { ProjectServiceSupervisor } from "../../infrastructure/service-supervisor";
@@ -208,6 +212,19 @@ export async function executeFeatureImplementation(
 
     const model = params.model || DEFAULT_MODEL;
     const repo = resolveGitHubRepo(params.repo, params.credentialBroker);
+    const egressPolicy = (declaredHosts?: readonly string[]) =>
+      buildSandboxEgressPolicy({
+        env,
+        trustLevel: params.trustLevel ?? "balanced",
+        declaredHosts,
+        directGitHubCheckout: !repo.brokered,
+      });
+
+    await applySandboxEgress({
+      sandbox,
+      policy: egressPolicy(),
+      credentialBroker: repo.brokered ? params.credentialBroker : undefined,
+    });
 
     await checkpoint("Sandbox run cancelled before repository clone");
     await emit({
@@ -216,12 +233,11 @@ export async function executeFeatureImplementation(
       installationId: params.installationId,
     });
 
-    if (repo.checkoutAuthHeader) {
-      await execOrThrowRedacted(
+    if (repo.brokered) {
+      await execOrThrow(
         sandbox,
-        `git -c http.extraHeader=${quoteForShell(repo.checkoutAuthHeader)} clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)}`,
+        `git clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)}`,
         executionLogs,
-        `git clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)} [auth header redacted]`,
       );
     } else {
       await sandbox.gitCheckout(repo.checkoutUrl, {
@@ -278,6 +294,7 @@ export async function executeFeatureImplementation(
       abortSignal,
       checkpoint,
       emit,
+      allowNetworkHosts: (hosts) => applySandboxEgress({ sandbox, policy: egressPolicy(hosts) }),
     });
 
     environmentEvidence = environmentPreparation.evidence;
@@ -321,7 +338,6 @@ export async function executeFeatureImplementation(
         runId,
         policy: deliveryPolicy,
         credentialBroker: params.credentialBroker,
-        checkoutAuthHeader: repo.checkoutAuthHeader,
         executionLogs,
       });
 
@@ -567,7 +583,6 @@ export async function executeFeatureImplementation(
           commitSha,
           validationSummary: qualityGateResult.summary,
           credentialBroker: params.credentialBroker,
-          checkoutAuthHeader: repo.checkoutAuthHeader,
           executionLogs,
           trustLevel: params.trustLevel ?? "balanced",
           approvalClient,
@@ -602,6 +617,7 @@ export async function executeFeatureImplementation(
 
     await serviceSupervisor?.stop();
 
+    const egressRisks = await takeBlockedEgressRisks(sandbox);
     const result: TaskResult = {
       success: true,
       logs: truncateForModel(executionLogs.join("\n"), MAX_LOG_CHARS),
@@ -621,7 +637,10 @@ export async function executeFeatureImplementation(
         branch: branchName,
         commit: commitSha,
         pullRequestUrl,
-        residualRisks: qualityGateResult.passed ? [] : [qualityGateResult.summary],
+        residualRisks: [
+          ...(qualityGateResult.passed ? [] : [qualityGateResult.summary]),
+          ...egressRisks,
+        ],
         incompleteWork: deliveryIncompleteReason ? [deliveryIncompleteReason] : [],
       }),
     };
@@ -636,6 +655,8 @@ export async function executeFeatureImplementation(
     console.error("Error during sandbox task execution:", classified);
 
     await serviceSupervisor?.stop();
+
+    const egressRisks = await takeBlockedEgressRisks(sandbox);
 
     await emit({
       type: classified.type === "cancelled" ? "task_cancelled" : "task_failed",
@@ -664,7 +685,7 @@ export async function executeFeatureImplementation(
         branch: branchName,
         commit: commitSha,
         pullRequestUrl,
-        residualRisks: [classified.message],
+        residualRisks: [classified.message, ...egressRisks],
         incompleteWork: ["The run ended before the objective was completed."],
       }),
     };

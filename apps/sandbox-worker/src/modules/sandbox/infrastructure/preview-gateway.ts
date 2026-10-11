@@ -9,9 +9,10 @@ import {
   type SandboxPreviewAuthorisationResponse,
   type SandboxPreviewGrantClaims,
 } from "@ngriffin_uk/polychat-schemas";
+import { createInternalServiceToken } from "@ngriffin_uk/polychat-utility-server/internal-service-auth";
 
 import type { Env } from "../../../types";
-import { createInternalServiceToken, verifySandboxPreviewGrant } from "./auth";
+import { verifySandboxPreviewGrant } from "./auth";
 
 const INTERNAL_EXPOSURE_ORIGIN = "http://sandbox";
 const INTERNAL_AUTHORISATION_URL = "http://api/apps/sandbox/previews/authorise";
@@ -207,7 +208,10 @@ async function authorisePreview(params: {
         "Content-Type": "application/json",
         [INTERNAL_SERVICE_AUTHORIZATION_HEADER]: `Bearer ${await createInternalServiceToken(
           params.env.JWT_SECRET.trim(),
-          "sandbox-preview:authorise",
+          {
+            service: "sandbox-worker",
+            scopes: ["sandbox-preview:authorise"],
+          },
         )}`,
       },
       body: JSON.stringify({

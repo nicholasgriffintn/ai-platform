@@ -1,17 +1,11 @@
 import type { TaskEvent } from "../../../types";
-import {
-  execOrThrow,
-  execOrThrowRedacted,
-  quoteForShell,
-  type SandboxExecInstance,
-} from "./commands";
+import { execOrThrow, quoteForShell, type SandboxExecInstance } from "./commands";
 
 export async function pushBranchToRemote(params: {
   sandbox: SandboxExecInstance;
   repoTargetDir: string;
   branchName: string;
   remoteBranchName?: string;
-  checkoutAuthHeader?: string;
   executionLogs: string[];
   checkpoint: (abortMessage: string) => Promise<void>;
   emit: (event: TaskEvent) => Promise<void>;
@@ -21,7 +15,6 @@ export async function pushBranchToRemote(params: {
     repoTargetDir,
     branchName,
     remoteBranchName = branchName,
-    checkoutAuthHeader,
     executionLogs,
     checkpoint,
     emit,
@@ -36,20 +29,11 @@ export async function pushBranchToRemote(params: {
   const refspec =
     remoteBranchName === branchName ? branchName : `${branchName}:refs/heads/${remoteBranchName}`;
 
-  if (checkoutAuthHeader) {
-    await execOrThrowRedacted(
-      sandbox,
-      `git -c http.extraHeader=${quoteForShell(checkoutAuthHeader)} -C ${quoteForShell(repoTargetDir)} push --set-upstream origin ${quoteForShell(refspec)}`,
-      executionLogs,
-      `git -C ${quoteForShell(repoTargetDir)} push --set-upstream origin ${quoteForShell(refspec)} [auth header redacted]`,
-    );
-  } else {
-    await execOrThrow(
-      sandbox,
-      `git -C ${quoteForShell(repoTargetDir)} push --set-upstream origin ${quoteForShell(refspec)}`,
-      executionLogs,
-    );
-  }
+  await execOrThrow(
+    sandbox,
+    `git -C ${quoteForShell(repoTargetDir)} push --set-upstream origin ${quoteForShell(refspec)}`,
+    executionLogs,
+  );
 
   await checkpoint("Sandbox run cancelled after push");
   await emit({

@@ -4,7 +4,12 @@ import { renderToolProxySource, describeToolsForModel } from "../code-mode-sourc
 import { isSandboxError } from "../errors.js";
 import { createExecutionControl } from "../execution-control.js";
 import { createLeaseFence } from "../lease-fence.js";
-import { decideOutbound, isHostAllowed, outboundNeedsGateway } from "../outbound.js";
+import {
+  decideContainerEgress,
+  decideOutbound,
+  isHostAllowed,
+  outboundNeedsGateway,
+} from "../outbound.js";
 import { signGrant, verifyGrant } from "../signed-grant.js";
 import { workerCodeId } from "../worker-code.js";
 
@@ -131,6 +136,28 @@ describe("outbound policy", () => {
     expect(outboundNeedsGateway({ allowlist: "none" })).toBe(false);
     expect(outboundNeedsGateway({ allowlist: ["a.com"] })).toBe(true);
     expect(outboundNeedsGateway({ allowlist: "none", invocationId: "x" })).toBe(true);
+  });
+
+  it("lets containers read registries without letting them publish or reach other hosts", () => {
+    const policy = {
+      mode: "list" as const,
+      hosts: ["api.example.com"],
+      readOnlyHosts: ["registry.npmjs.org"],
+    };
+    const decide = (url: string, method: string) =>
+      decideContainerEgress(policy, { url: new URL(url), method }).kind;
+
+    expect(decide("https://registry.npmjs.org/react", "GET")).toBe("allow");
+    expect(decide("https://registry.npmjs.org/react", "PUT")).toBe("block");
+    expect(decide("https://api.example.com/v1", "POST")).toBe("allow");
+    expect(decide("https://evil.com/", "GET")).toBe("block");
+    expect(decide("ftp://registry.npmjs.org/", "GET")).toBe("block");
+    expect(
+      decideContainerEgress(
+        { mode: "all", hosts: [], readOnlyHosts: [] },
+        { url: new URL("https://evil.com/"), method: "POST" },
+      ).kind,
+    ).toBe("allow");
   });
 });
 

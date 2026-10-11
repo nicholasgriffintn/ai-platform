@@ -8,6 +8,7 @@
 - Keep the Sandbox SDK and Docker image versions aligned. The Python script tool requires the Python-enabled image.
 - For previews, use the same `SANDBOX_PREVIEW_HOST` in the API and worker, set `VITE_SANDBOX_PREVIEW_HOST` when building the app, and set the trusted `APP_BASE_URL`. Preview routing needs wildcard DNS and TLS on a custom domain.
 - Bind `BACKUP_BUCKET` to the API's private assets bucket and apply an R2 lifecycle rule for cached backups.
+- Containers start without internet access. Outbound requests are limited to read-only package registries, backup storage and declared `networkHosts`; repository Git uses the API broker. Export `ContainerProxy` from the entry point for interception.
 
 ## Execution boundaries
 

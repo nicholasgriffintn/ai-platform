@@ -3,41 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { pushBranchToRemote } from "../../infrastructure/push-branch";
 
 describe("pushBranchToRemote", () => {
-  it("pushes branch using auth header when provided", async () => {
-    const exec = vi.fn().mockResolvedValue({
-      success: true,
-      exitCode: 0,
-      stdout: "",
-      stderr: "",
-    });
-    const checkpoint = vi.fn().mockResolvedValue(undefined);
-    const emitted: Array<Record<string, unknown>> = [];
-    const logs: string[] = [];
-
-    await pushBranchToRemote({
-      sandbox: {
-        exec,
-      } as any,
-      repoTargetDir: "/workspace/repo",
-      branchName: "polychat/feature-123",
-      checkoutAuthHeader: "AUTHORIZATION: basic token",
-      executionLogs: logs,
-      checkpoint,
-      emit: async (event) => {
-        emitted.push(event);
-      },
-    });
-
-    expect(exec).toHaveBeenCalledTimes(1);
-    expect(exec.mock.calls[0]?.[0]).toContain("http.extraHeader=");
-    expect(exec.mock.calls[0]?.[0]).toContain("push --set-upstream origin 'polychat/feature-123'");
-    expect(checkpoint).toHaveBeenCalledTimes(2);
-    expect(emitted.map((event) => event.type)).toEqual(["commit_push_started", "commit_pushed"]);
-    expect(logs.length).toBe(1);
-    expect(logs[0]).toContain("[auth header redacted]");
-  });
-
-  it("pushes branch without auth header when none is provided", async () => {
+  it("pushes without putting credentials on the command line", async () => {
     const exec = vi.fn().mockResolvedValue({
       success: true,
       exitCode: 0,
