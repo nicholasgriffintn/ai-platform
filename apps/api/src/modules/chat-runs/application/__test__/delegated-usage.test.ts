@@ -31,7 +31,7 @@ describe("summariseDelegatedUsage", () => {
         teammateId: "teammate-1",
         teammateName: "Researcher",
         state: "running",
-        runId: null,
+        runIds: [],
         measurement: "unknown",
         consumptionStatus: "unknown",
         creditMicros: null,
@@ -57,14 +57,23 @@ describe("summariseDelegatedUsage", () => {
       attempts: [],
       settlement: { status: "settled", at: null },
     };
+    const resumedChildUsage: ChatRunUsage = {
+      ...childUsage,
+      runId: "run_child_resume",
+      consumption: { ...childUsage.consumption, creditMicros: 200_000 },
+    };
 
     expect(
-      summariseDelegatedUsage([delegation], new Map([["delegation-1", childUsage]]), new Map())[0],
+      summariseDelegatedUsage(
+        [delegation],
+        new Map([["delegation-1", [childUsage, resumedChildUsage]]]),
+        new Map(),
+      )[0],
     ).toMatchObject({
-      runId: "run_child",
+      runIds: ["run_child", "run_child_resume"],
       teammateName: null,
       consumptionStatus: "recorded",
-      creditMicros: 420_000,
+      creditMicros: 620_000,
     });
   });
 });

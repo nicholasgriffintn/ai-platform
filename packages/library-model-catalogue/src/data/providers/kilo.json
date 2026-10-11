@@ -158,7 +158,7 @@
       "matchingModel": "~deepseek/deepseek-flash-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0000101,
+        "costPer1kInputTokens": 1e-7,
         "costPer1kOutputTokens": 0.0006
       }
     },
@@ -167,8 +167,8 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.005,
+        "costPer1kInputTokens": 0.00021912,
+        "costPer1kOutputTokens": 0.00065736,
         "supportsAttachments": false
       }
     },
@@ -177,7 +177,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000047,
+        "costPer1kInputTokens": 0.0000142,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false
       }
@@ -207,8 +207,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.01489
       }
     },
     "~openai/gpt-astra-latest": {
@@ -745,7 +745,7 @@
       }
     },
     "bytedance-seed/seed-1.6": {
-      "model": "seed/bytedance-seed-seed-1-6",
+      "model": "seed/bytedance-seed-seed-1-6-retires-nov-11",
       "matchingModel": "bytedance-seed/seed-1.6",
       "overrides": {
         "lastUpdated": "December 23, 2025",
@@ -754,7 +754,7 @@
       }
     },
     "bytedance-seed/seed-1.6-flash": {
-      "model": "seed/bytedance-seed-seed-1-6-flash",
+      "model": "seed/bytedance-seed-seed-1-6-flash-retires-nov-11",
       "matchingModel": "bytedance-seed/seed-1.6-flash",
       "overrides": {
         "lastUpdated": "December 23, 2025",
@@ -1045,7 +1045,7 @@
         "maxTokens": 147456,
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.000259,
-        "costPer1kOutputTokens": 0.00042,
+        "costPer1kOutputTokens": 0.0008,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1074,7 +1074,7 @@
         "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0000078,
+        "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -2097,7 +2097,7 @@
         },
         "lastUpdated": "August 10, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2619,8 +2619,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.000465,
-        "costPer1kOutputTokens": 0.00245,
+        "costPer1kInputTokens": 0.00065,
+        "costPer1kOutputTokens": 0.00341,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2888,7 +2888,7 @@
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
         "description": "NVIDIA Nemotron 3.5 Lightning is an open mixture-of-experts model from NVIDIA, with 3B active parameters out of 30B total. It is suited for high-throughput agentic workloads and specialized tasks that...",
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.000025,
         "costPer1kOutputTokens": 0.00012,
@@ -4121,8 +4121,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "April 28, 2025",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00022,
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
       }
     },
@@ -4634,7 +4634,6 @@
       "model": "qwen/qwen3-6-35b-a3b",
       "matchingModel": "qwen/qwen3.6-35b-a3b",
       "overrides": {
-        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -4653,8 +4652,8 @@
         ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.001,
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00095,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -4801,8 +4800,7 @@
       "matchingModel": "qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen3.8 27B is an open-weight dense vision-language model from Qwen. It is suited for coding, professional workflows, research, multimodal interaction, and long-running agent tasks, with flexible thinking that can be...",
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",

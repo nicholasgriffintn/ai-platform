@@ -1094,7 +1094,7 @@
         "maxTokens": 147456,
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.000259,
-        "costPer1kOutputTokens": 0.00042,
+        "costPer1kOutputTokens": 0.0008,
         "supportsAttachments": false
       }
     },
@@ -1831,8 +1831,8 @@
         "speed": 3,
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
-        "costPer1kInputTokens": 0.00045,
-        "costPer1kOutputTokens": 0.00225
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "nousresearch/deephermes-3-llama-3-8b-preview": {
@@ -3111,8 +3111,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.00044,
+        "costPer1kOutputTokens": 0.01489
       }
     },
     "~openai/gpt-latest": {
@@ -3817,7 +3817,7 @@
         "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0000078,
+        "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -3851,8 +3851,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0009483,
-        "costPer1kOutputTokens": 0.0018966,
+        "costPer1kInputTokens": 0.0002088,
+        "costPer1kOutputTokens": 0.0004176,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4848,8 +4848,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.000465,
-        "costPer1kOutputTokens": 0.00245
+        "costPer1kInputTokens": 0.00065,
+        "costPer1kOutputTokens": 0.00341
       }
     },
     "morph/morph-v3-fast": {
@@ -5823,13 +5823,13 @@
       "matchingModel": "qwen/qwen3-14b",
       "overrides": {
         "openWeights": true,
-        "maxTokens": 36864,
+        "maxTokens": 16384,
         "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00022,
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
       }
     },
@@ -6194,7 +6194,6 @@
       "overrides": {
         "name": "Qwen3.6 35B A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
-        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -6213,8 +6212,8 @@
         ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00095
       }
     },
     "qwen/qwen3.6-flash": {
@@ -7419,8 +7418,8 @@
         "maxTokens": 943718,
         "isFeatured": false,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.00064,
-        "costPer1kOutputTokens": 0.0135
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.01
       }
     },
     "thinkingmachines/inkling": {
@@ -7617,7 +7616,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000047,
+        "costPer1kInputTokens": 0.0000142,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false
       }
@@ -7752,10 +7751,10 @@
       "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.0000469,
-        "costPer1kOutputTokens": 0.000134,
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7866,7 +7865,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -7878,8 +7877,8 @@
           ]
         },
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.000425,
-        "costPer1kOutputTokens": 0.00255,
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.0023,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -8565,7 +8564,7 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0000101,
+        "costPer1kInputTokens": 1e-7,
         "costPer1kOutputTokens": 0.0006
       }
     },
@@ -8574,11 +8573,11 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 943718,
+        "maxTokens": 393216,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.005,
+        "costPer1kInputTokens": 0.00021912,
+        "costPer1kOutputTokens": 0.00065736,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

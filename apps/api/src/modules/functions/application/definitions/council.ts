@@ -1,4 +1,8 @@
-import { councilDecisionInputSchema, councilMemberIds } from "@ngriffin_uk/polychat-schemas";
+import {
+  councilDecisionInputSchema,
+  councilMemberIds,
+  reviewOutputInputSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
@@ -79,4 +83,15 @@ export const run_council: FunctionToolDescriptor = {
         "Optional concrete options and evaluation criteria. After the debate, an independent decision model returns the recommended option and calibrated probabilities.",
       ),
   }),
+};
+
+export const review_output: FunctionToolDescriptor = {
+  name: "review_output",
+  description:
+    "Ask a four-seat council (sceptic, researcher, customer, strategist) to review a finished Output before it is sent or published. Each seat critiques it, reads the others and votes; an adjudicator returns ship, revise or hold with a revision brief and any dissent, saved on the Output. Use it before sending or publishing work that matters, or when the user asks for a review. It costs about nine model calls.",
+  type: "normal",
+  permissions: ["orchestration"],
+  effects: { effectClass: "draft" },
+  intentEvidence: (input) => ({ operation: "review_output", outputId: input.outputId }),
+  inputSchema: reviewOutputInputSchema,
 };

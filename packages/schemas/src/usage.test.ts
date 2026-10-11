@@ -32,7 +32,7 @@ function delegated(
     teammateId: "teammate-1",
     teammateName: "Researcher",
     state,
-    runId: "run_child",
+    runIds: ["run_child"],
     measurement: creditMicros === null ? "unknown" : "reported",
     consumptionStatus: creditMicros === null ? "processing" : "recorded",
     creditMicros,
@@ -43,15 +43,24 @@ describe("totalChatRunCredits", () => {
   it("adds delegated work to the run and calls it complete once everything is recorded", () => {
     expect(
       totalChatRunCredits(usage(2_000_000, [delegated("done", 500_000), delegated("failed", 0)])),
-    ).toEqual({ recordedCreditMicros: 2_500_000, complete: true });
+    ).toEqual({
+      recordedCreditMicros: 2_500_000,
+      complete: true,
+      hasProcessingUsage: false,
+    });
   });
 
   it("treats live or unreported delegated work as a lower bound, never as zero", () => {
     expect(totalChatRunCredits(usage(2_000_000, [delegated("running", 300_000)]))).toEqual({
       recordedCreditMicros: 2_300_000,
       complete: false,
+      hasProcessingUsage: false,
     });
     expect(totalChatRunCredits(usage(2_000_000, [delegated("done", null)])).complete).toBe(false);
-    expect(totalChatRunCredits(usage(null)).complete).toBe(false);
+    expect(totalChatRunCredits(usage(null))).toEqual({
+      recordedCreditMicros: null,
+      complete: false,
+      hasProcessingUsage: false,
+    });
   });
 });

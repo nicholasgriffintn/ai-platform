@@ -361,22 +361,30 @@ const TOOL_CALL_TRIGGERS = [
   },
   {
     marker: "Propose the corrected release skill",
-    name: "propose_skill_revision",
+    name: "propose_correction",
     arguments: () =>
       JSON.stringify({
-        name: "release-playbook",
-        instructions: "Return the corrected release procedure.",
-        changeNote: "Use the corrected procedure",
+        pattern: "Use the corrected release procedure",
+        quote: "Propose the corrected release skill",
+        placement: {
+          type: "skill",
+          name: "release-playbook",
+          instructions: "Return the corrected release procedure.",
+        },
       }),
   },
   {
     marker: "Propose a nonexistent release skill",
-    name: "propose_skill_revision",
+    name: "propose_correction",
     arguments: () =>
       JSON.stringify({
-        name: "nonexistent-release-playbook",
-        instructions: "Return the corrected release procedure.",
-        changeNote: "Refuse an unknown skill",
+        pattern: "Refuse an unknown skill",
+        quote: "Propose a nonexistent release skill",
+        placement: {
+          type: "skill",
+          name: "nonexistent-release-playbook",
+          instructions: "Return the corrected release procedure.",
+        },
       }),
   },
   {

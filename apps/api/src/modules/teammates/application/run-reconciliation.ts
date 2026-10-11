@@ -21,6 +21,7 @@ import {
   buildDelegationResultFromMessage,
   listDelegationResultOutputIds,
 } from "~/modules/delegations/application/result";
+import { resumeInterruptedDelegation } from "~/modules/delegations/application/resume";
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
@@ -197,6 +198,18 @@ async function reconcileDelegationRun(params: {
   if (
     params.run.status === "succeeded" &&
     (await isRunWaitingForDelegations(params.context, params.run.id))
+  ) {
+    return;
+  }
+
+  if (
+    params.run.status === "interrupted" &&
+    (await resumeInterruptedDelegation({
+      context: params.context,
+      user: params.user,
+      run: params.run,
+      delegation,
+    }))
   ) {
     return;
   }

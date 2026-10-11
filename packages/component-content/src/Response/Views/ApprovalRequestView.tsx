@@ -1,5 +1,9 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { STANDING_APPROVAL_OPTION } from "@ngriffin_uk/polychat-schemas";
+import {
+  STANDING_APPROVAL_OPTION,
+  TEAMMATE_STANDING_APPROVAL_DAYS,
+  TEAMMATE_STANDING_OFFER_STREAK,
+} from "@ngriffin_uk/polychat-schemas";
 import { AlertTriangle } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -91,6 +95,14 @@ export function ApprovalRequestView({
         <div className="min-w-0 space-y-1">
           <p className="font-medium text-foreground">Approval required</p>
           {approval.message && <p className="break-words text-foreground">{approval.message}</p>}
+          {approval.approvedInARow !== undefined &&
+            approval.approvedInARow >= TEAMMATE_STANDING_OFFER_STREAK &&
+            options.includes(STANDING_APPROVAL_OPTION) && (
+              <p className="text-xs text-muted-foreground">
+                You have approved this {approval.approvedInARow} times in a row here.{" "}
+                {STANDING_APPROVAL_OPTION} stops asking for {TEAMMATE_STANDING_APPROVAL_DAYS} days.
+              </p>
+            )}
         </div>
       </div>
 

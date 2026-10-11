@@ -1,42 +1,15 @@
-# Set up local development
+# Local development
 
-Run commands from the repository root with the same Node/pnpm toolchain already used by checkout.
+Use Node.js 24 and the pnpm version pinned in the root `package.json`. Run commands from the repository root.
 
-## 1. Install and build schema packages
+1. Install dependencies with `pnpm install`.
+2. Create `apps/api/.dev.vars` from `apps/api/.dev.vars.example` if it does not already exist. Keep the tracked Wrangler manifest; do not replace it with the example manifest.
+3. If you need a local worker, create its `.dev.vars` from the matching example in `apps/sandbox-worker` or `apps/computer-worker`.
+4. Apply the local API migrations with `pnpm --filter @assistant/api db:migrate:local`.
+5. Start the web app and API with `pnpm dev`. Use `pnpm dev:api` or `pnpm dev:app` for one surface, and `pnpm dev:mobile` for iOS.
 
-```sh
-pnpm install
-pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
-```
+Development resolves workspace packages from source. Run `pnpm build:packages` when you need their built outputs.
 
-## 2. Create required local env files
+Magic-link sign-in sends email through the API's `SEND_EMAIL` binding. Configure it and `SES_EMAIL_FROM` for the local environment before relying on email sign-in.
 
-- API: copy `.dev.vars.example` and `wrangler.jsonc.example` to `apps/api/.dev.vars` and `apps/api/wrangler.json`
-- Optional workers: copy the `.dev.vars.example` file into `apps/sandbox-worker` if you enable it.
-
-## 3. Configure and migrate locally
-
-```sh
-pnpm --filter @assistant/api db:migrate:local
-```
-
-Use `db:seed:local` only when you explicitly want an empty seeded dataset replaced.
-
-## 4. Start the correct surface
-
-```sh
-pnpm dev
-```
-
-Use `pnpm dev:api`, `pnpm dev:app`, or `pnpm dev:mobile` for targeted checks.
-Stop any long-running process you start once validation is complete.
-
-## Sign-in and fixtures
-
-- Use the local magic-link flow; open the generated email file under `apps/api/.wrangler/tmp/email/`.
-- Run native fixture refresh only when the requested surface needs it: `pnpm refresh:mobile-model-fixture`.
-
-## Native setup
-
-- iOS: open `apps/mobile/ios/Polychat.xcodeproj`, then run `pnpm dev:mobile`, `pnpm test:mobile`, or `pnpm build:mobile`.
-- Desktop details are optional and documented where needed in the operations docs.
+Refresh the native model fixture with `pnpm refresh:mobile-model-fixture` only when a task needs current catalogue data. See [configuration](configuration.md) for bindings and [E2E checks](../../../../apps/app/tests/e2e/README.md) for browser journeys.

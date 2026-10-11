@@ -4,8 +4,10 @@ import {
   totalChatRunCredits,
   type ChatContextOmission,
   type ChatContextSnapshot,
+  type ChatRunDelegatedUsage,
   type ChatRunUsage,
 } from "@ngriffin_uk/polychat-schemas";
+import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { BookOpenText, ExternalLink } from "lucide-react";
 
 interface ContextDetailsPanelProps {
@@ -52,8 +54,32 @@ function ReferenceLink({
   );
 }
 
-function formatCredits(creditMicros: number): string {
-  return `${creditsFromCreditMicros(creditMicros).toLocaleString()} credits`;
+function runTotalLabel(total: ReturnType<typeof totalChatRunCredits>): string {
+  if (total.recordedCreditMicros === null) {
+    return total.hasProcessingUsage
+      ? "Run total: usage processing"
+      : "Run total: usage not reported";
+  }
+
+  const credits = formatCredits(creditsFromCreditMicros(total.recordedCreditMicros)) + " credits";
+
+  return total.complete ? "Run total: " + credits : "Run total so far: at least " + credits;
+}
+
+function delegatedUsageLabel(delegated: ChatRunDelegatedUsage): string {
+  if (delegated.creditMicros === null) {
+    return delegated.consumptionStatus === "processing" ? "usage processing" : "usage not reported";
+  }
+
+  const credits = formatCredits(creditsFromCreditMicros(delegated.creditMicros));
+
+  if (delegated.consumptionStatus === "recorded") {
+    return credits + " credits";
+  }
+
+  return delegated.consumptionStatus === "processing"
+    ? "at least " + credits + " credits · usage processing"
+    : "at least " + credits + " credits";
 }
 
 function DelegatedUsage({ usage }: { usage: ChatRunUsage }) {
@@ -68,21 +94,11 @@ function DelegatedUsage({ usage }: { usage: ChatRunUsage }) {
             <span className="min-w-0 flex-1 truncate">
               {delegated.teammateName ?? "Teammate"} · {delegated.state.replaceAll("_", " ")}
             </span>
-            <span className="shrink-0 text-muted-foreground">
-              {delegated.creditMicros === null
-                ? delegated.consumptionStatus === "processing"
-                  ? "usage processing"
-                  : "usage not reported"
-                : formatCredits(delegated.creditMicros)}
-            </span>
+            <span className="shrink-0 text-muted-foreground">{delegatedUsageLabel(delegated)}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-2 text-foreground">
-        {total.complete
-          ? `Run total: ${formatCredits(total.recordedCreditMicros)}`
-          : `Run total so far: at least ${formatCredits(total.recordedCreditMicros)}`}
-      </p>
+      <p className="mt-2 text-foreground">{runTotalLabel(total)}</p>
     </>
   );
 }
@@ -149,13 +165,13 @@ export function ContextDetailsPanel({
             </li>
             <li>
               {usage.reservation
-                ? `Reserved estimate: ${creditsFromCreditMicros(usage.reservation.creditMicros).toLocaleString()} credits · not a charge`
+                ? `Reserved estimate: ${formatCredits(creditsFromCreditMicros(usage.reservation.creditMicros))} credits · not a charge`
                 : "Reserved estimate: none recorded"}
             </li>
             <li>
               {usage.consumption.creditMicros === null
                 ? "Recorded consumption: unknown"
-                : `Recorded consumption: ${creditsFromCreditMicros(usage.consumption.creditMicros).toLocaleString()} credits`}
+                : `Recorded consumption: ${formatCredits(creditsFromCreditMicros(usage.consumption.creditMicros))} credits`}
             </li>
             <li>Settlement: {usage.settlement.status}</li>
           </ul>

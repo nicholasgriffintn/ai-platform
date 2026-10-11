@@ -20,7 +20,7 @@ export const INTERNAL_FUNCTION_TOOLS = new Set<string>([
 export const NON_RUNNABLE_FUNCTION_TOOLS = new Set<string>([
   ...INTERNAL_FUNCTION_TOOLS,
   "complete_goal",
-  "propose_skill_revision",
+  "propose_correction",
   "save_skill",
   "set_goal",
 ]);

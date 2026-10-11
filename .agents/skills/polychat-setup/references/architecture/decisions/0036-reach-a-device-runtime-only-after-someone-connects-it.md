@@ -1,6 +1,6 @@
 # ADR 0036: Reach a device runtime only after someone connects it
 
-Status: Implemented in the desktop core and shared model queries; the desktop application is not released.
+Status: Implemented in the desktop core and shared model queries.
 
 ## Problem
 

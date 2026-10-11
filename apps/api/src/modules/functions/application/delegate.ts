@@ -25,6 +25,7 @@ import {
   canRunDelegationOnMachine,
   resolveDelegationExecutionRoute,
 } from "~/modules/delegations/application/routing";
+import { delegationRunTaskId } from "~/modules/delegations/application/run-identity";
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { requireDelegationGroupWaitPolicy } from "~/modules/delegations/application/wait-policy";
@@ -372,7 +373,7 @@ export const delegate: ApiToolDefinition = {
 
       await scheduleDelegationExpiry(tasks, delegation, user.id);
       await tasks.enqueueTask({
-        id: `delegation_task_${delegationId}`,
+        id: delegationRunTaskId(delegationId),
         task_type: DELEGATION_RUN_TASK_TYPE,
         user_id: user.id,
         project_id: projectId ?? undefined,

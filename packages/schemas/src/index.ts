@@ -86,6 +86,7 @@ export * from "./chat-mode.js";
 export * from "./chat-stream.js";
 export * from "./capability-discovery.js";
 export * from "./skills.js";
+export * from "./corrections.js";
 export * from "./compaction-status.js";
 export * from "./conversation-replacement.js";
 export * from "./conversation-storage.js";

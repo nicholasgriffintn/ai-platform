@@ -38,6 +38,7 @@ import {
 } from "~/modules/functions/application";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import { applyFunctionRequestContext } from "~/modules/functions/application/request-context";
+import { approvalsInARow } from "~/modules/poly/domain/earned-trust";
 import type { IRequest, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/tools/execution" });
@@ -317,6 +318,12 @@ export const handleToolCalls = async (
               conversationType: req.request?.conversation_type,
               effectClass: callEffectClass,
               destination: callDestination,
+            }),
+            approvedInARow: approvalsInARow({
+              streaks: req.request?.approval_streaks,
+              toolName: functionName,
+              destination: callDestination,
+              now: Date.now(),
             }),
             logId: modelResponseLogId || "",
             timestamp,

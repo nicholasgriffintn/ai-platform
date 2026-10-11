@@ -66,7 +66,7 @@ export const chatRunDelegatedUsageSchema = z.object({
   teammateId: z.string().min(1),
   teammateName: z.string().min(1).nullable(),
   state: delegationStateSchema,
-  runId: z.string().min(1).nullable(),
+  runIds: z.array(z.string().min(1)),
   measurement: chatRunUsageMeasurementSchema,
   consumptionStatus: chatRunConsumptionStatusSchema,
   creditMicros: z.number().int().nonnegative().nullable(),
@@ -107,23 +107,35 @@ export const chatRunUsageSchema = z.object({
 export type ChatRunUsage = z.infer<typeof chatRunUsageSchema>;
 
 export interface ChatRunCreditTotal {
-  recordedCreditMicros: number;
+  recordedCreditMicros: number | null;
   complete: boolean;
+  hasProcessingUsage: boolean;
 }
 
 export function totalChatRunCredits(usage: ChatRunUsage): ChatRunCreditTotal {
+  const delegated = usage.delegated ?? [];
   const parts = [
     usage.consumption.creditMicros,
-    ...(usage.delegated ?? []).map((delegated) => delegated.creditMicros),
+    ...delegated.map((delegation) => delegation.creditMicros),
   ];
-  const settled = (usage.delegated ?? []).every(
-    (delegated) =>
-      delegated.consumptionStatus === "recorded" && !isLiveDelegationState(delegated.state),
-  );
+  const recordedParts = parts.filter((part): part is number => part !== null);
+  const complete =
+    usage.consumption.status === "recorded" &&
+    usage.consumption.creditMicros !== null &&
+    delegated.every(
+      (delegation) =>
+        delegation.consumptionStatus === "recorded" &&
+        delegation.creditMicros !== null &&
+        !isLiveDelegationState(delegation.state),
+    );
 
   return {
-    recordedCreditMicros: parts.reduce<number>((total, part) => total + (part ?? 0), 0),
-    complete: usage.consumption.status === "recorded" && settled,
+    recordedCreditMicros:
+      recordedParts.length > 0 ? recordedParts.reduce((total, part) => total + part, 0) : null,
+    complete,
+    hasProcessingUsage:
+      usage.consumption.status === "processing" ||
+      delegated.some((delegation) => delegation.consumptionStatus === "processing"),
   };
 }
 

@@ -18,6 +18,7 @@ import {
   createProjectFlowFromWorkflow,
   createSuggestedProjectFlow,
   platformTeammateCategoryLabels,
+  projectFlowAdvanceSchema,
   PROJECT_WORKFLOWS,
   type ProjectFlow,
   type ProjectFlowStage,
@@ -51,6 +52,7 @@ const STAGE_MODE_OPTIONS: FormSelectOption[] = [
 const STAGE_ADVANCE_OPTIONS: FormSelectOption[] = [
   { value: "on_goal_complete", label: "Hand off automatically" },
   { value: "on_human_accept", label: "Stop for human review" },
+  { value: "on_council_ship", label: "Hand off when the council ships it" },
 ];
 
 const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
@@ -382,12 +384,13 @@ export function FlowEditorDialog({
                       label="When the goal completes"
                       value={stage.advance}
                       options={STAGE_ADVANCE_OPTIONS}
-                      onValueChange={(advance) =>
+                      onValueChange={(value) => {
+                        const advance = projectFlowAdvanceSchema.safeParse(value);
+
                         updateStage(index, {
-                          advance:
-                            advance === "on_human_accept" ? "on_human_accept" : "on_goal_complete",
-                        })
-                      }
+                          advance: advance.success ? advance.data : "on_goal_complete",
+                        });
+                      }}
                     />
 
                     <fieldset>

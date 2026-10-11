@@ -11,6 +11,7 @@ import capabilities from "~/modules/capabilities/api/routes";
 import channels from "~/modules/channels/api/routes";
 import computerUse from "~/modules/computer-use/api/routes";
 import chat from "~/modules/conversations/api/routes";
+import corrections from "~/modules/corrections/api/routes";
 import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
 import flags from "~/modules/experiments/api/routes";
@@ -80,6 +81,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/decisions", decisions);
   app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);
+  app.route("/memory/corrections", corrections);
   app.route("/chat/saved-messages", savedMessages);
   app.route("/channels", channels);
   app.route("/teammates", teammates);

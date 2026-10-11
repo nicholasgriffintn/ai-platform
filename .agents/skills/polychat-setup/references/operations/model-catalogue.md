@@ -39,7 +39,7 @@ Upstream routing rules in `provider-routing.mjs` can split one remote provider a
 
 Infer a shared model from its family and normalised upstream display name. Retain distinct names and variants rather than fuzzy-matching model identifiers. Prefer upstream descriptions, retain existing descriptions when upstream has none, and generate a factual capability summary only when neither exists. Family descriptions use repeated model descriptions where possible, then a summary of recorded output modalities.
 
-Repeat a command with identical input and expect `changedFiles: 0`. Validate the catalogue package typecheck and its `scripts/sync-models-dev` tests after edits. Generated catalogue files remain excluded from lint and formatting; validate their schema, references and generated imports instead.
+Repeat a command with identical input and expect `changedFiles: 0`. Validate the catalogue package typecheck and its sync-tool tests after edits. Generated catalogue files remain excluded from lint and formatting; validate their schema, references and generated imports instead.
 
 ## Keep browser search lightweight
 

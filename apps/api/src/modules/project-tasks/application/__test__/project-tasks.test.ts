@@ -29,6 +29,9 @@ const baseTask = {
   workspaceId: "workspace-1",
   objective: "Ship the pricing note",
   acceptanceCriteria: [],
+  assumptions: [],
+  killConditions: [],
+  retrospective: null,
   expectedOutput: null,
   context: null,
   constraints: null,
@@ -819,6 +822,7 @@ describe("task dependencies", () => {
       expect.objectContaining({
         status: "blocked",
         blockedReason: "dependencies_unmet",
+        runnerIdentityUserId: 7,
       }),
     );
   });

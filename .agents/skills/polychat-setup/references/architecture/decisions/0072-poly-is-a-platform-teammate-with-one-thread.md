@@ -1,10 +1,10 @@
 # ADR 0072: Poly is a platform teammate with one thread per person
 
-Status: Implemented for identity and the thread. Supersedes [0016](0016-meta-tools-belong-to-the-meta-scope.md).
+Status: Implemented for identity, thread and navigation tools.
 
 ## Problem
 
-ADR 0016 made Poly a separate kind of conversation that could navigate the product but never act. That kept product-operating tools away from teammates and recipes, but it also meant Poly had no identity, grants, memory or routines of its own, and every overlay session could start a fresh conversation, so nothing Poly learned or was asked to follow survived the session. People expect the character that knows the product to be the same one that does the work, and to keep one conversation going rather than choosing which session to continue.
+Poly used to be a separate kind of conversation with navigation tools outside the teammate system. That left it without teammate identity, grants, memory or routines, and each overlay session could start a fresh conversation. People need one continuing Poly thread that uses the same scoped teammate capabilities as other work.
 
 ## Decision
 

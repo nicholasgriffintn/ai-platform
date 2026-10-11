@@ -4,6 +4,7 @@ import {
   isProjectTaskRetryable,
   projectTaskBlockedReasonLabels,
   type ProjectFlow,
+  type ProjectFlowAdvance,
   type ProjectTask,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
@@ -13,6 +14,7 @@ import {
   GitBranch,
   ListChecks,
   MessageSquareText,
+  Gavel,
   Pause,
   Play,
   Settings2,
@@ -29,6 +31,12 @@ import {
 import { TaskBoardFilters } from "./TaskBoardFilters";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { sortProjectTasks } from "./utils/project-tasks";
+
+const STAGE_ADVANCE_LABELS: Record<ProjectFlowAdvance, string> = {
+  on_goal_complete: "Auto hand-off",
+  on_human_accept: "Human review",
+  on_council_ship: "Council review",
+};
 
 const NO_PENDING_TASKS: string[] = [];
 
@@ -289,10 +297,12 @@ function FlowStrip({
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                     {stage.advance === "on_goal_complete" ? (
                       <Sparkles size={11} />
+                    ) : stage.advance === "on_council_ship" ? (
+                      <Gavel size={11} />
                     ) : (
                       <Pause size={11} />
                     )}
-                    {stage.advance === "on_goal_complete" ? "Auto hand-off" : "Human review"}
+                    {STAGE_ADVANCE_LABELS[stage.advance]}
                   </span>
                 </div>
                 <p className="mt-3 truncate text-sm font-semibold">{stage.name}</p>
