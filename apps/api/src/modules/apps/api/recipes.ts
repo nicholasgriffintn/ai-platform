@@ -25,11 +25,13 @@ import {
 } from "~/modules/apps/application/recipes";
 
 import recipeComposioTriggers from "./recipe-composio-triggers";
+import recipeWebhookTriggers from "./recipe-webhook-triggers";
 
 const app = new Hono();
 const installationListQuerySchema = z.object({ projectId: z.string().min(1).optional() });
 
 app.route("/", recipeComposioTriggers);
+app.route("/", recipeWebhookTriggers);
 
 addRoute(app, "get", "/", {
   tags: ["apps"],

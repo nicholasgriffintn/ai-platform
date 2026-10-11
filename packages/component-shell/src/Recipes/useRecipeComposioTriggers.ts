@@ -22,15 +22,18 @@ const recipeComposioTriggerTypesQueryKey = (
 export function useRecipeComposioTriggers(
   installationId: string,
   providerId: RecipeConnectorProvider,
+  enabled = true,
 ) {
   const queryClient = useQueryClient();
   const triggers = useQuery({
     queryKey: recipeComposioTriggersQueryKey(installationId),
     queryFn: () => listRecipeComposioTriggers(installationId),
+    enabled,
   });
   const triggerTypes = useQuery({
     queryKey: recipeComposioTriggerTypesQueryKey(installationId, providerId),
     queryFn: () => listRecipeComposioTriggerTypes(installationId, providerId),
+    enabled,
   });
   const refreshTriggers = () =>
     queryClient.invalidateQueries({ queryKey: recipeComposioTriggersQueryKey(installationId) });

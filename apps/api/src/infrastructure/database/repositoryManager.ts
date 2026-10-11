@@ -4,6 +4,8 @@ import { ComposioConnectorSessionRepository } from "~/modules/apps/infrastructur
 import { ConnectorOperationApprovalRepository } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { ProviderConnectionRepository } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeEventReceiptRepository } from "~/modules/apps/infrastructure/RecipeEventReceiptRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/apps/infrastructure/RecipeWebhookTriggerRepository";
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
@@ -134,6 +136,8 @@ export {
   ProjectEnvironmentVariableRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
+  RecipeEventReceiptRepository,
+  RecipeWebhookTriggerRepository,
   SharedTeammateRepository,
   SourceRepository,
   WorkspaceRepository,
@@ -361,6 +365,14 @@ export class RepositoryManager {
 
   public get providerConnections(): ProviderConnectionRepository {
     return this.resolve("providerConnections", (env) => new ProviderConnectionRepository(env));
+  }
+
+  public get recipeEventReceipts(): RecipeEventReceiptRepository {
+    return this.resolve("recipeEventReceipts", (env) => new RecipeEventReceiptRepository(env));
+  }
+
+  public get recipeWebhookTriggers(): RecipeWebhookTriggerRepository {
+    return this.resolve("recipeWebhookTriggers", (env) => new RecipeWebhookTriggerRepository(env));
   }
 
   public get recipeComposioTriggers(): RecipeComposioTriggerRepository {

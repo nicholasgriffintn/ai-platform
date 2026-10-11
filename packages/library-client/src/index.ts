@@ -31,6 +31,7 @@ export * from "./project-tasks.js";
 export * from "./project-task-integrations.js";
 export * from "./realtime-service.js";
 export * from "./recipe-composio-triggers.js";
+export * from "./recipe-webhook-triggers.js";
 export * from "./recipes.js";
 export * from "./replicate.js";
 export * from "./runnable-tools.js";

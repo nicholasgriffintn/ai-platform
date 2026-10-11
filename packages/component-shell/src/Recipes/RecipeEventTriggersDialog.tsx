@@ -22,11 +22,14 @@ import {
   buildRecipeTriggerConfiguration,
   getRecipeTriggerConfigurationFields,
   type RecipeTriggerConfigurationValue,
+  type RecipeWebhookTrigger,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
+import { RecipeWebhookTriggersSection } from "./RecipeWebhookTriggersSection.js";
 import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers.js";
+import { useRecipeWebhookTriggers } from "./useRecipeWebhookTriggers.js";
 
 interface RecipeEventTriggersDialogProps {
   recipe: AssistantRecipe;
@@ -57,9 +60,12 @@ export function RecipeEventTriggersDialog({
   const [condition, setCondition] = useState("");
   const [validationError, setValidationError] = useState<string>();
   const [triggerToDelete, setTriggerToDelete] = useState<RecipeComposioTrigger | null>(null);
+  const [webhookToDelete, setWebhookToDelete] = useState<RecipeWebhookTrigger | null>(null);
+  const hasProviders = providers.length > 0;
+  const webhooks = useRecipeWebhookTriggers(installation.id);
   const provider = providers.find((candidate) => candidate.id === providerId) ?? providers[0];
   const accountsQuery = useRecipeConnectorAccounts(providerId);
-  const manager = useRecipeComposioTriggers(installation.id, providerId);
+  const manager = useRecipeComposioTriggers(installation.id, providerId, hasProviders);
   const activeAccounts = useMemo(
     () =>
       (accountsQuery.data?.accounts ?? []).filter(
@@ -149,11 +155,11 @@ export function RecipeEventTriggersDialog({
         <DialogHeader>
           <DialogTitle>Event triggers for {recipe.title}</DialogTitle>
           <DialogDescription>
-            Run this installed recipe when a selected connected app reports an event.
+            Run this installed recipe when a connected app reports an event or a webhook is called.
           </DialogDescription>
         </DialogHeader>
 
-        {requestError && (
+        {hasProviders && requestError && (
           <div
             role="alert"
             className="rounded-md border border-failure/45 bg-failure/12 p-3 text-sm text-failure"
@@ -162,74 +168,101 @@ export function RecipeEventTriggersDialog({
           </div>
         )}
 
-        {isLoading ? (
-          <output className="block py-8 text-center text-sm text-muted-foreground">
-            Loading event options…
-          </output>
-        ) : (
-          <div className="grid gap-6 py-2 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-            <RecipeEventTriggerForm
-              providers={providers}
-              providerId={providerId}
-              onProviderIdChange={setProviderId}
-              accountOptions={getAccountOptions(activeAccounts, provider?.name ?? "Connected")}
-              accountId={accountId}
-              onAccountIdChange={setAccountId}
-              hasActiveAccounts={activeAccounts.length > 0}
-              triggerOptions={triggerTypes.map((type) => ({ value: type.slug, label: type.name }))}
-              triggerSlug={triggerSlug}
-              onTriggerSlugChange={setTriggerSlug}
-              triggerDescription={selectedTriggerType?.description}
-              configurationFields={configuration.fields}
-              configurationValues={configurationValues}
-              onConfigurationChange={(key, value) =>
-                setConfigurationValues((current) => ({ ...current, [key]: value }))
-              }
-              condition={condition}
-              onConditionChange={setCondition}
-              hasUnsupportedRequiredFields={configuration.unsupportedRequiredLabels.length > 0}
-              validationError={validationError}
-              canCreate={canCreate}
-              isCreating={manager.createTrigger.isPending}
-              onSubmit={() => {
-                void submit().catch(() => undefined);
-              }}
-            />
-
-            <section aria-labelledby="active-event-triggers" className="space-y-3">
-              <div>
-                <h3 id="active-event-triggers" className="text-sm font-semibold text-foreground">
-                  Installed events
-                </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Pause an event without removing its setup.
-                </p>
-              </div>
-              <TriggerList
-                triggers={manager.triggers.data?.triggers ?? []}
-                triggerTypes={triggerTypes}
+        {hasProviders &&
+          (isLoading ? (
+            <output className="block py-8 text-center text-sm text-muted-foreground">
+              Loading event options…
+            </output>
+          ) : (
+            <div className="grid gap-6 py-2 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+              <RecipeEventTriggerForm
                 providers={providers}
-                onSetStatus={(trigger, status) =>
-                  manager.updateTrigger.mutate({ triggerId: trigger.id, status })
+                providerId={providerId}
+                onProviderIdChange={setProviderId}
+                accountOptions={getAccountOptions(activeAccounts, provider?.name ?? "Connected")}
+                accountId={accountId}
+                onAccountIdChange={setAccountId}
+                hasActiveAccounts={activeAccounts.length > 0}
+                triggerOptions={triggerTypes.map((type) => ({
+                  value: type.slug,
+                  label: type.name,
+                }))}
+                triggerSlug={triggerSlug}
+                onTriggerSlugChange={setTriggerSlug}
+                triggerDescription={selectedTriggerType?.description}
+                configurationFields={configuration.fields}
+                configurationValues={configurationValues}
+                onConfigurationChange={(key, value) =>
+                  setConfigurationValues((current) => ({ ...current, [key]: value }))
                 }
-                onDelete={setTriggerToDelete}
-                isUpdating={(trigger) =>
-                  manager.updateTrigger.isPending &&
-                  manager.updateTrigger.variables?.triggerId === trigger.id
-                }
-                isDeleting={(trigger) =>
-                  manager.deleteTrigger.isPending && manager.deleteTrigger.variables === trigger.id
-                }
+                condition={condition}
+                onConditionChange={setCondition}
+                hasUnsupportedRequiredFields={configuration.unsupportedRequiredLabels.length > 0}
+                validationError={validationError}
+                canCreate={canCreate}
+                isCreating={manager.createTrigger.isPending}
+                onSubmit={() => {
+                  void submit().catch(() => undefined);
+                }}
               />
-            </section>
-          </div>
-        )}
+
+              <section aria-labelledby="active-event-triggers" className="space-y-3">
+                <div>
+                  <h3 id="active-event-triggers" className="text-sm font-semibold text-foreground">
+                    Installed events
+                  </h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Pause an event without removing its setup.
+                  </p>
+                </div>
+                <TriggerList
+                  triggers={manager.triggers.data?.triggers ?? []}
+                  triggerTypes={triggerTypes}
+                  providers={providers}
+                  onSetStatus={(trigger, status) =>
+                    manager.updateTrigger.mutate({ triggerId: trigger.id, status })
+                  }
+                  onDelete={setTriggerToDelete}
+                  isUpdating={(trigger) =>
+                    manager.updateTrigger.isPending &&
+                    manager.updateTrigger.variables?.triggerId === trigger.id
+                  }
+                  isDeleting={(trigger) =>
+                    manager.deleteTrigger.isPending &&
+                    manager.deleteTrigger.variables === trigger.id
+                  }
+                />
+              </section>
+            </div>
+          ))}
+
+        <RecipeWebhookTriggersSection
+          installationId={installation.id}
+          onDelete={setWebhookToDelete}
+        />
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Done
           </Button>
         </DialogFooter>
+        <ConfirmationDialog
+          open={webhookToDelete !== null}
+          onOpenChange={(open) => !open && setWebhookToDelete(null)}
+          title="Delete webhook?"
+          description="Requests to this webhook URL will stop starting this recipe. This cannot be undone."
+          confirmText="Delete webhook"
+          variant="destructive"
+          isLoading={webhooks.deleteTrigger.isPending}
+          onConfirm={async () => {
+            if (!webhookToDelete) {
+              return;
+            }
+
+            await webhooks.deleteTrigger.mutateAsync(webhookToDelete.id);
+            setWebhookToDelete(null);
+          }}
+        />
         <ConfirmationDialog
           open={triggerToDelete !== null}
           onOpenChange={(open) => !open && setTriggerToDelete(null)}
