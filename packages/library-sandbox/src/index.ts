@@ -52,6 +52,9 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
+  AGENT_HOST_BLOCKED_REMEDY,
+  agentHostBlockedResponse,
+  buildAgentHostEgressPolicy,
   containerEgressBlockedResponse,
   decideContainerEgress,
   decideOutbound,

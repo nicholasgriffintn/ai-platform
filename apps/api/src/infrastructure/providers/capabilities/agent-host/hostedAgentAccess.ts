@@ -5,8 +5,12 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IUser } from "~/types";
 
 import { AgentHostClient } from "./AgentHostClient";
+import type { AgentHostSpec } from "./agentHostSpec";
 
-export function requireHostedHermesAccess(context: ServiceContext | undefined): {
+export function requireHostedAgentAccess(
+  context: ServiceContext | undefined,
+  spec: AgentHostSpec,
+): {
   context: ServiceContext;
   user: IUser;
   client: AgentHostClient;
@@ -14,12 +18,16 @@ export function requireHostedHermesAccess(context: ServiceContext | undefined): 
   const user = context?.user;
 
   if (!context || !user?.id) {
-    throw new AssistantError("Sign in to use Hermes", ErrorType.AUTHENTICATION_ERROR, 401);
+    throw new AssistantError(
+      `Sign in to use ${spec.displayName}`,
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
+    );
   }
 
   if (!hasProEntitlement(user)) {
     throw new AssistantError(
-      "Hosted Hermes is available on paid plans",
+      `Hosted ${spec.displayName} is available on paid plans`,
       ErrorType.AUTHORISATION_ERROR,
       403,
     );

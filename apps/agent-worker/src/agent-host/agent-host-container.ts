@@ -9,11 +9,14 @@ import type { Env } from "../types";
 import { agentHostEgressOutbound, polychatApiOutbound } from "./outbound";
 
 const AGENT_HOST_STATE_KEY = "polychatAgentHost";
+const AGENT_HOST_BLOCKED_EGRESS_KEY = "polychatAgentHostBlockedEgress";
+const MAX_RECORDED_BLOCKED_HOSTS = 20;
 
 export interface AgentHostState {
   apiServerKey: string;
   checkpointReference?: string;
   lastCheckpointedRunId?: string;
+  networkHosts?: string[];
 }
 
 export class AgentHost extends Sandbox<Env> {
@@ -27,6 +30,29 @@ export class AgentHost extends Sandbox<Env> {
 
   async writeAgentHostState(state: AgentHostState): Promise<void> {
     await this.ctx.storage.put(AGENT_HOST_STATE_KEY, state);
+  }
+
+  async clearAgentHostState(): Promise<void> {
+    await this.ctx.storage.delete(AGENT_HOST_STATE_KEY);
+    await this.ctx.storage.delete(AGENT_HOST_BLOCKED_EGRESS_KEY);
+  }
+
+  async recordBlockedEgress(host: string): Promise<void> {
+    const hosts = (await this.ctx.storage.get<string[]>(AGENT_HOST_BLOCKED_EGRESS_KEY)) ?? [];
+
+    if (hosts.includes(host) || hosts.length >= MAX_RECORDED_BLOCKED_HOSTS) {
+      return;
+    }
+
+    await this.ctx.storage.put(AGENT_HOST_BLOCKED_EGRESS_KEY, [...hosts, host]);
+  }
+
+  async takeBlockedEgress(): Promise<string[]> {
+    const hosts = (await this.ctx.storage.get<string[]>(AGENT_HOST_BLOCKED_EGRESS_KEY)) ?? [];
+
+    await this.ctx.storage.delete(AGENT_HOST_BLOCKED_EGRESS_KEY);
+
+    return hosts;
   }
 }
 

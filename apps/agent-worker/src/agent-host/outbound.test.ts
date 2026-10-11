@@ -2,7 +2,7 @@ import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-sch
 import { describe, expect, it, vi } from "vitest";
 
 import type { Env } from "../types";
-import { polychatApiOutbound } from "./outbound";
+import { agentHostEgressOutbound, polychatApiOutbound } from "./outbound";
 
 describe("polychatApiOutbound", () => {
   it("forwards the request unchanged with a scoped internal service identity", async () => {
@@ -88,5 +88,100 @@ describe("polychatApiOutbound", () => {
       "Agent host service authentication is not configured",
     );
     expect(apiFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("agentHostEgressOutbound", () => {
+  const policy = {
+    mode: "list" as const,
+    hosts: ["api.example.com"],
+    readOnlyHosts: ["registry.npmjs.org"],
+  };
+  const env = {} as Env;
+
+  it("allows declared hosts and registry reads", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok"));
+
+    try {
+      const allowed = await agentHostEgressOutbound(
+        new Request("https://api.example.com/v1", { method: "POST" }),
+        env,
+        { params: policy },
+      );
+
+      expect(allowed.status).toBe(200);
+
+      const registry = await agentHostEgressOutbound(
+        new Request("https://registry.npmjs.org/react", { method: "GET" }),
+        env,
+        { params: policy },
+      );
+
+      expect(registry.status).toBe(200);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("blocks registry writes, unknown hosts and missing policy", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok"));
+
+    try {
+      const write = await agentHostEgressOutbound(
+        new Request("https://registry.npmjs.org/react", { method: "PUT" }),
+        env,
+        { params: policy },
+      );
+
+      expect(write.status).toBe(403);
+      await expect(write.text()).resolves.toContain("Hosted agents can read package registries");
+
+      const unknown = await agentHostEgressOutbound(
+        new Request("https://evil.example.com/", { method: "GET" }),
+        env,
+        { params: policy },
+      );
+
+      expect(unknown.status).toBe(403);
+
+      const missing = await agentHostEgressOutbound(
+        new Request("https://api.example.com/v1", { method: "GET" }),
+        env,
+        { params: null },
+      );
+
+      expect(missing.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("strips authorization material before egress", async () => {
+    let forwarded: Request | undefined;
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input: string | URL | Request) => {
+        forwarded = new Request(input);
+
+        return new Response("ok");
+      });
+
+    try {
+      await agentHostEgressOutbound(
+        new Request("https://api.example.com/v1", {
+          method: "POST",
+          headers: { Authorization: "Bearer secret", Cookie: "session=1" },
+          body: "{}",
+        }),
+        env,
+        { params: policy },
+      );
+
+      expect(forwarded?.headers.get("Authorization")).toBeNull();
+      expect(forwarded?.headers.get("Cookie")).toBeNull();
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 });

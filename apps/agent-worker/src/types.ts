@@ -6,4 +6,5 @@ export interface Env {
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_R2_ACCOUNT_ID?: string;
   SANDBOX_TRANSPORT?: "http" | "rpc";
+  JWT_SECRET?: string;
 }

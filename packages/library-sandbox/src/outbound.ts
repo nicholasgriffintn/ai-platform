@@ -171,6 +171,33 @@ export function containerEgressBlockedResponse(reason: string, remedy: string): 
   });
 }
 
+export const AGENT_HOST_BLOCKED_REMEDY =
+  "Hosted agents can read package registries and access Polychat only. Add the host to networkHosts in the project's environment configuration if the run needs it.";
+
+export function agentHostBlockedResponse(reason: string): Response {
+  return containerEgressBlockedResponse(reason, AGENT_HOST_BLOCKED_REMEDY);
+}
+
+export function buildAgentHostEgressPolicy(params: {
+  env: {
+    BACKUP_BUCKET_ENDPOINT?: string;
+    CLOUDFLARE_ACCOUNT_ID?: string;
+    CLOUDFLARE_R2_ACCOUNT_ID?: string;
+  };
+  networkHosts?: readonly string[];
+}): ContainerEgressPolicy {
+  const storageHost = resolveBackupStorageHost(params.env);
+  const declared = (params.networkHosts ?? [])
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean);
+
+  return {
+    mode: "list",
+    hosts: [...(storageHost ? [storageHost] : []), ...declared],
+    readOnlyHosts: [...SANDBOX_PACKAGE_REGISTRY_HOSTS],
+  };
+}
+
 export function resolveBackupStorageHost(env: {
   BACKUP_BUCKET_ENDPOINT?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;

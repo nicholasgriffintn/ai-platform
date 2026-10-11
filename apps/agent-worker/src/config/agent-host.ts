@@ -3,6 +3,7 @@ export const HERMES_HOME = "/workspace/hermes";
 export const HERMES_START_COMMAND = "/usr/local/bin/start-hermes";
 export const HERMES_STARTUP_TIMEOUT_MS = 180_000;
 export const HERMES_REQUEST_TIMEOUT_MS = 30_000;
+export const HERMES_RUN_START_TIMEOUT_MS = 120_000;
 export const AGENT_HOST_SLEEP_AFTER = "15m";
 export const AGENT_HOST_CHECKPOINT_TTL_SECONDS = 90 * 24 * 60 * 60;
 export const AGENT_HOST_CHECKPOINT_EXCLUDES = [

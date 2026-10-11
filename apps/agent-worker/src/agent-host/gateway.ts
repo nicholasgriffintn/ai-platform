@@ -7,12 +7,15 @@ import {
   HERMES_API_PORT,
   HERMES_HOME,
   HERMES_REQUEST_TIMEOUT_MS,
+  HERMES_RUN_START_TIMEOUT_MS,
   HERMES_START_COMMAND,
   HERMES_STARTUP_TIMEOUT_MS,
 } from "../config/agent-host";
 import type { AgentHost, AgentHostState } from "./agent-host-container";
 
 export type AgentHostSandbox = ReturnType<typeof getSandbox<AgentHost>>;
+
+const gatewayStartFlights = new Map<string, Promise<void>>();
 
 async function findRunningGateway(sandbox: AgentHostSandbox) {
   const processes = await sandbox.listProcesses().catch(() => []);
@@ -26,16 +29,17 @@ async function findRunningGateway(sandbox: AgentHostSandbox) {
   );
 }
 
+export async function isHermesGatewayRunning(sandbox: AgentHostSandbox): Promise<boolean> {
+  return (await findRunningGateway(sandbox)) !== null;
+}
+
 async function hermesHomeExists(sandbox: AgentHostSandbox): Promise<boolean> {
   const result = await sandbox.exec(`test -f ${HERMES_HOME}/config.yaml`).catch(() => null);
 
   return result?.success === true;
 }
 
-export async function ensureHermesGateway(
-  sandbox: AgentHostSandbox,
-  state: AgentHostState,
-): Promise<void> {
+async function startHermesGateway(sandbox: AgentHostSandbox, state: AgentHostState): Promise<void> {
   const running = await findRunningGateway(sandbox);
 
   if (running) {
@@ -63,24 +67,57 @@ export async function ensureHermesGateway(
   });
 }
 
+export async function ensureHermesGateway(
+  sandbox: AgentHostSandbox,
+  state: AgentHostState,
+  hostId: string,
+): Promise<void> {
+  const inFlight = gatewayStartFlights.get(hostId);
+
+  if (inFlight) {
+    await inFlight;
+
+    return;
+  }
+
+  const flight = startHermesGateway(sandbox, state).finally(() => {
+    gatewayStartFlights.delete(hostId);
+  });
+
+  gatewayStartFlights.set(hostId, flight);
+  await flight;
+}
+
 export async function hermesRequest(
   sandbox: AgentHostSandbox,
   state: AgentHostState,
   path: string,
-  init: { method: "GET" | "POST"; body?: unknown },
+  init: {
+    method: "GET" | "POST";
+    body?: unknown;
+    timeoutMs?: number;
+    headers?: Record<string, string>;
+  },
 ): Promise<Response> {
+  const timeoutMs = init.timeoutMs ?? HERMES_REQUEST_TIMEOUT_MS;
+
   return sandbox.containerFetch(
     new Request(`http://localhost:${HERMES_API_PORT}${path}`, {
       method: init.method,
       headers: {
         Authorization: `Bearer ${state.apiServerKey}`,
         "Content-Type": "application/json",
+        ...init.headers,
       },
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
-      signal: AbortSignal.timeout(HERMES_REQUEST_TIMEOUT_MS),
+      ...(timeoutMs > 0 ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     }),
     HERMES_API_PORT,
   );
+}
+
+export function hermesRunStartTimeout(): number {
+  return HERMES_RUN_START_TIMEOUT_MS;
 }
 
 export async function checkpointHermesHome(
