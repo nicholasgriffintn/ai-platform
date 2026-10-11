@@ -38,8 +38,8 @@
         "costPer1kOutputTokens": 0.00025
       },
       "unset": [
-        "supportsResponseFormat",
-        "contextComplexity"
+        "contextComplexity",
+        "supportsResponseFormat"
       ]
     },
     "solar-pro4": {

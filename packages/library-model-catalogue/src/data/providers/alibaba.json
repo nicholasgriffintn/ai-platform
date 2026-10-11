@@ -679,7 +679,6 @@
       "matchingModel": "qwen3.6-35b-a3b",
       "overrides": {
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

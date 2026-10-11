@@ -984,7 +984,7 @@
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
-        "maxTokens": 36864,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text"
@@ -2572,6 +2572,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 17, 2026",
@@ -2844,6 +2845,7 @@
         "name": "Qwen3.8 27B",
         "openWeights": true,
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
+        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text",
