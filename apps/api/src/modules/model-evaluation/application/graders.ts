@@ -10,6 +10,7 @@ import {
   type Grader,
   type GraderConfig,
   parsePlatformChatModelId,
+  type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { ai } from "~/infrastructure/ai";
@@ -37,7 +38,11 @@ export async function scoreWithGrader(
   },
   config: GraderConfig,
   item: { input: string; output: string; expected?: string },
-  judge?: { model: string; provider: string },
+  judge?: {
+    model: string;
+    provider: string;
+    effort?: ReasoningEffort;
+  },
 ): Promise<number | null> {
   if (isDeterministicGrader(config)) {
     return scoreDeterministic(config, item.output, item.expected);
@@ -71,6 +76,7 @@ export async function scoreWithGrader(
     env,
     model: model.model,
     provider: model.provider,
+    reasoning_effort: "effort" in model ? model.effort : undefined,
     prompt,
   });
 

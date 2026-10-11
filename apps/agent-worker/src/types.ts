@@ -1,5 +1,7 @@
+import type { AgentHost } from "./agent-host/agent-host-container";
+
 export interface Env {
-  AgentHost: DurableObjectNamespace<import("./agent-host/agent-host-container").AgentHost>;
+  AgentHost: DurableObjectNamespace<AgentHost>;
   POLYCHAT_API: Fetcher;
   BACKUP_BUCKET: R2Bucket;
   BACKUP_BUCKET_ENDPOINT?: string;

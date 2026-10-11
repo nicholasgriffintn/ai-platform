@@ -5,6 +5,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   type EvalCase,
   type EvalCaseResult,
+  type ReasoningEffort,
   type ScoreSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -68,7 +69,11 @@ async function runCase(
   graders: readonly ModelGraderRecord[],
   route: ModelRouteRecord,
   item: EvalCase,
-  judge: { model: string; provider: string },
+  judge: {
+    model: string;
+    provider: string;
+    effort?: ReasoningEffort;
+  },
 ): Promise<EvalCaseResult> {
   const started = Date.now();
 

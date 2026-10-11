@@ -1,8 +1,10 @@
 import type { getSandbox } from "@cloudflare/sandbox";
 import type { TeammateComputerInput } from "@ngriffin_uk/polychat-schemas";
 
+import type { Computer } from "./index";
+
 export interface Env {
-  Computer: DurableObjectNamespace<import("./index").Computer>;
+  Computer: DurableObjectNamespace<Computer>;
   BACKUP_BUCKET: R2Bucket;
   COMPUTER_SCREEN_HOST?: string;
   COMPUTER_SCREEN_SECRET?: string;
