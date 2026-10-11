@@ -20,7 +20,7 @@ library.listNames("chat", { includeAliases: true });
 
 ## Host
 
-`ProviderHost` is the inversion point. `models` resolves model configuration, `storage` creates output stores, `keyStore(env)` reads user credentials, `metrics` records provider operations, and `realtime.createProxyGrant` mints realtime proxy grants. The API implements it once in `apps/api/src/lib/providers/host.ts`.
+`ProviderHost` is the inversion point. `models` resolves model configuration, `storage` creates output stores, `keyStore(env)` reads user credentials, `metrics` records provider operations, and `realtime.createProxyGrant` mints realtime proxy grants. The API implements it in `apps/api/src/infrastructure/providers/host.ts`.
 
 ## Library
 

@@ -1,6 +1,6 @@
 # Agent instructions
 
-Polychat is a pnpm monorepo: Chat, Work, API, web, desktop, optional sandbox/training workers, and iOS.
+Polychat is a pnpm monorepo: Chat, Work, API, web, desktop, optional sandbox/computer workers, and iOS.
 Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops reference and keep the repository root `AGENTS.md` contract current.
 
 ## Boundaries

@@ -1,36 +1,25 @@
 ---
 name: polychat-setup
-description: Configure, deploy, and verify Polychat using the live repository and SKILL/AGENTS context.
+description: Set up, configure, understand and release Polychat from the current repository.
 ---
 
 # Polychat setup
 
-Use the repository as implementation authority. If a request includes deploy, migrations, or external connectors, pause and confirm credentials first.
+Use the checked-out code and manifests as the source of truth. Read only the guide that matches the task, and verify paths, commands and bindings before repeating them.
 
-## Core references
+## Guides
 
-- [Understand product and workflow](references/product.md)
-- [Set up local development](references/setup.md)
-- [Apply runtime configuration](references/configuration.md)
-- [Deploy safely](references/deployment.md)
-- [White-label and branding](references/white-labelling.md)
-- [Architecture context and ownership](references/architecture/context.md)
-- [Durable decisions](references/architecture/decisions.md)
-- [Model catalogue](references/operations/model-catalogue.md)
-- [Model governance](references/operations/model-governance.md)
-- [Browser and computer use](references/operations/computer-use.md)
-- [Billing and spend](references/operations/loop-cost-controls.md)
-- [Connector operations](references/operations/composio-connectors.md)
+- **Product and architecture:** [product](references/product.md), [architecture map](references/architecture/context.md), [decision records](references/architecture/decisions/).
+- **Local development:** [setup](references/setup.md), [configuration](references/configuration.md), [E2E checks](../../../apps/app/tests/e2e/README.md).
+- **Deployment and release:** [deployment](references/deployment.md), [release process](references/operations/releases.md), [verification records](references/verification.md).
+- **Model operations:** [catalogue](references/operations/model-catalogue.md), [model platform](references/operations/model-governance.md), [usage and cost](references/operations/loop-cost-controls.md), [Stripe](references/operations/stripe-billing.md).
+- **Capabilities and workers:** [Composio](references/operations/composio-connectors.md), [computer use](references/operations/computer-use.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md), [sandbox worker](references/components/sandbox-worker.md), [computer worker](../../../apps/computer-worker/README.md).
+- **Branding:** [white-labelling](references/white-labelling.md).
 
-## Operating rules
+## Working rules
 
-- Keep scope narrow and report unresolved external actions in `references/verification.md`.
-- Prefer optional worker details only when the task explicitly touches sandbox or local runtime setup.
-- Never invent identifiers or credentials, and never paste ignored secrets into tracked files.
-- Treat `setup` as local unless the user authorises a deployment action.
-
-### Validation points
-
-- [E2E guide](references/testing/e2e.md) for app/API/Worker coverage.
-- `.agents/verification` items for operator-only checks.
-- [architecture decisions](references/architecture/decisions.md) when changing durable boundaries.
+- Local setup stays local. Deployments and remote migrations need explicit user authority.
+- Use tracked manifests and example files; keep credentials out of tracked files and model input.
+- Keep operational guidance short and point to the owning package or application for implementation details.
+- Record only outstanding operator checks in `.agents/verification/pending/`; skip verification records for documentation-only changes.
+- Follow the repository root `AGENTS.md` and the owning package's README.

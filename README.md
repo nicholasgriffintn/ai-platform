@@ -1,21 +1,18 @@
 # Polychat AI Platform
 
-Polychat is a multi-model AI assistant platform. It brings personal chat, collaborative project work, agents, retrieval, generated media, code assistance, and reusable workflows into one Cloudflare-backed API with web and iOS clients.
+Polychat is a multi-model AI assistant platform for personal chat and collaborative project work, with web, iOS and desktop clients.
 
 Try the hosted version at [polychat.app](https://polychat.app), or read [Building my own AI assistant](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant) for the story behind the project.
-
-> [!NOTE]
-> Polychat is always in active development. Some features are still being developed, tested, or reimagined.
 
 ![A chat in the Polychat web application](./docs/images/chat.png)
 
 ## Set up or adapt Polychat
 
-Use the repo-local [`$polychat-setup`](./.agents/skills/polychat-setup/SKILL.md) skill with your coding agent. It will explain the product and its architecture, help you choose the capabilities you need, make the agreed configuration or white-labelling changes, and validate the result.
+Use the repo-local [`polychat-setup` skill](./.agents/skills/polychat-setup/SKILL.md) for setup, configuration, architecture and release guidance.
 
 For example, ask your agent:
 
-> Use `$polychat-setup` to help me run a white-labelled Polychat instance. Start with the web app and API, explain each decision, and make the changes after I confirm them.
+> Use `polychat-setup` to help me run a white-labelled Polychat instance. Start with the web app and API, explain each decision, and make the changes after I confirm them.
 
 ## Product
 
@@ -39,6 +36,8 @@ The platform includes:
 - `apps/app` — React Router web application and PWA.
 - `apps/api` — public Hono API Worker and platform control plane.
 - `apps/sandbox-worker` — isolated coding-task execution Worker.
+- `apps/computer-worker` — hosted browser and computer Worker.
+- `apps/desktop` — Tauri desktop client.
 - `apps/mobile/ios` — native iOS client under active development.
 - `packages/*` — shared schemas, utilities, runtime libraries, and reusable React components published under the `@ngriffin_uk/polychat-*` scope.
 
