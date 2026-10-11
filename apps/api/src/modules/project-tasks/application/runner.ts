@@ -56,6 +56,7 @@ import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
+import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { retainTaskReviewCompletion } from "./review-output";
 import { assertReviewDispatchAuthority } from "./review-policy";
@@ -922,8 +923,13 @@ export async function runProjectTaskDispatch(params: {
           ])
         ).map((output) => output.id)
       : [];
+  const metKillCondition = goal
+    ? await findMetKillCondition(context, claimed, responseOutput, conversationId)
+    : null;
   const council =
-    goal?.status === "completed" && runtime.stage?.advance === "on_council_ship"
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    runtime.stage?.advance === "on_council_ship"
       ? await reviewStageOutputs(context, {
           taskId,
           conversationId,
@@ -933,7 +939,9 @@ export async function runProjectTaskDispatch(params: {
         })
       : null;
   const nextStageId =
-    goal?.status === "completed" && stageAdvancesOnCompletion(runtime.stage, council)
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    stageAdvancesOnCompletion(runtime.stage, council)
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
   const completion =
@@ -949,8 +957,9 @@ export async function runProjectTaskDispatch(params: {
           council,
         })
       : null;
-  const nextStatus =
-    goal?.status === "completed"
+  const nextStatus = metKillCondition
+    ? "blocked"
+    : goal?.status === "completed"
       ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
       : projection.status;
 
@@ -961,8 +970,8 @@ export async function runProjectTaskDispatch(params: {
     executionLease: params.executionLease,
     updates: {
       status: nextStatus,
-      blockedReason: projection.blockedReason,
-      blockedDetail: goal?.stopped_reason ?? null,
+      blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
+      blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
       tokensSpent,
       ...(completion ? { completions: [...claimed.completions, completion] } : {}),
       ...(nextStatus === "done"
@@ -1034,6 +1043,19 @@ export async function runProjectTaskDispatch(params: {
   }
 
   if (nextStatus === "done") {
+    await recordProjectTaskRetrospective(
+      context,
+      {
+        ...claimed,
+        completions: completion ? [...claimed.completions, completion] : claimed.completions,
+      },
+      "done",
+    ).catch((error: unknown) =>
+      logger.warn("Could not record the task retrospective", {
+        taskId,
+        error: getErrorMessage(error),
+      }),
+    );
     await releaseReadyDependentTasks(context, claimed.projectId);
   }
 

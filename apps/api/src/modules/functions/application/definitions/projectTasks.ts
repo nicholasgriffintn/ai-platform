@@ -36,6 +36,18 @@ export const create_task: FunctionToolDescriptor = {
         type: "string",
         description: "A concrete description of the result the task should leave behind.",
       },
+      assumptions: {
+        type: "array",
+        description:
+          "What has to be true for this plan to be worth doing, one statement each. They are checked against the outcome when the task finishes.",
+        items: { type: "string" },
+      },
+      killConditions: {
+        type: "array",
+        description:
+          "Evidence that should stop the work, one condition each, decided now rather than once invested. Checked after every run.",
+        items: { type: "string" },
+      },
       stageId: {
         type: "string",
         description: "Optional flow stage id to start the task in.",
@@ -86,7 +98,7 @@ export const get_task: FunctionToolDescriptor = {
 export const update_task: FunctionToolDescriptor = {
   name: "update_task",
   description:
-    "Update work in this project's task system. You may reword it, sharpen its acceptance criteria, or move it to backlog, review, or cancelled. You cannot queue or finish a task — dispatch does the first and a person accepts the second.",
+    "Update work in this project's task system. You may reword it, sharpen its acceptance criteria, record the assumptions and kill conditions a plan rests on, or move it to backlog, review, or cancelled. You cannot queue or finish a task — dispatch does the first and a person accepts the second.",
   type: "normal",
   permissions: ["write"],
   effects: { effectClass: "write" },
@@ -99,6 +111,18 @@ export const update_task: FunctionToolDescriptor = {
       acceptanceCriteria: {
         type: "array",
         description: "Replacement checkable completion criteria.",
+        items: { type: "string" },
+      },
+      assumptions: {
+        type: "array",
+        description:
+          "Replacement list of what has to be true for this plan to be worth doing, one statement each. They are checked against the outcome when the task finishes.",
+        items: { type: "string" },
+      },
+      killConditions: {
+        type: "array",
+        description:
+          "Replacement list of evidence that should stop the work, one condition each, decided now rather than once invested. Checked after every run.",
         items: { type: "string" },
       },
       status: {

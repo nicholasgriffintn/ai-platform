@@ -789,7 +789,7 @@ Steps this recipe performs:
     title: "Project stage instructions",
     description:
       "Builds the stage preamble, skills to load and human-review note for a project task.",
-    text: `{{#stageName}}You are working the "{{stageName}}" stage of this project's flow.{{/stageName}}{{#stageInstructions}} {{stageInstructions}}{{/stageInstructions}}{{#skillIds}} Load these skills before you start and follow them: {{skillIds}}.{{/skillIds}}{{#humanReview}} This stage ends with a person reviewing your work. Finish by stating what you did and what remains unproven.{{/humanReview}}`,
+    text: `{{#stageName}}You are working the "{{stageName}}" stage of this project's flow.{{/stageName}}{{#stageInstructions}} {{stageInstructions}}{{/stageInstructions}}{{#skillIds}} Load these skills before you start and follow them: {{skillIds}}.{{/skillIds}}{{#planStage}} Before you finish, record on this task with update_task the assumptions the plan rests on and the evidence that should stop the work. Find the weakest assumption and run a short pre-mortem: if this failed in a month, what would have caused it?{{/planStage}}{{#humanReview}} This stage ends with a person reviewing your work. Finish by stating what you did and what remains unproven.{{/humanReview}}`,
     variables: [
       {
         name: "stageName",
@@ -803,6 +803,11 @@ Steps this recipe performs:
         name: "skillIds",
         description:
           "Comma-separated skill ids to load before starting; empty when no skills are granted.",
+      },
+      {
+        name: "planStage",
+        description:
+          "Non-empty when the stage runs in plan mode, which asks for assumptions and kill conditions.",
       },
       {
         name: "humanReview",
