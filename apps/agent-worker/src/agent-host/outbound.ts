@@ -3,6 +3,7 @@ import {
   decideContainerEgress,
   parseContainerEgressPolicy,
 } from "@ngriffin_uk/polychat-library-sandbox";
+import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Env } from "../types";
@@ -12,7 +13,7 @@ interface OutboundContext {
 }
 
 export interface PolychatApiParams {
-  apiKey: string;
+  serviceToken: string;
 }
 
 export async function polychatApiOutbound(
@@ -25,15 +26,16 @@ export async function polychatApiOutbound(
   targetUrl.protocol = "http:";
   targetUrl.hostname = "polychat-api";
   targetUrl.port = "";
-  const apiKey =
-    isRecord(ctx.params) && typeof ctx.params.apiKey === "string" ? ctx.params.apiKey : undefined;
+  const serviceToken = isRecord(ctx.params) ? ctx.params.serviceToken : undefined;
+
+  if (typeof serviceToken !== "string" || !serviceToken) {
+    throw new Error("Agent host service authentication is not configured");
+  }
+
   const forwardedRequest = new Request(targetUrl, request);
 
-  if (apiKey) {
-    forwardedRequest.headers.set("Authorization", `Bearer ${apiKey}`);
-  } else {
-    forwardedRequest.headers.delete("Authorization");
-  }
+  forwardedRequest.headers.delete("Authorization");
+  forwardedRequest.headers.set(INTERNAL_SERVICE_AUTHORIZATION_HEADER, `Bearer ${serviceToken}`);
 
   return env.POLYCHAT_API.fetch(forwardedRequest);
 }

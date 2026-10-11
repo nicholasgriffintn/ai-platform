@@ -1,47 +1,37 @@
-import type { AgentHostRunSnapshot } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AgentHostProvisionRequest,
+  AgentHostRunSnapshot,
+} from "@ngriffin_uk/polychat-schemas";
+import { verifyInternalServiceDelegationJwt } from "@ngriffin_uk/polychat-utility-server/internal-service-auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import type { AgentHostClient } from "./AgentHostClient";
-import { AgentHostUnprovisionedError } from "./AgentHostUnprovisionedError";
-import { HOSTED_HERMES_KEY_NAME, runHostedHermesTurn } from "./hostedHermesTurn";
+import { runHostedHermesTurn } from "./hostedHermesTurn";
 
-const apiKeys = vi.hoisted(() => ({
-  getUserApiKeys: vi.fn(),
-  createUserApiKey: vi.fn(),
-  deleteUserApiKey: vi.fn(),
-}));
-
-vi.mock("~/modules/user/application/apiKeys", () => apiKeys);
 vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   abortableDelay: vi.fn(async () => undefined),
 }));
 
 const RUN_ID = `run_${"a".repeat(32)}`;
+const DELEGATION_SECRET = "hosted-hermes-test-secret-with-at-least-32-bytes";
 
-function fakeClient(snapshots: AgentHostRunSnapshot[], unprovisioned = false) {
-  let starts = 0;
-
+function fakeClient(snapshots: AgentHostRunSnapshot[]) {
   return {
-    provision: vi.fn(async () => undefined),
-    startRun: vi.fn(async () => {
-      starts += 1;
-
-      if (unprovisioned && starts === 1) {
-        throw new AgentHostUnprovisionedError();
-      }
-
-      return RUN_ID;
-    }),
+    provision: vi.fn(async (_input: AgentHostProvisionRequest) => undefined),
+    startRun: vi.fn(async () => RUN_ID),
     readRun: vi.fn(async () => snapshots.shift() ?? snapshots.at(-1)),
     answerApproval: vi.fn(async () => undefined),
     stopRun: vi.fn(async () => undefined),
   };
 }
 
-const context = { executionRunId: undefined } as unknown as ServiceContext;
+const context = {
+  executionRunId: undefined,
+  env: { JWT_SECRET: DELEGATION_SECRET },
+} as unknown as ServiceContext;
 
 function turn(
   client: ReturnType<typeof fakeClient>,
@@ -60,21 +50,26 @@ function turn(
 describe("runHostedHermesTurn", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    apiKeys.getUserApiKeys.mockResolvedValue([
-      { id: "old", name: HOSTED_HERMES_KEY_NAME, created_at: "" },
-    ]);
-    apiKeys.createUserApiKey.mockResolvedValue({ plaintextKey: "ak_new", metadata: {} });
   });
 
-  it("provisions on first use with a fresh key and revokes the previous hosted key", async () => {
-    const client = fakeClient([{ run_id: RUN_ID, status: "completed", output: "Done" }], true);
+  it("provisions with the authenticated user before starting a run", async () => {
+    const client = fakeClient([{ run_id: RUN_ID, status: "completed", output: "Done" }]);
 
     await expect(turn(client)).resolves.toMatchObject({ output: "Done" });
-    expect(apiKeys.getUserApiKeys).toHaveBeenCalledWith(context, 7, HOSTED_HERMES_KEY_NAME);
-    expect(apiKeys.deleteUserApiKey).toHaveBeenCalledTimes(1);
-    expect(apiKeys.deleteUserApiKey).toHaveBeenCalledWith(context, "old", 7);
-    expect(client.provision).toHaveBeenCalledWith({ hostId: "hermes-7", apiKey: "ak_new" });
-    expect(client.startRun).toHaveBeenLastCalledWith({
+    const provisionRequest = client.provision.mock.calls[0]?.[0];
+
+    expect(provisionRequest?.hostId).toBe("hermes-7");
+    const claims = await verifyInternalServiceDelegationJwt(
+      provisionRequest?.serviceToken ?? "",
+      DELEGATION_SECRET,
+    );
+
+    expect(claims).toMatchObject({
+      sub: "agent-worker",
+      scopes: ["user:delegate"],
+      user_id: 7,
+    });
+    expect(client.startRun).toHaveBeenCalledWith({
       hostId: "hermes-7",
       sessionId: "polychat-conv-1",
       input: "Plan my week",

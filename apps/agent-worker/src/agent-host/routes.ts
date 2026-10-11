@@ -49,9 +49,9 @@ function agentHostEgressPolicy(env: Env): ContainerEgressPolicy {
 async function applyAgentHostOutbound(
   sandbox: AgentHostSandbox,
   env: Env,
-  apiKey: string,
+  serviceToken: string,
 ): Promise<void> {
-  const params: PolychatApiParams = { apiKey };
+  const params: PolychatApiParams = { serviceToken };
 
   await sandbox.setOutboundByHost(POLYCHAT_API_HOST, POLYCHAT_API_HANDLER, params);
   await sandbox.setOutboundHandler(AGENT_HOST_EGRESS_HANDLER, agentHostEgressPolicy(env));
@@ -143,13 +143,17 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
 
       const existing = await sandbox.readAgentHostState();
       const state: AgentHostState = {
-        ...existing,
         apiServerKey: existing?.apiServerKey ?? randomHex(64),
-        apiKey: input.data.apiKey,
+        ...(existing?.checkpointReference
+          ? { checkpointReference: existing.checkpointReference }
+          : {}),
+        ...(existing?.lastCheckpointedRunId
+          ? { lastCheckpointedRunId: existing.lastCheckpointedRunId }
+          : {}),
       };
 
       await sandbox.writeAgentHostState(state);
-      await applyAgentHostOutbound(sandbox, env, state.apiKey);
+      await applyAgentHostOutbound(sandbox, env, input.data.serviceToken);
 
       return Response.json({ provisioned: true });
     }

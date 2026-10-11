@@ -1,10 +1,12 @@
+import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Env } from "../types";
 import { polychatApiOutbound } from "./outbound";
 
 describe("polychatApiOutbound", () => {
-  it("forwards the request unchanged apart from the scoped API credential", async () => {
+  it("forwards the request unchanged with a scoped internal service identity", async () => {
+    const serviceToken = "signed-service-token";
     const body = JSON.stringify({
       model: "",
       messages: [{ role: "user", content: "Do the work" }],
@@ -22,26 +24,31 @@ describe("polychatApiOutbound", () => {
       return apiResponse;
     });
     const env = { POLYCHAT_API: { fetch: apiFetch } } as unknown as Env;
-    const request = new Request("http://polychat.internal/chat/completions?source=hermes", {
+    const request = new Request("http://polychat.internal/chat/completions", {
       method: "POST",
       headers: {
         Authorization: "Bearer polychat-gateway",
         "Content-Type": "application/json",
-        "X-Request-Source": "hermes",
       },
       body,
     });
 
-    const response = await polychatApiOutbound(request, env, {
-      params: { apiKey: "ak_member" },
-    });
+    const response = await polychatApiOutbound(request, env, { params: { serviceToken } });
 
     expect(apiFetch).toHaveBeenCalledOnce();
-    expect(forwardedRequest?.url).toBe("http://polychat-api/chat/completions?source=hermes");
+    expect(forwardedRequest?.url).toBe("http://polychat-api/chat/completions");
     expect(forwardedRequest?.method).toBe("POST");
-    expect(forwardedRequest?.headers.get("Authorization")).toBe("Bearer ak_member");
+    expect(forwardedRequest?.headers.get("Authorization")).toBeNull();
+    const serviceAuthorization = forwardedRequest?.headers.get(
+      INTERNAL_SERVICE_AUTHORIZATION_HEADER,
+    );
+
+    if (!serviceAuthorization?.startsWith("Bearer ")) {
+      throw new Error("Missing internal service authorization");
+    }
+
+    expect(serviceAuthorization).toBe(`Bearer ${serviceToken}`);
     expect(forwardedRequest?.headers.get("Content-Type")).toBe("application/json");
-    expect(forwardedRequest?.headers.get("X-Request-Source")).toBe("hermes");
     await expect(forwardedRequest?.text()).resolves.toBe(body);
     expect(response).toBe(apiResponse);
     expect(response.status).toBe(422);
@@ -50,6 +57,7 @@ describe("polychatApiOutbound", () => {
   });
 
   it("forwards model catalogue requests to the API", async () => {
+    const serviceToken = "signed-service-token";
     const apiResponse = Response.json({ data: [{ id: "api-selected-model" }] });
     let forwardedRequest: Request | undefined;
     const apiFetch = vi.fn(async (request: Request) => {
@@ -60,13 +68,25 @@ describe("polychatApiOutbound", () => {
     const env = { POLYCHAT_API: { fetch: apiFetch } } as unknown as Env;
     const request = new Request("http://polychat.internal/models");
 
-    const response = await polychatApiOutbound(request, env, {
-      params: { apiKey: "ak_member" },
-    });
+    const response = await polychatApiOutbound(request, env, { params: { serviceToken } });
 
     expect(forwardedRequest?.url).toBe("http://polychat-api/models");
     expect(forwardedRequest?.method).toBe("GET");
     expect(response).toBe(apiResponse);
     await expect(response.json()).resolves.toEqual({ data: [{ id: "api-selected-model" }] });
+  });
+
+  it("does not call the API without a delegated service token", async () => {
+    const apiFetch = vi.fn();
+    const env = { POLYCHAT_API: { fetch: apiFetch } } as unknown as Env;
+    const request = new Request("http://polychat.internal/chat/completions", {
+      method: "POST",
+      body: "{}",
+    });
+
+    await expect(polychatApiOutbound(request, env, { params: {} })).rejects.toThrow(
+      "Agent host service authentication is not configured",
+    );
+    expect(apiFetch).not.toHaveBeenCalled();
   });
 });

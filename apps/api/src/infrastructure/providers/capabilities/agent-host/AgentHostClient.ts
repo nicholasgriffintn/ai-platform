@@ -1,5 +1,4 @@
 import {
-  AGENT_HOST_UNPROVISIONED_CODE,
   agentHostRunSnapshotSchema,
   type AgentHostApprovalRequest,
   type AgentHostProvisionRequest,
@@ -12,8 +11,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { IEnv } from "~/types";
 
-import { AgentHostUnprovisionedError } from "./AgentHostUnprovisionedError";
-
 export class AgentHostClient {
   constructor(private readonly worker: NonNullable<IEnv["AGENT_WORKER"]>) {}
 
@@ -24,14 +21,6 @@ export class AgentHostClient {
       body: JSON.stringify(body),
     });
     const payload: unknown = await response.json().catch(() => null);
-
-    if (
-      response.status === 409 &&
-      isRecord(payload) &&
-      payload.code === AGENT_HOST_UNPROVISIONED_CODE
-    ) {
-      throw new AgentHostUnprovisionedError();
-    }
 
     if (!response.ok) {
       throw new AssistantError(

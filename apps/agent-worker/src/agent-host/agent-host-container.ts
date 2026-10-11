@@ -12,7 +12,6 @@ const AGENT_HOST_STATE_KEY = "polychatAgentHost";
 
 export interface AgentHostState {
   apiServerKey: string;
-  apiKey: string;
   checkpointReference?: string;
   lastCheckpointedRunId?: string;
 }

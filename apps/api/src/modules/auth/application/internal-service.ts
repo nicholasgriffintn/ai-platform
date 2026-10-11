@@ -1,11 +1,9 @@
-import { importHmacSecret, verifyJwt } from "@ngriffin_uk/auth-jwt";
-import {
-  INTERNAL_SERVICE_TOKEN_AUDIENCE,
-  INTERNAL_SERVICE_TOKEN_TTL_SECONDS,
-  internalServiceTokenClaimsSchema,
-  type InternalServiceTokenClaims,
-} from "@ngriffin_uk/polychat-schemas";
+import type { InternalServiceTokenClaims } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  verifyInternalServiceDelegationJwt,
+  verifyInternalServiceJwt,
+} from "@ngriffin_uk/polychat-utility-server/internal-service-auth";
 
 import type { IEnv } from "~/types";
 
@@ -21,30 +19,17 @@ export async function verifyInternalServiceToken(
   }
 
   try {
-    const claims = await verifyJwt(token, {
-      algorithms: ["HS256"],
-      audience: INTERNAL_SERVICE_TOKEN_AUDIENCE,
-      issuer: "assistant",
-      key: await importHmacSecret(env.JWT_SECRET.trim()),
-      maxTokenAgeSeconds: INTERNAL_SERVICE_TOKEN_TTL_SECONDS,
-    });
-    const parsed = internalServiceTokenClaimsSchema.safeParse(claims);
-
-    if (!parsed.success) {
-      throw new Error("Internal service token claims are invalid");
+    return await verifyInternalServiceJwt(token, env.JWT_SECRET.trim());
+  } catch {
+    try {
+      return await verifyInternalServiceDelegationJwt(token, env.JWT_SECRET.trim());
+    } catch (cause) {
+      throw new AssistantError(
+        "Invalid or expired internal service token",
+        ErrorType.AUTHENTICATION_ERROR,
+        401,
+        { cause },
+      );
     }
-
-    return parsed.data;
-  } catch (cause) {
-    if (cause instanceof AssistantError) {
-      throw cause;
-    }
-
-    throw new AssistantError(
-      "Invalid or expired internal service token",
-      ErrorType.AUTHENTICATION_ERROR,
-      401,
-      { cause },
-    );
   }
 }

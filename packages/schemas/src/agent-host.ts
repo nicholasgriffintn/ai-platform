@@ -11,7 +11,7 @@ export const agentHostRunIdSchema = z.string().regex(/^run_[a-f0-9]{32}$/u);
 export const agentHostProvisionRequestSchema = z
   .object({
     hostId: agentHostIdSchema,
-    apiKey: z.string().startsWith("ak_").min(8).max(256),
+    serviceToken: z.string().min(1),
   })
   .strict();
 

@@ -1,16 +1,12 @@
-import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
+import { importHmacSecret, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
 import {
-  INTERNAL_SERVICE_TOKEN_AUDIENCE,
-  INTERNAL_SERVICE_TOKEN_TTL_SECONDS,
   SANDBOX_PREVIEW_ACCESS_TTL_SECONDS,
   SANDBOX_PREVIEW_BOOTSTRAP_TTL_SECONDS,
   SANDBOX_PREVIEW_GRANT_AUDIENCE,
   sandboxPreviewGrantClaimsSchema,
   type SandboxPreviewGrantClaims,
   type SandboxPreviewGrantPurpose,
-  type InternalServiceScope,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 const ISSUER = "assistant";
 
@@ -79,24 +75,4 @@ export async function verifySandboxPreviewGrant(
   }
 
   return parsed.data;
-}
-
-export async function createInternalServiceToken(
-  secret: string,
-  scope: InternalServiceScope,
-): Promise<string> {
-  const now = Math.floor(Date.now() / 1_000);
-
-  return signJwt(
-    {
-      aud: INTERNAL_SERVICE_TOKEN_AUDIENCE,
-      exp: now + INTERNAL_SERVICE_TOKEN_TTL_SECONDS,
-      iat: now,
-      iss: ISSUER,
-      jti: generateId(),
-      scopes: [scope],
-      sub: "sandbox-worker",
-    },
-    { algorithm: "HS256", key: await importHmacSecret(secret) },
-  );
 }
