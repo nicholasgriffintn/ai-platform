@@ -22,6 +22,10 @@ function placementLabel(correction: Correction): string {
     return correction.placementRef ? `In the ${correction.placementRef} skill` : "In a skill";
   }
 
+  if (correction.placement === "policy") {
+    return "In how Poly decides";
+  }
+
   return "In memory";
 }
 
@@ -60,7 +64,9 @@ export function RulesLearnedPanel({
                     {correction.pattern}
                   </p>
                   <p className="text-xs break-words text-muted-foreground">
-                    You said: “{correction.quote}”
+                    {correction.placement === "policy"
+                      ? correction.quote
+                      : `You said: “${correction.quote}”`}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {placementLabel(correction)} · {formatDate(correction.createdAt)}

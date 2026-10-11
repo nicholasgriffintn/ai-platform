@@ -146,6 +146,35 @@ export async function recordNewCorrection(
   return id;
 }
 
+export async function recordPolicyCorrection(
+  context: ServiceContext,
+  input: { conversationId: string; pattern: string; quote: string; placementRef: string },
+): Promise<string> {
+  const user = context.requireUser();
+  const [existing] = await context.repositories.corrections.listActiveByPlacementRefs(user.id, [
+    input.placementRef,
+  ]);
+
+  if (existing) {
+    await recordCorrectionRecurrence(context, {
+      correction: existing,
+      placement: "policy",
+      placementRef: input.placementRef,
+    });
+
+    return existing.id;
+  }
+
+  return recordNewCorrection(context, {
+    teammateContextId: null,
+    conversationId: input.conversationId,
+    pattern: input.pattern,
+    quote: input.quote,
+    placement: "policy",
+    placementRef: input.placementRef,
+  });
+}
+
 export async function recordCorrectionRecurrence(
   context: ServiceContext,
   input: {

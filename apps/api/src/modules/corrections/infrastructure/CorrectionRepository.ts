@@ -55,6 +55,23 @@ export class CorrectionRepository extends BaseRepository {
     return rows.map(formatCorrection);
   }
 
+  public async listActiveByPlacementRefs(
+    userId: number,
+    placementRefs: readonly string[],
+  ): Promise<Correction[]> {
+    if (placementRefs.length === 0) {
+      return [];
+    }
+
+    const rows = await this.runQuery<CorrectionRow>(
+      `SELECT * FROM correction WHERE user_id = ? AND status = 'active'
+       AND placement_ref IN (${placementRefs.map(() => "?").join(", ")})`,
+      [userId, ...placementRefs],
+    );
+
+    return rows.map(formatCorrection);
+  }
+
   public async recordRecurrence(params: {
     userId: number;
     id: string;

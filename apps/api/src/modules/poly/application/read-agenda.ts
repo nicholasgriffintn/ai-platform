@@ -6,6 +6,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { handoffOverrideRef, readHandoffJudgement } from "~/modules/poly/domain/handoff-overrides";
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
@@ -17,7 +18,7 @@ const NOTED_SCAN_LIMIT = 50;
 export async function loadPolyAgenda(
   repositories: Pick<
     RepositoryManager,
-    "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "activities"
+    "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "activities" | "corrections"
   >,
   userId: number,
 ): Promise<PolyAgenda> {
@@ -45,26 +46,31 @@ export async function loadPolyAgenda(
     }),
   ]);
 
+  const notedHandoffs = handoffs.flatMap((record) => {
+    const handoff = readPolyHandoff(record);
+
+    return handoff?.data.decision === "noted" ? [handoff] : [];
+  });
+  const overrides = await repositories.corrections.listActiveByPlacementRefs(userId, [
+    ...new Set(notedHandoffs.map((handoff) => handoffOverrideRef(handoff.data.sourceId))),
+  ]);
+  const overruled = new Set(overrides.map((override) => override.placementRef));
+
   return buildPolyAgenda({
     conversationId,
     delegations,
     goal: goals[0] ?? null,
     latestRun,
-    noted: handoffs.flatMap((record) => {
-      const handoff = readPolyHandoff(record);
-
-      return handoff?.data.decision === "noted"
-        ? [
-            {
-              id: handoff.id,
-              title: handoff.title,
-              reason: handoff.data.reason,
-              resultConversationId: handoff.data.resultConversationId,
-              createdAt: handoff.createdAt,
-            },
-          ]
-        : [];
-    }),
+    noted: notedHandoffs
+      .filter((handoff) => !overruled.has(handoffOverrideRef(handoff.data.sourceId)))
+      .map((handoff) => ({
+        id: handoff.id,
+        title: handoff.title,
+        reason: handoff.data.reason,
+        resultConversationId: handoff.data.resultConversationId,
+        createdAt: handoff.createdAt,
+        judgement: readHandoffJudgement(handoff.data.receipt),
+      })),
     now,
   });
 }

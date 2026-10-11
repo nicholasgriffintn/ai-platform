@@ -266,7 +266,7 @@ export const correction = sqliteTable(
     pattern: text().notNull(),
     quote: text().notNull(),
     conversation_id: text(),
-    placement: text({ enum: ["skill", "memory"] }).notNull(),
+    placement: text({ enum: ["skill", "memory", "policy"] }).notNull(),
     placement_ref: text(),
     recurrences: integer().default(0).notNull(),
     status: text({ enum: ["active", "dismissed"] })
