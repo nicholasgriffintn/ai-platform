@@ -101,19 +101,28 @@ export async function hermesRequest(
 ): Promise<Response> {
   const timeoutMs = init.timeoutMs ?? HERMES_REQUEST_TIMEOUT_MS;
 
-  return sandbox.containerFetch(
-    new Request(`http://localhost:${HERMES_API_PORT}${path}`, {
-      method: init.method,
-      headers: {
-        Authorization: `Bearer ${state.apiServerKey}`,
-        "Content-Type": "application/json",
-        ...init.headers,
-      },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
-      ...(timeoutMs > 0 ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
-    }),
-    HERMES_API_PORT,
-  );
+  const request = new Request(`http://localhost:${HERMES_API_PORT}${path}`, {
+    method: init.method,
+    headers: {
+      Authorization: `Bearer ${state.apiServerKey}`,
+      "Content-Type": "application/json",
+      ...init.headers,
+    },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+
+  if (timeoutMs <= 0) {
+    return sandbox.containerFetch(request, HERMES_API_PORT);
+  }
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const timer = setTimeout(() => {
+      reject(new DOMException("Request timed out", "TimeoutError"));
+    }, timeoutMs);
+    request.signal.addEventListener("abort", () => clearTimeout(timer), { once: true });
+  });
+
+  return Promise.race([sandbox.containerFetch(request, HERMES_API_PORT), timeoutPromise]);
 }
 
 export function hermesRunStartTimeout(): number {

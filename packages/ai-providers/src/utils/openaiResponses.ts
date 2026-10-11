@@ -432,7 +432,6 @@ export function buildOpenAIResponsesBody(
       ? { top_logprobs: params.top_logprobs }
       : {}),
     max_tool_calls: params.max_tool_calls,
-    stream_options: params.stream_options,
     safety_identifier: params.safety_identifier || params.context?.user?.id?.toString(),
   };
 }
