@@ -3,7 +3,7 @@ import z from "zod/v4";
 export const INTERNAL_SERVICE_AUTHORIZATION_HEADER = "X-Polychat-Service-Authorization";
 export const INTERNAL_SERVICE_TOKEN_AUDIENCE = "assistant-internal-service";
 export const INTERNAL_SERVICE_TOKEN_TTL_SECONDS = 30;
-export const INTERNAL_SERVICE_DELEGATION_TOKEN_TTL_SECONDS = 15 * 60;
+export const INTERNAL_SERVICE_DELEGATION_TOKEN_TTL_SECONDS = 11 * 60;
 export const INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE = "assistant-internal-user-delegation";
 
 export const internalServiceNameSchema = z.enum(["agent-worker", "sandbox-worker"]);

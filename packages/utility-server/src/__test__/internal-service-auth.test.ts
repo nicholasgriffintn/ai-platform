@@ -34,7 +34,7 @@ describe("internal service tokens", () => {
       scopes: ["user:delegate"],
       user_id: 42,
     });
-    expect(claims.exp - claims.iat).toBe(900);
+    expect(claims.exp - claims.iat).toBe(660);
     await expect(verifyInternalServiceJwt(token, SECRET)).rejects.toThrow();
     await expect(verifyInternalServiceDelegationJwt(token, SECRET)).rejects.toThrow();
   });
