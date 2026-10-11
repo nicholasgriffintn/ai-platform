@@ -56,6 +56,7 @@ Read the relevant record before changing any durable boundary.
 - [0040: Delegate to a teammate in its own conversation](decisions/0040-delegate-to-a-teammate-in-its-own-conversation.md)
 - [0080: Resume interrupted delegations without repeating an unsettled effect](decisions/0080-resume-interrupted-delegations.md)
 - [0019: Keep repeatable scheduling in recipes](decisions/0019-keep-repeatable-scheduling-in-recipes.md)
+- [0083: Webhooks carry data, never authority](decisions/0083-webhooks-carry-data-never-authority.md)
 - [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
 - [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
