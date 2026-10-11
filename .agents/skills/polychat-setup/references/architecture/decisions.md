@@ -26,6 +26,7 @@ Read the relevant record before changing any durable boundary.
 - [0011: Resolve models, tiers and readiness on the server](decisions/0011-resolve-models-and-readiness-on-the-server.md)
 - [0012: Share model definitions across provider offerings](decisions/0012-share-model-definitions-across-offerings.md)
 - [0013: Load skills on demand and version authored content](decisions/0013-load-skills-on-demand.md)
+- [0084: Apply short skills to the messages they help with](decisions/0084-apply-short-skills-per-message.md)
 - [0014: Keep retrieval authority in D1 and preserve vector provenance](decisions/0014-retrieval-authority-and-vector-provenance.md)
 - [0015: Hire teammates from roles and call them teammates everywhere](decisions/0015-teammates-hired-from-roles.md)
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md) (superseded by 0072)

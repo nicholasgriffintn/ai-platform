@@ -48,6 +48,8 @@ export const skillResourceSummarySchema = z.object({
   mimeType: z.string().min(1).optional(),
 });
 
+export const skillActivationSchema = z.enum(["on-demand", "per-message"]);
+
 export const skillSummarySchema = z.object({
   id: skillIdSchema,
   name: z.string().min(1).max(80),
@@ -55,6 +57,7 @@ export const skillSummarySchema = z.object({
   category: skillCategorySchema,
   tags: z.array(z.string()).default([]),
   alwaysOn: z.boolean().default(false),
+  activation: skillActivationSchema.optional(),
   requirement: skillRequirementSchema,
   source: skillSourceSchema.optional(),
 });
@@ -125,6 +128,12 @@ export const saveSkillInputSchema = z.object({
     .min(1)
     .max(64 * 1024)
     .describe("The playbook itself, in Markdown, written for whoever runs it next."),
+  applyAutomatically: z
+    .boolean()
+    .optional()
+    .describe(
+      "Apply these instructions to every message they clearly help with, without loading them first. Only for short instructions of at most 2 KB, such as a writing style or a standing preference.",
+    ),
 });
 
 export type SaveSkillInput = z.infer<typeof saveSkillInputSchema>;
@@ -251,6 +260,7 @@ export type SkillSource = z.infer<typeof skillSourceSchema>;
 export type AuthoredSkillProvenance = z.infer<typeof authoredSkillProvenanceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
+export type SkillActivation = z.infer<typeof skillActivationSchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;
 export type SkillAvailability = z.infer<typeof skillAvailabilitySchema>;
 export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponseSchema>;

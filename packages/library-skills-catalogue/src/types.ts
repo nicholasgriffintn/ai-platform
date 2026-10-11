@@ -1,5 +1,7 @@
 import {
+  skillActivationSchema,
   skillCategorySchema,
+  type SkillActivation,
   type SkillCategory,
   type SkillSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,6 +15,10 @@ const METADATA_KEYS = {
   tools: "polychat-tools",
   suggestedTools: "polychat-suggests-tools",
 } as const;
+
+const ACTIVATION_METADATA_KEY = "activation";
+
+export const MAX_PER_MESSAGE_SKILL_BODY_BYTES = 2_048;
 
 export type SkillResourceKind = "reference" | "script" | "asset" | "file";
 
@@ -50,6 +56,7 @@ export interface SkillDefinition {
   category: SkillCategory;
   tags: string[];
   alwaysOn: boolean;
+  activation?: SkillActivation;
   requirement: {
     modelCapabilities: string[];
     tools: string[];
@@ -124,6 +131,24 @@ function readAlwaysOn(descriptor: SkillDescriptor): boolean {
   );
 }
 
+function readActivation(descriptor: SkillDescriptor): SkillActivation | undefined {
+  const value = descriptor.metadata?.[ACTIVATION_METADATA_KEY]?.trim();
+
+  if (!value) {
+    return undefined;
+  }
+
+  const activation = skillActivationSchema.safeParse(value);
+
+  if (!activation.success) {
+    throw new Error(
+      `Skill ${descriptor.name} metadata ${ACTIVATION_METADATA_KEY} must be on-demand or per-message`,
+    );
+  }
+
+  return activation.data === "per-message" ? activation.data : undefined;
+}
+
 export function toSkillDefinition(
   descriptor: SkillDescriptor,
   options: {
@@ -138,6 +163,7 @@ export function toSkillDefinition(
     category: readCategory(descriptor),
     tags: readMetadataList(descriptor, METADATA_KEYS.tags),
     alwaysOn: options.allowAlwaysOn === true && readAlwaysOn(descriptor),
+    ...(readActivation(descriptor) ? { activation: readActivation(descriptor) } : {}),
     requirement: {
       modelCapabilities: [
         ...new Set([
@@ -160,6 +186,7 @@ export function toSkillSummary(skill: SkillDefinition): SkillSummary {
     category: skill.category,
     tags: skill.tags,
     alwaysOn: skill.alwaysOn,
+    ...(skill.activation ? { activation: skill.activation } : {}),
     requirement: skill.requirement,
     source: skill.source,
   };
