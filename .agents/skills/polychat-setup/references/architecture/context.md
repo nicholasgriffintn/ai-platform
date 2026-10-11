@@ -40,7 +40,7 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 
 ## Conversation execution
 
-- `services/chat/core` handles request orchestration; `apps/api/src/lib` holds only host infrastructure (database, http, storage, cloudflare, durable objects, provider host, telemetry), and every product capability lives under `services/<capability>`.
+- `modules/chat/application/core` handles request orchestration; `apps/api/src/infrastructure` holds only host infrastructure (database, http, storage, cloudflare, durable objects, provider host, telemetry), and every product capability lives under `modules/<capability>`.
 - Finalisation owns persistence, cleanup, lock release and run status.
 - Streams are authoritative only for transport; recovery uses stored snapshots and ordered events.
 - Model loops are bounded by provider readiness, context budgets, and usage controls.
