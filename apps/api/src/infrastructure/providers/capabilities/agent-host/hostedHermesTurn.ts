@@ -1,6 +1,7 @@
 import {
   isTerminalAgentHostRunStatus,
   type AgentHostRunRequest,
+  type AgentHostRunSnapshot,
   type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
@@ -25,7 +26,7 @@ const RUN_MAX_DURATION_MS = 10 * 60 * 1000;
 export interface HostedHermesTurnResult {
   runId: string;
   output: string;
-  deniedActions: string[];
+  approval?: NonNullable<AgentHostRunSnapshot["approval"]>;
 }
 
 export function hostedHermesHostId(userId: number): string {
@@ -72,28 +73,45 @@ async function startHostedRun(
   }
 }
 
-function describeDeniedAction(approval: { command?: string; description?: string }): string {
-  return approval.description || approval.command || "an action Hermes flagged for approval";
-}
-
 export async function runHostedHermesTurn(params: {
   context: ServiceContext;
   client: AgentHostClient;
   userId: number;
   conversationId: string;
-  input: string;
+  input?: string;
   modelTier: ModelTier;
+  resume?: {
+    runId: string;
+    requestId?: string;
+    choice: "once" | "deny";
+  };
 }): Promise<HostedHermesTurnResult> {
   const hostId = hostedHermesHostId(params.userId);
-  const runId = await startHostedRun(params.context, params.client, params.userId, {
-    hostId,
-    sessionId: hostedHermesSessionId(params.conversationId),
-    input: params.input,
-    modelTier: params.modelTier,
-  });
+  let runId: string;
+
+  if (params.resume) {
+    runId = params.resume.runId;
+    await requireActiveExecutionRun(params.context);
+    await params.client.answerApproval({
+      hostId,
+      runId,
+      choice: params.resume.choice,
+      ...(params.resume.requestId ? { requestId: params.resume.requestId } : {}),
+    });
+  } else {
+    if (!params.input) {
+      throw new AssistantError("Hermes needs a message in a conversation", ErrorType.PARAMS_ERROR);
+    }
+
+    runId = await startHostedRun(params.context, params.client, params.userId, {
+      hostId,
+      sessionId: hostedHermesSessionId(params.conversationId),
+      input: params.input,
+      modelTier: params.modelTier,
+    });
+  }
+
   const deadline = Date.now() + RUN_MAX_DURATION_MS;
-  const deniedActions: string[] = [];
-  const deniedApprovalKeys = new Set<string>();
 
   while (true) {
     try {
@@ -105,27 +123,20 @@ export async function runHostedHermesTurn(params: {
 
     const snapshot = await params.client.readRun({ hostId, runId });
 
-    const approvalKey = snapshot.approval
-      ? (snapshot.approval.request_id ?? describeDeniedAction(snapshot.approval))
-      : undefined;
+    if (snapshot.status === "waiting_for_approval") {
+      if (!snapshot.approval) {
+        throw new AssistantError(
+          "Hermes is waiting for approval but did not provide the request",
+          ErrorType.PROVIDER_ERROR,
+        );
+      }
 
-    if (
-      snapshot.status === "waiting_for_approval" &&
-      snapshot.approval &&
-      approvalKey &&
-      !deniedApprovalKeys.has(approvalKey)
-    ) {
-      deniedApprovalKeys.add(approvalKey);
-      deniedActions.push(describeDeniedAction(snapshot.approval));
-      await params.client.answerApproval({
-        hostId,
-        runId,
-        choice: "deny",
-        ...(snapshot.approval.request_id ? { requestId: snapshot.approval.request_id } : {}),
-      });
-    } else if (isTerminalAgentHostRunStatus(snapshot.status)) {
+      return { runId, output: snapshot.output ?? "", approval: snapshot.approval };
+    }
+
+    if (isTerminalAgentHostRunStatus(snapshot.status)) {
       if (snapshot.status === "completed") {
-        return { runId, output: snapshot.output ?? "", deniedActions };
+        return { runId, output: snapshot.output ?? "" };
       }
 
       throw new AssistantError(

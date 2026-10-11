@@ -79,5 +79,9 @@ describe("provider contracts", () => {
         writesFiles: true,
       });
     }
+
+    expect(getProviderCapabilities("hermes")).toMatchObject({
+      reportsApprovals: true,
+    });
   });
 });

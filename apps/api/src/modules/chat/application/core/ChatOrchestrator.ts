@@ -326,6 +326,10 @@ export class ChatOrchestrator {
       enabledTools = requestedEnabledTools,
     } = prepared;
     const enabled_tools = enabledTools;
+    const toolExecutionEnabledTools =
+      primaryModelConfig?.agent?.capabilities.reportsApprovals && enabled_tools
+        ? [...new Set([...enabled_tools, "request_approval"])]
+        : enabled_tools;
 
     await conversationManager.admitTurn({
       modelConfig: primaryModelConfig,
@@ -378,7 +382,7 @@ export class ChatOrchestrator {
       chatOptions: {
         ...chatOptions,
         approved_tools,
-        enabled_tools,
+        enabled_tools: toolExecutionEnabledTools,
         tool_options: prepared.toolOptions,
         conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
         permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,

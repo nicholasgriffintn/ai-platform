@@ -43,7 +43,10 @@ function fakeClient(snapshots: AgentHostRunSnapshot[], unprovisioned = false) {
 
 const context = { executionRunId: undefined } as unknown as ServiceContext;
 
-function turn(client: ReturnType<typeof fakeClient>) {
+function turn(
+  client: ReturnType<typeof fakeClient>,
+  resume?: { runId: string; requestId?: string; choice: "once" | "deny" },
+) {
   return runHostedHermesTurn({
     context,
     client: client as unknown as AgentHostClient,
@@ -51,6 +54,7 @@ function turn(client: ReturnType<typeof fakeClient>) {
     conversationId: "conv/1",
     input: "Plan my week",
     modelTier: "medium",
+    ...(resume ? { resume } : {}),
   });
 }
 
@@ -76,27 +80,34 @@ describe("runHostedHermesTurn", () => {
     );
   });
 
-  it("declines each approval request once and reports it", async () => {
+  it("returns a pending approval without answering it", async () => {
     const waiting: AgentHostRunSnapshot = {
       run_id: RUN_ID,
       status: "waiting_for_approval",
       approval: { request_id: "req-1", description: "delete the cache" },
     };
-    const client = fakeClient([
-      waiting,
-      waiting,
-      { run_id: RUN_ID, status: "completed", output: "Skipped it" },
-    ]);
+    const client = fakeClient([waiting]);
 
     await expect(turn(client)).resolves.toEqual({
       runId: RUN_ID,
-      output: "Skipped it",
-      deniedActions: ["delete the cache"],
+      output: "",
+      approval: { request_id: "req-1", description: "delete the cache" },
     });
-    expect(client.answerApproval).toHaveBeenCalledTimes(1);
-    expect(client.answerApproval).toHaveBeenCalledWith(
-      expect.objectContaining({ choice: "deny", requestId: "req-1" }),
-    );
+    expect(client.answerApproval).not.toHaveBeenCalled();
+  });
+
+  it("answers a user approval and resumes the waiting run", async () => {
+    const client = fakeClient([{ run_id: RUN_ID, status: "completed", output: "Done" }]);
+
+    await expect(
+      turn(client, { runId: RUN_ID, requestId: "req-1", choice: "once" }),
+    ).resolves.toEqual({ runId: RUN_ID, output: "Done" });
+    expect(client.answerApproval).toHaveBeenCalledWith({
+      hostId: "hermes-7",
+      runId: RUN_ID,
+      requestId: "req-1",
+      choice: "once",
+    });
   });
 
   it("surfaces a failed run as an error", async () => {

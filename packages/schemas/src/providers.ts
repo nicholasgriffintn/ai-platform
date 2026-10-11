@@ -220,7 +220,6 @@ const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
   hermes: {
     ...AGENT_CAPABILITIES,
     picksOwnModel: false,
-    reportsApprovals: false,
     rollsBack: false,
   },
 };

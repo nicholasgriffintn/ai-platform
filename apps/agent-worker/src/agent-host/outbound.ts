@@ -6,7 +6,6 @@ import {
 import {
   modelTierSchema,
   partialChatCompletionsJsonSchema,
-  type ChatCompletionRequestBody,
   type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
@@ -19,35 +18,37 @@ interface OutboundContext {
   params?: unknown;
 }
 
-const COMPLETION_FIELDS = [
-  "messages",
-  "tools",
-  "tool_choice",
-  "parallel_tool_calls",
-  "response_format",
-  "temperature",
-  "top_p",
-  "top_k",
-  "stop",
-  "max_tokens",
-  "max_completion_tokens",
-  "max_output_tokens",
-  "presence_penalty",
-  "frequency_penalty",
-  "repetition_penalty",
-  "logit_bias",
-  "logprobs",
-  "top_logprobs",
-  "seed",
-  "reasoning_effort",
-  "reasoning",
-  "verbosity",
-  "system_prompt",
-  "metadata",
-  "service_tier",
-  "stream_options",
-  "safety_identifier",
-] as const satisfies readonly (keyof ChatCompletionRequestBody)[];
+const polychatModelRequestSchema = partialChatCompletionsJsonSchema
+  .pick({
+    messages: true,
+    stream: true,
+    tools: true,
+    tool_choice: true,
+    parallel_tool_calls: true,
+    response_format: true,
+    temperature: true,
+    top_p: true,
+    top_k: true,
+    stop: true,
+    max_tokens: true,
+    max_completion_tokens: true,
+    max_output_tokens: true,
+    presence_penalty: true,
+    frequency_penalty: true,
+    repetition_penalty: true,
+    logit_bias: true,
+    logprobs: true,
+    top_logprobs: true,
+    seed: true,
+    reasoning_effort: true,
+    reasoning: true,
+    verbosity: true,
+    system_prompt: true,
+    service_tier: true,
+    stream_options: true,
+    safety_identifier: true,
+  })
+  .strip();
 
 export interface PolychatModelParams {
   apiKey: string;
@@ -69,18 +70,11 @@ function openAIError(status: number, message: string): Response {
 }
 
 function polychatCompletionRequest(
-  body: Partial<ChatCompletionRequestBody>,
+  body: ReturnType<typeof polychatModelRequestSchema.parse>,
   modelTier: ModelTier,
 ): Record<string, unknown> {
-  const completionFields = Object.fromEntries(
-    COMPLETION_FIELDS.filter((field) => body[field] !== undefined).map((field) => [
-      field,
-      body[field],
-    ]),
-  );
-
   return {
-    ...completionFields,
+    ...body,
     model_tier: modelTier,
     stream: body.stream === true,
     store: false,
@@ -113,12 +107,7 @@ export async function polychatModelsOutbound(
   }
 
   const body: unknown = await request.json().catch(() => null);
-
-  if (!isRecord(body)) {
-    return openAIError(400, "Request body must be a JSON object");
-  }
-
-  const completionRequest = partialChatCompletionsJsonSchema.safeParse(body);
+  const completionRequest = polychatModelRequestSchema.safeParse(body);
 
   if (!completionRequest.success || !completionRequest.data.messages?.length) {
     return openAIError(400, "Invalid chat completion request");
