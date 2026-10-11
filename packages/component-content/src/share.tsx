@@ -28,6 +28,7 @@ export interface ShareDialogLabels {
   sharedDescription?: string;
   shareButton?: string;
   unshareButton?: string;
+  updateButton?: string;
 }
 
 export interface ShareDialogProps {
@@ -37,6 +38,7 @@ export interface ShareDialogProps {
   shareUrl?: string;
   isSharing?: boolean;
   isUnsharing?: boolean;
+  isUpdating?: boolean;
   copied?: boolean;
   variant?: ButtonVariant;
   collapseLabel?: ButtonCollapse;
@@ -45,6 +47,7 @@ export interface ShareDialogProps {
   onOpenChange: (open: boolean) => void;
   onShare: () => void;
   onUnshare: () => void;
+  onUpdate?: () => void;
   onCopy: (value: string) => void;
 }
 
@@ -55,6 +58,7 @@ export function ShareDialog({
   shareUrl,
   isSharing = false,
   isUnsharing = false,
+  isUpdating = false,
   copied = false,
   variant = "ghost",
   collapseLabel = false,
@@ -63,6 +67,7 @@ export function ShareDialog({
   onOpenChange,
   onShare,
   onUnshare,
+  onUpdate,
   onCopy,
 }: ShareDialogProps) {
   const typeLabel = capitaliseFirst(type);
@@ -75,6 +80,7 @@ export function ShareDialog({
     sharedDescription: `Your ${type} is publicly accessible with the following link:`,
     shareButton: `Share ${typeLabel}`,
     unshareButton: "Stop Sharing",
+    updateButton: "Update link",
     ...labels,
   };
 
@@ -125,6 +131,16 @@ export function ShareDialog({
                     icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   />
                 </div>
+                {onUpdate ? (
+                  <Button
+                    variant="secondary"
+                    onClick={onUpdate}
+                    isLoading={isUpdating}
+                    className="mt-4 w-full"
+                  >
+                    {isUpdating ? "Updating link..." : finalLabels.updateButton}
+                  </Button>
+                ) : null}
                 <Button
                   variant="destructive"
                   onClick={onUnshare}

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6a704d83-14b1-4345-b80a-cf740d5d6e0c",
+  "id": "efde8c83-d035-4c6b-abce-72ddfbcef5da",
   "prevId": "17c57fdd-5242-4e66-aa98-3e4683e40f93",
   "tables": {
     "activity_record": {
@@ -1263,6 +1263,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "shared_through": {
+          "name": "shared_through",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "last_message_id": {
           "name": "last_message_id",
           "type": "text",
@@ -1906,128 +1913,6 @@
           "tableFrom": "conversation_run_event",
           "tableTo": "conversation_run",
           "columnsFrom": ["run_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "correction": {
-      "name": "correction",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "teammate_context_id": {
-          "name": "teammate_context_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "pattern": {
-          "name": "pattern",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "quote": {
-          "name": "quote",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "placement": {
-          "name": "placement",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "placement_ref": {
-          "name": "placement_ref",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "recurrences": {
-          "name": "recurrences",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'active'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "last_recurred_at": {
-          "name": "last_recurred_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "correction_user_status_idx": {
-          "name": "correction_user_status_idx",
-          "columns": ["user_id", "status", "created_at"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "correction_user_id_user_id_fk": {
-          "name": "correction_user_id_user_id_fk",
-          "tableFrom": "correction",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "correction_teammate_context_id_teammate_context_id_fk": {
-          "name": "correction_teammate_context_id_teammate_context_id_fk",
-          "tableFrom": "correction",
-          "tableTo": "teammate_context",
-          "columnsFrom": ["teammate_context_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
