@@ -51,6 +51,9 @@ function createContext(run: ChatRun | null, userId = 7) {
       usageReservations: {
         listReservations: vi.fn().mockResolvedValue([]),
       },
+      delegations: {
+        listByParentRunId: vi.fn().mockResolvedValue([]),
+      },
       workspaces: {
         getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
         getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
