@@ -1,5 +1,5 @@
 import { extractTextFromMessageContent, type AIProvider } from "@ngriffin_uk/polychat-ai-providers";
-import { agentHostRunIdSchema, DEFAULT_MODEL_TIER } from "@ngriffin_uk/polychat-schemas";
+import { agentHostRunIdSchema } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -75,14 +75,12 @@ export class HostedHermesChatProvider implements AIProvider {
       throw new AssistantError("Hermes needs a message in a conversation", ErrorType.PARAMS_ERROR);
     }
 
-    const settings = await context.getUserSettings();
     const result = await runHostedHermesTurn({
       context,
       client,
       userId: user.id,
       conversationId: params.completion_id,
       input,
-      modelTier: settings?.default_model_tier ?? DEFAULT_MODEL_TIER,
       ...(approvalResolution ? { resume: approvalResolution } : {}),
     });
 

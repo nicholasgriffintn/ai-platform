@@ -53,7 +53,6 @@ function turn(
     userId: 7,
     conversationId: "conv/1",
     input: "Plan my week",
-    modelTier: "medium",
     ...(resume ? { resume } : {}),
   });
 }
@@ -75,9 +74,11 @@ describe("runHostedHermesTurn", () => {
     expect(apiKeys.deleteUserApiKey).toHaveBeenCalledTimes(1);
     expect(apiKeys.deleteUserApiKey).toHaveBeenCalledWith(context, "old", 7);
     expect(client.provision).toHaveBeenCalledWith({ hostId: "hermes-7", apiKey: "ak_new" });
-    expect(client.startRun).toHaveBeenLastCalledWith(
-      expect.objectContaining({ sessionId: "polychat-conv-1", modelTier: "medium" }),
-    );
+    expect(client.startRun).toHaveBeenLastCalledWith({
+      hostId: "hermes-7",
+      sessionId: "polychat-conv-1",
+      input: "Plan my week",
+    });
   });
 
   it("returns a pending approval without answering it", async () => {

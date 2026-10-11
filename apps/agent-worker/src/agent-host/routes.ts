@@ -8,7 +8,6 @@ import {
 } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   AGENT_HOST_UNPROVISIONED_CODE,
-  DEFAULT_MODEL_TIER,
   agentHostApprovalRequestSchema,
   agentHostHostRequestSchema,
   agentHostProvisionRequestSchema,
@@ -17,14 +16,13 @@ import {
   agentHostRunSnapshotSchema,
   agentHostRunStartedSchema,
   isTerminalAgentHostRunStatus,
-  type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { randomHex } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   AGENT_HOST_EGRESS_HANDLER,
-  POLYCHAT_MODEL_HOST,
-  POLYCHAT_MODELS_HANDLER,
+  POLYCHAT_API_HANDLER,
+  POLYCHAT_API_HOST,
 } from "../config/agent-host";
 import type { Env } from "../types";
 import type { AgentHostState } from "./agent-host-container";
@@ -34,7 +32,7 @@ import {
   hermesRequest,
   type AgentHostSandbox,
 } from "./gateway";
-import type { PolychatModelParams } from "./outbound";
+import type { PolychatApiParams } from "./outbound";
 
 const AGENT_HOST_PATH_PREFIX = "/agent-host/";
 
@@ -52,11 +50,10 @@ async function applyAgentHostOutbound(
   sandbox: AgentHostSandbox,
   env: Env,
   apiKey: string,
-  modelTier: ModelTier,
 ): Promise<void> {
-  const params: PolychatModelParams = { apiKey, modelTier };
+  const params: PolychatApiParams = { apiKey };
 
-  await sandbox.setOutboundByHost(POLYCHAT_MODEL_HOST, POLYCHAT_MODELS_HANDLER, params);
+  await sandbox.setOutboundByHost(POLYCHAT_API_HOST, POLYCHAT_API_HANDLER, params);
   await sandbox.setOutboundHandler(AGENT_HOST_EGRESS_HANDLER, agentHostEgressPolicy(env));
 }
 
@@ -149,11 +146,10 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
         ...existing,
         apiServerKey: existing?.apiServerKey ?? randomHex(64),
         apiKey: input.data.apiKey,
-        modelTier: existing?.modelTier ?? DEFAULT_MODEL_TIER,
       };
 
       await sandbox.writeAgentHostState(state);
-      await applyAgentHostOutbound(sandbox, env, state.apiKey, state.modelTier);
+      await applyAgentHostOutbound(sandbox, env, state.apiKey);
 
       return Response.json({ provisioned: true });
     }
@@ -172,17 +168,9 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
           return errorResponse(400, "Invalid agent host run request");
         }
 
-        let current = state;
+        await ensureHermesGateway(sandbox, state);
 
-        if (state.modelTier !== input.data.modelTier) {
-          current = { ...state, modelTier: input.data.modelTier };
-          await sandbox.writeAgentHostState(current);
-          await applyAgentHostOutbound(sandbox, env, current.apiKey, current.modelTier);
-        }
-
-        await ensureHermesGateway(sandbox, current);
-
-        const response = await hermesRequest(sandbox, current, "/v1/runs", {
+        const response = await hermesRequest(sandbox, state, "/v1/runs", {
           method: "POST",
           body: { input: input.data.input, session_id: input.data.sessionId },
         });

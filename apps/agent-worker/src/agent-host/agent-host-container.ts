@@ -1,20 +1,18 @@
 import { Sandbox } from "@cloudflare/sandbox";
-import type { ModelTier } from "@ngriffin_uk/polychat-schemas";
 
 import {
   AGENT_HOST_EGRESS_HANDLER,
   AGENT_HOST_SLEEP_AFTER,
-  POLYCHAT_MODELS_HANDLER,
+  POLYCHAT_API_HANDLER,
 } from "../config/agent-host";
 import type { Env } from "../types";
-import { agentHostEgressOutbound, polychatModelsOutbound } from "./outbound";
+import { agentHostEgressOutbound, polychatApiOutbound } from "./outbound";
 
 const AGENT_HOST_STATE_KEY = "polychatAgentHost";
 
 export interface AgentHostState {
   apiServerKey: string;
   apiKey: string;
-  modelTier: ModelTier;
   checkpointReference?: string;
   lastCheckpointedRunId?: string;
 }
@@ -34,6 +32,6 @@ export class AgentHost extends Sandbox<Env> {
 }
 
 AgentHost.outboundHandlers = {
-  [POLYCHAT_MODELS_HANDLER]: polychatModelsOutbound,
+  [POLYCHAT_API_HANDLER]: polychatApiOutbound,
   [AGENT_HOST_EGRESS_HANDLER]: agentHostEgressOutbound,
 };

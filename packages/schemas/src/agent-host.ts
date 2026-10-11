@@ -1,7 +1,5 @@
 import z from "zod/v4";
 
-import { modelTierSchema } from "./model-lineup.js";
-
 export const AGENT_HOST_UNPROVISIONED_CODE = "agent_host_unprovisioned" as const;
 
 export const agentHostIdSchema = z
@@ -25,7 +23,6 @@ export const agentHostRunRequestSchema = z
       .regex(/^[A-Za-z0-9_-]{1,160}$/u)
       .describe("Hermes session that carries the conversation's history."),
     input: z.string().trim().min(1).max(100_000),
-    modelTier: modelTierSchema,
   })
   .strict();
 

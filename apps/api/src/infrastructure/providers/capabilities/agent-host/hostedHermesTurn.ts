@@ -2,7 +2,6 @@ import {
   isTerminalAgentHostRunStatus,
   type AgentHostRunRequest,
   type AgentHostRunSnapshot,
-  type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -79,7 +78,6 @@ export async function runHostedHermesTurn(params: {
   userId: number;
   conversationId: string;
   input?: string;
-  modelTier: ModelTier;
   resume?: {
     runId: string;
     requestId?: string;
@@ -107,7 +105,6 @@ export async function runHostedHermesTurn(params: {
       hostId,
       sessionId: hostedHermesSessionId(params.conversationId),
       input: params.input,
-      modelTier: params.modelTier,
     });
   }
 

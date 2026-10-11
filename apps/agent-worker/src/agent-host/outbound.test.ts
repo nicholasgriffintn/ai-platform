@@ -1,83 +1,72 @@
-import { createChatCompletionsJsonSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Env } from "../types";
-import { polychatModelsOutbound } from "./outbound";
+import { polychatApiOutbound } from "./outbound";
 
-describe("polychatModelsOutbound", () => {
-  it("forwards the API contract and applies only server-owned controls", async () => {
-    let forwardedBody: unknown;
+describe("polychatApiOutbound", () => {
+  it("forwards the request unchanged apart from the scoped API credential", async () => {
+    const body = JSON.stringify({
+      model: "",
+      messages: [{ role: "user", content: "Do the work" }],
+      unsupported_option: true,
+      store: true,
+    });
+    const apiResponse = new Response("API response", {
+      status: 422,
+      headers: { "Content-Type": "text/plain", "X-API-Result": "preserved" },
+    });
+    let forwardedRequest: Request | undefined;
     const apiFetch = vi.fn(async (request: Request) => {
-      forwardedBody = await request.json();
+      forwardedRequest = request;
 
-      return Response.json({ id: "completion" });
+      return apiResponse;
     });
     const env = { POLYCHAT_API: { fetch: apiFetch } } as unknown as Env;
-    const request = new Request("http://polychat.internal/v1/chat/completions", {
+    const request = new Request("http://polychat.internal/chat/completions?source=hermes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "polychat",
-        temperature: 0.4,
-        store: true,
-        metadata: { source: "hermes" },
-        stream: true,
-        messages: [{ role: "user", content: "Do the work" }],
-      }),
+      headers: {
+        Authorization: "Bearer polychat-gateway",
+        "Content-Type": "application/json",
+        "X-Request-Source": "hermes",
+      },
+      body,
     });
 
-    const response = await polychatModelsOutbound(request, env, {
-      containerId: "agent-host",
-      params: { apiKey: "ak_member", modelTier: "medium" },
+    const response = await polychatApiOutbound(request, env, {
+      params: { apiKey: "ak_member" },
     });
 
-    expect(response.status).toBe(200);
     expect(apiFetch).toHaveBeenCalledOnce();
-    expect(apiFetch.mock.calls[0]?.[0].url).toBe("http://polychat-api/chat/completions");
-    expect(apiFetch.mock.calls[0]?.[0].headers.get("Authorization")).toBe("Bearer ak_member");
-    expect(createChatCompletionsJsonSchema.safeParse(forwardedBody).success).toBe(true);
-    expect(forwardedBody).toEqual({
-      temperature: 0.4,
-      metadata: { source: "hermes" },
-      stream: true,
-      messages: [{ role: "user", content: "Do the work" }],
-      model_tier: "medium",
-      store: false,
-      enabled_tools: [],
-    });
+    expect(forwardedRequest?.url).toBe("http://polychat-api/chat/completions?source=hermes");
+    expect(forwardedRequest?.method).toBe("POST");
+    expect(forwardedRequest?.headers.get("Authorization")).toBe("Bearer ak_member");
+    expect(forwardedRequest?.headers.get("Content-Type")).toBe("application/json");
+    expect(forwardedRequest?.headers.get("X-Request-Source")).toBe("hermes");
+    await expect(forwardedRequest?.text()).resolves.toBe(body);
+    expect(response).toBe(apiResponse);
+    expect(response.status).toBe(422);
+    expect(response.headers.get("X-API-Result")).toBe("preserved");
+    await expect(response.text()).resolves.toBe("API response");
   });
 
-  it("passes unsupported fields to the API for global schema validation", async () => {
-    let forwardedBody: unknown;
+  it("forwards model catalogue requests to the API", async () => {
+    const apiResponse = Response.json({ data: [{ id: "api-selected-model" }] });
+    let forwardedRequest: Request | undefined;
     const apiFetch = vi.fn(async (request: Request) => {
-      forwardedBody = await request.json();
-      const validation = createChatCompletionsJsonSchema.safeParse(forwardedBody);
+      forwardedRequest = request;
 
-      return validation.success
-        ? Response.json({ id: "completion" })
-        : Response.json({ error: validation.error.issues }, { status: 400 });
+      return apiResponse;
     });
     const env = { POLYCHAT_API: { fetch: apiFetch } } as unknown as Env;
-    const request = new Request("http://polychat.internal/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "polychat",
-        messages: [{ role: "user", content: "Do the work" }],
-        unsupported_option: true,
-      }),
+    const request = new Request("http://polychat.internal/models");
+
+    const response = await polychatApiOutbound(request, env, {
+      params: { apiKey: "ak_member" },
     });
 
-    const response = await polychatModelsOutbound(request, env, {
-      containerId: "agent-host",
-      params: { apiKey: "ak_member", modelTier: "medium" },
-    });
-
-    expect(response.status).toBe(400);
-    expect(forwardedBody).toMatchObject({ unsupported_option: true });
-    expect(createChatCompletionsJsonSchema.safeParse(forwardedBody).success).toBe(false);
-    expect(await response.json()).toMatchObject({
-      error: [expect.objectContaining({ code: "unrecognized_keys" })],
-    });
+    expect(forwardedRequest?.url).toBe("http://polychat-api/models");
+    expect(forwardedRequest?.method).toBe("GET");
+    expect(response).toBe(apiResponse);
+    await expect(response.json()).resolves.toEqual({ data: [{ id: "api-selected-model" }] });
   });
 });

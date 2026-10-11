@@ -15,7 +15,6 @@ export const AGENT_HOST_CHECKPOINT_EXCLUDES = [
   "audio_cache",
   "image_cache",
 ];
-export const POLYCHAT_MODEL_HOST = "polychat.internal";
-export const POLYCHAT_MODEL_NAME = "polychat";
-export const POLYCHAT_MODELS_HANDLER = "polychatModels";
+export const POLYCHAT_API_HOST = "polychat.internal";
+export const POLYCHAT_API_HANDLER = "polychatApi";
 export const AGENT_HOST_EGRESS_HANDLER = "agentHostEgress";
