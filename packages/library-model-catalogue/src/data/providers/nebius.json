@@ -323,7 +323,6 @@
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
         "description": "Dense 27B reasoning model for coding, research, and long-horizon agent tasks",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
           "input": [
