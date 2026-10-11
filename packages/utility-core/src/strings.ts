@@ -60,6 +60,14 @@ export function titleCaseSlug(value: string): string {
     .join(" ");
 }
 
+export function normaliseComparableText(value: string): string {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
 export function normalizeStatus(status?: string): string {
   return status?.toLowerCase() ?? "";
 }

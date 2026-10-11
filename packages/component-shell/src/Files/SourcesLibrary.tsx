@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { KnowledgeSyncPanel } from "./KnowledgeSyncPanel.js";
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
 import { ProjectKnowledgeSearch } from "./ProjectKnowledgeSearch.js";
+import { RulesLearnedPanel } from "./RulesLearnedPanel.js";
 import { useSourcesLibrary } from "./useSourcesLibrary.js";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
@@ -124,8 +125,9 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
           </SettingsSection>
 
           {!projectId ? (
-            <div className="mt-6">
+            <div className="mt-6 space-y-6">
               <MemorySynthesisPanel />
+              <RulesLearnedPanel />
             </div>
           ) : null}
         </section>

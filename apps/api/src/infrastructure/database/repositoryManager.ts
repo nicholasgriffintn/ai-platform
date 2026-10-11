@@ -19,6 +19,7 @@ import { ConversationOrganisationRepository } from "~/modules/conversations/infr
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
 import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
@@ -233,6 +234,10 @@ export class RepositoryManager {
 
   public get memoryDocuments(): MemoryDocumentRepository {
     return this.resolve("memoryDocuments", (env) => new MemoryDocumentRepository(env));
+  }
+
+  public get corrections(): CorrectionRepository {
+    return this.resolve("corrections", (env) => new CorrectionRepository(env));
   }
 
   public get savedMessages(): SavedMessageRepository {

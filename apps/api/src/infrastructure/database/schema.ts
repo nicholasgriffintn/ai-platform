@@ -255,6 +255,39 @@ export const machine = sqliteTable(
   }),
 );
 
+export const correction = sqliteTable(
+  "correction",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    teammate_context_id: text().references(() => teammateContext.id, { onDelete: "cascade" }),
+    pattern: text().notNull(),
+    quote: text().notNull(),
+    conversation_id: text(),
+    placement: text({ enum: ["skill", "memory"] }).notNull(),
+    placement_ref: text(),
+    recurrences: integer().default(0).notNull(),
+    status: text({ enum: ["active", "dismissed"] })
+      .default("active")
+      .notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    last_recurred_at: text(),
+  },
+  (table) => ({
+    userStatusIdx: index("correction_user_status_idx").on(
+      table.user_id,
+      table.status,
+      table.created_at,
+    ),
+  }),
+);
+
+export type CorrectionRow = typeof correction.$inferSelect;
+
 export const delivery = sqliteTable(
   "delivery",
   {

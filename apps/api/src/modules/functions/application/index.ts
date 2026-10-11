@@ -55,7 +55,7 @@ import { run_pashi_tools, search_pashi_tools } from "./pashi";
 import { polyNavigationTools } from "./poly-navigation";
 import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
-import { propose_skill_revision } from "./propose_skill_revision";
+import { propose_correction } from "./propose_correction";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
@@ -134,7 +134,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   list_saved_messages,
   load_skill,
   process_recording,
-  propose_skill_revision,
+  propose_correction,
   save_skill,
   run_council,
   select_council_members,
