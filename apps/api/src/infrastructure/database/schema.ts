@@ -5,13 +5,17 @@ import type {
   ProjectTaskConstraints,
   ProjectTaskCompletion,
   ProjectTaskContext,
+  ProjectTaskAssumption,
   ProjectTaskCriterion,
+  ProjectTaskKillCondition,
+  ProjectTaskRetrospective,
   ProjectFlow,
   ProjectTaskRunner,
   OutputProvenance,
   ToolPermission,
   MachineCapability,
   MachineRuntime,
+  CouncilReviewSeat,
   DatasetGovernance,
   DatasetMapping,
   DatasetStats,
@@ -254,6 +258,72 @@ export const machine = sqliteTable(
     userIdx: index("machine_user_idx").on(table.user_id, table.last_seen_at),
   }),
 );
+
+export const correction = sqliteTable(
+  "correction",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    teammate_context_id: text().references(() => teammateContext.id, { onDelete: "cascade" }),
+    pattern: text().notNull(),
+    quote: text().notNull(),
+    conversation_id: text(),
+    placement: text({ enum: ["skill", "memory", "policy"] }).notNull(),
+    placement_ref: text(),
+    recurrences: integer().default(0).notNull(),
+    status: text({ enum: ["active", "dismissed"] })
+      .default("active")
+      .notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    last_recurred_at: text(),
+  },
+  (table) => ({
+    userStatusIdx: index("correction_user_status_idx").on(
+      table.user_id,
+      table.status,
+      table.created_at,
+    ),
+  }),
+);
+
+export type CorrectionRow = typeof correction.$inferSelect;
+
+export const outputReview = sqliteTable(
+  "output_review",
+  {
+    id: text().primaryKey(),
+    output_id: text()
+      .notNull()
+      .references(() => resource.output_id, { onDelete: "cascade" }),
+    output_revision: integer().notNull(),
+    output_kind: text().notNull(),
+    reviewed_by_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text(),
+    verdict: text({ enum: ["ship", "revise", "hold"] }).notNull(),
+    brief: text().notNull(),
+    dissent: text({ mode: "json" }).$type<string[]>().notNull(),
+    seats: text({ mode: "json" }).$type<CouncilReviewSeat[]>().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    outputIdx: index("output_review_output_idx").on(table.output_id, table.created_at),
+    kindIdx: index("output_review_kind_idx").on(
+      table.reviewed_by_user_id,
+      table.output_kind,
+      table.created_at,
+    ),
+  }),
+);
+
+export type OutputReviewRow = typeof outputReview.$inferSelect;
 
 export const delivery = sqliteTable(
   "delivery",
@@ -2530,6 +2600,9 @@ export const projectTask = sqliteTable(
     objective: text().notNull(),
     execution_profile: text({ enum: ["diff_review"] }),
     acceptance_criteria: text({ mode: "json" }).$type<ProjectTaskCriterion[]>(),
+    assumptions: text({ mode: "json" }).$type<ProjectTaskAssumption[]>(),
+    kill_conditions: text({ mode: "json" }).$type<ProjectTaskKillCondition[]>(),
+    retrospective: text({ mode: "json" }).$type<ProjectTaskRetrospective>(),
     expected_output: text(),
     context: text({ mode: "json" }).$type<ProjectTaskContext>(),
     constraints: text({ mode: "json" }).$type<ProjectTaskConstraints>(),
@@ -2554,6 +2627,7 @@ export const projectTask = sqliteTable(
         "dispatch_failed",
         "run_failed",
         "dependencies_unmet",
+        "kill_condition_met",
       ],
     }),
     blocked_detail: text(),

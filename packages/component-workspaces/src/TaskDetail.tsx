@@ -26,6 +26,7 @@ import {
 
 import { isTaskCriterionMet } from "./task-evidence";
 import { TaskActivityTimeline as TaskActivityTimelineView } from "./TaskActivityTimeline";
+import { TaskPlanRecord } from "./TaskPlanRecord";
 import { TaskStageEvidence } from "./TaskStageEvidence";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
@@ -226,6 +227,8 @@ export function TaskDetail({
             </p>
           )}
         </section>
+
+        <TaskPlanRecord task={task} />
 
         {latestCompletion ? (
           <section className="space-y-3 rounded-xl border border-border p-4">

@@ -1,10 +1,13 @@
 import type {
   ProjectTask,
+  ProjectTaskAssumption,
   ProjectTaskBlockedReason,
   ProjectTaskCompletion,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
+  ProjectTaskKillCondition,
+  ProjectTaskRetrospective,
   ProjectFlow,
   ProjectTaskRunner,
   ProjectTaskSource,
@@ -26,6 +29,8 @@ export interface CreateProjectTaskParams {
   workspaceId: string;
   objective: string;
   acceptanceCriteria?: ProjectTaskCriterion[];
+  assumptions?: ProjectTaskAssumption[];
+  killConditions?: ProjectTaskKillCondition[];
   expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
@@ -45,6 +50,9 @@ export interface CreateProjectTaskParams {
 export interface UpdateProjectTaskParams {
   objective?: string;
   acceptanceCriteria?: ProjectTaskCriterion[];
+  assumptions?: ProjectTaskAssumption[];
+  killConditions?: ProjectTaskKillCondition[];
+  retrospective?: ProjectTaskRetrospective | null;
   expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
@@ -90,6 +98,9 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     flowSnapshot: parseJsonColumn<ProjectFlow | null>(row.flow_snapshot, null),
     runner: parseJsonColumn<ProjectTaskRunner | null>(row.runner, null),
     acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria, []),
+    assumptions: parseJsonColumn<ProjectTaskAssumption[]>(row.assumptions, []),
+    killConditions: parseJsonColumn<ProjectTaskKillCondition[]>(row.kill_conditions, []),
+    retrospective: parseJsonColumn<ProjectTaskRetrospective | null>(row.retrospective, null),
     expectedOutput: row.expected_output,
     context: parseJsonColumn<ProjectTaskContext | null>(row.context, null),
     constraints: parseJsonColumn<ProjectTaskConstraints | null>(row.constraints, null),
@@ -126,6 +137,8 @@ export class ProjectTaskRepository extends BaseRepository {
         objective: params.objective,
         execution_profile: params.executionProfile ?? null,
         acceptance_criteria: params.acceptanceCriteria ?? [],
+        assumptions: params.assumptions ?? [],
+        kill_conditions: params.killConditions ?? [],
         expected_output: params.expectedOutput ?? null,
         context: params.context ?? null,
         constraints: params.constraints ?? null,
@@ -146,6 +159,8 @@ export class ProjectTaskRepository extends BaseRepository {
       {
         jsonFields: [
           "acceptance_criteria",
+          "assumptions",
+          "kill_conditions",
           "context",
           "constraints",
           "depends_on_task_ids",
@@ -314,6 +329,18 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.acceptanceCriteria !== undefined) {
       set("acceptance_criteria", JSON.stringify(updates.acceptanceCriteria));
+    }
+
+    if (updates.assumptions !== undefined) {
+      set("assumptions", JSON.stringify(updates.assumptions));
+    }
+
+    if (updates.killConditions !== undefined) {
+      set("kill_conditions", JSON.stringify(updates.killConditions));
+    }
+
+    if (updates.retrospective !== undefined) {
+      set("retrospective", updates.retrospective ? JSON.stringify(updates.retrospective) : null);
     }
 
     if (updates.expectedOutput !== undefined) {

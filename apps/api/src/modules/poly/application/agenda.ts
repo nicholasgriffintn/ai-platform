@@ -5,6 +5,7 @@ import type {
   Goal,
   PolyAgenda,
   PolyAgendaItem,
+  PolyHandoffJudgement,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 
@@ -27,6 +28,7 @@ export interface PolyNotedHandoff {
   reason: string;
   resultConversationId: string | null;
   createdAt: string;
+  judgement: PolyHandoffJudgement | null;
 }
 
 export interface PolyAgendaInput {
@@ -120,6 +122,7 @@ export function buildPolyAgenda(input: PolyAgendaInput): PolyAgenda {
     status: handoff.reason,
     conversation_id: handoff.resultConversationId ?? input.conversationId,
     updated_at: handoff.createdAt,
+    judgement: handoff.judgement,
   }));
 
   return {

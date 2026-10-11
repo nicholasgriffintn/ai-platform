@@ -2,12 +2,15 @@ import {
   createPolyStandingApprovalSchema,
   errorResponseSchema,
   polyAgendaSchema,
+  polyHandoffDisagreementSchema,
   polyHomeSchema,
   revokePolyStandingApprovalSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
+import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { disagreeWithPolyHandoff } from "~/modules/poly/application/handoff-disagreement";
 import { openPolyHome } from "~/modules/poly/application/home";
 import { readPolyAgenda } from "~/modules/poly/application/read-agenda";
 import {
@@ -41,6 +44,22 @@ addRoute(app, "get", "/agenda", {
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext }) => readPolyAgenda(serviceContext),
+});
+
+addRoute(app, "post", "/handoffs/:handoffId/disagree", {
+  tags: ["poly"],
+  summary: "Tell Poly it should not have kept a result quiet",
+  description:
+    "Record a rule that results from the same routine always reach you, and return where the result is.",
+  auth: true,
+  paramSchema: z.object({ handoffId: z.string().min(1) }),
+  responses: {
+    200: { description: "The rule and the result", schema: polyHandoffDisagreementSchema },
+    404: { description: "Not in your Poly thread", schema: errorResponseSchema },
+    409: { description: "Poly already told you", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    disagreeWithPolyHandoff(serviceContext, params.handoffId),
 });
 
 addRoute(app, "post", "/standing-approvals", {

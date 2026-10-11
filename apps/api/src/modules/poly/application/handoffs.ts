@@ -12,6 +12,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
 import { admitPolyNotification } from "~/modules/poly/domain/budgets";
+import { handoffOverrideRef } from "~/modules/poly/domain/handoff-overrides";
 import type { IUser } from "~/types";
 
 import { judgeRoutineResult } from "./handoff-judgement";
@@ -57,6 +58,15 @@ async function resolveUrgency(
 
   if (input.failed) {
     return { urgency: "high", receipt: null };
+  }
+
+  const [override] = await input.context.repositories.corrections.listActiveByPlacementRefs(
+    input.user.id,
+    [handoffOverrideRef(input.installationId)],
+  );
+
+  if (override) {
+    return { urgency: "high", receipt: { override: override.id } };
   }
 
   return judgeRoutineResult({

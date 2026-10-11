@@ -8,6 +8,7 @@ import type {
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
   PolyAgenda,
+  PolyHandoffDisagreement,
   PolyHome,
   TeammateAutonomyLevel,
   TeammateResponse,
@@ -249,6 +250,9 @@ class ApiService {
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 
   readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
+
+  disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
+    this.polyService.disagreeWithPolyHandoff(handoffId);
 
   grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
     this.polyService.grantPolyStandingApproval(interactionId);

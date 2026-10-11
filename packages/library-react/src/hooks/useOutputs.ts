@@ -4,9 +4,11 @@ import {
   formatOutputDocument,
   getOutput,
   getOutputHistory,
+  listOutputReviews,
   listOutputs,
   listOutputShares,
   revokeOutputShare,
+  requestOutputReview,
   restoreOutputRevision,
   updateOutput,
 } from "@ngriffin_uk/polychat-library-client";
@@ -21,6 +23,7 @@ export const OUTPUT_QUERY_KEYS = {
   detail: (outputId: string | null) => ["outputs", "detail", outputId] as const,
   history: (outputId: string | null) => ["outputs", "history", outputId] as const,
   shares: (outputId: string | null) => ["outputs", "shares", outputId] as const,
+  reviews: (outputId: string | null) => ["outputs", "reviews", outputId] as const,
 };
 
 export function useOutputs(
@@ -49,6 +52,25 @@ export function useOutputHistory(outputId: string | null) {
     queryFn: () =>
       outputId ? getOutputHistory(outputId) : Promise.reject(new Error("No output ID")),
     enabled: Boolean(outputId),
+  });
+}
+
+export function useOutputReviews(outputId: string | null) {
+  return useQuery({
+    queryKey: OUTPUT_QUERY_KEYS.reviews(outputId),
+    queryFn: () =>
+      outputId ? listOutputReviews(outputId) : Promise.reject(new Error("No output ID")),
+    enabled: Boolean(outputId),
+  });
+}
+
+export function useRequestOutputReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (outputId: string) => requestOutputReview(outputId),
+    onSuccess: (review) =>
+      queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.reviews(review.outputId) }),
   });
 }
 

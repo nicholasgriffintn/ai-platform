@@ -116,6 +116,13 @@ export const polyHomeSchema = z.object({
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;
 
+export const polyHandoffDisagreementSchema = z.object({
+  correction_id: z.string().min(1),
+  result_conversation_id: z.string().min(1).nullable(),
+});
+
+export type PolyHandoffDisagreement = z.infer<typeof polyHandoffDisagreementSchema>;
+
 export const createPolyStandingApprovalSchema = z.object({
   interaction_id: z.string().min(1),
 });
@@ -148,6 +155,16 @@ export type PolyHandoffUrgency = z.infer<typeof polyHandoffUrgencySchema>;
 export type PolyHandoffDecision = z.infer<typeof polyHandoffDecisionSchema>;
 export type PolyHandoffData = z.infer<typeof polyHandoffDataSchema>;
 
+export const polyHandoffJudgementSchema = z.object({
+  chosen: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  alternatives: z.array(
+    z.object({ option: z.string().min(1), probability: z.number().min(0).max(1) }),
+  ),
+});
+
+export type PolyHandoffJudgement = z.infer<typeof polyHandoffJudgementSchema>;
+
 export const polyAgendaItemSchema = z.object({
   kind: z.enum(["delegation", "goal", "approval", "question", "routine"]),
   id: z.string().min(1),
@@ -155,6 +172,7 @@ export const polyAgendaItemSchema = z.object({
   status: z.string(),
   conversation_id: z.string().min(1),
   updated_at: z.string().nullable(),
+  judgement: polyHandoffJudgementSchema.nullable().optional(),
 });
 
 export const polyAgendaSchema = z.object({

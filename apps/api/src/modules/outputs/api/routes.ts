@@ -1,4 +1,6 @@
 import {
+  councilReviewListResponseSchema,
+  councilReviewSchema,
   createOutputSchema,
   describeDocumentResponseSchema,
   describeDocumentInputSchema,
@@ -42,6 +44,7 @@ import {
   restoreOutputRevision,
   updateOutput,
 } from "~/modules/outputs/application";
+import { listOutputReviews, reviewOutput } from "~/modules/outputs/application/review";
 
 const app = new Hono();
 
@@ -201,6 +204,35 @@ addRoute(app, "get", "/:outputId/revisions", {
   },
   handler: ({ params, serviceContext, user }) =>
     listOutputRevisions(serviceContext, user.id, params.outputId),
+});
+
+addRoute(app, "get", "/:outputId/reviews", {
+  tags: ["outputs"],
+  summary: "List council reviews of an output",
+  auth: true,
+  paramSchema: outputParams,
+  responses: {
+    200: { description: "Council reviews, newest first", schema: councilReviewListResponseSchema },
+  },
+  handler: ({ params, serviceContext }) => listOutputReviews(serviceContext, params.outputId),
+});
+
+addRoute(app, "post", "/:outputId/reviews", {
+  tags: ["outputs"],
+  summary: "Ask the council to review an output",
+  description:
+    "Four seats critique the current revision, read each other's critiques and vote; an adjudicator returns ship, revise or hold with a revision brief.",
+  auth: true,
+  paramSchema: outputParams,
+  responses: {
+    200: { description: "The new review", schema: councilReviewSchema },
+    409: { description: "The output is not finished", schema: errorResponseSchema },
+  },
+  handler: ({ params, serviceContext }) =>
+    reviewOutput(serviceContext, params.outputId, {
+      completionId: `output-review:${params.outputId}`,
+      usageScopeId: `output-review:${params.outputId}:${Date.now()}`,
+    }),
 });
 
 addRoute(app, "post", "/:outputId/revisions/:revision/restore", {
