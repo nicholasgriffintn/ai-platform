@@ -674,8 +674,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.10
-        version: 0.52.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.53.0
+        version: 0.53.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -853,8 +853,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.10
-        version: 0.52.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.53.0
+        version: 0.53.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1632,8 +1632,8 @@ importers:
         specifier: 2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       virtua:
-        specifier: 0.52.10
-        version: 0.52.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.53.0
+        version: 0.53.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: '*'
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -2632,8 +2632,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.10
-        version: 0.52.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.53.0
+        version: 0.53.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: '*'
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -10351,8 +10351,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  virtua@0.52.10:
-    resolution: {integrity: sha512-AbYcd+7Vk6HznogCw28yoT+am8wK67fMfaPjHIp3+CGhvSh31FOBuVm+eAN+p4y8azjEC8kC9O1AtmyKG6ithg==}
+  virtua@0.53.0:
+    resolution: {integrity: sha512-ijNBfbjVd0o+NUvIUg04Hob9nVK1OVyw0jO5u9/bfR27sa3cUzX1zoj7f6w6eveAseuNyCDu6tciLf2LFgwThw==}
     peerDependencies:
       '@angular/common': '>=20.0.0'
       '@angular/core': '>=20.0.0'
@@ -17842,7 +17842,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  virtua@0.52.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15):
+  virtua@0.53.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15):
     optionalDependencies:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
