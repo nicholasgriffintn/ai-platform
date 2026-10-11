@@ -365,6 +365,31 @@ export function decisionChoiceSelection(
   );
 }
 
+export const decisionReceiptAlternativeSchema = z.object({
+  question: z.string().min(1),
+  option: z.string().min(1),
+  probability: probabilitySchema,
+});
+
+export type DecisionReceiptAlternative = z.infer<typeof decisionReceiptAlternativeSchema>;
+
+const RECEIPT_ALTERNATIVE_FLOOR = 0.05;
+const RECEIPT_ALTERNATIVES_PER_QUESTION = 2;
+
+export function decisionChoiceAlternatives(
+  question: string,
+  answer: Pick<DecisionChoiceAnswer, "choice" | "probabilities">,
+): DecisionReceiptAlternative[] {
+  return Object.entries(answer.probabilities)
+    .filter(
+      ([option, probability]) =>
+        option !== answer.choice && probability >= RECEIPT_ALTERNATIVE_FLOOR,
+    )
+    .sort(([, left], [, right]) => right - left)
+    .slice(0, RECEIPT_ALTERNATIVES_PER_QUESTION)
+    .map(([option, probability]) => ({ question, option, probability }));
+}
+
 export function formatDecisionEntry(value: DecisionEntry): string {
   if (value === null) {
     return "None";

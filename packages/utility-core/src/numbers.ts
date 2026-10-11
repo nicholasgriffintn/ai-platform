@@ -34,6 +34,10 @@ export interface FormatDurationOptions {
   padMinutes?: boolean;
 }
 
+export function formatProbabilityPercent(probability: number): string {
+  return `${Math.round(clampNumber(probability, 0, 1) * 100)}%`;
+}
+
 export function formatDuration(
   seconds: number | undefined,
   { padMinutes = false }: FormatDurationOptions = {},

@@ -78,9 +78,20 @@ function memoryActivities(notifiedToday: number) {
   };
 }
 
-function input(activities: ReturnType<typeof memoryActivities>, overrides = {}) {
+function input(
+  activities: ReturnType<typeof memoryActivities>,
+  overrides = {},
+  overruledSources: readonly string[] = [],
+) {
+  const corrections = {
+    listActiveByPlacementRefs: async (_userId: number, refs: readonly string[]) =>
+      refs
+        .filter((ref) => overruledSources.some((source) => ref.endsWith(`:${source}`)))
+        .map((ref) => ({ id: `correction_${ref}`, placementRef: ref })),
+  };
+
   return {
-    context: { env: {}, repositories: { activities } } as unknown as ServiceContext,
+    context: { env: {}, repositories: { activities, corrections } } as unknown as ServiceContext,
     user: { id: 7 } as IUser,
     polyConversationId: "teammate_home_poly",
     installationId: "installation_inbox",
@@ -128,6 +139,18 @@ describe("admitRoutineHandoff", () => {
     await expect(admitRoutineHandoff(input(activities))).resolves.toBe("notified");
     expect(judge).toHaveBeenCalledTimes(1);
     expect(activities.records.size).toBe(1);
+  });
+
+  it("tells the person about a routine they asked to hear from, without asking the judge", async () => {
+    const activities = memoryActivities(0);
+
+    await expect(admitRoutineHandoff(input(activities, {}, ["installation_inbox"]))).resolves.toBe(
+      "notified",
+    );
+    expect(judge).not.toHaveBeenCalled();
+    expect(onlyHandoff(activities)?.data.receipt).toEqual({
+      override: "correction_poly.handoff_urgency:installation_inbox",
+    });
   });
 
   it("notes even a failure once the day's interruptions are spent", async () => {

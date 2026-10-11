@@ -4,7 +4,7 @@ import { skillIdSchema } from "./skills.js";
 
 export const PROPOSE_CORRECTION_TOOL_NAME = "propose_correction";
 
-export const CORRECTION_PLACEMENTS = ["skill", "memory"] as const;
+export const CORRECTION_PLACEMENTS = ["skill", "memory", "policy"] as const;
 
 export const correctionPlacementSchema = z.enum(CORRECTION_PLACEMENTS);
 

@@ -38,6 +38,7 @@ Read the relevant record before changing any durable boundary.
 - [0073: Teammate autonomy is a dial over effects](decisions/0073-teammate-autonomy-is-a-dial-over-effects.md)
 - [0085: Corrections become placed rules](decisions/0085-corrections-become-placed-rules.md)
 - [0086: Earn standing approvals and brake when the owner is away](decisions/0086-earn-standing-approvals-and-brake-when-the-owner-is-away.md)
+- [0087: Receipts show the road not taken](decisions/0087-receipts-show-the-road-not-taken.md)
 
 ## Model governance
 
