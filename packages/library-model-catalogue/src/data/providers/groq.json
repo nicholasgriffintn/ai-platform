@@ -410,7 +410,11 @@
         },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "whisper-large-v3": {
       "model": "whisper/whisper",
@@ -462,6 +466,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 3,
         "isFeatured": true,

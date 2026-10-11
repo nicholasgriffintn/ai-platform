@@ -1,6 +1,7 @@
 import {
   ApprovalRequestView,
   CouncilMemberPickerView,
+  CouncilReviewView,
   type CustomResponseViewRegistry,
   PanelConclusionView,
   PanelTurnView,
@@ -49,6 +50,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   council_turn: ({ data, embedded }) => (
     <PanelTurnView data={data} embedded={embedded} fallbackName="Council member" />
   ),
+  council_review: ({ data }) => <CouncilReviewView data={data} />,
   council_member_picker: ({ data, embedded, onToolInteraction }) => (
     <CouncilMemberPickerView
       data={data}

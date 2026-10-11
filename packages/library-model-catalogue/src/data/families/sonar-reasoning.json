@@ -29,6 +29,11 @@
         "name": "Perplexity: Sonar Reasoning Pro",
         "description": "Web-grounded reasoning model for multi-step research and cited answers",
         "maxTokens": 115200,
+        "strengths": [
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 4,
         "releaseDate": "March 7, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {

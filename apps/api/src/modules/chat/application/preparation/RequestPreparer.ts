@@ -63,6 +63,11 @@ import {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/modules/skills/application";
+import {
+  listPerMessageSkillCandidates,
+  renderPerMessageSkills,
+  selectPerMessageSkills,
+} from "~/modules/skills/application/per-message";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
 import {
   mergeNativeMcpToolNames,
@@ -482,6 +487,15 @@ export class RequestPreparer {
           scopedSkillCatalog?.listDefinitions(),
         );
 
+    const perMessageSkillsPromise = hasFixedToolScope
+      ? Promise.resolve([])
+      : selectPerMessageSkills({
+          env: scope.options.env,
+          user: user ?? undefined,
+          conversationId: scope.options.completion_id,
+          message: finalMessage,
+          candidates: listPerMessageSkillCandidates(skills, scopedSkillCatalog),
+        });
     const activeGoal = await activeGoalPromise;
     const effectiveMemoryScope = await effectiveMemoryScopePromise;
 
@@ -561,7 +575,7 @@ export class RequestPreparer {
       completionId: scope.options.completion_id,
       shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
-      messageWithContext,
+      messageWithContext: renderPerMessageSkills(await perMessageSkillsPromise, messageWithContext),
     });
 
     return {

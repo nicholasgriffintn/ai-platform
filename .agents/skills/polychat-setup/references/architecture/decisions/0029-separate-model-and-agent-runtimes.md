@@ -1,6 +1,6 @@
 # ADR 0029: Separate model runtimes from agent runtimes
 
-Status: Implemented in `apps/desktop`; not yet released.
+Status: Implemented in `apps/desktop`.
 
 ## Problem
 

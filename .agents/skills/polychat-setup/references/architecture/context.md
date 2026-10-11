@@ -1,73 +1,36 @@
 # Architecture context
 
-Use this as the ownership and responsibility map. Detailed rationale is in [decisions](decisions.md).
+Use this map to find the owning app or package. Read only the relevant [architecture decision records](decisions/) when changing a durable boundary.
 
-## Vocabulary
+## Applications
 
-- **Chat / Work**: personal vs collaborative surfaces on one runtime.
-- **Project**: shared instructions, files, conversations, tasks, and access in a workspace.
-- **Run**: one accepted stored execution with stable identity and attempt history.
-- **Scope**: personal or project authority boundaries.
-- **Conversation**: durable user history; **Activity**: user-visible execution trace.
-- **Teammate context**: one teammate's durable home, grants, routines and computer within a personal or project scope.
-- **Poly**: the platform teammate `platform-poly`; each person has one personal Poly context whose home conversation (type `poly`) is their continuous Poly thread.
-- **Platform teammate**: a read-only teammate defined in code and available to every project by default; its tools and skills are platform grants.
-- **Workflow**: a code-defined sequence of project flow stages that can be applied and then edited as task phases.
-- **Brief**: a revisioned memory document explicitly bound to a conversation and loaded into its runs.
-- **Model version**: an open model or dataset pinned to a Hub commit with hashed files; the unit that evidence, decisions and lineage attach to (Work › Models).
-- **Evidence / Decision**: dated, append-only observations about a version, and the approval that cites them for a workspace or project scope.
-- **Route**: a version served by a provider in a region; approved separately from the version and enforced in project chats when a workspace opts in.
-- **Build**: a fine-tune from an approved base and a governed dataset snapshot whose output is a derived version that re-enters review.
+- `apps/app` owns the web and PWA presentation.
+- `apps/api` owns request orchestration, persistence, provider adapters, webhooks and queue tasks. Product capabilities live in `apps/api/src/modules`; host infrastructure lives in `apps/api/src/infrastructure`.
+- `apps/desktop` owns the Tauri client shell, local storage and host-specific egress.
+- `apps/mobile/ios` owns the native iOS client.
+- `apps/sandbox-worker` runs coding tasks; `apps/computer-worker` hosts persistent graphical computers; `apps/agent-worker` hosts stateful Hermes sessions.
+
+## Shared packages
+
+- `packages/schemas` owns wire contracts shared across apps and workers.
+- `packages/ai-*` packages provide host-facing provider, tool, model, agent, workflow, billing and telemetry interfaces.
+- `packages/library-*` packages implement reusable domain mechanisms; `packages/utility-*` packages provide shared helpers.
+- `packages/component-*` packages own reusable UI. Keep API and router dependencies in their owning apps, except where `component-shell` provides host integration.
+
+## Execution and authority
+
+- Chat uses the shared run engine; the API persists run identity, ordered events, results and terminal state. Reconnect from stored state rather than treating a live stream as durable history.
+- Project task delivery, notifications and attention belong to their owning API modules. Revalidate scope and permissions at each I/O boundary.
+- Sandbox runs use versioned contracts from `packages/schemas`. The API owns dispatch and project authority; the sandbox worker owns repository execution. Hosted computer sessions use fenced leases and creator-bound credentials.
+- Personal credentials stay personal. Workspace connections are scoped to their workspace, and project membership does not grant another member's external credentials.
+- Model-written code runs through the `LOADER` binding. Do not route it through the repository sandbox.
 
 ## Model platform
 
-- Work › Models is six API modules: `model-registry` (sources, imports, uploads, inspection, policies, decisions), `model-datasets`, `model-training`, `model-serving` (deployments, aliases, routes, the deployment chat provider), `model-evaluation` (graders, suites, runs) and `model-governance` (provider connections, permissions, budgets, spend requests, revocation, audit, exports). All mount under `/model-platform`.
-- Provider calls go through `ai-model-providers` adapters from the API; there is no separate training Worker. Pure mechanisms (policy, sizing, costs, dataset pipeline, promotion gates, BOMs) live in `library-model-registry`.
-- Inspection parses byte ranges and never loads weights. Policy evaluation is a pure function shared by enforcement, previews and dry runs.
-- Workspaces bring their own provider accounts (`workspace_provider_connection`, secrets sealed with `PRIVATE_KEY`). Uploads and dataset splits live in `PRIVATE_ASSETS_BUCKET` and are published to the workspace's private Hub repository when Hugging Face is connected.
-- Queue tasks: `model_registry_inspect`, `model_registry_eval`, and polls `model_dataset_process`, `model_training_sync`, `model_deployment_sync`, `model_upload_finalise`. `model_platform_reconcile` runs per workspace every 15 minutes for idle pause, budget hard stops and stale syncs; replays and decision expiry run daily.
+Work › Models is implemented by API modules for registry, datasets, training, serving, evaluation and governance under `/model-platform`. Provider calls run through `ai-model-providers`; reusable governance mechanisms live in `library-model-registry`.
 
-## Deployables and owners
+Workspaces own provider connections and related secrets. Model versions are identified by pinned source revisions and file hashes; approvals, evidence and routes attach to versions rather than mutable names. Queue tasks handle processing and provider synchronisation; scheduled reconciliation enforces budgets and repairs stale state.
 
-- `apps/app`: web/PWA presentation and route composition.
-- `apps/api`: request orchestration, validation, persistence, provider adapters, webhooks, queue tasks.
-- `apps/desktop`: native shell, secure signing/everything local-first where possible.
-- `apps/sandbox-worker`: coding execution boundary, approvals, preview gateway.
-- `apps/computer-worker`: hosted graphical computer lifecycle, screen sessions, checkpoints and fenced control.
-- `apps/agent-worker`: hosted stateful agent sessions, container lifecycle, model proxy and checkpoints.
-- `apps/mobile/ios`: native client consuming API streams and push.
-- Shared packages own contracts and reusable UI, leaving API calls and storage ownership at hosts.
-- Backend mechanisms live in primitives packages: `ai-*` for host-facing interaction (providers, functions, agents, workflows, models, billing, telemetry), `library-*` for the mechanisms they compose (agent loop, tools, tasks, model catalogue), `utility-*` for helpers. Packages are generic over host types, throw coded errors, and the API maps them at one boundary.
+## Runtime details
 
-## Conversation execution
-
-- `services/chat/core` handles request orchestration; `apps/api/src/lib` holds only host infrastructure (database, http, storage, cloudflare, durable objects, provider host, telemetry), and every product capability lives under `services/<capability>`.
-- Finalisation owns persistence, cleanup, lock release and run status.
-- Streams are authoritative only for transport; recovery uses stored snapshots and ordered events.
-- Model loops are bounded by provider readiness, context budgets, and usage controls.
-- Teammate entry points resolve one invocation, snapshot its configuration, then use the same run engine.
-- Durable result projection is independent from whether an optional parent model wake is admitted.
-
-## Work and coding
-
-- `project-tasks`, `attention`, `task-notifications`, and `conversation-organisation` own project execution and delivery signals.
-- Sandbox/Workbench uses versioned contracts from `schemas/sandbox*`, environment snapshots, and authenticated previews.
-- Model-written code runs through `run_code` in a dynamic Worker isolate (`ai-sandbox` over the `LOADER` binding); tools reach it through the loopback `OutboundGateway`, never through the container sandbox.
-- Avoid adding extra workbench tables or duplicate contracts outside existing channels.
-
-## Data, authority, and spend
-
-- Membership + workspace role decides project access.
-- External credentials remain personal unless explicitly shared by design.
-- Teammate connector access is an exact account-and-operation grant, revalidated at every operation.
-- Hosted computer control uses expiring leases and monotonically increasing fences.
-- Browser and computer use share the `use_computer` tool and computer capability. The built-in worker provides interactive control with fenced leases; OpenAI provides managed browser tasks through the shared Agents API client. Bind managed sessions to their creator, conversation and credential source, and submit sign-in values through dedicated approval events outside model input.
-- Vector retrieval uses scoped authority and immutable provenance.
-- Credits are reserved, used, and settled as separate accounting states.
-- Feature flags and experiments are defined in code (`services/experiments`), bucketed on the analytics distinct id, optionally overridden by the Flagship `FLAGS` binding, and exposed to telemetry as `feature_flag.evaluation` events plus `experiment.<key>` properties on outcomes and generations.
-
-## Web and desktop
-
-- Desktop owns egress and system-level secrets; web uses host boundaries.
-- Machine sessions use short-lived adverts and relay coordination with explicit revalidation.
-- Both hosts share navigation, form, and rendering standards, and resolve actions via host-aware stores/routes.
+Feature flags are defined in code and may be overridden through the `FLAGS` binding. The API owns persistence and public authorisation; workers receive scoped service bindings for their assigned tasks. Check the owning manifest and module before changing a binding or adding a new boundary.

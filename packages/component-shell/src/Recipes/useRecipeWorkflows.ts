@@ -321,15 +321,11 @@ export function useRecipeWorkflows({
   };
 
   const openEventTriggersDialog = (recipe: AssistantRecipe, installation: RecipeInstallation) => {
-    const providers = getRecipeEventTriggerProviders(recipe, connectorByProviderId);
-
-    if (providers.length === 0) {
-      toast.error("Connect a supported integration before adding an event trigger.");
-
-      return;
-    }
-
-    setEventDialog({ recipe, installation, providers });
+    setEventDialog({
+      recipe,
+      installation,
+      providers: getRecipeEventTriggerProviders(recipe, connectorByProviderId),
+    });
   };
 
   const closeConfigurationDialog = () => {
@@ -348,9 +344,7 @@ export function useRecipeWorkflows({
 
   const getRecipeCardState = (recipe: AssistantRecipe, installation?: RecipeInstallation) => ({
     installation,
-    canManageEventTriggers:
-      Boolean(installation) &&
-      getRecipeEventTriggerProviders(recipe, connectorByProviderId).length > 0,
+    canManageEventTriggers: Boolean(installation),
     isStarting:
       (installRecipe.isPending &&
         installRecipe.variables?.recipeId === recipe.id &&

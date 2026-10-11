@@ -15,6 +15,7 @@ import type {
   PermissionMode,
   RunProvenance,
   TeammateAutonomyLevel,
+  TeammateApprovalStreak,
   TeammateStandingApproval,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -79,6 +80,7 @@ export interface IBody {
   teammate_context_id?: string;
   autonomy_level?: TeammateAutonomyLevel | null;
   standing_approvals?: TeammateStandingApproval[];
+  approval_streaks?: TeammateApprovalStreak[];
   [other: string]: any;
 }
 
@@ -100,6 +102,7 @@ export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "e
   context?: ServiceContext;
   autonomy_level?: TeammateAutonomyLevel | null;
   standing_approvals?: TeammateStandingApproval[];
+  approval_streaks?: TeammateApprovalStreak[];
 };
 
 export type ChatCompletionParametersWithModel = ChatCompletionParameters;

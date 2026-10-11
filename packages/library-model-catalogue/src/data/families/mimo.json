@@ -86,6 +86,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
         "supportsAttachments": false,

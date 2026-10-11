@@ -678,6 +678,14 @@
         "name": "Stealth: Claude Sonnet 4.6 (20% off)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "supportsTemperature": false,
@@ -692,6 +700,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 47.2,
+          "codingIndex": 63,
+          "agenticIndex": 40.8,
+          "intelligenceIndexVersion": 4.1
         }
       }
     }

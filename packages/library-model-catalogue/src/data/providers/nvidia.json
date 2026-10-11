@@ -53,6 +53,10 @@
             "image"
           ]
         },
+        "strengths": [
+          "image",
+          "vision"
+        ],
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -275,6 +279,8 @@
       "matchingModel": "mistralai/mistral-medium-3-instruct",
       "overrides": {
         "maxTokens": 32768,
+        "contextComplexity": 3,
+        "speed": 2,
         "releaseDate": "September 25, 2025",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0,
@@ -399,6 +405,7 @@
       "model": "nemotron/llama-3-1-nemotron-ultra-253b",
       "matchingModel": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "April 7, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -455,6 +462,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "speed": 4,
         "releaseDate": "April 28, 2026",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
@@ -466,6 +483,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -475,12 +498,24 @@
       "overrides": {
         "name": "Nemotron 3 Super",
         "maxTokens": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "speed": 4,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008,
         "supportsToolCalls": true,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.4,
+          "codingIndex": 37.7,
+          "agenticIndex": 8.7,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "nvidia/nemotron-3-ultra-550b-a55b": {
@@ -489,6 +524,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 65536,
+        "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0025,
@@ -659,6 +695,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -707,6 +744,12 @@
             "image"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "image"
+        ],
+        "contextComplexity": 4,
         "releaseDate": "August 7, 2025",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0,

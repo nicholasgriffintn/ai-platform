@@ -13,8 +13,10 @@ export function packageTaskConfig({ build }) {
           build: {
             command: bundle,
             dependsOn: dependencyBuilds,
-            input,
-            output: ["dist/**"],
+            cache: {
+              input,
+              output: ["dist/**"],
+            },
           },
         },
       },
@@ -27,14 +29,18 @@ export function packageTaskConfig({ build }) {
         "build:styles": {
           command: styles.join(" && "),
           dependsOn: dependencyBuilds,
-          input,
-          output: styleOutputs,
+          cache: {
+            input,
+            output: styleOutputs,
+          },
         },
         build: {
           command: bundle,
           dependsOn: [...dependencyBuilds, "build:styles"],
-          input,
-          output: ["dist/**", ...styleOutputs.map((output) => `!${output}`)],
+          cache: {
+            input,
+            output: ["dist/**", ...styleOutputs.map((output) => `!${output}`)],
+          },
         },
       },
     },

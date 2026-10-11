@@ -169,3 +169,9 @@ export function readFiniteNumber(value: unknown): number | undefined {
 export function readStringArray(value: unknown): string[] {
   return toStringArray(value);
 }
+
+export function readTrimmedStringArray(value: unknown): string[] {
+  return toStringArray(value)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}

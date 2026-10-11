@@ -1535,6 +1535,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
         "reliability": 1,
         "supportsAttachments": false,
         "reasoningConfig": {

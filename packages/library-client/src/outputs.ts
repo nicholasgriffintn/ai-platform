@@ -1,4 +1,6 @@
 import type {
+  CouncilReview,
+  CouncilReviewListResponse,
   DocumentMetadata,
   Output,
   OutputHistoryResponse,
@@ -62,6 +64,24 @@ export async function getOutputHistory(outputId: string): Promise<OutputHistoryR
   });
 
   return returnFetchedData<OutputHistoryResponse>(response);
+}
+
+export async function listOutputReviews(outputId: string): Promise<CouncilReview[]> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/reviews`, {
+    method: "GET",
+    headers: await getHeaders(),
+  });
+
+  return (await returnFetchedData<CouncilReviewListResponse>(response)).reviews;
+}
+
+export async function requestOutputReview(outputId: string): Promise<CouncilReview> {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/reviews`, {
+    method: "POST",
+    headers: await getHeaders(),
+  });
+
+  return returnFetchedData<CouncilReview>(response);
 }
 
 export async function restoreOutputRevision(

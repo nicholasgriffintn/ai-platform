@@ -1047,8 +1047,9 @@
       "matchingModel": "ling-3.0-flash-fin-free",
       "overrides": {
         "name": "Ling 3.0 Flash Fin Free",
+        "openWeights": true,
         "description": "Finance-enhanced model for financial research, multi-step investment workflows, and long-horizon planning and execution",
-        "lastUpdated": "August 27, 2026",
+        "lastUpdated": "September 3, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsResponseFormat": false,

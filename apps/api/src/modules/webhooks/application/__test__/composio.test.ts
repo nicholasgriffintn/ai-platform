@@ -89,6 +89,8 @@ describe("Composio webhook", () => {
             condition: null,
           }),
           markConnectedAccountError,
+        },
+        recipeEventReceipts: {
           claimEvent: async () => ({ status: "execute", executionToken: "lease_1" }),
           settleEvent: async () => true,
         },

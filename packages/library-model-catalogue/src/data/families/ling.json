@@ -47,7 +47,7 @@
           ]
         },
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": true,
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -110,7 +110,7 @@
         }
       }
     },
-    "inclusionai-ling-3-1-flash-new": {
+    "inclusionai-ling-3-1-flash": {
       "defaults": {
         "name": "inclusionAI: Ling 3.1 Flash (new)",
         "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",

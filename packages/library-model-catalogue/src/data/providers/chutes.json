@@ -124,6 +124,7 @@
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 3,
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000078,
@@ -430,7 +431,11 @@
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00036
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "openai/gpt-oss-20b": {
       "model": "gpt/gpt-oss-20b",
@@ -505,7 +510,6 @@
       "model": "qwen/qwen3-14b",
       "matchingModel": "Qwen/Qwen3-14B",
       "overrides": {
-        "contextWindow": 40960,
         "maxTokens": 40960,
         "speed": 3,
         "releaseDate": "December 29, 2025",
@@ -531,7 +535,6 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
         "knowledgeCutoffDate"
       ]
     },
@@ -805,6 +808,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",

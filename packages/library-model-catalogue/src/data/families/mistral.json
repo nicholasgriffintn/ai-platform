@@ -339,9 +339,21 @@
             "text"
           ]
         },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "April 17, 2024",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "mistral-moderation": {
@@ -428,9 +440,21 @@
             "text"
           ]
         },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "February 17, 2025",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "mistral-small-24b-instruct-2501": {

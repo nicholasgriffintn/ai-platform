@@ -1419,6 +1419,28 @@ export const recipeComposioTriggersResponseSchema = z.object({
   triggers: z.array(recipeComposioTriggerSchema),
 });
 
+export const recipeWebhookTriggerCreateRequestSchema = z.object({
+  condition: z.string().trim().min(1).max(2000).optional(),
+});
+
+export const recipeWebhookTriggerSchema = z.object({
+  id: z.string(),
+  installationId: z.string(),
+  projectId: z.string().nullable(),
+  condition: z.string().nullable(),
+  status: z.enum(["active", "paused", "error"]),
+  createdAt: z.string(),
+  updatedAt: z.string().nullable(),
+});
+
+export const recipeWebhookTriggerSecretSchema = recipeWebhookTriggerSchema.extend({
+  url: z.url(),
+});
+
+export const recipeWebhookTriggersResponseSchema = z.object({
+  triggers: z.array(recipeWebhookTriggerSchema),
+});
+
 export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
   projectId: z.string().min(1).optional(),
@@ -1465,6 +1487,12 @@ export type RecipeComposioTrigger = z.infer<typeof recipeComposioTriggerSchema>;
 export type ComposioTriggerType = z.infer<typeof composioTriggerTypeSchema>;
 export type ComposioTriggerTypesResponse = z.infer<typeof composioTriggerTypesResponseSchema>;
 export type RecipeComposioTriggersResponse = z.infer<typeof recipeComposioTriggersResponseSchema>;
+export type RecipeWebhookTriggerCreateRequest = z.infer<
+  typeof recipeWebhookTriggerCreateRequestSchema
+>;
+export type RecipeWebhookTrigger = z.infer<typeof recipeWebhookTriggerSchema>;
+export type RecipeWebhookTriggerSecret = z.infer<typeof recipeWebhookTriggerSecretSchema>;
+export type RecipeWebhookTriggersResponse = z.infer<typeof recipeWebhookTriggersResponseSchema>;
 export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
 export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;
 export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;

@@ -167,6 +167,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "January 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -178,6 +186,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 29.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -503,9 +517,20 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "July 11, 2025",
         "supportsResponseFormat": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 19.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     }
   }

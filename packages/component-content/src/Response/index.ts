@@ -14,6 +14,7 @@ export * from "./TextView";
 export * from "./ToolErrorView";
 export * from "./Views/ApprovalRequestView";
 export * from "./Views/CouncilMemberPickerView";
+export * from "./Views/CouncilReviewCard";
 export * from "./Views/PanelConclusionView";
 export * from "./Views/PanelTurnView";
 export * from "./Views/UserQuestionView";

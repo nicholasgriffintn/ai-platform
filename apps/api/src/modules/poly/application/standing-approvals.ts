@@ -2,6 +2,7 @@ import {
   POLY_CONVERSATION_TYPE,
   TEAMMATE_STANDING_APPROVAL_DAYS,
   type PolyHome,
+  type TeammateContext,
   type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -22,16 +23,38 @@ function isLive(approval: TeammateStandingApproval, now: number): boolean {
   return Date.parse(approval.expiresAt) > now;
 }
 
-export async function grantPolyStandingApproval(
+export async function readPendingPolyCall(
   context: ServiceContext,
+  polyContext: TeammateContext,
   interactionId: string,
-): Promise<PolyHome> {
-  const polyContext = await requirePolyContext(context);
+) {
   const pending = await context.repositories.messages.getLatestPendingToolMessage(
     polyContext.homeConversationId,
   );
 
   if (!pending || pending.tool_call_id !== interactionId || typeof pending.name !== "string") {
+    return null;
+  }
+
+  const toolName = pending.name;
+  const effects = resolveFunctionTool(toolName).effects;
+  const rawArguments = pending.tool_call_arguments;
+
+  return {
+    toolName,
+    destination: resolveToolCallDestination({ effects, rawArguments }),
+    effectClass: resolveToolCallEffectClass({ toolName, effects, rawArguments }),
+  };
+}
+
+export async function grantPolyStandingApproval(
+  context: ServiceContext,
+  interactionId: string,
+): Promise<PolyHome> {
+  const polyContext = await requirePolyContext(context);
+  const call = await readPendingPolyCall(context, polyContext, interactionId);
+
+  if (!call) {
     throw new AssistantError(
       "That approval is no longer waiting in Poly's conversation",
       ErrorType.CONFLICT_ERROR,
@@ -39,14 +62,11 @@ export async function grantPolyStandingApproval(
     );
   }
 
-  const toolName = pending.name;
-  const effects = resolveFunctionTool(toolName).effects;
-  const rawArguments = pending.tool_call_arguments;
-  const destination = resolveToolCallDestination({ effects, rawArguments });
+  const { toolName, destination } = call;
   const eligible = isStandingApprovalEligible({
     autonomyLevel: polyContext.autonomyLevel,
     conversationType: POLY_CONVERSATION_TYPE,
-    effectClass: resolveToolCallEffectClass({ toolName, effects, rawArguments }),
+    effectClass: call.effectClass,
     destination,
   });
 

@@ -42,6 +42,11 @@
         "description": "Flagship Nemotron model for high-throughput reasoning and complex agents",
         "contextWindow": 128000,
         "maxTokens": 16384,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "April 7, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -49,6 +54,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -239,6 +250,10 @@
         "description": "Small Nemotron 3 MoE for efficient coding, math, and long-context agents",
         "contextWindow": 262144,
         "maxTokens": 235929,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 15, 2025",
         "reasoningConfig": {
@@ -421,7 +436,18 @@
         "name": "Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
         "contextWindow": 262144,
-        "releaseDate": "March 11, 2026"
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "March 11, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.4,
+          "codingIndex": 37.7,
+          "agenticIndex": 8.7,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "nemotron-3-super-free": {
@@ -649,6 +675,11 @@
         "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
         "contextWindow": 202800,
         "maxTokens": 202800,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "June 4, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -656,6 +687,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.8,
+          "codingIndex": 49.3,
+          "agenticIndex": 27.4,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -674,8 +711,37 @@
             "text"
           ]
         },
+        "strengths": [
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
         "releaseDate": "March 16, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "bbaScore",
+              "label": "Big Bench Audio",
+              "value": 0.39,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "fdbScore",
+              "label": "Full Duplex Bench",
+              "value": 0.78,
+              "min": 0,
+              "max": 1
+            }
+          ]
+        }
       }
     },
     "nvidia-nemotron-3-5-content-safety-free": {

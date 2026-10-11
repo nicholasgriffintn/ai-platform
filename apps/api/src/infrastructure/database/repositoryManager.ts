@@ -4,6 +4,8 @@ import { ComposioConnectorSessionRepository } from "~/modules/apps/infrastructur
 import { ConnectorOperationApprovalRepository } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { ProviderConnectionRepository } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeEventReceiptRepository } from "~/modules/apps/infrastructure/RecipeEventReceiptRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/apps/infrastructure/RecipeWebhookTriggerRepository";
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
@@ -19,6 +21,7 @@ import { ConversationOrganisationRepository } from "~/modules/conversations/infr
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
 import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
@@ -45,6 +48,7 @@ import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/Mod
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputReviewRepository } from "~/modules/outputs/infrastructure/OutputReviewRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
@@ -134,6 +138,8 @@ export {
   ProjectEnvironmentVariableRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
+  RecipeEventReceiptRepository,
+  RecipeWebhookTriggerRepository,
   SharedTeammateRepository,
   SourceRepository,
   WorkspaceRepository,
@@ -233,6 +239,10 @@ export class RepositoryManager {
 
   public get memoryDocuments(): MemoryDocumentRepository {
     return this.resolve("memoryDocuments", (env) => new MemoryDocumentRepository(env));
+  }
+
+  public get corrections(): CorrectionRepository {
+    return this.resolve("corrections", (env) => new CorrectionRepository(env));
   }
 
   public get savedMessages(): SavedMessageRepository {
@@ -359,8 +369,20 @@ export class RepositoryManager {
     return this.resolve("outputs", (env) => new OutputRepository(env));
   }
 
+  public get outputReviews(): OutputReviewRepository {
+    return this.resolve("outputReviews", (env) => new OutputReviewRepository(env));
+  }
+
   public get providerConnections(): ProviderConnectionRepository {
     return this.resolve("providerConnections", (env) => new ProviderConnectionRepository(env));
+  }
+
+  public get recipeEventReceipts(): RecipeEventReceiptRepository {
+    return this.resolve("recipeEventReceipts", (env) => new RecipeEventReceiptRepository(env));
+  }
+
+  public get recipeWebhookTriggers(): RecipeWebhookTriggerRepository {
+    return this.resolve("recipeWebhookTriggers", (env) => new RecipeWebhookTriggerRepository(env));
   }
 
   public get recipeComposioTriggers(): RecipeComposioTriggerRepository {

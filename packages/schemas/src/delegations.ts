@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { chatRunIdSchema } from "./chat-runs.js";
+import { delegationStateSchema } from "./delegation-state.js";
 import { outputStatusSchema } from "./outputs.js";
 import { creditMicrosFromCredits } from "./pricing/constants.js";
 import { userQuestionSchema } from "./user-questions.js";
@@ -20,31 +21,6 @@ export function resolveDelegationCreditCeiling(remainingCreditMicros: number): n
 
 export const delegationWaitForSchema = z.enum(["all", "any", "none"]);
 export type DelegationWaitFor = z.infer<typeof delegationWaitForSchema>;
-
-export const delegationStateSchema = z.enum([
-  "queued",
-  "running",
-  "awaiting_input",
-  "awaiting_approval",
-  "awaiting_takeover",
-  "done",
-  "failed",
-  "cancelled",
-  "expired",
-]);
-export type DelegationState = z.infer<typeof delegationStateSchema>;
-
-export const LIVE_DELEGATION_STATES: readonly DelegationState[] = [
-  "queued",
-  "running",
-  "awaiting_input",
-  "awaiting_approval",
-  "awaiting_takeover",
-];
-
-export function isLiveDelegationState(state: DelegationState): boolean {
-  return LIVE_DELEGATION_STATES.includes(state);
-}
 
 export const delegationBudgetSchema = z.object({
   maxCreditMicros: z.number().int().positive(),
@@ -160,10 +136,21 @@ export const DELEGATION_RUN_EVENT_TYPES = [
 export const delegationRunEventTypeSchema = z.enum(DELEGATION_RUN_EVENT_TYPES);
 export type DelegationRunEventType = z.infer<typeof delegationRunEventTypeSchema>;
 
+export const MAX_DELEGATION_RUN_RESUMES = 2;
+
+export const delegationRunResumeSchema = z.object({
+  attempt: z.number().int().min(1).max(MAX_DELEGATION_RUN_RESUMES),
+  unknownOutcomes: z.array(z.string().min(1)).max(32),
+  maxSteps: z.number().int().positive(),
+  maxCreditMicros: z.number().int().positive(),
+});
+export type DelegationRunResume = z.infer<typeof delegationRunResumeSchema>;
+
 export const delegationRunTaskDataSchema = z.object({
   delegationId: z.string().min(1),
   projectId: z.string().min(1).nullable(),
   enabledTools: z.array(z.string()),
+  resume: delegationRunResumeSchema.optional(),
 });
 export type DelegationRunTaskData = z.infer<typeof delegationRunTaskDataSchema>;
 

@@ -11,6 +11,7 @@
       "defaults": {
         "openWeights": false,
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "reliability": 1,
         "supportsResponseFormat": true
       }
     },

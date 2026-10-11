@@ -5,13 +5,16 @@ import {
   type CouncilMemberDefinition,
   type CouncilMemberId,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
 import { runPanel, type PanelMember, type PanelTurn } from "~/modules/chat/application/panel";
 import { judgeCouncilDecision } from "~/modules/decisions/application/council-decision";
+import { reviewOutput } from "~/modules/outputs/application/review";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
+  review_output as review_outputDescriptor,
   select_council_members as select_council_membersDescriptor,
   run_council as run_councilDescriptor,
 } from "./definitions/council";
@@ -162,6 +165,40 @@ export const run_council: ApiToolDefinition = {
         model: result.model,
         ...(decision ? { decision, decisionOptions: args.decision?.options } : {}),
       },
+    };
+  },
+};
+
+export const review_output: ApiToolDefinition = {
+  ...review_outputDescriptor,
+  execute: async (args, context) => {
+    const request = context.request;
+
+    if (!request.context) {
+      throw new AssistantError(
+        "Reviewing an output needs a signed-in user",
+        ErrorType.AUTHENTICATION_ERROR,
+        401,
+      );
+    }
+
+    const review = await reviewOutput(request.context, String(args.outputId), {
+      completionId: context.completionId,
+      usageScopeId: context.toolCallId ?? context.completionId,
+      runId: request.request?.run_id,
+      runAttempt: request.request?.run_attempt,
+      model: request.request?.model,
+      provider: request.request?.provider,
+    });
+    const dissent = review.dissent.length
+      ? `\nDissent:\n${review.dissent.map((line) => `- ${line}`).join("\n")}`
+      : "";
+
+    return {
+      status: "success",
+      name: "review_output",
+      content: `<council_review verdict="${review.verdict}">\n${review.brief}${dissent}\n</council_review>`,
+      data: { renderer: "council_review", review },
     };
   },
 };

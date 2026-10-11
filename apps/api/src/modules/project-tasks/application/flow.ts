@@ -60,6 +60,7 @@ export function buildStageInstructions(
     stageName: stage?.name,
     stageInstructions: stage?.instructions || undefined,
     skillIds: skillIds.length > 0 ? skillIds.join(", ") : undefined,
+    planStage: stage?.mode === "plan" ? "true" : undefined,
     humanReview: stage?.advance === "on_human_accept" ? "true" : undefined,
   }).trim();
 

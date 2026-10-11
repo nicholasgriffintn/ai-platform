@@ -38,6 +38,7 @@
         "costPer1kOutputTokens": 0.00025
       },
       "unset": [
+        "contextComplexity",
         "supportsResponseFormat"
       ]
     },
@@ -49,7 +50,10 @@
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     }
   }
 }

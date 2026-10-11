@@ -1,6 +1,6 @@
 # ADR 0042: An agent session is a long-lived handle, not a one-shot process
 
-Status: Implemented for Codex in `apps/desktop`; the desktop application is not released. The remaining drivers stay on the batch path described in [0038](0038-spawn-only-compiled-agent-programs.md).
+Status: Implemented for Codex in `apps/desktop`; other drivers use the batch path described in [0038](0038-spawn-only-compiled-agent-programs.md).
 
 ## Problem
 

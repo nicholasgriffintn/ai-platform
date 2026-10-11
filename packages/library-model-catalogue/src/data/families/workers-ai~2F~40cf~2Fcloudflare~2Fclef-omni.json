@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65536,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 9, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/cloudflare/clef omni family includes models that produce text.",
+  "models": {
+    "clef-omni": {
+      "defaults": {
+        "name": "Clef Omni",
+        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks"
+      }
+    }
+  }
+}

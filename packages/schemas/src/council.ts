@@ -1,3 +1,5 @@
+import z from "zod/v4";
+
 export const councilMemberIds = [
   "chair",
   "sceptic",
@@ -112,3 +114,43 @@ export const councilMembers = [
 ] as const satisfies readonly CouncilMemberDefinition[];
 
 export const defaultCouncilMemberIds = councilMemberIds;
+
+export const COUNCIL_REVIEW_SEATS = ["sceptic", "researcher", "customer", "strategist"] as const;
+
+export const COUNCIL_REVIEW_ADJUDICATOR = "synthesiser" as const;
+
+export const councilReviewVerdictSchema = z.enum(["ship", "revise", "hold"]);
+
+export type CouncilReviewVerdict = z.infer<typeof councilReviewVerdictSchema>;
+
+export const councilReviewSeatSchema = z.object({
+  memberId: z.enum(councilMemberIds),
+  critique: z.string(),
+  rebuttal: z.string(),
+  vote: councilReviewVerdictSchema,
+});
+
+export type CouncilReviewSeat = z.infer<typeof councilReviewSeatSchema>;
+
+export const councilReviewSchema = z.object({
+  id: z.string().min(1),
+  outputId: z.string().min(1),
+  outputRevision: z.number().int().positive(),
+  verdict: councilReviewVerdictSchema,
+  brief: z.string(),
+  dissent: z.array(z.string()),
+  seats: z.array(councilReviewSeatSchema),
+  createdAt: z.string(),
+});
+
+export type CouncilReview = z.infer<typeof councilReviewSchema>;
+
+export const councilReviewListResponseSchema = z.object({
+  reviews: z.array(councilReviewSchema),
+});
+
+export type CouncilReviewListResponse = z.infer<typeof councilReviewListResponseSchema>;
+
+export const reviewOutputInputSchema = z.object({
+  outputId: z.string().min(1).describe("The Output to review before it is sent or published."),
+});

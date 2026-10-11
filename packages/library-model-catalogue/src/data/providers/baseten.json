@@ -34,6 +34,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 262144,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
         "costPer1kOutputTokens": 0.00348,
@@ -98,6 +99,12 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "January 30, 2026",
         "lastUpdated": "February 12, 2026",
@@ -111,6 +118,12 @@
       "overrides": {
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -131,6 +144,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -170,6 +190,7 @@
       "model": "nemotron/nemotron-ultra",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -180,6 +201,7 @@
       "model": "gpt-oss/openai-gpt-120b",
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
@@ -259,6 +281,7 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 200000,
         "maxTokens": 200000,
+        "speed": 4,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022,
@@ -273,6 +296,7 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202800,
         "maxTokens": 202800,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2026",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -288,6 +312,7 @@
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 202800,
         "maxTokens": 202800,
+        "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0013,
         "costPer1kOutputTokens": 0.0043,
@@ -310,6 +335,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "coding",
+          "tool_use",
+          "vision",
+          "document"
+        ],
+        "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,

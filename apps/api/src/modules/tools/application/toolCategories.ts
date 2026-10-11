@@ -48,6 +48,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   ],
   Collaboration: [
     "ask_user",
+    "review_output",
     "run_council",
     "select_council_members",
     "request_approval",

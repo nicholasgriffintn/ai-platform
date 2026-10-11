@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 131072,
     "modalities": {
       "input": [
         "text"
@@ -44,7 +45,6 @@
       "defaults": {
         "name": "Mistral Nemo Instruct 2407 TEE",
         "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
-        "contextWindow": 131072,
         "maxTokens": 131072,
         "releaseDate": "July 1, 2024",
         "supportsToolCalls": false

@@ -257,7 +257,7 @@ export const POLY_TEAMMATE: PlatformTeammate = {
     "create_automation",
     "load_skill",
     "save_skill",
-    "propose_skill_revision",
+    "propose_correction",
     "search_documents",
     "get_document",
     "write_document",

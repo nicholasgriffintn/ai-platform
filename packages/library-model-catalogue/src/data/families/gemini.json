@@ -870,6 +870,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "June 5, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -877,6 +885,12 @@
             "high"
           ],
           "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23,
+          "codingIndex": 46.7,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

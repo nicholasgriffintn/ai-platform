@@ -10,6 +10,7 @@
         "text"
       ]
     },
+    "contextComplexity": 4,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -25,7 +26,6 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "January 27, 2026",
         "reasoningConfig": {
@@ -80,7 +80,6 @@
           "coding",
           "general_knowledge"
         ],
-        "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "May 20, 2025",
@@ -115,6 +114,10 @@
         "name": "Upstage: Solar Pro 3",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "maxTokens": 117964,
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
         "releaseDate": "January 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -125,6 +128,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.1,
+          "codingIndex": 16.2,
+          "agenticIndex": 2.7,
+          "intelligenceIndexVersion": 4.1
         }
       }
     }

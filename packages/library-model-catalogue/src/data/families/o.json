@@ -331,6 +331,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "February 12, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
@@ -341,6 +347,12 @@
             "high"
           ],
           "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 18.4,
+          "codingIndex": 42.1,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },

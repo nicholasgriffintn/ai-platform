@@ -28,7 +28,9 @@ import {
   getPublicConversation,
   shareConversation,
   unshareConversation,
+  type ConversationShare,
   type ConversationSharingScope,
+  type PublicConversationPage,
 } from "~/modules/conversations/application/sharing";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { createInitialConversationTitle } from "~/modules/conversations/application/title-source";
@@ -1197,7 +1199,7 @@ export class ConversationManager {
     };
   }
 
-  async shareConversation(conversation_id: string): Promise<{ share_id: string }> {
+  async shareConversation(conversation_id: string): Promise<ConversationShare> {
     return shareConversation(this.sharingScope(), conversation_id);
   }
 
@@ -1210,7 +1212,7 @@ export class ConversationManager {
     limit = 50,
     after?: string,
     options?: { includeArchived?: boolean },
-  ): Promise<Message[]> {
+  ): Promise<PublicConversationPage> {
     return getPublicConversation(this.database.repositories, share_id, limit, after, options);
   }
 }

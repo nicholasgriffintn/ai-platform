@@ -4,6 +4,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatSource, requireSourcesAccess } from "~/modules/sources/application/sources";
 
+import { renderDependencyHandoffs } from "./dependents";
+
 export async function assertTaskSourcesAvailable(
   context: ServiceContext,
   projectId: string,
@@ -43,12 +45,21 @@ export async function buildProjectTaskContext(
     },
   );
   const snapshotContext = renderTaskSources(sources.map(formatSource));
+  const dependencies = await Promise.all(
+    task.dependsOnTaskIds.map((id) => context.repositories.projectTasks.getTaskById(id)),
+  );
   const lines = [
     task.context?.notes ?? "",
     ...(task.context?.links ?? []).map((link) =>
       link.label ? `- ${link.label}: ${link.url}` : `- ${link.url}`,
     ),
     ...snapshotContext,
+    ...renderDependencyHandoffs(
+      dependencies.filter(
+        (dependency): dependency is ProjectTask =>
+          dependency !== null && dependency.projectId === task.projectId,
+      ),
+    ),
   ];
 
   return lines.some(Boolean) ? lines.join("\n") : null;

@@ -22,8 +22,20 @@
       "defaults": {
         "name": "Perplexity: Sonar Pro",
         "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "strengths": [
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "March 7, 2025",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     },
     "perplexity-sonar-pro-search": {

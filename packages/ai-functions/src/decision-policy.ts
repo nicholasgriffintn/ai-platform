@@ -1,8 +1,11 @@
-import type {
-  DecisionAnswers,
-  DecisionQuestions,
-  DecisionState,
-  DecisionUsage,
+import {
+  decisionChoiceAlternatives,
+  decisionChoiceAnswerSchema,
+  type DecisionAnswers,
+  type DecisionQuestions,
+  type DecisionReceiptAlternative,
+  type DecisionState,
+  type DecisionUsage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { DecideRequest, DecideResult, DecisionFunctions, DecisionScope } from "./decisions.js";
@@ -31,6 +34,7 @@ export interface DecisionPolicyReceipt<TOutcome extends string> {
   policy: { key: string; version: string };
   status: DecisionPolicyStatus;
   recommendation?: DecisionPolicyRecommendation<TOutcome>;
+  alternatives?: DecisionReceiptAlternative[];
   applied: boolean;
   provider?: string;
   model?: string;
@@ -108,6 +112,14 @@ function failedResult<TQuestions extends DecisionQuestions, TOutcome extends str
   };
 }
 
+function receiptAlternatives(answers: Record<string, unknown>): DecisionReceiptAlternative[] {
+  return Object.entries(answers).flatMap(([question, answer]) => {
+    const parsed = decisionChoiceAnswerSchema.safeParse(answer);
+
+    return parsed.success ? decisionChoiceAlternatives(question, parsed.data) : [];
+  });
+}
+
 function evaluatedResult<TQuestions extends DecisionQuestions, TOutcome extends string>(
   request: EvaluateDecisionPolicyRequest<TQuestions, TOutcome>,
   decision: DecideResult<TQuestions>,
@@ -124,6 +136,7 @@ function evaluatedResult<TQuestions extends DecisionQuestions, TOutcome extends 
       policy: policyIdentity(request.policy),
       status: "evaluated",
       recommendation,
+      alternatives: receiptAlternatives(decision.answers),
       applied: true,
       provider: decision.provider,
       model: decision.model,

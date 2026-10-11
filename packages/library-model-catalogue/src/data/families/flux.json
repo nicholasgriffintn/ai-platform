@@ -142,9 +142,30 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 4096,
         "maxTokens": 0,
+        "strengths": [
+          "image"
+        ],
+        "contextComplexity": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "August 1, 2024",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1027,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
       }
     },
     "flux-1-fill-pro": {
@@ -173,10 +194,33 @@
             "image"
           ]
         },
+        "strengths": [
+          "image",
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 3,
+        "reliability": 2,
         "releaseDate": "August 12, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "image_editingElo",
+              "label": "Image-editing arena",
+              "value": 1017,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
       }
     },
     "flux-1-kontext-max": {
@@ -248,10 +292,31 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 77,
         "maxTokens": 0,
+        "strengths": [
+          "image"
+        ],
+        "contextComplexity": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1000,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 0
+            }
+          ]
+        }
       }
     },
     "flux-2-dev": {
@@ -310,6 +375,7 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 40960,
         "maxTokens": 40960,
+        "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 14, 2026",

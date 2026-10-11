@@ -13,6 +13,7 @@ export * from "./Teammates/ShareTeammateModal";
 export * from "./ConfirmDeleteModal";
 export * from "./ConnectorApiKeyModal";
 export * from "./MemorySynthesisPanel";
+export * from "./RulesLearnedPanel";
 export * from "./ConnectorAuthConfigModal";
 export * from "./Connectors/connector-account-display";
 export * from "./Connectors/ConnectorAccountsPanel";
