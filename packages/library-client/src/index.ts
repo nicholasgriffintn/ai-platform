@@ -74,8 +74,6 @@ export * from "./api-key.js";
 export * from "./machine-runs.js";
 
 export { machineRunClient } from "./machine-run-service.js";
-export { wakeHostedHermes } from "./hosted-agents.js";
-
 export * from "./browser-sessions.js";
 export * from "./channels.js";
 export * from "./document-collaboration.js";

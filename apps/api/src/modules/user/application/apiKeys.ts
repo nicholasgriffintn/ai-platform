@@ -4,11 +4,12 @@ import type { ApiKeyMetadata } from "~/modules/user/infrastructure/ApiKeyReposit
 export async function getUserApiKeys(
   context: ServiceContext,
   userId?: number,
+  name?: string,
 ): Promise<ApiKeyMetadata[]> {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  return context.repositories.apiKeys.getUserApiKeys(id);
+  return context.repositories.apiKeys.getUserApiKeys(id, name);
 }
 
 export async function createUserApiKey(

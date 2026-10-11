@@ -21,6 +21,7 @@ export {
   type LeaseFence,
   type LeaseFenceStore,
 } from "./lease-fence.js";
+export { parseSandboxCheckpointReference, type SandboxCheckpointReference } from "./checkpoints.js";
 export {
   createSandboxOutputRedactor,
   redactSandboxError,
@@ -81,10 +82,3 @@ export {
   type EvaluationLogLevel,
   type EvaluationOutcome,
 } from "./evaluation-result.js";
-export {
-  toOpenAICompletion,
-  toOpenAICompletionStream,
-  toPolychatCompletionRequest,
-  type BridgedCompletionRequest,
-  type OpenAICompletion,
-} from "./chat-completion-bridge.js";

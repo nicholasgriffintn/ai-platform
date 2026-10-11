@@ -1,7 +1,6 @@
 export const HERMES_API_PORT = 8642;
 export const HERMES_HOME = "/workspace/hermes";
 export const HERMES_START_COMMAND = "/usr/local/bin/start-hermes";
-export const HERMES_PROCESS_ID = "hermes-gateway";
 export const HERMES_STARTUP_TIMEOUT_MS = 180_000;
 export const HERMES_REQUEST_TIMEOUT_MS = 30_000;
 export const AGENT_HOST_SLEEP_AFTER = "15m";

@@ -34,6 +34,7 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - `apps/desktop`: native shell, secure signing/everything local-first where possible.
 - `apps/sandbox-worker`: coding execution boundary, approvals, preview gateway.
 - `apps/computer-worker`: hosted graphical computer lifecycle, screen sessions, checkpoints and fenced control.
+- `apps/agent-worker`: hosted stateful agent sessions, container lifecycle, model proxy and checkpoints.
 - `apps/mobile/ios`: native client consuming API streams and push.
 - Shared packages own contracts and reusable UI, leaving API calls and storage ownership at hosts.
 - Backend mechanisms live in primitives packages: `ai-*` for host-facing interaction (providers, functions, agents, workflows, models, billing, telemetry), `library-*` for the mechanisms they compose (agent loop, tools, tasks, model catalogue), `utility-*` for helpers. Packages are generic over host types, throw coded errors, and the API maps them at one boundary.

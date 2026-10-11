@@ -25,12 +25,12 @@ export function requireHostedHermesAccess(context: ServiceContext | undefined): 
     );
   }
 
-  if (!context.env.COMPUTER_WORKER) {
+  if (!context.env.AGENT_WORKER) {
     throw new AssistantError(
       "Hosted agents are not configured on this server",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
 
-  return { context, user, client: new AgentHostClient(context.env.COMPUTER_WORKER) };
+  return { context, user, client: new AgentHostClient(context.env.AGENT_WORKER) };
 }

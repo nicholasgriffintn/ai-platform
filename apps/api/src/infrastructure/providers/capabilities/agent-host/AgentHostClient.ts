@@ -15,10 +15,10 @@ import type { IEnv } from "~/types";
 import { AgentHostUnprovisionedError } from "./AgentHostUnprovisionedError";
 
 export class AgentHostClient {
-  constructor(private readonly worker: NonNullable<IEnv["COMPUTER_WORKER"]>) {}
+  constructor(private readonly worker: NonNullable<IEnv["AGENT_WORKER"]>) {}
 
   private async request(path: string, body: Record<string, unknown>): Promise<unknown> {
-    const response = await this.worker.fetch(`https://computer.internal/agent-host/${path}`, {
+    const response = await this.worker.fetch(`https://agent.internal/agent-host/${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -48,14 +48,6 @@ export class AgentHostClient {
 
   async provision(input: AgentHostProvisionRequest): Promise<void> {
     await this.request("provision", input);
-  }
-
-  async wake(hostId: string): Promise<void> {
-    await this.request("wake", { hostId });
-  }
-
-  async destroy(hostId: string): Promise<void> {
-    await this.request("destroy", { hostId });
   }
 
   async startRun(input: AgentHostRunRequest): Promise<string> {

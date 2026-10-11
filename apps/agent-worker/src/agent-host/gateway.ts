@@ -1,6 +1,6 @@
 import type { getSandbox } from "@cloudflare/sandbox";
+import { parseSandboxCheckpointReference } from "@ngriffin_uk/polychat-library-sandbox";
 
-import { parseCheckpointReference } from "../checkpoints";
 import {
   AGENT_HOST_CHECKPOINT_EXCLUDES,
   AGENT_HOST_CHECKPOINT_TTL_SECONDS,
@@ -49,7 +49,7 @@ export async function ensureHermesGateway(
   }
 
   if (state.checkpointReference && !(await hermesHomeExists(sandbox))) {
-    await sandbox.restoreBackup(parseCheckpointReference(state.checkpointReference));
+    await sandbox.restoreBackup(parseSandboxCheckpointReference(state.checkpointReference));
   }
 
   const process = await sandbox.startProcess(HERMES_START_COMMAND, {

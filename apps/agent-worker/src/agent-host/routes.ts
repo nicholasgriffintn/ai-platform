@@ -158,13 +158,6 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
       return Response.json({ provisioned: true });
     }
 
-    if (action === "destroy") {
-      await sandbox.destroy();
-      await sandbox.clearAgentHostState();
-
-      return Response.json({ destroyed: true });
-    }
-
     const state = await sandbox.readAgentHostState();
 
     if (!state) {
@@ -172,10 +165,6 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
     }
 
     switch (action) {
-      case "wake":
-        await ensureHermesGateway(sandbox, state);
-
-        return Response.json({ ready: true });
       case "run": {
         const input = agentHostRunRequestSchema.safeParse(body);
 

@@ -1,30 +1,8 @@
-import type { DirectoryBackup } from "@cloudflare/sandbox";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { parseSandboxCheckpointReference } from "@ngriffin_uk/polychat-library-sandbox";
 
 import { startComputer, stopComputer } from "./browser";
 import { PROFILE_DIRECTORY } from "./config/app";
 import type { ComputerSandbox } from "./types";
-
-export function parseCheckpointReference(value: string): DirectoryBackup {
-  const parsed: unknown = JSON.parse(value);
-
-  if (
-    !isRecord(parsed) ||
-    typeof parsed.id !== "string" ||
-    !parsed.id ||
-    typeof parsed.dir !== "string" ||
-    !parsed.dir ||
-    (parsed.localBucket !== undefined && typeof parsed.localBucket !== "boolean")
-  ) {
-    throw new Error("Checkpoint reference is invalid");
-  }
-
-  return {
-    id: parsed.id,
-    dir: parsed.dir,
-    ...(typeof parsed.localBucket === "boolean" ? { localBucket: parsed.localBucket } : {}),
-  };
-}
 
 export async function createComputerCheckpoint(
   sandbox: ComputerSandbox,
@@ -51,6 +29,6 @@ export async function restoreComputerCheckpoint(
   reference: string,
 ): Promise<void> {
   await stopComputer(sandbox);
-  await sandbox.restoreBackup(parseCheckpointReference(reference));
+  await sandbox.restoreBackup(parseSandboxCheckpointReference(reference));
   await startComputer(sandbox);
 }

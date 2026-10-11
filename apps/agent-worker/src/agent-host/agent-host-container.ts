@@ -31,10 +31,6 @@ export class AgentHost extends Sandbox<Env> {
   async writeAgentHostState(state: AgentHostState): Promise<void> {
     await this.ctx.storage.put(AGENT_HOST_STATE_KEY, state);
   }
-
-  async clearAgentHostState(): Promise<void> {
-    await this.ctx.storage.delete(AGENT_HOST_STATE_KEY);
-  }
 }
 
 AgentHost.outboundHandlers = {

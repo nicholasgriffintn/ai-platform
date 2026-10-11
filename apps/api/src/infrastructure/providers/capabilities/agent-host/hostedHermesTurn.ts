@@ -39,15 +39,16 @@ export function hostedHermesSessionId(conversationId: string): string {
 async function provisionHostedHermes(
   context: ServiceContext,
   client: AgentHostClient,
-  hostId: string,
+  userId: number,
 ): Promise<void> {
-  const existingKeys = await getUserApiKeys(context);
+  const hostId = hostedHermesHostId(userId);
+  const existingKeys = await getUserApiKeys(context, userId, HOSTED_HERMES_KEY_NAME);
 
-  for (const key of existingKeys.filter((candidate) => candidate.name === HOSTED_HERMES_KEY_NAME)) {
-    await deleteUserApiKey(context, key.id);
+  for (const key of existingKeys) {
+    await deleteUserApiKey(context, key.id, userId);
   }
 
-  const { plaintextKey } = await createUserApiKey(context, HOSTED_HERMES_KEY_NAME);
+  const { plaintextKey } = await createUserApiKey(context, HOSTED_HERMES_KEY_NAME, userId);
 
   await client.provision({ hostId, apiKey: plaintextKey });
 }
@@ -55,6 +56,7 @@ async function provisionHostedHermes(
 async function startHostedRun(
   context: ServiceContext,
   client: AgentHostClient,
+  userId: number,
   request: AgentHostRunRequest,
 ): Promise<string> {
   try {
@@ -64,28 +66,9 @@ async function startHostedRun(
       throw error;
     }
 
-    await provisionHostedHermes(context, client, request.hostId);
+    await provisionHostedHermes(context, client, userId);
 
     return client.startRun(request);
-  }
-}
-
-export async function prepareHostedHermes(
-  context: ServiceContext,
-  client: AgentHostClient,
-  userId: number,
-): Promise<void> {
-  const hostId = hostedHermesHostId(userId);
-
-  try {
-    await client.wake(hostId);
-  } catch (error) {
-    if (!(error instanceof AgentHostUnprovisionedError)) {
-      throw error;
-    }
-
-    await provisionHostedHermes(context, client, hostId);
-    await client.wake(hostId);
   }
 }
 
@@ -102,7 +85,7 @@ export async function runHostedHermesTurn(params: {
   modelTier: ModelTier;
 }): Promise<HostedHermesTurnResult> {
   const hostId = hostedHermesHostId(params.userId);
-  const runId = await startHostedRun(params.context, params.client, {
+  const runId = await startHostedRun(params.context, params.client, params.userId, {
     hostId,
     sessionId: hostedHermesSessionId(params.conversationId),
     input: params.input,

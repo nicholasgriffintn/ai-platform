@@ -2,11 +2,13 @@ import {
   containerEgressBlockedResponse,
   decideContainerEgress,
   parseContainerEgressPolicy,
-  toOpenAICompletion,
-  toOpenAICompletionStream,
-  toPolychatCompletionRequest,
 } from "@ngriffin_uk/polychat-library-sandbox";
-import { modelTierSchema, type ModelTier } from "@ngriffin_uk/polychat-schemas";
+import {
+  modelTierSchema,
+  partialChatCompletionsJsonSchema,
+  type ChatCompletionRequestBody,
+  type ModelTier,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { POLYCHAT_MODEL_NAME } from "../config/agent-host";
@@ -16,6 +18,36 @@ interface OutboundContext {
   containerId: string;
   params?: unknown;
 }
+
+const COMPLETION_FIELDS = [
+  "messages",
+  "tools",
+  "tool_choice",
+  "parallel_tool_calls",
+  "response_format",
+  "temperature",
+  "top_p",
+  "top_k",
+  "stop",
+  "max_tokens",
+  "max_completion_tokens",
+  "max_output_tokens",
+  "presence_penalty",
+  "frequency_penalty",
+  "repetition_penalty",
+  "logit_bias",
+  "logprobs",
+  "top_logprobs",
+  "seed",
+  "reasoning_effort",
+  "reasoning",
+  "verbosity",
+  "system_prompt",
+  "metadata",
+  "service_tier",
+  "stream_options",
+  "safety_identifier",
+] as const satisfies readonly (keyof ChatCompletionRequestBody)[];
 
 export interface PolychatModelParams {
   apiKey: string;
@@ -34,6 +66,26 @@ function parsePolychatModelParams(value: unknown): PolychatModelParams | null {
 
 function openAIError(status: number, message: string): Response {
   return Response.json({ error: { message, type: "polychat_gateway_error" } }, { status });
+}
+
+function polychatCompletionRequest(
+  body: Partial<ChatCompletionRequestBody>,
+  modelTier: ModelTier,
+): Record<string, unknown> {
+  const completionFields = Object.fromEntries(
+    COMPLETION_FIELDS.filter((field) => body[field] !== undefined).map((field) => [
+      field,
+      body[field],
+    ]),
+  );
+
+  return {
+    ...completionFields,
+    model_tier: modelTier,
+    stream: body.stream === true,
+    store: false,
+    enabled_tools: [],
+  };
 }
 
 export async function polychatModelsOutbound(
@@ -66,7 +118,12 @@ export async function polychatModelsOutbound(
     return openAIError(400, "Request body must be a JSON object");
   }
 
-  const bridged = toPolychatCompletionRequest(body, params.modelTier);
+  const completionRequest = partialChatCompletionsJsonSchema.safeParse(body);
+
+  if (!completionRequest.success || !completionRequest.data.messages?.length) {
+    return openAIError(400, "Invalid chat completion request");
+  }
+
   const response = await env.POLYCHAT_API.fetch(
     new Request("http://polychat-api/chat/completions", {
       method: "POST",
@@ -75,7 +132,8 @@ export async function polychatModelsOutbound(
         "Content-Type": "application/json",
         "User-Agent": "Polychat-Agent-Host/1.0 (+https://polychat.app)",
       },
-      body: JSON.stringify(bridged.body),
+      body: JSON.stringify(polychatCompletionRequest(completionRequest.data, params.modelTier)),
+      signal: request.signal,
     }),
   );
 
@@ -83,17 +141,7 @@ export async function polychatModelsOutbound(
     return openAIError(response.status, `Polychat returned ${response.status}`);
   }
 
-  const completion = toOpenAICompletion(await response.json(), POLYCHAT_MODEL_NAME);
-
-  if (!completion) {
-    return openAIError(502, "Polychat returned an unreadable completion");
-  }
-
-  return bridged.stream
-    ? new Response(toOpenAICompletionStream(completion), {
-        headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" },
-      })
-    : Response.json(completion);
+  return response;
 }
 
 export async function agentHostEgressOutbound(

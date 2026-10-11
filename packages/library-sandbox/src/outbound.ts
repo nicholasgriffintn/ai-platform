@@ -17,7 +17,14 @@ export type OutboundDecision =
   | { kind: "block"; reason: string };
 
 function hostMatchesPatterns(host: string, patterns: readonly string[]): boolean {
-  const candidate = host.toLowerCase().replace(/\.+$/, "");
+  const lowerHost = host.toLowerCase();
+  let hostnameLength = lowerHost.length;
+
+  while (hostnameLength > 0 && lowerHost[hostnameLength - 1] === ".") {
+    hostnameLength -= 1;
+  }
+
+  const candidate = lowerHost.slice(0, hostnameLength);
 
   return patterns.some((pattern) => {
     const normalised = pattern.trim().toLowerCase();

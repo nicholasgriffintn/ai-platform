@@ -152,7 +152,7 @@ export class ApiKeyRepository extends BaseRepository {
     }
   }
 
-  public async getUserApiKeys(userId: number): Promise<ApiKeyMetadata[]> {
+  public async getUserApiKeys(userId: number, name?: string): Promise<ApiKeyMetadata[]> {
     if (!userId) {
       throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
     }
@@ -160,7 +160,7 @@ export class ApiKeyRepository extends BaseRepository {
     try {
       const { query, values } = this.buildSelectQuery(
         "user_credential",
-        { kind: "api_key", user_id: userId },
+        { kind: "api_key", user_id: userId, ...(name ? { name } : {}) },
         {
           columns: ["public_id AS id", "name", "created_at"],
           orderBy: "created_at DESC",
