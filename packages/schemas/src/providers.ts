@@ -92,15 +92,17 @@ export function resolveEffectivePermissionMode(
   stored: unknown,
   supportedModes?: readonly PermissionMode[],
 ): PermissionMode {
-  if (requested) {
+  const fallback = supportedModes?.[0];
+  const isSupported = (mode: PermissionMode) => !supportedModes || supportedModes.includes(mode);
+
+  if (requested && isSupported(requested)) {
     return requested;
   }
 
   const parsed = permissionModeSchema.safeParse(stored);
   const resolved = parsed.success ? parsed.data : DEFAULT_PERMISSION_MODE;
-  const fallback = supportedModes?.[0];
 
-  return fallback && !supportedModes.includes(resolved) ? fallback : resolved;
+  return isSupported(resolved) ? resolved : (fallback ?? resolved);
 }
 
 const PERMISSION_MODE_LABELS: Record<PermissionMode, string> = {
