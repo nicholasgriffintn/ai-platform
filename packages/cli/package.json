@@ -1,0 +1,35 @@
+{
+  "name": "@ngriffin_uk/polychat-cli",
+  "version": "0.0.0",
+  "description": "Sign gateways, scripts and terminals in to Polychat with a device code instead of a pasted API key",
+  "license": "Apache-2.0",
+  "bin": {
+    "polychat": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

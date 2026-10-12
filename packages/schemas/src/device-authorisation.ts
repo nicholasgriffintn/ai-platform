@@ -6,6 +6,13 @@ export const DEVICE_CODE_POLL_INTERVAL_SECONDS = 10;
 export const DEVICE_USER_CODE_ALPHABET = "BCDFGHJKLMNPQRSTVWXZ";
 export const DEVICE_USER_CODE_LENGTH = 8;
 
+export function readDeviceUserCodeCharacters(input: string): string {
+  return input
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, DEVICE_USER_CODE_LENGTH);
+}
+
 export function normaliseDeviceUserCode(input: string): string | null {
   const characters = input.toUpperCase().replace(/[\s-]/g, "");
 

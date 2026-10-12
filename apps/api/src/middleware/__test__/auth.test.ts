@@ -200,6 +200,21 @@ describe("Auth Middleware", () => {
       expect(repositoryCtor).not.toHaveBeenCalled();
     });
 
+    it("lets headless device sign-in clients start and poll without a browser user agent", async () => {
+      mockIsbot.mockReturnValue(true);
+
+      for (const path of ["/auth/device/code", "/auth/device/token"]) {
+        const context = createMockContext();
+
+        context.req.path = path;
+
+        await authMiddleware(context, mockNext);
+      }
+
+      expect(mockNext).toHaveBeenCalledTimes(2);
+      expect(repositoryCtor).not.toHaveBeenCalled();
+    });
+
     it("should block unknown user agents", async () => {
       const context = createMockContext();
 
