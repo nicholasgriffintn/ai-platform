@@ -44,7 +44,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
         ? await repositories.userSettings.getUserSettings(user.id)
         : null;
 
-      const speechModel = await getAuxiliarySpeechModel(env, userSettings);
+      const speechModel = await getAuxiliarySpeechModel(env, userSettings, user);
 
       if (!isTranscriptionProvider(speechModel.transcriptionProvider)) {
         throw new AssistantError(

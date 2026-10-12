@@ -1,4 +1,4 @@
-import type { PolyAgenda, PolyHome } from "@ngriffin_uk/polychat-schemas";
+import type { PolyAgenda, PolyHandoffDisagreement, PolyHome } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
@@ -30,6 +30,19 @@ export class PolyService {
     }
 
     return returnFetchedData<PolyAgenda>(response);
+  }
+
+  async disagreeWithPolyHandoff(handoffId: string): Promise<PolyHandoffDisagreement> {
+    const response = await fetchApi(`/poly/handoffs/${encodeURIComponent(handoffId)}/disagree`, {
+      method: "POST",
+      headers: await this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Poly could not take that on board");
+    }
+
+    return returnFetchedData<PolyHandoffDisagreement>(response);
   }
 
   async grantPolyStandingApproval(interactionId: string): Promise<PolyHome> {

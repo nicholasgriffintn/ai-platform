@@ -459,6 +459,7 @@ export function useModelSelection({
       setSelectedMachineId(nextModel.machineId);
       selectModelWithDefaults(newModel);
       onModelChange?.(newModel, nextModel);
+
       rememberLastUsed({
         modelId: newModel,
         name: nextModel.name || newModel,

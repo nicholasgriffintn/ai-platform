@@ -72,3 +72,9 @@ export function generatePrefixedId(prefix: string): string {
 
   return `${prefix}${generateId()}`;
 }
+
+export function withGeneratedIds<T extends { id?: string }>(
+  items: readonly T[],
+): (Omit<T, "id"> & { id: string })[] {
+  return items.map((item) => ({ ...item, id: item.id ?? generateId() }));
+}

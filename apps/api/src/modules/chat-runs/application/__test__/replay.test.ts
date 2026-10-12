@@ -73,6 +73,9 @@ function createContext(options?: {
       usageReservations: {
         listReservations: vi.fn().mockResolvedValue([]),
       },
+      delegations: {
+        listByParentRunId: vi.fn().mockResolvedValue([]),
+      },
     },
   } as unknown as ServiceContext;
 }

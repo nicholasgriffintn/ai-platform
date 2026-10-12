@@ -16,6 +16,7 @@ interface ShareDialogProps {
   shareId?: string;
   onShare: (itemId: string) => Promise<{ share_id: string }>;
   onUnshare: (itemId: string) => Promise<void>;
+  allowUpdate?: boolean;
   getShareUrl: (shareId: string) => string;
   collapseLabel?: ButtonCollapse;
   className?: string;
@@ -29,6 +30,7 @@ export function ShareDialog({
   shareId,
   onShare,
   onUnshare,
+  allowUpdate = false,
   getShareUrl,
   collapseLabel = false,
   className,
@@ -37,6 +39,7 @@ export function ShareDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isUnsharing, setIsUnsharing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [currentShareId, setCurrentShareId] = useState(shareId);
   const [currentIsPublic, setCurrentIsPublic] = useState(isPublic);
   const [prevShareId, setPrevShareId] = useState(shareId);
@@ -65,6 +68,20 @@ export function ShareDialog({
     }
   };
 
+  const update = async () => {
+    try {
+      setIsUpdating(true);
+      const result = await onShare(itemId);
+
+      setCurrentShareId(result.share_id);
+      toast.success("Link updated to include everything so far");
+    } catch {
+      toast.error("Failed to update the link");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const unshare = async () => {
     try {
       setIsUnsharing(true);
@@ -87,6 +104,7 @@ export function ShareDialog({
       shareUrl={currentShareId ? getShareUrl(currentShareId) : undefined}
       isSharing={isSharing}
       isUnsharing={isUnsharing}
+      isUpdating={isUpdating}
       copied={copied}
       collapseLabel={collapseLabel}
       className={className}
@@ -94,6 +112,7 @@ export function ShareDialog({
       onOpenChange={setIsOpen}
       onShare={() => void share()}
       onUnshare={() => void unshare()}
+      onUpdate={allowUpdate ? () => void update() : undefined}
       onCopy={copy}
     />
   );

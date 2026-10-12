@@ -97,6 +97,10 @@
     {
       "binding": "COMPUTER_WORKER",
       "service": "assistant-computer-worker"
+    },
+    {
+      "binding": "AGENT_WORKER",
+      "service": "assistant-agent-worker"
     }
   ],
   "durable_objects": {

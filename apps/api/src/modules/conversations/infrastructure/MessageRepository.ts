@@ -560,6 +560,19 @@ export class MessageRepository extends BaseRepository {
     return Array.isArray(result) ? result : [];
   }
 
+  public async getRecentUserMessageContents(
+    conversationId: string,
+    limit: number,
+  ): Promise<unknown[]> {
+    const rows = await this.runQuery<{ content: unknown }>(
+      `SELECT content FROM message WHERE conversation_id = ? AND role = 'user'
+       ORDER BY ${MESSAGE_ORDER_BY_DESC} LIMIT ?`,
+      [conversationId, limit],
+    );
+
+    return rows.map((row) => row.content);
+  }
+
   public async getMemoryReflectionInput(input: {
     conversationId: string;
     runId: string;
@@ -969,6 +982,7 @@ export class MessageRepository extends BaseRepository {
         timestamp: result.timestamp,
         platform: result.platform,
         mode: result.mode,
+        tool_call_id: result.tool_call_id,
         is_archived: result.is_archived,
         data: result.data,
         parts: result.parts,

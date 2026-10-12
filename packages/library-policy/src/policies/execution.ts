@@ -16,6 +16,8 @@ export const executionPolicies = {
     when { context.trustLevel == "strict" && context.risky && !context.allowRisky };`,
   "sandbox.network": `permit(principal, action == Polychat::Action::"sandbox.network", resource)
     when { context.protocolAllowed && (context.mode == "all" || (context.mode == "list" && context.hostMatched)) };`,
+  "sandbox.egress": `permit(principal, action == Polychat::Action::"sandbox.egress", resource)
+    when { context.protocolAllowed && (context.mode == "all" || context.hostMatched || (context.readOnlyHostMatched && context.safeMethod)) };`,
   "sandbox.tool": `permit(principal, action == Polychat::Action::"sandbox.tool", resource) when { context.attached };`,
   "execution.owner": `permit(principal, action == Polychat::Action::"owner.access", resource)
     when { context.actorId != "" && context.actorId == context.ownerId };`,

@@ -219,12 +219,12 @@ async function getConnectorStatus(
     }
 
     const toolkitSlug = provider.auth.toolkitSlug;
-    const authConfigIds = provider.auth.authConfigs.map((config) => config.id);
+    const authConfigIds = new Set(provider.auth.authConfigs.map((config) => config.id));
     const account = composioAccounts.find(
       (item) =>
         item.toolkitSlug === toolkitSlug &&
         item.authConfigId != null &&
-        authConfigIds.includes(item.authConfigId) &&
+        authConfigIds.has(item.authConfigId) &&
         item.status === "ACTIVE" &&
         !item.isDisabled,
     );

@@ -804,6 +804,38 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       if (action === "submitPrompt") {
+        const interactionId = typeof data.interactionId === "string" ? data.interactionId : null;
+        const resolution = data.resolution;
+        const directResolution = data.approvalRequired === true || toolName === "request_approval";
+
+        if (
+          directResolution &&
+          interactionId &&
+          (resolution === "approved" || resolution === "rejected")
+        ) {
+          if (!currentConversationId) {
+            throw new Error("The conversation is no longer available");
+          }
+
+          const interactionRequestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
+            options: {
+              toolInteraction: {
+                toolName,
+                response: data,
+              },
+            },
+          });
+          const response = await respondToExistingConversation(currentConversationId, {
+            requestOptions: interactionRequestOptions,
+          });
+
+          if (response.status === "error") {
+            throw new Error(response.response || "The approval could not be submitted");
+          }
+
+          return;
+        }
+
         if (typeof data.input === "string" && data.input.trim()) {
           const approvedToolName =
             typeof data.approvedToolName === "string" ? data.approvedToolName : null;
@@ -866,6 +898,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       uploadInteractionFiles,
       setComposerInput,
       sendMessage,
+      respondToExistingConversation,
       modeConfig?.requestOptions,
       modeToolInteraction,
       location.pathname,

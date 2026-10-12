@@ -10,6 +10,8 @@ export interface ApprovalRequestData {
   key: string;
   message?: string;
   options?: string[];
+  approvalRequired?: boolean;
+  selectedOption?: string;
   context?: unknown;
   expiresAt?: string;
   approval?: {
@@ -81,11 +83,17 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
   const options = Array.isArray(data.options)
     ? data.options.filter((option): option is string => typeof option === "string")
     : undefined;
+  const approvalResolution = isRecord(data.approvalResolution)
+    ? data.approvalResolution
+    : undefined;
+  const selectedOption = readNonEmptyString(approvalResolution?.option);
 
   return {
     key: interactionId ?? completionId ?? timestamp ?? message ?? "approval",
     ...(message ? { message } : {}),
     ...(options ? { options } : {}),
+    ...(data.approvalRequired === true ? { approvalRequired: true } : {}),
+    ...(selectedOption ? { selectedOption } : {}),
     ...(data.context !== undefined ? { context: data.context } : {}),
     ...(expiresAt ? { expiresAt } : {}),
     ...(interactionId || toolName

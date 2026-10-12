@@ -49,15 +49,7 @@ export interface PanelResult {
   stoppedReason: "consensus" | "turn_budget";
 }
 
-export interface RunPanelParams {
-  env: IEnv;
-  completionId: string;
-  usageScopeId: string;
-  runId?: string;
-  runAttempt?: number;
-  user?: IUser;
-  model?: string;
-  provider?: string;
+export interface RunPanelParams extends PanelCompletionScope {
   question: string;
   members: readonly PanelMember[];
   openingMemberId?: string;
@@ -145,17 +137,18 @@ export function extractPanelRouting(
   };
 }
 
-export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
-  const members = params.members;
+export interface PanelCompletionScope {
+  env: IEnv;
+  completionId: string;
+  usageScopeId: string;
+  runId?: string;
+  runAttempt?: number;
+  user?: IUser;
+  model?: string;
+  provider?: string;
+}
 
-  if (members.length === 0) {
-    throw new AssistantError("A panel needs at least one member", ErrorType.PARAMS_ERROR);
-  }
-
-  const memberById = new Map(members.map((member) => [member.id, member]));
-  const memberIds = new Set(memberById.keys());
-  const maxTurns = Math.min(params.maxTurns ?? MAX_PANEL_TURNS, MAX_PANEL_TURNS);
-
+export async function createPanelCompletion(params: PanelCompletionScope) {
   const fallback = params.model ? null : await getAuxiliaryModel(params.env, params.user);
   const model = params.model ?? fallback.model;
   const provider = params.provider ?? fallback?.provider;
@@ -165,7 +158,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
   const complete = async (
     systemPrompt: string,
     userContent: string,
-    speaker?: PanelMember,
+    speaker?: Pick<PanelMember, "model" | "provider">,
   ): Promise<string> => {
     const selectedModel = speaker?.model ?? model;
     const selectedProvider = speaker?.model ? speaker.provider : provider;
@@ -210,6 +203,22 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
 
     return result.response.trim();
   };
+
+  return { complete, model, provider };
+}
+
+export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
+  const members = params.members;
+
+  if (members.length === 0) {
+    throw new AssistantError("A panel needs at least one member", ErrorType.PARAMS_ERROR);
+  }
+
+  const memberById = new Map(members.map((member) => [member.id, member]));
+  const memberIds = new Set(memberById.keys());
+  const maxTurns = Math.min(params.maxTurns ?? MAX_PANEL_TURNS, MAX_PANEL_TURNS);
+
+  const { complete, model, provider } = await createPanelCompletion(params);
 
   const turns: PanelTurn[] = [];
   const queue: string[] = [params.openingMemberId ?? members[0].id];

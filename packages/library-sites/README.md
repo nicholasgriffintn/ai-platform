@@ -1,8 +1,6 @@
 # @ngriffin_uk/polychat-library-sites
 
-The pure core of Polychat Sites. It never calls a model and runs the same in the API, the browser and tests.
-
-Sites work the way json-render proved generative UI should: a model can only use components from a catalogue, it streams a flat document one JSON Patch line at a time so the UI fills in progressively, and the same document compiles to real code. This package owns each of those pieces for Polychat.
+The shared core for Polychat Sites. It defines the component catalogue and document schema, parses and validates streamed patches, and generates preview and project files. It does not call a model and runs in the API, browser and tests.
 
 ## Pieces
 

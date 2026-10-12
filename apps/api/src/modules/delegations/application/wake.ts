@@ -5,6 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { deliverChannelFollowUp } from "~/modules/channels/application/follow-up";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import type { TaskMessage } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
@@ -71,7 +72,7 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   ) {
     const resumed = await prepareTeammateRunResume({ context, run: parentRun });
 
-    await enqueueTeammateRun({
+    const completion = await enqueueTeammateRun({
       env,
       context,
       body,
@@ -84,6 +85,16 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
       continuationRun: parentRun,
       ...(resumed.durableExecution ? { durableExecution: resumed.durableExecution } : {}),
     });
+    const invocation = parentConfiguration.data.invocation;
+
+    if (invocation?.source === "channel") {
+      await deliverChannelFollowUp({
+        context,
+        invocation,
+        operationId: `delegation_wake_${payload.parentRunId}`,
+        completion,
+      });
+    }
 
     return { status: "success" as const, detail: "Teammate parent resumed" };
   }

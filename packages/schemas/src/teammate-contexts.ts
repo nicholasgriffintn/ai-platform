@@ -148,6 +148,8 @@ export const teammateInvocationSchema = z.discriminatedUnion("source", [
     messageId: z.string().min(1),
     senderMappingId: z.string().min(1),
     senderRevision: z.number().int().positive(),
+    threadId: z.string().min(1).max(998).optional(),
+    subject: z.string().max(998).optional(),
   }),
   z.object({
     source: z.literal("project_task"),

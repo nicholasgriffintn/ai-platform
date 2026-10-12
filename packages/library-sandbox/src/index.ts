@@ -21,6 +21,7 @@ export {
   type LeaseFence,
   type LeaseFenceStore,
 } from "./lease-fence.js";
+export { parseSandboxCheckpointReference, type SandboxCheckpointReference } from "./checkpoints.js";
 export {
   createSandboxOutputRedactor,
   redactSandboxError,
@@ -51,11 +52,21 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
+  AGENT_HOST_BLOCKED_REMEDY,
+  agentHostBlockedResponse,
+  buildAgentHostEgressPolicy,
+  containerEgressBlockedResponse,
+  decideContainerEgress,
   decideOutbound,
   isHostAllowed,
   outboundNeedsGateway,
+  parseContainerEgressPolicy,
   parseToolRequest,
+  resolveBackupStorageHost,
+  SANDBOX_PACKAGE_REGISTRY_HOSTS,
   TOOLS_ORIGIN,
+  type ContainerEgressDecision,
+  type ContainerEgressPolicy,
   type OutboundAllowlist,
   type OutboundDecision,
   type OutboundGatewayProps,

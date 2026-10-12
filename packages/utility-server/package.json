@@ -102,6 +102,11 @@
       "types": "./dist/id.d.ts",
       "import": "./dist/id.js"
     },
+    "./internal-service-auth": {
+      "polychat-source": "./src/internal-service-auth.ts",
+      "types": "./dist/internal-service-auth.d.ts",
+      "import": "./dist/internal-service-auth.js"
+    },
     "./image-dimensions": {
       "polychat-source": "./src/image-dimensions.ts",
       "types": "./dist/image-dimensions.d.ts",
@@ -216,6 +221,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@ngriffin_uk/auth-jwt": "^2.0.0",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "zod": "catalog:"

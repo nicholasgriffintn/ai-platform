@@ -1,6 +1,6 @@
 # ADR 0039: Set permission mode on the conversation
 
-Status: Implemented for the conversation control, persistence and request contract; agent runtimes that consume the mode are not released.
+Status: Implemented for conversation controls, persistence and the request contract.
 
 ## Problem
 

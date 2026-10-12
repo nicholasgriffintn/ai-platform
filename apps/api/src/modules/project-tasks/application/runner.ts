@@ -47,10 +47,16 @@ import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
-import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
+import {
+  createProjectTaskCompletion,
+  projectTaskStatusAfterCompletedGoal,
+  stageAdvancesOnCompletion,
+} from "./completions";
+import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
+import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { retainTaskReviewCompletion } from "./review-output";
 import { assertReviewDispatchAuthority } from "./review-policy";
@@ -909,8 +915,33 @@ export async function runProjectTaskDispatch(params: {
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
   const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
+  const completedOutputIds =
+    goal?.status === "completed" && completedRun
+      ? (
+          await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
+            completedRun.id,
+          ])
+        ).map((output) => output.id)
+      : [];
+  const metKillCondition = goal
+    ? await findMetKillCondition(context, claimed, responseOutput, conversationId)
+    : null;
+  const council =
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    runtime.stage?.advance === "on_council_ship"
+      ? await reviewStageOutputs(context, {
+          taskId,
+          conversationId,
+          outputIds: completedOutputIds,
+          runId: completedRun?.id,
+          runAttempt: completedRun?.attempt,
+        })
+      : null;
   const nextStageId =
-    goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    stageAdvancesOnCompletion(runtime.stage, council)
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
   const completion =
@@ -921,19 +952,15 @@ export async function runProjectTaskDispatch(params: {
           goal,
           run: completedRun,
           dispatchTaskId: params.dispatchTaskId,
-          outputIds: completedRun
-            ? (
-                await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
-                  completedRun.id,
-                ])
-              ).map((output) => output.id)
-            : [],
+          outputIds: completedOutputIds,
           output: responseOutput,
+          council,
         })
       : null;
-  const nextStatus =
-    goal?.status === "completed"
-      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
+  const nextStatus = metKillCondition
+    ? "blocked"
+    : goal?.status === "completed"
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
       : projection.status;
 
   await updateOwnedProjectTask({
@@ -943,8 +970,8 @@ export async function runProjectTaskDispatch(params: {
     executionLease: params.executionLease,
     updates: {
       status: nextStatus,
-      blockedReason: projection.blockedReason,
-      blockedDetail: goal?.stopped_reason ?? null,
+      blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
+      blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
       tokensSpent,
       ...(completion ? { completions: [...claimed.completions, completion] } : {}),
       ...(nextStatus === "done"
@@ -1016,6 +1043,19 @@ export async function runProjectTaskDispatch(params: {
   }
 
   if (nextStatus === "done") {
+    await recordProjectTaskRetrospective(
+      context,
+      {
+        ...claimed,
+        completions: completion ? [...claimed.completions, completion] : claimed.completions,
+      },
+      "done",
+    ).catch((error: unknown) =>
+      logger.warn("Could not record the task retrospective", {
+        taskId,
+        error: getErrorMessage(error),
+      }),
+    );
     await releaseReadyDependentTasks(context, claimed.projectId);
   }
 

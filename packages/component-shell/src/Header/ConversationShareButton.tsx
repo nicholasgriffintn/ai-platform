@@ -28,6 +28,13 @@ export function ConversationShareButton({
       shareId={shareId}
       onShare={async (id) => apiService.shareConversation(id)}
       onUnshare={async (id) => apiService.unshareConversation(id)}
+      allowUpdate
+      labels={{
+        description:
+          "Share this conversation as it stands now. Messages you send later stay private until you update the link.",
+        sharedDescription:
+          "Anyone with this link sees the conversation up to when you last shared it. Update the link to include newer messages; stopping sharing retires the link for good.",
+      }}
       getShareUrl={(id) => `${webBaseUrl}/s/${id}`}
       collapseLabel={compactOnMobile ? "container" : false}
       className={className}

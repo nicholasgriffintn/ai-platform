@@ -14,4 +14,4 @@ Approval is a **decision** about a version in a scope (workspace or project). Ea
 
 ## Consequences
 
-An auditor can answer "which weights, approved by whom, on what evidence" from one record, and the ML-BOM export is a projection of it. Imports cost a Hub metadata call and a tree listing up front. A repository that rewrites its history leaves old versions pointing at commits that may disappear upstream; ADR 0066 accepts that risk rather than copying weights.
+An auditor can answer "which weights, approved by whom, on what evidence" from one record, and the ML-BOM export is a projection of it. Imports cost a Hub metadata call and a tree listing up front. A repository that rewrites its history can leave old versions pointing at commits that no longer exist; Polychat does not mirror model weights to avoid taking custody of them.

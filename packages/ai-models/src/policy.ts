@@ -84,6 +84,44 @@ export function resolveTierModel(
   );
 }
 
+export interface HostedAgentModelSelection {
+  id: string;
+  config: ModelConfigItem;
+  effort?: ResolvedLineupCandidate["effort"];
+}
+
+export function resolveHostedAgentModel(
+  models: ModelConfig,
+  user: AccountPlan | undefined,
+  tier: ModelTier,
+  role: ModelTierRole,
+  explicitModel?: string,
+  options: TierModelOptions = {},
+): HostedAgentModelSelection | null {
+  const executable = getExecutableModelsForAccount(models, user);
+  const requested = explicitModel?.trim();
+
+  if (requested) {
+    const match = Object.entries(executable).find(
+      ([id, config]) => id === requested || config.matchingModel === requested,
+    );
+
+    return match ? { id: match[0], config: match[1] } : null;
+  }
+
+  const selected = resolveModelTierSelection(executable, "hosted", tier, role, {
+    isEligible: tierEligibility(options),
+  });
+
+  return selected
+    ? {
+        id: selected.id,
+        config: selected.config,
+        ...(selected.effort ? { effort: selected.effort } : {}),
+      }
+    : null;
+}
+
 export function resolveTierAlternateModel(
   models: ModelConfig,
   user: AccountPlan | undefined,

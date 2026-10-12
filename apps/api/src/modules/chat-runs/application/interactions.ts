@@ -23,3 +23,14 @@ export function readToolInteractionResolution(
 
   return resolution === "approved" || resolution === "rejected" ? resolution : undefined;
 }
+
+export function isBuiltInToolApprovalResolution(options: unknown): boolean {
+  const response = readToolInteractionResponse(options);
+  const toolInteraction =
+    isRecord(options) && isRecord(options.toolInteraction) ? options.toolInteraction : undefined;
+
+  return (
+    (response?.resolution === "approved" || response?.resolution === "rejected") &&
+    (response.approvalRequired === true || toolInteraction?.toolName === "request_approval")
+  );
+}

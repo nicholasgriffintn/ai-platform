@@ -80,6 +80,8 @@ const COMMON_CSP = {
     "https://github.githubassets.com/images/modules/logos_page/",
     "https://ticktick.com",
     "https://www.cloudflare.com",
+    "https://pashi.app",
+    "https://imagedelivery.net",
     "'self'",
     "data:",
     API_BASE_URL,

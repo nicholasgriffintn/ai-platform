@@ -14,12 +14,12 @@ export default {
       return handleScreenRequest(request, env);
     }
 
-    if (!url.pathname.startsWith("/computer/")) {
-      return errorResponse(404, "Not found");
-    }
-
     if (request.method !== "POST") {
       return errorResponse(405, "Method not allowed");
+    }
+
+    if (!url.pathname.startsWith("/computer/")) {
+      return errorResponse(404, "Not found");
     }
 
     if (url.pathname === "/computer/site-verify") {
@@ -30,4 +30,4 @@ export default {
   },
 };
 
-export { Sandbox as Computer } from "@cloudflare/sandbox";
+export { ContainerProxy, Sandbox as Computer } from "@cloudflare/sandbox";

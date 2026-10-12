@@ -1,6 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
+import { authorise, hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
+  INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE,
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
 } from "@ngriffin_uk/polychat-schemas";
@@ -55,7 +56,42 @@ export async function authMiddleware(context: Context, next: Next) {
   const serviceToken = parseBearerToken(context.req.header(INTERNAL_SERVICE_AUTHORIZATION_HEADER));
 
   if (serviceToken) {
-    context.set("servicePrincipal", await verifyInternalServiceToken(context.env, serviceToken));
+    const service = await verifyInternalServiceToken(context.env, serviceToken);
+
+    if (service.sub === "agent-worker" || service.scopes.includes("user:delegate")) {
+      const canDelegateUser =
+        service.sub === "agent-worker" &&
+        service.aud === INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE &&
+        authorise("service.call", {
+          authenticated: true,
+          scopes: service.scopes,
+          requiredScope: "user:delegate",
+        }).allowed;
+
+      if (!canDelegateUser || !service.user_id) {
+        throw new AssistantError(
+          "This internal service cannot act for a user.",
+          ErrorType.AUTHORISATION_ERROR,
+          403,
+        );
+      }
+
+      const user = await new RepositoryManager(context.env).users.getUserById(service.user_id);
+
+      if (!user) {
+        throw new AssistantError(
+          "The internal service user no longer exists.",
+          ErrorType.AUTHENTICATION_ERROR,
+          401,
+        );
+      }
+
+      context.set("user", user);
+
+      return next();
+    }
+
+    context.set("servicePrincipal", service);
 
     return next();
   }

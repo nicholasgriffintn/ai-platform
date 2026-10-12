@@ -14,7 +14,7 @@ import {
   SourceRepository,
   type SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import { defineTask } from "../workflows";
 
@@ -69,7 +69,15 @@ export const memorySynthesis = defineTask({
       }),
     );
 
-    const synthesis = await generateSynthesis(categorized, existingSynthesis, env);
+    const synthesisOwner = await createServiceContext({ env }).repositories.users.getUserById(
+      message.user_id,
+    );
+    const synthesis = await generateSynthesis(
+      categorized,
+      existingSynthesis,
+      env,
+      synthesisOwner ?? undefined,
+    );
 
     const synthesisRecord = await memorySynthesisRepository.createSynthesis({
       user_id: message.user_id,
@@ -133,6 +141,7 @@ async function generateSynthesis(
   categorized: CategorizedMemories,
   existing: any,
   env: IEnv,
+  user?: IUser,
 ): Promise<string> {
   const memoriesText = Object.entries(categorized)
     .map(
@@ -150,7 +159,11 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
   });
 
   try {
-    const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModel(env, user);
 
     return await ai.generateText({
       env,

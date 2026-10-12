@@ -4,6 +4,7 @@ import {
   type ProjectTask,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { readTrimmedStringArray } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   createProjectTask,
@@ -47,6 +48,25 @@ function formatTaskDetail(task: ProjectTask, goal: Goal | null): string {
       "Done when:",
       ...task.acceptanceCriteria.map((criterion) => `- ${criterion.id}: ${criterion.text}`),
     );
+  }
+
+  if (task.assumptions.length > 0) {
+    const outcomes = new Map(
+      (task.retrospective?.assumptions ?? []).map((entry) => [entry.id, entry.outcome]),
+    );
+
+    lines.push(
+      "Rests on:",
+      ...task.assumptions.map((assumption) => {
+        const outcome = outcomes.get(assumption.id);
+
+        return `- ${assumption.statement}${outcome ? ` (${outcome})` : ""}`;
+      }),
+    );
+  }
+
+  if (task.killConditions.length > 0) {
+    lines.push("Stop if:", ...task.killConditions.map((condition) => `- ${condition.condition}`));
   }
 
   if (goal) {
@@ -102,6 +122,10 @@ export const create_task: ApiToolDefinition = {
               .filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "")
               .map((text) => ({ text: text.trim() }))
           : undefined,
+        assumptions: readTrimmedStringArray(args.assumptions).map((statement) => ({ statement })),
+        killConditions: readTrimmedStringArray(args.killConditions).map((condition) => ({
+          condition,
+        })),
         expectedOutput: typeof args.expectedOutput === "string" ? args.expectedOutput.trim() : null,
         stageId: typeof args.stageId === "string" ? args.stageId : null,
       },
@@ -196,6 +220,20 @@ export const update_task: ApiToolDefinition = {
                   (entry): entry is string => typeof entry === "string" && entry.trim() !== "",
                 )
                 .map((text) => ({ text: text.trim() })),
+            }
+          : {}),
+        ...(Array.isArray(args.assumptions)
+          ? {
+              assumptions: readTrimmedStringArray(args.assumptions).map((statement) => ({
+                statement,
+              })),
+            }
+          : {}),
+        ...(Array.isArray(args.killConditions)
+          ? {
+              killConditions: readTrimmedStringArray(args.killConditions).map((condition) => ({
+                condition,
+              })),
             }
           : {}),
         ...(status ? { status } : {}),

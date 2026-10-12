@@ -4,7 +4,6 @@ import { teachingRecordingIdSchema } from "./teammate-computers.js";
 
 export const SKILL_LOAD_TOOL_NAME = "load_skill";
 export const SKILL_SAVE_TOOL_NAME = "save_skill";
-export const SKILL_REVISE_TOOL_NAME = "propose_skill_revision";
 
 export const skillCategorySchema = z.enum([
   "Output",
@@ -48,6 +47,8 @@ export const skillResourceSummarySchema = z.object({
   mimeType: z.string().min(1).optional(),
 });
 
+export const skillActivationSchema = z.enum(["on-demand", "per-message"]);
+
 export const skillSummarySchema = z.object({
   id: skillIdSchema,
   name: z.string().min(1).max(80),
@@ -55,6 +56,7 @@ export const skillSummarySchema = z.object({
   category: skillCategorySchema,
   tags: z.array(z.string()).default([]),
   alwaysOn: z.boolean().default(false),
+  activation: skillActivationSchema.optional(),
   requirement: skillRequirementSchema,
   source: skillSourceSchema.optional(),
 });
@@ -125,27 +127,15 @@ export const saveSkillInputSchema = z.object({
     .min(1)
     .max(64 * 1024)
     .describe("The playbook itself, in Markdown, written for whoever runs it next."),
+  applyAutomatically: z
+    .boolean()
+    .optional()
+    .describe(
+      "Apply these instructions to every message they clearly help with, without loading them first. Only for short instructions of at most 2 KB, such as a writing style or a standing preference.",
+    ),
 });
 
 export type SaveSkillInput = z.infer<typeof saveSkillInputSchema>;
-
-export const proposeSkillRevisionInputSchema = z.object({
-  name: skillIdSchema.describe("The skill being corrected."),
-  instructions: z
-    .string()
-    .trim()
-    .min(1)
-    .max(64 * 1024)
-    .describe("The full corrected playbook, not a diff or a note about what changed."),
-  changeNote: z
-    .string()
-    .trim()
-    .min(1)
-    .max(500)
-    .describe("One line saying what was wrong and what you changed, for the person reviewing it."),
-});
-
-export type ProposeSkillRevisionInput = z.infer<typeof proposeSkillRevisionInputSchema>;
 
 export const authoredSkillChangeNoteSchema = z.string().trim().min(1).max(1024);
 
@@ -251,6 +241,7 @@ export type SkillSource = z.infer<typeof skillSourceSchema>;
 export type AuthoredSkillProvenance = z.infer<typeof authoredSkillProvenanceSchema>;
 export type SkillResourceSummary = z.infer<typeof skillResourceSummarySchema>;
 export type SkillSummary = z.infer<typeof skillSummarySchema>;
+export type SkillActivation = z.infer<typeof skillActivationSchema>;
 export type SkillAvailabilityState = z.infer<typeof skillAvailabilityStateSchema>;
 export type SkillAvailability = z.infer<typeof skillAvailabilitySchema>;
 export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponseSchema>;

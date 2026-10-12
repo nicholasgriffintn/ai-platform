@@ -100,7 +100,7 @@ export const organise_conversation: FunctionToolDescriptor = {
 export const read_conversation: FunctionToolDescriptor = {
   name: "read_conversation",
   description:
-    "Read a bounded transcript of a conversation the user can access so you can summarise it or answer questions about it. Returns the most recent messages first-to-last.",
+    "Read a bounded transcript of a conversation the user can access so you can summarise it or answer questions about it. Pass the opaque conversationId returned by find_places, never a title. maxMessages bounds the transcript; messages are returned in conversation order.",
   type: "normal",
   permissions: ["read"],
   effects: { effectClass: "read" },

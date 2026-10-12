@@ -1,5 +1,6 @@
 import type {
   ChatRun,
+  CouncilReviewVerdict,
   Goal,
   ProjectFlowStage,
   ProjectTaskCompletion,
@@ -16,8 +17,12 @@ export function createProjectTaskCompletion(params: {
   outputIds?: string[];
   output: string;
   createdAt?: string;
+  council?: StageCouncilOutcome | null;
 }): ProjectTaskCompletion {
-  const automated = params.stage?.advance !== "on_human_accept";
+  const automated =
+    params.stage?.advance === "on_council_ship"
+      ? params.council?.shipped === true
+      : params.stage?.advance !== "on_human_accept";
 
   return {
     id: generateId(),
@@ -30,6 +35,7 @@ export function createProjectTaskCompletion(params: {
     outputIds: params.outputIds ?? [],
     output: params.output,
     evidence: params.goal.evidence ?? [],
+    ...(params.council ? { councilReviewIds: params.council.reviewIds } : {}),
     approval: {
       mode: automated ? "automated" : "human",
       status: automated ? "approved" : "pending",
@@ -75,9 +81,29 @@ export function approveLatestProjectTaskCompletion(
   );
 }
 
+export interface StageCouncilOutcome {
+  shipped: boolean;
+  reviewIds: string[];
+}
+
+export function councilShipsStage(verdicts: readonly CouncilReviewVerdict[]): boolean {
+  return verdicts.length > 0 && verdicts.every((verdict) => verdict === "ship");
+}
+
+export function stageAdvancesOnCompletion(
+  stage: ProjectFlowStage | null,
+  council: StageCouncilOutcome | null,
+): boolean {
+  return (
+    stage?.advance === "on_goal_complete" ||
+    (stage?.advance === "on_council_ship" && council?.shipped === true)
+  );
+}
+
 export function projectTaskStatusAfterCompletedGoal(
   stage: ProjectFlowStage | null,
   nextStageId: string | null,
+  council: StageCouncilOutcome | null = null,
 ): ProjectTaskStatus {
-  return stage?.advance === "on_goal_complete" && !nextStageId ? "done" : "review";
+  return stageAdvancesOnCompletion(stage, council) && !nextStageId ? "done" : "review";
 }

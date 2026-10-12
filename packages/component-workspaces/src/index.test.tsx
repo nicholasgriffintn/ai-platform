@@ -60,6 +60,9 @@ const task: ProjectTask = {
   workspaceId: "workspace-1",
   objective: "Prepare the release note",
   acceptanceCriteria: [],
+  assumptions: [],
+  killConditions: [],
+  retrospective: null,
   expectedOutput: "A reviewed release note",
   context: null,
   constraints: null,
@@ -368,6 +371,9 @@ describe("TaskDetail", () => {
           status: "done",
           conversationId: "conversation-2",
           acceptanceCriteria: [{ id: "criterion-1", text: criterion }],
+          assumptions: [],
+          killConditions: [],
+          retrospective: null,
         }}
         goal={completedGoal}
         activity={emptyActivity}

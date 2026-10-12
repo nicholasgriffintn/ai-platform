@@ -23,6 +23,7 @@ import {
 } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { providerHost } from "~/infrastructure/providers/host";
+import { readStreamOrStop } from "~/modules/chat/application/agent/read-stream-or-stop";
 import {
   buildAnthropicSearchGrounding,
   buildAnthropicHostedToolResultPart,
@@ -602,13 +603,14 @@ export async function consumeProviderStream(
 
   try {
     while (!completed) {
-      if (context.shouldStop?.()) {
+      const next = await readStreamOrStop(reader, context.shouldStop);
+
+      if (!next) {
         turn.stopped = true;
-        await reader.cancel().catch(() => {});
         break;
       }
 
-      const { done, value } = await reader.read();
+      const { done, value } = next;
 
       if (done) {
         if (hasIncompleteToolCall()) {

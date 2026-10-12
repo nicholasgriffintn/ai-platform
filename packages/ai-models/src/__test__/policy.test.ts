@@ -5,6 +5,7 @@ import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
   resolveDefaultChatModel,
+  resolveHostedAgentModel,
   resolveTierModel,
 } from "../policy.js";
 
@@ -105,6 +106,59 @@ describe("resolveTierModel", () => {
       "@cf/moonshotai/kimi-k2.7-code",
     );
     expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
+  });
+});
+
+describe("resolveHostedAgentModel", () => {
+  const models: ModelConfig = {
+    "google-ai-studio/gemini-3.8-flash": model({
+      matchingModel: "gemini-3.8-flash",
+      provider: "google-ai-studio",
+    }),
+    "@cf/moonshotai/kimi-k2.7-code": model({
+      matchingModel: "kimi-k2.7-code",
+      provider: "workers-ai",
+    }),
+  };
+
+  it("prefers an explicit executable model by id or matching model", () => {
+    expect(
+      resolveHostedAgentModel(
+        models,
+        { plan_id: "pro" },
+        "medium",
+        "agent",
+        "@cf/moonshotai/kimi-k2.7-code",
+      )?.id,
+    ).toBe("@cf/moonshotai/kimi-k2.7-code");
+    expect(
+      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "gemini-3.8-flash")
+        ?.id,
+    ).toBe("google-ai-studio/gemini-3.8-flash");
+  });
+
+  it("returns null for an explicit model the account cannot execute", () => {
+    expect(
+      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "no-such-model"),
+    ).toBeNull();
+    expect(
+      resolveHostedAgentModel(
+        models,
+        { plan_id: "free" },
+        "medium",
+        "agent",
+        "@cf/moonshotai/kimi-k2.7-code",
+      ),
+    ).toBeNull();
+  });
+
+  it("falls back to the tier lineup for the requested role", () => {
+    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
+      "google-ai-studio/gemini-3.8-flash",
+    );
+    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
+      "@cf/moonshotai/kimi-k2.7-code",
+    );
   });
 });
 

@@ -25,6 +25,7 @@ import {
   listRecipeConnectors,
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
+import { isBuiltInToolApprovalResolution } from "~/modules/chat-runs/application/interactions";
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
@@ -63,6 +64,11 @@ import {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/modules/skills/application";
+import {
+  listPerMessageSkillCandidates,
+  renderPerMessageSkills,
+  selectPerMessageSkills,
+} from "~/modules/skills/application/per-message";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
 import {
   mergeNativeMcpToolNames,
@@ -377,8 +383,6 @@ export class RequestPreparer {
     const activeGoalPromise = loadActiveGoal(scope.options);
     const effectiveMemoryScopePromise = this.resolveBriefMemoryScope(scope);
 
-    const finalMessage = this.resolveMessageText(validationContext);
-
     const [modelConfigs, userSettings, savedToolConfigurations, connectedConnectorProviders] =
       await Promise.all([
         modelConfigsPromise,
@@ -397,6 +401,7 @@ export class RequestPreparer {
       permissionMode = resolveEffectivePermissionMode(
         scope.options.permission_mode,
         await this.resolveStoredPermissionMode(scope),
+        primaryModelConfig.agent.permissionModes,
       );
 
       const unavailableReason = getPermissionModeUnavailableReason(
@@ -445,8 +450,24 @@ export class RequestPreparer {
           : {}),
     });
 
+    const completionId = scope.options.completion_id;
+    const isApprovalResolution = isBuiltInToolApprovalResolution(scope.options.options);
     const shouldStoreMessages =
-      (scope.options.store ?? false) && scope.options.conversation_history_write_mode !== "append";
+      (scope.options.store ?? false) &&
+      scope.options.conversation_history_write_mode !== "append" &&
+      !isApprovalResolution;
+    let toolIntentRequest = messageWithContext;
+
+    if (completionId && isApprovalResolution) {
+      toolIntentRequest = resolveToolIntentRequest(
+        await conversationManager.get(completionId),
+        messageWithContext,
+      );
+    }
+
+    const finalMessage = isApprovalResolution
+      ? toolIntentRequest
+      : this.resolveMessageText(validationContext);
 
     const storeMessagesTask = shouldStoreMessages
       ? storeUserTurn({
@@ -481,6 +502,15 @@ export class RequestPreparer {
           scopedSkillCatalog?.listDefinitions(),
         );
 
+    const perMessageSkillsPromise = hasFixedToolScope
+      ? Promise.resolve([])
+      : selectPerMessageSkills({
+          env: scope.options.env,
+          user: user ?? undefined,
+          conversationId: scope.options.completion_id,
+          message: finalMessage,
+          candidates: listPerMessageSkillCandidates(skills, scopedSkillCatalog),
+        });
     const activeGoal = await activeGoalPromise;
     const effectiveMemoryScope = await effectiveMemoryScopePromise;
 
@@ -549,18 +579,19 @@ export class RequestPreparer {
       }),
     });
 
-    const completionId = scope.options.completion_id;
-    const toolIntentRequest =
-      shouldStoreMessages && completionId && scope.options.options?.toolInteraction
-        ? resolveToolIntentRequest(await conversationManager.get(completionId), messageWithContext)
-        : messageWithContext;
+    if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
+      toolIntentRequest = resolveToolIntentRequest(
+        await conversationManager.get(completionId),
+        messageWithContext,
+      );
+    }
 
     const messages = await buildProviderContext({
       conversationManager,
       completionId: scope.options.completion_id,
       shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
-      messageWithContext,
+      messageWithContext: renderPerMessageSkills(await perMessageSkillsPromise, messageWithContext),
     });
 
     return {

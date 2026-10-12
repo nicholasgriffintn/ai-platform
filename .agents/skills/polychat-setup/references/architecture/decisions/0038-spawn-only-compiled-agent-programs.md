@@ -1,6 +1,6 @@
-# 0038: Spawn only programs the core was compiled knowing
+# ADR 0038: Spawn only programs the core was compiled knowing
 
-Status: accepted
+Status: Accepted.
 
 ## Problem
 

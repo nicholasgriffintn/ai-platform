@@ -31,11 +31,13 @@ export * from "./project-tasks.js";
 export * from "./project-task-integrations.js";
 export * from "./realtime-service.js";
 export * from "./recipe-composio-triggers.js";
+export * from "./recipe-webhook-triggers.js";
 export * from "./recipes.js";
 export * from "./replicate.js";
 export * from "./runnable-tools.js";
 export * from "./sandbox.js";
 export * from "./saved-messages.js";
+export * from "./corrections.js";
 export * from "./shared-conversation.js";
 export * from "./sites.js";
 export * from "./skills.js";
@@ -74,7 +76,6 @@ export * from "./api-key.js";
 export * from "./machine-runs.js";
 
 export { machineRunClient } from "./machine-run-service.js";
-
 export * from "./browser-sessions.js";
 export * from "./channels.js";
 export * from "./document-collaboration.js";

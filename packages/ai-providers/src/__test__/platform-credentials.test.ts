@@ -54,6 +54,7 @@ describe("getPlatformEnabledProviders", () => {
 
     expect([...enabled].sort()).toEqual([
       "gpt",
+      "hermes",
       "openai",
       "polychat-sandbox",
       "workers",

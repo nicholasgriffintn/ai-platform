@@ -2,6 +2,34 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+export interface TextMatchRange {
+  start: number;
+  end: number;
+}
+
+export function findTextMatchRanges(value: string, terms: readonly string[]): TextMatchRange[] {
+  const alternatives = [
+    ...new Set(terms.map((term) => term.trim()).filter((term) => term.length > 1)),
+  ]
+    .sort((left, right) => right.length - left.length)
+    .map(escapeRegExp);
+
+  if (alternatives.length === 0) {
+    return [];
+  }
+
+  const matcher = new RegExp(alternatives.join("|"), "giu");
+  const ranges: TextMatchRange[] = [];
+
+  for (const match of value.matchAll(matcher)) {
+    if (match.index !== undefined) {
+      ranges.push({ start: match.index, end: match.index + match[0].length });
+    }
+  }
+
+  return ranges;
+}
+
 let naturalTextCollator: Intl.Collator | undefined;
 
 export function compareNaturalText(left: string, right: string): number {
@@ -58,6 +86,14 @@ export function titleCaseSlug(value: string): string {
     .filter(Boolean)
     .map(capitaliseFirst)
     .join(" ");
+}
+
+export function normaliseComparableText(value: string): string {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
 }
 
 export function normalizeStatus(status?: string): string {

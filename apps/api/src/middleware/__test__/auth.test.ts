@@ -1,3 +1,7 @@
+import {
+  INTERNAL_SERVICE_AUTHORIZATION_HEADER,
+  INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -24,6 +28,7 @@ const mockRepositories = {
 
 const mockGetUserByJwtToken = vi.fn();
 const mockAuthenticateSession = vi.hoisted(() => vi.fn());
+const mockVerifyInternalServiceToken = vi.hoisted(() => vi.fn());
 const mockIsbot = vi.fn();
 const repositoryCtor = vi.fn();
 let repositoryFactory = () => mockRepositories;
@@ -40,6 +45,10 @@ vi.mock("~/infrastructure/database/repositoryManager", () => ({
 
 vi.mock("~/modules/auth/application/jwt", () => ({
   getUserByJwtToken: vi.fn(),
+}));
+
+vi.mock("~/modules/auth/application/internal-service", () => ({
+  verifyInternalServiceToken: mockVerifyInternalServiceToken,
 }));
 
 vi.mock("~/modules/auth/application/sharedAuth", () => ({
@@ -92,11 +101,21 @@ function createMockContext(overrides: any = {}): Context {
   return mockContext;
 }
 
+function setInternalServiceAuthorization(context: Context): void {
+  Object.defineProperty(context.req, "header", {
+    configurable: true,
+    value: (name: string) =>
+      name === INTERNAL_SERVICE_AUTHORIZATION_HEADER ? "Bearer service-token" : null,
+  });
+}
+
 const mockNext: Next = vi.fn();
 
 describe("Auth Middleware", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockRepositories.users.getUserById.mockReset();
+    mockVerifyInternalServiceToken.mockReset();
     repositoryCtor.mockClear();
 
     const { getUserByJwtToken } = await import("~/modules/auth/application/jwt");
@@ -114,6 +133,62 @@ describe("Auth Middleware", () => {
   });
 
   describe("authMiddleware", () => {
+    it("uses a scoped service claim as the normal authenticated user", async () => {
+      const delegatedUser = { id: 42, email: "test@example.com" };
+      const context = createMockContext({
+        req: { ...createMockRequest(), path: "/chat/completions", method: "POST" },
+      });
+
+      setInternalServiceAuthorization(context);
+      mockVerifyInternalServiceToken.mockResolvedValue({
+        aud: INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE,
+        sub: "agent-worker",
+        scopes: ["user:delegate"],
+        user_id: 42,
+      });
+      mockRepositories.users.getUserById.mockResolvedValue(delegatedUser);
+
+      await authMiddleware(context, mockNext);
+
+      expect(mockRepositories.users.getUserById).toHaveBeenCalledWith(42);
+      expect(context.set).toHaveBeenCalledWith("user", delegatedUser);
+      expect(context.set).not.toHaveBeenCalledWith("servicePrincipal", expect.anything());
+      expect(mockNext).toHaveBeenCalledOnce();
+    });
+
+    it("rejects user delegation claims from another internal service", async () => {
+      const context = createMockContext();
+
+      setInternalServiceAuthorization(context);
+      mockVerifyInternalServiceToken.mockResolvedValue({
+        sub: "sandbox-worker",
+        scopes: ["user:delegate"],
+        user_id: 42,
+      });
+
+      await expect(authMiddleware(context, mockNext)).rejects.toThrow(
+        "This internal service cannot act for a user.",
+      );
+      expect(mockRepositories.users.getUserById).not.toHaveBeenCalled();
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it("rejects user delegation claims without a user id", async () => {
+      const context = createMockContext();
+
+      setInternalServiceAuthorization(context);
+      mockVerifyInternalServiceToken.mockResolvedValue({
+        sub: "agent-worker",
+        scopes: ["user:delegate"],
+      });
+
+      await expect(authMiddleware(context, mockNext)).rejects.toThrow(
+        "This internal service cannot act for a user.",
+      );
+      expect(mockRepositories.users.getUserById).not.toHaveBeenCalled();
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
     it("leaves sandbox credential broker authentication to the broker", async () => {
       const context = createMockContext();
 

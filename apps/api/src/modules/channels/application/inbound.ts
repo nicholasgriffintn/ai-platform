@@ -716,6 +716,10 @@ export async function handleInboundChannelMessage(params: {
                 messageId: message.messageId,
                 senderMappingId: params.data.senderMappingId,
                 senderRevision: params.data.senderRevision,
+                threadId: params.data.messageContext.threadId,
+                ...(params.data.messageContext.subject
+                  ? { subject: params.data.messageContext.subject }
+                  : {}),
               }
             : undefined,
         })

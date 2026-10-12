@@ -13,7 +13,12 @@ import {
 import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import {
   applyToolInteractionResolutions,
+  collectApprovalToolCallIds,
+  collectApprovalToolResponseContents,
+  isApprovalOnlyAssistantMessage,
+  isApprovalResolutionMessage,
   isHiddenToolResponse,
+  isRedundantApprovalAssistantMessage,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -128,6 +133,11 @@ export const MessageList = ({
   const isTemporary = retention === "temporary";
   const messages = useMemo(() => applyToolInteractionResolutions(sourceMessages), [sourceMessages]);
   const resolvedToolCallIds = useMemo(() => collectResolvedToolCallIds(messages), [messages]);
+  const approvalToolCallIds = useMemo(() => collectApprovalToolCallIds(messages), [messages]);
+  const approvalToolResponseContents = useMemo(
+    () => collectApprovalToolResponseContents(messages),
+    [messages],
+  );
   const availableModels = useMemo(
     () => getAvailableModels(apiModels, computeSite === "browser", webLLMModels),
     [apiModels, computeSite, webLLMModels],
@@ -199,10 +209,19 @@ export const MessageList = ({
             !(goalMarker?.event === "set" && messages[index + 1]?.role === "user") &&
             (Boolean(compactionLabel) ||
               Boolean(goalMarker) ||
-              (!isHiddenToolResponse(message) &&
+              (!isApprovalResolutionMessage(message) &&
+                !isApprovalOnlyAssistantMessage(message, approvalToolCallIds) &&
+                !isRedundantApprovalAssistantMessage(message, approvalToolResponseContents) &&
+                !isHiddenToolResponse(message) &&
                 isRenderableMessage(message, resolvedToolCallIds))),
         ),
-    [hideInlineUserQuestions, messages, resolvedToolCallIds],
+    [
+      approvalToolCallIds,
+      approvalToolResponseContents,
+      hideInlineUserQuestions,
+      messages,
+      resolvedToolCallIds,
+    ],
   );
 
   const streamAnnouncement = useStreamAnnouncement({

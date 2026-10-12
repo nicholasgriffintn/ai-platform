@@ -1,6 +1,6 @@
-# 0041: Carry live updates on one per-user socket
+# ADR 0041: Carry live updates on one per-user socket
 
-Status: accepted
+Status: Implemented.
 
 ## Problem
 

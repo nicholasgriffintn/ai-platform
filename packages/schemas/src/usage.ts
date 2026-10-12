@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { computeSiteSchema } from "./compute-sites.js";
+import { delegationStateSchema, isLiveDelegationState } from "./delegation-state.js";
 import { usageUnitSchema } from "./pricing/units.js";
 import { runProvenanceSchema } from "./run-provenance.js";
 
@@ -58,6 +59,21 @@ export const chatRunUsageAttemptSchema = z.object({
   estimatedPriceEventCount: z.number().int().nonnegative(),
 });
 
+const chatRunConsumptionStatusSchema = z.enum(["recorded", "processing", "unknown"]);
+
+export const chatRunDelegatedUsageSchema = z.object({
+  delegationId: z.string().min(1),
+  teammateId: z.string().min(1),
+  teammateName: z.string().min(1).nullable(),
+  state: delegationStateSchema,
+  runIds: z.array(z.string().min(1)),
+  measurement: chatRunUsageMeasurementSchema,
+  consumptionStatus: chatRunConsumptionStatusSchema,
+  creditMicros: z.number().int().nonnegative().nullable(),
+});
+
+export type ChatRunDelegatedUsage = z.infer<typeof chatRunDelegatedUsageSchema>;
+
 export const chatRunUsageSchema = z.object({
   protocolVersion: z.literal(1),
   runId: z.string().min(1),
@@ -73,7 +89,7 @@ export const chatRunUsageSchema = z.object({
     })
     .nullable(),
   consumption: z.object({
-    status: z.enum(["recorded", "processing", "unknown"]),
+    status: chatRunConsumptionStatusSchema,
     eventCount: z.number().int().nonnegative(),
     costMicros: z.number().int().nonnegative().nullable(),
     creditMicros: z.number().int().nonnegative().nullable(),
@@ -85,9 +101,43 @@ export const chatRunUsageSchema = z.object({
     status: z.enum(["pending", "settled", "released", "missing"]),
     at: z.string().nullable(),
   }),
+  delegated: z.array(chatRunDelegatedUsageSchema).optional(),
 });
 
 export type ChatRunUsage = z.infer<typeof chatRunUsageSchema>;
+
+export interface ChatRunCreditTotal {
+  recordedCreditMicros: number | null;
+  complete: boolean;
+  hasProcessingUsage: boolean;
+}
+
+export function totalChatRunCredits(usage: ChatRunUsage): ChatRunCreditTotal {
+  const delegated = usage.delegated ?? [];
+  const parts = [
+    usage.consumption.creditMicros,
+    ...delegated.map((delegation) => delegation.creditMicros),
+  ];
+  const recordedParts = parts.filter((part): part is number => part !== null);
+  const complete =
+    usage.consumption.status === "recorded" &&
+    usage.consumption.creditMicros !== null &&
+    delegated.every(
+      (delegation) =>
+        delegation.consumptionStatus === "recorded" &&
+        delegation.creditMicros !== null &&
+        !isLiveDelegationState(delegation.state),
+    );
+
+  return {
+    recordedCreditMicros:
+      recordedParts.length > 0 ? recordedParts.reduce((total, part) => total + part, 0) : null,
+    complete,
+    hasProcessingUsage:
+      usage.consumption.status === "processing" ||
+      delegated.some((delegation) => delegation.consumptionStatus === "processing"),
+  };
+}
 
 export const USAGE_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 

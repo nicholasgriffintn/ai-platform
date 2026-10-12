@@ -184,6 +184,8 @@ export interface AgentLoopExecutionParams {
   context?: ServiceContext;
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
+  initialToolCalls?: ToolCall[];
+  initialToolResults?: Message[];
   guardrailPrompt?: string;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
@@ -247,14 +249,24 @@ export async function runAgentLoop(
   );
 
   const state: ChatAgentLoopState = {
-    commandCount: 0,
+    commandCount: params.initialToolCalls?.length ?? 0,
     enabledToolNames: new Set(params.requestParams.enabled_tools ?? []),
     unknownToolRecoveryUsed: false,
     toolCallLedger: createToolCallLedger(),
   };
-  const toolResponses: Message[] = [];
-  const allToolCalls: ToolCall[] = [];
-  const steps: AgentStepSummary[] = [];
+  const toolResponses = [...(params.initialToolResults ?? [])];
+  const allToolCalls = [...(params.initialToolCalls ?? [])];
+  const steps: AgentStepSummary[] =
+    allToolCalls.length > 0
+      ? [
+          {
+            stepNumber: 1,
+            stepType: "tool-call",
+            toolCallCount: allToolCalls.length,
+            toolResultCount: toolResponses.length,
+          },
+        ]
+      : [];
 
   let totalUsage: NormalisedTokenUsage | undefined;
   let finalMessage: Message | undefined;
@@ -320,6 +332,11 @@ export async function runAgentLoop(
       assistantMessage: { role: "assistant" as const, content: text },
     };
   };
+
+  for (const toolResult of params.initialToolResults ?? []) {
+    await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
+    await params.onToolResult?.(toolResult);
+  }
 
   await executeAgentLoop<ChatAgentSharedContext, ChatAgentLoopState>({
     initialMessages: runtimeMessages,

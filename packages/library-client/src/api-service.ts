@@ -8,6 +8,7 @@ import type {
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
   PolyAgenda,
+  PolyHandoffDisagreement,
   PolyHome,
   TeammateAutonomyLevel,
   TeammateResponse,
@@ -51,6 +52,7 @@ import { TeammateService } from "./services/teammate-service.js";
 import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
 import type { ProviderSetting } from "./services/user-service.js";
 import { UserService } from "./services/user-service.js";
+import type { ConversationShare } from "./shared-conversation.js";
 import { useToolsStore } from "./toolsStore.js";
 import { getHeaders } from "./utils/headers.js";
 
@@ -180,7 +182,7 @@ class ApiService {
     return this.chatService.deleteAllConversations();
   };
 
-  shareConversation = (completion_id: string): Promise<{ share_id: string }> => {
+  shareConversation = (completion_id: string): Promise<ConversationShare> => {
     return this.chatService.shareConversation(completion_id);
   };
 
@@ -248,6 +250,9 @@ class ApiService {
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 
   readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
+
+  disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
+    this.polyService.disagreeWithPolyHandoff(handoffId);
 
   grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
     this.polyService.grantPolyStandingApproval(interactionId);

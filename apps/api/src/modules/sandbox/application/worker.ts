@@ -1,8 +1,4 @@
-import {
-  getModels,
-  getExecutableModelsForAccount,
-  resolveTierModel,
-} from "@ngriffin_uk/polychat-ai-models";
+import { getModels, resolveHostedAgentModel } from "@ngriffin_uk/polychat-ai-models";
 import type {
   SandboxExecutionProvider,
   SandboxWorkerExecuteRequest,
@@ -77,16 +73,15 @@ export async function resolveSandboxModel(params: {
   const visibleModels = await filterModelsForUserAccess(getModels(), context.env, user.id, {
     shouldUseCache: false,
   });
-  const executableModels = Object.fromEntries(
-    Object.entries(getExecutableModelsForAccount(visibleModels, user)).filter(
+  const scopedModels = Object.fromEntries(
+    Object.entries(visibleModels).filter(
       ([, config]) => executionProvider !== "openai" || config.provider === "openai",
     ),
   );
+  const tier = await resolveProjectDefaultModelTier(context, projectId);
 
   if (requestedModel) {
-    const selected = Object.entries(executableModels).find(
-      ([modelId, config]) => modelId === requestedModel || config.matchingModel === requestedModel,
-    );
+    const selected = resolveHostedAgentModel(scopedModels, user, tier, "coding", requestedModel);
 
     if (!selected && (explicitModel || executionProvider === "polychat")) {
       throw new AssistantError(
@@ -97,21 +92,20 @@ export async function resolveSandboxModel(params: {
     }
 
     if (selected) {
-      return enforceSandboxModelPolicy(context.env, selected[0]);
+      return enforceSandboxModelPolicy(context.env, selected.id);
     }
   }
 
-  const tier = await resolveProjectDefaultModelTier(context, projectId);
-  const selected = resolveTierModel(executableModels, user, tier, "coding");
+  const tierSelected = resolveHostedAgentModel(scopedModels, user, tier, "coding");
 
-  if (!selected) {
+  if (!tierSelected) {
     throw new AssistantError(
       "No active sandbox model is available for this account",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
 
-  return enforceSandboxModelPolicy(context.env, selected.id);
+  return enforceSandboxModelPolicy(context.env, tierSelected.id);
 }
 
 export async function executeSandboxWorker(
