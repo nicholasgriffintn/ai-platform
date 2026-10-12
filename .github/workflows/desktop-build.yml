@@ -7,31 +7,35 @@ on:
         description: How long to keep the packaged archives.
         type: number
         default: 7
+      signed:
+        description: Sign, notarise and produce updater artefacts. Requires every signing secret.
+        type: boolean
+        default: false
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
         description: Update-signing key.
-        required: true
+        required: false
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
         description: Passphrase for the update-signing key.
         required: false
       APPLE_CERTIFICATE:
         description: Base64 Developer ID Application certificate.
-        required: true
+        required: false
       APPLE_CERTIFICATE_PASSWORD:
         description: Passphrase for the exported certificate.
         required: false
       APPLE_SIGNING_IDENTITY:
         description: Full identity name, beginning Developer ID Application.
-        required: true
+        required: false
       APPLE_API_KEY:
         description: App Store Connect key identifier used for notarisation.
-        required: true
+        required: false
       APPLE_API_ISSUER:
         description: App Store Connect issuer identifier.
-        required: true
+        required: false
       APPLE_API_KEY_P8:
         description: Base64 contents of the App Store Connect .p8 private key.
-        required: true
+        required: false
 
 permissions:
   contents: read
@@ -58,6 +62,38 @@ jobs:
             rust-targets: ""
             tauri-args: --bundles nsis,msi
     steps:
+      - name: Check the signing secrets
+        if: inputs.signed
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          set -euo pipefail
+
+          required=(TAURI_SIGNING_PRIVATE_KEY)
+
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            required+=(APPLE_CERTIFICATE APPLE_SIGNING_IDENTITY APPLE_API_KEY APPLE_API_ISSUER APPLE_API_KEY_P8)
+          fi
+
+          missing=()
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              missing+=("$name")
+            fi
+          done
+
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Signed desktop builds need these repository secrets: ${missing[*]}"
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
 
       - name: Install Linux build dependencies
@@ -95,7 +131,7 @@ jobs:
         run: pnpm build:packages
 
       - name: Write the notarisation key
-        if: runner.os == 'macOS'
+        if: inputs.signed && runner.os == 'macOS'
         shell: bash
         env:
           APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
@@ -103,7 +139,8 @@ jobs:
           printf '%s' "$APPLE_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
           chmod 600 "$RUNNER_TEMP/AuthKey.p8"
 
-      - name: Build the desktop bundle
+      - name: Build the signed desktop bundle
+        if: inputs.signed
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -118,8 +155,14 @@ jobs:
           ${{ matrix.tauri-args }}
           --config src-tauri/tauri.updater.conf.json
 
+      - name: Build the unsigned desktop bundle
+        if: ${{ !inputs.signed }}
+        run: >
+          pnpm --filter @assistant/desktop tauri build
+          ${{ matrix.tauri-args }}
+
       - name: Verify the macOS signature
-        if: runner.os == 'macOS'
+        if: inputs.signed && runner.os == 'macOS'
         shell: bash
         run: |
           set -euo pipefail
@@ -132,6 +175,7 @@ jobs:
         shell: bash
         env:
           LABEL: ${{ matrix.label }}
+          SIGNED: ${{ inputs.signed }}
         run: |
           set -euo pipefail
 
@@ -148,24 +192,30 @@ jobs:
               bundle="$target/universal-apple-darwin/release/bundle"
               ditto -c -k --sequesterRsrc --keepParent \
                 "$bundle/macos/Polychat.app" "$output/$name.zip"
-              cp "$bundle/macos/Polychat.app.tar.gz" "$output/$name.app.tar.gz"
-              cp "$bundle/macos/Polychat.app.tar.gz.sig" "$output/$name.app.tar.gz.sig"
+              if [ "$SIGNED" = "true" ]; then
+                cp "$bundle/macos/Polychat.app.tar.gz" "$output/$name.app.tar.gz"
+                cp "$bundle/macos/Polychat.app.tar.gz.sig" "$output/$name.app.tar.gz.sig"
+              fi
               ;;
             Linux)
               bundle="$target/release/bundle"
               cp "$bundle"/appimage/*.AppImage "$staging"/
               cp "$bundle"/deb/*.deb "$staging"/
               (cd "$staging" && zip -r -j "../$output/$name.zip" .)
-              cp "$bundle"/appimage/*.AppImage "$output/$name.AppImage"
-              cp "$bundle"/appimage/*.AppImage.sig "$output/$name.AppImage.sig"
+              if [ "$SIGNED" = "true" ]; then
+                cp "$bundle"/appimage/*.AppImage "$output/$name.AppImage"
+                cp "$bundle"/appimage/*.AppImage.sig "$output/$name.AppImage.sig"
+              fi
               ;;
             Windows)
               bundle="$target/release/bundle"
               cp "$bundle"/nsis/*-setup.exe "$staging"/
               cp "$bundle"/msi/*.msi "$staging"/
               (cd "$staging" && 7z a "../$output/$name.zip" ./*)
-              cp "$bundle"/nsis/*-setup.exe "$output/$name-setup.exe"
-              cp "$bundle"/nsis/*-setup.exe.sig "$output/$name-setup.exe.sig"
+              if [ "$SIGNED" = "true" ]; then
+                cp "$bundle"/nsis/*-setup.exe "$output/$name-setup.exe"
+                cp "$bundle"/nsis/*-setup.exe.sig "$output/$name-setup.exe.sig"
+              fi
               ;;
           esac
 

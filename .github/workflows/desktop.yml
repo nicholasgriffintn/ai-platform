@@ -80,4 +80,3 @@ jobs:
     name: Bundle
     needs: core
     uses: ./.github/workflows/desktop-build.yml
-    secrets: inherit

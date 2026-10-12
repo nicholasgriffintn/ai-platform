@@ -1,4 +1,7 @@
+export type AccessTokenSource = () => Promise<string | null>;
+
 let accessToken: string | null = null;
+let tokenSource: AccessTokenSource | null = null;
 
 export const apiKeyService = {
   setApiKey: async (apiKey: string): Promise<void> => {
@@ -6,12 +9,18 @@ export const apiKeyService = {
   },
 
   getApiKey: async (): Promise<string | null> => {
-    return accessToken;
+    return tokenSource ? tokenSource() : accessToken;
   },
 
   removeApiKey: (): void => {
     accessToken = null;
   },
+
+  setTokenSource: (source: AccessTokenSource | null): void => {
+    tokenSource = source;
+  },
+
+  hasTokenSource: (): boolean => tokenSource !== null,
 
   validateApiKey: (apiKey: string): boolean => {
     return (

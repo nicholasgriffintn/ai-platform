@@ -75,6 +75,7 @@ jobs:
     secrets: inherit
     with:
       retention-days: 30
+      signed: true
 
   publish:
     name: Publish GitHub releases
