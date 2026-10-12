@@ -12,7 +12,7 @@ Deployment requires explicit authority and environment separation.
 
 ## Deploy order
 
-1. Deploy enabled workers first (`@assistant/sandbox-worker deploy` and `@assistant/computer-worker deploy`).
+1. Deploy enabled workers first: `@assistant/sandbox-worker deploy`, then `@assistant/agent-worker deploy`, which binds the sandbox worker's `Workspace` class.
 2. Deploy API.
 3. Deploy web/app.
 

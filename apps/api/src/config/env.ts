@@ -9,6 +9,7 @@ import type {
   SendEmail,
 } from "@cloudflare/workers-types";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
+import type { AgentHarnessRpc } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -50,7 +51,7 @@ export type IEnv = {
   CLOUDFLARE_AI_SEARCH_INSTANCE?: string;
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
-  AGENT_WORKER?: Fetcher;
+  AGENT_WORKER?: Fetcher & AgentHarnessRpc;
   SITES_RUNTIME?: DurableObjectNamespace;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
@@ -159,7 +160,6 @@ export type IEnv = {
   SANDBOX_MAX_RUN_STARTS_PER_MINUTE?: string;
   SANDBOX_ALLOWED_MODELS?: string;
   SANDBOX_BLOCKED_MODELS?: string;
-  SANDBOX_INSTANCE_TYPE?: string;
   SANDBOX_PREVIEW_HOST?: string;
   REALTIME_MAX_SESSION_SECONDS?: string;
   CLOUDFLARE_ANALYTICS_API_TOKEN?: string;

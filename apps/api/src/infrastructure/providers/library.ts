@@ -1,12 +1,15 @@
 import { createProviderLibrary, type AIProvider } from "@ngriffin_uk/polychat-ai-providers";
-import { PLATFORM_DEPLOYMENT_CHAT_PROVIDER } from "@ngriffin_uk/polychat-schemas";
+import {
+  AGENT_HARNESS_PROVIDER,
+  PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fromProviderError } from "~/infrastructure/errors";
 import { withAvailableFunctions } from "~/modules/chat/application/tools/available-functions";
 import { withCapabilityMetering } from "~/modules/usage/application/capabilityMetering";
 import type { ChatCompletionParameters } from "~/types";
 
-import { HostedAgentChatProvider } from "./capabilities/agent-host/HostedAgentChatProvider";
+import { AgentHarnessChatProvider } from "./capabilities/agent-harness/AgentHarnessChatProvider";
 import { DeploymentChatProvider } from "./capabilities/model-platform/DeploymentChatProvider";
 import { PolychatSandboxChatProvider } from "./capabilities/sandbox/providers/PolychatSandboxChatProvider";
 import { providerHost } from "./host";
@@ -27,9 +30,9 @@ function registerHostChatProviders(registry: ProviderRegistry): void {
     metadata: { vendor: "Polychat", categories: ["chat"], tags: ["coding"] },
   });
   registry.register("chat", {
-    name: "hermes",
-    create: () => new HostedAgentChatProvider(),
-    metadata: { vendor: "Nous Research", categories: ["chat"], tags: ["agent"] },
+    name: AGENT_HARNESS_PROVIDER,
+    create: () => new AgentHarnessChatProvider(),
+    metadata: { vendor: "Polychat", categories: ["chat"], tags: ["agent"] },
   });
   registry.register("chat", {
     name: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,

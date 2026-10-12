@@ -1,12 +1,29 @@
-import type { AgentHost } from "./agent-host/agent-host-container";
+import type {
+  ContainerCommandResult,
+  ContainerEgressPolicy,
+} from "@ngriffin_uk/polychat-library-sandbox";
+
+import type { HermesAgent } from "./harness/hermes";
+import type { OpenCodeAgent } from "./harness/opencode";
+import type { PiAgent } from "./harness/pi";
+import type { ThinkAgent } from "./harness/think";
+
+export interface WorkspaceRpc extends Rpc.DurableObjectBranded {
+  setEgressPolicy(policy: ContainerEgressPolicy): Promise<void>;
+  exec(
+    command: string,
+    options?: { cwd?: string; timeoutMs?: number },
+  ): Promise<ContainerCommandResult>;
+  readFile(path: string): Promise<string>;
+  writeFile(path: string, content: string): Promise<void>;
+}
 
 export interface Env {
-  AgentHost: DurableObjectNamespace<AgentHost>;
   POLYCHAT_API: Fetcher;
-  BACKUP_BUCKET: R2Bucket;
-  BACKUP_BUCKET_ENDPOINT?: string;
-  CLOUDFLARE_ACCOUNT_ID?: string;
-  CLOUDFLARE_R2_ACCOUNT_ID?: string;
-  SANDBOX_TRANSPORT?: "http" | "rpc";
   JWT_SECRET?: string;
+  THINK_AGENT: DurableObjectNamespace<ThinkAgent>;
+  PI_AGENT: DurableObjectNamespace<PiAgent>;
+  OPENCODE_AGENT: DurableObjectNamespace<OpenCodeAgent>;
+  HERMES_AGENT: DurableObjectNamespace<HermesAgent>;
+  WORKSPACE: DurableObjectNamespace<WorkspaceRpc>;
 }

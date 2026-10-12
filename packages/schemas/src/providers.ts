@@ -12,7 +12,6 @@ export const PROVIDER_DRIVERS = [
   "opencode",
   "antigravity",
   "polychat-sandbox",
-  "hermes",
 ] as const;
 
 export const providerDriverSchema = z.enum(PROVIDER_DRIVERS);
@@ -218,11 +217,6 @@ const PROVIDER_CAPABILITIES: Record<ProviderDriver, ProviderCapabilities> = {
     ...AGENT_CAPABILITIES,
     picksOwnModel: false,
     runsUnattended: true,
-  },
-  hermes: {
-    ...AGENT_CAPABILITIES,
-    picksOwnModel: false,
-    rollsBack: false,
   },
 };
 

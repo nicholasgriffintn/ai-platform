@@ -11,10 +11,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/sandbox": "0.12.10",
+    "@ai-sdk/openai-compatible": "2.0.37",
+    "@earendil-works/pi-ai": "1.1.0",
+    "@earendil-works/pi-durable": "1.1.0",
     "@ngriffin_uk/polychat-library-sandbox": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-server": "workspace:^",
+    "@opencode/plugin": "2.0.27",
+    "@opencode/sdk": "2.0.27",
+    "agents": "0.28.0",
+    "ai": "7.0.138",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",

@@ -4,7 +4,7 @@ Use Node.js 24 and the pnpm version pinned in the root `package.json`. Run comma
 
 1. Install dependencies with `pnpm install`.
 2. Create `apps/api/.dev.vars` from `apps/api/.dev.vars.example` if it does not already exist. Keep the tracked Wrangler manifest; do not replace it with the example manifest.
-3. If you need a local worker, create its `.dev.vars` from the matching example in `apps/sandbox-worker` or `apps/computer-worker`.
+3. If you need a local worker, create its `.dev.vars` from the matching example in `apps/sandbox-worker` or `apps/agent-worker`.
 4. Apply the local API migrations with `pnpm --filter @assistant/api db:migrate:local`.
 5. Start the web app and API with `pnpm dev`. Use `pnpm dev:api` or `pnpm dev:app` for one surface, and `pnpm dev:mobile` for iOS.
 

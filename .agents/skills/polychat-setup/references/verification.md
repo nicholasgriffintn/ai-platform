@@ -10,7 +10,7 @@ Use one Markdown file per outcome under `.agents/verification/pending/`, named `
 # User-visible outcome
 
 - **Change:** what changed.
-- **Surfaces:** only the affected web, iOS, desktop, API, sandbox worker or computer worker.
+- **Surfaces:** only the affected web, iOS, desktop, API, sandbox worker or agent worker.
 - **Prerequisites:** migrations, secrets, bindings or external actions; otherwise none.
 - **Risk if wrong:** what breaks and for whom.
 - **Commits:** known commit or PR references, when available.

@@ -1,13 +1,10 @@
 {
   "name": "assistant-agent-worker",
   "main": "src/index.ts",
-  "compatibility_date": "2026-08-28",
+  "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
-  "vars": {
-    "SANDBOX_TRANSPORT": "rpc",
-  },
   "dev": {
     "port": 8789,
   },
@@ -15,14 +12,6 @@
     "enabled": true,
     "head_sampling_rate": 0.1,
   },
-  "r2_buckets": [
-    {
-      "binding": "BACKUP_BUCKET",
-      "bucket_name": "assistant-private-assets",
-      "preview_bucket_name": "assistant-private-assets",
-      "remote": true,
-    },
-  ],
   "services": [
     {
       "binding": "POLYCHAT_API",
@@ -31,16 +20,26 @@
   ],
   "containers": [
     {
-      "class_name": "AgentHost",
-      "image": "./agent-host/Dockerfile",
-      "instance_type": "standard-1",
+      "class_name": "HermesAgent",
+      "scheduling_policy": "durable_object",
+      "images": {
+        "hermes": {
+          "dockerfile": "./hermes/Dockerfile",
+          "build_context": "./hermes",
+        },
+      },
     },
   ],
   "durable_objects": {
     "bindings": [
+      { "class_name": "ThinkAgent", "name": "THINK_AGENT" },
+      { "class_name": "PiAgent", "name": "PI_AGENT" },
+      { "class_name": "OpenCodeAgent", "name": "OPENCODE_AGENT" },
+      { "class_name": "HermesAgent", "name": "HERMES_AGENT" },
       {
-        "class_name": "AgentHost",
-        "name": "AgentHost",
+        "class_name": "Workspace",
+        "name": "WORKSPACE",
+        "script_name": "assistant-sandbox-worker",
       },
     ],
   },
@@ -48,6 +47,11 @@
     {
       "tag": "v1",
       "new_sqlite_classes": ["AgentHost"],
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["ThinkAgent", "PiAgent", "OpenCodeAgent", "HermesAgent"],
+      "deleted_classes": ["AgentHost"],
     },
   ],
 }

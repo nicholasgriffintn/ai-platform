@@ -1,30 +1,51 @@
-import { ContainerProxy } from "@cloudflare/sandbox";
-import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
+import type {
+  AgentHarnessAbortRequest,
+  AgentHarnessAnswerRequest,
+  AgentHarnessRpc,
+  AgentHarnessTurnRequest,
+  HostedAgentHarnessId,
+} from "@ngriffin_uk/polychat-schemas";
+import { WorkerEntrypoint } from "cloudflare:workers";
 
-import { handleAgentHostRequest, isAgentHostPath } from "./agent-host/routes";
 import type { Env } from "./types";
 
-const INTERNAL_AGENT_ORIGIN = "https://agent.internal";
-
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-
-    if (url.origin !== INTERNAL_AGENT_ORIGIN) {
-      return errorResponse(404, "Not found");
+export default class AgentWorker extends WorkerEntrypoint<Env> implements AgentHarnessRpc {
+  private host(harness: HostedAgentHarnessId, sessionKey: string) {
+    switch (harness) {
+      case "think":
+        return this.env.THINK_AGENT.getByName(sessionKey);
+      case "pi":
+        return this.env.PI_AGENT.getByName(sessionKey);
+      case "opencode":
+        return this.env.OPENCODE_AGENT.getByName(sessionKey);
+      default:
+        return this.env.HERMES_AGENT.getByName(sessionKey);
     }
+  }
 
-    if (request.method !== "POST") {
-      return errorResponse(405, "Method not allowed");
-    }
+  async fetch(): Promise<Response> {
+    return new Response("Not found", { status: 404 });
+  }
 
-    if (!isAgentHostPath(url.pathname)) {
-      return errorResponse(404, "Not found");
-    }
+  async submitHarnessTurn(harness: HostedAgentHarnessId, request: AgentHarnessTurnRequest) {
+    return this.host(harness, request.sessionKey).submit(request);
+  }
 
-    return handleAgentHostRequest(request, env);
-  },
-};
+  async readHarnessEvents(harness: HostedAgentHarnessId, sessionKey: string, after: number) {
+    return this.host(harness, sessionKey).events(after);
+  }
 
-export { ContainerProxy };
-export { AgentHost } from "./agent-host/agent-host-container";
+  async answerHarnessApproval(harness: HostedAgentHarnessId, request: AgentHarnessAnswerRequest) {
+    return this.host(harness, request.sessionKey).answer(request);
+  }
+
+  async abortHarnessTurn(harness: HostedAgentHarnessId, request: AgentHarnessAbortRequest) {
+    await this.host(harness, request.sessionKey).abort(request.operationId);
+  }
+}
+
+export { HermesAgent } from "./harness/hermes";
+export { HermesModelEgress } from "./harness/model-egress";
+export { OpenCodeAgent } from "./harness/opencode";
+export { PiAgent } from "./harness/pi";
+export { ThinkAgent } from "./harness/think";
