@@ -39,6 +39,11 @@ function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boo
       provider: "workers-ai",
       modalities: { input: ["text"], output: ["decision"] },
     },
+    "@cf/cloudflare/clef-omni": {
+      matchingModel: "@cf/cloudflare/clef-omni",
+      provider: "workers-ai",
+      modalities: { input: ["text", "image", "audio", "video"], output: ["decision"] },
+    },
     "gpt-5": {
       matchingModel: "gpt-5",
       provider: "openai",
@@ -118,9 +123,15 @@ function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boo
         resolveModelProvider: vi.fn(
           async ({ provider, defaultProvider }) => provider ?? defaultProvider,
         ),
-        getAuxiliaryDecisionModel: vi.fn(async () =>
-          options.decisionTarget ? { model: "jev-latest", provider: "typesafe" } : null,
-        ),
+        getAuxiliaryDecisionModel: vi.fn(async (_env: unknown, _user: unknown, inputs = []) => {
+          if (!options.decisionTarget) {
+            return null;
+          }
+
+          return inputs.length > 0
+            ? { model: "@cf/cloudflare/clef-omni", provider: "workers-ai" }
+            : { model: "jev-latest", provider: "typesafe" };
+        }),
       } as never,
       storage: { forEnv: () => null, forContext: () => null },
       keyStore: () => undefined,
@@ -393,6 +404,46 @@ describe("createAiFunctions", () => {
         env,
         model: "gpt-5",
         state: "x",
+        questions: { q: { type: "noul", instructions: "?" } },
+      }),
+    ).rejects.toMatchObject({ type: "PARAMS_ERROR" });
+    expect(decision.decide).not.toHaveBeenCalled();
+  });
+
+  it("asks the decision lineup for a media judge when media is attached", async () => {
+    const { runtime, resolve, decision } = createRuntime(vi.fn<GetResponse>(), {
+      decisionTarget: true,
+    });
+    const ai = createAiFunctions(runtime);
+    const audio = ["data:audio/wav;base64,UklGRg=="];
+
+    await ai.decide({
+      env,
+      user,
+      state: "hello there",
+      audio,
+      questions: { verbatim: { type: "noul", instructions: "Is the transcript exact?" } },
+    });
+
+    expect(runtime.host.models.getAuxiliaryDecisionModel).toHaveBeenCalledWith(env, user, [
+      "audio",
+    ]);
+    expect(resolve).toHaveBeenCalledWith("decision", "workers-ai", { env, user });
+    expect(decision.decide).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "@cf/cloudflare/clef-omni", audio }),
+    );
+  });
+
+  it("rejects media for an explicit text-only decision model", async () => {
+    const { runtime, decision } = createRuntime(vi.fn<GetResponse>(), { decisionTarget: true });
+    const ai = createAiFunctions(runtime);
+
+    await expect(
+      ai.decide({
+        env,
+        model: "@cf/cloudflare/clef-flash",
+        state: "x",
+        images: ["data:image/png;base64,iVBORw=="],
         questions: { q: { type: "noul", instructions: "?" } },
       }),
     ).rejects.toMatchObject({ type: "PARAMS_ERROR" });

@@ -23,6 +23,7 @@ import {
   searchProviderSchema,
   getSystemModelLineup,
   isMachineOnline,
+  modelHasInputModalities,
   type ModelConfigItem,
   type ModelModality,
   type ReasoningEffort,
@@ -472,6 +473,7 @@ async function resolveModalitySystemModel(
   user: IUser | undefined,
   role: SystemModelRole,
   options: ModelAccessOptions = {},
+  inputs: readonly ModelModality[] = [],
 ): Promise<ResolvedSystemModel | null> {
   const modality = MODALITY_SYSTEM_ROLE_MODALITIES[role];
 
@@ -488,7 +490,9 @@ async function resolveModalitySystemModel(
   );
   const executableModels = getExecutableModelsForAccount(accessibleModels, user);
   const availableModels = Object.fromEntries(
-    Object.entries(executableModels).filter(([, model]) => isModelRuntimeAvailable(model, env)),
+    Object.entries(executableModels).filter(
+      ([, model]) => isModelRuntimeAvailable(model, env) && modelHasInputModalities(model, inputs),
+    ),
   );
   const selected = resolvePolicyModel(availableModels, candidates, user);
 
@@ -607,8 +611,9 @@ export const getAuxiliaryGuardrailsModel = async (
 export const getAuxiliaryDecisionModel = async (
   env: IEnv,
   user?: IUser,
+  inputs: readonly ModelModality[] = [],
 ): Promise<ResolvedSystemModel | null> => {
-  return resolveModalitySystemModel(env, user, "decision");
+  return resolveModalitySystemModel(env, user, "decision", {}, inputs);
 };
 
 export const resolveRerankingModel = async (

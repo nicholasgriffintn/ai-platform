@@ -54,8 +54,14 @@ export function splitNonEmptyLines(value: string): string[] {
 
 export const parseCommaSeparatedTags = parseCommaSeparatedList;
 
+export function splitWords(text: string): string[] {
+  const trimmed = text.trim();
+
+  return trimmed ? trimmed.split(/\s+/) : [];
+}
+
 export function getWordCount(text: string): number {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
+  return splitWords(text).length;
 }
 
 export function getCharCount(text: string): number {

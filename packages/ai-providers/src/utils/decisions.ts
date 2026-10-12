@@ -1,4 +1,9 @@
-import { decisionResponseSchema, type DecisionResponse } from "@ngriffin_uk/polychat-schemas";
+import {
+  decisionMediaModalities,
+  decisionResponseSchema,
+  type DecisionMedia,
+  type DecisionResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -32,4 +37,16 @@ export function normaliseDecisionResponse(
   }
 
   return parsed.data;
+}
+
+export function assertTextOnlyDecisionRequest(media: DecisionMedia, provider: string): void {
+  const modalities = decisionMediaModalities(media);
+
+  if (modalities.length > 0) {
+    throw new AssistantError(
+      `${provider} decisions only judge text, not ${modalities.join(" or ")}`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 }

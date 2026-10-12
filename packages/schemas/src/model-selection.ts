@@ -186,6 +186,15 @@ export function modelHasOutputModality(
   return getModelOutputModalities(model).includes(modality);
 }
 
+export function modelHasInputModalities(
+  model: Pick<ModelConfigItem, "modalities">,
+  modalities: readonly ModelModality[],
+) {
+  const inputs = getModelInputModalities(model);
+
+  return modalities.every((modality) => inputs.includes(modality));
+}
+
 export function requiresPaidPlan(
   model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
 ): boolean {

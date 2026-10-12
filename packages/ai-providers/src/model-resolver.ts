@@ -8,8 +8,10 @@ import {
 import {
   getSystemModelLineup,
   findModelByReference,
+  modelHasInputModalities,
   modelHasOutputModality,
   type ModelConfig,
+  type ModelModality,
   type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -112,13 +114,18 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
       | "audio"
       | "speech"
       | "transcription",
+    inputs: readonly ModelModality[] = [],
   ): AuxiliaryModelRef | null => {
     const models = getModelsByOutputModality(modality);
 
     for (const candidate of getSystemModelLineup(role).candidates) {
       const config = findModelByReference(models, candidate)?.config;
 
-      if (config && isModelRuntimeAvailable(config, env)) {
+      if (
+        config &&
+        isModelRuntimeAvailable(config, env) &&
+        modelHasInputModalities(config, inputs)
+      ) {
         return { model: config.matchingModel, provider: config.provider, effort: candidate.effort };
       }
     }
@@ -280,7 +287,8 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
         }
       );
     },
-    getAuxiliaryDecisionModel: async (env) => resolveModalityRole(env, "decision", "decision"),
+    getAuxiliaryDecisionModel: async (env, _user, inputs) =>
+      resolveModalityRole(env, "decision", "decision", inputs),
     resolveRerankingModel: async (env, _user, selection) => resolveReranking(env, selection),
     getAuxiliaryRerankingModel: async (env, _user, selection) => resolveReranking(env, selection),
     getAuxiliarySpeechModel: async (env) => resolveTranscriptionModel(env),

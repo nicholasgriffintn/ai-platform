@@ -1,4 +1,9 @@
-import type { DecisionRequest, DecisionResponse } from "@ngriffin_uk/polychat-schemas";
+import {
+  decisionMediaModalities,
+  pickDecisionMedia,
+  type DecisionRequest,
+  type DecisionResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/infrastructure/ai";
@@ -19,16 +24,20 @@ export async function decide({
   completionId,
   conversationId,
 }: DecideOptions): Promise<DecisionResponse> {
+  const media = pickDecisionMedia(request);
   const target = await ai.resolveDecisionTarget({
     env,
     user,
     model: request.model,
     provider: request.provider,
+    ...media,
   });
 
   if (!target) {
     throw new AssistantError(
-      "No decision model is available for this account. Configure Workers AI or add a TypeSafe or OpenAI API key in settings.",
+      decisionMediaModalities(media).length > 0
+        ? "No decision model that judges images, audio or video is available. Configure Workers AI to use Clef Omni."
+        : "No decision model is available for this account. Configure Workers AI or add a TypeSafe or OpenAI API key in settings.",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
@@ -42,5 +51,6 @@ export async function decide({
     provider: target.provider,
     state: request.state,
     questions: request.questions,
+    ...media,
   });
 }

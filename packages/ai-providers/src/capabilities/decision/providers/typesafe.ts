@@ -7,7 +7,10 @@ import { fetchProviderJson } from "../../../fetch.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type { DecisionProvider, DecisionRequest } from "../../../types/decision.js";
-import { normaliseDecisionResponse } from "../../../utils/decisions.js";
+import {
+  assertTextOnlyDecisionRequest,
+  normaliseDecisionResponse,
+} from "../../../utils/decisions.js";
 
 const logger = getLogger({ prefix: "lib/decision/typesafe" });
 
@@ -25,6 +28,7 @@ export class TypeSafeDecisionProvider implements DecisionProvider {
   ) {}
 
   async decide(request: DecisionRequest): Promise<DecisionResponse> {
+    assertTextOnlyDecisionRequest(request, "TypeSafe");
     const model = request.model ?? TYPESAFE_DEFAULT_MODEL;
     const apiKey = await resolveHostProviderApiKey(this.runtime.host, {
       env: this.env,

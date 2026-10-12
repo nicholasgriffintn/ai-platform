@@ -392,12 +392,16 @@ export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
   "articles",
+  "charades",
   "image-studio",
   "notes",
+  "photo-sorter",
   "recordings",
   "replicate",
   "sites",
   "strudel",
+  "twenty-questions",
+  "verbatim",
 ]);
 
 export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [

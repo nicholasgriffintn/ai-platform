@@ -11,7 +11,13 @@ const CLEF_DECISION_CONTRACT = {
 const MODEL_CONTRACT_OVERRIDES = {
   "workers-ai": {
     "@cf/cloudflare/clef": { ...CLEF_DECISION_CONTRACT, costPer1kInputTokens: 0.00024 },
-    "@cf/cloudflare/clef-flash": { ...CLEF_DECISION_CONTRACT, costPer1kInputTokens: 0.00009 },
+    "@cf/cloudflare/clef-flash": { ...CLEF_DECISION_CONTRACT, costPer1kInputTokens: 0.000038 },
+    "@cf/cloudflare/clef-omni": {
+      ...CLEF_DECISION_CONTRACT,
+      modalities: { input: ["text", "image", "audio", "video"], output: ["decision"] },
+      supportsAttachments: true,
+      costPer1kInputTokens: 0.00015,
+    },
   },
   openai: {
     "gpt-5.3-codex": {

@@ -7,6 +7,7 @@ import { fetchAIResponse } from "../../../fetch.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type { DecisionProvider, DecisionRequest } from "../../../types/decision.js";
+import { assertTextOnlyDecisionRequest } from "../../../utils/decisions.js";
 import {
   buildOpenAIDecisionRequest,
   normaliseOpenAIDecisionResponse,
@@ -27,6 +28,7 @@ export class OpenAIDecisionProvider implements DecisionProvider {
   ) {}
 
   async decide(request: DecisionRequest): Promise<DecisionResponse> {
+    assertTextOnlyDecisionRequest(request, "OpenAI");
     const model = request.model ?? OPENAI_DEFAULT_DECISION_MODEL;
     const body = buildOpenAIDecisionRequest(request, model);
     const apiKey = await resolveHostProviderApiKey(this.runtime.host, {

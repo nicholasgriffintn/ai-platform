@@ -2,28 +2,35 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 65536,
-    "maxTokens": 65536,
+    "maxTokens": 0,
     "modalities": {
       "input": [
         "text",
-        "image"
+        "image",
+        "audio",
+        "video"
       ],
       "output": [
-        "text"
+        "decision"
       ]
     },
     "releaseDate": "October 9, 2026",
+    "strengths": [
+      "decision",
+      "analysis",
+      "vision",
+      "transcription"
+    ],
     "supportsToolCalls": false,
-    "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
-  "description": "The workers ai/@cf/cloudflare/clef omni family includes models that produce text.",
+  "description": "Cloudflare Clef Omni returns calibrated probabilities for typed questions about text, images, audio and video.",
   "models": {
     "clef-omni": {
       "defaults": {
         "name": "Clef Omni",
-        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks"
+        "description": "Cloudflare’s 30B mixture-of-experts decision model (3B active) for choice, score and yes/no questions about text, images, audio and video with its soundtrack."
       }
     }
   }

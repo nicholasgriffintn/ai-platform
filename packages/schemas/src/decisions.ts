@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import type { ModelModality } from "./models.js";
+
 export type DecisionEntry =
   | string
   | number
@@ -88,14 +90,126 @@ export const decisionQuestionsSchema = z
   });
 export type DecisionQuestions = z.infer<typeof decisionQuestionsSchema>;
 
+export const DECISION_MEDIA_KINDS = ["images", "audio", "videos"] as const;
+export type DecisionMediaKind = (typeof DECISION_MEDIA_KINDS)[number];
+
+export const DECISION_MEDIA_TYPES = {
+  images: ["image/png", "image/jpeg", "image/webp"],
+  audio: ["audio/wav", "audio/mpeg"],
+  videos: ["video/mp4", "video/webm"],
+} as const satisfies Record<DecisionMediaKind, readonly string[]>;
+
+export const DECISION_MEDIA_MAX_ITEMS = {
+  images: 4,
+  audio: 4,
+  videos: 2,
+} as const satisfies Record<DecisionMediaKind, number>;
+
+const MEBIBYTE = 1024 * 1024;
+
+export const DECISION_MEDIA_MAX_BYTES = {
+  images: 4 * MEBIBYTE,
+  audio: 8 * MEBIBYTE,
+  videos: 16 * MEBIBYTE,
+} as const satisfies Record<DecisionMediaKind, number>;
+
+export const DECISION_TIMED_MEDIA_MAX_BYTES = 16 * MEBIBYTE;
+
+const DATA_URL_HEADER_ALLOWANCE = 64;
+
+export function decisionMediaDecodedBytes(dataUrl: string): number {
+  const payload = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+
+  return Math.floor((payload.length * 3) / 4) - padding;
+}
+
+const DECISION_MEDIA_MODALITIES = {
+  images: "image",
+  audio: "audio",
+  videos: "video",
+} as const satisfies Record<DecisionMediaKind, ModelModality>;
+
+const BASE64_PAYLOAD_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
+
+export function isDecisionMediaDataUrl(value: string, kind: DecisionMediaKind): boolean {
+  const separator = value.indexOf(",");
+
+  if (separator === -1) {
+    return false;
+  }
+
+  const header = value.slice(0, separator);
+  const allowed: readonly string[] = DECISION_MEDIA_TYPES[kind];
+
+  return (
+    allowed.some((type) => header === `data:${type};base64`) &&
+    BASE64_PAYLOAD_PATTERN.test(value.slice(separator + 1))
+  );
+}
+
+function decisionMediaListSchema(kind: DecisionMediaKind) {
+  return z
+    .array(
+      z
+        .string()
+        .max(Math.ceil(DECISION_MEDIA_MAX_BYTES[kind] / 3) * 4 + DATA_URL_HEADER_ALLOWANCE, {
+          message: `Each ${kind} item must be at most ${DECISION_MEDIA_MAX_BYTES[kind] / MEBIBYTE} MiB`,
+        })
+        .refine((value) => isDecisionMediaDataUrl(value, kind), {
+          message: `Expected a base64 data URL of type ${DECISION_MEDIA_TYPES[kind].join(", ")}`,
+        }),
+    )
+    .min(1)
+    .max(DECISION_MEDIA_MAX_ITEMS[kind]);
+}
+
+export const decisionMediaSchema = z
+  .object({
+    images: decisionMediaListSchema("images").optional(),
+    audio: decisionMediaListSchema("audio").optional(),
+    videos: decisionMediaListSchema("videos").optional(),
+  })
+  .strict();
+export type DecisionMedia = z.infer<typeof decisionMediaSchema>;
+
+export function pickDecisionMedia(source: DecisionMedia): DecisionMedia {
+  const media: DecisionMedia = {};
+
+  for (const kind of DECISION_MEDIA_KINDS) {
+    const items = source[kind];
+
+    if (items && items.length > 0) {
+      media[kind] = items;
+    }
+  }
+
+  return media;
+}
+
+export function decisionMediaModalities(media: DecisionMedia): ModelModality[] {
+  return DECISION_MEDIA_KINDS.filter((kind) => (media[kind]?.length ?? 0) > 0).map(
+    (kind) => DECISION_MEDIA_MODALITIES[kind],
+  );
+}
+
 export const decisionRequestSchema = z
   .object({
     state: decisionStateSchema,
     questions: decisionQuestionsSchema,
     model: z.string().min(1).optional(),
     provider: z.string().min(1).optional(),
+    ...decisionMediaSchema.shape,
   })
-  .strict();
+  .strict()
+  .refine(
+    (request) =>
+      [...(request.audio ?? []), ...(request.videos ?? [])].reduce(
+        (total, item) => total + decisionMediaDecodedBytes(item),
+        0,
+      ) <= DECISION_TIMED_MEDIA_MAX_BYTES,
+    { message: "Audio and video together must be at most 16 MiB", path: ["videos"] },
+  );
 export type DecisionRequest = z.infer<typeof decisionRequestSchema>;
 
 const probabilitySchema = z.number().min(0).max(1);
@@ -129,6 +243,19 @@ export const decisionAnswerSchema = z.discriminatedUnion("type", [
   decisionNoulAnswerSchema,
 ]);
 export type DecisionAnswer = z.infer<typeof decisionAnswerSchema>;
+
+export function isDecisionAnswerOfType<TType extends DecisionAnswer["type"]>(
+  answer: DecisionAnswer | undefined,
+  type: TType,
+): answer is Extract<DecisionAnswer, { type: TType }> {
+  return answer?.type === type;
+}
+
+export function readDecisionNoul(answers: Record<string, DecisionAnswer>, id: string): number {
+  const answer = answers[id];
+
+  return isDecisionAnswerOfType(answer, "noul") ? answer.noul : 0;
+}
 
 export type DecisionAnswerFor<TQuestion extends DecisionQuestion> = TQuestion extends {
   type: "choice";

@@ -14,7 +14,7 @@ addRoute(app, "post", "/", {
   tags: ["decisions"],
   summary: "Make a decision",
   description:
-    "Evaluates a state against one or more typed questions with a System One decision model and returns calibrated answers. Ask every question that might matter in one call: questions are independent and evaluated in parallel.",
+    "Evaluates a state against one or more typed questions with a System One decision model and returns calibrated answers. Ask every question that might matter in one call: questions are independent and evaluated in parallel. Attach images, audio or video as base64 data URLs to have Clef Omni judge them alongside the state.",
   auth: true,
   bodySchema: decisionRequestSchema,
   responses: {

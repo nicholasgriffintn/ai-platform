@@ -95,7 +95,8 @@ export const providerHost: ProviderHost = {
       getAuxiliaryModelForRetrieval(asEnv(env), asUser(user)),
     getAuxiliaryGuardrailsModel: (env, user) =>
       getAuxiliaryGuardrailsModel(asEnv(env), asUser(user)),
-    getAuxiliaryDecisionModel: (env, user) => getAuxiliaryDecisionModel(asEnv(env), asUser(user)),
+    getAuxiliaryDecisionModel: (env, user, inputs) =>
+      getAuxiliaryDecisionModel(asEnv(env), asUser(user), inputs),
     resolveRerankingModel: (env, user, selection) =>
       resolveRerankingModel(asEnv(env), asUser(user), selection),
     getAuxiliaryRerankingModel: (env, user, selection) =>

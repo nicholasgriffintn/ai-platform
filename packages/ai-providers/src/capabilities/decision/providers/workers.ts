@@ -1,5 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { DecisionResponse } from "@ngriffin_uk/polychat-schemas";
+import { pickDecisionMedia, type DecisionResponse } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ProviderEnv, ProviderUser } from "../../../env.js";
@@ -27,8 +27,10 @@ export class WorkersAiDecisionProvider implements DecisionProvider {
   ) {}
 
   async decide(request: DecisionRequest): Promise<DecisionResponse> {
-    validateWorkersDecisionRequest(request);
-    const { model, selector } = resolveWorkersDecisionModel(request.model);
+    const target = resolveWorkersDecisionModel(request.model);
+
+    validateWorkersDecisionRequest(request, target);
+    const { model, selector } = target;
     const ai = this.env.AI;
 
     if (!ai) {
@@ -56,7 +58,12 @@ export class WorkersAiDecisionProvider implements DecisionProvider {
         try {
           raw = await ai.run(
             model,
-            { model: selector, state: request.state, questions: request.questions },
+            {
+              model: selector,
+              state: request.state,
+              questions: request.questions,
+              ...pickDecisionMedia(request),
+            },
             { gateway: { id: resolveAiGatewayId(), skipCache: true } },
           );
         } catch (error) {

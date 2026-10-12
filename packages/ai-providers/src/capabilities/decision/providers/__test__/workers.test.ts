@@ -88,6 +88,31 @@ describe("Workers AI decisions", () => {
     });
   });
 
+  it("sends media to Clef Omni alongside the state", async () => {
+    const audio = ["data:audio/wav;base64,UklGRg=="];
+    const videos = ["data:video/webm;base64,GkXfow=="];
+
+    run.mockResolvedValue({ answers, usage: { input_tokens: 900 } });
+    await provider().decide({ model: "clef-omni", state: "Hello there", questions, audio, videos });
+
+    expect(run).toHaveBeenCalledWith(
+      "@cf/cloudflare/clef-omni",
+      { model: "clef-omni", state: "Hello there", questions, audio, videos },
+      { gateway: { id: "llm-assistant", skipCache: true } },
+    );
+  });
+
+  it.each([
+    ["clef-flash", { images: ["data:image/png;base64,iVBORw=="] }],
+    ["clef-omni", { images: ["data:image/gif;base64,R0lGOD=="] }],
+    ["clef-omni", { audio: ["https://example.com/clip.wav"] }],
+  ])("rejects media %s cannot judge before inference", async (model, media) => {
+    await expect(
+      provider().decide({ model, state: "x", questions, ...media }),
+    ).rejects.toMatchObject({ type: "PARAMS_ERROR" });
+    expect(run).not.toHaveBeenCalled();
+  });
+
   it("rejects unsupported models before inference", async () => {
     await expect(
       provider().decide({ model: "@cf/qwen/qwen3.8-27b", state: "x", questions }),
@@ -142,5 +167,18 @@ describe("Workers AI decisions", () => {
       provider: "workers-ai",
     });
     await expect(models.getAuxiliaryDecisionModel({})).resolves.toBeNull();
+  });
+
+  it("selects Clef Omni from the lineup only when media needs judging", async () => {
+    const models = createCatalogueModelResolver();
+    const env = { TYPESAFE_API_KEY: "test", AI: binding };
+
+    await expect(models.getAuxiliaryDecisionModel(env, undefined, ["video"])).resolves.toEqual({
+      model: "@cf/cloudflare/clef-omni",
+      provider: "workers-ai",
+    });
+    await expect(
+      models.getAuxiliaryDecisionModel({ TYPESAFE_API_KEY: "test" }, undefined, ["image"]),
+    ).resolves.toBeNull();
   });
 });

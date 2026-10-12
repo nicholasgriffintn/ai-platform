@@ -1,19 +1,23 @@
 import type { ProviderRuntime } from "@ngriffin_uk/polychat-ai-providers";
 import type {
   DecisionAnswers,
+  DecisionMedia,
   DecisionQuestions,
   DecisionResponse,
   DecisionState,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   decisionAnswersMatchQuestions,
+  decisionMediaModalities,
+  modelHasInputModalities,
   modelHasOutputModality,
+  pickDecisionMedia,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { AiRequestScope } from "./types.js";
 
-export interface DecisionScope extends AiRequestScope {
+export interface DecisionScope extends AiRequestScope, DecisionMedia {
   model?: string;
   provider?: string;
   conversationId?: string;
@@ -42,6 +46,8 @@ export function createDecisionFunctions(runtime: ProviderRuntime) {
       return { provider: scope.provider, model: scope.model ?? "" };
     }
 
+    const modalities = decisionMediaModalities(scope);
+
     if (scope.model) {
       const config = await runtime.host.models.findModelConfig(
         scope.model,
@@ -54,10 +60,18 @@ export function createDecisionFunctions(runtime: ProviderRuntime) {
         throw new AssistantError("Select a valid decision model", ErrorType.PARAMS_ERROR, 400);
       }
 
+      if (!modelHasInputModalities(config, modalities)) {
+        throw new AssistantError(
+          `${config.name ?? scope.model} cannot judge ${modalities.join(" or ")}`,
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+
       return { model: config.matchingModel, provider: config.provider };
     }
 
-    return runtime.host.models.getAuxiliaryDecisionModel(scope.env, scope.user);
+    return runtime.host.models.getAuxiliaryDecisionModel(scope.env, scope.user, modalities);
   };
 
   const run = async <TQuestions extends DecisionQuestions>(
@@ -71,6 +85,7 @@ export function createDecisionFunctions(runtime: ProviderRuntime) {
     const response = await provider.decide({
       state: request.state,
       questions: request.questions,
+      ...pickDecisionMedia(request),
       model: target.model || undefined,
       completion_id: request.completion_id,
       conversationId: request.conversationId,

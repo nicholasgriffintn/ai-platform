@@ -8,6 +8,7 @@ export default defineConfig({
     "src/audio-commit-gate.ts",
     "src/audio-levels.ts",
     "src/errors.ts",
+    "src/media-encoding.ts",
     "src/messages.ts",
     "src/websocket-protocols.ts",
   ],

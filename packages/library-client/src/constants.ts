@@ -86,6 +86,7 @@ const COMMON_CSP = {
     "https://imagedelivery.net",
     "'self'",
     "data:",
+    "blob:",
     API_BASE_URL,
   ],
   connectSrc: [

@@ -57,3 +57,10 @@ export function settleWithin<T, F>(
 
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
 }
+
+export async function measureDuration<T>(operation: () => Promise<T>): Promise<[T, number]> {
+  const started = Date.now();
+  const result = await operation();
+
+  return [result, Date.now() - started];
+}

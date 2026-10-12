@@ -1,5 +1,5 @@
 import type { R2PutOptions } from "@cloudflare/workers-types";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProviderKeyStore } from "./api-keys";
 import type { ProviderEnv, ProviderRequestContext, ProviderUser } from "./env";
@@ -62,6 +62,7 @@ export interface ProviderModelResolver {
   getAuxiliaryDecisionModel(
     env: ProviderEnv,
     user?: ProviderUser,
+    inputs?: readonly ModelModality[],
   ): Promise<{ model: string; provider: string } | null>;
   resolveRerankingModel(
     env: ProviderEnv,

@@ -896,7 +896,7 @@
       "matchingModel": "@cf/cloudflare/clef-flash",
       "overrides": {
         "isFree": true,
-        "costPer1kInputTokens": 0.00009,
+        "costPer1kInputTokens": 0.000038,
         "costPer1kOutputTokens": 0,
         "supportsTemperature": false
       }
@@ -905,10 +905,11 @@
       "model": "workers-ai/@cf/cloudflare/clef-omni/clef-omni",
       "matchingModel": "@cf/cloudflare/clef-omni",
       "overrides": {
+        "isFree": true,
         "lastUpdated": "October 9, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": true
+        "supportsTemperature": false
       }
     }
   }

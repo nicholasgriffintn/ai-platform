@@ -42,6 +42,12 @@
       "import": "./dist/errors.js",
       "require": "./dist/errors.cjs"
     },
+    "./media-encoding": {
+      "polychat-source": "./src/media-encoding.ts",
+      "types": "./dist/media-encoding.d.ts",
+      "import": "./dist/media-encoding.js",
+      "require": "./dist/media-encoding.cjs"
+    },
     "./live-providers": {
       "polychat-source": "./src/live-providers.ts",
       "types": "./dist/live-providers.d.ts",

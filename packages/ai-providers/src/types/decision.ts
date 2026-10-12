@@ -1,10 +1,11 @@
 import type {
+  DecisionMedia,
   DecisionQuestions,
   DecisionResponse,
   DecisionState,
 } from "@ngriffin_uk/polychat-schemas";
 
-export interface DecisionRequest {
+export interface DecisionRequest extends DecisionMedia {
   state: DecisionState;
   questions: DecisionQuestions;
   model?: string;

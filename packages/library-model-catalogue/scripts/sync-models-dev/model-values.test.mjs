@@ -136,4 +136,31 @@ describe("Clef decision contracts", () => {
       expect(values.maxTokens).toBe(0);
     },
   );
+
+  it("keeps Clef Omni a decision model that accepts media", () => {
+    const values = buildUpdateValues(
+      {
+        id: "@cf/cloudflare/clef-omni",
+        name: "Clef Omni",
+        temperature: true,
+        attachment: true,
+        modalities: { input: ["text", "image"], output: ["text"] },
+        limit: { context: 65536, output: 65536 },
+      },
+      {
+        modelKey: "@cf/cloudflare/clef-omni",
+        existingMatchingModel: "@cf/cloudflare/clef-omni",
+        allowMatchingModelUpdate: false,
+        isNewEntry: false,
+        includeProvider: false,
+        provider: "workers-ai",
+      },
+    );
+
+    expect(values.modalities).toEqual({
+      input: ["text", "image", "audio", "video"],
+      output: ["decision"],
+    });
+    expect(values.maxTokens).toBe(0);
+  });
 });
