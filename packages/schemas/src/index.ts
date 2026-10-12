@@ -78,6 +78,7 @@ export * from "./chat-queue.js";
 export * from "./chat-runs.js";
 export * from "./delegation-state.js";
 export * from "./delegations.js";
+export * from "./device-authorisation.js";
 export * from "./device-sync.js";
 export * from "./automations.js";
 export * from "./channels.js";

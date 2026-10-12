@@ -20,6 +20,37 @@ export function randomHex(len: number): string {
     .toUpperCase();
 }
 
+export function randomFromAlphabet(length: number, alphabet: string): string {
+  const webCrypto = (
+    globalThis as {
+      crypto?: { getRandomValues?: (array: Uint8Array) => Uint8Array };
+    }
+  ).crypto;
+
+  if (typeof webCrypto?.getRandomValues !== "function") {
+    throw new Error("Secure random generator unavailable");
+  }
+
+  if (alphabet.length < 2 || alphabet.length > 256) {
+    throw new Error("Alphabet must have between 2 and 256 characters");
+  }
+
+  const limit = 256 - (256 % alphabet.length);
+  let result = "";
+
+  while (result.length < length) {
+    const bytes = webCrypto.getRandomValues(new Uint8Array(length));
+
+    for (const byte of bytes) {
+      if (byte < limit && result.length < length) {
+        result += alphabet[byte % alphabet.length];
+      }
+    }
+  }
+
+  return result;
+}
+
 export function randomUUIDLike(): string {
   return [8, 4, 4, 4, 12].map((n) => randomHex(n)).join("-");
 }

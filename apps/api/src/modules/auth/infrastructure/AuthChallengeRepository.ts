@@ -1,6 +1,6 @@
 import type { AuthChallengeRecord, ChallengeStore } from "@ngriffin_uk/auth-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, lte, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { authenticationToken } from "~/infrastructure/database/schema";
@@ -57,6 +57,18 @@ export class AuthChallengeRepository extends BaseRepository implements Challenge
       .returning();
 
     return record ? this.mapAuthChallenge(record) : null;
+  }
+
+  public async deleteExpiredForProvider(provider: string, now: Date): Promise<void> {
+    await this.database
+      .delete(authenticationToken)
+      .where(
+        and(
+          eq(authenticationToken.purpose, "challenge"),
+          eq(authenticationToken.provider, provider),
+          lte(authenticationToken.expires_at, now.toISOString()),
+        ),
+      );
   }
 
   public async incrementAttempts(tokenHash: string, expectedAttempts: number): Promise<boolean> {
