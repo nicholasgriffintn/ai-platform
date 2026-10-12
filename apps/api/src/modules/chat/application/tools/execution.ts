@@ -16,6 +16,10 @@ import {
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
 import {
+  evaluateToolDataFlow,
+  recordToolDataFlow,
+} from "~/modules/chat/application/tools/data-flow";
+import {
   hasStandingApproval,
   isStandingApprovalEligible,
   resolveToolCallDestination,
@@ -450,6 +454,18 @@ export const handleToolCalls = async (
           recordToolCallAttempt?.();
         } else if (result?.data?.outcome === "unknown") {
           recordDeterministicFailure?.();
+        }
+
+        if (result?.status !== "error" && result?.status !== "pending") {
+          recordToolDataFlow(
+            req,
+            evaluateToolDataFlow({
+              req,
+              toolName: functionName,
+              effectClass: callEffectClass,
+              destination: callDestination,
+            }),
+          );
         }
       } catch (functionError: any) {
         logger.error(`Function execution error for ${functionName}:`, functionError);

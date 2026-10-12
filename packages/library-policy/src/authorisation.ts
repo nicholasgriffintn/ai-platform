@@ -80,6 +80,12 @@ const actionShapes = {
   "owner.access": { actorId: string, ownerId: string },
   "conversation.share": { actorId: string, ownerId: string, project: boolean },
   "conversation.public": { project: boolean, isPublic: boolean },
+  "data.flow": {
+    sourceScope: string,
+    sourceId: string,
+    destinationScope: string,
+    destinationId: string,
+  },
   "conversation.access": {
     actorId: string,
     ownerId: string,

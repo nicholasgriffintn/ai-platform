@@ -18,6 +18,9 @@ export const scopePolicies = {
     when { context.project };`,
   "scope.public": `permit(principal, action == Polychat::Action::"conversation.public", resource)
     when { !context.project && context.isPublic };`,
+  "scope.flow": `permit(principal, action == Polychat::Action::"data.flow", resource)
+    when { context.destinationScope != "external" &&
+      context.destinationScope == context.sourceScope && context.destinationId == context.sourceId };`,
   "scope.conversation": `permit(principal, action == Polychat::Action::"conversation.access", resource)
     when { (context.project && context.plan == "pro" && context.member) ||
       (!context.project && context.actorId == context.ownerId) };

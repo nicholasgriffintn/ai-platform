@@ -32,6 +32,31 @@ describe("Cedar authorisation", () => {
     expect(authorise("resource.write", { ...context, role: "unknown" }).allowed).toBe(false);
   });
 
+  it("lets data flow only within the audience it came from", () => {
+    const personal = { sourceScope: "personal", sourceId: "7" };
+
+    expect(
+      authorise("data.flow", { ...personal, destinationScope: "personal", destinationId: "7" })
+        .allowed,
+    ).toBe(true);
+    expect(
+      authorise("data.flow", { ...personal, destinationScope: "personal", destinationId: "8" })
+        .allowed,
+    ).toBe(false);
+    expect(
+      authorise("data.flow", { ...personal, destinationScope: "project", destinationId: "7" })
+        .allowed,
+    ).toBe(false);
+    expect(
+      authorise("data.flow", {
+        sourceScope: "external",
+        sourceId: "slack",
+        destinationScope: "external",
+        destinationId: "slack",
+      }).allowed,
+    ).toBe(false);
+  });
+
   it("prevents project sharing and cross-user teammate conversation access", () => {
     expect(
       authorise("conversation.share", { actorId: "7", ownerId: "7", project: false }).allowed,
