@@ -19,7 +19,7 @@ import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execu
 import {
   agentHarnessSessionKey,
   harnessRecordToProviderChunks,
-  readHarnessRecords,
+  followHarnessRecords,
   type HarnessApprovalReference,
 } from "./harness-stream";
 import { takeQueuedSteer } from "./queued-steer";
@@ -161,7 +161,6 @@ export async function startHostedHarnessTurn(
     after = receipt.after;
   }
 
-  const events = await turn.client.readHarnessEvents(turn.harness, sessionKey, after);
   const reading = new AbortController();
   const abort = () =>
     turn.client.abortHarnessTurn(turn.harness, {
@@ -170,7 +169,11 @@ export async function startHostedHarnessTurn(
     });
 
   return streamHarnessRecords({
-    records: readHarnessRecords(events, reading.signal),
+    records: followHarnessRecords(
+      (cursor) => turn.client.readHarnessEvents(turn.harness, sessionKey, cursor),
+      after,
+      reading.signal,
+    ),
     release: () => reading.abort(),
     harnessName: definition.name,
     ...(operationId ? { operationId } : {}),

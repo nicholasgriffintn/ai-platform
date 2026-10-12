@@ -5,7 +5,12 @@ import {
   type AgentHarnessEventRecord,
   type AgentHarnessToolStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, readServerSentEvents, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
+import {
+  abortableDelay,
+  isRecord,
+  readServerSentEvents,
+  safeParseJson,
+} from "@ngriffin_uk/polychat-utility-core";
 
 const APPROVAL_TOOL_CALL_PATTERN = /^hx-(\d+)-([A-Za-z0-9_-]+)$/u;
 
@@ -27,6 +32,8 @@ export function parseApprovalToolCallId(value: unknown): HarnessApprovalReferenc
 export function agentHarnessSessionKey(userId: number, conversationId: string): string {
   return `${userId}-${conversationId.replace(/[^A-Za-z0-9_-]/gu, "-")}`.slice(0, 160);
 }
+
+const HARNESS_RECONNECT_DELAY_MS = 1_000;
 
 export interface ProviderChunks {
   chunks: unknown[];
@@ -160,6 +167,29 @@ export async function* readHarnessRecords(
   } finally {
     signal.removeEventListener("abort", cancel);
     reader.releaseLock();
+  }
+}
+
+export async function* followHarnessRecords(
+  open: (after: number) => Promise<ReadableStream<Uint8Array>>,
+  after: number,
+  signal: AbortSignal,
+): AsyncGenerator<AgentHarnessEventRecord> {
+  let cursor = after;
+
+  while (!signal.aborted) {
+    try {
+      for await (const record of readHarnessRecords(await open(cursor), signal)) {
+        cursor = record.seq;
+        yield record;
+      }
+    } catch {
+      if (signal.aborted) {
+        return;
+      }
+    }
+
+    await abortableDelay(HARNESS_RECONNECT_DELAY_MS, signal).catch(() => undefined);
   }
 }
 

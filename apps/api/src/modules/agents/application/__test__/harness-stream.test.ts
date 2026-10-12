@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   agentHarnessSessionKey,
   collectHarnessProviderStream,
+  followHarnessRecords,
   harnessRecordToProviderChunks,
   parseApprovalToolCallId,
   readHarnessRecords,
@@ -165,5 +166,49 @@ describe("hosted harness event streams", () => {
 
     expect(collected.response).toBe("Done");
     await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
+  });
+});
+
+describe("followHarnessRecords", () => {
+  it("reconnects from the last record it saw when the event stream drops", async () => {
+    const line = (seq: number, delta: string) =>
+      new TextEncoder().encode(
+        `${JSON.stringify({ seq, event: { type: "text-delta", partId: "p", delta } })}\n`,
+      );
+    const cursors: number[] = [];
+    const open = async (after: number) => {
+      cursors.push(after);
+
+      let pulls = 0;
+
+      return new ReadableStream<Uint8Array>({
+        pull(controller) {
+          pulls += 1;
+
+          if (after > 0) {
+            controller.enqueue(line(2, " again"));
+          } else if (pulls === 1) {
+            controller.enqueue(line(1, "Hello"));
+          } else {
+            controller.error(
+              new Error("ReadableStream received over RPC disconnected prematurely."),
+            );
+          }
+        },
+      });
+    };
+    const reading = new AbortController();
+    const seen: number[] = [];
+
+    for await (const record of followHarnessRecords(open, 0, reading.signal)) {
+      seen.push(record.seq);
+
+      if (record.seq === 2) {
+        reading.abort();
+      }
+    }
+
+    expect(seen).toEqual([1, 2]);
+    expect(cursors).toEqual([0, 1]);
   });
 });
