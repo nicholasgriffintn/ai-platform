@@ -478,7 +478,17 @@ async fn is_signed_in() -> Result<bool, String> {
 }
 
 #[tauri::command]
-fn sign_out() -> Result<(), String> {
+async fn sign_out() -> Result<(), String> {
+    if let Some(session) = secrets::read(secrets::SESSION)? {
+        if let Ok(client) = http_client(REQUEST_TIMEOUT) {
+            let _ = client
+                .post(format!("{API_BASE_URL}/auth/logout"))
+                .header(reqwest::header::COOKIE, format!("session={session}"))
+                .send()
+                .await;
+        }
+    }
+
     secrets::forget(secrets::SESSION)
 }
 

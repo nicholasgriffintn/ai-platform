@@ -14,7 +14,7 @@ export async function getHeaders(): Promise<Record<string, string>> {
 
     const isRunningOnTheSameOrigin = isCookieSameSite(globalThis.location?.origin, API_BASE_URL);
 
-    if (apiKey && !isRunningOnTheSameOrigin) {
+    if (apiKey && (apiKeyService.hasTokenSource() || !isRunningOnTheSameOrigin)) {
       headers.Authorization = `Bearer ${apiKey}`;
     }
 

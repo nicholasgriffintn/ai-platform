@@ -1,21 +1,19 @@
-import { apiKeyService, authService, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { authService, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useCallback, useEffect, useState } from "react";
 
 import { getApiOriginMismatch } from "../infrastructure/api-origin";
 import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
+import { desktopAccessToken } from "../infrastructure/desktop-session-token";
 import { removeMachineAdvertisement } from "../infrastructure/machine-heartbeat";
-import { expiresAtMs, isTokenStale, refreshDelayMs } from "../infrastructure/session-refresh";
 import { getDesktopSignInMessage } from "../infrastructure/sign-in-message";
 
-const RENEWAL_EVENTS = ["focus", "online"] as const;
-const RETRY_AFTER_FAILURE_SECONDS = 0;
+const UNCONFIRMED_ACCOUNT =
+  "Polychat could not confirm your account. Check your connection and sign in again.";
 
 export function useDesktopSession() {
   const [isChecking, setChecking] = useState(true);
   const [isSigningIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const tokenExpiresAt = useRef(0);
-  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const setAuthenticatedUserConfiguration = useChatStore(
     (state) => state.setAuthenticatedUserConfiguration,
   );
@@ -24,19 +22,9 @@ export function useDesktopSession() {
   );
 
   const forgetSession = useCallback(() => {
-    tokenExpiresAt.current = 0;
-    apiKeyService.removeApiKey();
+    desktopAccessToken.forget();
     clearAuthenticatedUserConfiguration();
   }, [clearAuthenticatedUserConfiguration]);
-
-  const adoptToken = useCallback(async () => {
-    const session = await tauriDesktopBackend.accessToken();
-
-    await apiKeyService.setApiKey(session.token);
-    tokenExpiresAt.current = expiresAtMs(session.expiresIn, Date.now());
-
-    return session.expiresIn;
-  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -56,8 +44,14 @@ export function useDesktopSession() {
         return;
       }
 
-      await adoptToken();
-      await authService.checkAuthStatus();
+      await desktopAccessToken.renew();
+
+      if (!(await authService.checkAuthStatus())) {
+        setError(UNCONFIRMED_ACCOUNT);
+        forgetSession();
+
+        return;
+      }
 
       setAuthenticatedUserConfiguration({
         hasApiKey: true,
@@ -70,69 +64,12 @@ export function useDesktopSession() {
     } finally {
       setChecking(false);
     }
-  }, [adoptToken, forgetSession, setAuthenticatedUserConfiguration]);
+  }, [forgetSession, setAuthenticatedUserConfiguration]);
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- initial session load syncs with Tauri backend (external system); state settles on async completion
     void load();
   }, [load]);
-
-  const renew = useCallback(async (): Promise<number | null> => {
-    try {
-      if (!(await tauriDesktopBackend.isSignedIn())) {
-        forgetSession();
-
-        return null;
-      }
-
-      return await adoptToken();
-    } catch {
-      return null;
-    }
-  }, [adoptToken, forgetSession]);
-
-  useEffect(() => {
-    let stopped = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    const arm = (expiresInSeconds: number) => {
-      timer = setTimeout(() => void cycle(), refreshDelayMs(expiresInSeconds));
-    };
-
-    const cycle = async () => {
-      const expiresIn = await renew();
-
-      if (!stopped) {
-        arm(expiresIn ?? RETRY_AFTER_FAILURE_SECONDS);
-      }
-    };
-
-    const renewIfStale = () => {
-      if (!isTokenStale(tokenExpiresAt.current, Date.now())) {
-        return;
-      }
-
-      clearTimeout(timer);
-      void cycle();
-    };
-
-    if (isAuthenticated) {
-      arm((tokenExpiresAt.current - Date.now()) / 1000);
-
-      for (const event of RENEWAL_EVENTS) {
-        window.addEventListener(event, renewIfStale);
-      }
-    }
-
-    return () => {
-      stopped = true;
-      clearTimeout(timer);
-
-      for (const event of RENEWAL_EVENTS) {
-        window.removeEventListener(event, renewIfStale);
-      }
-    };
-  }, [isAuthenticated, renew]);
 
   const signOut = useCallback(async () => {
     setError(null);

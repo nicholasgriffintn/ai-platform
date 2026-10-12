@@ -100,6 +100,7 @@ function createContext(
   return {
     context: {
       env: {},
+      ensureDatabase: vi.fn(),
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       repositories: {
         workspaces: {
@@ -122,6 +123,8 @@ function createContext(
         teammates: {
           getTeammateById: vi.fn().mockResolvedValue(overrides.teammate ?? null),
           listWorkspaceDefaults: vi.fn().mockResolvedValue([]),
+          listPlatformTeammates: vi.fn().mockResolvedValue([]),
+          upsertPlatformTeammates: vi.fn().mockResolvedValue(undefined),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),

@@ -1,5 +1,68 @@
 # @ngriffin_uk/polychat-component-navigation
 
+## 0.4.0
+
+### Minor Changes
+
+- 1df361b: Remove unused public exports and dead helpers, consolidate duplicated duration, identifier, status, model-grouping, JSON, SMS and timing-safe comparison logic into shared modules, narrow the desktop backend option types to the interfaces each runner uses, and surface previously silent validation and rewrite failures in the UI.
+- de24f4b: Filter global search by kind, and show unread Attention counts in both sidebars.
+
+  - The search dialog shows filter chips (All, Chats, Projects, Workspaces, Capabilities), each with a count. Only kinds present in the results are offered, and arrow keys and Enter work on the filtered list.
+  - `SidebarNavLink` accepts `count` and `countLabel`, and `component-navigation` exports `SidebarCountBadge`. The badge caps at 99+ and gives screen readers a text label (an `aria-label` on a plain `<span>` isn't reliably announced).
+  - The Chat sidebar's Attention link and the Work sidebar's Attention link (`WorkSidebarNav` `attentionCount`) show the unread notification count. The per-project Tasks badge uses the same component.
+
+### Patch Changes
+
+- b105d00: Keep search filters usable when results change and preserve keyboard activation of dialog controls. Prioritise blocked and review tasks consistently across project overviews and boards.
+
+  Preserve task drafts after failed saves, prevent duplicate submissions, and distinguish saved tasks from failed starts. Follow task creation links on an open board and show Attention loading and notification errors accurately.
+
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [dd4389b]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [dd4389b]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-library-chat@1.1.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-utility-react@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

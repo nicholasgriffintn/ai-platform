@@ -115,7 +115,7 @@ function resolveApprovalData(params: {
 export async function resolveApprovedToolInteraction(params: {
   conversationId: string;
   conversationManager: ConversationManager;
-  messages: readonly Message[];
+  loadMessages: () => Promise<readonly Message[]>;
   providerMessages: readonly Message[];
   request: IRequest;
   run: ChatRun | null;
@@ -147,8 +147,9 @@ export async function resolveApprovedToolInteraction(params: {
     return failApproval();
   }
 
-  const pendingIndex = params.messages.findIndex((message) => message.id === run.lastMessageId);
-  const pending = params.messages[pendingIndex];
+  const messages = await params.loadMessages();
+  const pendingIndex = messages.findIndex((message) => message.id === run.lastMessageId);
+  const pending = messages[pendingIndex];
   const pendingData = isRecord(pending?.data) ? pending.data : undefined;
   const approval = isRecord(pendingData?.approval) ? pendingData.approval : undefined;
   const interactionId = interaction.response.interactionId;
@@ -204,7 +205,7 @@ export async function resolveApprovedToolInteraction(params: {
     }
   }
 
-  const originalCall = params.messages
+  const originalCall = messages
     .slice(0, pendingIndex)
     .reverse()
     .flatMap((message) => (message.role === "assistant" ? (message.tool_calls ?? []) : []))
@@ -308,7 +309,7 @@ export async function resolveApprovedToolInteraction(params: {
 
   const hiddenApprovalContent = typeof pending.content === "string" ? pending.content.trim() : "";
   const duplicateAssistantMessages = hiddenApprovalContent
-    ? params.messages.filter(
+    ? messages.filter(
         (message) =>
           message.role === "assistant" &&
           message.status === "pending" &&

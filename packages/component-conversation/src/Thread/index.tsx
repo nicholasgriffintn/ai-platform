@@ -837,9 +837,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         }
 
         if (typeof data.input === "string" && data.input.trim()) {
-          const approvedToolName =
-            typeof data.approvedToolName === "string" ? data.approvedToolName : null;
-          const interactionRequestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
+          const requestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
             options: {
               toolInteraction: {
                 toolName,
@@ -847,12 +845,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               },
             },
           });
-          const requestOptions = approvedToolName
-            ? {
-                ...interactionRequestOptions,
-                approved_tools: [approvedToolName],
-              }
-            : interactionRequestOptions;
 
           const answerAttachments = await uploadInteractionFiles(data.files);
           const response = await sendMessage(

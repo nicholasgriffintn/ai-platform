@@ -32,6 +32,7 @@ function stubPendingFetch() {
 
 afterEach(() => {
   apiKeyService.removeApiKey();
+  apiKeyService.setTokenSource(null);
   vi.unstubAllGlobals();
 });
 
@@ -40,6 +41,19 @@ describe("fetchApi", () => {
     const fetchSpy = stubFetch();
 
     await apiKeyService.setApiKey("a-desktop-access-token");
+    await fetchApi("/auth/me");
+
+    const [, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
+
+    expect(new Headers(init.headers).get("Authorization")).toBe("Bearer a-desktop-access-token");
+  });
+
+  it("sends a host-supplied token even when the page shares the API's site", async () => {
+    const fetchSpy = stubFetch();
+
+    vi.stubGlobal("location", { origin: "http://localhost:5183" });
+    await apiKeyService.setApiKey("a-cookie-backed-token");
+    apiKeyService.setTokenSource(async () => "a-desktop-access-token");
     await fetchApi("/auth/me");
 
     const [, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];

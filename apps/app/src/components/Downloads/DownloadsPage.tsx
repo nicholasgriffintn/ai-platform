@@ -19,6 +19,8 @@ import {
   Terminal,
 } from "lucide-react";
 
+import { CliSection } from "./CliSection";
+
 const PLATFORM_DETAILS: Record<
   DesktopPlatform,
   { label: string; icon: LucideIcon; requirement: string; install: string }
@@ -192,6 +194,8 @@ export function DownloadsPage() {
           })}
         </div>
       </section>
+
+      <CliSection />
 
       <section className="flex flex-col gap-4" aria-labelledby="downloads-reasons">
         <h2 id="downloads-reasons" className="text-lg font-semibold">

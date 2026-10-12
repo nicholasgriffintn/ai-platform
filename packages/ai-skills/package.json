@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-skills",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Skill retrieval and formatting for Polychat: list, load and read resources from the built-in skills catalogue, and format skill content for model tool responses",
   "license": "Apache-2.0",
   "files": [

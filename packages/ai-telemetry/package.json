@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-telemetry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Telemetry primitives for Polychat: the logger, events, metrics, spans, AI generation and training-example signals fanned out to pluggable sinks (Analytics Engine, PostHog, Beacon, OpenTelemetry), plus token usage normalisation",
   "license": "Apache-2.0",
   "files": [

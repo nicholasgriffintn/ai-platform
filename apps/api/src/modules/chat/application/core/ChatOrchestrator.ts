@@ -383,14 +383,16 @@ export class ChatOrchestrator {
       memoryScope: prepared.memoryScope,
     });
 
+    const replayConversationId = chatOptions.completion_id;
     const approvalReplay =
-      chatOptions.completion_id && runLifecycle
+      replayConversationId && runLifecycle
         ? await resolveApprovedToolInteraction({
-            conversationId: chatOptions.completion_id,
+            conversationId: replayConversationId,
             conversationManager,
-            messages: await conversationManager.getAllMessages(chatOptions.completion_id, {
-              includeArchived: false,
-            }),
+            loadMessages: () =>
+              conversationManager.getAllMessages(replayConversationId, {
+                includeArchived: false,
+              }),
             providerMessages: messages,
             request: toolRequestContext,
             run: runLifecycle.run,

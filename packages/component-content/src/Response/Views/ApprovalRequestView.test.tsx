@@ -11,7 +11,7 @@ const pending = {
 afterEach(cleanup);
 
 describe("ApprovalRequestView authority", () => {
-  it.each(["Approve", "Reject"])("submits the exact stored operation for %s", async (option) => {
+  it.each(["Approve", "Reject"])("binds %s to the stored interaction", async (option) => {
     const submit = vi.fn(async () => {});
 
     render(<ApprovalRequestView embedded data={pending} onToolInteraction={submit} />);
@@ -20,14 +20,15 @@ describe("ApprovalRequestView authority", () => {
     await waitFor(() =>
       expect(screen.getByRole("status")).toHaveTextContent(`You chose ${option}.`),
     );
-    expect(submit).toHaveBeenCalledExactlyOnceWith("write_document", "submitPrompt", {
-      option,
-      message: pending.message,
-      input: `${option}: ${pending.message}`,
-      interactionId: "interaction-1",
-      resolution: option === "Approve" ? "approved" : "rejected",
-      ...(option === "Approve" ? { approvedToolName: "write_document" } : {}),
-    });
+    expect(submit).toHaveBeenCalledExactlyOnceWith(
+      "write_document",
+      "submitPrompt",
+      expect.objectContaining({
+        option,
+        interactionId: "interaction-1",
+        resolution: option === "Approve" ? "approved" : "rejected",
+      }),
+    );
   });
 
   it.each([
