@@ -1,3 +1,4 @@
+export * from "./Account/DeviceApprovalPage.js";
 export * from "./Account/SignInEmptyState.js";
 export * from "./Apps/AppCard.js";
 export * from "./Apps/AppChrome.js";

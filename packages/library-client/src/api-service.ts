@@ -7,6 +7,8 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  DeviceAuthorization,
+  DeviceAuthorizationDecision,
   PolyAgenda,
   PolyHandoffDisagreement,
   PolyHome,
@@ -44,6 +46,7 @@ import {
   type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service.js";
+import { DeviceAuthorizationService } from "./services/device-authorization-service.js";
 import { MachineService } from "./services/machine-service.js";
 import { PolyService } from "./services/poly-service.js";
 import { ResearchService } from "./services/research-service.js";
@@ -65,6 +68,7 @@ class ApiService {
   private userService: UserService;
   private machineService: MachineService;
   private polyService: PolyService;
+  private deviceAuthorizationService: DeviceAuthorizationService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
   private researchService: ResearchService;
@@ -76,6 +80,7 @@ class ApiService {
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
     this.polyService = new PolyService(getHeaders);
+    this.deviceAuthorizationService = new DeviceAuthorizationService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
     this.researchService = new ResearchService(getHeaders);
@@ -246,6 +251,15 @@ class ApiService {
   } {
     return formatMessageContent(messageContent);
   }
+
+  getDeviceAuthorization = (userCode: string): Promise<DeviceAuthorization> =>
+    this.deviceAuthorizationService.getDeviceAuthorization(userCode);
+
+  decideDeviceAuthorization = (
+    userCode: string,
+    decision: DeviceAuthorizationDecision["decision"],
+  ): Promise<{ status: "approved" | "denied" }> =>
+    this.deviceAuthorizationService.decideDeviceAuthorization(userCode, decision);
 
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 

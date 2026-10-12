@@ -25,7 +25,9 @@ export class DeviceAuthorizationRepository extends BaseRepository {
     });
   }
 
-  public async findByDeviceCodeHash(deviceCodeHash: string): Promise<DeviceAuthorizationRow | null> {
+  public async findByDeviceCodeHash(
+    deviceCodeHash: string,
+  ): Promise<DeviceAuthorizationRow | null> {
     const [row] = await this.database
       .select()
       .from(deviceAuthorization)

@@ -13,6 +13,7 @@ export * from "./hooks/useAssistantActionCatalog.js";
 export * from "./hooks/useAuth.js";
 export * from "./hooks/useBilling.js";
 export * from "./hooks/useDesktopDownloads.js";
+export * from "./hooks/useDeviceAuthorization.js";
 export * from "./hooks/useCanAccessProFeatures.js";
 export * from "./hooks/useCanvas.js";
 export * from "./hooks/useCapabilityCatalog.js";

@@ -129,11 +129,7 @@ export async function pollDeviceAuthorization(
     return { error: "invalid_grant" };
   }
 
-  const { plaintextKey } = await createUserApiKey(
-    context,
-    consumed.client_name,
-    consumed.user_id,
-  );
+  const { plaintextKey } = await createUserApiKey(context, consumed.client_name, consumed.user_id);
 
   return { access_token: plaintextKey, token_type: "Bearer" };
 }
