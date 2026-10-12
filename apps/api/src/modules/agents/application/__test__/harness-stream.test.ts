@@ -1,10 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   agentHarnessSessionKey,
   collectHarnessProviderStream,
   harnessRecordToProviderChunks,
   parseApprovalToolCallId,
+  readHarnessRecords,
 } from "../harness-stream";
 import { streamHarnessRecords } from "../harness-turn";
 
@@ -105,5 +106,37 @@ describe("streamHarnessRecords", () => {
       response: "Checking done.",
       toolCalls: [],
     });
+  });
+});
+
+describe("hosted harness event streams", () => {
+  it("finishes the turn and cancels the open event stream once its operation settles", async () => {
+    const cancel = vi.fn();
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(
+          new TextEncoder().encode(
+            `${JSON.stringify({ seq: 1, event: { type: "text-delta", partId: "p", delta: "Done" } })}\n${JSON.stringify({ seq: 2, event: { type: "operation-settled", operationId: "op", status: "done" } })}\n`,
+          ),
+        );
+      },
+      cancel,
+    });
+    const reading = new AbortController();
+
+    const collected = await collectHarnessProviderStream(
+      streamHarnessRecords({
+        records: readHarnessRecords(source, reading.signal),
+        harnessName: "Think",
+        operationId: "op",
+        deadline: Date.now() + 60_000,
+        checkIn: async () => undefined,
+        onExpired: async () => undefined,
+        release: () => reading.abort(),
+      }),
+    );
+
+    expect(collected.response).toBe("Done");
+    await vi.waitFor(() => expect(cancel).toHaveBeenCalled());
   });
 });

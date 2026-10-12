@@ -47,6 +47,7 @@ export function streamHarnessRecords(params: {
   checkIn: () => Promise<void>;
   deadline: number;
   onExpired: () => Promise<void>;
+  release?: () => void;
 }): ReadableStream<Uint8Array> {
   const iterator = params.records[Symbol.asyncIterator]();
 
@@ -81,7 +82,6 @@ export function streamHarnessRecords(params: {
             break;
           }
 
-          pending = iterator.next();
           const translated = harnessRecordToProviderChunks(next.value, {
             harnessName: params.harnessName,
             ...(params.operationId ? { operationId: params.operationId } : {}),
@@ -94,6 +94,8 @@ export function streamHarnessRecords(params: {
           if (translated.done) {
             break;
           }
+
+          pending = iterator.next();
         }
 
         controller.enqueue(encodeServerSentEventDone());
@@ -101,6 +103,7 @@ export function streamHarnessRecords(params: {
       } catch (error) {
         controller.error(error);
       } finally {
+        params.release?.();
         await iterator.return?.();
       }
     },
@@ -141,6 +144,7 @@ export async function startHostedHarnessTurn(
   }
 
   const events = await turn.client.readHarnessEvents(turn.harness, sessionKey, after);
+  const reading = new AbortController();
   const abort = () =>
     turn.client.abortHarnessTurn(turn.harness, {
       sessionKey,
@@ -148,7 +152,8 @@ export async function startHostedHarnessTurn(
     });
 
   return streamHarnessRecords({
-    records: readHarnessRecords(events),
+    records: readHarnessRecords(events, reading.signal),
+    release: () => reading.abort(),
     harnessName: definition.name,
     ...(operationId ? { operationId } : {}),
     deadline: Date.now() + definition.capabilities.maxTurnMinutes * 60_000,

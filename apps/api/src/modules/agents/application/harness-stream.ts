@@ -124,23 +124,42 @@ export function harnessRecordToProviderChunks(
 
 export async function* readHarnessRecords(
   stream: ReadableStream<Uint8Array>,
+  signal: AbortSignal,
 ): AsyncGenerator<AgentHarnessEventRecord> {
+  const reader = stream.getReader();
   const decoder = new TextDecoder();
+  const cancel = () => {
+    void reader.cancel().catch(() => undefined);
+  };
+
   let buffer = "";
 
-  for await (const chunk of stream) {
-    buffer += decoder.decode(chunk, { stream: true });
-    const lines = buffer.split("\n");
+  signal.addEventListener("abort", cancel, { once: true });
 
-    buffer = lines.pop() ?? "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
 
-    for (const line of lines) {
-      const record = agentHarnessEventRecordSchema.safeParse(safeParseJson(line));
+      if (done) {
+        return;
+      }
 
-      if (record.success) {
-        yield record.data;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        const record = agentHarnessEventRecordSchema.safeParse(safeParseJson(line));
+
+        if (record.success) {
+          yield record.data;
+        }
       }
     }
+  } finally {
+    signal.removeEventListener("abort", cancel);
+    reader.releaseLock();
   }
 }
 
