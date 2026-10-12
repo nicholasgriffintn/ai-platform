@@ -3,8 +3,10 @@ import {
   cn,
   Link,
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
+  ShortcutTooltip,
   ThemeMenu,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ThemePreference } from "@ngriffin_uk/polychat-library-chat";
@@ -19,6 +21,7 @@ import {
   Loader2,
   LogIn,
   LogOut,
+  MonitorDown,
   Settings2,
   ShieldCheck,
   User,
@@ -52,6 +55,7 @@ export interface SidebarSettingsLinks {
   terms: string;
   privacy: string;
   sourceCode: string;
+  downloads?: string;
 }
 
 export interface SidebarThemeControl {
@@ -214,30 +218,49 @@ export function SidebarSettingsPopover({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-none bg-sidebar px-3 py-3 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset"
-          aria-label="Open settings and configuration"
-        >
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-selection text-foreground">
-              <SidebarUserAvatar
-                account={account}
-                isAuthenticated={isAuthenticated}
-                isLoading={isLoading}
-              />
-            </span>
-            <span className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="min-w-0 truncate text-sm font-medium">{displayName}</span>
-              <span className="shrink-0 rounded-full bg-selection px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                {planLabel}
+      <PopoverAnchor asChild>
+        <div className="flex min-w-0 items-center bg-sidebar">
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-none bg-sidebar px-3 py-3 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset"
+              aria-label="Open settings and configuration"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-selection text-foreground">
+                  <SidebarUserAvatar
+                    account={account}
+                    isAuthenticated={isAuthenticated}
+                    isLoading={isLoading}
+                  />
+                </span>
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="min-w-0 truncate text-sm font-medium">{displayName}</span>
+                  <span className="shrink-0 rounded-full bg-selection px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    {planLabel}
+                  </span>
+                </span>
               </span>
-            </span>
-          </span>
-          <TriggerIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        </button>
-      </PopoverTrigger>
+              <TriggerIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </button>
+          </PopoverTrigger>
+          {links.downloads ? (
+            <ShortcutTooltip
+              keys={[]}
+              label="Desktop app and CLI"
+              className="shrink-0 self-stretch"
+            >
+              <Link
+                href={links.downloads}
+                aria-label="Get the desktop app and CLI"
+                className="flex items-center justify-center rounded-none bg-sidebar px-3 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset"
+              >
+                <MonitorDown className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </ShortcutTooltip>
+          ) : null}
+        </div>
+      </PopoverAnchor>
       <PopoverContent
         ref={contentRef}
         tabIndex={-1}

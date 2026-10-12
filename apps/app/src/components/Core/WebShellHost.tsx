@@ -80,6 +80,7 @@ export function WebShellHost({ children }: { children: ReactNode }) {
       modelSourceSurface: "web",
       modelSourceRows,
       openProviderSettings: () => void navigate("/profile?tab=providers"),
+      downloadsPath: "/downloads",
     }),
     [logout, modelSourceRows, navigate, setShowLoginModal, setShowPoly],
   );
