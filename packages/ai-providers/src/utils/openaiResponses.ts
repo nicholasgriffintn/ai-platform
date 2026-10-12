@@ -70,7 +70,9 @@ function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): b
   const hasEnabledFunctionTool = coerceStringArray(params.enabled_tools).some(
     (tool) => !OPENAI_HOSTED_TOOL_NAMES.has(tool),
   );
-  const hasExplicitFunctionTool = (params.tools ?? []).some((tool) => tool?.type === "function");
+  const hasExplicitFunctionTool =
+    (params.available_functions?.length ?? 0) > 0 ||
+    (params.tools ?? []).some((tool) => tool?.type === "function");
 
   return hasEnabledFunctionTool || hasExplicitFunctionTool || isAgentExecutionMode(params.mode);
 }

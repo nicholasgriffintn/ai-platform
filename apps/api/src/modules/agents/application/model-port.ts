@@ -129,6 +129,7 @@ export async function createAgentModelCompletion(params: {
     model: request.model,
     messages: conversation.messages,
     ...(conversation.systemPrompt ? { system_prompt: conversation.systemPrompt } : {}),
+    available_functions: [],
     ...(request.tools ? { tools: request.tools } : {}),
     ...(request.tool_choice ? { tool_choice: request.tool_choice } : {}),
     ...(request.parallel_tool_calls !== undefined
@@ -140,6 +141,7 @@ export async function createAgentModelCompletion(params: {
       ? { max_tokens: request.max_completion_tokens ?? request.max_tokens }
       : {}),
     ...(request.reasoning_effort ? { reasoning_effort: request.reasoning_effort } : {}),
+    ...(request.response_format ? { response_format: request.response_format } : {}),
     completion_id: completionId,
     stream: true,
     store: false,

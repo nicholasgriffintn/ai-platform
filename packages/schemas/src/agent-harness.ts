@@ -3,6 +3,7 @@ import z from "zod/v4";
 import {
   chatCompletionMessageSchema,
   chatCompletionToolSchema,
+  chatResponseFormatSchema,
   chatToolChoiceSchema,
 } from "./chat-completions.js";
 import { permissionModeSchema, type PermissionMode } from "./providers.js";
@@ -236,6 +237,7 @@ export const agentModelCompletionRequestSchema = z.object({
   max_tokens: z.number().int().positive().optional(),
   max_completion_tokens: z.number().int().positive().optional(),
   reasoning_effort: reasoningEffortSchema.optional(),
+  response_format: chatResponseFormatSchema.optional(),
   stream: z.boolean().optional(),
 });
 export type AgentModelCompletionRequest = z.infer<typeof agentModelCompletionRequestSchema>;
