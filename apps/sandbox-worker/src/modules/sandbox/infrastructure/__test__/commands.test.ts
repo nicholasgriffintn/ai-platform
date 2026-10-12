@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { assertSafeCommand, buildSummary, runSandboxCommand } from "../commands";
-import { createSseStream } from "./sse-stream";
+import type { WorkspaceCommandOptions } from "../workspace";
 
 describe("assertSafeCommand", () => {
   it("allows non-mutating commands in read-only mode", () => {
@@ -32,67 +32,21 @@ describe("assertSafeCommand", () => {
 });
 
 describe("runSandboxCommand", () => {
-  it("collects streamed command output and returns the completion result", async () => {
-    const exec = vi.fn();
-    const execStream = vi.fn().mockResolvedValue(
-      createSseStream([
-        { type: "stdout", data: "building\n", timestamp: "2026-05-18T00:00:00.000Z" },
-        { type: "stderr", data: "warning\n", timestamp: "2026-05-18T00:00:01.000Z" },
-        {
-          type: "complete",
-          exitCode: 0,
-          result: {
-            success: true,
-            exitCode: 0,
-            stdout: "building\n",
-            stderr: "warning\n",
-            command: "pnpm build",
-            duration: 12,
-            timestamp: "2026-05-18T00:00:00.000Z",
-          },
-          timestamp: "2026-05-18T00:00:02.000Z",
-        },
-      ]),
-    );
-    const output: Array<{ stream: "stdout" | "stderr"; data: string }> = [];
-
-    const result = await runSandboxCommand(
-      {
-        exec,
-        execStream,
-      },
-      "pnpm build",
-      {
-        onOutput: (chunk) => {
-          output.push(chunk);
-        },
-      },
-    );
-
-    expect(exec).not.toHaveBeenCalled();
-    expect(execStream).toHaveBeenCalledWith("pnpm build");
-    expect(output).toEqual([
-      { stream: "stdout", data: "building\n" },
-      { stream: "stderr", data: "warning\n" },
-    ]);
-    expect(result).toMatchObject({
-      success: true,
-      exitCode: 0,
-      stdout: "building\n",
-      stderr: "warning\n",
-    });
-  });
-
-  it("redacts credentials split across SDK events before emitting or returning output", async () => {
+  it("redacts credentials split across output chunks before emitting or returning output", async () => {
     const output: string[] = [];
-    const execStream = vi.fn().mockResolvedValue(
-      createSseStream([
-        { type: "stdout", data: "ready\nprivate-" },
-        { type: "stdout", data: "credential\nfinished\n" },
-        { type: "complete", exitCode: 0 },
-      ]),
-    );
-    const result = await runSandboxCommand({ exec: vi.fn(), execStream }, "pnpm test", {
+    const exec = vi.fn(async (_command: string, options?: WorkspaceCommandOptions) => {
+      await options?.onOutput?.({ stream: "stdout", data: "ready\nprivate-" });
+      await options?.onOutput?.({ stream: "stdout", data: "credential\nfinished\n" });
+
+      return {
+        success: true,
+        exitCode: 0,
+        stdout: "ready\nprivate-credential\nfinished\n",
+        stderr: "",
+        timedOut: false,
+      };
+    });
+    const result = await runSandboxCommand({ exec }, "pnpm test", {
       redactionSecrets: ["private-credential"],
       onOutput: ({ data }) => {
         output.push(data);
@@ -101,35 +55,6 @@ describe("runSandboxCommand", () => {
 
     expect(output.join("")).toBe("ready\n[redacted credential]\nfinished\n");
     expect(result.stdout).toBe(output.join(""));
-  });
-
-  it("falls back to buffered exec for sandbox test doubles without execStream", async () => {
-    const exec = vi.fn().mockResolvedValue({
-      success: true,
-      exitCode: 0,
-      stdout: "ok",
-      stderr: "",
-    });
-
-    const result = await runSandboxCommand({ exec }, "pwd");
-
-    expect(exec).toHaveBeenCalledWith("pwd");
-    expect(result.stdout).toBe("ok");
-  });
-
-  it("cancels a running stream locally without passing a signal over RPC", async () => {
-    const abortController = new AbortController();
-    const cancel = vi.fn();
-    const execStream = vi.fn().mockResolvedValue(new ReadableStream({ cancel }));
-    const result = runSandboxCommand({ exec: vi.fn(), execStream }, "long-running-command", {
-      abortSignal: abortController.signal,
-    });
-
-    abortController.abort();
-
-    await expect(result).rejects.toThrow(/operation was aborted/i);
-    expect(execStream).toHaveBeenCalledWith("long-running-command");
-    expect(cancel).toHaveBeenCalledTimes(1);
   });
 });
 

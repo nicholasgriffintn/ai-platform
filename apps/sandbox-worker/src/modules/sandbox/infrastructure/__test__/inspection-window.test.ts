@@ -2,7 +2,6 @@ import { afterEach, expect, it, vi } from "vitest";
 
 import { waitForInspectionWindow } from "../inspection-window";
 import { RunControlClient } from "../run-control-client";
-import { createSseStream } from "./sse-stream";
 
 afterEach(() => vi.useRealTimers());
 
@@ -42,14 +41,14 @@ it("limits execution to the inspection deadline and refuses the remaining queued
         inspectionExpiresAt: "2026-09-08T00:00:01Z",
       }),
     );
-  const execStream = vi.fn().mockImplementation(async () => {
+  const exec = vi.fn().mockImplementation(async () => {
     vi.setSystemTime(new Date("2026-09-08T00:00:02Z"));
 
-    return createSseStream([{ type: "complete", exitCode: 0 }]);
+    return { success: true, exitCode: 0, stdout: "", stderr: "", timedOut: false };
   });
   const emit = vi.fn().mockResolvedValue(undefined);
   const pending = waitForInspectionWindow({
-    sandbox: { exec: vi.fn(), execStream },
+    sandbox: { exec },
     repoTargetDir: "/repo",
     controlClient: new RunControlClient({ runId: "run", userToken: "test", apiService: { fetch } }),
     inspectionWindowSeconds: 1,
@@ -61,7 +60,7 @@ it("limits execution to the inspection deadline and refuses the remaining queued
 
   await vi.advanceTimersByTimeAsync(600);
   await pending;
-  expect(execStream).toHaveBeenCalledTimes(1);
-  expect(execStream.mock.calls[0][1]).toEqual({ timeout: 1000 });
+  expect(exec).toHaveBeenCalledTimes(1);
+  expect(exec.mock.calls[0][1]).toMatchObject({ timeoutMs: 1000 });
   expect(emit).toHaveBeenCalledWith(expect.objectContaining({ type: "inspection_window_expired" }));
 });

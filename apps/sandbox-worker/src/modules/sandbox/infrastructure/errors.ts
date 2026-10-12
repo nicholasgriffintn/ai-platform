@@ -1,4 +1,3 @@
-import { RPCTransportError, SessionTerminatedError } from "@cloudflare/sandbox";
 import {
   SandboxCancellationError,
   SandboxTimeoutError,
@@ -25,18 +24,9 @@ export interface ClassifiedSandboxError {
   retryable: boolean;
 }
 
-export function hasSandboxErrorCode(error: unknown, code: string): boolean {
-  if (typeof error !== "object" || error === null || !("errorResponse" in error)) {
-    return false;
-  }
-
-  const response = error.errorResponse;
-
+function isRetryableTransportError(error: unknown): boolean {
   return (
-    typeof response === "object" &&
-    response !== null &&
-    "code" in response &&
-    response.code === code
+    typeof error === "object" && error !== null && "retryable" in error && error.retryable === true
   );
 }
 
@@ -75,24 +65,11 @@ export function classifySandboxError(error: unknown): ClassifiedSandboxError {
     };
   }
 
-  if (error instanceof RPCTransportError) {
+  if (isRetryableTransportError(error)) {
     return {
       type: "sandbox_transport_error",
       message: "The sandbox transport connection failed. Please retry this run.",
       retryable: true,
-    };
-  }
-
-  if (error instanceof SessionTerminatedError) {
-    const exitCode = error.exitCode;
-
-    return {
-      type: "command_execution_error",
-      message:
-        typeof exitCode === "number"
-          ? `The sandbox shell exited with code ${exitCode}. Retry with a safer command.`
-          : "The sandbox shell exited unexpectedly. Retry with a safer command.",
-      retryable: false,
     };
   }
 

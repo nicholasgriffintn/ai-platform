@@ -582,11 +582,11 @@ export async function processSandboxRunDispatch(params: {
         installationId: message.payload.installationId,
         candidate: environmentCacheCandidate,
         candidateWasReused:
-          message.payload.environmentCache?.backupId === environmentCacheCandidate.backupId,
+          message.payload.environmentCache?.backup.id === environmentCacheCandidate.backup.id,
         replaceExistingCache:
           message.payload.environmentCache?.status === "ready" &&
           message.payload.environmentCache.cacheKey === environmentCacheCandidate.cacheKey &&
-          message.payload.environmentCache.backupId !== environmentCacheCandidate.backupId,
+          message.payload.environmentCache.backup.id !== environmentCacheCandidate.backup.id,
       });
     } catch (error) {
       logger.error("Failed to persist sandbox environment cache", {

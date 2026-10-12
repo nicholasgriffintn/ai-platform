@@ -402,28 +402,18 @@ describe("executeAgentLoop", () => {
       )
       .mockResolvedValueOnce(toolCallResponse("finish", { summary: "script complete" }));
 
-    const runCode = vi.fn().mockResolvedValue({
-      logs: {
-        stdout: ["true"],
-        stderr: [],
-      },
-      error: null,
+    const runScript = vi.fn().mockResolvedValue({
+      success: true,
+      exitCode: 0,
+      stdout: "true\n",
+      stderr: "",
+      timedOut: false,
     });
-    const createCodeContext = vi.fn().mockResolvedValue({
-      id: "ctx-1",
-      language: "python",
-      cwd: "/workspace/repo",
-      createdAt: new Date(),
-      lastUsed: new Date(),
-    });
-    const deleteCodeContext = vi.fn().mockResolvedValue(undefined);
 
     const result = await executeAgentLoop({
       sandbox: {
         exec: vi.fn(),
-        createCodeContext,
-        runCode,
-        deleteCodeContext,
+        runScript,
       } as any,
       client: {
         chatCompletion,
@@ -455,21 +445,11 @@ describe("executeAgentLoop", () => {
     });
 
     expect(result.summary).toBe("script complete");
-    expect(createCodeContext).toHaveBeenCalledTimes(1);
-    expect(createCodeContext).toHaveBeenCalledWith({
+    expect(runScript).toHaveBeenCalledWith({
       language: "python",
+      code: expect.stringContaining("from pathlib import Path"),
       cwd: "/workspace/repo",
     });
-    expect(runCode).toHaveBeenCalledTimes(2);
-    expect(runCode.mock.calls[0]?.[0]).toBe('__import__("os").chdir("/workspace/repo")');
-    expect(runCode.mock.calls[1]?.[0]).toContain("from pathlib import Path");
-    expect(runCode.mock.calls[1]?.[1]).toEqual({
-      context: expect.objectContaining({
-        id: "ctx-1",
-      }),
-      language: "python",
-    });
-    expect(deleteCodeContext).toHaveBeenCalledWith("ctx-1");
     expect(emitted.some((event) => event.type === "script_completed")).toBe(true);
   });
 

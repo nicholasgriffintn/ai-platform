@@ -12,7 +12,10 @@ import {
   type NormalisedTokenUsage,
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
+import {
+  agentHarnessToolStreamEventSchema,
+  type InferenceImpact,
+} from "@ngriffin_uk/polychat-schemas";
 import { deepMergeRecords, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -23,6 +26,7 @@ import {
 } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { providerHost } from "~/infrastructure/providers/host";
+import { applyAgentHarnessToolEvent } from "~/modules/chat/application/agent/agent-harness-tool-events";
 import { readStreamOrStop } from "~/modules/chat/application/agent/read-stream-or-stop";
 import {
   buildAnthropicSearchGrounding,
@@ -307,6 +311,14 @@ export async function consumeProviderStream(
 
     if (!data) {
       logger.error("Failed to parse provider stream data", { data: dataStr });
+
+      return false;
+    }
+
+    const agentHarnessTool = agentHarnessToolStreamEventSchema.safeParse(data);
+
+    if (agentHarnessTool.success) {
+      await applyAgentHarnessToolEvent(agentHarnessTool.data, { sink, step, parts: turn.parts });
 
       return false;
     }

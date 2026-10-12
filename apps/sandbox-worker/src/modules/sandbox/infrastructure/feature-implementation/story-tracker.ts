@@ -118,10 +118,10 @@ export async function updatePrdStoryPassStatus(params: {
   }
 
   const prdPath = `${repoTargetDir}/${prdContext.path}`;
-  let prdReadResult: Awaited<ReturnType<SandboxFileInstance["readFile"]>>;
+  let prdContent: string;
 
   try {
-    prdReadResult = await sandbox.readFile(prdPath);
+    prdContent = await sandbox.readFile(prdPath);
   } catch (error) {
     return {
       updated: false,
@@ -129,14 +129,7 @@ export async function updatePrdStoryPassStatus(params: {
     };
   }
 
-  if (!prdReadResult.success) {
-    return {
-      updated: false,
-      reason: "Failed to read prd.json for story tracking",
-    };
-  }
-
-  const parsedPrd = safeParseJson<Record<string, unknown>>(prdReadResult.content);
+  const parsedPrd = safeParseJson<Record<string, unknown>>(prdContent);
 
   if (!parsedPrd) {
     return {
@@ -174,21 +167,13 @@ export async function updatePrdStoryPassStatus(params: {
   };
 
   const nextPrdContent = `${JSON.stringify(parsedPrd, null, 2)}\n`;
-  let writeResult: Awaited<ReturnType<SandboxFileInstance["writeFile"]>>;
 
   try {
-    writeResult = await sandbox.writeFile(prdPath, nextPrdContent);
+    await sandbox.writeFile(prdPath, nextPrdContent);
   } catch (error) {
     return {
       updated: false,
       reason: `Failed to write updated prd.json: ${formatIoError(error)}`,
-    };
-  }
-
-  if (!writeResult.success) {
-    return {
-      updated: false,
-      reason: "Failed to write updated prd.json",
     };
   }
 
@@ -223,10 +208,10 @@ export async function appendProgressEntry(params: {
   const progressPath = `${repoTargetDir}/${relativePath}`;
   let currentContent = "";
 
-  let existsResult: Awaited<ReturnType<SandboxFileInstance["exists"]>>;
+  let progressExists: boolean;
 
   try {
-    existsResult = await sandbox.exists(progressPath);
+    progressExists = await sandbox.exists(progressPath);
   } catch (error) {
     return {
       updated: false,
@@ -235,11 +220,9 @@ export async function appendProgressEntry(params: {
     };
   }
 
-  if (existsResult.success && existsResult.exists) {
-    let currentResult: Awaited<ReturnType<SandboxFileInstance["readFile"]>>;
-
+  if (progressExists) {
     try {
-      currentResult = await sandbox.readFile(progressPath);
+      currentContent = await sandbox.readFile(progressPath);
     } catch (error) {
       return {
         updated: false,
@@ -247,36 +230,17 @@ export async function appendProgressEntry(params: {
         path: relativePath,
       };
     }
-
-    if (!currentResult.success) {
-      return {
-        updated: false,
-        reason: "Failed to read existing progress file",
-        path: relativePath,
-      };
-    }
-
-    currentContent = currentResult.content;
   }
 
   const separator = currentContent.length > 0 && !currentContent.endsWith("\n") ? "\n" : "";
   const nextContent = `${currentContent}${separator}${entry}\n`;
-  let writeResult: Awaited<ReturnType<SandboxFileInstance["writeFile"]>>;
 
   try {
-    writeResult = await sandbox.writeFile(progressPath, nextContent);
+    await sandbox.writeFile(progressPath, nextContent);
   } catch (error) {
     return {
       updated: false,
       reason: `Failed to update progress file: ${formatIoError(error)}`,
-      path: relativePath,
-    };
-  }
-
-  if (!writeResult.success) {
-    return {
-      updated: false,
-      reason: "Failed to update progress file",
       path: relativePath,
     };
   }

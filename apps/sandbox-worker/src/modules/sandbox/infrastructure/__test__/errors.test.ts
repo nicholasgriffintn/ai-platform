@@ -1,4 +1,3 @@
-import { RPCTransportError, SessionTerminatedError } from "@cloudflare/sandbox";
 import {
   SandboxCancellationError,
   SandboxTimeoutError,
@@ -9,32 +8,6 @@ import { classifySandboxError } from "../errors";
 import { PolychatApiError } from "../polychat-client";
 
 describe("classifySandboxError", () => {
-  function createRpcTransportError(): RPCTransportError {
-    const error = Object.create(RPCTransportError.prototype) as RPCTransportError;
-
-    Object.defineProperty(error, "message", {
-      value: "WebSocket upgrade failed",
-      configurable: true,
-    });
-
-    return error;
-  }
-
-  function createSessionTerminatedError(exitCode: number | null): SessionTerminatedError {
-    const error = Object.create(SessionTerminatedError.prototype) as SessionTerminatedError;
-
-    Object.defineProperty(error, "message", {
-      value: "Session terminated",
-      configurable: true,
-    });
-    Object.defineProperty(error, "exitCode", {
-      value: exitCode,
-      configurable: true,
-    });
-
-    return error;
-  }
-
   it("classifies retryable model request failures", () => {
     const error = new PolychatApiError(503, "service unavailable", true);
     const classified = classifySandboxError(error);
@@ -75,18 +48,12 @@ describe("classifySandboxError", () => {
     expect(classified.retryable).toBe(false);
   });
 
-  it("classifies RPC transport failures as retryable sandbox transport errors", () => {
-    const classified = classifySandboxError(createRpcTransportError());
+  it("classifies retryable platform failures as sandbox transport errors", () => {
+    const classified = classifySandboxError(
+      Object.assign(new Error("Durable Object reset"), { retryable: true }),
+    );
 
     expect(classified.type).toBe("sandbox_transport_error");
     expect(classified.retryable).toBe(true);
-  });
-
-  it("classifies session termination as command execution failure", () => {
-    const classified = classifySandboxError(createSessionTerminatedError(42));
-
-    expect(classified.type).toBe("command_execution_error");
-    expect(classified.message).toContain("42");
-    expect(classified.retryable).toBe(false);
   });
 });

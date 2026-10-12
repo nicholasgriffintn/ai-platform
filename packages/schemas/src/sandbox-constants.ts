@@ -1,3 +1,4 @@
+import type { ContainerInstanceType } from "./pricing/cloudflare.js";
 import type { ReasoningEffort } from "./reasoning.js";
 
 export const SANDBOX_PROMPT_STRATEGIES = [
@@ -9,6 +10,7 @@ export const SANDBOX_PROMPT_STRATEGIES = [
 ] as const;
 
 export const SANDBOX_RUNS_CAPABILITY_ID = "sandbox_runs";
+export const SANDBOX_WORKSPACE_INSTANCE_TYPE = "standard-1" satisfies ContainerInstanceType;
 export const SANDBOX_RUN_PROOF_MAX_CHANGED_FILES = 200;
 
 export const SANDBOX_TASK_TYPES = [

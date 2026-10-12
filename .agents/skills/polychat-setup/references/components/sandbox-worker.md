@@ -1,14 +1,14 @@
 # Sandbox worker
 
-`apps/sandbox-worker` runs coding tasks in Cloudflare Sandbox. The API owns public access, project authority, GitHub credentials, dispatch and stored results; the worker owns repository and process execution.
+`apps/sandbox-worker` runs coding tasks and hosted computers on Cloudflare Sandbox SDK 1.0. The API owns public access, project authority, GitHub credentials, dispatch and stored results; the worker owns repository and process execution. Its `Workspace` class also serves the workspace tools of hosted agent harnesses, and its `Computer` class hosts the built-in browser.
 
 ## Configure
 
 - Use `apps/sandbox-worker/wrangler.json` and `.dev.vars.example`. Keep `JWT_SECRET` aligned with the API and retain the `POLYCHAT_API` service binding.
-- Keep the Sandbox SDK and Docker image versions aligned. The Python script tool requires the Python-enabled image.
+- Keep the `@cloudflare/sandbox` version and the `cloudflare/sandbox` image tag that provides `sandbox-shim` aligned. Both classes use the `durable_object` scheduling policy and pick their image (`code` or `browser`) when they start.
 - For previews, use the same `SANDBOX_PREVIEW_HOST` in the API and worker, set `VITE_SANDBOX_PREVIEW_HOST` when building the app, and set the trusted `APP_BASE_URL`. Preview routing needs wildcard DNS and TLS on a custom domain.
-- Bind `BACKUP_BUCKET` to the API's private assets bucket and apply an R2 lifecycle rule for cached backups.
-- Containers start without internet access. Outbound requests are limited to read-only package registries, backup storage and declared `networkHosts`; repository Git uses the API broker. Export `ContainerProxy` from the entry point for interception.
+- Bind `BACKUP_BUCKET` to the API's private assets bucket and apply R2 lifecycle rules that expire `environment-cache/` and `computer-profiles/` objects.
+- Workspaces start without internet access. Outbound requests go through the `WorkspaceOutbound` entrypoint and are limited to read-only package registries and declared `networkHosts`; repository Git uses the API broker. Export `WorkspaceOutbound` and `DirectoryBackupGateway` from the entry point.
 
 ## Execution boundaries
 

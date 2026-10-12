@@ -5,7 +5,6 @@ import { isSandboxError } from "../errors.js";
 import { createExecutionControl } from "../execution-control.js";
 import { createLeaseFence } from "../lease-fence.js";
 import {
-  buildAgentHostEgressPolicy,
   decideContainerEgress,
   decideOutbound,
   isHostAllowed,
@@ -137,21 +136,6 @@ describe("outbound policy", () => {
     expect(outboundNeedsGateway({ allowlist: "none" })).toBe(false);
     expect(outboundNeedsGateway({ allowlist: ["a.com"] })).toBe(true);
     expect(outboundNeedsGateway({ allowlist: "none", invocationId: "x" })).toBe(true);
-  });
-
-  it("builds a shared agent-host policy with declared hosts and registry reads", () => {
-    const policy = buildAgentHostEgressPolicy({
-      env: {},
-      networkHosts: ["api.example.com"],
-    });
-    const decide = (url: string, method: string) =>
-      decideContainerEgress(policy, { url: new URL(url), method }).kind;
-
-    expect(policy.hosts).toContain("api.example.com");
-    expect(decide("https://api.example.com/v1", "POST")).toBe("allow");
-    expect(decide("https://registry.npmjs.org/react", "GET")).toBe("allow");
-    expect(decide("https://registry.npmjs.org/react", "PUT")).toBe("block");
-    expect(decide("https://evil.com/", "GET")).toBe("block");
   });
 
   it("lets containers read registries without letting them publish or reach other hosts", () => {

@@ -13,7 +13,7 @@ Use the checked-out code and manifests as the source of truth. Read only the gui
 - **Local development:** [setup](references/setup.md), [configuration](references/configuration.md), [E2E checks](../../../apps/app/tests/e2e/README.md).
 - **Deployment and release:** [deployment](references/deployment.md), [release process](references/operations/releases.md), [verification records](references/verification.md).
 - **Model operations:** [catalogue](references/operations/model-catalogue.md), [model platform](references/operations/model-governance.md), [usage and cost](references/operations/loop-cost-controls.md), [Stripe](references/operations/stripe-billing.md).
-- **Capabilities and workers:** [Composio](references/operations/composio-connectors.md), [computer use](references/operations/computer-use.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md), [sandbox worker](references/components/sandbox-worker.md), [computer worker](../../../apps/computer-worker/README.md).
+- **Capabilities and workers:** [Composio](references/operations/composio-connectors.md), [computer use](references/operations/computer-use.md), [OCR](references/operations/ocr.md), [agent gateways](references/operations/agent-gateways.md), [sandbox worker](references/components/sandbox-worker.md).
 - **Branding:** [white-labelling](references/white-labelling.md).
 
 ## Working rules

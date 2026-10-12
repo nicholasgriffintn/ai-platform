@@ -194,7 +194,7 @@ export * from "./desktop-releases.js";
 export * from "./model-selection-ui.js";
 export * from "./machine-runs.js";
 export * from "./agent-catalogue.js";
-export * from "./agent-host.js";
+export * from "./agent-harness.js";
 export * from "./agent-sessions.js";
 export * from "./codex-protocol.js";
 export * from "./agent-output.js";

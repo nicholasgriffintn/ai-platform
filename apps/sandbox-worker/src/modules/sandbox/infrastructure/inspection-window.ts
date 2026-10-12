@@ -5,14 +5,9 @@ import {
   type SandboxRunEvent,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
-import { delay } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument, delay } from "@ngriffin_uk/polychat-utility-core";
 
-import {
-  assertSafeCommand,
-  quoteForShell,
-  runSandboxCommand,
-  type SandboxExecInstance,
-} from "./commands";
+import { assertSafeCommand, runSandboxCommand, type SandboxExecInstance } from "./commands";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
@@ -155,7 +150,7 @@ export async function waitForInspectionWindow(params: {
 
       const result = await runSandboxCommand(
         params.sandbox,
-        `cd ${quoteForShell(params.repoTargetDir)} && ${withSandboxEnvironment(parsedCommand.data, params.environmentVariables, params.environmentVariableNames)}`,
+        `cd ${quoteShellArgument(params.repoTargetDir)} && ${withSandboxEnvironment(parsedCommand.data, params.environmentVariables, params.environmentVariableNames)}`,
         {
           abortSignal: params.abortSignal,
           timeoutMs,

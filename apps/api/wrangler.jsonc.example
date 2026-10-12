@@ -96,7 +96,7 @@
     },
     {
       "binding": "COMPUTER_WORKER",
-      "service": "assistant-computer-worker"
+      "service": "assistant-sandbox-worker"
     },
     {
       "binding": "AGENT_WORKER",

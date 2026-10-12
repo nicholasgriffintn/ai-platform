@@ -53,8 +53,8 @@ describe("getPlatformEnabledProviders", () => {
     const enabled = getPlatformEnabledProviders({ OPENAI_API_KEY: "sk-test" });
 
     expect([...enabled].sort()).toEqual([
+      "agent-harness",
       "gpt",
-      "hermes",
       "openai",
       "polychat-sandbox",
       "workers",

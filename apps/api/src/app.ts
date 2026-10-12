@@ -2,6 +2,7 @@ import type { Hono } from "hono";
 
 import activity from "~/modules/activity/api/routes";
 import admin from "~/modules/admin/api/routes";
+import agents from "~/modules/agents/api/routes";
 import apps from "~/modules/apps/api";
 import { registerSandboxCredentialBrokerRoutes } from "~/modules/apps/api/sandbox/credential-broker";
 import { registerSandboxPreviewAuthorisationRoute } from "~/modules/apps/api/sandbox/preview-authorisation";
@@ -55,6 +56,7 @@ export function registerApiRoutes(app: ApiApp): void {
   registerSandboxPreviewAuthorisationRoute(app);
   app.route("/auth", auth);
   app.route("/activity", activity);
+  app.route("/agents", agents);
   app.route("/chat", chat);
   app.route("/apps", apps);
   app.route("/desktop", desktop);

@@ -1,4 +1,4 @@
-import { quoteForShell } from "./commands";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
 export function withSandboxEnvironment(
   command: string,
@@ -11,7 +11,7 @@ export function withSandboxEnvironment(
 
   const assignments = names
     .filter((name) => Object.hasOwn(values, name))
-    .map((name) => `export ${name}=${quoteForShell(values[name] ?? "")}`);
+    .map((name) => `export ${name}=${quoteShellArgument(values[name] ?? "")}`);
 
   return assignments.length > 0 ? `${assignments.join(" && ")} && ${command}` : command;
 }

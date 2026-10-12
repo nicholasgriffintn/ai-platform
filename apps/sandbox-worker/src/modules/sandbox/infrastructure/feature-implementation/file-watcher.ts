@@ -1,51 +1,42 @@
-import { parseSSEStream, type FileWatchSSEEvent } from "@cloudflare/sandbox";
+import type { ContainerFileChange } from "@ngriffin_uk/polychat-library-sandbox";
 
 import type { TaskEvent } from "../../../../types";
-import type { SandboxInstance } from "./types";
 
 export interface FileWatcher {
   stop(): void;
 }
 
+interface WatchableWorkspace {
+  watchFiles(
+    path: string,
+    onChange: (change: ContainerFileChange) => Promise<void> | void,
+  ): Promise<void>;
+  stopFileWatches(): Promise<void>;
+}
+
 export function startFileWatcher(params: {
-  sandbox: SandboxInstance;
+  sandbox: WatchableWorkspace;
   watchPath: string;
   emit: (event: TaskEvent) => Promise<void>;
   abortSignal?: AbortSignal;
 }): FileWatcher {
   const { sandbox, watchPath, emit, abortSignal } = params;
-  const controller = new AbortController();
+  const stop = () => {
+    void sandbox.stopFileWatches().catch(() => undefined);
+  };
 
-  const run = async () => {
-    try {
-      const stream = await sandbox.watch(watchPath, {
-        recursive: true,
+  void sandbox
+    .watchFiles(watchPath, async (change) => {
+      await emit({
+        type: "file_changed",
+        path: change.path,
+        changeType: change.changeType,
+        isDirectory: change.isDirectory,
       });
+    })
+    .catch(() => undefined);
 
-      for await (const event of parseSSEStream<FileWatchSSEEvent>(stream, controller.signal)) {
-        if (event.type === "event") {
-          await emit({
-            type: "file_changed",
-            path: event.path,
-            changeType: event.eventType,
-            isDirectory: event.isDirectory,
-          });
-        }
-      }
-    } catch {
-      // Watcher stopped or sandbox destroyed — expected during cleanup.
-    }
-  };
+  abortSignal?.addEventListener("abort", stop, { once: true });
 
-  void run();
-
-  abortSignal?.addEventListener("abort", () => controller.abort(), {
-    once: true,
-  });
-
-  return {
-    stop() {
-      controller.abort();
-    },
-  };
+  return { stop };
 }

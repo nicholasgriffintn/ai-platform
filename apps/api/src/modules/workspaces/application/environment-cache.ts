@@ -1,5 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  sandboxEnvironmentCacheObjectKey,
   sandboxEnvironmentCacheRecordSchema,
   sandboxEnvironmentSetupSchema,
   toSandboxEnvironmentCacheSummary,
@@ -17,8 +18,6 @@ import type { ProjectRow } from "~/modules/workspaces/infrastructure/WorkspaceRe
 import { requireProjectAccess } from "./access";
 
 const logger = getLogger({ prefix: "services/workspaces/environment-cache" });
-const BACKUP_ARCHIVE_OBJECT_NAME = "data.sqsh";
-const BACKUP_METADATA_OBJECT_NAME = "meta.json";
 
 function parseCacheRecord(project: ProjectRow): SandboxEnvironmentCacheRecord | undefined {
   if (!project.coding_environment_cache) {
@@ -51,16 +50,9 @@ function parseEnvironmentSetup(project: ProjectRow): SandboxEnvironmentSetup | u
   return parsed.data;
 }
 
-function backupObjectKeys(backupId: string): [string, string] {
-  return [
-    `backups/${backupId}/${BACKUP_ARCHIVE_OBJECT_NAME}`,
-    `backups/${backupId}/${BACKUP_METADATA_OBJECT_NAME}`,
-  ];
-}
-
 async function deleteBackupObjects(
   context: ServiceContext,
-  backupId: string,
+  cache: SandboxEnvironmentCacheRecord,
 ): Promise<"deleted" | "failed"> {
   const bucket = context.env.PRIVATE_ASSETS_BUCKET;
 
@@ -69,7 +61,7 @@ async function deleteBackupObjects(
   }
 
   try {
-    await bucket.delete(backupObjectKeys(backupId));
+    await bucket.delete(sandboxEnvironmentCacheObjectKey(cache.backup));
 
     return "deleted";
   } catch (error) {
@@ -83,7 +75,7 @@ async function deleteBackupObjects(
 
 async function getBackupSize(
   context: ServiceContext,
-  backupId: string,
+  cache: SandboxEnvironmentCacheRecord,
 ): Promise<number | undefined> {
   const bucket = context.env.PRIVATE_ASSETS_BUCKET;
 
@@ -92,7 +84,7 @@ async function getBackupSize(
   }
 
   try {
-    const object = await bucket.head(backupObjectKeys(backupId)[0]);
+    const object = await bucket.head(sandboxEnvironmentCacheObjectKey(cache.backup));
 
     return typeof object?.size === "number" ? object.size : undefined;
   } catch {
@@ -155,7 +147,7 @@ export async function invalidateProjectEnvironmentCacheForConfiguration(
     invalidated ? JSON.stringify(invalidated) : null,
   );
 
-  if (cache && (await deleteBackupObjects(context, cache.backupId)) === "failed") {
+  if (cache && (await deleteBackupObjects(context, cache)) === "failed") {
     logger.error("Project configuration changed but its old environment snapshot was not deleted", {
       project_id: project.id,
     });
@@ -185,7 +177,7 @@ export async function applyProjectEnvironmentCacheAction(
     invalidated ? JSON.stringify(invalidated) : null,
   );
 
-  const storageDeletion = cache ? await deleteBackupObjects(context, cache.backupId) : "not_found";
+  const storageDeletion = cache ? await deleteBackupObjects(context, cache) : "not_found";
 
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
@@ -223,7 +215,7 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
 
   if (!project) {
     if (!params.candidateWasReused) {
-      await deleteBackupObjects(params.context, params.candidate.backupId);
+      await deleteBackupObjects(params.context, params.candidate);
     }
 
     return;
@@ -245,7 +237,7 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
 
   if (!boundaryMatches) {
     if (!params.candidateWasReused) {
-      await deleteBackupObjects(params.context, params.candidate.backupId);
+      await deleteBackupObjects(params.context, params.candidate);
     }
 
     return;
@@ -254,28 +246,28 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
   const current = parseCacheRecord(project);
 
   if (current?.status === "ready" && current.cacheKey === params.candidate.cacheKey) {
-    if (current.backupId !== params.candidate.backupId) {
+    if (current.backup.id !== params.candidate.backup.id) {
       if (params.replaceExistingCache) {
         const candidate = {
           ...params.candidate,
-          sizeBytes: await getBackupSize(params.context, params.candidate.backupId),
+          sizeBytes: await getBackupSize(params.context, params.candidate),
         };
         const replaced =
           await params.context.repositories.workspaces.replaceProjectEnvironmentCache(
             params.projectId,
             generation,
-            current.backupId,
+            current.backup.id,
             JSON.stringify(candidate),
           );
 
         if (replaced) {
-          await deleteBackupObjects(params.context, current.backupId);
+          await deleteBackupObjects(params.context, current);
 
           return;
         }
       }
 
-      await deleteBackupObjects(params.context, params.candidate.backupId);
+      await deleteBackupObjects(params.context, params.candidate);
 
       return;
     }
@@ -283,14 +275,14 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
     await params.context.repositories.workspaces.touchProjectEnvironmentCache(
       params.projectId,
       generation,
-      current.backupId,
+      current.backup.id,
       JSON.stringify(params.candidate),
     );
 
     return;
   }
 
-  const sizeBytes = await getBackupSize(params.context, params.candidate.backupId);
+  const sizeBytes = await getBackupSize(params.context, params.candidate);
   const candidate = {
     ...params.candidate,
     sizeBytes,
@@ -303,6 +295,6 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
   );
 
   if (!stored) {
-    await deleteBackupObjects(params.context, candidate.backupId);
+    await deleteBackupObjects(params.context, candidate);
   }
 }
