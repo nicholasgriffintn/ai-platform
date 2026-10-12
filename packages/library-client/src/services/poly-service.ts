@@ -19,6 +19,19 @@ export class PolyService {
     return returnFetchedData<PolyHome>(response);
   }
 
+  async exportPolyBundle(): Promise<Blob> {
+    const response = await fetchApi("/poly/export", {
+      method: "GET",
+      headers: await this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Poly could not be exported");
+    }
+
+    return response.blob();
+  }
+
   async readPolyAgenda(): Promise<PolyAgenda> {
     const response = await fetchApi("/poly/agenda", {
       method: "GET",

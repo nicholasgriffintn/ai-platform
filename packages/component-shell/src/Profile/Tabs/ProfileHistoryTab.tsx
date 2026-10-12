@@ -5,6 +5,7 @@ import {
   useDeleteAllLocalChats,
   useDeleteAllRemoteChats,
 } from "@ngriffin_uk/polychat-library-react";
+import { downloadBlob } from "@ngriffin_uk/polychat-utility-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ export function ProfileHistoryTab() {
   const deleteAllChats = useDeleteAllLocalChats();
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPoly, setIsExportingPoly] = useState(false);
 
   const handleExportJson = async () => {
     setIsExporting(true);
@@ -27,16 +29,9 @@ export function ProfileHistoryTab() {
         value: 1,
       });
       const blob = await apiService.exportChatHistory();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
       const ts = new Date().toISOString().replace(/[:.]/g, "-");
 
-      a.href = url;
-      a.download = `chat-history-${ts}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      downloadBlob(`chat-history-${ts}.json`, blob);
     } catch (error) {
       console.error("Failed to export chat history:", error);
       toast.error("Couldn't export chat history", {
@@ -47,13 +42,37 @@ export function ProfileHistoryTab() {
     }
   };
 
+  const handleExportPoly = async () => {
+    setIsExportingPoly(true);
+    try {
+      trackEvent({
+        name: "export_poly_bundle",
+        category: "profile",
+        label: "export_poly_bundle",
+        value: 1,
+      });
+      const blob = await apiService.exportPolyBundle();
+
+      downloadBlob(`poly-${new Date().toISOString().slice(0, 10)}.aip`, blob);
+    } catch (error) {
+      console.error("Failed to export Poly:", error);
+      toast.error("Couldn't export Poly", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsExportingPoly(false);
+    }
+  };
+
   return (
     <ProfileTab title="Chat History">
       <ChatHistoryControls
         isExporting={isExporting}
+        isExportingPoly={isExportingPoly}
         isDeletingLocal={deleteAllChats.isPending}
         isDeletingRemote={deleteAllRemoteChats.isPending}
         onExport={() => void handleExportJson()}
+        onExportPoly={() => void handleExportPoly()}
         onDeleteLocal={async () => {
           try {
             trackEvent({

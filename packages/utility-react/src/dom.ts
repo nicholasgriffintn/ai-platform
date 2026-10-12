@@ -35,8 +35,7 @@ export function containsEventTarget(
   return Boolean(element && target instanceof Node && element.contains(target));
 }
 
-export function downloadTextFile(filename: string, content: string, mimeType = "text/plain") {
-  const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+export function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
@@ -44,4 +43,8 @@ export function downloadTextFile(filename: string, content: string, mimeType = "
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+export function downloadTextFile(filename: string, content: string, mimeType = "text/plain") {
+  downloadBlob(filename, new Blob([content], { type: `${mimeType};charset=utf-8` }));
 }

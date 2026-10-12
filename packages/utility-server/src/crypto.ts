@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { base64ToBuffer, bufferToBase64 } from "./base64.js";
+import { decodeBase64Url } from "./base64url.js";
 import { AssistantError, ErrorType } from "./errors.js";
 import { isPlainObject } from "./objects.js";
 
@@ -187,4 +188,73 @@ export async function verifyHmacSha256(
     bytes,
     new TextEncoder().encode(message),
   );
+}
+
+const ED25519_PKCS8_PREFIX = Uint8Array.from([
+  0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20,
+]);
+
+export interface Ed25519SigningKey {
+  readonly privateKey: CryptoKey;
+  readonly publicKey: string;
+}
+
+export async function deriveEd25519SigningKey(
+  secret: Uint8Array,
+  info: string,
+): Promise<Ed25519SigningKey> {
+  if (secret.byteLength < 32) {
+    throw new AssistantError(
+      "Signing secret must be at least 32 bytes",
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  const secretBytes = new Uint8Array(secret.byteLength);
+
+  secretBytes.set(secret);
+
+  const material = await crypto.subtle.importKey("raw", secretBytes, "HKDF", false, ["deriveBits"]);
+  const seed = new Uint8Array(
+    await crypto.subtle.deriveBits(
+      {
+        name: "HKDF",
+        hash: "SHA-256",
+        salt: new Uint8Array(32),
+        info: new TextEncoder().encode(info),
+      },
+      material,
+      256,
+    ),
+  );
+  const pkcs8 = new Uint8Array(ED25519_PKCS8_PREFIX.length + seed.length);
+
+  pkcs8.set(ED25519_PKCS8_PREFIX);
+  pkcs8.set(seed, ED25519_PKCS8_PREFIX.length);
+
+  const extractable = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, true, [
+    "sign",
+  ]);
+  const jwk = await crypto.subtle.exportKey("jwk", extractable);
+
+  if (!jwk.x) {
+    throw new AssistantError("Signing key has no public part", ErrorType.INTERNAL_ERROR);
+  }
+
+  const privateKey = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, false, [
+    "sign",
+  ]);
+  const publicKey = bufferToBase64(decodeBase64Url(jwk.x));
+
+  return { privateKey, publicKey };
+}
+
+export async function signEd25519(key: CryptoKey, message: string): Promise<string> {
+  const signature = await crypto.subtle.sign(
+    { name: "Ed25519" },
+    key,
+    new TextEncoder().encode(message),
+  );
+
+  return bufferToBase64(new Uint8Array(signature));
 }

@@ -4,6 +4,7 @@ export * from "./teammate-contexts.js";
 export * from "./teammate-computers.js";
 export * from "./agent-modes.js";
 export * from "./tool-effects.js";
+export * from "./aip.js";
 export * from "./analytics.js";
 export * from "./flags.js";
 export * from "./assistant-actions.js";

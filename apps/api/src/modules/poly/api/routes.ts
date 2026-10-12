@@ -1,4 +1,5 @@
 import {
+  aipBundleSchema,
   createPolyStandingApprovalSchema,
   errorResponseSchema,
   polyAgendaSchema,
@@ -12,6 +13,7 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { disagreeWithPolyHandoff } from "~/modules/poly/application/handoff-disagreement";
 import { openPolyHome } from "~/modules/poly/application/home";
+import { exportPolyBundle } from "~/modules/poly/application/portable-bundle";
 import { readPolyAgenda } from "~/modules/poly/application/read-agenda";
 import {
   grantPolyStandingApproval,
@@ -31,6 +33,30 @@ addRoute(app, "get", "/home", {
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext }) => openPolyHome(serviceContext),
+});
+
+addRoute(app, "get", "/export", {
+  tags: ["poly"],
+  summary: "Export Poly",
+  description:
+    "Download Poly's memory, profile and approval preferences as a signed Agent Identity Portability bundle. Credentials, conversations and project memory are never included.",
+  auth: true,
+  responses: {
+    200: { description: "Signed AIP v0.1 bundle", schema: aipBundleSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+    503: { description: "Signing is not configured", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, raw }) => {
+    const bundle = await exportPolyBundle(serviceContext);
+
+    raw.header("Cache-Control", "no-store");
+    raw.header(
+      "Content-Disposition",
+      `attachment; filename="poly-${bundle.created_at.slice(0, 10)}.aip"`,
+    );
+
+    return bundle;
+  },
 });
 
 addRoute(app, "get", "/agenda", {

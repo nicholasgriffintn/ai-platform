@@ -7,7 +7,9 @@ export interface ChatHistoryControlsProps {
   isExporting?: boolean;
   isDeletingLocal?: boolean;
   isDeletingRemote?: boolean;
+  isExportingPoly?: boolean;
   onExport: () => void;
+  onExportPoly?: () => void;
   onDeleteLocal: () => void | Promise<void>;
   onDeleteRemote: () => void | Promise<void>;
 }
@@ -16,7 +18,9 @@ export function ChatHistoryControls({
   isExporting = false,
   isDeletingLocal = false,
   isDeletingRemote = false,
+  isExportingPoly = false,
   onExport,
+  onExportPoly,
   onDeleteLocal,
   onDeleteRemote,
 }: ChatHistoryControlsProps) {
@@ -36,6 +40,17 @@ export function ChatHistoryControls({
           )}
         </div>
       </SettingsSection>
+
+      {onExportPoly ? (
+        <SettingsSection
+          title="Take Poly with you"
+          description="Download Poly's memory documents, profile and approval preferences as a signed .aip file. Conversations, credentials and project memory stay here."
+        >
+          <Button variant="secondary" onClick={onExportPoly} disabled={isExportingPoly}>
+            {isExportingPoly ? "Packing..." : "Export Poly"}
+          </Button>
+        </SettingsSection>
+      ) : null}
 
       <SettingsSection title="Danger Zone" description="Deleting your history cannot be undone.">
         <div className="space-y-6">

@@ -249,6 +249,8 @@ class ApiService {
 
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 
+  exportPolyBundle = (): Promise<Blob> => this.polyService.exportPolyBundle();
+
   readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
 
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>

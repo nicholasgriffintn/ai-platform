@@ -213,6 +213,16 @@ export async function listMemoryDocuments(
   return { documents: rows.map(toSummary) };
 }
 
+export async function listPersonalMemoryDocuments(
+  context: ServiceContext,
+): Promise<MemoryDocument[]> {
+  context.ensureDatabase();
+  const scope = await resolveScope(context, undefined);
+  const rows = await context.repositories.memoryDocuments.listDocuments(scope);
+
+  return rows.map(formatMemoryDocument);
+}
+
 export async function getMemoryDocument(
   context: ServiceContext,
   name: string,
