@@ -39,21 +39,20 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths"
       ]
     },
     "solar-pro4": {
       "model": "solar-pro/solar-pro-4",
       "matchingModel": "solar-pro4",
       "overrides": {
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     }
   }
 }

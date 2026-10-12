@@ -8,6 +8,7 @@
         "image"
       ]
     },
+    "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -18,6 +19,33 @@
       "defaults": {
         "name": "Black Forest Labs Flux 1 Schnell",
         "description": "FLUX.1 [schnell] is a 12 billion parameter rectified flow transformer capable of generating images from text descriptions.",
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "contextComplexity": 3,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 803,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 7
+            }
+          ]
+        }
+      }
+    },
+    "black-forest-labs-flux-2-dev": {
+      "defaults": {
+        "name": "Black Forest Labs Flux 2 Dev",
+        "description": "Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
         "strengths": [
           "creative",
           "image"
@@ -42,34 +70,6 @@
         }
       }
     },
-    "black-forest-labs-flux-2-dev": {
-      "defaults": {
-        "name": "Black Forest Labs Flux 2 Dev",
-        "description": "Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": [
-          "creative",
-          "image"
-        ],
-        "contextComplexity": 3,
-        "reliability": 4,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1159,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 9
-            }
-          ]
-        }
-      }
-    },
     "black-forest-labs-flux-2-klein-4b": {
       "defaults": {
         "name": "Black Forest Labs Flux 2 Klein 4B",
@@ -79,7 +79,6 @@
           "image"
         ],
         "contextComplexity": 3,
-        "reliability": 3,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -89,7 +88,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1067,
+              "value": 863,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -107,7 +106,6 @@
           "image"
         ],
         "contextComplexity": 3,
-        "reliability": 3,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -117,7 +115,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1122,
+              "value": 941,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -146,7 +144,6 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 2,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": true,
@@ -159,10 +156,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1027,
+              "value": 841,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -200,7 +197,6 @@
           "document"
         ],
         "contextComplexity": 3,
-        "reliability": 2,
         "releaseDate": "August 12, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -214,10 +210,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 1017,
+              "value": 861,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -234,7 +230,6 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 3,
         "releaseDate": "May 29, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -245,10 +240,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1124,
+              "value": 933,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -265,7 +260,6 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 3,
         "releaseDate": "May 29, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -276,10 +270,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1089,
+              "value": 909,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -296,11 +290,37 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 2,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": false,
         "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 803,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 7
+            }
+          ]
+        }
+      }
+    },
+    "flux-2-dev": {
+      "defaults": {
+        "name": "FLUX 2 Dev",
+        "description": "Flux 2 Dev is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "reliability": 2,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -319,37 +339,10 @@
         }
       }
     },
-    "flux-2-dev": {
-      "defaults": {
-        "name": "FLUX 2 Dev",
-        "description": "Flux 2 Dev is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": [
-          "creative",
-          "image"
-        ],
-        "reliability": 4,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1159,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 9
-            }
-          ]
-        }
-      }
-    },
     "flux-2-flex": {
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "November 25, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -360,7 +353,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1182,
+              "value": 1028,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -376,7 +369,6 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "contextComplexity": 3,
-        "reliability": 3,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 14, 2026",
         "artificialAnalysis": {
@@ -388,7 +380,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1067,
+              "value": 863,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -407,7 +399,6 @@
         "strengths": [
           "image"
         ],
-        "reliability": 3,
         "releaseDate": "January 15, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -418,7 +409,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1122,
+              "value": 941,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -431,7 +422,7 @@
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "December 16, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -442,10 +433,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1192,
+              "value": 1019,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -455,7 +446,7 @@
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "November 25, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -466,10 +457,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1186,
+              "value": 1004,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -490,7 +481,27 @@
             "video"
           ]
         },
-        "releaseDate": "August 4, 2026"
+        "strengths": [
+          "video"
+        ],
+        "reliability": 3,
+        "releaseDate": "August 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1091,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
       }
     },
     "flux-3-image": {
@@ -500,7 +511,27 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "maxTokens": 0,
-        "releaseDate": "October 5, 2026"
+        "strengths": [
+          "image"
+        ],
+        "reliability": 3,
+        "releaseDate": "October 5, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1116,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
       }
     },
     "flux-schnell": {
@@ -524,7 +555,6 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 3,
         "releaseDate": "October 2, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -535,10 +565,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1083,
+              "value": 891,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -555,7 +585,6 @@
           "image"
         ],
         "contextComplexity": 1,
-        "reliability": 3,
         "releaseDate": "November 1, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -566,10 +595,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1094,
+              "value": 895,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }

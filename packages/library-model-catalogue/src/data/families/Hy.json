@@ -55,7 +55,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "July 6, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
@@ -68,10 +68,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 33.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 25.3,
+          "codingIndex": 58.8,
+          "agenticIndex": 24.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -98,10 +98,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.1,
+          "intelligenceIndex": 22.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

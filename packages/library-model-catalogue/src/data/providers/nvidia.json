@@ -79,6 +79,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -302,6 +303,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -471,7 +480,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 4,
+        "speed": 5,
         "releaseDate": "April 28, 2026",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
@@ -485,10 +494,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
-          "codingIndex": null,
+          "intelligenceIndex": 10.3,
+          "codingIndex": 13.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -511,10 +520,10 @@
         "supportsToolCalls": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 25.4,
+          "intelligenceIndex": 12.8,
           "codingIndex": 37.7,
-          "agenticIndex": 8.7,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -773,6 +782,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -796,6 +806,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

@@ -191,7 +191,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -203,19 +203,18 @@
       "matchingModel": "gemini-3.5-flash-lite",
       "overrides": {
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemini-3.7-flash": {
       "model": "gemini-flash/gemini-3-7-flash",
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -294,7 +293,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths"
       ]
     },
     "gemini-3.8-flash": {
@@ -302,6 +302,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -327,6 +328,12 @@
             "image"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "image"
+        ],
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.03
@@ -350,6 +357,13 @@
             "image"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.03,

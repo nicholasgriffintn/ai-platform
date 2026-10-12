@@ -24,10 +24,10 @@
     "supportsAttachments": true,
     "supportsTemperature": false,
     "artificialAnalysis": {
-      "intelligenceIndex": 30.4,
+      "intelligenceIndex": 20.2,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The github copilot/o3 family includes models that produce text.",

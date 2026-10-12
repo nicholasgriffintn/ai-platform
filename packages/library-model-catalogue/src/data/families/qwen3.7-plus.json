@@ -33,10 +33,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 39,
+      "intelligenceIndex": 25.2,
       "codingIndex": 55.9,
-      "agenticIndex": 20.8,
-      "intelligenceIndexVersion": 4.1
+      "agenticIndex": 17.5,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The qwen3.7 plus family includes models that produce text.",

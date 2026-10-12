@@ -36,10 +36,10 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 4,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -59,10 +59,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -74,10 +74,10 @@
         "maxTokens": 16384,
         "contextComplexity": 3,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -102,10 +102,10 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 3,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
+          "intelligenceIndex": 9,
           "codingIndex": 20.7,
-          "agenticIndex": 3.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -124,10 +124,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
+          "intelligenceIndex": 9,
           "codingIndex": 20.7,
-          "agenticIndex": 3.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -139,10 +139,10 @@
         "maxTokens": 16384,
         "contextComplexity": 3,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
+          "intelligenceIndex": 9,
           "codingIndex": 20.7,
-          "agenticIndex": 3.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -231,10 +231,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

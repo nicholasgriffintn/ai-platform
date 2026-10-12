@@ -31,7 +31,7 @@
         "strengths": [
           "image"
         ],
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "June 1, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
@@ -43,10 +43,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1078,
+              "value": 884,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -60,7 +60,7 @@
           "image",
           "creative"
         ],
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "May 24, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -71,10 +71,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1172,
+              "value": 998,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 10
             }
           ]
         }

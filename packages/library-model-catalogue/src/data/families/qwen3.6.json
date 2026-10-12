@@ -68,10 +68,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
+          "intelligenceIndex": 27,
           "codingIndex": 54.5,
-          "agenticIndex": 27.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -108,10 +108,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
+          "intelligenceIndex": 27,
           "codingIndex": 54.5,
-          "agenticIndex": 27.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

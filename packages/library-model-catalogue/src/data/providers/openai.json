@@ -105,7 +105,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "July 18, 2024",
@@ -241,7 +241,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "April 14, 2025",
@@ -281,7 +281,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -339,7 +339,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -395,7 +395,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -451,7 +451,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -491,7 +491,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -538,7 +538,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -920,7 +920,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5-codex": {
@@ -1023,7 +1024,7 @@
           "search",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
         "dataRetention": {
@@ -1103,7 +1104,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5.1-codex-max": {
@@ -1139,7 +1141,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5.2-codex": {
@@ -1246,7 +1249,7 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1537,7 +1540,7 @@
           "document",
           "search"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
@@ -1673,7 +1676,7 @@
           "search",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 17, 2026",
         "dataRetention": {
@@ -1796,7 +1799,7 @@
           "document",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
         "dataRetention": {
@@ -1940,10 +1943,10 @@
           "audio",
           "chat",
           "reasoning",
-          "vision"
+          "vision",
+          "document",
+          "tool_use"
         ],
-        "contextComplexity": 5,
-        "reliability": 5,
         "speed": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "September 30, 2024",
@@ -2247,12 +2250,23 @@
         "prefersResponsesApiForReasoning": true,
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5.6-luna": {
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "gpt-5.6-luna",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
@@ -2313,6 +2327,14 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
@@ -2373,6 +2395,14 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "gpt-5.6-terra",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
@@ -2443,10 +2473,9 @@
           "research",
           "multilingual",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
-        "contextComplexity": 5,
-        "reliability": 5,
         "speed": 2,
         "multimodal": true,
         "isFeatured": true,
@@ -2576,6 +2605,7 @@
             "decision"
           ]
         },
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
@@ -2591,6 +2621,7 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2613,7 +2644,10 @@
         },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-daybreak-red-latest": {
       "model": "gpt/daybreak-red",
@@ -2633,6 +2667,7 @@
       "model": "gpt-sol/gpt-6-1-sol",
       "matchingModel": "gpt-6.1-sol",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "dataRetention": {

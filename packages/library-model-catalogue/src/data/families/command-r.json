@@ -28,10 +28,10 @@
         "reliability": 1,
         "releaseDate": "August 30, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 2.1,
+          "intelligenceIndex": 5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

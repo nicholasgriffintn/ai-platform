@@ -29,10 +29,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 38.1,
+      "intelligenceIndex": 22.8,
       "codingIndex": 52.6,
-      "agenticIndex": 25.6,
-      "intelligenceIndexVersion": 4.1
+      "agenticIndex": 15.3,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The minimax m2.7 family includes models that produce text.",

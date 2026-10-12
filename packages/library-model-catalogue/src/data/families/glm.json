@@ -68,10 +68,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.5,
+          "intelligenceIndex": 12.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -88,10 +88,10 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.5,
+          "intelligenceIndex": 11.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -117,10 +117,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.5,
+          "intelligenceIndex": 11.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -176,10 +176,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": 6.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -203,10 +203,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23,
+          "intelligenceIndex": 14.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -224,10 +224,10 @@
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "September 30, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 23,
+          "intelligenceIndex": 14.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -266,10 +266,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -310,7 +310,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "December 22, 2025",
         "reasoningConfig": {
@@ -321,10 +321,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.6,
-          "codingIndex": null,
+          "intelligenceIndex": 22.2,
+          "codingIndex": 45.3,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -341,10 +341,10 @@
         "reliability": 1,
         "releaseDate": "January 27, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.5,
+          "intelligenceIndex": 14.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -398,10 +398,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 32.4,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -423,10 +423,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 26.1,
+          "codingIndex": 55.8,
+          "agenticIndex": 23.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -453,10 +453,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 26.1,
+          "codingIndex": 55.8,
+          "agenticIndex": 23.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -501,13 +501,13 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "June 13, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51.1,
+          "intelligenceIndex": 33.7,
           "codingIndex": 68.8,
-          "agenticIndex": 43.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -579,7 +579,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "June 13, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -592,10 +592,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 51.1,
+          "intelligenceIndex": 33.7,
           "codingIndex": 68.8,
-          "agenticIndex": 43.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -616,7 +616,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "June 13, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
@@ -628,10 +628,10 @@
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 51.1,
+          "intelligenceIndex": 33.7,
           "codingIndex": 68.8,
-          "agenticIndex": 43.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -770,6 +770,12 @@
         "name": "GLM-5.3",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1048576,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -778,6 +784,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.8,
+          "codingIndex": 74.8,
+          "agenticIndex": 53.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -788,6 +800,12 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 18, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -795,6 +813,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.8,
+          "codingIndex": 74.8,
+          "agenticIndex": 53.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -804,6 +828,12 @@
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -815,6 +845,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.8,
+          "codingIndex": 74.8,
+          "agenticIndex": 53.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -880,6 +916,12 @@
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1000000,
         "maxTokens": 128000,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -889,6 +931,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.8,
+          "codingIndex": 74.8,
+          "agenticIndex": 53.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -917,6 +965,12 @@
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1000000,
         "maxTokens": 128000,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -926,6 +980,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.8,
+          "codingIndex": 74.8,
+          "agenticIndex": 53.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -956,7 +1016,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "March 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -966,10 +1026,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.1,
+          "intelligenceIndex": 26.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -992,10 +1052,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.5,
+          "intelligenceIndex": 23.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

@@ -157,7 +157,7 @@
       "model": "mixtral/mixtral-8x7b-instruct",
       "matchingModel": "mixtral-8x7b-32768",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "December 11, 2023",
         "dataRetention": {
@@ -498,6 +498,7 @@
       "overrides": {
         "contextWindow": 131042,
         "maxTokens": 16384,
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {

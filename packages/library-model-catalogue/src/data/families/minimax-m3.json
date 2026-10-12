@@ -18,10 +18,10 @@
     "supportsToolCalls": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 44.4,
+      "intelligenceIndex": 29.2,
       "codingIndex": 58.6,
-      "agenticIndex": 35.4,
-      "intelligenceIndexVersion": 4.1
+      "agenticIndex": 29.5,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The minimax m3 family includes models that produce text.",

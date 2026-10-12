@@ -10,7 +10,6 @@
       ]
     },
     "contextComplexity": 4,
-    "reliability": 1,
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
@@ -37,13 +36,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 2,
         "knowledgeCutoffDate": "March 1, 2026",
         "releaseDate": "May 29, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 29.7,
-          "codingIndex": 37.3,
-          "agenticIndex": 21.5,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 19.5,
+          "codingIndex": 39.6,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -54,9 +54,21 @@
         "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use",
         "contextWindow": 1000000,
         "maxTokens": 1000000,
+        "strengths": [
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
         "releaseDate": "September 16, 2026",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "stepfun-3-5-flash": {
@@ -77,14 +89,15 @@
         "strengths": [
           "tool_use"
         ],
+        "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 29, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 25.5,
+          "intelligenceIndex": 17,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -95,6 +108,7 @@
         "description": "Step 5 Preview is StepFun's flagship model for agentic work, with strong capabilities in software engineering, professional knowledge work, and finance. It natively supports text, image, and video input with a 1M-token context window and up to 64K output tokens. The model supports tool calling, structured outputs, and selectable reasoning levels (low/medium/high) for long-context research, coding, and multi-step workflows.",
         "contextWindow": 1000000,
         "maxTokens": 64000,
+        "reliability": 1,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false
       }

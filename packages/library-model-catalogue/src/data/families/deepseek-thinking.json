@@ -9,10 +9,6 @@
         "text"
       ]
     },
-    "strengths": [
-      "tool_use"
-    ],
-    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -26,6 +22,10 @@
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -42,7 +42,11 @@
         "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
         "contextWindow": 64000,
         "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "reasoningConfig": {
@@ -53,10 +57,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 12.6,
+          "intelligenceIndex": 13.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -66,7 +70,11 @@
         "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
         "contextWindow": 164000,
         "maxTokens": 164000,
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
+        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "May 28, 2025",
         "reasoningConfig": {
@@ -78,10 +86,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
+          "intelligenceIndex": 13.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -108,7 +116,11 @@
         "description": "Reasoning-capable distilled Llama 70B model.",
         "contextWindow": 131072,
         "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
+        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 29, 2025",
         "reasoningConfig": {
@@ -119,10 +131,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9.9,
+          "intelligenceIndex": 7.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -133,6 +145,7 @@
         "contextWindow": 80000,
         "maxTokens": 80000,
         "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "supportsToolCalls": false,
@@ -145,10 +158,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -158,7 +171,11 @@
         "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
         "contextWindow": 128000,
         "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "supportsToolCalls": false,
@@ -170,10 +187,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 12.6,
+          "intelligenceIndex": 13.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -208,14 +225,19 @@
       "defaults": {
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -224,7 +246,19 @@
         "name": "DeepSeek V4 Pro 0813",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1048576,
-        "releaseDate": "August 12, 2026"
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "releaseDate": "August 12, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "deepseek-v4-pro-0813-eu": {
@@ -233,6 +267,12 @@
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1048576,
         "maxTokens": 65536,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -243,6 +283,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -252,7 +298,12 @@
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "reasoningConfig": {
@@ -266,10 +317,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -279,7 +330,12 @@
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "reasoningConfig": {
@@ -290,10 +346,10 @@
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -304,6 +360,7 @@
         "contextWindow": 8192,
         "maxTokens": 7372,
         "contextComplexity": 1,
+        "reliability": 1,
         "knowledgeCutoffDate": "July 31, 2024",
         "releaseDate": "January 23, 2025",
         "supportsToolCalls": false,
@@ -316,10 +373,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9.9,
+          "intelligenceIndex": 7.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

@@ -42,26 +42,40 @@ export function addModelLookupKeys(keys, value) {
   }
 }
 
+function exactLookupKeys(model) {
+  const keys = new Set();
+  const evaluations = readRecord(model.evaluations);
+
+  addLookupKey(keys, model.slug);
+  addLookupKey(keys, evaluations.artificial_analysis_source_id);
+  addLookupKey(keys, model.id);
+  if (typeof model.id === "string" && model.id.includes(":")) {
+    addLookupKey(keys, model.id.split(":").at(-1));
+  }
+
+  return keys;
+}
+
 export function buildArtificialAnalysisLookup(models) {
   const lookup = new Map();
+  const register = (key, model) => {
+    if (!lookup.has(key)) {
+      lookup.set(key, model);
+    }
+  };
 
   for (const model of models) {
-    const keys = new Set();
-    const evaluations = readRecord(model.evaluations);
-
-    addLookupKey(keys, model.id);
-    if (typeof model.id === "string" && model.id.includes(":")) {
-      addLookupKey(keys, model.id.split(":").at(-1));
+    for (const key of exactLookupKeys(model)) {
+      register(key, model);
     }
+  }
 
-    addLookupKey(keys, model.name);
-    addLookupKey(keys, model.slug);
-    addLookupKey(keys, evaluations.artificial_analysis_source_id);
+  for (const model of models) {
+    const nameKeys = new Set();
 
-    for (const key of keys) {
-      if (!lookup.has(key)) {
-        lookup.set(key, model);
-      }
+    addLookupKey(nameKeys, model.name);
+    for (const key of nameKeys) {
+      register(key, model);
     }
   }
 

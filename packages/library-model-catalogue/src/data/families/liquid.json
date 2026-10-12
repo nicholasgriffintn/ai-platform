@@ -27,10 +27,10 @@
         "releaseDate": "February 25, 2026",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 4.9,
+          "intelligenceIndex": 5.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -42,10 +42,10 @@
         "releaseDate": "January 20, 2026",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 2.7,
+          "intelligenceIndex": 5.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -66,10 +66,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 2.7,
+          "intelligenceIndex": 5.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -79,6 +79,9 @@
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
         "contextWindow": 65536,
         "maxTokens": 8192,
+        "strengths": [
+          "tool_use"
+        ],
         "releaseDate": "August 11, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -86,6 +89,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.4,
+          "codingIndex": 7.7,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

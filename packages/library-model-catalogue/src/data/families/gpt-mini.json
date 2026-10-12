@@ -24,10 +24,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.3,
-          "codingIndex": null,
+          "intelligenceIndex": 10.2,
+          "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -50,10 +50,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.3,
-          "codingIndex": null,
+          "intelligenceIndex": 10.2,
+          "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -76,10 +76,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.3,
-          "codingIndex": null,
+          "intelligenceIndex": 10.2,
+          "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -102,10 +102,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.9,
-          "codingIndex": null,
+          "intelligenceIndex": 6.7,
+          "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -129,10 +129,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.9,
-          "codingIndex": null,
+          "intelligenceIndex": 6.7,
+          "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -156,10 +156,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.9,
-          "codingIndex": null,
+          "intelligenceIndex": 6.7,
+          "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -189,6 +189,7 @@
         "description": "Strong small GPT for coding subagents, quick tool use, and high-volume work",
         "contextWindow": 400000,
         "maxTokens": 128000,
+        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 17, 2026",
         "reasoningConfig": {
@@ -202,10 +203,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.1,
+          "codingIndex": 56.1,
+          "agenticIndex": 17.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -225,6 +226,7 @@
             "text"
           ]
         },
+        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 17, 2026",
         "reasoningConfig": {
@@ -239,10 +241,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.1,
+          "codingIndex": 56.1,
+          "agenticIndex": 17.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -265,10 +267,10 @@
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 33,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.8,
+          "codingIndex": 15.6,
+          "agenticIndex": 6.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -301,10 +303,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 33,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.8,
+          "codingIndex": 15.6,
+          "agenticIndex": 6.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -337,10 +339,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 33,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.8,
+          "codingIndex": 15.6,
+          "agenticIndex": 6.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

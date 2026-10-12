@@ -15,7 +15,7 @@
       "creative"
     ],
     "contextComplexity": 4,
-    "reliability": 4,
+    "reliability": 2,
     "artificialAnalysis": {
       "intelligenceIndex": null,
       "codingIndex": null,
@@ -25,10 +25,10 @@
         {
           "key": "text_to_imageElo",
           "label": "Text-to-image arena",
-          "value": 1159,
+          "value": 984,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 8
+          "confidenceInterval95": 9
         }
       ]
     }

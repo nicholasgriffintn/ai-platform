@@ -41,6 +41,7 @@
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
         "contextWindow": 1000000,
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0001596,
         "costPer1kOutputTokens": 0.000399,
@@ -103,7 +104,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.001254,
@@ -305,9 +306,10 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0007524,
         "costPer1kOutputTokens": 0.004275,
@@ -361,6 +363,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
@@ -398,7 +401,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0001938,
         "costPer1kOutputTokens": 0.001129,
@@ -436,7 +439,7 @@
       "model": "mistral-small/mistral-small-3-2",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0.000456,
@@ -469,7 +472,7 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
@@ -512,7 +515,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.000798,
         "costPer1kOutputTokens": 0.004959,
@@ -582,6 +585,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,
@@ -605,6 +609,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00127754,
@@ -634,6 +639,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,

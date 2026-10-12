@@ -16,10 +16,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 17.8,
+      "intelligenceIndex": 11.8,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The sonar reasoning family includes models that produce text.",

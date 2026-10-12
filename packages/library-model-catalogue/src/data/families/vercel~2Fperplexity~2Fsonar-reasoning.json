@@ -25,10 +25,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 11.7,
+      "intelligenceIndex": 8.7,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The vercel/perplexity/sonar reasoning family includes models that produce text.",

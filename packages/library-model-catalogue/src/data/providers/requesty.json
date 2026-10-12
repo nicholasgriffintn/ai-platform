@@ -29,7 +29,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -98,7 +98,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "knowledgeCutoffDate": "October 2024",
@@ -300,6 +300,7 @@
       "unset": [
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "supportsResponseFormat"
       ]
     },
@@ -307,7 +308,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -399,7 +400,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -422,7 +423,7 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 32000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -458,7 +459,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -493,6 +494,7 @@
           "document",
           "tool_use"
         ],
+        "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "September 9, 2025",
         "lastUpdated": "September 9, 2025",
@@ -606,7 +608,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5-codex": {
@@ -687,7 +690,7 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "openai/gpt-5.1",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -716,7 +719,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5.1-codex": {
@@ -724,7 +728,7 @@
       "matchingModel": "openai/gpt-5.1-codex",
       "overrides": {
         "name": "GPT-5.1-Codex",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -754,7 +758,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5.1-codex-mini": {
@@ -763,7 +768,7 @@
       "overrides": {
         "name": "GPT-5.1-Codex-Mini",
         "maxTokens": 100000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -780,7 +785,7 @@
       "model": "gpt/gpt-5-2",
       "matchingModel": "openai/gpt-5.2",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -804,7 +809,8 @@
         "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5.2-codex": {
@@ -860,7 +866,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3-Codex",
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -879,7 +885,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "openai/gpt-5.4",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
@@ -915,6 +921,7 @@
       "model": "claude-fable/claude-fable-5",
       "matchingModel": "claude-fable-5",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.011,
@@ -981,7 +988,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP"
+        "supportsTopP",
+        "reliability"
       ]
     },
     "claude-opus-4-5": {
@@ -989,7 +997,7 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "name": "Claude Opus 4.5 (latest)",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1012,7 +1020,7 @@
       "model": "claude-opus/claude-opus-4-5-latest-eu",
       "matchingModel": "claude-opus-4-5@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -1155,6 +1163,7 @@
       "model": "claude-opus/claude-opus-5",
       "matchingModel": "claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1169,15 +1178,13 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "claude-opus-5@eu": {
       "model": "claude-opus/claude-opus-5-eu",
       "matchingModel": "claude-opus-5@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
@@ -1192,10 +1199,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "claude-sonnet-4-5": {
       "model": "claude-sonnet/claude-sonnet-4-5-latest",
@@ -1283,6 +1287,7 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -1303,6 +1308,7 @@
       "model": "claude-sonnet/claude-sonnet-5-eu",
       "matchingModel": "claude-sonnet-5@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
@@ -1323,6 +1329,7 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731-eu",
       "matchingModel": "deepseek-v4-flash-0731@eu",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00028,
         "costPer1kOutputTokens": 0.00056,
@@ -1355,6 +1362,7 @@
       "overrides": {
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "maxTokens": 65535,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
@@ -1368,16 +1376,13 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemini-3.5-flash@eu": {
       "model": "gemini-flash/gemini-3-5-flash-eu",
       "matchingModel": "gemini-3.5-flash@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.00165,
         "costPer1kOutputTokens": 0.0099
@@ -1388,6 +1393,15 @@
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
         "maxTokens": 65535,
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.007,
@@ -1409,7 +1423,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.00255,
@@ -1430,7 +1444,7 @@
       "model": "glm/glm-5-2-eu",
       "matchingModel": "glm-5.2@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0042,
@@ -1441,7 +1455,7 @@
       "model": "gpt-mini/gpt-4-1-mini-eu",
       "matchingModel": "gpt-4.1-mini@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00176
@@ -1471,7 +1485,7 @@
       "model": "gpt-mini/gpt-4o-mini-eu",
       "matchingModel": "gpt-4o-mini@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -1481,7 +1495,7 @@
       "model": "gpt-mini/gpt-5-mini-eu",
       "matchingModel": "gpt-5-mini@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000275,
         "costPer1kOutputTokens": 0.0022,
@@ -1492,7 +1506,7 @@
       "model": "gpt-nano/gpt-5-nano-eu",
       "matchingModel": "gpt-5-nano@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000055,
         "costPer1kOutputTokens": 0.00044,
@@ -1503,7 +1517,7 @@
       "model": "gpt/gpt-5-1-eu",
       "matchingModel": "gpt-5.1@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011
@@ -1513,7 +1527,7 @@
       "model": "gpt/gpt-5-4-eu",
       "matchingModel": "gpt-5.4@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165
@@ -1523,7 +1537,7 @@
       "model": "gpt/gpt-5-5-eu",
       "matchingModel": "gpt-5.5@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.033,
@@ -1534,6 +1548,7 @@
       "model": "gpt-luna/gpt-5-6-luna-eu",
       "matchingModel": "gpt-5.6-luna@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00132,
@@ -1544,6 +1559,7 @@
       "model": "gpt-sol/gpt-5-6-sol-eu",
       "matchingModel": "gpt-5.6-sol@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
@@ -1554,6 +1570,7 @@
       "model": "gpt-terra/gpt-5-6-terra-eu",
       "matchingModel": "gpt-5.6-terra@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0132,
@@ -1564,7 +1581,7 @@
       "model": "gpt/gpt-5-eu",
       "matchingModel": "gpt-5@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011,
@@ -1584,6 +1601,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -1614,6 +1632,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1634,6 +1660,7 @@
       "model": "kimi-k3/kimi-k3-eu",
       "matchingModel": "kimi-k3@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1657,6 +1684,7 @@
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "maxTokens": 65535,
+        "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -1676,6 +1704,7 @@
       "model": "gemini-flash/gemini-3-7-flash-eu",
       "matchingModel": "gemini-3.7-flash@eu",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.000825,
         "costPer1kOutputTokens": 0.004125
@@ -1685,6 +1714,7 @@
       "model": "claude-fable/claude-fable-5-eu",
       "matchingModel": "claude-fable-5@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
@@ -1930,7 +1960,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
@@ -1950,13 +1980,11 @@
       "model": "gemini-flash-lite/gemini-3-5-flash-lite-eu",
       "matchingModel": "gemini-3.5-flash-lite@eu",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00275
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemma-4-26b-a4b-it": {
       "model": "gemma/gemma-4-26b-a4b-it",
@@ -2069,6 +2097,7 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "maxTokens": 1048576,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0042,
@@ -2113,7 +2142,7 @@
       "model": "gpt-codex/gpt-5-3-codex",
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -2133,7 +2162,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165,
@@ -2193,7 +2222,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
@@ -2242,7 +2271,7 @@
       "model": "gpt/gpt-5-5",
       "matchingModel": "gpt-5.5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.033,
@@ -2283,6 +2312,7 @@
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
@@ -2303,6 +2333,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -2323,6 +2354,7 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
@@ -2356,7 +2388,7 @@
       "matchingModel": "grok-4.3",
       "overrides": {
         "maxTokens": 1000000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -2376,6 +2408,7 @@
       "model": "grok/grok-4-6",
       "matchingModel": "grok-4.6",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -2441,6 +2474,8 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 32768,
+        "contextComplexity": 3,
+        "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
@@ -2504,9 +2539,10 @@
           "vision",
           "video",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -2526,7 +2562,7 @@
       "model": "kimi-k2/kimi-k2-6-eu",
       "matchingModel": "kimi-k2.6@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -2685,6 +2721,7 @@
       "model": "ling/ling-3-0-tiny",
       "matchingModel": "ling-3.0-tiny",
       "overrides": {
+        "speed": 1,
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2712,7 +2749,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
@@ -2759,7 +2796,7 @@
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 200000,
         "maxTokens": 128000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2805,7 +2842,7 @@
         "contextWindow": 1000000,
         "maxTokens": 128000,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2825,7 +2862,7 @@
       "model": "minimax/minimax-m3-eu",
       "matchingModel": "minimax-m3@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002
@@ -2983,7 +3020,7 @@
       "model": "nemotron/nemotron-3-nano-omni-30b-a3b-reasoning",
       "matchingModel": "nemotron-3-nano-omni-30b-a3b-reasoning",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -3009,6 +3046,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 65536,
+        "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -3024,13 +3062,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "strengths",
-        "contextComplexity",
-        "reliability",
-        "artificialAnalysis"
-      ]
+      }
     },
     "nemotron-3-ultra-550b-a55b": {
       "model": "nemotron/nemotron-3-ultra-550b-a55b",
@@ -3324,7 +3356,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00128,
@@ -3345,6 +3377,7 @@
       "matchingModel": "qwen3.8-2.4T-A95B",
       "overrides": {
         "maxTokens": 262144,
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -3377,6 +3410,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "speed": 2,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -3524,7 +3566,7 @@
       "model": "requesty/step-3.7-flash/step-3-7-flash",
       "matchingModel": "step-3.7-flash",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -3575,6 +3617,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
@@ -3594,6 +3644,7 @@
       "model": "glm-flash/glm-5-3-flash-eu",
       "matchingModel": "glm-5.3-flash@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006
@@ -3603,6 +3654,7 @@
       "model": "glm/glm-5-3-eu",
       "matchingModel": "glm-5.3@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0042,
@@ -3614,6 +3666,7 @@
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "claude-fable-5.1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -3637,6 +3690,7 @@
       "model": "claude-fable/claude-fable-5-1-eu",
       "matchingModel": "claude-fable-5.1@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
@@ -3650,15 +3704,12 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813-eu",
       "matchingModel": "deepseek-v4-pro-0813@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.0035,
         "supportsAttachments": false
-      },
-      "unset": [
-        "strengths",
-        "reliability"
-      ]
+      }
     },
     "gemini-2.5-flash-lite@eu": {
       "model": "gemini-flash-lite/gemini-2-5-flash-lite-eu",
@@ -3685,6 +3736,7 @@
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
         "maxTokens": 65535,
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -3707,6 +3759,7 @@
       "model": "gemini-flash/gemini-3-8-flash-eu",
       "matchingModel": "gemini-3.8-flash@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.000825,
         "costPer1kOutputTokens": 0.004125
@@ -3719,6 +3772,7 @@
       "model": "qwen/qwen3-8-2-4t-a95b-eu",
       "matchingModel": "qwen3.8-2.4T-A95B@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.006,
@@ -3763,6 +3817,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
@@ -3782,6 +3844,7 @@
       "model": "qwen/qwen3-8-flash-next-eu",
       "matchingModel": "qwen3.8-flash-next@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
@@ -3791,6 +3854,7 @@
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "gpt-6-astra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -3812,6 +3876,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -3831,6 +3896,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-eu",
       "matchingModel": "deepseek-v4.1-flash@eu",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -3840,6 +3906,7 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -3860,6 +3927,7 @@
       "model": "claude-opus/claude-opus-5-5-eu",
       "matchingModel": "claude-opus-5-5@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
@@ -3880,6 +3948,7 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
@@ -3900,6 +3969,7 @@
       "model": "gpt-luna/gpt-6-luna-eu",
       "matchingModel": "gpt-6-luna@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0006,
@@ -3910,6 +3980,7 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -3930,6 +4001,7 @@
       "model": "gpt-sol/gpt-6-sol-eu",
       "matchingModel": "gpt-6-sol@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.012,
@@ -3951,6 +4023,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
@@ -3981,6 +4054,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
@@ -4001,6 +4075,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5",
       "matchingModel": "claude-sonnet-5-5",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -4021,6 +4096,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5-eu",
       "matchingModel": "claude-sonnet-5-5@eu",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
@@ -4041,6 +4117,7 @@
       "model": "gpt-sol/gpt-6-1-sol",
       "matchingModel": "gpt-6.1-sol",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.002,
@@ -4062,6 +4139,7 @@
       "model": "gpt-sol/gpt-6-1-sol-eu",
       "matchingModel": "gpt-6.1-sol@eu",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.012,
@@ -4072,6 +4150,7 @@
       "model": "grok/grok-4-7",
       "matchingModel": "grok-4.7",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -4122,6 +4201,7 @@
       "model": "claude-haiku/claude-haiku-5-5",
       "matchingModel": "claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -4146,6 +4226,7 @@
       "model": "claude-haiku/claude-haiku-5-5-eu",
       "matchingModel": "claude-haiku-5-5@eu",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,

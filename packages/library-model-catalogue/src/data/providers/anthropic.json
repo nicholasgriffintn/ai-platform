@@ -77,7 +77,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "September 29, 2025",
@@ -101,10 +101,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
+          "intelligenceIndex": 19.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -144,10 +144,10 @@
         "supportsTemperature": true,
         "supportsTokenCounting": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 25.5,
+          "intelligenceIndex": 16.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -241,6 +241,7 @@
       "unset": [
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "supportsResponseFormat",
         "supportsCodeExecution"
       ]
@@ -255,7 +256,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
@@ -465,6 +466,15 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 2,
         "isFeatured": false,
         "releaseDate": "June 29, 2026",
         "lastUpdated": "June 30, 2026",
@@ -498,6 +508,15 @@
       "model": "claude-opus/claude-opus-5",
       "matchingModel": "claude-opus-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
@@ -524,15 +543,13 @@
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "claude-fable-5-1": {
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "claude-fable-5-1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -550,6 +567,13 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
@@ -565,6 +589,13 @@
       "model": "claude-sonnet/claude-sonnet-5-5",
       "matchingModel": "claude-sonnet-5-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
@@ -580,6 +611,13 @@
       "model": "claude-haiku/claude-haiku-5-5",
       "matchingModel": "claude-haiku-5-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {

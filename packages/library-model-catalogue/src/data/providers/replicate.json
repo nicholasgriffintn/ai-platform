@@ -1955,6 +1955,7 @@
         }
       },
       "unset": [
+        "reliability",
         "supportsToolCalls",
         "supportsTemperature"
       ]

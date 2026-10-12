@@ -128,7 +128,7 @@
         "contextWindow": 976000,
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -158,6 +158,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -198,9 +206,10 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "April 20, 2026",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -245,6 +254,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
+        "speed": 2,
         "lastUpdated": "July 27, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -258,7 +268,7 @@
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -275,7 +285,7 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -297,7 +307,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 31, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -395,6 +405,7 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "maxTokens": 131072,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -406,6 +417,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 384000,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -427,6 +439,7 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1048576,
+        "contextComplexity": 5,
         "isFeatured": true,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00136,

@@ -12,7 +12,7 @@
       "matchingModel": "openai.gpt-5.4",
       "overrides": {
         "contextWindow": 1000000,
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "June 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -27,7 +27,7 @@
       "matchingModel": "openai.gpt-5.5",
       "overrides": {
         "contextWindow": 1000000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -101,7 +101,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -115,6 +115,7 @@
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "openai.gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -128,6 +129,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "openai.gpt-5.6-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -141,6 +143,7 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "openai.gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -154,6 +157,7 @@
       "model": "grok/grok-4-6",
       "matchingModel": "xai.grok-4.6",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -167,6 +171,7 @@
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "openai.gpt-6-astra",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 4, 2026",
         "dataRetention": {
@@ -275,6 +280,7 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "openai.gpt-6-luna",
       "overrides": {
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
@@ -289,6 +295,7 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "openai.gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -302,6 +309,7 @@
       "model": "gpt-sol/gpt-6-1-sol",
       "matchingModel": "openai.gpt-6.1-sol",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "dataRetention": {

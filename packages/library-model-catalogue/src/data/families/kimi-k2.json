@@ -114,10 +114,10 @@
         "releaseDate": "September 5, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.5,
+          "intelligenceIndex": 15.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -135,7 +135,7 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -144,10 +144,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.4,
-          "codingIndex": null,
+          "intelligenceIndex": 23.5,
+          "codingIndex": 46.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -174,7 +174,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "January 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -188,10 +188,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.4,
-          "codingIndex": null,
+          "intelligenceIndex": 23.5,
+          "codingIndex": 46.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -245,10 +245,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 42.8,
-          "codingIndex": 56,
-          "agenticIndex": 30.3,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 27,
+          "codingIndex": 61.8,
+          "agenticIndex": 20.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -272,7 +272,8 @@
           "vision",
           "video",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 4,
         "reliability": 2,
@@ -288,10 +289,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 42.8,
-          "codingIndex": 56,
-          "agenticIndex": 30.3,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 27,
+          "codingIndex": 61.8,
+          "agenticIndex": 20.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -338,10 +339,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.9,
+          "intelligenceIndex": 25.8,
           "codingIndex": 60.8,
-          "agenticIndex": 29.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 21,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -382,10 +383,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.9,
+          "intelligenceIndex": 25.8,
           "codingIndex": 60.8,
-          "agenticIndex": 29.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 21,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -526,10 +527,10 @@
         "supportsResponseFormat": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 19.4,
+          "intelligenceIndex": 12.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

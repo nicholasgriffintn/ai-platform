@@ -107,7 +107,29 @@
             "text"
           ]
         },
-        "releaseDate": "September 3, 2026"
+        "strengths": [
+          "audio",
+          "transcription"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "September 3, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "aaWerIndex",
+              "label": "Word Error Rate",
+              "value": 0,
+              "min": 0,
+              "max": 1,
+              "lowerIsBetter": true
+            }
+          ]
+        }
       }
     },
     "mai-transcribe-2-streaming": {

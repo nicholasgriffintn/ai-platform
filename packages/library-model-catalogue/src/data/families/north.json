@@ -18,13 +18,7 @@
     "reliability": 1,
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "artificialAnalysis": {
-      "intelligenceIndex": 20.6,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
-    }
+    "supportsTemperature": true
   },
   "description": "Cohere coding model for practical software engineering and agentic edits",
   "models": {
@@ -41,6 +35,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -57,6 +57,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.9,
+          "codingIndex": 36.5,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -72,6 +78,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 9.9,
+          "codingIndex": 36.5,
+          "agenticIndex": 1.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -82,7 +94,13 @@
         "contextWindow": 32768,
         "maxTokens": 16000,
         "releaseDate": "September 9, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
       }
     }
   }

@@ -13,6 +13,14 @@
         "text"
       ]
     },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
     "releaseDate": "September 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -25,6 +33,12 @@
         "high"
       ],
       "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 43.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The kilo/stepfun/step 5 preview family includes models that produce text.",

@@ -11,6 +11,10 @@
         "image"
       ]
     },
+    "strengths": [
+      "image"
+    ],
+    "reliability": 2,
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -30,11 +34,8 @@
         "name": "Recraft V3",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "strengths": [
-          "image"
-        ],
         "contextComplexity": 1,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "October 30, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -45,10 +46,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1067,
+              "value": 869,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -58,10 +59,6 @@
       "defaults": {
         "name": "Recraft V4",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": [
-          "image"
-        ],
-        "reliability": 3,
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -72,7 +69,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1136,
+              "value": 984,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -85,10 +82,6 @@
       "defaults": {
         "name": "Recraft V4.1",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": [
-          "image"
-        ],
-        "reliability": 3,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -99,10 +92,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1146,
+              "value": 991,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -112,7 +105,23 @@
       "defaults": {
         "name": "Recraft V4.1 Flash",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "releaseDate": "September 23, 2026"
+        "releaseDate": "September 23, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 956,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
       }
     },
     "recraft-v4-1-pro": {
@@ -123,7 +132,6 @@
           "image",
           "creative"
         ],
-        "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -134,10 +142,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1153,
+              "value": 986,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -151,7 +159,6 @@
           "image",
           "creative"
         ],
-        "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -162,10 +169,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1197,
+              "value": 1022,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -179,7 +186,6 @@
           "image",
           "creative"
         ],
-        "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -190,10 +196,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1205,
+              "value": 1017,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -203,10 +209,6 @@
       "defaults": {
         "name": "Recraft V4 Pro",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": [
-          "image"
-        ],
-        "reliability": 3,
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -217,7 +219,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1143,
+              "value": 988,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9

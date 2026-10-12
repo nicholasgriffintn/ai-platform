@@ -24,8 +24,19 @@
         "description": "DeepHermes 3 Mistral 24B Preview accepts text and produces text.",
         "contextWindow": 32768,
         "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "releaseDate": "December 29, 2025",
-        "supportsToolCalls": true
+        "supportsToolCalls": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "hermes-3-405b-instruct": {
@@ -40,8 +51,16 @@
       "defaults": {
         "name": "Hermes 3 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 18, 2024"
+        "releaseDate": "August 18, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "hermes-4-14b": {
@@ -74,7 +93,15 @@
         "name": "Nous: Hermes 3 70B Instruct",
         "openWeights": false,
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "releaseDate": "August 18, 2024"
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "August 18, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "nous-hermes-4-405b": {

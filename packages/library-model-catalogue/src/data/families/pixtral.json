@@ -23,10 +23,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 8.1,
+      "intelligenceIndex": 7.1,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The pixtral family includes models that produce text.",

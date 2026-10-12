@@ -56,7 +56,7 @@
           "multilingual",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": false,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
@@ -83,7 +83,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
@@ -195,7 +195,7 @@
       "overrides": {
         "contextWindow": 204608,
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 27, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -243,7 +243,7 @@
         "name": "NVIDIA Nemotron Nano 9B v2",
         "maxTokens": 8192,
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 18, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -546,7 +546,7 @@
           "analysis",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "May 29, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -841,6 +841,7 @@
         "openWeights",
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "reasoningConfig"
       ]
     },
@@ -848,7 +849,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 1, 2025",
         "lastUpdated": "November 1, 2025",
@@ -1006,6 +1007,7 @@
       "matchingModel": "deepseek.v3-v1:0",
       "overrides": {
         "maxTokens": 81920,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "September 18, 2025",
         "dataRetention": {
@@ -1034,7 +1036,7 @@
       "model": "claude-opus/claude-opus-4-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 1, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1104,7 +1106,7 @@
       "model": "claude-opus/claude-opus-4-5-global",
       "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 1, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1376,7 +1378,7 @@
       "overrides": {
         "name": "MiniMax M2.1",
         "contextWindow": 196608,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1570,10 +1572,10 @@
         "costPer1kOutputTokens": 0.00088,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 22.3,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 12.7,
+          "codingIndex": 22.1,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1618,7 +1620,7 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 65536,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "July 23, 2025",
         "lastUpdated": "September 18, 2025",
         "dataRetention": {
@@ -1655,7 +1657,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-VL-235B-A22B-Instruct",
         "maxTokens": 262000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 25, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1682,7 +1684,7 @@
       "model": "claude-opus/claude-opus-4-5-us",
       "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 1, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1719,7 +1721,7 @@
         "name": "GLM-4.7",
         "contextWindow": 202752,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "December 22, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1736,7 +1738,7 @@
       "overrides": {
         "contextWindow": 202752,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1824,7 +1826,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP"
+        "supportsTopP",
+        "reliability"
       ]
     },
     "au.anthropic.claude-sonnet-4-5-20250929-v1:0": {
@@ -1998,7 +2001,7 @@
         "name": "MiniMax M2.5",
         "contextWindow": 196608,
         "maxTokens": 98304,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2028,7 +2031,7 @@
       "model": "magistral/magistral-small-1-2",
       "matchingModel": "mistral.magistral-small-2509",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 18, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2042,7 +2045,7 @@
       "model": "ministral/ministral-3-3b",
       "matchingModel": "mistral.ministral-3-3b-instruct",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 2, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2139,7 +2142,7 @@
       "matchingModel": "qwen.qwen3-coder-next",
       "overrides": {
         "maxTokens": 65536,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 6, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2183,6 +2186,7 @@
       "model": "deepseek-thinking/deepseek-r1-us",
       "matchingModel": "us.deepseek.r1-v1:0",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "May 29, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2397,6 +2401,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "June 9, 2026",
         "dataRetention": {
@@ -2412,6 +2417,7 @@
       "model": "claude-fable/claude-fable-5-global",
       "matchingModel": "global.anthropic.claude-fable-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2426,6 +2432,7 @@
       "model": "claude-fable/claude-fable-5-us",
       "matchingModel": "us.anthropic.claude-fable-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2440,6 +2447,7 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2466,6 +2474,7 @@
       "model": "claude-sonnet/claude-sonnet-5-au",
       "matchingModel": "au.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2480,6 +2489,7 @@
       "model": "claude-sonnet/claude-sonnet-5-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2506,6 +2516,7 @@
       "model": "claude-sonnet/claude-sonnet-5-global",
       "matchingModel": "global.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2520,6 +2531,7 @@
       "model": "claude-sonnet/claude-sonnet-5-jp",
       "matchingModel": "jp.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2534,6 +2546,7 @@
       "model": "claude-sonnet/claude-sonnet-5-us",
       "matchingModel": "us.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2548,6 +2561,7 @@
       "model": "claude-fable/claude-fable-5",
       "matchingModel": "anthropic.claude-fable-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2586,6 +2600,7 @@
       "model": "claude-opus/claude-opus-5",
       "matchingModel": "anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2607,7 +2622,6 @@
         }
       },
       "unset": [
-        "contextComplexity",
         "supportsResponseFormat"
       ]
     },
@@ -2615,6 +2629,7 @@
       "model": "claude-opus/claude-opus-5-au",
       "matchingModel": "au.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2623,15 +2638,13 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "eu.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2651,15 +2664,13 @@
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "global.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-global",
       "matchingModel": "global.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2668,15 +2679,13 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "jp.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-jp",
       "matchingModel": "jp.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2685,15 +2694,13 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "us.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-us",
       "matchingModel": "us.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2702,15 +2709,13 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "global.openai.gpt-5.6-luna": {
       "model": "gpt-luna/gpt-5-6-luna-global",
       "matchingModel": "global.openai.gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2725,6 +2730,7 @@
       "model": "gpt-sol/gpt-5-6-sol-global",
       "matchingModel": "global.openai.gpt-5.6-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2739,6 +2745,7 @@
       "model": "gpt-terra/gpt-5-6-terra-global",
       "matchingModel": "global.openai.gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2753,6 +2760,7 @@
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "anthropic.claude-fable-5-1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2770,6 +2778,7 @@
       "model": "claude-fable/claude-fable-5-1-global",
       "matchingModel": "global.anthropic.claude-fable-5-1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2784,6 +2793,7 @@
       "model": "claude-fable/claude-fable-5-1-us",
       "matchingModel": "us.anthropic.claude-fable-5-1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2798,6 +2808,7 @@
       "model": "grok/grok-4-6-global",
       "matchingModel": "global.xai.grok-4.6",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2811,6 +2822,7 @@
       "model": "grok/grok-4-6-us",
       "matchingModel": "us.xai.grok-4.6",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2838,7 +2850,7 @@
       "model": "nova-micro/nova-micro-apac",
       "matchingModel": "apac.amazon.nova-micro-v1:0",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2853,6 +2865,7 @@
       "model": "nova-pro/nova-pro-apac",
       "matchingModel": "apac.amazon.nova-pro-v1:0",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2922,7 +2935,7 @@
       "model": "nova-micro/nova-micro-eu",
       "matchingModel": "eu.amazon.nova-micro-v1:0",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2937,6 +2950,7 @@
       "model": "nova-pro/nova-pro-eu",
       "matchingModel": "eu.amazon.nova-pro-v1:0",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2964,6 +2978,7 @@
       "model": "gpt-astra/gpt-6-astra-global",
       "matchingModel": "global.openai.gpt-6-astra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 4, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3018,7 +3033,7 @@
       "model": "nova-micro/nova-micro-us",
       "matchingModel": "us.amazon.nova-micro-v1:0",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3033,6 +3048,7 @@
       "model": "nova-pro/nova-pro-us",
       "matchingModel": "us.amazon.nova-pro-v1:0",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "December 3, 2024",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3102,6 +3118,7 @@
       "model": "gpt-luna/gpt-5-6-luna-us",
       "matchingModel": "us.openai.gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3116,6 +3133,7 @@
       "model": "gpt-sol/gpt-5-6-sol-us",
       "matchingModel": "us.openai.gpt-5.6-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3130,6 +3148,7 @@
       "model": "gpt-terra/gpt-5-6-terra-us",
       "matchingModel": "us.openai.gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3144,6 +3163,7 @@
       "model": "gpt-astra/gpt-6-astra-us",
       "matchingModel": "us.openai.gpt-6-astra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 4, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3186,6 +3206,7 @@
       "model": "gpt-luna/gpt-5-6-luna-india",
       "matchingModel": "in.openai.gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3200,6 +3221,7 @@
       "model": "gpt-terra/gpt-5-6-terra-india",
       "matchingModel": "in.openai.gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3244,6 +3266,7 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
@@ -3262,6 +3285,7 @@
       "model": "claude-opus/claude-opus-5-5-au",
       "matchingModel": "au.anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3276,6 +3300,7 @@
       "model": "claude-opus/claude-opus-5-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3301,6 +3326,7 @@
       "model": "claude-opus/claude-opus-5-5-global",
       "matchingModel": "global.anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3315,6 +3341,7 @@
       "model": "claude-opus/claude-opus-5-5-jp",
       "matchingModel": "jp.anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3329,6 +3356,7 @@
       "model": "claude-opus/claude-opus-5-5-us",
       "matchingModel": "us.anthropic.claude-opus-5-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3343,6 +3371,7 @@
       "model": "kimi-k3/kimi-k3-global",
       "matchingModel": "global.moonshotai.kimi-k3",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3357,6 +3386,7 @@
       "model": "gpt-luna/gpt-6-luna-global",
       "matchingModel": "global.openai.gpt-6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3371,6 +3401,7 @@
       "model": "gpt-sol/gpt-6-sol-global",
       "matchingModel": "global.openai.gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3385,6 +3416,7 @@
       "model": "kimi-k3/kimi-k3-us",
       "matchingModel": "us.moonshotai.kimi-k3",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3399,6 +3431,7 @@
       "model": "gpt-luna/gpt-6-luna-us",
       "matchingModel": "us.openai.gpt-6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3413,6 +3446,7 @@
       "model": "gpt-sol/gpt-6-sol-us",
       "matchingModel": "us.openai.gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3427,6 +3461,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5-global",
       "matchingModel": "global.anthropic.claude-sonnet-5-5",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3441,6 +3476,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5",
       "matchingModel": "anthropic.claude-sonnet-5-5",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3456,6 +3492,7 @@
       "model": "gpt-sol/gpt-6-1-sol-global",
       "matchingModel": "global.openai.gpt-6.1-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 29, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3470,6 +3507,7 @@
       "model": "grok/grok-4-7-global",
       "matchingModel": "global.xai.grok-4.7",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3483,6 +3521,7 @@
       "model": "gpt-sol/gpt-6-1-sol-us",
       "matchingModel": "us.openai.gpt-6.1-sol",
       "overrides": {
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "dataRetention": {
@@ -3498,6 +3537,7 @@
       "model": "grok/grok-4-7-us",
       "matchingModel": "us.xai.grok-4.7",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3524,6 +3564,7 @@
       "model": "claude-opus/claude-opus-5-india",
       "matchingModel": "in.anthropic.claude-opus-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3538,6 +3579,7 @@
       "model": "claude-sonnet/claude-sonnet-5-india",
       "matchingModel": "in.anthropic.claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3552,6 +3594,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-5-5",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3579,6 +3622,7 @@
       "model": "claude-sonnet/claude-sonnet-5-5-us",
       "matchingModel": "us.anthropic.claude-sonnet-5-5",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3593,6 +3637,7 @@
       "model": "glm/glm-5-3-global",
       "matchingModel": "global.zai.glm-5.3",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3607,6 +3652,7 @@
       "model": "glm/glm-5-3-us",
       "matchingModel": "us.zai.glm-5.3",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3621,6 +3667,7 @@
       "model": "claude-haiku/claude-haiku-5-5",
       "matchingModel": "anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
@@ -3637,6 +3684,7 @@
       "model": "claude-haiku/claude-haiku-5-5-au",
       "matchingModel": "au.anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3651,6 +3699,7 @@
       "model": "claude-haiku/claude-haiku-5-5-eu",
       "matchingModel": "eu.anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3678,6 +3727,7 @@
       "model": "claude-haiku/claude-haiku-5-5-global",
       "matchingModel": "global.anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3692,6 +3742,7 @@
       "model": "claude-haiku/claude-haiku-5-5-jp",
       "matchingModel": "jp.anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3706,6 +3757,7 @@
       "model": "claude-haiku/claude-haiku-5-5-us",
       "matchingModel": "us.anthropic.claude-haiku-5-5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",

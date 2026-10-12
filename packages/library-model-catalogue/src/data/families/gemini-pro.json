@@ -109,10 +109,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.1,
+          "codingIndex": 33.3,
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -155,10 +155,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.1,
+          "codingIndex": 33.3,
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -249,10 +249,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 46.5,
+          "intelligenceIndex": 29.7,
           "codingIndex": 68.8,
-          "agenticIndex": 21.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 8.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -331,7 +331,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "November 18, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -341,10 +341,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
+          "intelligenceIndex": 28,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -374,7 +374,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "November 18, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -384,10 +384,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
+          "intelligenceIndex": 28,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -466,7 +466,7 @@
           ]
         },
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 3,
         "releaseDate": "May 28, 2026",
         "supportsToolCalls": false,
         "artificialAnalysis": {
@@ -478,10 +478,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1219,
+              "value": 1102,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -499,25 +499,8 @@
           "creative"
         ],
         "contextComplexity": 3,
-        "reliability": 4,
         "releaseDate": "November 20, 2025",
-        "supportsToolCalls": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1219,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 9
-            }
-          ]
-        }
+        "supportsToolCalls": false
       }
     }
   }

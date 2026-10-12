@@ -167,7 +167,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "May 18, 2026",
         "lastUpdated": "May 18, 2026",
         "costPer1kInputTokens": 0.00071,
@@ -205,6 +205,7 @@
           "document",
           "tool_use"
         ],
+        "speed": 3,
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00012,
@@ -312,6 +313,7 @@
         "name": "Qwen3.8-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "speed": 2,
         "isFeatured": true,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",

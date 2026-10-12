@@ -58,7 +58,7 @@
       "model": "nova/nova-micro",
       "matchingModel": "nova-micro-v1",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00014,
@@ -85,7 +85,7 @@
       "model": "nova/nova-pro",
       "matchingModel": "nova-pro-v1",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032

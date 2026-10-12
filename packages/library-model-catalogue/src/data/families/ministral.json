@@ -77,10 +77,10 @@
         "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.6,
+          "intelligenceIndex": 4.8,
           "codingIndex": 4.8,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -113,10 +113,10 @@
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.9,
-          "codingIndex": 11.4,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 5.5,
+          "codingIndex": 9.7,
+          "agenticIndex": 0.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

@@ -276,7 +276,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -288,10 +288,10 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.6,
+          "intelligenceIndex": 4.8,
           "codingIndex": 4.8,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -424,6 +424,7 @@
       "matchingModel": "zai-glm-5-3",
       "overrides": {
         "maxTokens": 131072,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {

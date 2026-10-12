@@ -13,11 +13,30 @@
       "creative",
       "video",
       "vision",
-      "audio"
+      "audio",
+      "document"
     ],
+    "contextComplexity": 4,
+    "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 938,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 11
+        }
+      ]
+    }
   },
   "description": "Fast video generation with text-to-video and image-to-video, portrait and landscape support, synchronized audio, and frame interpolation. Up to 20 seconds at 1080p, and 4K resolution.",
   "models": {

@@ -64,9 +64,10 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -515,10 +516,7 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.000497,
         "costPer1kOutputTokens": 0.004881
-      },
-      "unset": [
-        "strengths"
-      ]
+      }
     },
     "@cf/huggingface/distilbert-sst-2-int8": {
       "model": "workers-ai/@cf/huggingface/distilbert-sst-2-int8/distilbert-sst-2-int8",
@@ -536,7 +534,11 @@
         "lastUpdated": "October 2, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "@cf/meta/llama-3.1-8b-instruct-fp8": {
       "model": "llama/llama-3-1-8b-instruct-fp8",
@@ -612,7 +614,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -740,7 +742,7 @@
         "contextWindow": 262144,
         "maxTokens": 256000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -760,6 +762,7 @@
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-flash-0731",
       "overrides": {
         "maxTokens": 1048576,
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00132,
@@ -779,6 +782,7 @@
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
         "maxTokens": 1048576,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
@@ -792,11 +796,7 @@
           ],
           "defaultEffort": "high"
         }
-      },
-      "unset": [
-        "strengths",
-        "reliability"
-      ]
+      }
     },
     "@cf/qwen/qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
@@ -804,6 +804,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "maxTokens": 262144,
+        "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0032,
@@ -825,6 +826,7 @@
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "maxTokens": 1048576,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -848,6 +850,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,

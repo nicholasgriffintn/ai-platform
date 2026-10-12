@@ -74,10 +74,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 32.7,
+          "intelligenceIndex": 22,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

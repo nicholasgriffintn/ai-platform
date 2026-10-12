@@ -138,6 +138,13 @@
       "defaults": {
         "name": "Nex-N2-Pro",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "June 8, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -146,6 +153,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.2,
+          "codingIndex": 59.1,
+          "agenticIndex": 23.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

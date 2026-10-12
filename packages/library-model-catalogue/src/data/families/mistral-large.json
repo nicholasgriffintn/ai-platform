@@ -42,10 +42,10 @@
         "knowledgeCutoffDate": "November 30, 2024",
         "releaseDate": "February 26, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 4.4,
+          "intelligenceIndex": 5.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -78,10 +78,10 @@
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.9,
+          "intelligenceIndex": 9.3,
           "codingIndex": 20.1,
-          "agenticIndex": 5.5,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -108,6 +108,12 @@
       "defaults": {
         "name": "Mistral Large 4",
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "October 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -115,6 +121,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -124,6 +136,12 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
         "maxTokens": 524288,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "October 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -134,6 +152,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -157,10 +181,10 @@
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "November 1, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 4.4,
+          "intelligenceIndex": 5.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

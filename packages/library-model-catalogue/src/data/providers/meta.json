@@ -23,8 +23,10 @@
           "reasoning",
           "coding",
           "analysis",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
+        "speed": 4,
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -48,8 +50,10 @@
           "reasoning",
           "coding",
           "analysis",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -72,6 +76,7 @@
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It improves long-horizon agent collaboration, instruction following, and coding efficiency relative to Muse Spark 1.2.",
         "maxTokens": 131072,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -88,6 +93,18 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002
+      }
+    },
+    "muse-wonder-1.0": {
+      "model": "muse/muse-wonder",
+      "matchingModel": "muse-wonder-1.0",
+      "overrides": {
+        "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
+        "maxTokens": 131072,
+        "speed": 2,
+        "lastUpdated": "October 12, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02
       }
     }
   }

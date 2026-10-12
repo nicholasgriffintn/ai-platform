@@ -30,7 +30,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 16384,
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "releaseDate": "March 1, 2026",
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -117,7 +117,7 @@
         "contextWindow": 96000,
         "maxTokens": 96000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.00231,
@@ -274,6 +274,7 @@
           "document",
           "tool_use"
         ],
+        "speed": 3,
         "releaseDate": "February 1, 2026",
         "lastUpdated": "February 1, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -300,6 +301,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00058,

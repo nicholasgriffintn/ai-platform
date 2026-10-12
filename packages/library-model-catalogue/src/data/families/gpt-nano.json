@@ -33,10 +33,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.3,
-          "codingIndex": null,
+          "intelligenceIndex": 7.8,
+          "codingIndex": 11.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -58,10 +58,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.3,
-          "codingIndex": null,
+          "intelligenceIndex": 7.8,
+          "codingIndex": 11.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -84,10 +84,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.3,
-          "codingIndex": null,
+          "intelligenceIndex": 7.8,
+          "codingIndex": 11.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -96,6 +96,7 @@
         "description": "Cheapest GPT-5.4 lane for simple routing, extraction, and bulk automation",
         "contextWindow": 400000,
         "maxTokens": 128000,
+        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 17, 2026",
         "reasoningConfig": {
@@ -109,10 +110,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 17.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 20.7,
+          "codingIndex": 56.1,
+          "agenticIndex": 16,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -144,10 +145,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.9,
+          "intelligenceIndex": 13,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -180,10 +181,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.9,
+          "intelligenceIndex": 13,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

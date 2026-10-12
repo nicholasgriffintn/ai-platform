@@ -118,9 +118,18 @@
           "instruction",
           "coding",
           "reasoning",
-          "chat"
+          "chat",
+          "tool_use"
         ],
-        "supportsResponseFormat": true
+        "contextComplexity": 2,
+        "reliability": 1,
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "llama-3-1-405b-instruct": {
@@ -283,10 +292,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9.1,
+          "intelligenceIndex": 7.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -553,10 +562,10 @@
         "releaseDate": "April 5, 2025",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.3,
+          "intelligenceIndex": 10,
           "codingIndex": 16.3,
-          "agenticIndex": 1.3,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -641,7 +650,7 @@
         "name": "Llama 4 Scout",
         "description": "Open multimodal Llama model for long-context analysis and efficient agents",
         "contextWindow": 1310720,
-        "maxTokens": 16384,
+        "maxTokens": 117964,
         "modalities": {
           "input": [
             "text",
@@ -663,10 +672,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 8.1,
           "codingIndex": 8.2,
-          "agenticIndex": 1.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -732,10 +741,10 @@
         "releaseDate": "April 5, 2025",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 8.1,
           "codingIndex": 8.2,
-          "agenticIndex": 1.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -805,10 +814,10 @@
         "releaseDate": "April 5, 2025",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 8.1,
           "codingIndex": 8.2,
-          "agenticIndex": 1.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1064,10 +1073,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.3,
+          "intelligenceIndex": 10,
           "codingIndex": 16.3,
-          "agenticIndex": 1.3,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1076,8 +1085,8 @@
         "name": "Meta: Llama 4 Scout",
         "openWeights": false,
         "description": "Open multimodal Llama model for long-context analysis and efficient agents",
-        "contextWindow": 327680,
-        "maxTokens": 16384,
+        "contextWindow": 131072,
+        "maxTokens": 117964,
         "modalities": {
           "input": [
             "text",
@@ -1098,10 +1107,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 8.1,
           "codingIndex": 8.2,
-          "agenticIndex": 1.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 0.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

@@ -162,10 +162,10 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.1,
+          "intelligenceIndex": 9.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -837,10 +837,10 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
-          "intelligenceIndex": 24.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 14.7,
+          "codingIndex": 43.4,
+          "agenticIndex": 4.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -865,7 +865,7 @@
           "search",
           "research"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
@@ -1003,6 +1003,17 @@
       "matchingModel": "gemini-3.5-flash-lite",
       "overrides": {
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 4,
         "isFeatured": false,
         "lastUpdated": "July 21, 2026",
         "dataRetention": {
@@ -1015,16 +1026,24 @@
         "supportsUrlContext": true,
         "supportsCodeExecution": true,
         "supportsWebFetch": true
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
         "maxTokens": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -1169,6 +1188,12 @@
             "image"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "image"
+        ],
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -1176,10 +1201,7 @@
         },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.03
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemini-3.5-live-translate-preview": {
       "model": "gemini-pro/gemini-3-5-live-translate-preview",
@@ -1314,23 +1336,7 @@
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1223,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 8
-            }
-          ]
-        }
+        "supportsTemperature": false
       }
     },
     "veo-3.1-lite-generate-preview": {
@@ -1352,6 +1358,17 @@
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 4,
         "isFeatured": false,
         "lastUpdated": "August 13, 2026",
         "dataRetention": {
@@ -1371,6 +1388,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "dataRetention": {

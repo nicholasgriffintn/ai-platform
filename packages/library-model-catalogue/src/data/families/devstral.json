@@ -29,10 +29,10 @@
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 8.6,
+          "codingIndex": 31.3,
+          "agenticIndex": 2.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -79,10 +79,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 21, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.3,
+          "intelligenceIndex": 7.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -100,10 +100,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 13.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 7.5,
+          "codingIndex": 29.3,
+          "agenticIndex": 2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

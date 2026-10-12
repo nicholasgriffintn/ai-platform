@@ -31,10 +31,10 @@
         "contextWindow": 131072,
         "releaseDate": "May 7, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.5,
+          "intelligenceIndex": 9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -59,10 +59,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.9,
+          "intelligenceIndex": 14.2,
           "codingIndex": 46.9,
-          "agenticIndex": 19,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -99,10 +99,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 3.6,
+          "intelligenceIndex": 5.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -115,10 +115,10 @@
         "maxTokens": 131072,
         "releaseDate": "April 29, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 3.6,
+          "intelligenceIndex": 5.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -140,10 +140,10 @@
         },
         "releaseDate": "May 7, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.5,
+          "intelligenceIndex": 9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -165,10 +165,10 @@
         },
         "releaseDate": "August 13, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 14.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 9.2,
+          "codingIndex": 20.5,
+          "agenticIndex": 1.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -198,10 +198,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.9,
+          "intelligenceIndex": 14.2,
           "codingIndex": 46.9,
-          "agenticIndex": 19,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

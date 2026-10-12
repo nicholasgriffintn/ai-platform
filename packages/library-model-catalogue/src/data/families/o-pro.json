@@ -33,10 +33,10 @@
         "releaseDate": "March 19, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 18.9,
+          "intelligenceIndex": 12.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -52,10 +52,10 @@
         "releaseDate": "June 10, 2025",
         "supportsToolCalls": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 32.5,
+          "intelligenceIndex": 21.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

@@ -88,6 +88,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 393216,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,

@@ -14,15 +14,15 @@
         "decision"
       ]
     },
-    "releaseDate": "October 9, 2026",
     "strengths": [
       "decision",
       "analysis",
       "vision",
       "transcription"
     ],
+    "releaseDate": "October 9, 2026",
     "supportsToolCalls": false,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "Cloudflare Clef Omni returns calibrated probabilities for typed questions about text, images, audio and video.",

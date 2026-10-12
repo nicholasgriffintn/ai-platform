@@ -11,6 +11,8 @@
         "text"
       ]
     },
+    "contextComplexity": 5,
+    "reliability": 2,
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -55,7 +57,18 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "releaseDate": "September 10, 2026"
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "September 10, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "deepseek-v4-1-flash-eu": {
@@ -63,6 +76,11 @@
         "name": "DeepSeek V4.1 Flash (EU)",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "maxTokens": 393216,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "September 10, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -73,6 +91,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -80,6 +104,7 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash Fast",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 32768,
         "releaseDate": "September 10, 2026"
       }
     },
@@ -96,17 +121,16 @@
           ]
         },
         "strengths": [
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "contextComplexity": 5,
-        "reliability": 1,
         "releaseDate": "April 24, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 28.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -123,8 +147,18 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "July 31, 2026",
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "deepseek-v4-flash-0731-eu": {
@@ -140,6 +174,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -151,6 +189,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -167,6 +211,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -176,6 +224,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

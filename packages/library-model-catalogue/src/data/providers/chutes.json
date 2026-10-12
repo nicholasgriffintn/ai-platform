@@ -36,6 +36,7 @@
         "description": "Advanced DeepSeek V3 model hosted on Chutes.",
         "contextWindow": 75000,
         "maxTokens": 163840,
+        "speed": 3,
         "releaseDate": "August 1, 2025",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00018,
@@ -54,6 +55,7 @@
         "description": "Reasoning-optimized DeepSeek R1 model.",
         "contextWindow": 75000,
         "maxTokens": 163840,
+        "speed": 2,
         "releaseDate": "August 1, 2025",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00018,
@@ -123,7 +125,7 @@
         "description": "High-capacity instruction-tuned Qwen3 model.",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -139,7 +141,7 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008
@@ -221,11 +223,7 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.00215
-      },
-      "unset": [
-        "strengths",
-        "reliability"
-      ]
+      }
     },
     "deepseek-ai/DeepSeek-R1-TEE": {
       "model": "deepseek/deepseek-r1-tee",
@@ -244,6 +242,7 @@
         "name": "DeepSeek V3",
         "maxTokens": 163840,
         "contextComplexity": 4,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -467,6 +466,7 @@
       "matchingModel": "Qwen/Qwen2.5-72B-Instruct",
       "overrides": {
         "maxTokens": 32768,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0002989,
@@ -591,7 +591,7 @@
       "overrides": {
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 65536,
-        "speed": 4,
+        "speed": 3,
         "releaseDate": "February 5, 2026",
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00007,
@@ -628,7 +628,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -828,7 +828,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
@@ -879,8 +879,8 @@
       "matchingModel": "moonshotai/Kimi-K2.6-TEE",
       "overrides": {
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.00285,
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.00195,
         "supportsAttachments": true
       }
     },
@@ -917,7 +917,7 @@
       "matchingModel": "Qwen/Qwen3.6-27B-TEE",
       "overrides": {
         "lastUpdated": "April 22, 2026",
-        "costPer1kInputTokens": 0.0003,
+        "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "supportsAttachments": true
       }
@@ -953,7 +953,8 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reliability"
+        "reliability",
+        "contextComplexity"
       ]
     },
     "zai-org/GLM-5-TEE": {
@@ -1036,8 +1037,8 @@
       "overrides": {
         "isFeatured": true,
         "lastUpdated": "July 29, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
+        "costPer1kInputTokens": 0.00185,
+        "costPer1kOutputTokens": 0.0095,
         "supportsAttachments": true
       }
     },
@@ -1048,7 +1049,11 @@
         "lastUpdated": "August 2, 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00132
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "Qwen/Qwen3.8-27B-TEE": {
       "model": "qwen/qwen3-8-27b-tee",
@@ -1056,8 +1061,8 @@
       "overrides": {
         "isFeatured": true,
         "lastUpdated": "August 16, 2026",
-        "costPer1kInputTokens": 0.00024,
-        "costPer1kOutputTokens": 0.0022,
+        "costPer1kInputTokens": 0.000039,
+        "costPer1kOutputTokens": 0.00125,
         "supportsAttachments": true
       }
     }

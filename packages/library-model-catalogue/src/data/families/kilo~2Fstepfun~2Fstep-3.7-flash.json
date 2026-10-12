@@ -20,7 +20,7 @@
       "tool_use"
     ],
     "contextComplexity": 4,
-    "reliability": 1,
+    "reliability": 2,
     "knowledgeCutoffDate": "March 1, 2026",
     "releaseDate": "May 29, 2026",
     "supportsToolCalls": true,
@@ -36,10 +36,10 @@
       "defaultEffort": "low"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 29.7,
-      "codingIndex": 37.3,
-      "agenticIndex": 21.5,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndex": 19.5,
+      "codingIndex": 39.6,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The kilo/stepfun/step 3.7 flash family includes models that produce text.",

@@ -28,10 +28,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 24.5,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndex": 10.8,
+      "codingIndex": 25.8,
+      "agenticIndex": 1,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The openrouter/arcee ai/trinity large thinking:free family includes models that produce text.",

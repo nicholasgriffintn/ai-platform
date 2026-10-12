@@ -10,6 +10,9 @@
         "text"
       ]
     },
+    "strengths": [
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -23,9 +26,6 @@
         "name": "Solar Pro 3",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "maxTokens": 117964,
-        "strengths": [
-          "tool_use"
-        ],
         "reliability": 1,
         "releaseDate": "January 27, 2026",
         "reasoningConfig": {
@@ -39,10 +39,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.1,
+          "intelligenceIndex": 7.8,
           "codingIndex": 16.2,
-          "agenticIndex": 2.7,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -52,6 +52,7 @@
         "description": "Upstage's flagship model, specialized for agentic use",
         "contextWindow": 524288,
         "maxTokens": 131072,
+        "reliability": 2,
         "knowledgeCutoffDate": "February 2026",
         "releaseDate": "August 6, 2026",
         "reasoningConfig": {
@@ -65,6 +66,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.2,
+          "codingIndex": 52.7,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -114,9 +121,6 @@
         "name": "Upstage: Solar Pro 3",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "maxTokens": 117964,
-        "strengths": [
-          "tool_use"
-        ],
         "reliability": 1,
         "releaseDate": "January 27, 2026",
         "reasoningConfig": {
@@ -130,10 +134,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.1,
+          "intelligenceIndex": 7.8,
           "codingIndex": 16.2,
-          "agenticIndex": 2.7,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

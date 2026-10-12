@@ -38,7 +38,7 @@
           "creative",
           "video"
         ],
-        "reliability": 4,
+        "reliability": 5,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -46,12 +46,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1179,
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1255,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -77,7 +77,7 @@
           "image"
         ],
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 1,
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "artificialAnalysis": {
@@ -89,7 +89,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1054,
+              "value": 862,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -135,9 +135,33 @@
             "video"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
         "releaseDate": "July 31, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1356,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
       }
     },
     "minimax-h3-max": {
@@ -156,9 +180,32 @@
             "video"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 27, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1118,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
       }
     },
     "minimax-latest": {
@@ -202,10 +249,10 @@
         "releaseDate": "June 17, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 17.7,
+          "intelligenceIndex": 11.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -221,10 +268,10 @@
         "releaseDate": "October 27, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 28.3,
+          "intelligenceIndex": 18.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -241,10 +288,10 @@
         "reliability": 1,
         "releaseDate": "December 23, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 31.4,
+          "intelligenceIndex": 20.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -281,10 +328,10 @@
         "reliability": 1,
         "releaseDate": "February 12, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 33.7,
+          "intelligenceIndex": 22.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -302,10 +349,10 @@
         "releaseDate": "February 12, 2026",
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 33.7,
+          "intelligenceIndex": 22.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -347,10 +394,10 @@
         "reliability": 2,
         "releaseDate": "March 18, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 38.1,
+          "intelligenceIndex": 22.8,
           "codingIndex": 52.6,
-          "agenticIndex": 25.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 15.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -365,10 +412,10 @@
         "reliability": 2,
         "releaseDate": "March 18, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 38.1,
+          "intelligenceIndex": 22.8,
           "codingIndex": 52.6,
-          "agenticIndex": 25.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 15.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -436,10 +483,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 44.4,
+          "intelligenceIndex": 29.2,
           "codingIndex": 58.6,
-          "agenticIndex": 35.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 29.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -481,10 +528,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.4,
+          "intelligenceIndex": 29.2,
           "codingIndex": 58.6,
-          "agenticIndex": 35.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 29.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -497,10 +544,10 @@
         "releaseDate": "June 1, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 44.4,
+          "intelligenceIndex": 29.2,
           "codingIndex": 58.6,
-          "agenticIndex": 35.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 29.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
