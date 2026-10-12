@@ -72,6 +72,87 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
     ],
   },
   {
+    id: "waiting-on-you",
+    title: "Waiting on You",
+    summary: "Find the reviews, issues, threads and emails that are waiting for your reply.",
+    description:
+      "Checks every connected work source for items where someone is waiting on you personally: review requests, issues assigned to you, mentions, Slack threads where someone else spoke last, and important emails you have not answered. It returns a short ranked list, each with the source link and one suggested next step, and never replies, closes, or changes anything itself.",
+    kind: "automate",
+    category: "Productivity",
+    featured: true,
+    enabledTools: [RECIPE_CONNECTOR_TOOL],
+    integrations: [
+      {
+        id: "github",
+        providerId: "github",
+        name: "GitHub",
+        description:
+          "Finds open pull requests awaiting your review, open work assigned to you, and recent mentions.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GITHUB_SEARCH_ISSUES_AND_PULL_REQUESTS"],
+      },
+      {
+        id: "linear",
+        providerId: "linear",
+        name: "Linear",
+        description: "Lists unfinished issues assigned to you.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["LINEAR_LIST_LINEAR_ISSUES"],
+      },
+      {
+        id: "slack",
+        providerId: "slack",
+        name: "Slack",
+        description: "Searches recent mentions and direct messages where someone else spoke last.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["SLACK_SEARCH_MESSAGES"],
+      },
+      {
+        id: "gmail",
+        providerId: "gmail",
+        name: "Gmail",
+        description:
+          "Finds important threads where the last message is to you and you have not replied.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GMAIL_FETCH_EMAILS"],
+      },
+    ],
+    triggers: [
+      {
+        type: "message",
+        label: "Ask what is waiting on you",
+        description: "Ask Polychat what needs your reply.",
+      },
+      {
+        type: "schedule",
+        label: "Regular check",
+        description: "Check a few times a day so the Poly can tell you about anything urgent.",
+      },
+    ],
+    actions: [
+      "Read every connected source for the past seven days, as you, the person the account belongs to",
+      "Keep only items where someone is waiting on you: a requested review, open work assigned to you, a mention or question to you, a direct or threaded conversation where someone else spoke last, or an important email to you with no reply from you later in the thread",
+      "Drop anything closed, merged, resolved, already answered by you, sent by a bot, or that only mentions you in passing",
+      "Rank by who is blocked and how long they have waited, then list at most ten items, each starting with a verb, with the source link, who is waiting, since when, and one suggested next step",
+      "Say plainly which sources could not be read, and never reply, close, assign, or change anything",
+    ],
+    setupPrompt:
+      "Set up the Waiting on You recipe. Use every connected work source unless I say otherwise, ask whether to check on a schedule, then list what is waiting on me with links and one suggested next step each. Never reply, close, or change anything for me.",
+    configurationFields: [
+      preferredConnectorsField,
+      {
+        key: "ignore",
+        label: "Leave out",
+        type: "textarea",
+        placeholder: "Repositories, channels, senders, or labels that never need your reply",
+      },
+    ],
+  },
+  {
     id: "add-deadlines-to-calendar",
     title: "Add Deadlines to Calendar",
     summary: "Turn deadline emails into reviewed calendar events.",
