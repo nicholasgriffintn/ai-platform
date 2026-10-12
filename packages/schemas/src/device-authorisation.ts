@@ -3,7 +3,6 @@ import z from "zod/v4";
 export const DEVICE_CODE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code" as const;
 export const DEVICE_CODE_EXPIRES_IN_SECONDS = 600;
 export const DEVICE_CODE_POLL_INTERVAL_SECONDS = 10;
-export const DEVICE_CODE_SLOW_DOWN_SECONDS = 5;
 export const DEVICE_USER_CODE_ALPHABET = "BCDFGHJKLMNPQRSTVWXZ";
 export const DEVICE_USER_CODE_LENGTH = 8;
 
@@ -64,21 +63,21 @@ export const deviceTokenResponseSchema = z.object({
 
 export type DeviceTokenResponse = z.infer<typeof deviceTokenResponseSchema>;
 
-export const deviceAuthorizationSchema = z.object({
+export const deviceAuthorisationSchema = z.object({
   userCode: z.string().min(1),
   clientName: z.string().min(1),
   createdAt: z.string(),
   expiresAt: z.string(),
 });
 
-export type DeviceAuthorization = z.infer<typeof deviceAuthorizationSchema>;
+export type DeviceAuthorisation = z.infer<typeof deviceAuthorisationSchema>;
 
-export const deviceAuthorizationParamsSchema = z.object({
+export const deviceAuthorisationParamsSchema = z.object({
   userCode: z.string().trim().min(1).max(20),
 });
 
-export const deviceAuthorizationDecisionSchema = z.object({
+export const deviceAuthorisationDecisionSchema = z.object({
   decision: z.enum(["approve", "deny"]),
 });
 
-export type DeviceAuthorizationDecision = z.infer<typeof deviceAuthorizationDecisionSchema>;
+export type DeviceAuthorisationDecision = z.infer<typeof deviceAuthorisationDecisionSchema>;

@@ -176,30 +176,6 @@ export const authenticationToken = sqliteTable(
   }),
 );
 
-export const deviceAuthorization = sqliteTable(
-  "device_authorization",
-  {
-    device_code_hash: text().primaryKey(),
-    user_code: text().notNull(),
-    client_name: text().notNull(),
-    status: text({ enum: ["pending", "approved", "denied", "consumed"] })
-      .notNull()
-      .default("pending"),
-    user_id: integer().references(() => user.id, { onDelete: "cascade" }),
-    interval_seconds: integer().notNull(),
-    last_polled_at: text(),
-    created_at: text().notNull(),
-    expires_at: text().notNull(),
-    decided_at: text(),
-  },
-  (table) => ({
-    userCodeIdx: uniqueIndex("device_authorization_user_code_idx").on(table.user_code),
-    expiresAtIdx: index("device_authorization_expires_at_idx").on(table.expires_at),
-  }),
-);
-
-export type DeviceAuthorizationRow = typeof deviceAuthorization.$inferSelect;
-
 export const notificationEndpoint = sqliteTable(
   "notification_endpoint",
   {

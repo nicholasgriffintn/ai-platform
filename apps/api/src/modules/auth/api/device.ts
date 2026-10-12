@@ -1,7 +1,7 @@
 import {
-  deviceAuthorizationDecisionSchema,
-  deviceAuthorizationParamsSchema,
-  deviceAuthorizationSchema,
+  deviceAuthorisationDecisionSchema,
+  deviceAuthorisationParamsSchema,
+  deviceAuthorisationSchema,
   deviceCodeRequestSchema,
   deviceCodeResponseSchema,
   deviceTokenRequestSchema,
@@ -13,11 +13,11 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
-  decideDeviceAuthorization,
-  getDeviceAuthorization,
-  pollDeviceAuthorization,
-  startDeviceAuthorization,
-} from "~/modules/auth/application/device-authorization";
+  decideDeviceAuthorisation,
+  getDeviceAuthorisation,
+  pollDeviceAuthorisation,
+  startDeviceAuthorisation,
+} from "~/modules/auth/application/device-authorisation";
 
 const app = new Hono();
 
@@ -34,7 +34,7 @@ addRoute(app, "post", "/code", {
   handler: async ({ body, raw, serviceContext }) => {
     raw.header("Cache-Control", "no-store");
 
-    return startDeviceAuthorization(serviceContext, body.client_name);
+    return startDeviceAuthorisation(serviceContext, body.client_name);
   },
 });
 
@@ -53,7 +53,7 @@ addRoute(app, "post", "/token", {
   },
   handler: async ({ body, raw, serviceContext }) => {
     raw.header("Cache-Control", "no-store");
-    const result = await pollDeviceAuthorization(serviceContext, body.device_code);
+    const result = await pollDeviceAuthorisation(serviceContext, body.device_code);
 
     return "error" in result ? raw.json(result, 400) : result;
   },
@@ -63,21 +63,21 @@ addRoute(app, "get", "/:userCode", {
   tags: ["auth"],
   summary: "Read a pending device sign-in",
   auth: true,
-  paramSchema: deviceAuthorizationParamsSchema,
+  paramSchema: deviceAuthorisationParamsSchema,
   responses: {
-    200: { description: "Pending device sign-in", schema: deviceAuthorizationSchema },
+    200: { description: "Pending device sign-in", schema: deviceAuthorisationSchema },
     404: { description: "Expired or already used", schema: errorResponseSchema },
   },
   handler: async ({ params, serviceContext }) =>
-    getDeviceAuthorization(serviceContext, params.userCode),
+    getDeviceAuthorisation(serviceContext, params.userCode),
 });
 
 addRoute(app, "post", "/:userCode/decision", {
   tags: ["auth"],
   summary: "Approve or deny a device sign-in",
   auth: true,
-  paramSchema: deviceAuthorizationParamsSchema,
-  bodySchema: deviceAuthorizationDecisionSchema,
+  paramSchema: deviceAuthorisationParamsSchema,
+  bodySchema: deviceAuthorisationDecisionSchema,
   responses: {
     200: {
       description: "Decision recorded",
@@ -86,7 +86,7 @@ addRoute(app, "post", "/:userCode/decision", {
     404: { description: "Expired or already used", schema: errorResponseSchema },
   },
   handler: async ({ params, body, serviceContext }) =>
-    decideDeviceAuthorization(serviceContext, params.userCode, body.decision),
+    decideDeviceAuthorisation(serviceContext, params.userCode, body.decision),
 });
 
 export default app;

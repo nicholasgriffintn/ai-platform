@@ -1,15 +1,15 @@
 import type {
-  DeviceAuthorization,
-  DeviceAuthorizationDecision,
+  DeviceAuthorisation,
+  DeviceAuthorisationDecision,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
 
-export class DeviceAuthorizationService {
+export class DeviceAuthorisationService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async getDeviceAuthorization(userCode: string): Promise<DeviceAuthorization> {
+  async getDeviceAuthorisation(userCode: string): Promise<DeviceAuthorisation> {
     const response = await fetchApi(`/auth/device/${encodeURIComponent(userCode)}`, {
       method: "GET",
       headers: await this.getHeaders(),
@@ -19,12 +19,12 @@ export class DeviceAuthorizationService {
       throw await createApiErrorFromResponse(response, "That code could not be checked");
     }
 
-    return returnFetchedData<DeviceAuthorization>(response);
+    return returnFetchedData<DeviceAuthorisation>(response);
   }
 
-  async decideDeviceAuthorization(
+  async decideDeviceAuthorisation(
     userCode: string,
-    decision: DeviceAuthorizationDecision["decision"],
+    decision: DeviceAuthorisationDecision["decision"],
   ): Promise<{ status: "approved" | "denied" }> {
     const response = await fetchApi(`/auth/device/${encodeURIComponent(userCode)}/decision`, {
       method: "POST",

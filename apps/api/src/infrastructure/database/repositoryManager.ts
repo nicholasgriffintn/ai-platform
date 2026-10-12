@@ -9,7 +9,6 @@ import { RecipeWebhookTriggerRepository } from "~/modules/apps/infrastructure/Re
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
-import { DeviceAuthorizationRepository } from "~/modules/auth/infrastructure/DeviceAuthorizationRepository";
 import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
@@ -95,7 +94,6 @@ export {
   ConversationRepository,
   ConversationRunRepository,
   DelegationRepository,
-  DeviceAuthorizationRepository,
   ConversationOrganisationRepository,
   CapabilityConfigurationRepository,
   ComposioConnectorSessionRepository,
@@ -253,10 +251,6 @@ export class RepositoryManager {
 
   public get audit(): AuditRepository {
     return this.resolve("audit", (env) => new AuditRepository(env));
-  }
-
-  public get deviceAuthorizations(): DeviceAuthorizationRepository {
-    return this.resolve("deviceAuthorizations", (env) => new DeviceAuthorizationRepository(env));
   }
 
   public get oauthStates(): OAuthStateRepository {

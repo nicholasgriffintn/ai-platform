@@ -7,8 +7,8 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
-  DeviceAuthorization,
-  DeviceAuthorizationDecision,
+  DeviceAuthorisation,
+  DeviceAuthorisationDecision,
   PolyAgenda,
   PolyHandoffDisagreement,
   PolyHome,
@@ -46,7 +46,7 @@ import {
   type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service.js";
-import { DeviceAuthorizationService } from "./services/device-authorization-service.js";
+import { DeviceAuthorisationService } from "./services/device-authorisation-service.js";
 import { MachineService } from "./services/machine-service.js";
 import { PolyService } from "./services/poly-service.js";
 import { ResearchService } from "./services/research-service.js";
@@ -68,7 +68,7 @@ class ApiService {
   private userService: UserService;
   private machineService: MachineService;
   private polyService: PolyService;
-  private deviceAuthorizationService: DeviceAuthorizationService;
+  private deviceAuthorisationService: DeviceAuthorisationService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
   private researchService: ResearchService;
@@ -80,7 +80,7 @@ class ApiService {
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
     this.polyService = new PolyService(getHeaders);
-    this.deviceAuthorizationService = new DeviceAuthorizationService(getHeaders);
+    this.deviceAuthorisationService = new DeviceAuthorisationService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
     this.researchService = new ResearchService(getHeaders);
@@ -252,14 +252,14 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
-  getDeviceAuthorization = (userCode: string): Promise<DeviceAuthorization> =>
-    this.deviceAuthorizationService.getDeviceAuthorization(userCode);
+  getDeviceAuthorisation = (userCode: string): Promise<DeviceAuthorisation> =>
+    this.deviceAuthorisationService.getDeviceAuthorisation(userCode);
 
-  decideDeviceAuthorization = (
+  decideDeviceAuthorisation = (
     userCode: string,
-    decision: DeviceAuthorizationDecision["decision"],
+    decision: DeviceAuthorisationDecision["decision"],
   ): Promise<{ status: "approved" | "denied" }> =>
-    this.deviceAuthorizationService.decideDeviceAuthorization(userCode, decision);
+    this.deviceAuthorisationService.decideDeviceAuthorisation(userCode, decision);
 
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 

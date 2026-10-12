@@ -1,8 +1,8 @@
 import { Button, FormInput, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import {
   useAuthStatus,
-  useDecideDeviceAuthorization,
-  useDeviceAuthorization,
+  useDecideDeviceAuthorisation,
+  useDeviceAuthorisation,
 } from "@ngriffin_uk/polychat-library-react";
 import { formatDeviceUserCode, normaliseDeviceUserCode } from "@ngriffin_uk/polychat-schemas";
 import { Loader2, MonitorSmartphone } from "lucide-react";
@@ -58,8 +58,8 @@ function DeviceCodeForm({
 }
 
 function DeviceDecision({ userCode, onReset }: { userCode: string; onReset: () => void }) {
-  const authorization = useDeviceAuthorization(userCode);
-  const decide = useDecideDeviceAuthorization(userCode);
+  const authorisation = useDeviceAuthorisation(userCode);
+  const decide = useDecideDeviceAuthorisation(userCode);
 
   if (decide.data) {
     return (
@@ -75,7 +75,7 @@ function DeviceDecision({ userCode, onReset }: { userCode: string; onReset: () =
     );
   }
 
-  if (authorization.isLoading) {
+  if (authorisation.isLoading) {
     return (
       <PageStatus
         icon={<Loader2 size={32} className="animate-spin text-active-work" />}
@@ -85,11 +85,11 @@ function DeviceDecision({ userCode, onReset }: { userCode: string; onReset: () =
     );
   }
 
-  if (!authorization.data) {
+  if (!authorisation.data) {
     return (
       <PageStatus
         title="Code not recognised"
-        message={authorization.error?.message ?? "This code has expired or was already used."}
+        message={authorisation.error?.message ?? "This code has expired or was already used."}
         className="h-auto min-h-[240px]"
       >
         <Button variant="secondary" onClick={onReset}>
@@ -102,8 +102,8 @@ function DeviceDecision({ userCode, onReset }: { userCode: string; onReset: () =
   return (
     <PageStatus
       icon={<MonitorSmartphone size={32} />}
-      title={`Sign in ${authorization.data.clientName}?`}
-      message={`Only approve this if you started sign-in on that device and it shows ${authorization.data.userCode}. It will get an API key that can act as you until you revoke it.`}
+      title={`Sign in ${authorisation.data.clientName}?`}
+      message={`Only approve this if you started sign-in on that device and it shows ${authorisation.data.userCode}. It will get an API key that can act as you until you revoke it.`}
       className="h-auto min-h-[240px]"
     >
       <div className="flex flex-col items-center gap-3">

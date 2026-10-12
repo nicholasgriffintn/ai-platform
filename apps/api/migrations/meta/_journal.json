@@ -92,13 +92,6 @@
       "when": 1791715537545,
       "tag": "0012_task_plan_record",
       "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "6",
-      "when": 1791829557440,
-      "tag": "0013_device_authorization",
-      "breakpoints": true
     }
   ]
 }
