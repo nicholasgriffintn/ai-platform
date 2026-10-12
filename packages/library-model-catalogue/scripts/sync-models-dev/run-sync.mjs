@@ -12,6 +12,7 @@ import { syncCatalogue } from "./catalogue-sync.mjs";
 import {
   fetchApiData,
   fetchArtificialAnalysisData,
+  triggerArtificialAnalysisIngest,
   validateRemoteProviders,
 } from "./remote-clients.mjs";
 
@@ -95,6 +96,17 @@ export async function runSyncModelsDev(options) {
   );
   if (!options.write && (outputs.length || removedFiles.length)) {
     console.log("Dry run only. Re-run with --write to apply changes.");
+  }
+
+  if (options.triggerAnalysisTask) {
+    const taskId = await triggerArtificialAnalysisIngest({
+      apiUrl: options.polychatApiBaseUrl,
+      apiKey: options.polychatApiKey,
+      write: options.write,
+      stats,
+    });
+
+    console.log(`Queued the Artificial Analysis ingest${taskId ? ` as task ${taskId}` : ""}.`);
   }
 
   return { ...stats, changedFiles: outputs.length + removedFiles.length };

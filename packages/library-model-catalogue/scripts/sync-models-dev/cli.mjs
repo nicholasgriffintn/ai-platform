@@ -10,6 +10,7 @@ export function parseArgs(argv) {
     modelsDir: DEFAULT_MODELS_DIR,
     write: false,
     verbose: false,
+    triggerAnalysisTask: false,
     help: false,
     providers: new Set(),
     polychatApiBaseUrl: process.env.POLYCHAT_API_BASE_URL || POLYCHAT_API_BASE_URL_DEFAULT,
@@ -37,6 +38,11 @@ export function parseArgs(argv) {
 
     if (arg === "--verbose") {
       options.verbose = true;
+      continue;
+    }
+
+    if (arg === "--trigger-analysis-task") {
+      options.triggerAnalysisTask = true;
       continue;
     }
 
@@ -120,10 +126,11 @@ Options:
   --snapshot <path>       Read a saved models.dev API snapshot, without network access
   --save-snapshot <path>  Save the models.dev input for replay (requires --write)
   --verbose               Print per-file details
+  --trigger-analysis-task Queue the Artificial Analysis ingest once the sync finishes
   --help, -h              Show this help
 
 Environment:
   POLYCHAT_API_BASE_URL   Polychat API base URL (defaults to ${POLYCHAT_API_BASE_URL_DEFAULT})
-  POLYCHAT_API_KEY        API key used to read cached Artificial Analysis data (live sync only)
+  POLYCHAT_API_KEY        API key used to read cached Artificial Analysis data and queue its ingest
 `);
 }

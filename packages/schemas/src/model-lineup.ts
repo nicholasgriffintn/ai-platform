@@ -230,11 +230,6 @@ const HOSTED_LINEUP: TierLineup = {
       { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
       { model: "glm-5.3-flash", provider: "zai", effort: "low" },
       { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
-      {
-        model: "google-ai-studio/gemini-3.1-flash-lite",
-        provider: "google-ai-studio",
-        effort: "low",
-      },
       ...hostedFreeAgent.low,
     ],
     coding: [
@@ -572,12 +567,14 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "decision",
 ];
 
+const LINEUP_OUTPUTS: ModelModality[] = ["text", "decision"];
+
 export function isLineupEligibleModel(model: ModelConfigItem) {
   return (
     isActiveModel(model) &&
     model.modalities?.input.includes("text") === true &&
-    model.modalities.output?.length === 1 &&
-    model.modalities.output[0] === "text" &&
+    model.modalities.output?.includes("text") === true &&
+    model.modalities.output.every((output) => LINEUP_OUTPUTS.includes(output)) &&
     !model.supportsRealtimeSession &&
     !NON_CHAT_STRENGTHS.some((strength) => model.strengths?.includes(strength)) &&
     !isStealthModel(model)

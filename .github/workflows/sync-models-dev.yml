@@ -34,7 +34,7 @@ jobs:
         env:
           POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ANALYSIS_TASK_API_KEY }}
           POLYCHAT_API_BASE_URL: https://api.polychat.app
-        run: pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --write --verbose
+        run: pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --write --verbose --trigger-analysis-task
       - name: Commit model updates
         id: sync-commit
         env:
