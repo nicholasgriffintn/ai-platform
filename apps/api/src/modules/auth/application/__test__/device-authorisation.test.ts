@@ -12,9 +12,7 @@ function at(seconds: number): Date {
 
 describe("evaluateDevicePoll", () => {
   it("lets a client poll once per interval since it started", () => {
-    expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 0 }, at(0))).toBe(
-      "check_decision",
-    );
+    expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 0 }, at(0))).toBe("check_decision");
     expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 1 }, at(10))).toBe(
       "check_decision",
     );
