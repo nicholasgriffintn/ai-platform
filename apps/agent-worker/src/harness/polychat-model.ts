@@ -1,4 +1,3 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { Model, Provider } from "@earendil-works/pi-ai";
 import {
   stream as streamOpenAICompletions,
@@ -13,20 +12,12 @@ import {
 export const POLYCHAT_PROVIDER_ID = "polychat";
 export const POLYCHAT_MODEL_BASE_URL = "https://polychat-api/agents/model";
 const MODEL_PORT_KEY = "delegated";
-const OPENCODE_CARRIER_PACKAGE = "aisdk:@ai-sdk/openai-compatible";
+const OPENCODE_PROVIDER_PACKAGE = "@opencode/ai/providers/openai-compatible";
+const MODEL_PORT_PATH = "/agents/model";
 const DEFAULT_CONTEXT_WINDOW = 128_000;
 const DEFAULT_MAX_OUTPUT_TOKENS = 16_384;
 
 export type ModelFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-
-export function polychatLanguageModel(modelId: string, fetch: ModelFetch) {
-  return createOpenAICompatible({
-    name: POLYCHAT_PROVIDER_ID,
-    baseURL: POLYCHAT_MODEL_BASE_URL,
-    fetch,
-    includeUsage: true,
-  }).chatModel(modelId);
-}
 
 export function polychatPiModel(modelId: string): Model<"openai-completions"> {
   return {
@@ -75,11 +66,13 @@ export function polychatPiProvider(
 
 export function polychatOpenCodePlugin(params: {
   agent: string;
+  apiUrl: string;
   currentModel: () => string | undefined;
   currentInstructions: () => string | undefined;
-  fetch: ModelFetch;
+  currentHeaders: () => Record<string, string> | undefined;
 }) {
-  const { agent, currentModel, currentInstructions, fetch } = params;
+  const { agent, apiUrl, currentModel, currentInstructions, currentHeaders } = params;
+  const baseURL = new URL(MODEL_PORT_PATH, apiUrl).toString();
   const providerID = OpenCodeProvider.ID.make(POLYCHAT_PROVIDER_ID);
   const reloads = new Set<() => Promise<void>>();
   const plugin: Plugin.Plugin = {
@@ -93,27 +86,21 @@ export function polychatOpenCodePlugin(params: {
             id: providerID,
             name: "Polychat",
             activation: "enabled",
-            package: OPENCODE_CARRIER_PACKAGE,
-            settings: { baseURL: POLYCHAT_MODEL_BASE_URL, apiKey: MODEL_PORT_KEY },
+            package: OPENCODE_PROVIDER_PACKAGE,
+            settings: { baseURL },
           },
           models: model
             ? [
                 {
                   ...OpenCodeModel.Info.default(providerID, OpenCodeModel.ID.make(model)),
-                  package: OPENCODE_CARRIER_PACKAGE,
+                  package: OPENCODE_PROVIDER_PACKAGE,
+                  headers: currentHeaders() ?? {},
                   limit: { context: DEFAULT_CONTEXT_WINDOW, output: DEFAULT_MAX_OUTPUT_TOKENS },
                 },
               ]
             : [],
         });
       });
-      const hook = await context.aisdk.hook(
-        "language",
-        (event) => {
-          event.language = polychatLanguageModel(event.model.id, fetch);
-        },
-        { providerID },
-      );
       const agentTransform = await context.agent.transform((editor) => {
         const instructions = currentInstructions();
 
@@ -132,7 +119,6 @@ export function polychatOpenCodePlugin(params: {
 
       return async () => {
         reloads.delete(reload);
-        await hook.dispose();
         await agentTransform.dispose();
         await transform.dispose();
       };

@@ -77,10 +77,7 @@ export abstract class HarnessHost extends DurableObject<Env> {
     }
   }
 
-  protected readonly modelFetch = async (
-    input: RequestInfo | URL,
-    init?: RequestInit,
-  ): Promise<Response> => {
+  protected async modelHeaders(): Promise<Record<string, string>> {
     const binding = this.binding();
     const secret = this.env.JWT_SECRET?.trim();
 
@@ -88,15 +85,24 @@ export abstract class HarnessHost extends DurableObject<Env> {
       throw new Error("The agent worker is missing JWT_SECRET");
     }
 
+    return {
+      [INTERNAL_SERVICE_AUTHORIZATION_HEADER]: `Bearer ${await createInternalServiceDelegationToken(secret, binding.userId)}`,
+      "x-polychat-conversation-id": binding.conversationId,
+    };
+  }
+
+  protected readonly modelFetch = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
     const request = new Request(input, init);
     const headers = new Headers(request.headers);
 
     headers.delete("Authorization");
-    headers.set(
-      INTERNAL_SERVICE_AUTHORIZATION_HEADER,
-      `Bearer ${await createInternalServiceDelegationToken(secret, binding.userId)}`,
-    );
-    headers.set("x-polychat-conversation-id", binding.conversationId);
+
+    for (const [name, value] of Object.entries(await this.modelHeaders())) {
+      headers.set(name, value);
+    }
 
     const response = await this.env.POLYCHAT_API.fetch(new Request(request, { headers }));
 

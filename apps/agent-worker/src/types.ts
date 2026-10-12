@@ -19,6 +19,7 @@ export interface WorkspaceRpc extends Rpc.DurableObjectBranded {
 
 export interface Env {
   POLYCHAT_API: Fetcher;
+  POLYCHAT_API_URL: string;
   JWT_SECRET?: string;
   PI_AGENT: DurableObjectNamespace<PiAgent>;
   OPENCODE_AGENT: DurableObjectNamespace<OpenCodeAgent>;
