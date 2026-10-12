@@ -1,0 +1,53 @@
+# @ngriffin_uk/polychat-component-sites
+
+## 0.2.0
+
+### Minor Changes
+
+- 57f8a16: Add Sites, a generative site builder that works from one brief. Jev classifies the brief into a plan (kind, scope, tone, palette, model tier), a tier-selected coding model streams the site as JSON Patch lines against a guardrailed component catalogue, and the shell renders every patch the moment it lands. `library-sites` holds the catalogue, patch stream compiler, validator and repair, prompt assembly, theme tokens and a deterministic Next.js and Tailwind code generator; `component-sites` holds the live React registry, themed preview and code view. Sites persist as revisioned outputs, refine in follow-ups, export as runnable project files, and hand off to a project's sandbox for a full build. The SSE buffer parser now lives once in `utility-core`. Sites are interactive (state, bindings, visibility, repeat, filters and actions in both the live renderer and the generated code), editable in place through an element inspector with zero-token edits and scoped refinement, exportable straight to a pull request with generated images, embeddable in chat through the `build_site` tool, revisioned with restore and public preview links, and judged by Jev at planning, refinement, quality-scoring and prompt-evaluation time.
+
+### Patch Changes
+
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [dd4389b]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-library-sites@0.2.0

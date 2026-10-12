@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-composio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The Polychat Composio catalogue: configured toolkit data, the schema that resolves it into connector operations, the session handle contract, and the sync that maintains them",
   "license": "Apache-2.0",
   "files": [
