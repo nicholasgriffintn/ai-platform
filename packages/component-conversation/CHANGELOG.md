@@ -1,5 +1,88 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 2.0.0
+
+### Major Changes
+
+- 1df361b: Remove unused public exports and dead helpers, consolidate duplicated duration, identifier, status, model-grouping, JSON, SMS and timing-safe comparison logic into shared modules, narrow the desktop backend option types to the interfaces each runner uses, and surface previously silent validation and rewrite failures in the UI.
+
+### Minor Changes
+
+- dd4389b: Let the model edit a large artifact without rewriting it. An artifact tagged `mode="edit"` carries FIND/REPLACE blocks, and the API applies them to the latest version of that artifact when the turn finishes, storing and sending the full updated artifact. Each FIND must match exactly once. While a reply streams the thread shows that the artifact is updating, and an edit that cannot be applied is reported rather than rendered.
+- dd4389b: Let React artifacts show live data and charts. An artifact can declare read-only connector reads in a leading `<bindings>` block and read them with `usePolychatData` from `@polychat/data`. The host runs each read through the API, which takes the declaration from the stored message, refuses operations that change anything, only lets a refetch change declared arguments, caches results for a minute and rate-limits each artifact. React artifacts now compile with Sucrase instead of Babel standalone, can import `recharts`, and are assembled without string replacement, so `$` sequences and `</script>` in component source no longer corrupt the page.
+- 1e5cafb: Let `ask_user` ask for a file. A question can set `requestsFile`, the question card offers an "Attach a file" button for it, and the chosen files are uploaded with the same model rules as composer attachments and sent with the answers.
+- 462cbe7: Queue follow-ups while a Chat reply is running. The composer stays open during a reply and queues what you type, up to ten messages per conversation, listed above the composer and removable. Queued messages are held as suspended `queued_chat_message` tasks and the next one is released when the run ends, so they send in order even after the tab closes. Work keeps steering the run instead.
+
+### Patch Changes
+
+- b4c0c65: Add user feedback capture to telemetry. `captureAiFeedback` fans thumbs feedback out to a new AI Gateway sink that patches the stored log (when the message has a log id) and to PostHog as a survey response linked to the chat run trace that produced the message. Provider generation events now use the chat run as `$ai_trace_id` (falling back to the conversation) so feedback and generations link in AI Observability. The chat feedback endpoint accepts a `message_id`, resolves the message, run id, log id and trace id on the backend, and attributes feedback to the latest assistant message when clients send only the conversation. The frontend sends the message id and always shows feedback prompts on assistant messages.
+- ac1b6d6: Replace browser pop-ups with in-app dialogs and toasts, and stop Attention showing Chat users a Work sales page.
+
+  - Renaming a conversation in the Chat or Work sidebar opens a shared `RenameConversationDialog` instead of `window.prompt`, and rename, upload and history-export failures show a toast instead of `window.alert`.
+  - Attention shows everyone signed in their background tasks. Workspace attention and the task inbox stay Pro-only, and non-Pro users see a short note pointing at Work instead of the full `WorkAccessEmptyState` panel.
+  - The Workspaces page no longer repeats the notification inbox that Attention already shows; it shows an unread count linking to Attention.
+
+- 5deae3a: Give pending work and failures a Polychat feel: a glowing pending card for slow generations, shimmering activity labels, a progress line while artifacts are written, and a short ruffle on failures, all respecting reduced motion.
+- 57f8a16: Add Sites, a generative site builder that works from one brief. Jev classifies the brief into a plan (kind, scope, tone, palette, model tier), a tier-selected coding model streams the site as JSON Patch lines against a guardrailed component catalogue, and the shell renders every patch the moment it lands. `library-sites` holds the catalogue, patch stream compiler, validator and repair, prompt assembly, theme tokens and a deterministic Next.js and Tailwind code generator; `component-sites` holds the live React registry, themed preview and code view. Sites persist as revisioned outputs, refine in follow-ups, export as runnable project files, and hand off to a project's sandbox for a full build. The SSE buffer parser now lives once in `utility-core`. Sites are interactive (state, bindings, visibility, repeat, filters and actions in both the live renderer and the generated code), editable in place through an element inspector with zero-token edits and scoped refinement, exportable straight to a pull request with generated images, embeddable in chat through the `build_site` tool, revisioned with restore and public preview links, and judged by Jev at planning, refinement, quality-scoring and prompt-evaluation time.
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [dd4389b]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [b105d00]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [f933fa8]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [dd4389b]
+- Updated dependencies [b105d00]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [de24f4b]
+- Updated dependencies [77a5ee5]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-library-client@0.3.0
+  - @ngriffin_uk/polychat-library-chat@1.1.0
+  - @ngriffin_uk/polychat-component-content@1.1.0
+  - @ngriffin_uk/polychat-library-react@0.4.0
+  - @ngriffin_uk/polychat-component-navigation@0.4.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-utility-react@0.3.0
+  - @ngriffin_uk/polychat-component-experiences@0.4.0
+  - @ngriffin_uk/polychat-component-models@1.1.0
+  - @ngriffin_uk/polychat-library-goals@0.1.1
+  - @ngriffin_uk/polychat-library-realtime@0.1.2
+
 ## 1.0.1
 
 ### Patch Changes

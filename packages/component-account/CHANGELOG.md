@@ -1,5 +1,61 @@
 # @ngriffin_uk/polychat-component-account
 
+## 0.2.2
+
+### Patch Changes
+
+- 1df361b: Remove unused public exports and dead helpers, consolidate duplicated duration, identifier, status, model-grouping, JSON, SMS and timing-safe comparison logic into shared modules, narrow the desktop backend option types to the interfaces each runner uses, and surface previously silent validation and rewrite failures in the UI.
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [b105d00]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [f933fa8]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [dd4389b]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [77a5ee5]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-library-client@0.3.0
+  - @ngriffin_uk/polychat-library-react@0.4.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-utility-react@0.3.0
+  - @ngriffin_uk/polychat-component-models@1.1.0
+  - @ngriffin_uk/polychat-component-capabilities@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

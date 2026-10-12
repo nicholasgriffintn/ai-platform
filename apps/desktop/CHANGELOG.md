@@ -1,5 +1,92 @@
 # @assistant/desktop
 
+## 0.3.0
+
+### Minor Changes
+
+- d3f1df3: Canvas is a place, not a mode toggle. Chat and Work sidebars link to it above Files; opening it in Work asks for a project first, like a new chat, and keeps what it makes with that project.
+- 5ead2cc: Import GitHub and Linear issues into Work and review exact GitHub PR revisions manually or through signed automatic intake. Retain captured Sources and review Outputs, isolate each workspace and credential owner, and approve publication separately.
+
+  Apply migration `0061_project_task_integrations` before deployment. Configure the GitHub webhook secret and pull-request events for automatic intake, and pull-request write permission for publication.
+
+- 6966643: Grant selected actions from existing connectors directly to projects through Plugins, without creating a recipe. Reuse personal accounts, the connector catalogue, project capabilities and existing execution approvals. Preserve exclusions and narrower recipe permissions.
+- d3f1df3: Automations leave the teammates library for their own Scheduled place. The Chat and Work sidebars link to it under Teammates, and the recipe cards, filters, schedule dialogs and deep links move with it.
+- 57f8a16: Add Sites, a generative site builder that works from one brief. Jev classifies the brief into a plan (kind, scope, tone, palette, model tier), a tier-selected coding model streams the site as JSON Patch lines against a guardrailed component catalogue, and the shell renders every patch the moment it lands. `library-sites` holds the catalogue, patch stream compiler, validator and repair, prompt assembly, theme tokens and a deterministic Next.js and Tailwind code generator; `component-sites` holds the live React registry, themed preview and code view. Sites persist as revisioned outputs, refine in follow-ups, export as runnable project files, and hand off to a project's sandbox for a full build. The SSE buffer parser now lives once in `utility-core`. Sites are interactive (state, bindings, visibility, repeat, filters and actions in both the live renderer and the generated code), editable in place through an element inspector with zero-token edits and scoped refinement, exportable straight to a pull request with generated images, embeddable in chat through the `build_site` tool, revisioned with restore and public preview links, and judged by Jev at planning, refinement, quality-scoring and prompt-evaluation time.
+
+### Patch Changes
+
+- f933fa8: Keep the desktop app signed in as you. A host can now hand the client its own access-token source, which is always sent as a Bearer token and renewed before a request goes out stale. The desktop window no longer lands as an anonymous free user under `tauri dev`, or after waking from sleep, and drops back to sign-in only when the API rejects the session. A failed network check no longer signs anyone out, and signing out of the desktop app now revokes the server session too.
+- ee31a6d: Call the Poly by its name everywhere. The `meta` conversation type is now `poly`, the `meta_assistant` request field is now `poly`, and the meta assistant contracts, prompts, tools, hooks and overlay are renamed to match (`POLY_NAVIGATION_TOOL_NAMES`, `polyRequestSchema`, `buildPolyPrompt`, `PolyOverlay`, `usePolyNavigation`). A data migration moves stored `meta` conversations to `poly`. Behaviour is unchanged.
+- a8cf8a8: Give Work projects an overview page and consistent section navigation.
+
+  - The project home shows open tasks, with anything blocked or waiting for review listed first, plus a preview of the project brief beside its conversations. `ProjectTasksSummary` was already built but not used anywhere, and the brief was only visible in Settings.
+  - Project section tabs now read Overview · Tasks · Files · Activity, with a More menu for Teammates, Scheduled, Plugins and Settings, which were previously reachable only from the sidebar.
+  - The Activity page uses the shared project header, so its tabs match the other project pages. `ProjectActivity` now takes `workspaceId`.
+  - "Add a task" on the overview opens the task board with the create dialog already open (`?new=1`).
+  - `component-workspaces` exports a new `ProjectBriefPreview`.
+  - Teammates, Scheduled, Plugins and Settings now show the project tabs as well: `CapabilityLibrary`, `ScheduledLibrary` and `PluginsLibrary` accept an optional `navigation` slot. On Settings the tabs replace the "Back to project" link.
+
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [dd4389b]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [b105d00]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [f933fa8]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [ac1b6d6]
+- Updated dependencies [dd4389b]
+- Updated dependencies [b105d00]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [de24f4b]
+- Updated dependencies [77a5ee5]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+- Updated dependencies [a8cf8a8]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-component-conversation@2.0.0
+  - @ngriffin_uk/polychat-library-client@0.3.0
+  - @ngriffin_uk/polychat-library-chat@1.1.0
+  - @ngriffin_uk/polychat-component-content@1.1.0
+  - @ngriffin_uk/polychat-library-react@0.4.0
+  - @ngriffin_uk/polychat-component-shell@1.1.0
+  - @ngriffin_uk/polychat-component-navigation@0.4.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-component-experiences@0.4.0
+  - @ngriffin_uk/polychat-component-models@1.1.0
+  - @ngriffin_uk/polychat-component-account@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
