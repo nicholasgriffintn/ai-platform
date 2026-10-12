@@ -400,6 +400,7 @@ export class ChatOrchestrator {
     if (approvalReplay) {
       const updatesById = new Map(approvalReplay.updates.map((message) => [message.id, message]));
       const suppressedMessageIds = new Set(approvalReplay.suppressedMessageIds);
+
       messages = messages
         .filter((message) => !suppressedMessageIds.has(message.id))
         .map((message) => updatesById.get(message.id) ?? message);
