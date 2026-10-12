@@ -34,7 +34,11 @@ describe("the packaged window", { skip: !APPLICATION }, () => {
     await waitForDriver();
     browser = await remote({
       port: DRIVER_PORT,
-      capabilities: { "tauri:options": { application: APPLICATION }, browserName: "wry" },
+      capabilities: {
+        "tauri:options": { application: APPLICATION },
+        "wdio:enforceWebDriverClassic": true,
+        browserName: "wry",
+      },
       logLevel: "error",
     });
   });
