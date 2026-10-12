@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-component-models
 
+## 1.1.1
+
+### Patch Changes
+
+- 6967a07: Host agent harnesses on Polychat's own ports. The agent worker now runs the Pi and OpenCode harnesses and a Hermes container behind one RPC contract, with models served by the API's OpenAI-compatible `/agents/model` port, workspace tools gated by the permission mode, and every reply streamed into chat as it is generated. OpenAI Agents joins as a remote harness through the same `agent-harness` chat provider. The sandbox worker moves to Sandbox SDK 1.0 with app-owned `Workspace` and `Computer` classes, absorbs the computer worker, and keeps caches and browser profiles with `DirectoryBackup`.
+- Updated dependencies [6967a07]
+  - @ngriffin_uk/polychat-schemas@1.3.0
+  - @ngriffin_uk/polychat-utility-core@0.3.1
+
 ## 1.1.0
 
 ### Minor Changes
