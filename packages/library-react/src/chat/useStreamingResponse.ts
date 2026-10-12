@@ -28,6 +28,7 @@ import {
   createRunProvenance,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
+  isAgentModelId,
   isBrowserModel,
   isTerminalChatRunStatus,
   POLY_TEAMMATE_ID,
@@ -662,7 +663,10 @@ export function useStreamingResponse(
               computeSite: effectiveComputeSite,
               model: modelToSend,
               modelConfig: modelConfigToSend,
-              modelTier: selectedModel ? undefined : (modelTier ?? undefined),
+              modelTier:
+                selectedModel && !isAgentModelId(modelToSend)
+                  ? undefined
+                  : (modelTier ?? undefined),
               permissionMode,
               models: modelsToSend?.length ? modelsToSend : undefined,
               onProgress: streamProgress.handleUpdate,

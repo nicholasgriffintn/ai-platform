@@ -197,6 +197,7 @@ describe("followHarnessRecords", () => {
         },
       });
     };
+
     const reading = new AbortController();
     const seen: number[] = [];
 

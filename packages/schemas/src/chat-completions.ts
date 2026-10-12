@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { isAgentModelId } from "./agent-model-id.js";
 import { chatRequestModeSchema, toolPermissionSchema } from "./agent-modes.js";
 import {
   recipeChatRequestOptionsSchema,
@@ -357,7 +358,7 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   model_tier: modelTierSchema
     .optional()
     .describe(
-      "Model tier used when no explicit model is requested. Omit it to use the project default tier in project conversations, otherwise Medium.",
+      "Model tier used when no explicit model is requested, or for the model an agent runs on. Omit it to use the project default tier in project conversations, otherwise Medium.",
     ),
   permission_mode: permissionModeSchema
     .optional()
@@ -645,11 +646,14 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
       });
     }
 
-    if (request.model_tier && (request.model || request.models?.length)) {
+    if (
+      request.model_tier &&
+      (request.models?.length || (request.model && !isAgentModelId(request.model)))
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["model_tier"],
-        message: "model_tier is only valid when no explicit model is provided",
+        message: "model_tier is only valid with no explicit model, or with an agent model",
       });
     }
 

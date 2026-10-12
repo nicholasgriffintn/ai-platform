@@ -15,7 +15,7 @@ describe("pushBranchToRemote", () => {
     await pushBranchToRemote({
       sandbox: {
         exec,
-      } as any,
+      },
       repoTargetDir: "/workspace/repo",
       branchName: "polychat/feature-456",
       executionLogs: [],
@@ -40,7 +40,7 @@ describe("pushBranchToRemote", () => {
     });
 
     await pushBranchToRemote({
-      sandbox: { exec } as any,
+      sandbox: { exec },
       repoTargetDir: "/workspace/repo",
       branchName: "integration",
       remoteBranchName: "polychat/run-run-123",

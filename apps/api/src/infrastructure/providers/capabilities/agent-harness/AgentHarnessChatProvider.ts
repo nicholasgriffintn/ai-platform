@@ -126,6 +126,7 @@ export class AgentHarnessChatProvider implements AIProvider {
       role: "agent",
       capability: definition.name,
       ...(projectId ? { projectId } : {}),
+      ...(params.model_tier ? { tier: params.model_tier } : {}),
     });
     const requestedEffort = reasoningEffortSchema.safeParse(params.reasoning_effort);
     const reasoningEffort = requestedEffort.success ? requestedEffort.data : selected.effort;

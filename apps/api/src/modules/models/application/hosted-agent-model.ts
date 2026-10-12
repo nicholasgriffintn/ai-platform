@@ -1,5 +1,5 @@
 import { getModels, resolveHostedAgentModel } from "@ngriffin_uk/polychat-ai-models";
-import type { ModelTierRole, ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
+import type { ModelTier, ModelTierRole, ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -18,6 +18,7 @@ export async function resolveHostedAgentRunModel(params: {
   role: ModelTierRole;
   capability: string;
   projectId?: string;
+  tier?: ModelTier;
 }): Promise<HostedAgentModelResolution> {
   const visibleModels = await filterModelsForUserAccess(
     getModels(),
@@ -25,7 +26,8 @@ export async function resolveHostedAgentRunModel(params: {
     params.user.id,
     { shouldUseCache: false },
   );
-  const tier = await resolveProjectDefaultModelTier(params.context, params.projectId);
+  const tier =
+    params.tier ?? (await resolveProjectDefaultModelTier(params.context, params.projectId));
   const selected = resolveHostedAgentModel(visibleModels, params.user, tier, params.role);
 
   if (!selected) {

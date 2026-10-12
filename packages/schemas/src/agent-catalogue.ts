@@ -4,6 +4,7 @@ import {
   type AgentHarnessDefinition,
   type AgentHarnessId,
 } from "./agent-harness.js";
+import { agentModelId } from "./agent-model-id.js";
 import type { ModelConfig, ModelConfigItem } from "./models.js";
 import {
   getProviderCapabilities,
@@ -73,7 +74,7 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
 ];
 
 export function agentHarnessModelId(harness: AgentHarnessId): string {
-  return `agent/harness-${harness}`;
+  return agentModelId(`harness-${harness}`);
 }
 
 function harnessCapabilities(definition: AgentHarnessDefinition): ProviderCapabilities {
@@ -117,7 +118,7 @@ function harnessModelConfig(definition: AgentHarnessDefinition): ModelConfigItem
 export const agentModelConfig: ModelConfig = {
   ...Object.fromEntries(
     AGENT_CATALOGUE.map(({ driver, name, description, workspace, runsOn, permissionModes }) => [
-      `agent/${driver}`,
+      agentModelId(driver),
       {
         kind: "agent",
         matchingModel: driver,
