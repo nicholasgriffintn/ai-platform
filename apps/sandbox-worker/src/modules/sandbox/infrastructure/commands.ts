@@ -1,9 +1,13 @@
-import { type getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
 import {
   createSandboxOutputRedactor,
   redactSandboxResult,
+  type ContainerCommandResult,
+  type ContainerProcessState,
+  type ContainerPortProbe,
 } from "@ngriffin_uk/polychat-library-sandbox";
-import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+import type { SandboxDirectoryBackup, SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+
+import type { WorkspaceCommandOptions } from "./workspace";
 
 const GITHUB_HTTPS_REPO_REGEX =
   /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
@@ -16,11 +20,33 @@ export type SandboxCommandResult = {
   stderr: string;
 };
 
-export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
-  Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
+export interface SandboxExecInstance {
+  exec(command: string, options?: WorkspaceCommandOptions): Promise<ContainerCommandResult>;
+}
 
-export type SandboxProcessInstance = SandboxExecInstance &
-  Pick<ReturnType<typeof getSandbox>, "getProcess" | "startProcess" | "unexposePort">;
+export interface SandboxBackupInstance extends SandboxExecInstance {
+  backupDirectory(params: {
+    dir: string;
+    name?: string;
+    exclude?: readonly string[];
+  }): Promise<SandboxDirectoryBackup>;
+  restoreDirectory(record: SandboxDirectoryBackup, dir?: string): Promise<void>;
+}
+
+export interface SandboxProcessInstance extends SandboxExecInstance {
+  startProcess(params: {
+    id: string;
+    command: string;
+    cwd?: string;
+    env?: Record<string, string>;
+  }): Promise<void>;
+  readProcess(id: string): Promise<ContainerProcessState>;
+  readProcessLogs(id: string, offset?: number): Promise<{ output: string; offset: number }>;
+  stopProcess(id: string): Promise<void>;
+  waitForPort(port: number, probe?: ContainerPortProbe & { timeoutMs?: number }): Promise<boolean>;
+  exposePort(port: number): Promise<void>;
+  unexposePort(port: number): Promise<void>;
+}
 
 interface RepoInfo {
   displayName: string;
@@ -41,85 +67,37 @@ export async function runSandboxCommand(
 ): Promise<SandboxCommandResult> {
   options?.abortSignal?.throwIfAborted();
 
-  if (!sandbox.execStream) {
-    const result =
-      options?.timeoutMs === undefined
-        ? await sandbox.exec(command)
-        : await sandbox.exec(command, { timeout: options.timeoutMs });
-
-    return redactSandboxResult(result, options?.redactionSecrets);
-  }
-
-  const stdout: string[] = [];
-  const stderr: string[] = [];
   const redactors = {
     stdout: createSandboxOutputRedactor(options?.redactionSecrets),
     stderr: createSandboxOutputRedactor(options?.redactionSecrets),
   };
-  let completedResult: SandboxCommandResult | undefined;
-  const stream =
-    options?.timeoutMs === undefined
-      ? await sandbox.execStream(command)
-      : await sandbox.execStream(command, { timeout: options.timeoutMs });
+  const onOutput = options?.onOutput;
+  const result = await sandbox.exec(command, {
+    ...(options?.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
+    ...(onOutput
+      ? {
+          onOutput: async (output) => {
+            const data = redactors[output.stream].push(output.data);
 
-  for await (const event of parseSSEStream<ExecEvent>(stream, options?.abortSignal)) {
-    if (event.type === "stdout" && event.data) {
-      stdout.push(event.data);
-      const data = redactors.stdout.push(event.data);
+            if (data) {
+              await onOutput({ stream: output.stream, data });
+            }
+          },
+        }
+      : {}),
+  });
 
-      if (data) {
-        await options?.onOutput?.({ stream: "stdout", data });
-      }
-
-      continue;
-    }
-
-    if (event.type === "stderr" && event.data) {
-      stderr.push(event.data);
-      const data = redactors.stderr.push(event.data);
+  if (onOutput) {
+    for (const source of ["stdout", "stderr"] as const) {
+      const data = redactors[source].flush();
 
       if (data) {
-        await options?.onOutput?.({ stream: "stderr", data });
+        await onOutput({ stream: source, data });
       }
-
-      continue;
-    }
-
-    if (event.type === "complete") {
-      completedResult = event.result ?? {
-        success: (event.exitCode ?? 1) === 0,
-        exitCode: event.exitCode ?? 1,
-        stdout: stdout.join(""),
-        stderr: stderr.join(""),
-      };
-      continue;
-    }
-
-    if (event.type === "error") {
-      stderr.push(event.error ?? "Sandbox command stream failed");
-      completedResult = {
-        success: false,
-        exitCode: 1,
-        stdout: stdout.join(""),
-        stderr: stderr.join(""),
-      };
     }
   }
 
-  for (const source of ["stdout", "stderr"] as const) {
-    const data = redactors[source].flush();
-
-    if (data) {
-      await options?.onOutput?.({ stream: source, data });
-    }
-  }
-
-  const result = completedResult ?? {
-    success: false,
-    exitCode: 1,
-    stdout: stdout.join(""),
-    stderr: stderr.join("") || "Sandbox command stream ended without completion",
-  };
+  options?.abortSignal?.throwIfAborted();
 
   return redactSandboxResult(result, options?.redactionSecrets);
 }
@@ -270,10 +248,6 @@ export function buildSummary(
   }
 
   return `Implemented "${task}" in ${repo} with ${commandCount} commands.`;
-}
-
-export function quoteForShell(value: string): string {
-  return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
 export function extractCommands(text: string): string[] {

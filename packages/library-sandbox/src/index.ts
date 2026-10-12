@@ -21,7 +21,6 @@ export {
   type LeaseFence,
   type LeaseFenceStore,
 } from "./lease-fence.js";
-export { parseSandboxCheckpointReference, type SandboxCheckpointReference } from "./checkpoints.js";
 export {
   createSandboxOutputRedactor,
   redactSandboxError,
@@ -52,9 +51,6 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
-  AGENT_HOST_BLOCKED_REMEDY,
-  agentHostBlockedResponse,
-  buildAgentHostEgressPolicy,
   containerEgressBlockedResponse,
   decideContainerEgress,
   decideOutbound,
@@ -62,7 +58,6 @@ export {
   outboundNeedsGateway,
   parseContainerEgressPolicy,
   parseToolRequest,
-  resolveBackupStorageHost,
   SANDBOX_PACKAGE_REGISTRY_HOSTS,
   TOOLS_ORIGIN,
   type ContainerEgressDecision,
@@ -85,3 +80,36 @@ export {
   type EvaluationLogLevel,
   type EvaluationOutcome,
 } from "./evaluation-result.js";
+export {
+  COMMAND_TIMEOUT_EXIT_CODE,
+  containerCommandArgv,
+  runContainerArgv,
+  runContainerCommand,
+  runContainerScript,
+  WORKSPACE_ROOT,
+  type ContainerCommandOptions,
+  type ContainerCommandOutput,
+  type ContainerCommandResult,
+  type ContainerExecutor,
+  type ContainerScriptLanguage,
+} from "./container-command.js";
+export {
+  readContainerProcess,
+  readContainerProcessLogs,
+  startContainerProcess,
+  stopContainerProcess,
+  type ContainerProcessState,
+  type ContainerProcessStatus,
+} from "./container-processes.js";
+export {
+  CONTAINER_INTERCEPTION_CA,
+  interceptContainerEgress,
+  trustContainerInterception,
+  waitForContainerPort,
+  type ContainerPortProbe,
+} from "./container-runtime.js";
+export {
+  parseInotifyLine,
+  watchContainerFiles,
+  type ContainerFileChange,
+} from "./container-watch.js";

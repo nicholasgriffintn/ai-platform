@@ -4,7 +4,8 @@ import type {
   SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { Sandbox } from "./modules/sandbox/infrastructure/sandbox-container";
+import type { Computer } from "./modules/computer/computer";
+import type { Workspace } from "./modules/sandbox/infrastructure/workspace";
 
 export type TaskParams = SandboxWorkerExecuteRequest;
 export type TaskResult = SandboxTaskResult;
@@ -17,13 +18,11 @@ export interface TaskSecrets {
 
 export interface Env {
   APP_BASE_URL?: string;
-  Sandbox: DurableObjectNamespace<Sandbox>;
+  WORKSPACE: DurableObjectNamespace<Workspace>;
+  COMPUTER: DurableObjectNamespace<Computer>;
+  COMPUTER_SCREEN_HOST?: string;
+  COMPUTER_SCREEN_SECRET?: string;
   BACKUP_BUCKET: R2Bucket;
-  BACKUP_BUCKET_ENDPOINT?: string;
-  CLOUDFLARE_ACCOUNT_ID?: string;
-  CLOUDFLARE_R2_ACCOUNT_ID?: string;
-  SANDBOX_TRANSPORT?: "http" | "rpc";
-  SANDBOX_INSTANCE_TYPE?: string;
   SANDBOX_PREVIEW_HOST?: string;
   ENV?: string;
   JWT_SECRET?: string;

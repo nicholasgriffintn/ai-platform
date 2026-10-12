@@ -1,0 +1,14 @@
+export const INTERNAL_COMPUTER_ORIGIN = "https://computer.internal";
+export const SCREEN_PORT = 6080;
+export const DEBUGGER_PORT = 9222;
+export const PAINT_BRIGHTNESS_THRESHOLD = 6;
+export const SCREEN_TTL_MS = 5 * 60 * 1000;
+export const PROFILE_DIRECTORY = "/workspace/profile";
+export const FENCE_FILE = "/workspace/.computer-fence";
+export const RESOURCE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,200}$/u;
+export const COMPUTER_INSTANCE_TYPE = "standard-1";
+export const COMPUTER_PROFILE_BACKUP_PREFIX = "computer-profiles/";
+export const START_COMPUTER_PROCESS_ID = "computer-display";
+export const NAVIGATE_TIMEOUT_MS = 90_000;
+export const OBSERVE_TIMEOUT_MS = 30_000;
+export const DEBUGGER_WAIT_TIMEOUT_MS = 20_000;

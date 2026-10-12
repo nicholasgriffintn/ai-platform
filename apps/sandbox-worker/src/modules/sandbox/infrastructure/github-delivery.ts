@@ -4,9 +4,10 @@ import type {
   SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
 import { isSandboxPullRequestUrl, sandboxReviewBranchName } from "@ngriffin_uk/polychat-schemas";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../../../types";
-import { execOrThrow, quoteForShell, type SandboxExecInstance } from "./commands";
+import { execOrThrow, type SandboxExecInstance } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { pushBranchToRemote } from "./push-branch";
 import type { RunControlClient } from "./run-control-client";
@@ -113,7 +114,7 @@ export async function prepareDeliveryBranch(params: {
 
     await execOrThrow(
       params.sandbox,
-      `git -C ${quoteForShell(params.repoTargetDir)} checkout -B ${quoteForShell(branchName)}`,
+      `git -C ${quoteShellArgument(params.repoTargetDir)} checkout -B ${quoteShellArgument(branchName)}`,
       params.executionLogs,
     );
 
@@ -122,13 +123,13 @@ export async function prepareDeliveryBranch(params: {
 
   await execOrThrow(
     params.sandbox,
-    `git -C ${quoteForShell(params.repoTargetDir)} fetch origin ${quoteForShell(params.policy.targetBranch)} --depth=1`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} fetch origin ${quoteShellArgument(params.policy.targetBranch)} --depth=1`,
     params.executionLogs,
   );
 
   await execOrThrow(
     params.sandbox,
-    `git -C ${quoteForShell(params.repoTargetDir)} checkout -B ${quoteForShell(params.policy.targetBranch)} FETCH_HEAD`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} checkout -B ${quoteShellArgument(params.policy.targetBranch)} FETCH_HEAD`,
     params.executionLogs,
   );
 

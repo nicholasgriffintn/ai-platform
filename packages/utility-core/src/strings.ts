@@ -226,3 +226,7 @@ export function excerptAround(text: string, terms: readonly string[], maxLength:
 
   return `${start > 0 ? "…" : ""}${compact.slice(start, end).trim()}${end < compact.length ? "…" : ""}`;
 }
+
+export function quoteShellArgument(value: string): string {
+  return `'${value.replace(/'/g, `'"'"'`)}'`;
+}

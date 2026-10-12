@@ -728,7 +728,7 @@ export class WorkspaceRepository extends BaseRepository {
          AND json_extract(
            CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
            END,
-           '$.backupId'
+           '$.backup.id'
          ) = ?`,
       [cache, projectId, expectedGeneration, backupId],
     );
@@ -755,7 +755,7 @@ export class WorkspaceRepository extends BaseRepository {
          AND json_extract(
            CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
            END,
-           '$.backupId'
+           '$.backup.id'
          ) = ?`,
       [cache, projectId, expectedGeneration, expectedBackupId],
     );

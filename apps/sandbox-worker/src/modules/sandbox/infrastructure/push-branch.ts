@@ -1,5 +1,7 @@
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
+
 import type { TaskEvent } from "../../../types";
-import { execOrThrow, quoteForShell, type SandboxExecInstance } from "./commands";
+import { execOrThrow, type SandboxExecInstance } from "./commands";
 
 export async function pushBranchToRemote(params: {
   sandbox: SandboxExecInstance;
@@ -31,7 +33,7 @@ export async function pushBranchToRemote(params: {
 
   await execOrThrow(
     sandbox,
-    `git -C ${quoteForShell(repoTargetDir)} push --set-upstream origin ${quoteForShell(refspec)}`,
+    `git -C ${quoteShellArgument(repoTargetDir)} push --set-upstream origin ${quoteShellArgument(refspec)}`,
     executionLogs,
   );
 
