@@ -1,7 +1,11 @@
 import type { UsageEmissionOutcome } from "@ngriffin_uk/polychat-ai-billing";
 import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { InferenceImpact, RunProvenance } from "@ngriffin_uk/polychat-schemas";
+import {
+  AGENT_HARNESS_PROVIDER,
+  type InferenceImpact,
+  type RunProvenance,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { nonEmptyToolCallsOrNull } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
@@ -165,25 +169,28 @@ export async function finaliseAssistantTurn(
 
   await params.conversationManager.add(completionId, message);
 
-  const usageOutcome = await recordModelTurnUsage(
-    createUsageRuntime({ env, repositories: context?.repositories }),
-    {
-      actor: params.conversationManager.creditActor(),
-      usage: auditedUsage,
-      rawUsage: turn.rawUsage,
-      parts: turn.parts,
-      structuredData: turn.structuredData,
-      tier: turn.serviceTier,
-      model,
-      provider: params.provider,
-      completionId,
-      messageId: message.id,
-      conversationId: completionId,
-      runId: params.runId ?? null,
-      runAttempt: params.runAttempt ?? null,
-      provenance: params.provenance,
-    },
-  );
+  const usageOutcome: UsageEmissionOutcome =
+    params.provider === AGENT_HARNESS_PROVIDER
+      ? "skipped"
+      : await recordModelTurnUsage(
+          createUsageRuntime({ env, repositories: context?.repositories }),
+          {
+            actor: params.conversationManager.creditActor(),
+            usage: auditedUsage,
+            rawUsage: turn.rawUsage,
+            parts: turn.parts,
+            structuredData: turn.structuredData,
+            tier: turn.serviceTier,
+            model,
+            provider: params.provider,
+            completionId,
+            messageId: message.id,
+            conversationId: completionId,
+            runId: params.runId ?? null,
+            runAttempt: params.runAttempt ?? null,
+            provenance: params.provenance,
+          },
+        );
 
   await params.conversationManager.releaseTurnReservation(usageReservationOutcome(usageOutcome));
 

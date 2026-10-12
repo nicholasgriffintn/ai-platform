@@ -1,3 +1,4 @@
+import { readServerSentEvents } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -106,6 +107,32 @@ describe("streamHarnessRecords", () => {
       response: "Checking done.",
       toolCalls: [],
     });
+  });
+
+  it("reports the running token total across every model call in the turn", async () => {
+    const stream = streamHarnessRecords({
+      records: recordsOf(
+        { seq: 1, event: { type: "usage", inputTokens: 100, outputTokens: 20 } },
+        { seq: 2, event: { type: "usage", inputTokens: 150, outputTokens: 30 } },
+        { seq: 3, event: { type: "operation-settled", operationId: "op", status: "done" } },
+      ),
+      harnessName: "Pi",
+      operationId: "op",
+      deadline: Date.now() + 60_000,
+      checkIn: async () => undefined,
+      onExpired: async () => undefined,
+    });
+    const usage: unknown[] = [];
+
+    await readServerSentEvents(stream, {
+      onEvent: (chunk) => {
+        if (chunk.usage) {
+          usage.push(chunk.usage);
+        }
+      },
+    });
+
+    expect(usage.at(-1)).toEqual({ prompt_tokens: 250, completion_tokens: 50, total_tokens: 300 });
   });
 });
 

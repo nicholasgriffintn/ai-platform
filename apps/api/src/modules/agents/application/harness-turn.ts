@@ -54,6 +54,8 @@ export function streamHarnessRecords(params: {
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       let pending = iterator.next();
+      let inputTokens = 0;
+      let outputTokens = 0;
 
       try {
         for (;;) {
@@ -80,6 +82,22 @@ export function streamHarnessRecords(params: {
 
           if (next.done) {
             break;
+          }
+
+          if (next.value.event.type === "usage") {
+            inputTokens += next.value.event.inputTokens;
+            outputTokens += next.value.event.outputTokens;
+            controller.enqueue(
+              encodeServerSentEvent({
+                usage: {
+                  prompt_tokens: inputTokens,
+                  completion_tokens: outputTokens,
+                  total_tokens: inputTokens + outputTokens,
+                },
+              }),
+            );
+            pending = iterator.next();
+            continue;
           }
 
           const translated = harnessRecordToProviderChunks(next.value, {

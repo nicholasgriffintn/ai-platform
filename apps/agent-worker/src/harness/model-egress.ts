@@ -16,6 +16,11 @@ export class HermesModelEgress extends WorkerEntrypoint<Env, HermesModelEgressPr
 
     return this.env.HERMES_AGENT.get(
       this.env.HERMES_AGENT.idFromString(this.ctx.props.hostId),
-    ).forwardModelRequest(request);
+    ).forwardModelRequest({
+      path: new URL(request.url).pathname,
+      method: request.method,
+      headers: [...request.headers],
+      body: request.body ? await request.arrayBuffer() : null,
+    });
   }
 }

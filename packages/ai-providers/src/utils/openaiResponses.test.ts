@@ -101,6 +101,16 @@ describe("shouldUseOpenAIResponsesApi", () => {
         modelConfig,
       ),
     ).toBe(false);
+    expect(
+      shouldUseOpenAIResponsesApi(
+        {
+          ...baseParams,
+          tools: [{ type: "function", function: { name: "run_command", parameters: {} } }],
+          reasoning_effort: "medium",
+        },
+        modelConfig,
+      ),
+    ).toBe(true);
   });
 
   it("prefers the responses API for GPT-5.5 and later reasoning requests", () => {

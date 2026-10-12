@@ -3,6 +3,7 @@ import {
   ContainerHarness,
   containerAgent,
   ROOT_SESSION,
+  type ContainerEgressProps,
   type ContainerSessionEvent,
 } from "agents/harness/container";
 import { Lifecycle } from "agents/lifecycle";
@@ -11,7 +12,17 @@ import type { Env } from "../types";
 import { HarnessHost, type HarnessOperationResult } from "./host";
 
 export const HERMES_MODEL_HOST = "polychat.harness.internal";
+
+export interface HermesModelRequest {
+  path: string;
+  method: string;
+  headers: [string, string][];
+  body: ArrayBuffer | null;
+}
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+const HERMES_EGRESS_ROUTES: ContainerEgressProps["routes"] = [
+  { host: HERMES_MODEL_HOST, upstream: "https://polychat-api", headers: {}, strip: [] },
+];
 
 function requireContainer(ctx: DurableObjectState): Container {
   if (!ctx.container) {
@@ -28,32 +39,37 @@ export class HermesAgent extends HarnessHost {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     const container = requireContainer(ctx);
+    const egress = (routes: ContainerEgressProps["routes"]) =>
+      ctx.exports.HermesModelEgress({ props: { hostId: ctx.id.toString(), routes } });
 
     this.harness = new ContainerHarness({
       container,
       agent: containerAgent({
         image: container.images.hermes,
         adapter: "hermes",
-        egress: [
-          { host: HERMES_MODEL_HOST, upstream: "https://polychat-api", headers: {}, strip: [] },
-        ],
+        egress: HERMES_EGRESS_ROUTES,
       }),
-      egress: (init) =>
-        ctx.exports.HermesModelEgress({
-          props: { hostId: ctx.id.toString(), routes: init.props.routes },
-        }),
+      egress: (init) => egress(init.props.routes),
       enableInternet: false,
       idleTimeoutMs: IDLE_TIMEOUT_MS,
     });
     Lifecycle.install(this).use(this.harness);
+
+    if (container.running) {
+      void ctx.blockConcurrencyWhile(async () => {
+        for (const route of HERMES_EGRESS_ROUTES) {
+          await container.interceptOutboundHttp(route.host, egress(HERMES_EGRESS_ROUTES));
+        }
+      });
+    }
   }
 
-  async forwardModelRequest(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-
-    return this.modelFetch(
-      new Request(`https://polychat-api/agents/model${url.pathname}`, request),
-    );
+  async forwardModelRequest(request: HermesModelRequest): Promise<Response> {
+    return this.modelFetch(`https://polychat-api/agents/model${request.path}`, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+    });
   }
 
   private recordToolActivity(events: readonly ContainerSessionEvent[]): void {
