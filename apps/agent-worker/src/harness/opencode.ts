@@ -7,22 +7,18 @@ import { toOpenCodePlugin } from "../tools/renderers";
 import { WORKSPACE_TOOLS } from "../tools/workspace-tools";
 import type { Env } from "../types";
 import { HarnessHost, type HarnessOperationResult } from "./host";
-import { openCodeEventToHarnessEvent } from "./opencode-events";
+import { MODEL_PORT_SESSION_HEADER, registerModelPort } from "./model-port-fetch";
 import { POLYCHAT_PROVIDER_ID, polychatOpenCodePlugin } from "./polychat-model";
 
 const OPENCODE_AGENT = "build";
-const MODEL_HEADER_REFRESH_MS = 5 * 60_000;
 
 export class OpenCodeAgent extends HarnessHost {
-  private modelHeadersCache: Record<string, string> | undefined;
-  private activeTurns = 0;
-  private turnScope: AbortController | undefined;
+  private readonly session = this.ctx.id.toString();
   private readonly models = polychatOpenCodePlugin({
     agent: OPENCODE_AGENT,
-    apiUrl: this.env.POLYCHAT_API_URL,
     currentModel: () => this.currentBinding()?.model,
     currentInstructions: () => this.currentBinding()?.instructions,
-    currentHeaders: () => this.modelHeadersCache,
+    headers: { [MODEL_PORT_SESSION_HEADER]: this.session },
   });
   private readonly harness = new OpenCodeHarness({
     opencode: ({ storage }) =>
@@ -36,13 +32,14 @@ export class OpenCodeAgent extends HarnessHost {
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    registerModelPort(this.session, this.modelFetch);
     Lifecycle.install(this).use(this.harness);
   }
 
   protected async submitToHarness(request: AgentHarnessTurnRequest) {
     const session = this.harness.session(ROOT_SESSION);
 
-    await this.refreshModelHeaders();
+    await this.models.refresh();
     await session.setModel({ providerID: POLYCHAT_PROVIDER_ID, id: request.model });
 
     const receipt = await session.submit(request.input, {
@@ -54,17 +51,11 @@ export class OpenCodeAgent extends HarnessHost {
   }
 
   protected async waitForOperation(operationId: string): Promise<HarnessOperationResult> {
-    this.beginTurn();
+    const result = await this.harness.session(ROOT_SESSION).wait(operationId);
 
-    try {
-      const result = await this.harness.session(ROOT_SESSION).wait(operationId);
-
-      return result.status === "done"
-        ? { status: "done", ...(result.text ? { text: result.text } : {}) }
-        : { status: "unanswered", ...(result.reason ? { reason: result.reason } : {}) };
-    } finally {
-      this.endTurn();
-    }
+    return result.status === "done"
+      ? { status: "done", ...(result.text ? { text: result.text } : {}) }
+      : { status: "unanswered", ...(result.reason ? { reason: result.reason } : {}) };
   }
 
   protected async abortInHarness(operationId?: string): Promise<void> {
@@ -75,52 +66,5 @@ export class OpenCodeAgent extends HarnessHost {
     return (await this.harness.pending({ session: ROOT_SESSION })).map(
       (operation) => operation.operationId,
     );
-  }
-
-  private async refreshModelHeaders(): Promise<void> {
-    this.modelHeadersCache = await this.modelHeaders();
-    await this.models.refresh();
-  }
-
-  private beginTurn(): void {
-    this.activeTurns += 1;
-
-    if (this.turnScope) {
-      return;
-    }
-
-    const scope = new AbortController();
-    const refresh = setInterval(() => {
-      this.refreshModelHeaders().catch(() => undefined);
-    }, MODEL_HEADER_REFRESH_MS);
-
-    scope.signal.addEventListener("abort", () => clearInterval(refresh), { once: true });
-    this.turnScope = scope;
-    this.ctx.waitUntil(this.streamSessionEvents(scope.signal));
-  }
-
-  private endTurn(): void {
-    this.activeTurns -= 1;
-
-    if (this.activeTurns > 0) {
-      return;
-    }
-
-    this.turnScope?.abort();
-    this.turnScope = undefined;
-  }
-
-  private async streamSessionEvents(signal: AbortSignal): Promise<void> {
-    try {
-      for await (const event of this.harness.session(ROOT_SESSION).events(signal)) {
-        const harnessEvent = openCodeEventToHarnessEvent(event);
-
-        if (harnessEvent) {
-          this.record(harnessEvent);
-        }
-      }
-    } catch {
-      return;
-    }
   }
 }

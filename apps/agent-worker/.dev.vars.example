@@ -1,2 +1,1 @@
 JWT_SECRET="REPLACE_ME"
-POLYCHAT_API_URL="http://localhost:8787"

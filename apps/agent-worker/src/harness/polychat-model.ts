@@ -13,7 +13,6 @@ export const POLYCHAT_PROVIDER_ID = "polychat";
 export const POLYCHAT_MODEL_BASE_URL = "https://polychat-api/agents/model";
 const MODEL_PORT_KEY = "delegated";
 const OPENCODE_PROVIDER_PACKAGE = "@opencode/ai/providers/openai-compatible";
-const MODEL_PORT_PATH = "/agents/model";
 const DEFAULT_CONTEXT_WINDOW = 128_000;
 const DEFAULT_MAX_OUTPUT_TOKENS = 16_384;
 
@@ -66,13 +65,11 @@ export function polychatPiProvider(
 
 export function polychatOpenCodePlugin(params: {
   agent: string;
-  apiUrl: string;
   currentModel: () => string | undefined;
   currentInstructions: () => string | undefined;
-  currentHeaders: () => Record<string, string> | undefined;
+  headers: Record<string, string>;
 }) {
-  const { agent, apiUrl, currentModel, currentInstructions, currentHeaders } = params;
-  const baseURL = new URL(MODEL_PORT_PATH, apiUrl).toString();
+  const { agent, currentModel, currentInstructions, headers } = params;
   const providerID = OpenCodeProvider.ID.make(POLYCHAT_PROVIDER_ID);
   const reloads = new Set<() => Promise<void>>();
   const plugin: Plugin.Plugin = {
@@ -87,14 +84,14 @@ export function polychatOpenCodePlugin(params: {
             name: "Polychat",
             activation: "enabled",
             package: OPENCODE_PROVIDER_PACKAGE,
-            settings: { baseURL },
+            settings: { baseURL: POLYCHAT_MODEL_BASE_URL },
           },
           models: model
             ? [
                 {
                   ...OpenCodeModel.Info.default(providerID, OpenCodeModel.ID.make(model)),
                   package: OPENCODE_PROVIDER_PACKAGE,
-                  headers: currentHeaders() ?? {},
+                  headers,
                   limit: { context: DEFAULT_CONTEXT_WINDOW, output: DEFAULT_MAX_OUTPUT_TOKENS },
                 },
               ]
