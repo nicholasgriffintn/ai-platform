@@ -12,8 +12,6 @@ import type { Env } from "./types";
 export default class AgentWorker extends WorkerEntrypoint<Env> implements AgentHarnessRpc {
   private host(harness: HostedAgentHarnessId, sessionKey: string) {
     switch (harness) {
-      case "think":
-        return this.env.THINK_AGENT.getByName(sessionKey);
       case "pi":
         return this.env.PI_AGENT.getByName(sessionKey);
       case "opencode":
@@ -48,4 +46,3 @@ export { HermesAgent } from "./harness/hermes";
 export { HermesModelEgress } from "./harness/model-egress";
 export { OpenCodeAgent } from "./harness/opencode";
 export { PiAgent } from "./harness/pi";
-export { ThinkAgent } from "./harness/think";

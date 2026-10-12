@@ -9,7 +9,7 @@ Use this map to find the owning app or package. Read only the relevant [architec
 - `apps/desktop` owns the Tauri client shell, local storage and host-specific egress.
 - `apps/mobile/ios` owns the native iOS client.
 - `apps/sandbox-worker` runs coding tasks, workspaces for hosted agents and persistent graphical computers.
-- `apps/agent-worker` hosts agent harnesses (Think, Pi, OpenCode and the Hermes container) behind Polychat's model, tool and approval ports.
+- `apps/agent-worker` hosts agent harnesses (Pi, OpenCode and the Hermes container) behind Polychat's model, tool and approval ports.
 
 ## Shared packages
 

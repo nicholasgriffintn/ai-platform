@@ -60,17 +60,17 @@ describe("harnessRecordToProviderChunks", () => {
 
     expect(
       harnessRecordToProviderChunks(settled("other", "done"), {
-        harnessName: "Think",
+        harnessName: "Pi",
         operationId: "mine",
       }),
     ).toEqual({ chunks: [], done: false });
     expect(
       harnessRecordToProviderChunks(settled("mine", "unanswered"), {
-        harnessName: "Think",
+        harnessName: "Pi",
         operationId: "mine",
       }),
     ).toEqual({
-      chunks: [{ error: { message: "Think stopped: model unavailable" } }],
+      chunks: [{ error: { message: "Pi stopped: model unavailable" } }],
       done: true,
     });
   });
@@ -127,7 +127,7 @@ describe("hosted harness event streams", () => {
     const collected = await collectHarnessProviderStream(
       streamHarnessRecords({
         records: readHarnessRecords(source, reading.signal),
-        harnessName: "Think",
+        harnessName: "Pi",
         operationId: "op",
         deadline: Date.now() + 60_000,
         checkIn: async () => undefined,

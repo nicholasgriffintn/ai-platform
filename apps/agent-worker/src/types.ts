@@ -6,7 +6,6 @@ import type {
 import type { HermesAgent } from "./harness/hermes";
 import type { OpenCodeAgent } from "./harness/opencode";
 import type { PiAgent } from "./harness/pi";
-import type { ThinkAgent } from "./harness/think";
 
 export interface WorkspaceRpc extends Rpc.DurableObjectBranded {
   setEgressPolicy(policy: ContainerEgressPolicy): Promise<void>;
@@ -21,7 +20,6 @@ export interface WorkspaceRpc extends Rpc.DurableObjectBranded {
 export interface Env {
   POLYCHAT_API: Fetcher;
   JWT_SECRET?: string;
-  THINK_AGENT: DurableObjectNamespace<ThinkAgent>;
   PI_AGENT: DurableObjectNamespace<PiAgent>;
   OPENCODE_AGENT: DurableObjectNamespace<OpenCodeAgent>;
   HERMES_AGENT: DurableObjectNamespace<HermesAgent>;

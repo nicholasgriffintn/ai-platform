@@ -1,7 +1,6 @@
 import { Type } from "@earendil-works/pi-ai";
 import type { Extension, ToolRegistration } from "@earendil-works/pi-durable";
 import type { Plugin } from "@opencode/plugin";
-import { tool, type ToolSet } from "ai";
 import z from "zod/v4";
 
 import type { HarnessTool } from "./workspace-tools";
@@ -17,19 +16,6 @@ const OPENCODE_REPLACED_TOOLS = new Set([
   "grep",
   "shell",
 ]);
-
-export function toAiSdkTools(tools: readonly HarnessTool[], run: RunHarnessTool): ToolSet {
-  return Object.fromEntries(
-    tools.map((definition) => [
-      definition.name,
-      tool({
-        description: definition.description,
-        inputSchema: definition.inputSchema,
-        execute: (input: unknown) => run(definition, input),
-      }),
-    ]),
-  );
-}
 
 export function toPiExtension(tools: readonly HarnessTool[], run: RunHarnessTool): Extension {
   const registrations: ToolRegistration[] = tools.map((definition) => ({

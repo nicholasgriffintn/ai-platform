@@ -36,7 +36,7 @@ The platform includes:
 - `apps/app` — React Router web application and PWA.
 - `apps/api` — public Hono API Worker and platform control plane.
 - `apps/sandbox-worker` — isolated coding workspaces and hosted browser computers.
-- `apps/agent-worker` — host for agent harnesses such as Think, Pi, OpenCode and container CLIs.
+- `apps/agent-worker` — host for agent harnesses such as Pi, OpenCode and container CLIs.
 - `apps/desktop` — Tauri desktop client.
 - `apps/mobile/ios` — native iOS client under active development.
 - `packages/*` — shared schemas, utilities, runtime libraries, and reusable React components published under the `@ngriffin_uk/polychat-*` scope.

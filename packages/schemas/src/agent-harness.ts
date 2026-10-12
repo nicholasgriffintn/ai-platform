@@ -8,7 +8,7 @@ import {
 import { permissionModeSchema, type PermissionMode } from "./providers.js";
 import { reasoningEffortSchema } from "./reasoning.js";
 
-export const AGENT_HARNESS_IDS = ["think", "pi", "opencode", "hermes", "openai-agents"] as const;
+export const AGENT_HARNESS_IDS = ["pi", "opencode", "hermes", "openai-agents"] as const;
 export const agentHarnessIdSchema = z.enum(AGENT_HARNESS_IDS);
 export type AgentHarnessId = z.infer<typeof agentHarnessIdSchema>;
 
@@ -44,21 +44,6 @@ export interface AgentHarnessDefinition {
 const GATED_PERMISSION_MODES: PermissionMode[] = ["supervised", "auto_accept_edits", "full_access"];
 
 export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefinition> = {
-  think: {
-    id: "think",
-    name: "Think",
-    description: "Cloudflare's Think harness, running Polychat models and workspace tools.",
-    runtime: "worker",
-    capabilities: {
-      approvals: true,
-      steer: false,
-      fork: true,
-      workspaceTools: true,
-      ownsEnvironment: false,
-      maxTurnMinutes: 60,
-    },
-    permissionModes: GATED_PERMISSION_MODES,
-  },
   pi: {
     id: "pi",
     name: "Pi",
