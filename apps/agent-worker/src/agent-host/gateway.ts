@@ -119,6 +119,7 @@ export async function hermesRequest(
     const timer = setTimeout(() => {
       reject(new DOMException("Request timed out", "TimeoutError"));
     }, timeoutMs);
+
     request.signal.addEventListener("abort", () => clearTimeout(timer), { once: true });
   });
 

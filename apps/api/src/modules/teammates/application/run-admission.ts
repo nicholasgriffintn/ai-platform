@@ -17,7 +17,10 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { readToolInteractionId } from "~/modules/chat-runs/application/interactions";
+import {
+  readToolInteractionId,
+  readToolInteractionResolution,
+} from "~/modules/chat-runs/application/interactions";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
@@ -198,13 +201,17 @@ export async function enqueueTeammateRun({
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ]),
   ];
-  const requestedEnabledTools = executionPolicy?.enabledTools ?? body.enabled_tools;
+  const isPolyTeammate = isPolyTeammateId(teammate.id);
+  const requestedEnabledTools = isPolyTeammate
+    ? executionPolicy?.enabledTools
+    : (executionPolicy?.enabledTools ?? body.enabled_tools);
   const liveEnabledTools = requestedEnabledTools
     ? intersectEnabledTools(currentEnabledTools, requestedEnabledTools)
     : currentEnabledTools;
-  const effectiveEnabledTools = resumeConfiguration
-    ? intersectEnabledTools(resumeConfiguration.enabledTools, liveEnabledTools)
-    : liveEnabledTools;
+  const effectiveEnabledTools =
+    resumeConfiguration && !isPolyTeammate
+      ? intersectEnabledTools(resumeConfiguration.enabledTools, liveEnabledTools)
+      : liveEnabledTools;
   const effectiveBody = {
     ...body,
     ...(effectiveEnabledTools ? { enabled_tools: effectiveEnabledTools } : {}),
@@ -365,6 +372,8 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     context: serviceContext,
     run,
     teammateId: input.teammateId,
+    interactionId,
+    resolution: readToolInteractionResolution(input.body.options),
   });
 
   return enqueueTeammateRun({

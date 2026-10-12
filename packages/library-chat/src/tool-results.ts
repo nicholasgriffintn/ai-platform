@@ -131,6 +131,99 @@ export function isHiddenToolResponse(message: Message): boolean {
   );
 }
 
+function isApprovalRequestData(data: unknown): boolean {
+  return isRecord(data) && data.renderer === "approval_request";
+}
+
+export function collectApprovalToolCallIds(messages: readonly Message[]): Set<string> {
+  const toolCallIds = new Set<string>();
+
+  for (const message of messages) {
+    if (message.role === "tool" && message.tool_call_id && isApprovalRequestData(message.data)) {
+      toolCallIds.add(message.tool_call_id);
+    }
+
+    for (const part of message.parts ?? []) {
+      if (part.type === "tool_result" && part.toolCallId && isApprovalRequestData(part.data)) {
+        toolCallIds.add(part.toolCallId);
+      }
+    }
+  }
+
+  return toolCallIds;
+}
+
+export function collectApprovalToolResponseContents(messages: readonly Message[]): Set<string> {
+  const contents = new Set<string>();
+
+  for (const message of messages) {
+    if (
+      message.role === "tool" &&
+      isApprovalRequestData(message.data) &&
+      typeof message.content === "string"
+    ) {
+      contents.add(message.content.trim());
+    }
+
+    for (const part of message.parts ?? []) {
+      if (
+        part.type === "tool_result" &&
+        isApprovalRequestData(part.data) &&
+        typeof part.content === "string"
+      ) {
+        contents.add(part.content.trim());
+      }
+    }
+  }
+
+  return contents;
+}
+
+export function isRedundantApprovalAssistantMessage(
+  message: Message,
+  approvalToolResponseContents: ReadonlySet<string>,
+): boolean {
+  return (
+    message.role === "assistant" &&
+    message.status === "pending" &&
+    typeof message.content === "string" &&
+    approvalToolResponseContents.has(message.content.trim())
+  );
+}
+
+export function isApprovalResolutionMessage(message: Message): boolean {
+  if (message.role !== "user" || !isRecord(message.data)) {
+    return false;
+  }
+
+  const interaction = message.data.toolInteraction;
+  const response = isRecord(interaction) ? interaction.response : undefined;
+
+  return (
+    isRecord(response) && (response.resolution === "approved" || response.resolution === "rejected")
+  );
+}
+
+export function isApprovalOnlyAssistantMessage(
+  message: Message,
+  approvalToolCallIds: ReadonlySet<string>,
+): boolean {
+  if (message.role !== "assistant") {
+    return false;
+  }
+
+  const toolCallIds = message.tool_calls?.length
+    ? message.tool_calls.map((toolCall) => toolCall.id)
+    : (message.parts ?? []).flatMap((part) => (part.type === "tool_use" ? [part.toolCallId] : []));
+
+  return (
+    toolCallIds.length > 0 &&
+    toolCallIds.every(
+      (toolCallId) => typeof toolCallId === "string" && approvalToolCallIds.has(toolCallId),
+    )
+  );
+}
+
 export function isHiddenToolResultPart(part: ToolResultPart): boolean {
   return isRecord(part.data) && part.data.responseType === ToolResponseType.HIDDEN;
 }

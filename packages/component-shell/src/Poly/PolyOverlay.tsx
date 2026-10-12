@@ -1,5 +1,6 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,8 +22,8 @@ import {
   usePolyStandingApprovals,
   useTrackEvent,
 } from "@ngriffin_uk/polychat-library-react";
-import { Feather, Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { Feather, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -170,6 +171,7 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const [isExpanded, setIsExpanded] = useState(false);
   const handleNavigate = (href: string) => {
     trackEvent({
       name: "poly_navigate",
@@ -182,7 +184,10 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} width="min(56rem, 96vw)">
-      <DialogContent className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0">
+      <DialogContent
+        className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0"
+        fullScreen={isExpanded}
+      >
         <div className="flex items-center gap-3 border-b border-border px-4 py-3 pr-14">
           <Feather size={18} aria-hidden="true" className="shrink-0 text-active-work" />
           <div className="min-w-0 flex-1">
@@ -192,6 +197,21 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
             </DialogDescription>
           </div>
           {isAuthenticated ? <PolyAutonomyMenu /> : null}
+          <Button
+            variant="icon"
+            size="icon"
+            className="shrink-0"
+            aria-label={isExpanded ? "Restore Poly window" : "Expand Poly to full screen"}
+            aria-expanded={isExpanded}
+            title={isExpanded ? "Restore Poly window" : "Expand Poly to full screen"}
+            onClick={() => setIsExpanded((expanded) => !expanded)}
+          >
+            {isExpanded ? (
+              <Minimize2 size={16} aria-hidden="true" />
+            ) : (
+              <Maximize2 size={16} aria-hidden="true" />
+            )}
+          </Button>
         </div>
         {!isAuthenticated ? (
           <div className="p-6">

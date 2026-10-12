@@ -103,12 +103,11 @@ export async function assertTeammateAccess(
 }
 
 async function loadTeammate(context: ServiceContext, teammateId: string): Promise<Teammate> {
-  let teammate = await context.repositories.teammates.getTeammateById(teammateId);
-
-  if (!teammate && isPlatformTeammateId(teammateId)) {
+  if (isPlatformTeammateId(teammateId)) {
     await ensurePlatformTeammates(context);
-    teammate = await context.repositories.teammates.getTeammateById(teammateId);
   }
+
+  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
 
   if (!teammate) {
     throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);

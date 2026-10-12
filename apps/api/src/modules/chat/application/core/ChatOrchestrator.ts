@@ -37,6 +37,7 @@ import {
 } from "~/modules/chat/application/preparation/RequestPreparer";
 import { DISCARDING_EVENT_SINK } from "~/modules/chat/application/streaming/emitter";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import { resolveApprovedToolInteraction } from "~/modules/chat/application/tools/approved-tool-interaction";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
 import { applyTierReasoningEffort } from "~/modules/chat/domain/tier-reasoning";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
@@ -362,22 +363,6 @@ export class ChatOrchestrator {
       messages = compactedSession.messages;
     }
 
-    const executionRequest = createChatExecutionRequest({
-      chatOptions: {
-        ...chatOptions,
-        permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
-      },
-      prepared: {
-        ...prepared,
-        enabledTools: enabled_tools,
-      },
-      messages,
-      resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
-        hasActiveGoal: Boolean(prepared.activeGoal),
-      }),
-      runId: runLifecycle?.run.id,
-    });
-
     const toolRequestContext = buildToolRequestContext({
       chatOptions: {
         ...chatOptions,
@@ -396,6 +381,67 @@ export class ChatOrchestrator {
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
       memoryScope: prepared.memoryScope,
+    });
+
+    const approvalReplay =
+      chatOptions.completion_id && runLifecycle
+        ? await resolveApprovedToolInteraction({
+            conversationId: chatOptions.completion_id,
+            conversationManager,
+            messages: await conversationManager.getAllMessages(chatOptions.completion_id, {
+              includeArchived: false,
+            }),
+            providerMessages: messages,
+            request: toolRequestContext,
+            run: runLifecycle.run,
+          })
+        : undefined;
+
+    if (approvalReplay) {
+      const updatesById = new Map(approvalReplay.updates.map((message) => [message.id, message]));
+      const suppressedMessageIds = new Set(approvalReplay.suppressedMessageIds);
+      messages = messages
+        .filter((message) => !suppressedMessageIds.has(message.id))
+        .map((message) => updatesById.get(message.id) ?? message);
+    }
+
+    const continuedRequestOptions = approvalReplay
+      ? { ...prepared.requestOptions, toolInteraction: undefined }
+      : prepared.requestOptions;
+
+    if (approvalReplay) {
+      if (!toolRequestContext.request) {
+        throw new AssistantError(
+          "The approved action lost its request context",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
+
+      toolRequestContext.request.approved_tools = [];
+      toolRequestContext.request.options = continuedRequestOptions ?? {};
+    }
+
+    const executionRequest = createChatExecutionRequest({
+      chatOptions: {
+        ...chatOptions,
+        ...(approvalReplay ? { approved_tools: [] } : {}),
+        permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
+      },
+      prepared: {
+        ...prepared,
+        enabledTools: enabled_tools,
+        ...(approvalReplay
+          ? {
+              messageWithContext: "",
+              requestOptions: continuedRequestOptions,
+            }
+          : {}),
+      },
+      messages,
+      resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
+        hasActiveGoal: Boolean(prepared.activeGoal),
+      }),
+      runId: runLifecycle?.run.id,
     });
 
     const goalFinishGate = this.resolveGoalFinishGate(
@@ -421,11 +467,17 @@ export class ChatOrchestrator {
       provider: primaryProvider,
       platform: platform || "api",
       mode: currentMode,
+      ...(approvalReplay
+        ? {
+            initialToolCalls: [approvalReplay.toolCall],
+            initialToolResults: [approvalReplay.toolResult],
+          }
+        : {}),
       memoryScope: prepared.memoryScope,
       context: chatOptions.context,
       userSettings,
-      requestOptions: prepared.requestOptions,
-      guardrailPrompt: messageWithContext,
+      requestOptions: continuedRequestOptions,
+      guardrailPrompt: approvalReplay ? prepared.toolIntentRequest : messageWithContext,
       assessFinish: goalFinishGate
         ? (finishContext) => goalFinishGate.assessFinish(finishContext)
         : undefined,

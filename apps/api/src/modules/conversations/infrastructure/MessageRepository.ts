@@ -982,6 +982,7 @@ export class MessageRepository extends BaseRepository {
         timestamp: result.timestamp,
         platform: result.platform,
         mode: result.mode,
+        tool_call_id: result.tool_call_id,
         is_archived: result.is_archived,
         data: result.data,
         parts: result.parts,

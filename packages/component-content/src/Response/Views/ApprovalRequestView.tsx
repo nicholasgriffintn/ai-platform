@@ -47,18 +47,23 @@ export function ApprovalRequestView({
     const pendingTool = approval.approval;
     const standing = option === STANDING_APPROVAL_OPTION;
     const resolution = standing || option.toLowerCase() === "approve" ? "approved" : "rejected";
-    const interactionInput = `${option}: ${approval.message ?? "the requested action"}`;
+    const directResolution =
+      approval.approvalRequired === true || pendingTool?.toolName === "request_approval";
 
     try {
       await onToolInteraction(pendingTool?.toolName ?? TOOL_NAME, "submitPrompt", {
         option,
-        message: approval.message,
-        input: interactionInput,
+        ...(approval.approvalRequired ? { approvalRequired: true } : {}),
+        ...(!directResolution
+          ? {
+              message: approval.message,
+              input: `${option}: ${approval.message ?? "the requested action"}`,
+            }
+          : {}),
         ...(pendingTool?.interactionId && pendingTool.toolName
           ? {
               interactionId: pendingTool.interactionId,
               resolution,
-              ...(resolution === "approved" ? { approvedToolName: pendingTool.toolName } : {}),
               ...(standing ? { standing: true } : {}),
             }
           : {}),
@@ -75,11 +80,13 @@ export function ApprovalRequestView({
     authoritativeState.status === "expired"
       ? "This approval request expired."
       : authoritativeState.status === "resolved"
-        ? authoritativeState.resolution === "approved"
-          ? "Approved."
-          : authoritativeState.resolution === "rejected"
-            ? "Rejected."
-            : "This request has been answered."
+        ? approval.approval?.toolName === "request_approval" && approval.selectedOption
+          ? `You selected: ${approval.selectedOption}`
+          : authoritativeState.resolution === "approved"
+            ? "Approved."
+            : authoritativeState.resolution === "rejected"
+              ? "Rejected."
+              : "This request has been answered."
         : isAcknowledged
           ? `You chose ${activeSubmission.option}.`
           : null;

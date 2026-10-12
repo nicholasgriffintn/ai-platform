@@ -1455,8 +1455,8 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       title: scenario(
         "Meta assistant",
         "Ask Poly",
-        "Press the Ask Poly button (⌘J) and ask 'find my dinner plan'. Poly navigates to the conversation.",
-        "The meta thread shows navigation results and clicking one opens the destination.",
+        "Press Ask Poly (⌘J). Try: ‘Find the chat titled Plan a week of dinners, read the full conversation, and tell me the follow-up change to the shopping list.’ Then try opening Autumn launch, checking what is waiting on you in Work, or starting a project conversation with a prefilled first message.",
+        "Poly searches seeded conversations and projects, reads a prior chat, lists project attention, and opens a new project conversation with your draft ready to send.",
       ),
       type: "meta",
       createdAt: at({ days: 2, hours: 2 }),
@@ -1466,12 +1466,12 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     [
       {
         role: "user",
-        content: "Find the conversation where I planned dinners.",
+        content: "Find the conversation titled Plan a week of dinners.",
       },
       ...toolCall({
         name: "find_places",
         callId: "call_find_1",
-        input: { query: "dinner plan" },
+        input: { query: "Plan a week of dinners" },
         result: {
           places: [
             {
@@ -2139,7 +2139,16 @@ export function seedGuideMarkdown() {
   const lines = [
     "# Seed debugging guide",
     "",
-    "Every seeded conversation is tagged with its scenario. Work through them in order.",
+    "Start with the Ask Poly prompts below. They use seeded conversations and project data, so they work without connecting external accounts.",
+    "",
+    "## Ask Poly: try these now",
+    "",
+    "- **Find and read a past chat:** ‘Find the chat titled Plan a week of dinners, read the full conversation, and tell me the follow-up change to the shopping list.’",
+    "- **Navigate to a project:** ‘Open the Autumn launch project.’",
+    "- **Surface work that needs you:** ‘What is waiting on me across Work? Summarise the blocked, approval, and review items.’",
+    "- **Start project work:** ‘In Autumn launch, start a conversation called Release readiness and prefill this first message: Review the September release notes draft. Separate verified entries from anything still pending.’",
+    "",
+    "The last prompt opens a project conversation with the first message ready in the composer; it does not send it. Every seeded conversation is also tagged with its scenario below.",
     "",
   ];
 

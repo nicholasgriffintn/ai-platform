@@ -360,7 +360,7 @@ export async function handleAgentHostRequest(request: Request, env: Env): Promis
           await steered.json().catch(() => null),
         );
 
-        if (!steered.ok || !payload.success || payload.data.accepted !== true) {
+        if (!steered.ok || !payload.success || !payload.data.accepted) {
           const status = steered.status === 409 ? 409 : 502;
 
           return errorResponse(

@@ -8,7 +8,7 @@ export const search_conversations: FunctionToolDescriptor = {
   name: SEARCH_CONVERSATIONS_TOOL_NAME,
   maxIdenticalCalls: 1,
   description:
-    "Searches the user's earlier conversations in the current personal or project scope and returns matching excerpts with conversation titles and dates. Use when the user refers to something discussed before, such as 'the trip we planned' or 'that bug from last week'. Search with distinctive keywords, not a full sentence.",
+    "Searches the user's earlier conversations in the current personal or project scope and returns matching excerpts with conversation titles and dates. Use when the user remembers a topic or phrase but not a conversation title, such as 'the trip we planned' or 'that bug from last week'. Search with distinctive keywords, not a full sentence. In Poly, use find_places followed by read_conversation when the user names a conversation title.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

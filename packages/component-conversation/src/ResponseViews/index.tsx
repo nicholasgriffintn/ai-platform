@@ -13,6 +13,7 @@ import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { ComputerObservationView } from "./ComputerObservationView.js";
 import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
+import { ConversationSearchView } from "./ConversationSearchView.js";
 import { createDelegationFollowUpInteraction, DelegationCard } from "./DelegationCard.js";
 import { DocumentSearchView } from "./DocumentSearchView.js";
 import { EvidenceAuditView } from "./EvidenceAuditView.js";
@@ -41,6 +42,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   computer_takeover: ({ data, onToolInteraction }) => (
     <ComputerTakeoverView data={data} onToolInteraction={onToolInteraction} />
   ),
+  conversation_search: ({ data }) => <ConversationSearchView data={data} />,
   approval_request: ({ data, embedded, onToolInteraction }) => (
     <ApprovalRequestView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
   ),

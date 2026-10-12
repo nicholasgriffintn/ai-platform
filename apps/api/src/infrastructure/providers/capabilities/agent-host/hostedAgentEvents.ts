@@ -83,31 +83,28 @@ export async function followAgentRunEvents(params: {
         break;
       }
 
-      buffer = parseServerSentEventBuffer<Record<string, unknown>>(
-        buffer + decoder.decode(read.value, { stream: true }),
-        {
-          onEvent: (payload) => {
-            const event = typeof payload.event === "string" ? payload.event : "";
+      buffer = parseServerSentEventBuffer(buffer + decoder.decode(read.value, { stream: true }), {
+        onEvent: (payload) => {
+          const event = typeof payload.event === "string" ? payload.event : "";
 
-            if (event === "tool.completed") {
-              recordToolEvent(progress, payload);
-            } else if (event === "tool.started") {
-              const tool =
-                typeof payload.tool === "string" && payload.tool ? payload.tool : "unknown";
+          if (event === "tool.completed") {
+            recordToolEvent(progress, payload);
+          } else if (event === "tool.started") {
+            const tool =
+              typeof payload.tool === "string" && payload.tool ? payload.tool : "unknown";
 
-              if (!progress.toolsUsed.includes(tool)) {
-                progress.toolsUsed.push(tool);
-              }
-            } else if (event === "subagent.complete") {
-              progress.subagentCompletions += 1;
-            } else if (event === "approval.request") {
-              outcome = { kind: "approval-requested" };
-            } else if (isTerminalAgentHostRunEvent(event)) {
-              outcome = { kind: "terminal" };
+            if (!progress.toolsUsed.includes(tool)) {
+              progress.toolsUsed.push(tool);
             }
-          },
+          } else if (event === "subagent.complete") {
+            progress.subagentCompletions += 1;
+          } else if (event === "approval.request") {
+            outcome = { kind: "approval-requested" };
+          } else if (isTerminalAgentHostRunEvent(event)) {
+            outcome = { kind: "terminal" };
+          }
         },
-      );
+      });
 
       if (!outcome) {
         await checkIn();

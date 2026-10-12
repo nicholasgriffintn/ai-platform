@@ -542,11 +542,14 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        ) SELECT ?, id, ?, ?, ?, ?, ?
        FROM conversation_run
         WHERE id = ? AND attempt = ? AND status = ?
-          AND EXISTS (
-            SELECT 1 FROM message interaction
-            WHERE interaction.run_id = conversation_run.id
-              AND interaction.tool_call_id = ?
-          )
+           AND EXISTS (
+             SELECT 1 FROM message interaction
+             WHERE interaction.run_id = conversation_run.id
+               AND interaction.id = conversation_run.last_message_id
+               AND interaction.tool_call_id = ?
+               AND interaction.role = 'tool'
+               AND interaction.status = 'pending'
+           )
           AND (? IS NULL OR EXISTS (
             SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
           ))
@@ -576,11 +579,14 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
            resolved_configuration_json = ?,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
-         AND EXISTS (
-           SELECT 1 FROM message interaction
-           WHERE interaction.run_id = conversation_run.id
-             AND interaction.tool_call_id = ?
-         )
+          AND EXISTS (
+            SELECT 1 FROM message interaction
+            WHERE interaction.run_id = conversation_run.id
+              AND interaction.id = conversation_run.last_message_id
+              AND interaction.tool_call_id = ?
+              AND interaction.role = 'tool'
+              AND interaction.status = 'pending'
+          )
          AND (? IS NULL OR EXISTS (
            SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
          ))
