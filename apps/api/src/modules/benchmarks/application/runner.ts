@@ -38,6 +38,7 @@ import { invokeEntrant } from "./invoke";
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
 const ITEMS_PER_TASK = 5;
+const TASK_TIME_BUDGET_MS = 6 * 60 * 1000;
 const TRANSIENT_ATTEMPTS = 4;
 const TRANSIENT_DELAY_MS = 3_000;
 const MAX_RETRY_DELAY_MS = 90_000;
@@ -308,27 +309,33 @@ export async function executeBenchmarkRun(
     }
 
     const store = BenchmarkResultStore.forEnv(env);
-    const previous = data.offset > 0 ? await store.readResults(run.id) : [];
-    const batch = benchmark.itemIds.slice(data.offset, data.offset + ITEMS_PER_TASK);
-    const fresh = await Promise.all(
-      batch.map((itemId) => runItem(env, repositories, run, benchmark, target, user, itemId)),
-    );
-    const results = [...previous, ...fresh];
-    const nextOffset = data.offset + batch.length;
+    const started = Date.now();
+    const results = data.offset > 0 ? await store.readResults(run.id) : [];
+    let offset = data.offset;
 
-    await store.writeResults(run.id, results);
-    await repositories.benchmarkRuns.update(run.id, {
-      items_completed: results.length,
-      ...totals(results),
-    });
+    while (offset < benchmark.itemIds.length) {
+      const batch = benchmark.itemIds.slice(offset, offset + ITEMS_PER_TASK);
+      const fresh = await Promise.all(
+        batch.map((itemId) => runItem(env, repositories, run, benchmark, target, user, itemId)),
+      );
 
-    if (nextOffset < benchmark.itemIds.length) {
-      await enqueueBenchmarkRunTask(env, repositories, run.id, nextOffset);
+      results.push(...fresh);
+      offset += batch.length;
 
-      return {
-        status: "success" as const,
-        message: `${nextOffset}/${benchmark.itemIds.length} items`,
-      };
+      await store.writeResults(run.id, results);
+      await repositories.benchmarkRuns.update(run.id, {
+        items_completed: results.length,
+        ...totals(results),
+      });
+
+      if (offset < benchmark.itemIds.length && Date.now() - started >= TASK_TIME_BUDGET_MS) {
+        await enqueueBenchmarkRunTask(env, repositories, run.id, offset);
+
+        return {
+          status: "success" as const,
+          message: `${offset}/${benchmark.itemIds.length} items`,
+        };
+      }
     }
 
     if (results.every((result) => result.error !== null)) {
