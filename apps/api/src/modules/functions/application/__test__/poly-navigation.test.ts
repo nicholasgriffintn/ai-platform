@@ -14,7 +14,7 @@ import {
   start_conversation,
 } from "../poly-navigation";
 
-vi.mock("~/modules/completions/application/updateChatCompletion", () => ({
+vi.mock("~/modules/conversations/application/updateChatCompletion", () => ({
   handleUpdateChatCompletion: vi.fn(async () => ({})),
 }));
 

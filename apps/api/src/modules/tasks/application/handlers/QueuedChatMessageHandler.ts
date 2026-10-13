@@ -1,15 +1,15 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   isTerminalChatRunStatus,
   queuedChatTaskDataSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { buildChatRunCommandPayload } from "~/modules/chat-runs/application/command-payload";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -53,7 +53,7 @@ export class QueuedChatMessageHandler implements TaskHandler {
       store: true,
       requestCache: context.requestCache,
     }).get(conversationId);
-    const chatRequest = createChatCompletionsJsonSchema.parse({
+    const chatRequest = responseCommandSchema.parse({
       ...buildChatRunCommandPayload({
         ...request,
         env,

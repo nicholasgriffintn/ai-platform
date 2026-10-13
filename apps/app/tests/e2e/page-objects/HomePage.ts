@@ -53,7 +53,7 @@ export class HomePage extends BasePage {
       .waitFor({ state: "hidden" });
   }
 
-  async sendMessageAndReadCompletionRequest(message: string, endpoint = "/chat/completions") {
+  async sendMessageAndReadCompletionRequest(message: string, endpoint = "/responses") {
     const requestPromise = this.page.waitForRequest(
       (request) => request.method() === "POST" && new URL(request.url()).pathname === endpoint,
     );
@@ -92,11 +92,19 @@ export class HomePage extends BasePage {
   }
 
   completionIdFromRequest(request: Record<string, unknown>) {
-    if (typeof request.completion_id !== "string" || request.completion_id.length === 0) {
-      throw new Error("Completion request has no conversation id");
+    const conversation = request.conversation;
+    const conversationId =
+      typeof conversation === "string"
+        ? conversation
+        : conversation && typeof conversation === "object" && "id" in conversation
+          ? (conversation as { id?: unknown }).id
+          : undefined;
+
+    if (typeof conversationId !== "string" || conversationId.length === 0) {
+      throw new Error("Response request has no conversation id");
     }
 
-    return request.completion_id;
+    return conversationId;
   }
 
   async selectModel(modelName: string) {
@@ -233,8 +241,7 @@ export class HomePage extends BasePage {
     await this.chatInput.pressSequentially(message);
     const requestPromise = this.page.waitForRequest(
       (request) =>
-        request.method() === "POST" &&
-        new URL(request.url()).pathname.endsWith("/chat/completions"),
+        request.method() === "POST" && new URL(request.url()).pathname.endsWith("/responses"),
     );
 
     await this.clickElement(this.sendButton);
@@ -708,7 +715,7 @@ export class HomePage extends BasePage {
     return this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/chat/completions"),
+        new URL(response.url()).pathname.endsWith("/responses"),
     );
   }
 
@@ -843,8 +850,7 @@ export class HomePage extends BasePage {
     await this.fillInput(this.chatInput, message);
     const requestPromise = this.page.waitForRequest(
       (request) =>
-        request.method() === "POST" &&
-        new URL(request.url()).pathname.endsWith("/chat/completions"),
+        request.method() === "POST" && new URL(request.url()).pathname.endsWith("/responses"),
     );
 
     await this.clickElement(this.sendButton);

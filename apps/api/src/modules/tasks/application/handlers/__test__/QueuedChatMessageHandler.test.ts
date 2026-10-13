@@ -24,7 +24,7 @@ vi.mock("~/modules/conversations/application/manager", () => ({
   ConversationManager: { getInstance: () => ({ get: async () => [] }) },
 }));
 
-vi.mock("~/modules/completions/application/createChatCompletions", () => ({
+vi.mock("~/modules/responses/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 

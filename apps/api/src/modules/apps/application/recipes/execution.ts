@@ -5,7 +5,7 @@ import type {
   TeammateInvocation,
 } from "@ngriffin_uk/polychat-schemas";
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   createRecipeChatRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -16,10 +16,10 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { recoverAcceptedChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { getDefaultChatModel } from "~/modules/models/application/resolve";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
@@ -135,7 +135,7 @@ export async function executeRecipeInvocationChat(params: {
 }> {
   const conversationId = params.conversationId ?? `recipe_${generateId()}`;
   const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
-  const request = createChatCompletionsJsonSchema.parse({
+  const request = responseCommandSchema.parse({
     completion_id: conversationId,
     ...(params.commandId ? { command_id: params.commandId } : {}),
     messages: [

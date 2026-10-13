@@ -8,12 +8,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { isAbortError } from "~/infrastructure/abort";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import {
-  acceptChatRun,
-  findAcceptedChatRunCommand,
-  type ChatRunLifecycle,
-} from "~/modules/chat-runs/application/lifecycle";
-import { createPartialCheckpointSink } from "~/modules/chat-runs/application/partial-checkpoint";
 import { runAgentLoop } from "~/modules/chat/application/agent/agent-loop";
 import { createGoalFinishGate } from "~/modules/chat/application/agent/goal-gate";
 import {
@@ -24,17 +18,18 @@ import {
   createChatRunReceiptStream,
   createChatTurnStream,
 } from "~/modules/chat/application/core/chat-stream";
-import { prependCompactionStateEvent } from "~/modules/chat/application/core/compaction-stream";
 import { createChatExecutionRequest } from "~/modules/chat/application/core/execution-request";
 import { createModelEnsembleStream } from "~/modules/chat/application/core/model-ensemble";
 import { buildToolRequestContext } from "~/modules/chat/application/core/request-context";
 import { resolveRunProvenance } from "~/modules/chat/application/core/run-provenance";
+import { buildChatCompactionMetadata } from "~/modules/chat/application/messages/compaction-metadata";
 import { resolveAccountDefaultComputeSite } from "~/modules/chat/application/policy/project-model-tier";
 import { resolveTurnStepBudget } from "~/modules/chat/application/policy/step-budget";
 import {
   RequestPreparer,
   type PreparedRequest,
 } from "~/modules/chat/application/preparation/RequestPreparer";
+import type { ChatStreamPreludeEvent } from "~/modules/chat/application/streaming/emitter";
 import { DISCARDING_EVENT_SINK } from "~/modules/chat/application/streaming/emitter";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { resolveApprovedToolInteraction } from "~/modules/chat/application/tools/approved-tool-interaction";
@@ -53,6 +48,12 @@ import {
   recordGoalMarker,
 } from "~/modules/goals/application/goalMarker";
 import { captureTrainingExample } from "~/modules/model-datasets/application/capture";
+import {
+  acceptChatRun,
+  findAcceptedChatRunCommand,
+  type ChatRunLifecycle,
+} from "~/modules/responses/application/runs/lifecycle";
+import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 
@@ -508,20 +509,26 @@ export class ChatOrchestrator {
 
     if (stream) {
       const runsEnsemble = !isAgentExecutionMode(currentMode) && modelConfigs.length > 1;
+      const compactionMetadata =
+        didCompact && compactionMessage ? buildChatCompactionMetadata(compactionMessage) : null;
+      const preludeEvents: ChatStreamPreludeEvent[] = [
+        ...(compactionMetadata
+          ? [{ type: "state", payload: { state: "compaction", ...compactionMetadata } }]
+          : []),
+        ...(chatOptions.stream_prelude_events ?? []),
+      ];
       const turnStream = runsEnsemble
         ? createModelEnsembleStream({
             ...runParams,
             models: modelConfigs,
             onTurnEnd,
             runLifecycle,
+            preludeEvents,
           })
-        : createChatTurnStream({ ...runParams, onTurnEnd, runLifecycle });
+        : createChatTurnStream({ ...runParams, onTurnEnd, runLifecycle, preludeEvents });
 
       return {
-        stream:
-          didCompact && compactionMessage
-            ? prependCompactionStateEvent(turnStream, compactionMessage)
-            : turnStream,
+        stream: turnStream,
         selectedModel: primaryModel,
         ...(runsEnsemble ? { selectedModels: modelConfigs.map((m) => m.model) } : {}),
         completion_id: chatOptions.completion_id,

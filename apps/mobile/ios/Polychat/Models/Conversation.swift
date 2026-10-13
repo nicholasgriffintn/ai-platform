@@ -10,7 +10,7 @@ struct Conversation: Identifiable, Equatable {
     var isLoadedFromAPI: Bool
     var lastMessageAt: Date?
     var messageCount: Int
-    var latestRun: ChatRun? = nil
+    var latestResponse: PlatformResponse? = nil
     var hasMoreMessages = false
     var oldestMessageId: String? = nil
     var isTemporary: Bool = false

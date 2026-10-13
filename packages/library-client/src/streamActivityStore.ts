@@ -11,7 +11,7 @@ import {
   markTurnActivityReconnecting,
   type TurnActivityProjection,
 } from "@ngriffin_uk/polychat-library-chat/turn-activity";
-import type { ChatTurnActivityEvent } from "@ngriffin_uk/polychat-schemas/chat-stream";
+import type { ResponseActivityEvent } from "@ngriffin_uk/polychat-schemas";
 import { keepLatestRecordEntries } from "@ngriffin_uk/polychat-utility-core";
 import { create } from "zustand";
 
@@ -38,7 +38,7 @@ interface StreamActivityStore {
     source?: "local" | "remote",
   ) => void;
   recordStreamActivityState: (conversationId: string, state: string, data?: unknown) => void;
-  recordTurnActivity: (conversationId: string, event: ChatTurnActivityEvent) => void;
+  recordTurnActivity: (conversationId: string, event: ResponseActivityEvent) => void;
   markStreamActivityReconnecting: (conversationId: string) => void;
   recordStreamActivityText: (
     conversationId: string,

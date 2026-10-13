@@ -98,169 +98,6 @@ public struct ResolvedModelTier: Codable {
     public let effort: String?
 }
 
-public struct ChatCompletionResponse: Codable {
-    public let choices: [ChatChoice]
-    public let run: ChatRunCommandReceipt?
-
-    public struct ChatChoice: Codable {
-        public let message: ChatMessage
-    }
-}
-
-public struct ChatCompletionRequest: Encodable {
-    let messages: [ChatRequestMessage]
-    let model: String?
-    let provider: String?
-    let platform: String
-    let mode: String
-    let store: Bool
-    let stream: Bool
-    let completionId: String?
-    let options: [String: JSONValue]
-    let temperature: Double?
-    let topP: Double?
-    let maxTokens: Int?
-    let presencePenalty: Double?
-    let frequencyPenalty: Double?
-    let reasoning: ReasoningSettings?
-    let reasoningEffort: String?
-    let verbosity: String?
-    let serviceTier: String?
-    let enabledTools: [String]?
-    let toolSelectionMode: String
-    let modelTier: String?
-    let computeSite: String?
-    let commandId: String
-    let runId: String?
-    let connectorApprovalId: String?
-
-    enum CodingKeys: String, CodingKey {
-        case messages, model, provider, platform, mode, store, stream, temperature, reasoning, verbosity, options
-        case completionId = "completion_id"
-        case topP = "top_p"
-        case maxTokens = "max_tokens"
-        case presencePenalty = "presence_penalty"
-        case frequencyPenalty = "frequency_penalty"
-        case reasoningEffort = "reasoning_effort"
-        case serviceTier = "service_tier"
-        case enabledTools = "enabled_tools"
-        case toolSelectionMode = "tool_selection_mode"
-        case modelTier = "model_tier"
-        case computeSite = "compute_site"
-        case commandId = "command_id"
-        case runId = "run_id"
-        case connectorApprovalId = "connector_approval_id"
-    }
-
-    public init(
-        messages: [ChatMessage],
-        model: String?,
-        provider: String? = nil,
-        store: Bool = true,
-        completionId: String? = nil,
-        settings: ChatSettings? = nil,
-        stream: Bool = false,
-        modelTier: String? = nil,
-        computeSite: String? = nil,
-        commandId: String = UUID().uuidString,
-        runId: String? = nil,
-        connectorApprovalId: String? = nil
-    ) {
-        self.messages = ChatMessage.providerMessages(from: messages).map(ChatRequestMessage.init)
-        self.model = model
-        self.provider = provider
-        self.platform = "mobile"
-        self.mode = "remote"
-        self.store = store
-        self.stream = stream
-        self.completionId = completionId
-        self.options = settings?.toolOptions ?? [:]
-        self.temperature = settings?.temperature
-        self.topP = settings?.topP
-        self.maxTokens = settings?.maxTokens
-        self.presencePenalty = settings?.presencePenalty
-        self.frequencyPenalty = settings?.frequencyPenalty
-        self.reasoning = settings?.reasoningEffort.map { ReasoningSettings(effort: $0.rawValue) }
-        self.reasoningEffort = settings?.reasoningEffort?.rawValue
-        self.verbosity = settings?.verbosity?.rawValue
-        self.serviceTier = settings?.serviceTier?.rawValue
-        self.enabledTools = settings?.enabledTools.isEmpty == false ? settings?.enabledTools : nil
-        self.toolSelectionMode = "managed"
-        self.modelTier = model == nil ? modelTier : nil
-        self.computeSite = computeSite
-        self.commandId = commandId
-        self.runId = runId
-        self.connectorApprovalId = connectorApprovalId
-    }
-}
-
-public struct ChatRun: Codable, Equatable {
-    public let protocolVersion: Int
-    public let id: String
-    public let conversationId: String
-    public let projectId: String?
-    public let projectTaskId: String?
-    public let stageId: String?
-    public let initiatorUserId: Int
-    public let status: String
-    public let attempt: Int
-    public let createdAt: String
-    public let updatedAt: String
-    public let startedAt: String?
-    public let completedAt: String?
-    public let cancellationRequestedAt: String?
-    public let terminalReason: String?
-    public let lastMessageId: String?
-    public let context: ChatContextSnapshot?
-    public let retry: ChatRetrySnapshot?
-    public let provenance: RunProvenance?
-    public let usage: ChatRunUsage?
-
-    public init(
-        protocolVersion: Int,
-        id: String,
-        conversationId: String,
-        projectId: String?,
-        projectTaskId: String?,
-        stageId: String? = nil,
-        initiatorUserId: Int,
-        status: String,
-        attempt: Int,
-        createdAt: String,
-        updatedAt: String,
-        startedAt: String?,
-        completedAt: String?,
-        cancellationRequestedAt: String? = nil,
-        terminalReason: String?,
-        lastMessageId: String?,
-        context: ChatContextSnapshot? = nil,
-        retry: ChatRetrySnapshot? = nil,
-        provenance: RunProvenance? = nil,
-        usage: ChatRunUsage? = nil
-    ) {
-        self.protocolVersion = protocolVersion
-        self.id = id
-        self.conversationId = conversationId
-        self.projectId = projectId
-        self.projectTaskId = projectTaskId
-        self.stageId = stageId
-        self.initiatorUserId = initiatorUserId
-        self.status = status
-        self.attempt = attempt
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-        self.startedAt = startedAt
-        self.completedAt = completedAt
-        self.cancellationRequestedAt = cancellationRequestedAt
-        self.terminalReason = terminalReason
-        self.lastMessageId = lastMessageId
-        self.context = context
-        self.retry = retry
-        self.provenance = provenance
-        self.usage = usage
-    }
-}
-
 public struct RunProvenance: Codable, Equatable {
     public let site: String
     public let model: String
@@ -268,18 +105,18 @@ public struct RunProvenance: Codable, Equatable {
     public let machineId: String?
 }
 
-public struct ChatRunUsage: Codable, Equatable {
+public struct ResponseUsage: Codable, Equatable {
     public let protocolVersion: Int
     public let runId: String
     public let currentAttempt: Int
     public let measurement: String
-    public let reservation: ChatRunUsageReservation?
-    public let consumption: ChatRunUsageConsumption
-    public let attempts: [ChatRunUsageAttempt]
-    public let settlement: ChatRunUsageSettlement
+    public let reservation: ResponseUsageReservation?
+    public let consumption: ResponseUsageConsumption
+    public let attempts: [ResponseUsageAttempt]
+    public let settlement: ResponseUsageSettlement
 }
 
-public struct ChatRunUsageReservation: Codable, Equatable {
+public struct ResponseUsageReservation: Codable, Equatable {
     public let creditMicros: Int
     public let status: String
     public let expiresAt: String?
@@ -287,16 +124,16 @@ public struct ChatRunUsageReservation: Codable, Equatable {
     public let updatedAt: String?
 }
 
-public struct ChatRunUsageConsumption: Codable, Equatable {
+public struct ResponseUsageConsumption: Codable, Equatable {
     public let status: String
     public let eventCount: Int
     public let costMicros: Int?
     public let creditMicros: Int?
     public let estimatedPriceEventCount: Int
-    public let bySource: [ChatRunUsageSourceSummary]
+    public let bySource: [ResponseUsageSourceSummary]
 }
 
-public struct ChatRunUsageSourceSummary: Codable, Equatable {
+public struct ResponseUsageSourceSummary: Codable, Equatable {
     public let source: String
     public let eventCount: Int
     public let costMicros: Int
@@ -304,7 +141,7 @@ public struct ChatRunUsageSourceSummary: Codable, Equatable {
     public let estimatedPriceEventCount: Int
 }
 
-public struct ChatRunUsageAttempt: Codable, Equatable {
+public struct ResponseUsageAttempt: Codable, Equatable {
     public let attempt: Int
     public let measurement: String
     public let inputTokens: Int?
@@ -314,7 +151,7 @@ public struct ChatRunUsageAttempt: Codable, Equatable {
     public let estimatedPriceEventCount: Int
 }
 
-public struct ChatRunUsageSettlement: Codable, Equatable {
+public struct ResponseUsageSettlement: Codable, Equatable {
     public let status: String
     public let at: String?
 }
@@ -401,66 +238,6 @@ public struct ChatContextOmission: Codable, Equatable, Identifiable {
     public let count: Int
     public let messageId: String?
     public let retrievalPath: String?
-}
-
-public struct ChatRunCommandReceipt: Codable, Equatable {
-    public let protocolVersion: Int
-    public let commandId: String
-    public let run: ChatRun
-    public let kind: String
-    public let acceptedAt: String
-    public let duplicate: Bool
-}
-
-public struct ChatRunRecoveryResponse: Codable, Equatable {
-    public let run: ChatRun
-    public let messages: [ChatMessage]
-}
-
-public struct ChatRunSnapshotResponse: Codable, Equatable {
-    public let protocolVersion: Int
-    public let cursor: Int
-    public let run: ChatRun
-    public let messages: [ChatMessage]
-
-    var recoveryResponse: ChatRunRecoveryResponse {
-        ChatRunRecoveryResponse(run: run, messages: messages)
-    }
-}
-
-public struct ChatRunEvent: Codable, Equatable {
-    public let protocolVersion: Int
-    public let id: String
-    public let runId: String
-    public let sequence: Int
-    public let attempt: Int
-    public let type: String
-    public let occurredAt: String
-    public let data: [String: JSONValue]
-}
-
-public struct ChatRunReplayResponse: Codable, Equatable {
-    public let protocolVersion: Int
-    public let runId: String
-    public let fromCursor: Int
-    public let nextCursor: Int
-    public let resetRequired: Bool
-    public let events: [ChatRunEvent]
-    public let snapshot: ChatRunSnapshotResponse?
-}
-
-public struct ChatRunCommandReceiptResponse: Codable, Equatable {
-    public let run: ChatRunCommandReceipt
-}
-
-struct CancelChatRunRequest: Encodable {
-    let commandId: String
-    let expectedAttempt: Int
-
-    enum CodingKeys: String, CodingKey {
-        case commandId = "command_id"
-        case expectedAttempt = "expected_attempt"
-    }
 }
 
 public struct ReasoningSettings: Codable, Equatable {
@@ -1056,175 +833,3 @@ public struct AssistantRecipeConnection: Codable, Equatable {
     public let setupUrl: String?
 }
 
-public struct TitleGenerationRequest: Encodable {
-    let messages: [ChatRequestMessage]
-
-    init(messages: [ChatMessage]) {
-        self.messages = ChatMessage.providerMessages(from: messages).map(ChatRequestMessage.init)
-    }
-}
-
-public struct TitleGenerationResponse: Codable {
-    public let title: String
-}
-
-public struct UpdateConversationRequest: Encodable {
-    let title: String?
-    let messages: [ConversationUpdateMessage]?
-    let parentConversationId: String?
-    let parentMessageId: String?
-
-    enum CodingKeys: String, CodingKey {
-        case title, messages
-        case parentConversationId = "parent_conversation_id"
-        case parentMessageId = "parent_message_id"
-    }
-
-    init(
-        title: String? = nil,
-        messages: [ChatMessage]? = nil,
-        parentConversationId: String? = nil,
-        parentMessageId: String? = nil
-    ) {
-        self.title = title
-        self.messages = messages?.map(ConversationUpdateMessage.init)
-        self.parentConversationId = parentConversationId
-        self.parentMessageId = parentMessageId
-    }
-}
-
-public struct UpdateConversationResponse: Codable {
-    public let success: Bool
-    public let message: String?
-    public let data: ConversationData?
-
-    public struct ConversationData: Codable {
-        public let id: String
-        public let title: String
-        public let updatedAt: String
-    }
-}
-
-public struct ConversationListResponse: Codable {
-    public let conversations: [ConversationSummary]
-    public let totalPages: Int
-    public let pageNumber: Int
-    public let pageSize: Int
-
-    public struct ConversationSummary: Codable, Identifiable {
-        public let id: String
-        public let title: String?
-        public let createdAt: String
-        public let updatedAt: String
-        public let model: String?
-        public let modelTier: String?
-        public let isArchived: Bool
-        public let userId: Int?
-        public let shareId: String?
-        public let messages: [String]
-        public let lastMessageAt: String?
-        public let messageCount: Int?
-
-        enum CodingKeys: String, CodingKey {
-            case id, title, model, messages
-            case modelTier = "model_tier"
-            case createdAt = "created_at"
-            case updatedAt = "updated_at"
-            case isArchived = "is_archived"
-            case userId = "user_id"
-            case shareId = "share_id"
-            case lastMessageAt = "last_message_at"
-            case messageCount = "message_count"
-        }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            id = try container.decode(String.self, forKey: .id)
-            title = try container.decodeIfPresent(String.self, forKey: .title)
-            createdAt = try container.decode(String.self, forKey: .createdAt)
-            updatedAt = try container.decode(String.self, forKey: .updatedAt)
-            model = try container.decodeIfPresent(String.self, forKey: .model)
-            modelTier = try container.decodeIfPresent(String.self, forKey: .modelTier)
-            isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
-            userId = try container.decodeFlexibleIntIfPresent(forKey: .userId)
-            shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
-            messages = try container.decodeIfPresent([String].self, forKey: .messages) ?? []
-            lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
-            messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
-        }
-    }
-}
-
-public struct ConversationDetailResponse: Codable {
-    public let id: String
-    public let title: String?
-    public let createdAt: String
-    public let updatedAt: String
-    public let model: String?
-    public let modelTier: String?
-    public let isArchived: Bool
-    public let messages: [ChatMessage]
-    public let shareId: String?
-    public let lastMessageAt: String?
-    public let messageCount: Int?
-    public let latestRun: ChatRun?
-    public let hasMoreMessages: Bool
-    public let oldestMessageId: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id, title, model, messages
-        case modelTier = "model_tier"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case isArchived = "is_archived"
-        case shareId = "share_id"
-        case lastMessageAt = "last_message_at"
-        case messageCount = "message_count"
-        case latestRun = "latest_run"
-        case hasMoreMessages = "has_more_messages"
-        case oldestMessageId = "oldest_message_id"
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        title = try container.decodeIfPresent(String.self, forKey: .title)
-        createdAt = try container.decode(String.self, forKey: .createdAt)
-        updatedAt = try container.decode(String.self, forKey: .updatedAt)
-        model = try container.decodeIfPresent(String.self, forKey: .model)
-        modelTier = try container.decodeIfPresent(String.self, forKey: .modelTier)
-        isArchived = try container.decodeFlexibleBool(forKey: .isArchived)
-        messages = try container.decodeIfPresent([ChatMessage].self, forKey: .messages) ?? []
-        shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
-        lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
-        messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
-        latestRun = try container.decodeIfPresent(ChatRun.self, forKey: .latestRun)
-        hasMoreMessages = try container.decodeIfPresent(Bool.self, forKey: .hasMoreMessages) ?? false
-        oldestMessageId = try container.decodeIfPresent(String.self, forKey: .oldestMessageId)
-    }
-}
-
-public struct ConversationMessagePageResponse: Codable {
-    public let messages: [ChatMessage]
-    public let hasMore: Bool
-    public let oldestMessageId: String?
-
-    enum CodingKeys: String, CodingKey {
-        case messages
-        case hasMore = "has_more"
-        case oldestMessageId = "oldest_message_id"
-    }
-
-    public init(messages: [ChatMessage], hasMore: Bool, oldestMessageId: String?) {
-        self.messages = messages
-        self.hasMore = hasMore
-        self.oldestMessageId = oldestMessageId
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        messages = try container.decodeIfPresent([ChatMessage].self, forKey: .messages) ?? []
-        hasMore = try container.decodeIfPresent(Bool.self, forKey: .hasMore) ?? false
-        oldestMessageId = try container.decodeIfPresent(String.self, forKey: .oldestMessageId)
-    }
-}

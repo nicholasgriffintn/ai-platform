@@ -1,9 +1,9 @@
 import { POLY_CONVERSATION_TYPE, POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { readToolInteractionResolution } from "~/modules/chat-runs/application/interactions";
 import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
 import { recordApprovalOutcome } from "~/modules/poly/domain/earned-trust";
+import { readToolInteractionResolution } from "~/modules/responses/application/runs/interactions";
 
 import { markPolyOwnerSeen } from "./home";
 import { readPendingPolyCall } from "./standing-approvals";

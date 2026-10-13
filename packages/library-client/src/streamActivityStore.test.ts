@@ -48,7 +48,6 @@ describe("streamActivityStore", () => {
     store.beginStreamActivity("conversation-1");
     store.beginStreamActivity("conversation-2");
     store.recordTurnActivity("conversation-1", {
-      type: "turn_activity",
       kind: "reasoning_started",
       step: 1,
     });
@@ -68,7 +67,6 @@ describe("streamActivityStore", () => {
 
     store.beginStreamActivity("conversation-1");
     store.recordTurnActivity("conversation-1", {
-      type: "turn_activity",
       kind: "tool_execution_started",
       step: 1,
       toolCallId: "call-weather",

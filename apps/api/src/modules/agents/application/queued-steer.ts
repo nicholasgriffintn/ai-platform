@@ -7,7 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { removeQueuedFollowUp } from "~/modules/chat-runs/application/follow-up-queue";
+import { removeQueuedFollowUp } from "~/modules/responses/application/runs/follow-up-queue";
 
 export async function takeQueuedSteer(params: {
   context: ServiceContext;

@@ -34,11 +34,11 @@ vi.mock("~/modules/apps/application/connectors/connector-approval-cleanup", () =
   deleteExpiredConnectorOperationApprovals: mocks.deleteExpiredConnectorOperationApprovals,
 }));
 
-vi.mock("~/modules/chat-runs/application/interrupted-run-sweep", () => ({
+vi.mock("~/modules/responses/application/runs/interrupted-run-sweep", () => ({
   sweepInterruptedChatRuns: mocks.sweepInterruptedChatRuns,
 }));
 
-vi.mock("~/modules/chat-runs/application/reservation-maintenance", () => ({
+vi.mock("~/modules/responses/application/runs/reservation-maintenance", () => ({
   releaseExpiredChatRunReservations: mocks.releaseExpiredChatRunReservations,
 }));
 

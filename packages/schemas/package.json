@@ -24,10 +24,15 @@
       "types": "./dist/analytics.d.ts",
       "import": "./dist/analytics.js"
     },
-    "./chat-stream": {
-      "polychat-source": "./src/chat-stream.ts",
-      "types": "./dist/chat-stream.d.ts",
-      "import": "./dist/chat-stream.js"
+    "./platform": {
+      "polychat-source": "./src/platform/index.ts",
+      "types": "./dist/platform/index.d.ts",
+      "import": "./dist/platform/index.js"
+    },
+    "./ports/chat-completions": {
+      "polychat-source": "./src/ports/chat-completions.ts",
+      "types": "./dist/ports/chat-completions.d.ts",
+      "import": "./dist/ports/chat-completions.js"
     },
     "./compaction-status": {
       "polychat-source": "./src/compaction-status.ts",

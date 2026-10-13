@@ -1,5 +1,5 @@
 export * from "./http.js";
-export * from "./chat/run-replay.js";
+export * from "./chat/response-replay.js";
 export * from "./activity.js";
 export * from "./agentApprovalStore.js";
 export * from "./apps.js";
@@ -53,7 +53,8 @@ export * from "./usage.js";
 export * from "./workspaces.js";
 export * from "./yield-to-main-thread.js";
 export * from "./services/audio-service.js";
-export * from "./services/chat-service.js";
+export * from "./services/conversations-service.js";
+export * from "./services/responses-service.js";
 export * from "./services/machine-service.js";
 export * from "./services/research-service.js";
 export * from "./services/strudel-service.js";

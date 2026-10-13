@@ -61,13 +61,13 @@ const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
 export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "conversation.changed", apply: refreshConversationAndList },
   {
-    type: "run.changed",
+    type: "response.changed",
     apply: (context, event) => {
       refreshConversationAndList(context, event);
       refreshPolyAgenda(context, event);
     },
   },
-  { type: "run.event", apply: refreshConversationDetail },
+  { type: "response.event", apply: refreshConversationDetail },
   { type: "message.changed", apply: refreshConversationDetail },
   {
     type: "conversation.unread_changed",

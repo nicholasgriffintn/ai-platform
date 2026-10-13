@@ -14,7 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execution-authority";
+import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 
 import {
   agentHarnessSessionKey,

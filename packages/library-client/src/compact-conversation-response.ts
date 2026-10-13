@@ -1,6 +1,8 @@
 import { readCompactionStatusMessage } from "@ngriffin_uk/polychat-library-chat/message-compaction-status";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import { normaliseConversationItems } from "./conversation-response.js";
+
 export interface CompactConversationResponse {
   compacted: boolean;
   conversation: {
@@ -16,20 +18,26 @@ export function parseCompactConversationResponse(
     return null;
   }
 
-  const messages = value.conversation.messages;
+  const items = value.conversation.items ?? value.conversation.messages;
 
-  if (!Array.isArray(messages)) {
+  if (!Array.isArray(items)) {
     return null;
   }
+
+  const messages = normaliseConversationItems(items);
 
   if (value.compacted && !messages.some((message) => readCompactionStatusMessage(message))) {
     return null;
   }
 
+  const { items: _items, ...conversation } = value.conversation;
+
+  void _items;
+
   return {
     compacted: value.compacted,
     conversation: {
-      ...value.conversation,
+      ...conversation,
       messages,
     },
   };

@@ -1,5 +1,5 @@
-import { getChatRunPresentation } from "@ngriffin_uk/polychat-library-react";
-import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
+import { getResponsePresentation } from "@ngriffin_uk/polychat-library-react";
+import type { PlatformResponse } from "@ngriffin_uk/polychat-schemas";
 
 const toneClasses = {
   active: "border-active-work/45 bg-active-work/12 text-foreground",
@@ -9,8 +9,8 @@ const toneClasses = {
   success: "border-success/45 bg-success/12 text-success",
 } as const;
 
-export function ChatRunStatusBanner({ run }: { run: ChatRun }) {
-  const presentation = getChatRunPresentation(run);
+export function ChatRunStatusBanner({ response }: { response: PlatformResponse }) {
+  const presentation = getResponsePresentation(response);
 
   return (
     <output className="block w-full pb-2" aria-live="polite">

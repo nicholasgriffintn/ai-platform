@@ -17,9 +17,9 @@ The API is built on Cloudflare Workers and provides:
 
 ## Core Features
 
-### Chat Completions
+### Responses and Conversations
 
-Create conversational AI experiences with support for streaming, multi-turn conversations, and tool calling.
+Run models, teammates and agents as Responses inside Conversations, with one sequenced event stream for every run. Chat Completions remains available as an OpenAI-compatible port onto the same engine.
 
 ### Code Generation
 

@@ -1,340 +1,195 @@
 {
-  "version": 2,
-  "description": "Provider-neutral server-sent event fixtures shared by Polychat stream consumers.",
+  "version": 3,
+  "description": "Response stream event fixtures shared by Polychat stream consumers. Generated from the platform event projector.",
   "cases": [
     {
       "name": "text_reasoning_metadata_and_unknown_event",
       "chunks": [
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-text\",\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}\n\ndata: {\"type\":\"thinking_delta\",\"thinking\":\"Checking context. \"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"Hello \"}\n\n",
-        "data: {\"type\":\"future_additive_event\",\"detail\":\"ignored by older clients\"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"world\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-text\",\"content\":\"Hello world\",\"usage\":{\"input_tokens\":12,\"output_tokens\":2},\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: [DONE]\n\n"
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-text\",\"content\":[],\"status\":\"in_progress\",\"metadata\":{\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}},\"sequence_number\":0,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\nevent: response.reasoning.delta\ndata: {\"type\":\"response.reasoning.delta\",\"item_id\":\"assistant-text\",\"output_index\":0,\"delta\":\"Checking context. \",\"sequence_number\":1,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"assistant-text\",\"output_index\":0,\"delta\":\"Hello \",\"sequence_number\":2,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\n",
+        "data: {\"type\":\"future_additive_event\",\"detail\":\"ignored by older clients\"}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"assistant-text\",\"output_index\":0,\"delta\":\"world\",\"sequence_number\":3,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-text\",\"content\":[{\"type\":\"text\",\"text\":\"Hello world\"}],\"metadata\":{\"usage\":{\"input_tokens\":12,\"output_tokens\":2},\"model\":\"model-a\",\"provider\":\"provider-a\",\"platform\":\"cloud\"}},\"finish_reason\":null,\"sequence_number\":4,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"item_id\":\"assistant-text\",\"sequence_number\":5,\"response_id\":\"resp-1\",\"conversation_id\":\"conversation-1\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "message_start",
-          "thinking_delta",
-          "content_block_delta",
+          "response.output_item.added",
+          "response.reasoning.delta",
+          "response.output_text.delta",
           "future_additive_event",
-          "content_block_delta",
-          "message_delta",
-          "message_stop",
+          "response.output_text.delta",
+          "response.output_item.done",
+          "response.content_part.done",
           "done"
-        ],
-        "updateTypes": [
-          "assistant_metadata",
-          "assistant_delta",
-          "assistant_delta",
-          "assistant_delta",
-          "assistant_final",
-          "done"
-        ],
-        "assistantFinalContents": ["Hello world"],
-        "toolResultStatuses": [],
-        "activityKinds": [],
-        "doneCount": 1,
-        "finalContent": "Hello world",
-        "remainingBuffer": ""
+        ]
       }
     },
     {
       "name": "parallel_tools_with_fragmented_arguments_and_mixed_results",
       "chunks": [
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-tools\",\"model\":\"model-a\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-weather\",\"tool_name\":\"weather\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-clock\",\"tool_name\":\"clock\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-weather\",\"parameters\":\"{\\\"city\\\":\\\"Lon\"}\n\n",
-        "data: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-clock\",\"parameters\":{\"zone\":\"UTC\"}}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-weather\",\"parameters\":\"don\\\"}\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-clock\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-weather\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-tools\",\"finish_reason\":\"tool_calls\"}\n\ndata: {\"type\":\"message_stop\"}\n\n",
-        "data: {\"type\":\"tool_response_start\"}\n\ndata: {\"type\":\"tool_response\",\"tool_id\":\"result-clock\",\"result\":{\"role\":\"tool\",\"id\":\"result-clock\",\"name\":\"clock\",\"status\":\"success\",\"content\":\"12:00\",\"tool_call_id\":\"call-clock\"}}\n\ndata: {\"type\":\"tool_response\",\"tool_id\":\"result-weather\",\"result\":{\"role\":\"tool\",\"id\":\"result-weather\",\"name\":\"weather\",\"status\":\"error\",\"content\":\"Unavailable\",\"tool_call_id\":\"call-weather\"}}\n\ndata: {\"type\":\"tool_response_end\"}\n\ndata: {\"type\":\"message_start\",\"message_id\":\"assistant-tools-final\",\"model\":\"model-a\"}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"The clock succeeded; weather failed.\"}\n\ndata: {\"type\":\"message_delta\",\"message_id\":\"assistant-tools-final\",\"content\":\"The clock succeeded; weather failed.\",\"finish_reason\":\"stop\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: [DONE]\n\n"
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-tools\",\"content\":[],\"status\":\"in_progress\",\"metadata\":{\"model\":\"model-a\"}},\"sequence_number\":0,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":1,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-weather\",\"id\":\"call-weather\",\"name\":\"weather\"},\"sequence_number\":1,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":2,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-clock\",\"id\":\"call-clock\",\"name\":\"clock\"},\"sequence_number\":2,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-weather\",\"call_id\":\"call-weather\",\"delta\":\"{\\\"city\\\":\\\"Lon\",\"sequence_number\":3,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\n",
+        "event: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-clock\",\"call_id\":\"call-clock\",\"delta\":{\"zone\":\"UTC\"},\"sequence_number\":4,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-weather\",\"call_id\":\"call-weather\",\"delta\":\"don\\\"}\",\"sequence_number\":5,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":2,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-clock\",\"id\":\"call-clock\",\"name\":\"clock\"},\"sequence_number\":6,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":1,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-weather\",\"id\":\"call-weather\",\"name\":\"weather\",\"arguments\":{\"city\":\"London\"}},\"sequence_number\":7,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-tools\",\"content\":[]},\"finish_reason\":\"tool_calls\",\"sequence_number\":8,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"item_id\":\"assistant-tools\",\"sequence_number\":9,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\n",
+        "event: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":3,\"item\":{\"type\":\"tool_output\",\"id\":\"result-clock\",\"status\":\"success\",\"call_id\":\"call-clock\",\"name\":\"clock\",\"content\":[{\"type\":\"text\",\"text\":\"12:00\"}]},\"sequence_number\":10,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":4,\"item\":{\"type\":\"tool_output\",\"id\":\"result-weather\",\"status\":\"error\",\"call_id\":\"call-weather\",\"name\":\"weather\",\"content\":[{\"type\":\"text\",\"text\":\"Unavailable\"}]},\"sequence_number\":11,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.tool_outputs.done\ndata: {\"type\":\"response.tool_outputs.done\",\"sequence_number\":12,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":5,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-tools-final\",\"content\":[],\"status\":\"in_progress\",\"metadata\":{\"model\":\"model-a\"}},\"sequence_number\":13,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"assistant-tools-final\",\"output_index\":5,\"delta\":\"The clock succeeded; weather failed.\",\"sequence_number\":14,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":5,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-tools-final\",\"content\":[{\"type\":\"text\",\"text\":\"The clock succeeded; weather failed.\"}]},\"finish_reason\":\"stop\",\"sequence_number\":15,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"item_id\":\"assistant-tools-final\",\"sequence_number\":16,\"response_id\":\"resp-2\",\"conversation_id\":\"conversation-2\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "message_start",
-          "tool_use_start",
-          "tool_use_start",
-          "tool_use_delta",
-          "tool_use_delta",
-          "tool_use_delta",
-          "tool_use_stop",
-          "tool_use_stop",
-          "message_delta",
-          "message_stop",
-          "tool_response_start",
-          "tool_response",
-          "tool_response",
-          "tool_response_end",
-          "message_start",
-          "content_block_delta",
-          "message_delta",
-          "message_stop",
+          "response.output_item.added",
+          "response.output_item.added",
+          "response.output_item.added",
+          "response.tool_call.arguments.delta",
+          "response.tool_call.arguments.delta",
+          "response.tool_call.arguments.delta",
+          "response.output_item.done",
+          "response.output_item.done",
+          "response.output_item.done",
+          "response.content_part.done",
+          "response.output_item.done",
+          "response.output_item.done",
+          "response.tool_outputs.done",
+          "response.output_item.added",
+          "response.output_text.delta",
+          "response.output_item.done",
+          "response.content_part.done",
           "done"
-        ],
-        "updateTypes": [
-          "assistant_metadata",
-          "assistant_final",
-          "tool_result",
-          "tool_result",
-          "assistant_metadata",
-          "assistant_delta",
-          "assistant_final",
-          "done"
-        ],
-        "assistantFinalContents": ["", "The clock succeeded; weather failed."],
-        "toolResultStatuses": ["success", "error"],
-        "activityKinds": [],
-        "doneCount": 1,
-        "finalContent": "The clock succeeded; weather failed.",
-        "remainingBuffer": ""
+        ]
       }
     },
     {
       "name": "sequential_tool_with_malformed_arguments",
       "chunks": [
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-sequential-1\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-read\",\"tool_name\":\"read_file\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-read\",\"parameters\":{\"path\":\"notes.txt\"}}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-read\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-read\",\"name\":\"read_file\",\"status\":\"success\",\"content\":\"notes\",\"tool_call_id\":\"call-read\"}}\n\ndata: {\"type\":\"tool_response_end\"}\n\n",
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-sequential-2\"}\n\ndata: {\"type\":\"tool_use_start\",\"tool_id\":\"call-write\",\"tool_name\":\"write_file\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-write\",\"parameters\":\"{\\\"path\\\":\"}\n\ndata: {\"type\":\"tool_use_delta\",\"tool_id\":\"call-write\",\"parameters\":\"not-json}\"}\n\ndata: {\"type\":\"tool_use_stop\",\"tool_id\":\"call-write\"}\n\ndata: {\"type\":\"message_stop\"}\n\ndata: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-write\",\"name\":\"write_file\",\"status\":\"error\",\"content\":\"Invalid arguments\",\"tool_call_id\":\"call-write\"}}\n\ndata: [DONE]\n\n"
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-sequential-1\",\"content\":[],\"status\":\"in_progress\"},\"sequence_number\":0,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":1,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-read\",\"id\":\"call-read\",\"name\":\"read_file\"},\"sequence_number\":1,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-read\",\"call_id\":\"call-read\",\"delta\":{\"path\":\"notes.txt\"},\"sequence_number\":2,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":1,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-read\",\"id\":\"call-read\",\"name\":\"read_file\"},\"sequence_number\":3,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"item_id\":\"assistant-sequential-1\",\"sequence_number\":4,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":2,\"item\":{\"type\":\"tool_output\",\"id\":\"result-read\",\"status\":\"success\",\"call_id\":\"call-read\",\"name\":\"read_file\",\"content\":[{\"type\":\"text\",\"text\":\"notes\"}]},\"sequence_number\":5,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.tool_outputs.done\ndata: {\"type\":\"response.tool_outputs.done\",\"sequence_number\":6,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\n",
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":3,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-sequential-2\",\"content\":[],\"status\":\"in_progress\"},\"sequence_number\":7,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":4,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-write\",\"id\":\"call-write\",\"name\":\"write_file\"},\"sequence_number\":8,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-write\",\"call_id\":\"call-write\",\"delta\":\"{\\\"path\\\":\",\"sequence_number\":9,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.tool_call.arguments.delta\ndata: {\"type\":\"response.tool_call.arguments.delta\",\"item_id\":\"call-write\",\"call_id\":\"call-write\",\"delta\":\"not-json}\",\"sequence_number\":10,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":4,\"item\":{\"type\":\"tool_call\",\"call_id\":\"call-write\",\"id\":\"call-write\",\"name\":\"write_file\",\"arguments\":\"{\\\"path\\\":not-json}\"},\"sequence_number\":11,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.content_part.done\ndata: {\"type\":\"response.content_part.done\",\"item_id\":\"assistant-sequential-2\",\"sequence_number\":12,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\nevent: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":5,\"item\":{\"type\":\"tool_output\",\"id\":\"result-write\",\"status\":\"error\",\"call_id\":\"call-write\",\"name\":\"write_file\",\"content\":[{\"type\":\"text\",\"text\":\"Invalid arguments\"}]},\"sequence_number\":13,\"response_id\":\"resp-3\",\"conversation_id\":\"conversation-3\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "message_start",
-          "tool_use_start",
-          "tool_use_delta",
-          "tool_use_stop",
-          "message_stop",
-          "tool_response",
-          "tool_response_end",
-          "message_start",
-          "tool_use_start",
-          "tool_use_delta",
-          "tool_use_delta",
-          "tool_use_stop",
-          "message_stop",
-          "tool_response",
+          "response.output_item.added",
+          "response.output_item.added",
+          "response.tool_call.arguments.delta",
+          "response.output_item.done",
+          "response.content_part.done",
+          "response.output_item.done",
+          "response.tool_outputs.done",
+          "response.output_item.added",
+          "response.output_item.added",
+          "response.tool_call.arguments.delta",
+          "response.tool_call.arguments.delta",
+          "response.output_item.done",
+          "response.content_part.done",
+          "response.output_item.done",
           "done"
-        ],
-        "updateTypes": [
-          "assistant_metadata",
-          "assistant_final",
-          "tool_result",
-          "assistant_metadata",
-          "assistant_final",
-          "tool_result",
-          "done"
-        ],
-        "assistantFinalContents": ["", ""],
-        "toolResultStatuses": ["success", "error"],
-        "activityKinds": [],
-        "doneCount": 1,
-        "finalContent": "",
-        "remainingBuffer": ""
+        ]
       }
     },
     {
       "name": "human_question_wait",
       "chunks": [
-        "data: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_started\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_finished\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\",\"reason\":\"question\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"waiting\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+        "event: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_started\",\"sequence_number\":0,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_started\",\"step\":1,\"sequence_number\":1,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\",\"kind\":\"tool_input_started\",\"sequence_number\":2,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\",\"kind\":\"tool_input_finished\",\"sequence_number\":3,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-question\",\"toolName\":\"ask_user\",\"kind\":\"waiting_for_user\",\"reason\":\"question\",\"sequence_number\":4,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"waiting\",\"sequence_number\":5,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\",\"sequence_number\":6,\"response_id\":\"resp-4\",\"conversation_id\":\"conversation-4\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
           "done"
-        ],
-        "updateTypes": [
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "done"
-        ],
-        "assistantFinalContents": [],
-        "toolResultStatuses": [],
-        "activityKinds": [
-          "turn_started",
-          "model_step_started",
-          "tool_input_started",
-          "tool_input_finished",
-          "waiting_for_user",
-          "model_step_finished",
-          "turn_finished"
-        ],
-        "doneCount": 1,
-        "remainingBuffer": ""
+        ]
       }
     },
     {
       "name": "approval_wait_after_tool_result",
       "chunks": [
-        "data: {\"type\":\"tool_response\",\"result\":{\"id\":\"result-preview\",\"name\":\"connector_preview\",\"status\":\"success\",\"content\":\"Ready for approval\",\"tool_call_id\":\"call-preview\"}}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":2,\"toolCallId\":\"call-approval\",\"toolName\":\"request_approval\",\"reason\":\"approval\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"waiting\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+        "event: response.output_item.done\ndata: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"tool_output\",\"id\":\"result-preview\",\"status\":\"success\",\"call_id\":\"call-preview\",\"name\":\"connector_preview\",\"content\":[{\"type\":\"text\",\"text\":\"Ready for approval\"}]},\"sequence_number\":0,\"response_id\":\"resp-5\",\"conversation_id\":\"conversation-5\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":2,\"toolCallId\":\"call-approval\",\"toolName\":\"request_approval\",\"kind\":\"waiting_for_user\",\"reason\":\"approval\",\"sequence_number\":1,\"response_id\":\"resp-5\",\"conversation_id\":\"conversation-5\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"waiting\",\"sequence_number\":2,\"response_id\":\"resp-5\",\"conversation_id\":\"conversation-5\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\",\"sequence_number\":3,\"response_id\":\"resp-5\",\"conversation_id\":\"conversation-5\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
-        "eventTypes": ["tool_response", "turn_activity", "turn_activity", "turn_activity", "done"],
-        "updateTypes": ["tool_result", "activity", "activity", "activity", "done"],
-        "assistantFinalContents": [],
-        "toolResultStatuses": ["success"],
-        "activityKinds": ["waiting_for_user", "model_step_finished", "turn_finished"],
-        "doneCount": 1,
-        "remainingBuffer": ""
+        "eventTypes": [
+          "response.output_item.done",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "done"
+        ]
       }
     },
     {
       "name": "selection_wait",
       "chunks": [
-        "data: {\"type\":\"turn_activity\",\"kind\":\"waiting_for_user\",\"step\":1,\"toolCallId\":\"call-selection\",\"toolName\":\"select_council_members\",\"reason\":\"selection\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\"}\n\ndata: [DONE]\n\n"
+        "event: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-selection\",\"toolName\":\"select_council_members\",\"kind\":\"waiting_for_user\",\"reason\":\"selection\",\"sequence_number\":0,\"response_id\":\"resp-6\",\"conversation_id\":\"conversation-6\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"waiting\",\"sequence_number\":1,\"response_id\":\"resp-6\",\"conversation_id\":\"conversation-6\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
-        "eventTypes": ["turn_activity", "turn_activity", "done"],
-        "updateTypes": ["activity", "activity", "done"],
-        "assistantFinalContents": [],
-        "toolResultStatuses": [],
-        "activityKinds": ["waiting_for_user", "turn_finished"],
-        "doneCount": 1,
-        "remainingBuffer": ""
+        "eventTypes": ["response.activity", "response.activity", "done"]
       }
     },
     {
       "name": "provider_failure_after_malformed_sse",
       "chunks": [
-        "data: {not valid json}\n\ndata: {\"type\":\"state\",\"state\":\"error\",\"errorType\":\"provider_unavailable\"}\n\ndata: {\"type\":\"error\",\"error\":{\"message\":\"Provider unavailable\"}}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"failed\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"failed\",\"errorType\":\"provider_unavailable\"}\n\n"
+        "data: {not valid json}\n\nevent: response.state\ndata: {\"type\":\"response.state\",\"state\":\"error\",\"errorType\":\"provider_unavailable\",\"sequence_number\":0,\"response_id\":\"resp-7\",\"conversation_id\":\"conversation-7\"}\n\nevent: response.error\ndata: {\"type\":\"response.error\",\"error\":{\"message\":\"Provider unavailable\"},\"sequence_number\":1,\"response_id\":\"resp-7\",\"conversation_id\":\"conversation-7\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"failed\",\"sequence_number\":2,\"response_id\":\"resp-7\",\"conversation_id\":\"conversation-7\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"failed\",\"errorType\":\"provider_unavailable\",\"sequence_number\":3,\"response_id\":\"resp-7\",\"conversation_id\":\"conversation-7\"}\n\n"
       ],
       "flush": true,
       "expected": {
-        "eventTypes": ["state", "error", "turn_activity", "turn_activity"],
-        "updateTypes": ["state", "activity", "activity"],
-        "assistantFinalContents": [],
-        "toolResultStatuses": [],
-        "activityKinds": ["model_step_finished", "turn_finished"],
-        "doneCount": 0,
-        "remainingBuffer": ""
+        "eventTypes": ["response.state", "response.error", "response.activity", "response.activity"]
       }
     },
     {
       "name": "explicit_cancellation_preserves_partial_answer",
       "chunks": [
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-cancelled\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"content_block_delta\",\"content\":\"Partial answer\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"cancelled\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"cancelled\"}\n\ndata: [DONE]\n\n"
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-cancelled\",\"content\":[],\"status\":\"in_progress\"},\"sequence_number\":0,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_started\",\"sequence_number\":1,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_started\",\"step\":1,\"sequence_number\":2,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"assistant-cancelled\",\"output_index\":0,\"delta\":\"Partial answer\",\"sequence_number\":3,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"cancelled\",\"sequence_number\":4,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"cancelled\",\"sequence_number\":5,\"response_id\":\"resp-8\",\"conversation_id\":\"conversation-8\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "message_start",
-          "turn_activity",
-          "turn_activity",
-          "content_block_delta",
-          "turn_activity",
-          "turn_activity",
+          "response.output_item.added",
+          "response.activity",
+          "response.activity",
+          "response.output_text.delta",
+          "response.activity",
+          "response.activity",
           "done"
-        ],
-        "updateTypes": [
-          "assistant_metadata",
-          "activity",
-          "activity",
-          "assistant_delta",
-          "activity",
-          "activity",
-          "assistant_final",
-          "done"
-        ],
-        "assistantFinalContents": ["Partial answer"],
-        "toolResultStatuses": [],
-        "activityKinds": [
-          "turn_started",
-          "model_step_started",
-          "model_step_finished",
-          "turn_finished"
-        ],
-        "doneCount": 1,
-        "finalContent": "Partial answer",
-        "remainingBuffer": ""
+        ]
       }
     },
     {
       "name": "transport_detachment_keeps_incomplete_block_buffered",
       "chunks": [
-        "data: {\"type\":\"message_start\",\"message_id\":\"assistant-detached\"}\n\n",
-        "data: {\"type\":\"content_block_delta\",\"content\":\"Still running\"}"
+        "event: response.output_item.added\ndata: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"role\":\"assistant\",\"id\":\"assistant-detached\",\"content\":[],\"status\":\"in_progress\"},\"sequence_number\":0,\"response_id\":\"resp-9\",\"conversation_id\":\"conversation-9\"}\n\nevent: response.output_text.delta\ndata: {\"type\":\"response.output_text.delta\",\"item_id\":\"assistant-detached\",\"outp",
+        "ut_index\":0,\"delta\":\"Still running\",\"sequence_number\":1,\"response_id\":\"resp-9\",\"conversation_id\":\"conversation-9\"}"
       ],
       "flush": false,
       "expected": {
-        "eventTypes": ["message_start"],
-        "updateTypes": ["assistant_metadata"],
-        "assistantFinalContents": [],
-        "toolResultStatuses": [],
-        "activityKinds": [],
-        "doneCount": 0,
-        "remainingBuffer": "data: {\"type\":\"content_block_delta\",\"content\":\"Still running\"}"
+        "eventTypes": ["response.output_item.added", "response.output_text.delta"]
       }
     },
     {
       "name": "semantic_turn_activity_lifecycle",
       "chunks": [
-        "data: {\"type\":\"turn_activity\",\"kind\":\"turn_started\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"reasoning_started\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"reasoning_finished\",\"step\":1}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"response_started\",\"step\":1}\n\n",
-        "data: {\"type\":\"turn_activity\",\"kind\":\"tool_input_started\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_input_finished\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_execution_started\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"tool_finished\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"outcome\":\"success\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"response_finished\",\"step\":1}\n\n",
-        "data: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"tool_calls\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_started\",\"step\":2}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"completed\"}\n\ndata: {\"type\":\"turn_activity\",\"kind\":\"turn_finished\",\"outcome\":\"completed\"}\n\ndata: [DONE]\n\n"
+        "event: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_started\",\"sequence_number\":0,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_started\",\"step\":1,\"sequence_number\":1,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"reasoning_started\",\"step\":1,\"sequence_number\":2,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"reasoning_finished\",\"step\":1,\"sequence_number\":3,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"response_started\",\"step\":1,\"sequence_number\":4,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\n",
+        "event: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"kind\":\"tool_input_started\",\"sequence_number\":5,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"kind\":\"tool_input_finished\",\"sequence_number\":6,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"kind\":\"tool_execution_started\",\"sequence_number\":7,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"step\":1,\"toolCallId\":\"call-weather\",\"toolName\":\"weather\",\"kind\":\"tool_finished\",\"outcome\":\"success\",\"sequence_number\":8,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"response_finished\",\"step\":1,\"sequence_number\":9,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\n",
+        "event: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":1,\"outcome\":\"tool_calls\",\"sequence_number\":10,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_started\",\"step\":2,\"sequence_number\":11,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"model_step_finished\",\"step\":2,\"outcome\":\"completed\",\"sequence_number\":12,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\nevent: response.activity\ndata: {\"type\":\"response.activity\",\"kind\":\"turn_finished\",\"outcome\":\"completed\",\"sequence_number\":13,\"response_id\":\"resp-10\",\"conversation_id\":\"conversation-10\"}\n\ndata: [DONE]\n\n"
       ],
       "flush": true,
       "expected": {
         "eventTypes": [
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
-          "turn_activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
+          "response.activity",
           "done"
-        ],
-        "updateTypes": [
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "activity",
-          "done"
-        ],
-        "assistantFinalContents": [],
-        "toolResultStatuses": [],
-        "activityKinds": [
-          "turn_started",
-          "model_step_started",
-          "reasoning_started",
-          "reasoning_finished",
-          "response_started",
-          "tool_input_started",
-          "tool_input_finished",
-          "tool_execution_started",
-          "tool_finished",
-          "response_finished",
-          "model_step_finished",
-          "model_step_started",
-          "model_step_finished",
-          "turn_finished"
-        ],
-        "doneCount": 1,
-        "remainingBuffer": ""
+        ]
       }
     }
   ]

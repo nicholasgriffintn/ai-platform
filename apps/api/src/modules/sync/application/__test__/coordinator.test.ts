@@ -177,7 +177,7 @@ describe("UserSyncCoordinator", () => {
       sockets[0] as unknown as WebSocket,
       JSON.stringify({ type: "subscribe", topics: [{ topic: "conversation:x", lastSeq: 0 }] }),
     );
-    await publish(coordinator, [{ topic: "conversation:y", type: "run.changed", data: {} }]);
+    await publish(coordinator, [{ topic: "conversation:y", type: "response.changed", data: {} }]);
     await vi.advanceTimersByTimeAsync(100);
 
     expect(messagesOfType(sockets[0], "event")).toHaveLength(0);

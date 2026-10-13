@@ -15,7 +15,7 @@ import {
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { requireChatRunAccess } from "~/modules/chat-runs/application/status";
+import { requireChatRunAccess } from "~/modules/responses/application/runs/status";
 
 export function createOutputProvenance(input: {
   origin: OutputProvenance["origin"];

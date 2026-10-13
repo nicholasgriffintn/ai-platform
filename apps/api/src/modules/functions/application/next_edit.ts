@@ -1,4 +1,4 @@
-import { handleCreateNextEditCompletions } from "~/modules/completions/application/createNextEditCompletions";
+import { handleCreateNextEditCompletions } from "~/modules/code/application/createNextEditCompletions";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { next_edit_completion as next_edit_completionDescriptor } from "./definitions/next_edit";

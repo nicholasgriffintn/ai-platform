@@ -1,4 +1,4 @@
-import { handleCreateApplyEditCompletions } from "~/modules/completions/application/createApplyEditCompletions";
+import { handleCreateApplyEditCompletions } from "~/modules/code/application/createApplyEditCompletions";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { apply_edit_completion as apply_edit_completionDescriptor } from "./definitions/apply_edit";

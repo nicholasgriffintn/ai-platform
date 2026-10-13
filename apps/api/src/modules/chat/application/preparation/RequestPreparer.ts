@@ -25,7 +25,6 @@ import {
   listRecipeConnectors,
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
-import { isBuiltInToolApprovalResolution } from "~/modules/chat-runs/application/interactions";
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
@@ -58,6 +57,7 @@ import {
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
 import { getConversationBrief } from "~/modules/memory-documents/application/memory-documents";
+import { isBuiltInToolApprovalResolution } from "~/modules/responses/application/runs/interactions";
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,

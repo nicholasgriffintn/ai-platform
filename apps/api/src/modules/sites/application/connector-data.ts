@@ -28,7 +28,7 @@ import {
   executeRecipeConnectorOperation,
   getActiveComposioAccountForProvider,
 } from "~/modules/apps/application/connectors/operations";
-import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execution-authority";
+import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 import { createSource, deleteSource } from "~/modules/sources/application/sources";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 

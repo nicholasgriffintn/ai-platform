@@ -4,13 +4,13 @@ import { reapComposioConnectorSessions } from "~/modules/apps/application/connec
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
 import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
 import { queueOfficialRuns } from "~/modules/benchmarks/application/official";
-import { sweepInterruptedChatRuns } from "~/modules/chat-runs/application/interrupted-run-sweep";
-import { releaseExpiredChatRunReservations } from "~/modules/chat-runs/application/reservation-maintenance";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
 import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
 } from "~/modules/model-governance/application/maintenance";
+import { sweepInterruptedChatRuns } from "~/modules/responses/application/runs/interrupted-run-sweep";
+import { releaseExpiredChatRunReservations } from "~/modules/responses/application/runs/reservation-maintenance";
 import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
 import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";

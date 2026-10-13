@@ -6,7 +6,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { z } from "zod/v4";
 
 import { Database } from "~/infrastructure/database";
-import { handleAsyncInvocation } from "~/modules/completions/application/async/handler";
+import { handleAsyncInvocation } from "~/modules/conversations/application/async/handler";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";

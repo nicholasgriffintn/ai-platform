@@ -15,13 +15,13 @@ import { MAX_POLY_ATTENTION_LIMIT, MAX_POLY_READ_MESSAGES } from "~/config/limit
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listWorkAttention } from "~/modules/attention/application";
 import { isPolyNavigationTurn } from "~/modules/chat/application/policy/poly";
-import { handleUpdateChatCompletion } from "~/modules/completions/application/updateChatCompletion";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import {
   getConversationOrganisation,
   updateConversationOrganisation,
 } from "~/modules/conversations/application/conversation-organisation";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
+import { handleUpdateChatCompletion } from "~/modules/conversations/application/updateChatCompletion";
 import { searchPolychat } from "~/modules/search/application/global";
 import { hireTeammate as hireTeammateService } from "~/modules/teammates/application";
 import {

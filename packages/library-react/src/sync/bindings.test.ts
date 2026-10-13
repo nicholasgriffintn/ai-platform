@@ -197,7 +197,7 @@ describe("sync bindings", () => {
   it("refreshes the conversation and the chat list when a run changes", () => {
     const { context, invalidatedKeys } = createContext();
 
-    applySyncEvent(context, buildEvent("run.changed", { conversationId: "abc" }));
+    applySyncEvent(context, buildEvent("response.changed", { conversationId: "abc" }));
 
     expect(invalidatedKeys).toContainEqual(["chats", "abc"]);
     expect(invalidatedKeys).toContainEqual(["chats", "remote"]);
@@ -226,7 +226,7 @@ describe("sync bindings", () => {
   it("binds only event types the server actually publishes", () => {
     const bound = new Set(SYNC_BINDINGS.map((binding) => binding.type));
 
-    for (const type of ["conversation.changed", "run.changed", "message.changed"] as const) {
+    for (const type of ["conversation.changed", "response.changed", "message.changed"] as const) {
       expect(bound.has(type)).toBe(true);
     }
   });

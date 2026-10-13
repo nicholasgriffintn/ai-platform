@@ -1,4 +1,4 @@
-import type { ChatTurnActivityEvent } from "@ngriffin_uk/polychat-schemas/chat-stream";
+import type { ResponseActivityEvent } from "@ngriffin_uk/polychat-schemas";
 
 export type TurnActivityPhase =
   | "preparing"
@@ -45,7 +45,7 @@ export function createTurnActivityProjection(): TurnActivityProjection {
 
 function updateTool(
   projection: TurnActivityProjection,
-  event: Extract<ChatTurnActivityEvent, { toolCallId: string }>,
+  event: Extract<ResponseActivityEvent, { toolCallId: string }>,
   status: TurnActivityTool["status"],
 ): TurnActivityTool[] {
   const existing = projection.tools.find((tool) => tool.id === event.toolCallId);
@@ -71,7 +71,7 @@ function toolExecutionLabel(tools: TurnActivityTool[]): string {
 
 export function applyTurnActivityEvent(
   projection: TurnActivityProjection,
-  event: ChatTurnActivityEvent,
+  event: ResponseActivityEvent,
 ): TurnActivityProjection {
   switch (event.kind) {
     case "turn_started":
