@@ -12,7 +12,16 @@ import {
   type BenchmarkItemResult,
   type BenchmarkRunTaskData,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage, percentile, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getErrorMessage,
+  percentile,
+  sleep,
+  truncateText,
+} from "@ngriffin_uk/polychat-utility-core";
+import {
+  classifyProviderRetryError,
+  getProviderRetryAfterMs,
+} from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
 import { ai } from "~/infrastructure/ai";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
@@ -23,12 +32,16 @@ import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
-import { resolveEntrantTarget, type EntrantTarget } from "./entrants";
+import { officialRunRefusal, resolveEntrantTarget, type EntrantTarget } from "./entrants";
 import { invokeEntrant } from "./invoke";
 
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
 const ITEMS_PER_TASK = 5;
+const TRANSIENT_ATTEMPTS = 4;
+const TRANSIENT_DELAY_MS = 3_000;
+const MAX_RETRY_DELAY_MS = 90_000;
+const RETRY_HINT_PATTERN = /retry in ([\d.]+)\s*s/i;
 const MAX_STORED_OUTPUT = 20_000;
 const RUN_TASK_PRIORITY = 7;
 
@@ -72,6 +85,50 @@ async function judgeArtefact(
   return parseJudgeScore(verdict.text);
 }
 
+function hintedRetryMs(error: unknown): number | undefined {
+  const fromContext = getProviderRetryAfterMs(error);
+
+  if (fromContext !== undefined) {
+    return fromContext;
+  }
+
+  const match = RETRY_HINT_PATTERN.exec(getErrorMessage(error, ""));
+
+  return match ? Number(match[1]) * 1000 : undefined;
+}
+
+export function benchmarkRetryDelayMs(error: unknown, attempt: number): number {
+  const hinted = hintedRetryMs(error);
+
+  return Math.min(MAX_RETRY_DELAY_MS, Math.round(hinted ?? TRANSIENT_DELAY_MS * attempt) + 1_000);
+}
+
+async function invokeWithRetries(
+  scope: Parameters<typeof invokeEntrant>[0],
+  target: EntrantTarget,
+) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await invokeEntrant(scope, target);
+    } catch (error) {
+      if (attempt >= TRANSIENT_ATTEMPTS || !classifyProviderRetryError(error).retryable) {
+        throw error;
+      }
+
+      const delayMs = benchmarkRetryDelayMs(error, attempt);
+
+      logger.warn("Benchmark item hit a transient provider error, retrying", {
+        runId: scope.runId,
+        itemId: scope.itemId,
+        attempt,
+        delayMs,
+        error: getErrorMessage(error, "Unknown error"),
+      });
+      await sleep(delayMs);
+    }
+  }
+}
+
 async function runItem(
   env: IEnv,
   repositories: RepositoryManager,
@@ -84,7 +141,7 @@ async function runItem(
   const started = Date.now();
 
   try {
-    const response = await invokeEntrant(
+    const response = await invokeWithRetries(
       {
         env,
         repositories,
@@ -217,6 +274,17 @@ export async function executeBenchmarkRun(
 
   if (benchmark.summary.version !== run.version) {
     return failRun(repositories, run.id, "The benchmark changed version before this run finished");
+  }
+
+  const refusal = officialRunRefusal(run);
+
+  if (refusal) {
+    await repositories.benchmarkRuns.update(run.id, {
+      status: "cancelled",
+      failure_reason: refusal,
+    });
+
+    return { status: "success" as const, message: `Benchmark run ${run.id} cancelled: ${refusal}` };
   }
 
   try {

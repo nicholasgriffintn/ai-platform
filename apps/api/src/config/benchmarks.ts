@@ -1,4 +1,18 @@
+export const OFFICIAL_BENCHMARK_PROVIDERS: readonly string[] = [
+  "anthropic",
+  "openai",
+  "google-ai-studio",
+  "deepseek",
+  "moonshot",
+  "zai",
+  "mistral",
+  "grok",
+  "minimax",
+  "alibaba",
+];
+
 export const BENCHMARKS_CONFIG = {
+  officialProviders: OFFICIAL_BENCHMARK_PROVIDERS,
   officialMonthlyBudgetUsd: 50,
   officialRunsPerQueuePass: 12,
   personalActiveRuns: 5,

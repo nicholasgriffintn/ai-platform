@@ -7,10 +7,12 @@ import {
   modelHasInputModalities,
   modelHasOutputModality,
   type BenchmarkEntrant,
+  type BenchmarkScope,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
@@ -62,6 +64,27 @@ export function findPlatformModel(env: IEnv, modelId: string): ModelConfigItem |
   return config && isProviderPlatformEnabled(config.provider, env)
     ? { ...config, id: modelId }
     : null;
+}
+
+export function isOfficialProvider(provider: string): boolean {
+  return BENCHMARKS_CONFIG.officialProviders.includes(provider);
+}
+
+export function officialRunRefusal(run: {
+  scope: BenchmarkScope;
+  entrant: BenchmarkEntrant;
+}): string | null {
+  return run.scope === "official" &&
+    run.entrant.kind === "model" &&
+    !isOfficialProvider(run.entrant.provider)
+    ? `Official runs only go to approved labs, not ${run.entrant.provider}`
+    : null;
+}
+
+export function findOfficialModel(env: IEnv, modelId: string): ModelConfigItem | null {
+  const config = findPlatformModel(env, modelId);
+
+  return config && isOfficialProvider(config.provider) ? config : null;
 }
 
 export async function resolveModelTarget(

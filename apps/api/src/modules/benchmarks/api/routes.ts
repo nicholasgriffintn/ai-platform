@@ -190,7 +190,7 @@ addRoute(app, "post", "/admin/queue", {
   tags,
   summary: "Queue official runs for models without one",
   description:
-    "Queues official runs for lineup and decision models that have not run the current version, within the monthly budget. The daily schedule calls the same queue.",
+    "Queues official runs for lineup and decision models from approved labs that have not run the current version, within the monthly budget. Models outside the approved providers are skipped, and the daily schedule calls the same queue.",
   middleware: [requireAdmin],
   bodySchema: queueOfficialBenchmarkRunsRequestSchema,
   responses: { 200: { description: "Queued runs", schema: benchmarkQueueResultSchema } },

@@ -60,23 +60,28 @@ function CleverButCan({ boards }: { boards: readonly BenchmarkBoard[] }) {
               role="tab"
               aria-selected={candidate.benchmark.id === board.benchmark.id}
               onClick={() => setSelected(candidate.benchmark.id)}
-              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground aria-selected:border-accent-amber aria-selected:bg-accent-amber/10 aria-selected:text-foreground"
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground aria-selected:border-accent-amber aria-selected:bg-accent-amber/10 aria-selected:text-foreground"
             >
               {candidate.benchmark.name}
             </button>
           ))}
         </div>
       </div>
-      <ScatterPlot
-        points={intelligencePoints(board)}
-        ariaLabel={`Artificial Analysis Intelligence Index against ${board.benchmark.name} score`}
-        x={{ label: "Artificial Analysis Intelligence Index", format: (value) => value.toFixed(0) }}
-        y={{
-          label: board.benchmark.scoring === "votes" ? "Win rate" : board.benchmark.name,
-          format: (value) => `${Math.round(value * 100)}`,
-        }}
-        quadrants={{ topRight: "Clever and capable", bottomRight: "Clever, somehow lost" }}
-      />
+      <div className="rounded-2xl border border-border bg-surface p-4">
+        <ScatterPlot
+          points={intelligencePoints(board)}
+          ariaLabel={`Artificial Analysis Intelligence Index against ${board.benchmark.name} score`}
+          x={{
+            label: "Artificial Analysis Intelligence Index",
+            format: (value) => value.toFixed(0),
+          }}
+          y={{
+            label: board.benchmark.scoring === "votes" ? "Win rate" : board.benchmark.name,
+            format: (value) => `${Math.round(value * 100)}`,
+          }}
+          quadrants={{ topRight: "Clever and capable", bottomRight: "Clever, somehow lost" }}
+        />
+      </div>
     </section>
   );
 }
@@ -85,16 +90,16 @@ export function BenchmarksIndex() {
   const { data, isLoading, error } = useBenchmarkIndex();
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-14 px-4 pb-16 sm:px-6">
+    <div className="w-full space-y-14 pb-16">
       <header className="space-y-5 pt-2">
         <p className="polychat-eyebrow">Benchmarks</p>
         <h1 className="max-w-3xl font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
-          Clever is one thing. Can it find Lisbon from a kerb?
+          Sure it can do math, but can it find Lisbon from a kerb?
         </h1>
         <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Six small, honest benchmarks: photos to place, numbers to reach, odds to call, hamsters to
-          animate and grooves to loop. Every score has its interval, every run its receipt, and you
-          can run your own models or play the board yourself.
+          Welcome to Polychat's benchmark arena. Here we test the latest models against a variety of
+          challenges to see how they perform. Check the results yourself or see how you compare to
+          the models.
         </p>
         <div className="flex flex-wrap gap-3">
           <ButtonLink href={benchmarkPaths.app} variant="primary">
@@ -109,7 +114,7 @@ export function BenchmarksIndex() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} className="h-56 rounded-2xl" />
+            <Skeleton key={index} className="h-64 rounded-2xl" />
           ))}
         </div>
       ) : null}

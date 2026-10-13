@@ -66,7 +66,6 @@ async function buildMessages(scope: InvocationScope): Promise<Message[]> {
     : null;
 
   return [
-    { role: "system", content: prompt.system },
     {
       role: "user",
       content: image
@@ -90,6 +89,7 @@ async function invokeChatModel(
       env: scope.env,
       model: model.config.id ?? model.config.matchingModel,
       provider: model.config.provider,
+      system_prompt: scope.benchmark.prompt(scope.itemId).system,
       messages: await buildMessages(scope),
       max_tokens: BENCHMARK_MAX_OUTPUT_TOKENS,
       reasoning_effort: hasProviderReasoningOptions(model.config)

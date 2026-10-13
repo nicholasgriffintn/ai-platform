@@ -1,10 +1,15 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
-import { getBenchmark, listBenchmarks } from "@ngriffin_uk/polychat-library-benchmarks";
+import {
+  getBenchmark,
+  listBenchmarks,
+  type Benchmark,
+} from "@ngriffin_uk/polychat-library-benchmarks";
 import {
   MODEL_TIER_LINEUP,
   benchmarkEntrantKey,
   findModelByReference,
   isActiveModel,
+  type BenchmarkEntrant,
   type BenchmarkRun,
   type QueueOfficialBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,7 +18,13 @@ import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { IEnv } from "~/types";
 
-import { findPlatformModel, isDecisionModel, modelEntrant, modelIneligibility } from "./entrants";
+import {
+  findOfficialModel,
+  isDecisionModel,
+  isOfficialProvider,
+  modelEntrant,
+  modelIneligibility,
+} from "./entrants";
 import { toBenchmarkRun } from "./mappers";
 import { enqueueBenchmarkRunTask } from "./runner";
 
@@ -33,6 +44,10 @@ export function officialCandidateModelIds(env: IEnv): string[] {
     Object.values(roles).flatMap((candidates) => [...candidates]),
   );
   const fromLineup = lineup.flatMap((candidate) => {
+    if (!isOfficialProvider(candidate.provider)) {
+      return [];
+    }
+
     const resolved = findModelByReference(models, candidate);
 
     return resolved ? [resolved.id] : [];
@@ -42,8 +57,27 @@ export function officialCandidateModelIds(env: IEnv): string[] {
     .map(([id]) => id);
 
   return [...new Set([...fromLineup, ...decisionModels])].filter((id) =>
-    Boolean(findPlatformModel(env, id)),
+    Boolean(findOfficialModel(env, id)),
   );
+}
+
+export function officialEntrantsFor(
+  env: IEnv,
+  benchmark: Benchmark,
+  modelIds: readonly string[],
+  existing: ReadonlySet<string>,
+): BenchmarkEntrant[] {
+  return modelIds.flatMap((modelId) => {
+    const config = findOfficialModel(env, modelId);
+
+    if (!config || modelIneligibility(benchmark, config)) {
+      return [];
+    }
+
+    const entrant = modelEntrant(modelId, config);
+
+    return existing.has(benchmarkEntrantKey(entrant)) ? [] : [entrant];
+  });
 }
 
 export async function queueOfficialRuns(
@@ -71,21 +105,9 @@ export async function queueOfficialRuns(
       { retryFailed: Boolean(request.modelIds?.length) },
     );
 
-    for (const modelId of modelIds) {
+    for (const entrant of officialEntrantsFor(env, benchmark, modelIds, existing)) {
       if (queued.length >= BENCHMARKS_CONFIG.officialRunsPerQueuePass) {
         return { queued, skippedForBudget: false, spentThisMonthUsd };
-      }
-
-      const config = findPlatformModel(env, modelId);
-
-      if (!config || modelIneligibility(benchmark, config)) {
-        continue;
-      }
-
-      const entrant = modelEntrant(modelId, config);
-
-      if (existing.has(benchmarkEntrantKey(entrant))) {
-        continue;
       }
 
       const record = await repositories.benchmarkRuns.create({

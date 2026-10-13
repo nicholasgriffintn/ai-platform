@@ -4,6 +4,8 @@ Polychat's fun benchmarks as pure definitions: frozen datasets, prompts, answer 
 
 Keep this package server-side. Datasets carry their answers, so clients receive public items and reveals from the API instead.
 
+Official runs on the public boards only go to the labs listed in `apps/api/src/config/benchmarks.ts`, on their own APIs. Aggregators, resellers and free tiers are skipped by the queue and cancelled by the runner, so a model holds one place per board and every receipt comes from the source. Personal runs can use any model the person can already run.
+
 ```ts
 import { getBenchmark, rankBySignificance } from "@ngriffin_uk/polychat-library-benchmarks";
 

@@ -1,9 +1,10 @@
-import { Button, PageStatus, Skeleton } from "@ngriffin_uk/polychat-component-ui";
+import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   useBenchmarkRun,
   useDeleteBenchmarkRun,
   useShareBenchmarkRun,
 } from "@ngriffin_uk/polychat-library-react";
+import { Link2, Link2Off, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { benchmarkPaths } from "../benchmark-display.js";
@@ -22,11 +23,11 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
   const [copied, setCopied] = useState(false);
 
   if (query.isLoading) {
-    return <Skeleton className="h-96 rounded-2xl" />;
+    return <CardGridLoadingSkeleton count={1} label="Loading run" />;
   }
 
   if (!query.data) {
-    return <PageStatus title="Run not found" message="It may have been deleted." />;
+    return <EmptyState title="Run not found" message="It may have been deleted." />;
   }
 
   const { run } = query.data;
@@ -44,13 +45,20 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
       <div className="flex flex-wrap gap-2">
         {isShared ? (
           <>
-            <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={<Link2 size={14} />}
+              onClick={() => void copy()}
+            >
               {copied ? "Link copied" : "Copy share link"}
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="sm"
+              icon={<Link2Off size={14} />}
               disabled={share.isPending}
               onClick={() => share.mutate({ runId, visibility: "private" })}
             >
@@ -62,6 +70,7 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
             type="button"
             variant="outline"
             size="sm"
+            icon={<Link2 size={14} />}
             disabled={share.isPending || run.status !== "completed"}
             onClick={() => share.mutate({ runId, visibility: "link" })}
           >
@@ -72,6 +81,7 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
           type="button"
           variant="ghost"
           size="sm"
+          icon={<Trash2 size={14} />}
           disabled={remove.isPending}
           onClick={() => remove.mutate(runId, { onSuccess: onDeleted })}
         >
@@ -80,5 +90,5 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
       </div>
     );
 
-  return <RunDetailView detail={query.data} actions={actions} />;
+  return <RunDetailView detail={query.data} actions={actions} embedded />;
 }

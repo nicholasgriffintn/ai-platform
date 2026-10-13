@@ -297,6 +297,7 @@ export const modelBenchmarkStandingSchema = z.object({
 
 export type BenchmarkId = z.infer<typeof benchmarkIdSchema>;
 export type BenchmarkScoring = z.infer<typeof benchmarkScoringSchema>;
+export type BenchmarkCategory = z.infer<typeof benchmarkCategorySchema>;
 export type BenchmarkArtefactKind = z.infer<typeof benchmarkArtefactKindSchema>;
 export type BenchmarkScope = z.infer<typeof benchmarkScopeSchema>;
 export type BenchmarkRunStatus = z.infer<typeof benchmarkRunStatusSchema>;
