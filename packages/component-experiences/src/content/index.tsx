@@ -15,6 +15,7 @@ export * from "./Recordings/workflow";
 export * from "./Articles/ArticleSourceArticleList";
 export * from "./Research/ResearchReport";
 export * from "./Recordings/RecordingDetailView";
+export * from "./Recordings/RecordingNotes";
 export * from "./Articles/ArticleAnalysisForm";
 export * from "./Recordings/UploadStep";
 export * from "./Articles/RerunReportControl";

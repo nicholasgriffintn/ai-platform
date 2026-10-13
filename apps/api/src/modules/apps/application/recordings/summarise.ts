@@ -1,12 +1,15 @@
-import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { recordingNotesSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { ai } from "~/infrastructure/ai";
 import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
@@ -89,6 +92,8 @@ export const handleRecordingSummarise = async (
         content: summaryData.summary,
         data: {
           summary: summaryData.summary,
+          decisions: summaryData.decisions,
+          actionItems: summaryData.actionItems,
           speakers: summaryData.speakers,
         },
       };
@@ -150,30 +155,24 @@ export const handleRecordingSummarise = async (
       };
     }
 
-    const data = await runtimeEnv.AI.run(
-      "@cf/facebook/bart-large-cnn",
-      {
-        input_text: fullTranscription,
-        max_length: 52,
-      },
-      {
-        gateway: {
-          id: resolveAiGatewayId(),
-          skipCache: false,
-          cacheTtl: 3360,
-          metadata: {
-            email: user?.email,
-          },
-        },
-      },
-    );
-
-    if (!data.summary) {
-      throw new AssistantError("No response from the model");
-    }
+    const { model, provider, effort } = await getAuxiliaryModel(runtimeEnv, user);
+    const { object: notes } = await ai.generateObject({
+      env: runtimeEnv,
+      user,
+      model,
+      provider,
+      reasoning_effort: effort,
+      disable_functions: true,
+      name: "recording_notes",
+      schema: recordingNotesSchema,
+      system: getPromptText("apps/recordings/notes"),
+      prompt: fullTranscription,
+    });
 
     const appData = {
-      summary: data.summary,
+      summary: notes.summary,
+      decisions: notes.decisions,
+      actionItems: notes.actionItems,
       title,
       description,
       speakers: request.speakers,
@@ -190,14 +189,14 @@ export const handleRecordingSummarise = async (
       title: `Summary: ${title || "Untitled recording"}`,
       content: appData,
       provenance: await createExecutionOutputProvenance(serviceContext, {
-        modelId: "@cf/facebook/bart-large-cnn",
-        provider: "cloudflare",
+        modelId: model,
+        provider,
       }),
     });
 
     return {
       status: "success",
-      content: data.summary,
+      content: notes.summary,
       data: appData,
     };
   } catch (error) {

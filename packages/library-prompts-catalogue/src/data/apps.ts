@@ -128,6 +128,23 @@ Summary: </s>`,
     ],
   },
   {
+    id: "apps/recordings/notes",
+    task: "recording-notes",
+    title: "Recording notes",
+    description:
+      "Turns a speaker-labelled recording transcript into a summary, decisions and action items.",
+    text: `You take notes on recordings. The user message is a transcript where each line starts with the speaker's name.
+
+Return a summary, the decisions and the action items.
+
+- Keep names, dates, figures and commitments exactly as spoken. Do not add anything the transcript does not say.
+- The summary covers what was discussed and concluded in three to five sentences.
+- A decision is something the speakers agreed. Leave the list empty when nothing was agreed.
+- An action item is a concrete commitment someone made. Write it as an instruction starting with a verb.
+- Set owner only when the transcript names who will do it, and due only when it states a time. Otherwise use null.
+- Do not turn general discussion, questions or suggestions nobody took on into action items.`,
+  },
+  {
     id: "apps/drawing/describe",
     task: "image-description",
     title: "Drawing image description",

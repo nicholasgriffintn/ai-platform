@@ -4,14 +4,24 @@ import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { FileText } from "lucide-react";
 
+import { RecordingNotes, type RecordingNotesProps } from "./RecordingNotes";
 import { TranscriptViewer } from "./TranscriptViewer";
 
-export interface RecordingDetailViewProps {
+export interface RecordingDetailViewProps extends Pick<
+  RecordingNotesProps,
+  "onAddActionItem" | "addedActionItems" | "addingActionItem"
+> {
   recording: Recording;
   onDownloadTranscript?: () => void;
 }
 
-export function RecordingDetailView({ recording, onDownloadTranscript }: RecordingDetailViewProps) {
+export function RecordingDetailView({
+  recording,
+  onDownloadTranscript,
+  onAddActionItem,
+  addedActionItems,
+  addingActionItem,
+}: RecordingDetailViewProps) {
   const duration = formatDuration(recording.duration) || "Unknown duration";
 
   return (
@@ -55,6 +65,14 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
               </div>
             </div>
           )}
+
+          <RecordingNotes
+            decisions={recording.decisions}
+            actionItems={recording.actionItems}
+            onAddActionItem={onAddActionItem}
+            addedActionItems={addedActionItems}
+            addingActionItem={addingActionItem}
+          />
 
           {recording.description && recording.description !== recording.summary && (
             <div className="pt-6 pb-2">

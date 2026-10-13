@@ -2,7 +2,17 @@ import { RecordingDetailView } from "@ngriffin_uk/polychat-component-experiences
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { useCallback } from "react";
 
-export function RecordingView({ recording }: { recording: Recording }) {
+import { useRecordingActionItemTasks } from "./useRecordingActionItemTasks.js";
+
+export function RecordingView({
+  recording,
+  projectId,
+}: {
+  recording: Recording;
+  projectId?: string;
+}) {
+  const actionItemTasks = useRecordingActionItemTasks(projectId, recording.title);
+
   const handleDownloadTranscript = useCallback(() => {
     if (!recording?.transcript) {
       return;
@@ -26,6 +36,23 @@ export function RecordingView({ recording }: { recording: Recording }) {
   }, [recording]);
 
   return (
-    <RecordingDetailView recording={recording} onDownloadTranscript={handleDownloadTranscript} />
+    <>
+      {actionItemTasks.error && (
+        <p role="alert" className="text-sm text-failure">
+          {actionItemTasks.error}
+        </p>
+      )}
+      <RecordingDetailView
+        recording={recording}
+        onDownloadTranscript={handleDownloadTranscript}
+        onAddActionItem={
+          actionItemTasks.canAdd
+            ? (item, index) => void actionItemTasks.addActionItem(item, index)
+            : undefined
+        }
+        addedActionItems={actionItemTasks.added}
+        addingActionItem={actionItemTasks.adding}
+      />
+    </>
   );
 }

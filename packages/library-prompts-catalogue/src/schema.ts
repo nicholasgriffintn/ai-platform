@@ -23,6 +23,7 @@ export const promptTasks = [
   "article-report",
   "image-description",
   "drawing-guess",
+  "recording-notes",
   "image-style",
   "web-search-questions",
   "web-search-answer",

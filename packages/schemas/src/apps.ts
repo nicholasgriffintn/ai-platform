@@ -864,11 +864,28 @@ export const recordingTranscriptDataSchema = z.object({
 
 export const recordingTranscriptSchema = z.union([z.string(), recordingTranscriptDataSchema]);
 
+export const recordingActionItemSchema = z.object({
+  task: z
+    .string()
+    .min(1)
+    .describe("One concrete thing someone said they or another person will do."),
+  owner: z.string().nullable().describe("Who will do it, only when the recording names them."),
+  due: z.string().nullable().describe("When it is due, only when the recording states it."),
+});
+
+export const recordingNotesSchema = z.object({
+  summary: z.string().min(1).describe("What the recording covers, in a few sentences."),
+  decisions: z.array(z.string().min(1)).describe("Decisions the speakers agreed on."),
+  actionItems: z.array(recordingActionItemSchema).describe("Commitments made in the recording."),
+});
+
 export const recordingSchema = recordingListItemSchema.extend({
   description: z.string().optional(),
   audioUrl: z.string().optional(),
   transcript: recordingTranscriptSchema.optional(),
   summary: z.string().optional(),
+  decisions: z.array(z.string()).optional(),
+  actionItems: z.array(recordingActionItemSchema).optional(),
 });
 
 export const listRecordingsResponseSchema = z.object({
@@ -884,6 +901,8 @@ export type RecordingListItem = z.infer<typeof recordingListItemSchema>;
 export type RecordingTranscriptSegment = z.infer<typeof recordingTranscriptSegmentSchema>;
 export type RecordingTranscriptData = z.infer<typeof recordingTranscriptDataSchema>;
 export type RecordingTranscript = z.infer<typeof recordingTranscriptSchema>;
+export type RecordingActionItem = z.infer<typeof recordingActionItemSchema>;
+export type RecordingNotes = z.infer<typeof recordingNotesSchema>;
 export type Recording = z.infer<typeof recordingSchema>;
 export type ListRecordingsResponse = z.infer<typeof listRecordingsResponseSchema>;
 export type RecordingDetailResponse = z.infer<typeof recordingDetailResponseSchema>;
