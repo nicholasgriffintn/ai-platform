@@ -287,9 +287,6 @@
       "path": "packages/schemas/tsconfig.json"
     },
     {
-      "path": "packages/schemas/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/utility-core/tsconfig.json"
     },
     {
