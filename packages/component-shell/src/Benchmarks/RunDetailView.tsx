@@ -33,7 +33,7 @@ function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: 
 function scopeLabel(run: BenchmarkRun): string {
   switch (run.scope) {
     case "official":
-      return "Official run";
+      return "Polychat run";
     case "human":
       return "Your game";
     case "workspace":

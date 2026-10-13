@@ -110,7 +110,7 @@ function BoardBody({ board }: { board: BenchmarkBoard }) {
         <SectionNav label="On this page" sections={sections} />
       </header>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-12">
+      <div>
         <div className="min-w-0 space-y-12">
           <Section
             id="leaderboard"
@@ -183,44 +183,6 @@ function BoardBody({ board }: { board: BenchmarkBoard }) {
             </div>
           </Section>
         </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div className="space-y-3 rounded-2xl border border-border bg-surface p-5">
-            <FlaskConical size={20} className={tone.text} aria-hidden />
-            <p className="font-display text-xl text-foreground">Run your own models</p>
-            <p className="text-sm text-muted-foreground">
-              Same items, same prompts, same scoring. Models on your own keys cost no credit and
-              runs stay private until you share them.
-            </p>
-            <ButtonLink href={benchmarkPaths.app} variant="primary" size="sm">
-              Open the Benchmarks app
-            </ButtonLink>
-          </div>
-          {benchmark.playable ? (
-            <a
-              href="#play"
-              className={cn(
-                "flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-border-strong",
-                BLOCK_LINK_CLASS,
-              )}
-            >
-              <Gamepad2 size={18} className="text-active-work" aria-hidden />
-              <span className="text-sm text-foreground">Play {benchmark.name} yourself</span>
-            </a>
-          ) : null}
-          {benchmark.scoring === "votes" ? (
-            <a
-              href="#judge"
-              className={cn(
-                "flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-border-strong",
-                BLOCK_LINK_CLASS,
-              )}
-            >
-              <Vote size={18} className="text-attention" aria-hidden />
-              <span className="text-sm text-foreground">Vote on a blind pair</span>
-            </a>
-          ) : null}
-        </aside>
       </div>
     </>
   );

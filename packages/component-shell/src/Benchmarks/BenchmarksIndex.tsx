@@ -94,12 +94,12 @@ export function BenchmarksIndex() {
       <header className="space-y-5 pt-2">
         <p className="polychat-eyebrow">Benchmarks</p>
         <h1 className="max-w-3xl font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">
-          Clever is one thing. Can it find Lisbon from a kerb?
+          Sure it can do math, but can it find Lisbon from a kerb?
         </h1>
         <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Six small, honest benchmarks: photos to place, numbers to reach, odds to call, hamsters to
-          animate and grooves to loop. Every score has its interval, every run its receipt, and you
-          can run your own models or play the board yourself.
+          Welcome to Polychat's benchmark arena. Here we test the latest models against a variety of
+          challenges to see how they perform. Check the results yourself or see how you compare to
+          the models.
         </p>
         <div className="flex flex-wrap gap-3">
           <ButtonLink href={benchmarkPaths.app} variant="primary">

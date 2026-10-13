@@ -45,7 +45,7 @@ export function BenchmarksApp({ basePath, subpath }: { basePath: string; subpath
             size="sm"
             icon={<ArrowUpRight size={14} />}
           >
-            Public boards
+            Results
           </ButtonLink>
         </div>
         <RunLauncher
