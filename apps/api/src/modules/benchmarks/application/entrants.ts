@@ -69,10 +69,6 @@ export function isOfficialProvider(provider: string): boolean {
   return (BENCHMARKS_CONFIG.officialProviders as readonly string[]).includes(provider);
 }
 
-/**
- * A model the official queue may run: on the platform's own credentials and from an approved lab.
- * Explicit admin requests go through the same gate, so nothing else ever reaches a public board.
- */
 export function findOfficialModel(env: IEnv, modelId: string): ModelConfigItem | null {
   const config = findPlatformModel(env, modelId);
 

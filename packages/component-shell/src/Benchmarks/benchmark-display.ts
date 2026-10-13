@@ -20,7 +20,6 @@ export const benchmarkPaths = {
 
 export const ARTIFICIAL_ANALYSIS_URL = "https://artificialanalysis.ai/";
 
-/** Block links opt out of the global anchor underline and keep hover quiet. */
 export const BLOCK_LINK_CLASS = "no-underline hover:!no-underline";
 
 export interface CategoryTone {
@@ -100,10 +99,6 @@ export interface StandingReadout {
   secondary: string | null;
 }
 
-/**
- * Voted boards hold a judge seed until people vote, so the readout says so instead of printing a
- * seed as though it were a rating.
- */
 export function standingReadout(
   benchmark: BenchmarkSummary,
   standing: Pick<BenchmarkStanding, "score" | "rating">,

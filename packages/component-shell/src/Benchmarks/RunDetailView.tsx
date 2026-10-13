@@ -83,7 +83,6 @@ export function RunDetailView({
 }: {
   detail: BenchmarkRunDetail;
   actions?: ReactNode;
-  /** Inside the Benchmarks app the surface already provides padding and a back link. */
   embedded?: boolean;
 }) {
   const { benchmark, run } = detail;

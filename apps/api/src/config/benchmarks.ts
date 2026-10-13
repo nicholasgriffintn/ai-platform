@@ -1,8 +1,3 @@
-/**
- * Providers whose models may hold official places on the public boards. Official runs go to the
- * labs that make the models, on their own APIs; aggregators, resellers and free tiers never enter,
- * so one model cannot appear twice and every receipt comes from the source.
- */
 export const OFFICIAL_BENCHMARK_PROVIDERS = [
   "anthropic",
   "openai",
