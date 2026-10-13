@@ -2382,6 +2382,7 @@
       "matchingModel": "qwen3.8-2.4t-a95b",
       "overrides": {
         "name": "qwen3.8-2.4t-a95b",
+        "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "maxTokens": 262144,
         "speed": 2,
         "lastUpdated": "August 12, 2026",

@@ -28,8 +28,6 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "coding",
           "agents",

@@ -9,16 +9,50 @@
   "models": {
     "cohere-command-a": {
       "defaults": {
+        "name": "Cohere: Command A+",
         "openWeights": false,
-        "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "description": "Command A+ is Cohere's flagship model for enterprise agentic workflows. It accepts text and image inputs with a 192K context window, supports native tool calling with strict tool schemas, structured...",
+        "contextWindow": 192000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
         "reliability": 1,
-        "supportsResponseFormat": true
+        "releaseDate": "September 22, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.1,
+          "codingIndex": 27.8,
+          "agenticIndex": 1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "command-a": {
       "defaults": {
         "name": "Command A",
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "contextWindow": 256000,
         "modalities": {
           "input": [
             "text"
@@ -30,6 +64,7 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 13, 2025",
+        "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7,

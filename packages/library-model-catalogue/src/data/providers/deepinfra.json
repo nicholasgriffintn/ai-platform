@@ -948,17 +948,6 @@
         "supportsAttachments": false
       }
     },
-    "Qwen/Qwen3.8-2.4T-A95B": {
-      "model": "qwen/qwen3-8-2-4t-a95b",
-      "matchingModel": "Qwen/Qwen3.8-2.4T-A95B",
-      "overrides": {
-        "speed": 2,
-        "lastUpdated": "August 12, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": false
-      }
-    },
     "Qwen/Qwen3-VL-235B-A22B-Instruct": {
       "model": "qwen/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
@@ -1190,6 +1179,18 @@
         "lastUpdated": "October 4, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "mistralai/Mistral-Small-24B-Instruct-2501": {
+      "model": "mistral-small/mistral-small-3",
+      "matchingModel": "mistralai/Mistral-Small-24B-Instruct-2501",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "January 30, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00008,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     }
   }

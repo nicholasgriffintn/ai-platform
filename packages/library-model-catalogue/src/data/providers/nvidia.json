@@ -280,6 +280,15 @@
       "matchingModel": "mistralai/mistral-medium-3-instruct",
       "overrides": {
         "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 3,
         "speed": 2,
         "releaseDate": "September 25, 2025",

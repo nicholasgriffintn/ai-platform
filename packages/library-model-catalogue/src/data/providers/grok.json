@@ -622,7 +622,8 @@
         "strengths": [
           "vision",
           "video",
-          "document"
+          "document",
+          "creative"
         ],
         "contextComplexity": 3,
         "lastUpdated": "May 30, 2026",
