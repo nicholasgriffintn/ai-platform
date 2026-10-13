@@ -113,7 +113,7 @@ const COMMON_CSP = {
     "https://assets.polychat.app",
     "https://strudel.cc",
   ],
-  mediaSrc: ["'self'", "data:", "https://assets.polychat.app", API_BASE_URL],
+  mediaSrc: ["'self'", "data:", "blob:", "https://assets.polychat.app", API_BASE_URL],
   workerSrc: ["'self'", "blob:"],
 } as const;
 

@@ -5,6 +5,7 @@ import { formatProviderError } from "../../../utils/errors.js";
 import { greenPtRequest, resolveGreenPtApiKey } from "../../../utils/greenpt.js";
 import { BaseTranscriptionProvider } from "../base.js";
 import type { TranscriptionRequest, TranscriptionResult } from "../index.js";
+import { readTranscriptionTimings } from "../timings.js";
 
 export const GREENPT_TRANSCRIPTION_MODELS = ["green-s", "green-s-pro"] as const;
 const DEFAULT_TRANSCRIPTION_MODEL = "green-s";
@@ -116,8 +117,11 @@ export class GreenPtTranscriptionProvider extends BaseTranscriptionProvider {
         );
       }
 
+      const { words } = readTranscriptionTimings(result);
+
       return {
         text,
+        words,
         data: result,
         metadata: {
           model,
