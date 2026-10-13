@@ -2599,6 +2599,38 @@
         "supportsRealtimeSession": true
       }
     },
+    "gpt-live-1": {
+      "model": "gpt/gpt-live-1",
+      "matchingModel": "gpt-live-1",
+      "overrides": {
+        "name": "GPT-Live 1",
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "lastUpdated": "September 10, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
+        "costPerAudioSecond": 0.000833,
+        "supportsResponseFormat": false,
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true
+      },
+      "unset": [
+        "openWeights"
+      ]
+    },
     "gpt-6-luna": {
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",

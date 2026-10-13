@@ -433,7 +433,9 @@ export function useRealtimeLiveSession({
 
   const handleTranscript = useCallback(
     (payload: unknown): boolean => {
-      const transcript = extractRealtimeTranscript(payload);
+      const transcript = extractRealtimeTranscript(payload, {
+        finalInputTranscription: sessionType === "transcription",
+      });
 
       if (!transcript) {
         return false;
@@ -445,7 +447,7 @@ export function useRealtimeLiveSession({
 
       return true;
     },
-    [onTranscript],
+    [onTranscript, sessionType],
   );
 
   const ensureAudioStream = useCallback(async (): Promise<MediaStream> => {
