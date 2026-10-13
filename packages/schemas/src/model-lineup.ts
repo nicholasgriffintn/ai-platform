@@ -571,7 +571,7 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "decision",
 ];
 
-const LINEUP_OUTPUTS: ModelModality[] = new Set(["text", "decision"]);
+const LINEUP_OUTPUTS: ReadonlySet<ModelModality> = new Set(["text", "decision"]);
 
 export function isLineupEligibleModel(model: ModelConfigItem) {
   return (
