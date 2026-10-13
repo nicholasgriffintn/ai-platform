@@ -92,6 +92,13 @@
       "when": 1791715537545,
       "tag": "0012_task_plan_record",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1791914646629,
+      "tag": "0013_note_captured_from",
+      "breakpoints": true
     }
   ]
 }

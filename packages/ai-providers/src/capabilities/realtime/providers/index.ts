@@ -7,7 +7,14 @@ export {
   ElevenLabsRealtimeProvider,
 } from "./ElevenLabsRealtimeProvider.js";
 export { GREENPT_REALTIME_DESCRIPTOR, GreenPtRealtimeProvider } from "./GreenPtRealtimeProvider.js";
-export { OPENAI_REALTIME_DESCRIPTOR, OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider.js";
+export {
+  buildOpenAILiveSessionConfig,
+  OPENAI_LIVE_MODEL,
+  OPENAI_LIVE_PROTOCOL,
+  OPENAI_LIVE_SESSIONS_URL,
+  OPENAI_REALTIME_DESCRIPTOR,
+  OpenAIRealtimeProvider,
+} from "./OpenAIRealtimeProvider.js";
 export { GOOGLE_REALTIME_DESCRIPTOR, GoogleRealtimeProvider } from "./GoogleRealtimeProvider.js";
 
 export {

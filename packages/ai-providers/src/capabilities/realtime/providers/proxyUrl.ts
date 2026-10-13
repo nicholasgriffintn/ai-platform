@@ -3,14 +3,18 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ProviderEnv } from "../../../env.js";
 import type { ProviderHost } from "../../../host.js";
 
+export type RealtimeProxyScheme = "websocket" | "https";
+
 export function buildRealtimeProxyUrl({
   apiBaseUrl,
   path,
   params,
+  scheme = "websocket",
 }: {
   apiBaseUrl?: string;
   path: string;
   params?: Record<string, string | undefined>;
+  scheme?: RealtimeProxyScheme;
 }): string {
   if (!apiBaseUrl) {
     throw new AssistantError("Missing API base URL", ErrorType.CONFIGURATION_ERROR);
@@ -18,9 +22,9 @@ export function buildRealtimeProxyUrl({
 
   const url = new URL(path, apiBaseUrl);
 
-  if (url.protocol === "http:") {
+  if (scheme === "websocket" && url.protocol === "http:") {
     url.protocol = "ws:";
-  } else if (url.protocol === "https:") {
+  } else if (scheme === "websocket" && url.protocol === "https:") {
     url.protocol = "wss:";
   }
 
@@ -36,21 +40,25 @@ export function buildRealtimeProxyUrl({
 export async function buildGrantedRealtimeProxyUrl({
   host,
   apiBaseUrl,
+  byok,
   env,
   model,
   params,
   path,
   provider,
+  scheme,
   sessionId,
   userId,
 }: {
   host: ProviderHost;
   apiBaseUrl?: string;
+  byok: boolean;
   env: ProviderEnv;
   model: string;
   params?: Record<string, string | undefined>;
   path: string;
   provider: string;
+  scheme?: RealtimeProxyScheme;
   sessionId: string;
   userId: number;
 }): Promise<{ expiresAt: number; url: string }> {
@@ -62,6 +70,7 @@ export async function buildGrantedRealtimeProxyUrl({
   }
 
   const grant = await host.realtime.createProxyGrant(env, {
+    byok,
     model,
     provider,
     sessionId,
@@ -73,6 +82,7 @@ export async function buildGrantedRealtimeProxyUrl({
     url: buildRealtimeProxyUrl({
       apiBaseUrl,
       path,
+      scheme,
       params: {
         ...params,
         grant: grant.token,

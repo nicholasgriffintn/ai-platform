@@ -1,4 +1,5 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -16,6 +17,7 @@ import {
   type RealtimeModality,
   type RealtimeTransport,
 } from "../modalities.js";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
 
 export const OPENAI_REALTIME_DESCRIPTOR = {
   id: "openai",
@@ -29,39 +31,37 @@ export const OPENAI_REALTIME_DESCRIPTOR = {
   outputModalities: ["audio"],
   description: "WebRTC voice agent",
   defaultModelId: "gpt-realtime-2.1",
+  supportsTranscriptionSession: true,
 } satisfies RealtimeLiveProviderDescriptor;
 
 const DEFAULT_REALTIME_MODEL = OPENAI_REALTIME_DESCRIPTOR.defaultModelId;
+
+export const OPENAI_LIVE_MODEL = "gpt-live-1";
+export const OPENAI_LIVE_PROTOCOL = "openai-live";
+export const OPENAI_LIVE_SESSIONS_URL = "https://api.openai.com/v1/live/sessions";
+const OPENAI_LIVE_PROXY_PATH = "/realtime/openai/live/calls";
+const DEFAULT_LIVE_DELEGATION_MODEL = "gpt-6-sol";
 const API_KEY_ENVIRONMENT_VARIABLE = "OPENAI_API_KEY";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
 const DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
 const OPENAI_WEBRTC_CALL_URL = "https://api.openai.com/v1/realtime/calls";
+const OPENAI_WEBRTC_TRANSLATION_CALL_URL = "https://api.openai.com/v1/realtime/translations/calls";
+const OPENAI_CLIENT_SECRETS_URL = "https://api.openai.com/v1/realtime/client_secrets";
+const OPENAI_TRANSLATION_CLIENT_SECRETS_URL =
+  "https://api.openai.com/v1/realtime/translations/client_secrets";
 const DEFAULT_MODELS_BY_TYPE = {
   realtime: DEFAULT_REALTIME_MODEL,
   translation: DEFAULT_TRANSLATION_MODEL,
   transcription: DEFAULT_TRANSCRIPTION_MODEL,
 } satisfies Record<RealtimeSessionRequest["type"], string>;
-const MODEL_ALIASES: Record<string, string> = {
-  whisper: "openai-whisper",
-};
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-2.1-mini", "gpt-realtime-2"],
+  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-2.1-mini", "gpt-realtime-2", OPENAI_LIVE_MODEL],
   translation: [DEFAULT_TRANSLATION_MODEL],
-  transcription: [
-    DEFAULT_TRANSCRIPTION_MODEL,
-    "gpt-transcribe",
-    "gpt-realtime-whisper",
-    "gpt-4o-transcribe",
-    "gpt-4o-mini-transcribe",
-    "openai-whisper",
-    "whisper",
-  ],
+  transcription: [DEFAULT_TRANSCRIPTION_MODEL, "gpt-realtime-whisper"],
 };
-const STREAMING_TRANSCRIPTION_MODELS = new Set([
-  DEFAULT_TRANSCRIPTION_MODEL,
-  "gpt-realtime-whisper",
-]);
+const LANGUAGE_LIST_TRANSCRIPTION_MODELS = new Set([DEFAULT_TRANSCRIPTION_MODEL]);
+const DEFAULT_LANGUAGE = "en";
 const DEFAULT_VOICE = "marin";
 const DEFAULT_TRANSPORT: RealtimeTransport = "webrtc";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
@@ -73,13 +73,9 @@ const TRANSCRIPTION_DELAYS = new Set<RealtimeTranscriptionDelay>([
   "xhigh",
 ]);
 
-const BASE_TURN_DETECTION = {
+const REALTIME_TURN_DETECTION = {
   type: "semantic_vad",
   eagerness: "auto",
-};
-const TRANSCRIPTION_TURN_DETECTION = BASE_TURN_DETECTION;
-const REALTIME_TURN_DETECTION = {
-  ...BASE_TURN_DETECTION,
   create_response: true,
   interrupt_response: true,
 };
@@ -107,6 +103,26 @@ const DEFAULT_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeMod
   translation: ["text", "audio"],
   transcription: ["text"],
 };
+
+export function buildOpenAILiveSessionConfig({
+  model,
+  instructions,
+  voice,
+}: {
+  model: string;
+  instructions?: string;
+  voice?: string;
+}): Record<string, unknown> {
+  return {
+    model,
+    ...(instructions ? { instructions } : {}),
+    audio: { output: { voice: voice ?? DEFAULT_VOICE } },
+    delegation: {
+      type: "responses",
+      responses: { model: DEFAULT_LIVE_DELEGATION_MODEL },
+    },
+  };
+}
 
 interface OpenAIRealtimeClientSecretResponse {
   value: string;
@@ -155,23 +171,36 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 
   private async resolveModel(request: RealtimeSessionRequest): Promise<string> {
     const requestedModel = request.model || this.getDefaultModel(request.type);
-    const modelId = MODEL_ALIASES[requestedModel] ?? requestedModel;
     const supportedModels = SESSION_MODELS_BY_TYPE[request.type];
 
     if (!supportedModels.includes(requestedModel)) {
       throw new AssistantError("Invalid model specified", ErrorType.PARAMS_ERROR);
     }
 
-    const modelConfig = await this.runtime.host.models.getModelConfigByModel(modelId, request.env);
+    const modelConfig = await this.runtime.host.models.getModelConfigByModel(
+      requestedModel,
+      request.env,
+    );
 
     if (!modelConfig || modelConfig.provider !== this.name) {
       throw new AssistantError(
-        `Model configuration not found for ${modelId}`,
+        `Model configuration not found for ${requestedModel}`,
         ErrorType.CONFIGURATION_ERROR,
       );
     }
 
     return modelConfig.matchingModel;
+  }
+
+  private buildTranscriptionLanguage(
+    model: string,
+    language: string | undefined,
+  ): { languages: string[] } | { language: string } {
+    const resolvedLanguage = language ?? DEFAULT_LANGUAGE;
+
+    return LANGUAGE_LIST_TRANSCRIPTION_MODELS.has(model)
+      ? { languages: [resolvedLanguage] }
+      : { language: resolvedLanguage };
   }
 
   private getTransport(request: RealtimeSessionRequest): RealtimeTransport {
@@ -238,28 +267,19 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     request: RealtimeSessionRequest,
   ): Promise<Record<string, unknown>> {
     const model = await this.resolveModel(request);
-    const isStreamingModel = STREAMING_TRANSCRIPTION_MODELS.has(model);
-    const transcription = isStreamingModel
-      ? {
-          model,
-          language: request.language ?? "en",
-          delay: this.getTranscriptionDelay(request),
-        }
-      : {
-          model,
-          language: request.language ?? "en",
-        };
 
     return {
       session: {
         type: "transcription",
         audio: {
           input: {
-            format: {
-              ...this.buildAudioFormat(),
+            format: this.buildAudioFormat(),
+            transcription: {
+              model,
+              ...this.buildTranscriptionLanguage(model, request.language),
+              delay: this.getTranscriptionDelay(request),
             },
-            transcription,
-            turn_detection: isStreamingModel ? null : TRANSCRIPTION_TURN_DETECTION,
+            turn_detection: null,
           },
         },
       },
@@ -291,7 +311,10 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
             format: this.buildAudioFormat(),
             transcription: {
               model: DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL,
-              language: request.language ?? "en",
+              ...this.buildTranscriptionLanguage(
+                DEFAULT_REALTIME_INPUT_TRANSCRIPTION_MODEL,
+                request.language,
+              ),
             },
             turn_detection: REALTIME_TURN_DETECTION,
           },
@@ -308,36 +331,83 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
 
     return {
       session: {
-        type: "translation",
         model,
         audio: {
-          input: {
-            format: this.buildAudioFormat(),
-          },
           output: {
-            format: this.buildAudioFormat(),
-            voice: request.voice ?? DEFAULT_VOICE,
+            language: request.targetLanguage ?? DEFAULT_LANGUAGE,
           },
-        },
-        translation: {
-          source_language: request.sourceLanguage ?? request.language,
-          target_language: request.targetLanguage ?? "en",
         },
       },
     };
   }
 
-  private normalizeClientSecretResponse(response: OpenAIRealtimeClientSecretResponse) {
+  private normalizeClientSecretResponse(
+    response: OpenAIRealtimeClientSecretResponse,
+    type: RealtimeSessionType,
+  ) {
     const session = response.session;
 
     return {
       ...session,
       provider: this.name,
       transport: DEFAULT_TRANSPORT,
-      url: OPENAI_WEBRTC_CALL_URL,
+      url: type === "translation" ? OPENAI_WEBRTC_TRANSLATION_CALL_URL : OPENAI_WEBRTC_CALL_URL,
       client_secret: {
         value: response.value,
         expires_at: response.expires_at,
+      },
+    };
+  }
+
+  private async createLiveSession(
+    request: RealtimeSessionRequest,
+    {
+      model,
+      transport,
+      inputModalities,
+      outputModalities,
+    }: {
+      model: string;
+      transport: RealtimeTransport;
+      inputModalities: RealtimeModality[];
+      outputModalities: RealtimeModality[];
+    },
+  ): Promise<unknown> {
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      host: this.runtime.host,
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      byok: request.credentialAuthority === "byok",
+      env: request.env,
+      model,
+      params: {
+        instructions: request.instructions,
+        voice: request.voice,
+      },
+      path: OPENAI_LIVE_PROXY_PATH,
+      provider: this.name,
+      scheme: "https",
+      sessionId,
+      userId: request.user.id,
+    });
+
+    return {
+      id: sessionId,
+      object: "realtime.session",
+      type: "realtime",
+      provider: this.name,
+      transport,
+      protocol: OPENAI_LIVE_PROTOCOL,
+      model,
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
+      client_secret: { value: "", expires_at: proxy.expiresAt },
+      input_modalities: inputModalities,
+      output_modalities: outputModalities,
+      modalities: outputModalities,
+      audio: {
+        input: { format: this.buildAudioFormat() },
+        output: { format: this.buildAudioFormat(), voice: request.voice ?? DEFAULT_VOICE },
       },
     };
   }
@@ -354,6 +424,20 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     const transport = this.getTransport(request);
     const inputModalities = this.getInputModalities(request);
     const outputModalities = this.getOutputModalities(request);
+
+    if (request.type === "realtime") {
+      const model = await this.resolveModel(request);
+
+      if (model === OPENAI_LIVE_MODEL) {
+        return this.createLiveSession(request, {
+          model,
+          transport,
+          inputModalities,
+          outputModalities,
+        });
+      }
+    }
+
     const apiKey = await this.getApiKey(request);
     const body =
       request.type === "realtime"
@@ -363,8 +447,8 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
           : await this.buildTranscriptionSessionBody(request);
     const endpoint =
       request.type === "translation"
-        ? "https://api.openai.com/v1/realtime/translations/client_secrets"
-        : "https://api.openai.com/v1/realtime/client_secrets";
+        ? OPENAI_TRANSLATION_CLIENT_SECRETS_URL
+        : OPENAI_CLIENT_SECRETS_URL;
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -387,7 +471,10 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     const clientSecret = (await response.json()) as OpenAIRealtimeClientSecretResponse;
 
     return {
-      ...(this.normalizeClientSecretResponse(clientSecret) as Record<string, unknown>),
+      ...(this.normalizeClientSecretResponse(clientSecret, request.type) as Record<
+        string,
+        unknown
+      >),
       transport,
       input_modalities: inputModalities,
       output_modalities: outputModalities,

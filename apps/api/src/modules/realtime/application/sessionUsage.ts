@@ -1,4 +1,10 @@
-import { holdUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
+import {
+  emitUsageEvents,
+  finishUsageReservation,
+  holdUsageReservation,
+  userCreditActor,
+  type UsageEventDraft,
+} from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   REALTIME_RECONCILIATION_TASK_TYPE,
@@ -8,6 +14,7 @@ import {
   creditMicrosFromCostMicros,
   usagePeriodFromDate,
   type ModelConfigItem,
+  type RateEntry,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -16,6 +23,7 @@ import {
   REALTIME_RESERVATION_SECONDS,
 } from "~/config/realtime";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { getModelConfig } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { IEnv } from "~/types";
@@ -37,6 +45,98 @@ export interface RealtimeReconciliationPayload {
   provider: string;
   byok: boolean;
   pricing: RealtimeReservationPricing;
+}
+
+export function buildRealtimeUsageDraft(params: {
+  userId: number;
+  sessionId: string;
+  provider: string;
+  vendor: string;
+  resource: string;
+  unit: UsageUnit;
+  quantity: number;
+  byok: boolean;
+  rates: readonly RateEntry[];
+}): UsageEventDraft {
+  return {
+    idempotencyKey: `realtime:${params.sessionId}:settlement`,
+    actor: userCreditActor(params.userId),
+    source: "capability",
+    vendor: params.vendor,
+    resource: params.resource,
+    unit: params.unit,
+    quantity: params.quantity,
+    byok: params.byok,
+    completionId: params.sessionId,
+    rates: params.rates,
+    raw: { sessionId: params.sessionId, provider: params.provider },
+  };
+}
+
+export async function settleRealtimeSessionUsage(params: {
+  env: IEnv;
+  repositories: RepositoryManager | null;
+  userId: number;
+  sessionId: string;
+  model: string;
+  provider: string;
+  byok: boolean;
+  audioSeconds: number;
+}): Promise<boolean> {
+  if (!params.repositories) {
+    return false;
+  }
+
+  const runtime = createUsageRuntime({ env: params.env, repositories: params.repositories });
+
+  try {
+    const reservation = await finishUsageReservation(runtime, {
+      kind: "realtime",
+      refId: params.sessionId,
+      outcome: "settled",
+    });
+
+    if (!reservation) {
+      return false;
+    }
+
+    const quantity = Math.max(0, Math.round(params.audioSeconds));
+
+    if (quantity === 0) {
+      return true;
+    }
+
+    const modelConfig = await getModelConfig(params.model, params.env, params.provider);
+    const vendor = modelConfig?.provider ?? params.provider;
+    const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
+    const rates = modelConfig ? rateEntriesFromModelConfig(modelConfig, { resource }) : [];
+
+    await emitUsageEvents(runtime, {
+      drafts: [
+        buildRealtimeUsageDraft({
+          userId: params.userId,
+          sessionId: params.sessionId,
+          provider: params.provider,
+          vendor,
+          resource,
+          unit: "audio_seconds",
+          quantity,
+          byok: params.byok,
+          rates,
+        }),
+      ],
+    });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to settle a realtime session on its measured duration", {
+      error,
+      sessionId: params.sessionId,
+      userId: params.userId,
+    });
+
+    return false;
+  }
 }
 
 export function priceRealtimeReservation(

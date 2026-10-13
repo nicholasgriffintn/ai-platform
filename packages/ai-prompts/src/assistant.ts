@@ -90,7 +90,6 @@ export function buildDocumentFormatPrompt(): string {
 export interface DocumentNotesPromptOptions {
   documentTypeDescriptor: string;
   sections: readonly string[];
-  useVideoAnalysis?: boolean;
   timestamps?: boolean;
   extraPrompt?: string | null;
 }
@@ -98,14 +97,12 @@ export interface DocumentNotesPromptOptions {
 export function buildDocumentNotesPrompt({
   documentTypeDescriptor,
   sections,
-  useVideoAnalysis = false,
   timestamps = false,
   extraPrompt,
 }: DocumentNotesPromptOptions): string {
   return renderPrompt("document/notes", {
     documentTypeDescriptor,
     selectedSections: sections.map((section) => `- ${section}`).join("\n"),
-    useVideoAnalysis: useVideoAnalysis ? "true" : undefined,
     timestamps: timestamps ? "true" : undefined,
     extraPrompt: extraPrompt ?? undefined,
   });

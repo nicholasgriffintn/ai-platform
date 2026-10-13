@@ -173,6 +173,7 @@ export interface ProviderMetrics {
 }
 
 export interface RealtimeProxyGrantScope {
+  byok: boolean;
   model: string;
   provider: string;
   sessionId: string;
