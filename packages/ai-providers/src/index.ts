@@ -130,6 +130,7 @@ export * from "./capabilities/ocr/format.js";
 export { GREENPT_OCR_MODEL } from "./capabilities/ocr/providers/GreenPtOcrProvider.js";
 export * from "./capabilities/realtime/index.js";
 export * from "./capabilities/realtime/providers/index.js";
+export * from "./capabilities/batch/index.js";
 export * from "./capabilities/research/index.js";
 export * from "./capabilities/reranking/index.js";
 export * from "./capabilities/search/index.js";

@@ -81,13 +81,14 @@ export async function startEvalRuns(
   workspaceId: string,
   suiteId: string,
   routeIds: string[],
+  options: { batch?: boolean } = {},
 ): Promise<EvalRun[]> {
   return (
     await platformRequest<{ runs: EvalRun[] }>(
       workspacePath(workspaceId, `/eval-suites/${segment(suiteId)}/runs`),
       {
         method: "POST",
-        body: { routeIds },
+        body: { routeIds, batch: options.batch === true },
       },
     )
   ).runs;
