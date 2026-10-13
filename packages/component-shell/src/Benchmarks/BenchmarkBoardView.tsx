@@ -1,20 +1,12 @@
-import {
-  BackLink,
-  ButtonLink,
-  PageStatus,
-  SectionNav,
-  Skeleton,
-  cn,
-} from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, PageStatus, SectionNav, Skeleton, cn } from "@ngriffin_uk/polychat-component-ui";
 import { useBenchmarkBoard } from "@ngriffin_uk/polychat-library-react";
 import type { BenchmarkBoard, BenchmarkId } from "@ngriffin_uk/polychat-schemas";
 import { formatUsd } from "@ngriffin_uk/polychat-utility-core";
-import { ExternalLink, FlaskConical, Gamepad2, Vote } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Arena } from "./Arena.js";
 import {
-  BLOCK_LINK_CLASS,
   CATEGORY_TONES,
   benchmarkPaths,
   scoringLabel,
