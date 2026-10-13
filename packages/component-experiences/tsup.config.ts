@@ -6,9 +6,7 @@ export default defineConfig({
     music: "src/music/index.tsx",
   },
   format: ["esm"],
-  dts: true,
   splitting: false,
   sourcemap: true,
-  clean: true,
   external: ["react", "react-dom", /^@strudel\//],
 });

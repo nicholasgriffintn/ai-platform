@@ -9,7 +9,7 @@
     "build:deps": "vp run --filter=\"@assistant/api^...\" build",
     "cf-typegen": "wrangler types",
     "ci:test": "pnpm run coverage",
-    "coverage": "pnpm build:deps && vitest run --coverage",
+    "coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply personal-assistant --local",
     "db:migrate:preview": "wrangler d1 migrations apply personal-assistant-preview --remote",
@@ -24,9 +24,9 @@
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
     "dev:pass": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser CLOUDFLARE_INCLUDE_PROCESS_ENV=true pass-cli run --env-file .dev.vars -- wrangler dev src/index.ts --env-file .dev.vars",
     "start": "wrangler dev src/index.ts",
-    "test": "pnpm build:deps && vitest run",
-    "test:watch": "pnpm build:deps && vitest",
-    "typecheck": "tsc --noEmit"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@hono/standard-validator": "0.4.0",
@@ -84,6 +84,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
     "better-sqlite3": "13.0.3",
     "drizzle-kit": "0.31.11",
