@@ -105,6 +105,7 @@ export function UserSettingsForm({
   afterPersonalisedResponses,
   showSubmit = true,
   isAuthenticated,
+  isPro = false,
   isSaving = false,
   onSignIn,
   onSave,
@@ -406,9 +407,11 @@ export function UserSettingsForm({
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Bedrock Managed Agents">
-        <BedrockManagedAgentSettings settings={formData} onChange={updateFormData} />
-      </SettingsSection>
+      {isPro && (
+        <SettingsSection title="Bedrock Managed Agents">
+          <BedrockManagedAgentSettings settings={formData} onChange={updateFormData} />
+        </SettingsSection>
+      )}
 
       <SettingsSection title="Guardrails">
         <div className="space-y-4">
