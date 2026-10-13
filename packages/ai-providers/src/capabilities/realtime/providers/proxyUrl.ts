@@ -36,6 +36,7 @@ export function buildRealtimeProxyUrl({
 export async function buildGrantedRealtimeProxyUrl({
   host,
   apiBaseUrl,
+  byok,
   env,
   model,
   params,
@@ -46,6 +47,7 @@ export async function buildGrantedRealtimeProxyUrl({
 }: {
   host: ProviderHost;
   apiBaseUrl?: string;
+  byok: boolean;
   env: ProviderEnv;
   model: string;
   params?: Record<string, string | undefined>;
@@ -62,6 +64,7 @@ export async function buildGrantedRealtimeProxyUrl({
   }
 
   const grant = await host.realtime.createProxyGrant(env, {
+    byok,
     model,
     provider,
     sessionId,

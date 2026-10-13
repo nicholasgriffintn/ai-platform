@@ -107,12 +107,6 @@ export const realtimeSessionResponseSchema = z
         language_code: z.string().optional(),
       })
       .optional(),
-    translation: z
-      .object({
-        source_language: z.string().optional(),
-        target_language: z.string().optional(),
-      })
-      .optional(),
     target_streaming_delay_ms: z.number().optional(),
     proxy_grant_expires_at: z.number().int().positive().optional(),
     client_secret: z
@@ -186,6 +180,7 @@ export const realtimeLiveProviderManifestItemSchema = z.object({
     })
     .optional(),
   supportsVideoInput: z.boolean().optional(),
+  supportsTranscriptionSession: z.boolean().optional(),
 });
 
 export const realtimeLiveProviderDescriptorSchema = realtimeLiveProviderManifestItemSchema.extend({

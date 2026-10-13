@@ -23,7 +23,7 @@ export const GOOGLE_REALTIME_DESCRIPTOR = {
   inputModalities: ["audio", "video"],
   outputModalities: ["audio"],
   description: "WebSocket voice and vision",
-  defaultModelId: "gemini-3.1-flash-live-preview",
+  defaultModelId: "gemini-3.8-live",
   supportsVideoInput: true,
 } satisfies RealtimeLiveProviderDescriptor;
 
@@ -32,8 +32,8 @@ const API_KEY_ENVIRONMENT_VARIABLE = "GOOGLE_STUDIO_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [
     DEFAULT_REALTIME_MODEL,
-    "gemini-live-2.5-flash",
-    "gemini-live-2.5-flash-preview-native-audio",
+    "gemini-3.8-live-extended-thinking",
+    "gemini-3.1-flash-live-preview",
   ],
   translation: [],
   transcription: [],

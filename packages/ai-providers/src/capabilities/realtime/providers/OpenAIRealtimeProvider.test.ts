@@ -65,7 +65,7 @@ describe("OpenAIRealtimeProvider", () => {
     );
     getModelConfigByModelMock.mockImplementation(async (model: string) => ({
       provider: "openai",
-      matchingModel: model === "openai-whisper" ? "whisper-1" : model,
+      matchingModel: model,
     }));
   });
 
@@ -80,7 +80,7 @@ describe("OpenAIRealtimeProvider", () => {
         model: "gpt-realtime-2.1",
         audio: {
           input: {
-            transcription: { model: "gpt-live-transcribe", language: "en" },
+            transcription: { model: "gpt-live-transcribe", languages: ["en"] },
           },
         },
       },
@@ -99,7 +99,7 @@ describe("OpenAIRealtimeProvider", () => {
           input: {
             transcription: {
               model: "gpt-live-transcribe",
-              language: "en",
+              languages: ["en"],
               delay: "minimal",
             },
             turn_detection: null,
@@ -109,20 +109,34 @@ describe("OpenAIRealtimeProvider", () => {
     });
   });
 
-  it("keeps semantic turn detection for committed GPT Transcribe turns", async () => {
+  it("rejects retired transcription models that OpenAI is shutting down", async () => {
     const provider = new OpenAIRealtimeProvider(runtime);
 
-    await provider.createSession(createRequest({ type: "transcription", model: "gpt-transcribe" }));
+    await expect(
+      provider.createSession(createRequest({ type: "transcription", model: "gpt-4o-transcribe" })),
+    ).rejects.toThrow("Invalid model specified");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    expect(getLastRequestBody()).toMatchObject({
+  it("creates translation sessions against the dedicated translations endpoints", async () => {
+    const provider = new OpenAIRealtimeProvider(runtime);
+
+    const session = await provider.createSession(
+      createRequest({ type: "translation", targetLanguage: "fr" }),
+    );
+
+    expect(fetchMock.mock.calls.at(-1)?.[0]).toBe(
+      "https://api.openai.com/v1/realtime/translations/client_secrets",
+    );
+    expect(getLastRequestBody()).toEqual({
       session: {
-        audio: {
-          input: {
-            transcription: { model: "gpt-transcribe", language: "en" },
-            turn_detection: { type: "semantic_vad", eagerness: "auto" },
-          },
-        },
+        model: "gpt-realtime-translate",
+        audio: { output: { language: "fr" } },
       },
+    });
+    expect(session).toMatchObject({
+      url: "https://api.openai.com/v1/realtime/translations/calls",
+      transport: "webrtc",
     });
   });
 });

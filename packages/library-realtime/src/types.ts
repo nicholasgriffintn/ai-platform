@@ -25,6 +25,7 @@ export interface RealtimeSession {
   id?: string;
   object?: string;
   type?: string;
+  max_session_seconds?: number;
   provider?: RealtimeProviderName;
   transport?: RealtimeTransport;
   protocol?: string;
@@ -46,7 +47,6 @@ export interface CreateRealtimeSessionOptions {
   inputModalities?: RealtimeModality[];
   outputModalities?: Exclude<RealtimeModality, "image" | "video">[];
   language?: string;
-  sourceLanguage?: string;
   targetLanguage?: string;
   voice?: string;
   instructions?: string;

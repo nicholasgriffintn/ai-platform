@@ -15,7 +15,7 @@ import {
 import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
-import { optionalRepositories } from "~/infrastructure/context/serviceContext";
+import { optionalRepositories, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
@@ -43,7 +43,9 @@ import {
   admitRealtimeSession,
   priceRealtimeReservation,
   registerRealtimeSessionUsage,
+  settleRealtimeSessionUsage,
 } from "~/modules/realtime/application/sessionUsage";
+import type { RealtimeProxySessionSummary } from "~/modules/realtime/application/transcriptionProxy";
 import type { IEnv, IUser } from "~/types";
 
 const app = new Hono<{
@@ -53,6 +55,35 @@ const app = new Hono<{
   };
 }>();
 const routeLogger = createRouteLogger("realtime");
+
+function settleProxySession({
+  serviceContext,
+  user,
+  sessionId,
+  model,
+  provider,
+  byok,
+}: {
+  serviceContext: ServiceContext;
+  user: IUser;
+  sessionId: string;
+  model: string;
+  provider: string;
+  byok: boolean;
+}): (summary: RealtimeProxySessionSummary) => Promise<void> {
+  return async (summary) => {
+    await settleRealtimeSessionUsage({
+      env: serviceContext.env,
+      repositories: optionalRepositories(serviceContext),
+      userId: user.id,
+      sessionId,
+      model,
+      provider,
+      byok,
+      audioSeconds: summary.audioSeconds,
+    });
+  };
+}
 
 app.use("/*", async (c, next) => {
   routeLogger.info(`Processing realtime route: ${c.req.path}`);
@@ -93,7 +124,6 @@ addRoute(app, "post", "/session/:type", {
     const type = raw.req.param("type");
     const model = raw.req.query("model");
     const language = raw.req.query("language");
-    const sourceLanguage = raw.req.query("source_language");
     const targetLanguage = raw.req.query("target_language");
     const voice = raw.req.query("voice");
     const instructions = raw.req.query("instructions");
@@ -181,7 +211,6 @@ addRoute(app, "post", "/session/:type", {
       type,
       model: accessibleModel.id,
       language,
-      sourceLanguage,
       targetLanguage,
       voice,
       instructions,
@@ -265,14 +294,24 @@ addRoute(app, "get", "/mistral/transcription", {
       user,
     });
 
-    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
-      createMistralRealtimeProxyResponse({
-        context: raw,
-        delay: query.delay,
-        env: serviceContext.env,
+    return connectReservedRealtimeProxy(
+      reservation,
+      (onSessionEnd) =>
+        createMistralRealtimeProxyResponse({
+          context: raw,
+          delay: query.delay,
+          env: serviceContext.env,
+          user,
+          model: query.model,
+          onSessionEnd,
+        }),
+      settleProxySession({
+        serviceContext,
         user,
+        sessionId: query.session_id,
         model: query.model,
-        onSessionEnd,
+        provider: "mistral",
+        byok: reservation.byok,
       }),
     );
   },
@@ -294,14 +333,24 @@ addRoute(app, "get", "/elevenlabs/transcription", {
       user,
     });
 
-    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
-      createElevenLabsRealtimeProxyResponse({
-        context: raw,
-        env: serviceContext.env,
+    return connectReservedRealtimeProxy(
+      reservation,
+      (onSessionEnd) =>
+        createElevenLabsRealtimeProxyResponse({
+          context: raw,
+          env: serviceContext.env,
+          user,
+          model: query.model,
+          language: query.language,
+          onSessionEnd,
+        }),
+      settleProxySession({
+        serviceContext,
         user,
+        sessionId: query.session_id,
         model: query.model,
-        language: query.language,
-        onSessionEnd,
+        provider: "elevenlabs",
+        byok: reservation.byok,
       }),
     );
   },
@@ -323,14 +372,24 @@ addRoute(app, "get", "/cartesia/transcription", {
       user,
     });
 
-    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
-      createCartesiaRealtimeProxyResponse({
-        context: raw,
-        delay: query.delay,
-        env: serviceContext.env,
+    return connectReservedRealtimeProxy(
+      reservation,
+      (onSessionEnd) =>
+        createCartesiaRealtimeProxyResponse({
+          context: raw,
+          delay: query.delay,
+          env: serviceContext.env,
+          user,
+          model: query.model,
+          onSessionEnd,
+        }),
+      settleProxySession({
+        serviceContext,
         user,
+        sessionId: query.session_id,
         model: query.model,
-        onSessionEnd,
+        provider: "cartesia",
+        byok: reservation.byok,
       }),
     );
   },
@@ -352,15 +411,25 @@ addRoute(app, "get", "/greenpt/transcription", {
       user,
     });
 
-    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
-      createGreenPtRealtimeProxyResponse({
-        context: raw,
-        delay: query.delay,
-        env: serviceContext.env,
+    return connectReservedRealtimeProxy(
+      reservation,
+      (onSessionEnd) =>
+        createGreenPtRealtimeProxyResponse({
+          context: raw,
+          delay: query.delay,
+          env: serviceContext.env,
+          user,
+          model: query.model,
+          language: query.language,
+          onSessionEnd,
+        }),
+      settleProxySession({
+        serviceContext,
         user,
+        sessionId: query.session_id,
         model: query.model,
-        language: query.language,
-        onSessionEnd,
+        provider: "greenpt",
+        byok: reservation.byok,
       }),
     );
   },

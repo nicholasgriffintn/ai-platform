@@ -14,8 +14,9 @@ import {
   useUpdateNote,
 } from "@ngriffin_uk/polychat-library-react";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
+import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
 import { NotebookPen, Plus } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -28,12 +29,15 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const firstSegment = subpath.split("/").find(Boolean);
   const noteId = firstSegment && firstSegment !== "new" ? firstSegment : undefined;
   const isNew = firstSegment === "new";
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
   const {
     data: notes,
     isLoading,
     error,
   } = useFetchNotes(projectId, {
     enabled: !isNew && !noteId,
+    query: debouncedSearchQuery,
   });
   const {
     data: note,
@@ -47,7 +51,6 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const [themeMode, setThemeMode] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState("Sans");
   const [fontSize, setFontSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
   const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
   const [saver] = useState(() =>
     createNoteSaver({
@@ -69,19 +72,6 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
   const isLocallyCreatedNote = Boolean(noteId) && noteId === createdNoteId;
   const activeThemeMode = themeMode ?? note?.metadata?.themeMode ?? "sepia";
   const chrome = useAppChrome();
-  const filteredNotes = useMemo(() => {
-    const availableNotes = notes ?? [];
-    const query = searchQuery.trim().toLowerCase();
-
-    if (!query) {
-      return availableNotes;
-    }
-
-    return availableNotes.filter(
-      (item) =>
-        item.title.toLowerCase().includes(query) || item.content.toLowerCase().includes(query),
-    );
-  }, [notes, searchQuery]);
 
   const saveNote = useCallback(
     async (
@@ -169,7 +159,7 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
     return <EmptyState title="Notes unavailable" message={error.message} />;
   }
 
-  if (!notes?.length) {
+  if (!notes?.length && !searchQuery.trim()) {
     return (
       <EmptyState
         icon={<NotebookPen size={24} className="text-muted-foreground" />}
@@ -186,10 +176,10 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
 
   return (
     <NoteCardGrid
-      notes={filteredNotes.map((item) => ({
+      notes={(notes ?? []).map((item) => ({
         id: item.id,
         title: item.title,
-        content: item.content,
+        excerpt: item.excerpt,
         updatedAt: item.updatedAt,
         href: `${basePath}/${item.id}`,
       }))}

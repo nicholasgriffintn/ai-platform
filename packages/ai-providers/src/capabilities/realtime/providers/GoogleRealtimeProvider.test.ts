@@ -63,7 +63,7 @@ describe("GoogleRealtimeProvider", () => {
     );
     getModelConfigByModelMock.mockResolvedValue({
       provider: "google-ai-studio",
-      matchingModel: "gemini-3.1-flash-live-preview",
+      matchingModel: "gemini-3.8-live",
     });
   });
 
@@ -86,7 +86,7 @@ describe("GoogleRealtimeProvider", () => {
       expireTime: "2026-08-31T14:00:00.000Z",
       newSessionExpireTime: "2026-08-31T12:01:00.000Z",
       liveConnectConstraints: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         config: {
           responseModalities: ["AUDIO"],
           sessionResumption: {},
@@ -104,7 +104,7 @@ describe("GoogleRealtimeProvider", () => {
         "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained",
       ),
       setup: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         sessionResumption: {},
         contextWindowCompression: { slidingWindow: {} },
         inputAudioTranscription: {},

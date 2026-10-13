@@ -905,6 +905,14 @@ export const noteCreateSchema = z.object({
   metadata: noteMetadataSchema.optional(),
 });
 
+export const noteSummarySchema = noteSchema.omit({ content: true, metadata: true }).extend({
+  excerpt: z.string(),
+});
+
+export const noteListQuerySchema = z.object({
+  q: z.string().trim().max(200).optional(),
+});
+
 export const noteUpdateSchema = noteCreateSchema.extend({
   options: z
     .object({
@@ -917,7 +925,7 @@ export const noteUpdateSchema = noteCreateSchema.extend({
 });
 
 export const listNotesResponseSchema = z.object({
-  notes: z.array(noteSchema),
+  notes: z.array(noteSummarySchema),
 });
 
 export const noteDetailResponseSchema = z.object({
@@ -938,6 +946,8 @@ export const noteFormatResponseSchema = z.object({
 
 export type NoteMetadata = z.infer<typeof noteMetadataSchema>;
 export type Note = z.infer<typeof noteSchema>;
+export type NoteSummary = z.infer<typeof noteSummarySchema>;
+export type NoteListQuery = z.infer<typeof noteListQuerySchema>;
 export type NoteCreateRequest = z.infer<typeof noteCreateSchema>;
 export type NoteUpdateRequest = z.infer<typeof noteUpdateSchema>;
 export type ListNotesResponse = z.infer<typeof listNotesResponseSchema>;
@@ -956,8 +966,6 @@ export const generateNotesFromMediaSchema = z.object({
         "action_items",
         "meeting_minutes",
         "qa_extraction",
-        "scene_analysis",
-        "visual_insights",
         "smart_timestamps",
       ]),
     )
@@ -982,18 +990,6 @@ export const generateNotesFromMediaSchema = z.object({
     .describe("Adjusts prompt style for the content type."),
   extraPrompt: z.string().optional().describe("Additional instructions."),
   timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
-  useVideoAnalysis: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe(
-      "Use Twelve Labs Pegasus for advanced video content analysis including visual elements.",
-    ),
-  enableVideoSearch: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe("Reserved for multimodal retrieval. Requests that enable it currently return 501."),
 });
 
 export const generateNotesFromMediaResponseSchema = z.object({

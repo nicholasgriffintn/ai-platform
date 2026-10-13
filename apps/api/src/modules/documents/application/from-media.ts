@@ -21,8 +21,6 @@ export async function generateDocumentFromMedia({
   documentType,
   extraPrompt,
   timestamps,
-  useVideoAnalysis = false,
-  enableVideoSearch = false,
 }: {
   context: ServiceContext;
   user: IUser;
@@ -34,29 +32,16 @@ export async function generateDocumentFromMedia({
     | "action_items"
     | "meeting_minutes"
     | "qa_extraction"
-    | "scene_analysis"
-    | "visual_insights"
     | "smart_timestamps"
   )[];
   documentType: string;
   extraPrompt?: string;
   timestamps?: boolean;
-  useVideoAnalysis?: boolean;
-  enableVideoSearch?: boolean;
-  projectId?: string;
 }): Promise<{ content: string }> {
   const env = context.env;
 
   if (!url) {
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
-  }
-
-  if (enableVideoSearch) {
-    throw new AssistantError(
-      "Multimodal video search is not available while its retrieval index is being upgraded",
-      ErrorType.CONFIGURATION_ERROR,
-      501,
-    );
   }
 
   try {
@@ -71,20 +56,9 @@ export async function generateDocumentFromMedia({
     const notePrompt = buildDocumentNotesPrompt({
       documentTypeDescriptor,
       sections: selectedSections,
-      useVideoAnalysis,
       timestamps,
       extraPrompt,
     });
-
-    if (useVideoAnalysis) {
-      throw new AssistantError(
-        "Video analysis by remote URL is disabled",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-
-    let transcriptText = "";
 
     const audio = await resolveAuthorisedTranscriptionSource({
       context,
@@ -115,7 +89,7 @@ export async function generateDocumentFromMedia({
       timestamps,
     });
 
-    transcriptText = transcription.content;
+    const transcriptText = transcription.content;
 
     if (!transcriptText) {
       throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);

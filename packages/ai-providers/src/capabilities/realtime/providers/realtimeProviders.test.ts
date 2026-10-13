@@ -92,16 +92,15 @@ describe("realtime provider session contracts", () => {
       },
     );
     mocks.getModelConfigByModel.mockImplementation((model: string) => {
-      const provider =
-        model.startsWith("gpt-") || model === "openai-whisper"
-          ? "openai"
-          : model.startsWith("gemini-")
-            ? "google-ai-studio"
-            : model.startsWith("voxtral-")
-              ? "mistral"
-              : model.startsWith("scribe_")
-                ? "elevenlabs"
-                : "cartesia";
+      const provider = model.startsWith("gpt-")
+        ? "openai"
+        : model.startsWith("gemini-")
+          ? "google-ai-studio"
+          : model.startsWith("voxtral-")
+            ? "mistral"
+            : model.startsWith("scribe_")
+              ? "elevenlabs"
+              : "cartesia";
 
       return Promise.resolve({
         provider,
@@ -173,7 +172,7 @@ describe("realtime provider session contracts", () => {
         audio: {
           input: {
             format: { type: "audio/pcm", rate: 24000 },
-            transcription: { model: "gpt-live-transcribe", language: "en" },
+            transcription: { model: "gpt-live-transcribe", languages: ["en"] },
             turn_detection: {
               type: "semantic_vad",
               eagerness: "auto",
@@ -218,7 +217,7 @@ describe("realtime provider session contracts", () => {
       provider: "google-ai-studio",
       transport: "websocket",
       protocol: "gemini-live",
-      model: "gemini-3.1-flash-live-preview",
+      model: "gemini-3.8-live",
       input_modalities: ["audio", "video"],
       output_modalities: ["audio"],
       modalities: ["audio"],
@@ -232,7 +231,7 @@ describe("realtime provider session contracts", () => {
       },
       url: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=auth-token-fixture",
       setup: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         generationConfig: {
           responseModalities: ["AUDIO"],
           speechConfig: {
@@ -264,7 +263,7 @@ describe("realtime provider session contracts", () => {
       expireTime: "2026-08-31T11:00:00.000Z",
       newSessionExpireTime: "2026-08-31T09:01:00.000Z",
       liveConnectConstraints: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         config: {
           responseModalities: ["AUDIO"],
           speechConfig: {
