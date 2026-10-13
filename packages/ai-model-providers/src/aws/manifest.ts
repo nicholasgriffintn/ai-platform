@@ -226,6 +226,13 @@ export const AWS_MANIFEST: ProviderManifest = {
         required: true,
         help: "A role SageMaker and Bedrock can assume to read and write the bucket.",
       },
+      {
+        key: "agentRuntimeArn",
+        label: "AgentCore Runtime ARN",
+        kind: "text",
+        required: false,
+        help: "Runs Bedrock Managed Agents in this account. Sessions assume the execution role, so it must trust Bedrock Managed Agents.",
+      },
     ],
   },
   source: true,

@@ -31,6 +31,8 @@ export interface UserSettings {
   embedding_provider?: string;
   bedrock_knowledge_base_id?: string;
   bedrock_knowledge_base_custom_data_source_id?: string;
+  bedrock_agent_runtime_arn?: string;
+  bedrock_agent_role_arn?: string;
   s3vectors_bucket_name?: string;
   s3vectors_index_name?: string;
   s3vectors_region?: string;
@@ -126,6 +128,8 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
     bedrock_knowledge_base_custom_data_source_id:
       userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
+    bedrock_agent_runtime_arn: userSettings?.bedrock_agent_runtime_arn || "",
+    bedrock_agent_role_arn: userSettings?.bedrock_agent_role_arn || "",
     s3vectors_bucket_name: userSettings?.s3vectors_bucket_name || "",
     s3vectors_index_name: userSettings?.s3vectors_index_name || "",
     s3vectors_region: userSettings?.s3vectors_region || "us-east-1",

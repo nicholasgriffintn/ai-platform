@@ -12,7 +12,6 @@ import {
   resolveEffectivePermissionMode,
   type AgentHarnessId,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -24,15 +23,9 @@ import {
   startHostedHarnessTurn,
   streamHarnessRecords,
 } from "~/modules/agents/application/harness-turn";
-import {
-  openAIAgentsTurnRecords,
-  resolveOpenAIAgentsModel,
-  type OpenAIAgentsTranscriptEntry,
-} from "~/modules/agents/application/openai-agents-turn";
+import { startRemoteHarnessTurn } from "~/modules/agents/application/remote-harness-turn";
 import { resolveHostedAgentRunModel } from "~/modules/models/application/hosted-agent-model";
 import type { ChatCompletionParameters, IUser } from "~/types";
-
-const OPENAI_AGENTS_TRANSCRIPT_LIMIT = 20;
 
 function requireHarnessAccess(
   context: ServiceContext | undefined,
@@ -77,22 +70,6 @@ function readApprovalResolution(options: ChatCompletionParameters["options"]) {
   return { ...reference, approved: resolution === "approved" };
 }
 
-function openAIAgentsTranscript(
-  messages: ChatCompletionParameters["messages"],
-): OpenAIAgentsTranscriptEntry[] {
-  return (messages ?? [])
-    .flatMap((message): OpenAIAgentsTranscriptEntry[] => {
-      if (message.role !== "user" && message.role !== "assistant") {
-        return [];
-      }
-
-      const text = extractTextFromMessageContent(message.content).trim();
-
-      return text ? [{ role: message.role, text }] : [];
-    })
-    .slice(-OPENAI_AGENTS_TRANSCRIPT_LIMIT);
-}
-
 export class AgentHarnessChatProvider implements AIProvider {
   readonly name = AGENT_HARNESS_PROVIDER;
   readonly supportsStreaming = true;
@@ -134,13 +111,14 @@ export class AgentHarnessChatProvider implements AIProvider {
 
     if (!isHostedAgentHarness(harness)) {
       return streamHarnessRecords({
-        records: openAIAgentsTurnRecords({
+        records: await startRemoteHarnessTurn({
+          harness,
           context,
           user,
-          model: await resolveOpenAIAgentsModel({ context, user, preferred: selected.model }),
+          preferredModel: selected.model,
+          messages: params.messages,
           ...(instructions ? { instructions } : {}),
-          transcript: openAIAgentsTranscript(params.messages),
-          operationId: generateId(),
+          ...(projectId ? { projectId } : {}),
         }),
         harnessName: definition.name,
         deadline: Date.now() + definition.capabilities.maxTurnMinutes * 60_000,

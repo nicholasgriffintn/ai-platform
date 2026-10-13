@@ -196,6 +196,7 @@ export * from "./model-selection-ui.js";
 export * from "./machine-runs.js";
 export * from "./agent-catalogue.js";
 export * from "./agent-harness.js";
+export * from "./bedrock-managed-agents.js";
 export * from "./agent-model-id.js";
 export * from "./agent-sessions.js";
 export * from "./codex-protocol.js";

@@ -42,6 +42,8 @@ export interface IUserSettings {
   embedding_provider: string;
   bedrock_knowledge_base_id: string | null;
   bedrock_knowledge_base_custom_data_source_id: string | null;
+  bedrock_agent_runtime_arn?: string | null;
+  bedrock_agent_role_arn?: string | null;
   s3vectors_bucket_name: string | null;
   s3vectors_index_name: string | null;
   s3vectors_region: string | null;
