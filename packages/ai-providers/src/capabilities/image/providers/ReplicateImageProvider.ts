@@ -46,6 +46,7 @@ export class ReplicateImageProvider implements ImageProvider {
       width: request.width,
       height: request.height,
       steps: request.steps,
+      seed: request.seed,
       ...request.metadata,
     });
 

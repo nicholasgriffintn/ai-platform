@@ -14,6 +14,7 @@ export interface ImageGenerationRequest {
   width?: number;
   height?: number;
   steps?: number;
+  seed?: number;
   model?: string;
   metadata?: Record<string, unknown>;
 }
