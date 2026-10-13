@@ -2,6 +2,7 @@ export {
   getLogger,
   LogLevel,
   onLogRecord,
+  type LoggerInstance,
   type LoggerOptions,
   type LogRecordListener,
 } from "./logger.js";

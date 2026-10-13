@@ -1,0 +1,308 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "apps/agent-worker/tsconfig.json"
+    },
+    {
+      "path": "apps/api/tsconfig.json"
+    },
+    {
+      "path": "apps/app/tsconfig.cloudflare.json"
+    },
+    {
+      "path": "apps/app/tsconfig.node.json"
+    },
+    {
+      "path": "apps/desktop/tsconfig.json"
+    },
+    {
+      "path": "apps/sandbox-worker/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-agents/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-agents/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-billing/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-billing/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-experiments/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-experiments/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-functions/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-functions/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-integrations/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-integrations/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-model-providers/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-model-providers/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-models/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-models/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-prompts/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-prompts/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-providers/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-providers/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-sandbox/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-sandbox/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-skills/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-skills/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-telemetry/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-telemetry/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/ai-workflows/tsconfig.json"
+    },
+    {
+      "path": "packages/ai-workflows/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/cli/tsconfig.json"
+    },
+    {
+      "path": "packages/cli/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-account/tsconfig.json"
+    },
+    {
+      "path": "packages/component-account/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-capabilities/tsconfig.json"
+    },
+    {
+      "path": "packages/component-capabilities/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-content/tsconfig.json"
+    },
+    {
+      "path": "packages/component-content/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-conversation/tsconfig.json"
+    },
+    {
+      "path": "packages/component-conversation/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-experiences/tsconfig.json"
+    },
+    {
+      "path": "packages/component-experiences/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-models/tsconfig.json"
+    },
+    {
+      "path": "packages/component-models/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-navigation/tsconfig.json"
+    },
+    {
+      "path": "packages/component-navigation/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-shell/tsconfig.json"
+    },
+    {
+      "path": "packages/component-shell/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-sites/tsconfig.json"
+    },
+    {
+      "path": "packages/component-sites/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-ui/tsconfig.json"
+    },
+    {
+      "path": "packages/component-ui/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/component-workspaces/tsconfig.json"
+    },
+    {
+      "path": "packages/component-workspaces/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-agent-loop/tsconfig.json"
+    },
+    {
+      "path": "packages/library-agent-loop/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-chat/tsconfig.json"
+    },
+    {
+      "path": "packages/library-chat/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-client/tsconfig.json"
+    },
+    {
+      "path": "packages/library-client/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-composio/tsconfig.json"
+    },
+    {
+      "path": "packages/library-composio/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-flags/tsconfig.json"
+    },
+    {
+      "path": "packages/library-flags/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-goals/tsconfig.json"
+    },
+    {
+      "path": "packages/library-goals/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-interactions/tsconfig.json"
+    },
+    {
+      "path": "packages/library-interactions/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-model-catalogue/tsconfig.json"
+    },
+    {
+      "path": "packages/library-model-registry/tsconfig.json"
+    },
+    {
+      "path": "packages/library-model-registry/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-policy/tsconfig.json"
+    },
+    {
+      "path": "packages/library-policy/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-prompts-catalogue/tsconfig.json"
+    },
+    {
+      "path": "packages/library-react/tsconfig.json"
+    },
+    {
+      "path": "packages/library-react/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-realtime/tsconfig.json"
+    },
+    {
+      "path": "packages/library-realtime/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-registry/tsconfig.json"
+    },
+    {
+      "path": "packages/library-registry/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-sandbox/tsconfig.json"
+    },
+    {
+      "path": "packages/library-sandbox/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-sites/tsconfig.json"
+    },
+    {
+      "path": "packages/library-sites/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-skills-catalogue/tsconfig.json"
+    },
+    {
+      "path": "packages/library-skills-catalogue/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-surface/tsconfig.json"
+    },
+    {
+      "path": "packages/library-surface/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-tasks/tsconfig.json"
+    },
+    {
+      "path": "packages/library-tasks/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/library-tools/tsconfig.json"
+    },
+    {
+      "path": "packages/library-tools/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/schemas/tsconfig.json"
+    },
+    {
+      "path": "packages/utility-core/tsconfig.json"
+    },
+    {
+      "path": "packages/utility-core/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/utility-react/tsconfig.json"
+    },
+    {
+      "path": "packages/utility-react/tsconfig.typecheck.json"
+    },
+    {
+      "path": "packages/utility-server/tsconfig.json"
+    },
+    {
+      "path": "packages/utility-server/tsconfig.typecheck.json"
+    }
+  ]
+}
