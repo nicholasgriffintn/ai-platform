@@ -12,7 +12,13 @@ import {
   type BenchmarkItemResult,
   type BenchmarkRunTaskData,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage, percentile, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getErrorMessage,
+  percentile,
+  sleep,
+  truncateText,
+} from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/infrastructure/ai";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
@@ -29,6 +35,8 @@ import { invokeEntrant } from "./invoke";
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
 const ITEMS_PER_TASK = 5;
+const TRANSIENT_ATTEMPTS = 3;
+const TRANSIENT_DELAY_MS = 3_000;
 const MAX_STORED_OUTPUT = 20_000;
 const RUN_TASK_PRIORITY = 7;
 
@@ -72,6 +80,40 @@ async function judgeArtefact(
   return parseJudgeScore(verdict.text);
 }
 
+function isTransientError(error: unknown): boolean {
+  if (!(error instanceof AssistantError)) {
+    return false;
+  }
+
+  return (
+    error.type === ErrorType.RATE_LIMIT_ERROR ||
+    (error.type === ErrorType.PROVIDER_ERROR && (error.statusCode ?? 0) >= 500)
+  );
+}
+
+async function invokeWithRetries(
+  scope: Parameters<typeof invokeEntrant>[0],
+  target: EntrantTarget,
+) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await invokeEntrant(scope, target);
+    } catch (error) {
+      if (attempt >= TRANSIENT_ATTEMPTS || !isTransientError(error)) {
+        throw error;
+      }
+
+      logger.warn("Benchmark item hit a transient provider error, retrying", {
+        runId: scope.runId,
+        itemId: scope.itemId,
+        attempt,
+        error: getErrorMessage(error, "Unknown error"),
+      });
+      await sleep(TRANSIENT_DELAY_MS * attempt);
+    }
+  }
+}
+
 async function runItem(
   env: IEnv,
   repositories: RepositoryManager,
@@ -84,7 +126,7 @@ async function runItem(
   const started = Date.now();
 
   try {
-    const response = await invokeEntrant(
+    const response = await invokeWithRetries(
       {
         env,
         repositories,
