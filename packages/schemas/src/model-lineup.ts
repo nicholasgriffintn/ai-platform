@@ -571,14 +571,14 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "decision",
 ];
 
-const LINEUP_OUTPUTS: ModelModality[] = ["text", "decision"];
+const LINEUP_OUTPUTS: ReadonlySet<ModelModality> = new Set(["text", "decision"]);
 
 export function isLineupEligibleModel(model: ModelConfigItem) {
   return (
     isActiveModel(model) &&
     model.modalities?.input.includes("text") === true &&
     model.modalities.output?.includes("text") === true &&
-    model.modalities.output.every((output) => LINEUP_OUTPUTS.includes(output)) &&
+    model.modalities.output.every((output) => LINEUP_OUTPUTS.has(output)) &&
     !model.supportsRealtimeSession &&
     !NON_CHAT_STRENGTHS.some((strength) => model.strengths?.includes(strength)) &&
     !isStealthModel(model)

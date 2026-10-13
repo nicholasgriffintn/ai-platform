@@ -1,4 +1,5 @@
 import {
+  BENCHMARK_RUN_TASK_TYPE,
   CONVERSATION_TITLE_TASK_TYPE,
   MEMORY_REFLECTION_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
@@ -34,6 +35,7 @@ import { TaskNotificationDeliveryHandler } from "~/modules/task-notifications/ap
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { asyncMessagePolling } from "./handlers/async-message-polling";
+import { BenchmarkRunHandler } from "./handlers/BenchmarkRunHandler";
 import { ConversationTitleHandler } from "./handlers/ConversationTitleHandler";
 import { DelegationExpiryHandler } from "./handlers/DelegationExpiryHandler";
 import { DelegationMessageHandler } from "./handlers/DelegationMessageHandler";
@@ -111,5 +113,6 @@ workflows.register(CONVERSATION_TITLE_TASK_TYPE, new ConversationTitleHandler())
 workflows.register(QUEUED_CHAT_MESSAGE_TASK_TYPE, new QueuedChatMessageHandler());
 workflows.register(MODEL_REGISTRY_INSPECT_TASK_TYPE, new ModelRegistryInspectHandler());
 workflows.register(MODEL_REGISTRY_EVAL_TASK_TYPE, new ModelRegistryEvalHandler());
+workflows.register(BENCHMARK_RUN_TASK_TYPE, new BenchmarkRunHandler());
 
 export { workflows };

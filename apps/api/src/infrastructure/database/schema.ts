@@ -25,6 +25,9 @@ import type {
   TeammateStandingApproval,
   DATASET_COLLECTION_METHODS,
   DATASET_SHAPES,
+  BenchmarkEntrant,
+  BenchmarkRating,
+  ScoreSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   COST_SUBJECTS,
@@ -2400,6 +2403,91 @@ export const artificialAnalysisModels = sqliteTable(
 
 export type ArtificialAnalysisModel = typeof artificialAnalysisModels.$inferSelect;
 
+export const benchmarkRun = sqliteTable(
+  "benchmark_run",
+  {
+    id: text().primaryKey(),
+    benchmark_id: text().notNull(),
+    version: integer().notNull(),
+    scope: text({ enum: ["official", "personal", "workspace", "human"] }).notNull(),
+    entrant_key: text().notNull(),
+    entrant: text({ mode: "json" }).$type<BenchmarkEntrant>().notNull(),
+    owner_user_id: integer().references(() => user.id, { onDelete: "cascade" }),
+    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+    status: text({ enum: ["queued", "running", "completed", "failed", "cancelled"] }).notNull(),
+    visibility: text({ enum: ["private", "link", "public"] }).notNull(),
+    share_token: text(),
+    items_total: integer().notNull(),
+    items_completed: integer().notNull().default(0),
+    score: text({ mode: "json" }).$type<ScoreSummary>(),
+    metrics: text({ mode: "json" }).$type<Record<string, number>>().notNull(),
+    rating: text({ mode: "json" }).$type<BenchmarkRating>(),
+    input_tokens: integer().notNull().default(0),
+    output_tokens: integer().notNull().default(0),
+    cost_usd: real(),
+    latency_p50_ms: real(),
+    failure_reason: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+    completed_at: text(),
+  },
+  (table) => ({
+    boardIdx: index("benchmark_run_board_idx").on(
+      table.benchmark_id,
+      table.version,
+      table.scope,
+      table.status,
+    ),
+    entrantIdx: index("benchmark_run_entrant_idx").on(table.scope, table.entrant_key),
+    ownerIdx: index("benchmark_run_owner_idx").on(table.owner_user_id, table.created_at),
+    workspaceIdx: index("benchmark_run_workspace_idx").on(table.workspace_id, table.created_at),
+    shareTokenIdx: uniqueIndex("benchmark_run_share_token_idx").on(table.share_token),
+  }),
+);
+
+export type BenchmarkRunRecord = typeof benchmarkRun.$inferSelect;
+
+export const benchmarkVote = sqliteTable(
+  "benchmark_vote",
+  {
+    id: text().primaryKey(),
+    benchmark_id: text().notNull(),
+    version: integer().notNull(),
+    pair_key: text().notNull(),
+    left_run_id: text()
+      .notNull()
+      .references(() => benchmarkRun.id, { onDelete: "cascade" }),
+    right_run_id: text()
+      .notNull()
+      .references(() => benchmarkRun.id, { onDelete: "cascade" }),
+    item_id: text().notNull(),
+    winner: text({ enum: ["left", "right", "tie"] }).notNull(),
+    voter_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    voterPairIdx: uniqueIndex("benchmark_vote_voter_pair_idx").on(
+      table.voter_user_id,
+      table.pair_key,
+    ),
+    boardIdx: index("benchmark_vote_board_idx").on(
+      table.benchmark_id,
+      table.version,
+      table.created_at,
+    ),
+  }),
+);
+
+export type BenchmarkVoteRecord = typeof benchmarkVote.$inferSelect;
+
 export const tasks = sqliteTable(
   "tasks",
   {
@@ -2439,6 +2527,7 @@ export const tasks = sqliteTable(
         "model_deployment_sync",
         "model_upload_finalise",
         "model_platform_reconcile",
+        "benchmark_run",
       ],
     }).notNull(),
     status: text({

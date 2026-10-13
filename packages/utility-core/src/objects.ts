@@ -144,6 +144,18 @@ export function parseRecordValue(value: unknown): Record<string, unknown> {
   }
 }
 
+export function getNumberProperty(value: unknown, key: string): number | undefined {
+  const property = isRecord(value) ? value[key] : undefined;
+
+  return typeof property === "number" && Number.isFinite(property) ? property : undefined;
+}
+
+export function getBooleanProperty(value: unknown, key: string): boolean | undefined {
+  const property = isRecord(value) ? value[key] : undefined;
+
+  return typeof property === "boolean" ? property : undefined;
+}
+
 export function readRecord(value: unknown): Record<string, unknown> {
   return isRecord(value) ? value : {};
 }

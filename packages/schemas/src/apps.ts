@@ -392,6 +392,7 @@ export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
   "articles",
+  "benchmarks",
   "charades",
   "image-studio",
   "notes",

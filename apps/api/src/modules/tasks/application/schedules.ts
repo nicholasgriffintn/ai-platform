@@ -2,6 +2,10 @@ import { SCHEDULES } from "~/config/schedules";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { reapComposioConnectorSessions } from "~/modules/apps/application/connectors/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
+import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
+import { queueOfficialRuns } from "~/modules/benchmarks/application/official";
+import { sweepInterruptedChatRuns } from "~/modules/chat-runs/application/interrupted-run-sweep";
+import { releaseExpiredChatRunReservations } from "~/modules/chat-runs/application/reservation-maintenance";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
 import {
   runModelGovernanceMaintenance,
@@ -174,6 +178,26 @@ workflows.every(
     name: "settled-task-purge",
     run: async ({ env }) => {
       await purgeSettledTasks(env);
+    },
+  }),
+);
+
+workflows.every(
+  SCHEDULES.BENCHMARK_QUEUE,
+  defineSchedule({
+    name: "benchmark-official-queue",
+    run: async ({ env }) => {
+      await queueOfficialRuns(env, RepositoryManager.getInstance(env));
+    },
+  }),
+);
+
+workflows.every(
+  SCHEDULES.RECIPE_EXECUTION,
+  defineSchedule({
+    name: "benchmark-ratings",
+    run: async ({ env }) => {
+      await refreshBenchmarkRatings(RepositoryManager.getInstance(env));
     },
   }),
 );

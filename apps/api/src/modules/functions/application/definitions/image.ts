@@ -61,6 +61,13 @@ export const create_image: FunctionToolDescriptor = {
           type: "integer",
           description: "Height of the generated image in pixels",
         },
+        seed: {
+          type: "integer",
+          description:
+            "Reuse the seed from an earlier image in this conversation when the person asks to tweak it, so the composition stays the same. Omit it for a fresh image.",
+          minimum: 0,
+          maximum: 4294967295,
+        },
       },
       required: ["prompt"],
     });

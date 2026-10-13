@@ -66,6 +66,11 @@ const TwentyQuestionsApp = lazy(async () => {
 
   return { default: module.TwentyQuestionsApp };
 });
+const BenchmarksApp = lazy(async () => {
+  const module = await import("../Benchmarks/app/BenchmarksApp.js");
+
+  return { default: module.BenchmarksApp };
+});
 const SitesApp = lazy(async () => {
   const module = await import("./Sites/SitesApp.js");
 
@@ -137,6 +142,10 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
 
   if (runtime === "photo-sorter") {
     return <PhotoSorterApp />;
+  }
+
+  if (runtime === "benchmarks") {
+    return <BenchmarksApp basePath={basePath} subpath={subpath} />;
   }
 
   if (runtime === "twenty-questions") {

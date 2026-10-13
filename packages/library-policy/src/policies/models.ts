@@ -10,6 +10,8 @@ export const modelPolicies = {
       (context.canApprove && (!context.separationOfDuties || context.requestExists)) };`,
   "model.suite.delete": `permit(principal, action == Polychat::Action::"model.suite.delete", resource)
     when { context.actorId == context.ownerId || context.managesPolicy };`,
+  "benchmark.run.start": `permit(principal, action == Polychat::Action::"benchmark.run.start", resource)
+    when { context.signedIn && (context.plan == "pro" || context.byok) };`,
   "spend.execute": `permit(principal, action == Polychat::Action::"spend.execute", resource)
     when { context.valid && !(context.hardStop && context.overMonthly) };`,
   "spend.unattended": `permit(principal, action == Polychat::Action::"spend.unattended", resource)

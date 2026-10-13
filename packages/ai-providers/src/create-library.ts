@@ -7,6 +7,7 @@ import {
   type ProviderErrorMapper,
 } from "./library.js";
 import { registerAudioProviders } from "./registrations/audio.js";
+import { registerBatchProviders } from "./registrations/batch.js";
 import { registerChatProviders } from "./registrations/chat.js";
 import { registerDecisionProviders } from "./registrations/decision.js";
 import { registerGuardrailProviders } from "./registrations/guardrails.js";
@@ -43,6 +44,7 @@ export function createAiProviderBootstrappers(
 ): ProviderBootstrappers<AiProviderMap, ProviderFactoryContext> {
   return {
     audio: [(registry) => registerAudioProviders(registry, runtime)],
+    batch: [(registry) => registerBatchProviders(registry, runtime)],
     chat: [(registry) => registerChatProviders(registry, runtime)],
     decision: [(registry) => registerDecisionProviders(registry, runtime)],
     guardrails: [(registry) => registerGuardrailProviders(registry, runtime)],

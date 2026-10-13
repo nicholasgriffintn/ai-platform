@@ -56,6 +56,7 @@ export const EVIDENCE_SOURCES = [
   "hub_scan",
   "static_inspection",
   "polychat_eval",
+  "polychat_benchmark",
   "community_eval",
   "guardrails",
   "route_registry",
@@ -518,8 +519,21 @@ export const registrySuiteParamsSchema = registryWorkspaceParamsSchema.extend({
   suiteId: z.string().min(1),
 });
 
+export const MODEL_BATCH_PROVIDERS = ["openai", "anthropic"] as const;
+
+export type ModelBatchProvider = (typeof MODEL_BATCH_PROVIDERS)[number];
+
+export function isModelBatchProvider(provider: string): provider is ModelBatchProvider {
+  return MODEL_BATCH_PROVIDERS.some((candidate) => candidate === provider);
+}
+
+export function canBatchModelRoute(route: { provider: string; deploymentId: string | null }) {
+  return route.deploymentId === null && isModelBatchProvider(route.provider);
+}
+
 export const startEvalRunsRequestSchema = z.object({
   routeIds: z.array(z.string().min(1)).min(1).max(6),
+  batch: z.boolean().default(false),
 });
 export type StartEvalRunsRequest = z.infer<typeof startEvalRunsRequestSchema>;
 
@@ -599,6 +613,8 @@ export const modelRegistryEvalTaskDataSchema = z.object({
   runId: z.string().min(1),
   offset: z.number().int().nonnegative().default(0),
   readinessAttempt: z.number().int().nonnegative().default(0),
+  batch: z.boolean().default(false),
+  pollAttempt: z.number().int().nonnegative().default(0),
 });
 
 export const routeSuggestionSchema = z.object({

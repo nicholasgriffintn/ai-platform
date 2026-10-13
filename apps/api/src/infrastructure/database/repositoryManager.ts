@@ -12,6 +12,8 @@ import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChall
 import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
+import { BenchmarkVoteRepository } from "~/modules/benchmarks/infrastructure/BenchmarkVoteRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
@@ -359,6 +361,14 @@ export class RepositoryManager {
 
   public get artificialAnalysis(): ArtificialAnalysisRepository {
     return this.resolve("artificialAnalysis", (env) => new ArtificialAnalysisRepository(env));
+  }
+
+  public get benchmarkRuns(): BenchmarkRunRepository {
+    return this.resolve("benchmarkRuns", (env) => new BenchmarkRunRepository(env));
+  }
+
+  public get benchmarkVotes(): BenchmarkVoteRepository {
+    return this.resolve("benchmarkVotes", (env) => new BenchmarkVoteRepository(env));
   }
 
   public get documentComments(): DocumentCommentRepository {

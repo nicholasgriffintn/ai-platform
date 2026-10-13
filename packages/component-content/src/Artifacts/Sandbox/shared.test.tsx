@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { hardenSandboxDocument, SandboxIframe } from "./shared";
+import { hardenSandboxDocument, hardenStandaloneHtml, SandboxIframe } from "./shared";
 
 describe("hardenSandboxDocument", () => {
   it("injects the policy after a bare head tag and after one with attributes", () => {
@@ -59,6 +59,12 @@ describe("artifact sandbox isolation", () => {
     expect(screen.getByTitle("Code Preview")).not.toHaveAttribute(
       "sandbox",
       expect.stringContaining("allow-same-origin"),
+    );
+  });
+
+  it("still applies the policy to model HTML that arrives without a head", () => {
+    expect(hardenStandaloneHtml("<svg><circle r='4'/></svg><header>x</header>")).toContain(
+      '<head><meta http-equiv="Content-Security-Policy"',
     );
   });
 });
