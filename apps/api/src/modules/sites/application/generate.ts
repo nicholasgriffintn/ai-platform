@@ -61,6 +61,7 @@ import {
   type ClassifiedSelectedElementRefinement,
 } from "./plan";
 import { createSite, finaliseSiteGeneration, getSite, updateSite } from "./records";
+import { readSiteReferenceTheme } from "./reference-theme";
 import { readSiteGenerationSources } from "./source-bindings";
 
 const logger = getLogger({ prefix: "services/sites/generate" });
@@ -107,6 +108,9 @@ async function prepareGeneration(
   completionId: string,
 ): Promise<PreparedGeneration> {
   const { context, user, request } = options;
+  const referenceTheme = request.referenceUrl
+    ? await readSiteReferenceTheme(context, request.referenceUrl, options.signal)
+    : null;
 
   if (request.siteId) {
     const existing = await getSite(
@@ -131,8 +135,15 @@ async function prepareGeneration(
       request.sourceIds ?? [],
       request.projectId ?? null,
     );
+    const project = referenceTheme
+      ? {
+          ...existing.project,
+          theme: { ...existing.project.theme, ...referenceTheme, ...request.theme },
+        }
+      : existing.project;
+    const elementOnly = Boolean(request.target) && sources.length === 0 && !referenceTheme;
     const selectedRefinement =
-      request.target && sources.length === 0
+      request.target && elementOnly
         ? await classifySelectedElementRefinement({
             env: context.env,
             user,
@@ -169,7 +180,7 @@ async function prepareGeneration(
         (entry): entry is SiteDecisionTraceEntry => Boolean(entry),
       ),
       system:
-        target && targetPage && sources.length === 0
+        target && targetPage && elementOnly
           ? renderPrompt("apps/sites/refine-element", {
               components,
               pageId: target.pageId,
@@ -181,10 +192,10 @@ async function prepareGeneration(
             })
           : renderPrompt("apps/sites/refine", {
               components,
-              document: serialiseSiteProjectForPrompt(existing.project),
+              document: serialiseSiteProjectForPrompt(project),
             }),
       prompt: buildSiteRefineUserPrompt(request.prompt, { sources, target }),
-      document: structuredClone(existing.project) as unknown as Record<string, unknown>,
+      document: structuredClone(project) as unknown as Record<string, unknown>,
       cacheKey: `sites-refine-${target ? "element" : "site"}-${catalogueSubsetId(subset)}`,
     };
   }
@@ -199,7 +210,7 @@ async function prepareGeneration(
     env: context.env,
     user,
     prompt: request.prompt,
-    themeHint: request.theme,
+    themeHint: referenceTheme ? { ...referenceTheme, ...request.theme } : request.theme,
     completionId,
   });
   const plan = planned.plan;
@@ -401,6 +412,13 @@ export async function runSiteGeneration(
     }
 
     emit({ type: "plan", plan });
+
+    if (prepared.existing && request.referenceUrl) {
+      emit({
+        type: "patch",
+        patch: { op: "replace", path: "/theme", value: prepared.document.theme },
+      });
+    }
 
     if (prepared.selectedRefinement?.action && prepared.existing && prepared.target) {
       const site = await applySelectedElementFastRefinement({

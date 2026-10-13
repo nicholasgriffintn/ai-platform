@@ -1,5 +1,6 @@
 import {
   SITE_PALETTES,
+  type SiteCustomPalette,
   type SiteFont,
   type SiteMode,
   type SitePalette,
@@ -7,12 +8,8 @@ import {
   type SiteTheme,
 } from "@ngriffin_uk/polychat-schemas";
 
-interface PaletteDefinition {
+interface PaletteDefinition extends SiteCustomPalette {
   label: string;
-  hue: number;
-  chroma: number;
-  neutralHue: number;
-  neutralChroma: number;
 }
 
 export const SITE_PALETTE_DEFINITIONS: Record<SitePalette, PaletteDefinition> = {
@@ -66,9 +63,57 @@ function oklch(l: number, c: number, h: number): string {
 
 export type SiteThemeVariables = Record<string, string>;
 
-export function buildSiteColorVariables(palette: SitePalette, mode: SiteMode): SiteThemeVariables {
-  const definition = SITE_PALETTE_DEFINITIONS[palette];
-  const { hue, chroma, neutralHue, neutralChroma } = definition;
+const SITE_NEUTRAL_CHROMA_LIMIT = 0.04;
+const SITE_CUSTOM_FONT_AXES = "wght@400;700";
+
+function hueDistance(left: number, right: number): number {
+  const difference = Math.abs(left - right) % 360;
+
+  return Math.min(difference, 360 - difference);
+}
+
+export function nearestSitePalette(palette: SiteCustomPalette): SitePalette {
+  if (palette.chroma < SITE_NEUTRAL_CHROMA_LIMIT) {
+    return "neutral";
+  }
+
+  return SITE_PALETTES.filter((name) => name !== "neutral").reduce((nearest, name) =>
+    hueDistance(SITE_PALETTE_DEFINITIONS[name].hue, palette.hue) <
+    hueDistance(SITE_PALETTE_DEFINITIONS[nearest].hue, palette.hue)
+      ? name
+      : nearest,
+  );
+}
+
+export function siteGoogleFontFamily(name: string): string {
+  return `${name.replaceAll(" ", "+")}:${SITE_CUSTOM_FONT_AXES}`;
+}
+
+function resolveSitePalette(theme: Pick<SiteTheme, "palette" | "customPalette">) {
+  return theme.customPalette ?? SITE_PALETTE_DEFINITIONS[theme.palette];
+}
+
+export function resolveSiteFonts(theme: Pick<SiteTheme, "font" | "customFonts">): {
+  body: string;
+  heading: string;
+  google: string[];
+} {
+  const base = SITE_FONT_STACKS[theme.font];
+  const heading = theme.customFonts?.heading;
+  const body = theme.customFonts?.body;
+  const custom = [...new Set([heading, body].filter((name) => name !== undefined))];
+
+  return {
+    body: body ? `"${body}", ${base.body}` : base.body,
+    heading: heading ? `"${heading}", ${base.heading}` : base.heading,
+    google: [...custom.map(siteGoogleFontFamily), ...base.google],
+  };
+}
+
+function buildPaletteVariables(
+  { hue, chroma, neutralHue, neutralChroma }: SiteCustomPalette,
+  mode: SiteMode,
+): SiteThemeVariables {
   const primaryLightness = mode === "light" ? 0.5 : 0.72;
   const primaryForeground = mode === "light" ? oklch(0.985, 0.005, hue) : oklch(0.16, 0.02, hue);
 
@@ -127,11 +172,15 @@ export function buildSiteColorVariables(palette: SitePalette, mode: SiteMode): S
   };
 }
 
+export function buildSiteColorVariables(palette: SitePalette, mode: SiteMode): SiteThemeVariables {
+  return buildPaletteVariables(SITE_PALETTE_DEFINITIONS[palette], mode);
+}
+
 export function buildSiteThemeVariables(theme: SiteTheme): SiteThemeVariables {
-  const fonts = SITE_FONT_STACKS[theme.font];
+  const fonts = resolveSiteFonts(theme);
 
   return {
-    ...buildSiteColorVariables(theme.palette, theme.mode),
+    ...buildPaletteVariables(resolveSitePalette(theme), theme.mode),
     "--radius": SITE_RADIUS_VALUES[theme.radius],
     "--font-sans": fonts.body,
     "--font-heading": fonts.heading,
@@ -153,9 +202,10 @@ export function renderSiteElementPaletteCss(): string {
 }
 
 export function renderSiteThemeCss(theme: SiteTheme): string {
-  const light = buildSiteColorVariables(theme.palette, "light");
-  const dark = buildSiteColorVariables(theme.palette, "dark");
-  const fonts = SITE_FONT_STACKS[theme.font];
+  const palette = resolveSitePalette(theme);
+  const light = buildPaletteVariables(palette, "light");
+  const dark = buildPaletteVariables(palette, "dark");
+  const fonts = resolveSiteFonts(theme);
 
   return [
     ":root {",
@@ -171,8 +221,10 @@ export function renderSiteThemeCss(theme: SiteTheme): string {
   ].join("\n");
 }
 
-export function buildSiteGoogleFontsUrl(font: SiteFont): string {
-  const families = SITE_FONT_STACKS[font].google.map((family) => `family=${family}`).join("&");
+export function buildSiteGoogleFontsUrl(theme: Pick<SiteTheme, "font" | "customFonts">): string {
+  const families = resolveSiteFonts(theme)
+    .google.map((family) => `family=${family}`)
+    .join("&");
 
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }

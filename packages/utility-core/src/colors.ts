@@ -47,3 +47,33 @@ export function oklchToHex({ lightness, chroma, hue }: OklchColor): string {
 
   return `#${[red, green, blue].map((channel) => channelToHex(linearToSrgbChannel(channel))).join("")}`;
 }
+
+const HEX_PATTERN = /^#?([0-9a-f]{6})$/i;
+
+function srgbToLinearChannel(value: number): number {
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
+export function hexToOklch(value: string): OklchColor | null {
+  const hex = HEX_PATTERN.exec(value.trim())?.[1];
+
+  if (!hex) {
+    return null;
+  }
+
+  const [red = 0, green = 0, blue = 0] = [0, 2, 4].map((offset) =>
+    srgbToLinearChannel(Number.parseInt(hex.slice(offset, offset + 2), 16) / 255),
+  );
+
+  const l = Math.cbrt(0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue);
+  const m = Math.cbrt(0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue);
+  const s = Math.cbrt(0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue);
+
+  const lightness = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const b = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  const chroma = Math.hypot(a, b);
+  const hue = chroma < 1e-4 ? 0 : ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360;
+
+  return { lightness, chroma, hue };
+}

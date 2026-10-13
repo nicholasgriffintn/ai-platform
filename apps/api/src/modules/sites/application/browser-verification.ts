@@ -103,7 +103,7 @@ export async function verifySiteInBrowser(
     title: site.title,
     runtimeUrl: `${origin.origin}/sites-runtime/preview-runtime.js`,
     stylesheetUrl: `${origin.origin}/sites-runtime/styles.css`,
-    fontUrl: buildSiteGoogleFontsUrl(site.project.theme.font),
+    fontUrl: buildSiteGoogleFontsUrl(site.project.theme),
   });
 
   for (const viewport of ["desktop", "mobile"] as const) {

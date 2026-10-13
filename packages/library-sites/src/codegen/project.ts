@@ -201,7 +201,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className=${JSON.stringify(documentClasses(project))}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme.font))} />
+        <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme))} />
       </head>
       <body>{children}</body>
     </html>
@@ -223,7 +223,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme.font))} />
+        <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme))} />
         <Meta />
         <Links />
       </head>
@@ -387,7 +387,7 @@ function frameworkFiles(project: SiteProject, target: SiteExportTarget): SiteFil
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${project.title.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme.font))} />
+    <link rel="stylesheet" href=${JSON.stringify(buildSiteGoogleFontsUrl(project.theme))} />
   </head>
   <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
 </html>
