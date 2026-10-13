@@ -4,7 +4,6 @@ import {
   bedrockManagedAgentTargetSchema,
   type AgentHarnessEventRecord,
   type BedrockManagedAgentTarget,
-  type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -24,8 +23,6 @@ import {
 } from "./agent-session-turn";
 
 const HARNESS_NAME = "Bedrock Managed Agents";
-const MANTLE_PROVIDER = "bedrock-mantle";
-const MANTLE_AGENT_MODEL_PREFIX = "openai.";
 const WORKSPACE_DIRECTORY = "/workspace";
 
 interface BedrockManagedAgentAccount {
@@ -33,32 +30,23 @@ interface BedrockManagedAgentAccount {
   credentials: BedrockManagedAgentsCredentials;
 }
 
-function isMantleAgentModel(model: ModelConfigItem): boolean {
-  return (
-    model.provider === MANTLE_PROVIDER &&
-    model.kind !== "agent" &&
-    model.supportsToolCalls &&
-    model.matchingModel.startsWith(MANTLE_AGENT_MODEL_PREFIX)
-  );
-}
-
 export async function resolveBedrockManagedAgentModel(params: {
   context: ServiceContext;
   user: IUser;
   preferred: string;
 }): Promise<string> {
-  const candidates = Object.values(getModels()).filter(isMantleAgentModel);
   const preferred = await getModelConfig(
     params.preferred,
     params.context.env,
     undefined,
     params.user.id,
   );
-  const preferredIds = preferred
-    ? [preferred.matchingModel, `${MANTLE_AGENT_MODEL_PREFIX}${preferred.matchingModel}`]
-    : [];
+  const models = Object.values(getModels()).filter(
+    (model) => model.provider === "bedrock-mantle" && model.matchingModel.startsWith("openai."),
+  );
   const selected =
-    candidates.find((model) => preferredIds.includes(model.matchingModel)) ?? candidates[0];
+    models.find((model) => model.matchingModel === `openai.${preferred?.matchingModel}`) ??
+    models[0];
 
   if (!selected) {
     throw new AssistantError(
