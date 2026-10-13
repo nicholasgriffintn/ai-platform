@@ -15,10 +15,6 @@ export interface OperationGroup {
   operations: ConnectionOperationView[];
 }
 
-/**
- * Turns an operation id such as `GITHUB_ADD_LABELS_TO_AN_ISSUE` into
- * "Add labels to an issue", stripping the provider prefix when present.
- */
 export function formatOperationLabel(operationId: string, provider: string): string {
   const prefix = `${provider}_`;
   const withoutPrefix = operationId.toLowerCase().startsWith(prefix.toLowerCase())
