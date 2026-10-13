@@ -202,6 +202,24 @@ describe("UserSyncCoordinator", () => {
     expect((events[0].event as { seq: number }).seq).toBe(2);
   });
 
+  it("starts a device without a cursor at the head of the log", async () => {
+    const { coordinator, sockets } = createCoordinator();
+
+    await connect(coordinator, "device-a");
+    await publish(coordinator, [
+      { topic: "user:1", type: "conversation.changed", data: { n: 1 } },
+      { topic: "user:1", type: "conversation.changed", data: { n: 2 } },
+    ]);
+    await coordinator.webSocketMessage(
+      sockets[0] as unknown as WebSocket,
+      JSON.stringify({ type: "subscribe", topics: [{ topic: "user:1" }] }),
+    );
+
+    expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
+    expect(messagesOfType(sockets[0], "reset")).toHaveLength(0);
+    expect(messagesOfType(sockets[0], "subscribed")[0]?.seq).toBe(2);
+  });
+
   it("asks a device ahead of the log to reset", async () => {
     const { coordinator, sockets } = createCoordinator();
 

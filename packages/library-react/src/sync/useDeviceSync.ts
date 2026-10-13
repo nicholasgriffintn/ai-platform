@@ -27,6 +27,7 @@ export function useDeviceSync(): void {
     const localScope = getLocalChatScope(userId);
     const store = useSyncStore.getState();
     const queue = createInvalidationQueue(queryClient);
+    let hasOpened = false;
     const socket = new DeviceSyncSocket({
       onEvent: (event) => {
         applySyncEvent({ queryClient, localScope, invalidate: queue.push }, event);
@@ -39,9 +40,15 @@ export function useDeviceSync(): void {
       onStatus: (status) => {
         store.setStatus(status);
 
-        if (status === "open") {
+        if (status !== "open") {
+          return;
+        }
+
+        if (hasOpened) {
           invalidateSyncQueries(queue.push);
         }
+
+        hasOpened = true;
       },
     });
 

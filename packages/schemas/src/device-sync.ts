@@ -107,7 +107,7 @@ export type DeviceSyncPublishBatch = z.infer<typeof deviceSyncPublishBatchSchema
 
 export const deviceSyncSubscriptionSchema = z.object({
   topic: deviceSyncTopicSchema,
-  lastSeq: z.number().int().nonnegative().default(0),
+  lastSeq: z.number().int().nonnegative().optional(),
 });
 
 export type DeviceSyncSubscription = z.infer<typeof deviceSyncSubscriptionSchema>;

@@ -60,6 +60,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/auth", auth);
   app.route("/activity", activity);
   app.route("/responses", responses);
+  app.route("/conversations/saved-messages", savedMessages);
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
   app.route("/code", code);
@@ -90,7 +91,6 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);
   app.route("/memory/corrections", corrections);
-  app.route("/conversations/saved-messages", savedMessages);
   app.route("/channels", channels);
   app.route("/teammates", teammates);
   app.route("/poly", poly);

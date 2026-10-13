@@ -70,7 +70,7 @@ export class DeviceSyncSocket {
       type: "subscribe",
       topics: [...this.topics].map((topic) => ({
         topic,
-        lastSeq: this.cursors.get(topic) ?? 0,
+        lastSeq: this.cursors.get(topic),
       })),
     });
 
@@ -286,7 +286,7 @@ export class DeviceSyncSocket {
     if (added.length > 0) {
       this.send({
         type: "subscribe",
-        topics: added.map((topic) => ({ topic, lastSeq: this.cursors.get(topic) ?? 0 })),
+        topics: added.map((topic) => ({ topic, lastSeq: this.cursors.get(topic) })),
       });
     }
   }

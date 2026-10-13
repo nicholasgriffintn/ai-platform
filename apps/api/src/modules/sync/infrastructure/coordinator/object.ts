@@ -108,7 +108,7 @@ export class UserSyncCoordinator extends Agent<IEnv> {
   private attachTopics(
     socket: WebSocket,
     state: ConnectionState,
-    requested: { topic: string; lastSeq: number }[],
+    requested: { topic: string; lastSeq?: number }[],
   ): void {
     const topics = new Set(state.topics);
 
@@ -119,6 +119,11 @@ export class UserSyncCoordinator extends Agent<IEnv> {
       }
 
       topics.add(topic);
+
+      if (lastSeq === undefined) {
+        this.send(socket, { type: "subscribed", topic, seq: this.events.latestSeq(topic) });
+        continue;
+      }
 
       const replay = this.events.read(topic, lastSeq);
 
