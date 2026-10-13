@@ -1239,11 +1239,31 @@
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.021,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "supportsAudio": true,
+        "supportsRealtimeTranslationSession": true
       },
       "unset": [
         "supportsResponseFormat"
       ]
+    },
+    "gemini-3.5-transcribe-live": {
+      "model": "gemini/gemini-3-5-transcribe-live",
+      "matchingModel": "gemini-3.5-transcribe-live",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 55,
+          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
+        },
+        "costPer1kInputTokens": 0.0035,
+        "costPer1kOutputTokens": 0.021,
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsStreaming": true,
+        "supportsAudio": true
+      }
     },
     "gemini-embedding-2": {
       "model": "gemini/gemini-embedding-2",

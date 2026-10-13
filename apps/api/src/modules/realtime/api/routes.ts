@@ -33,6 +33,7 @@ import { listRealtimeLiveProviders } from "~/modules/realtime/application/catalo
 import { createElevenLabsRealtimeProxyResponse } from "~/modules/realtime/application/elevenlabs";
 import { createGreenPtRealtimeProxyResponse } from "~/modules/realtime/application/greenpt";
 import { createMistralRealtimeProxyResponse } from "~/modules/realtime/application/mistral";
+import { createOpenAILiveCallResponse } from "~/modules/realtime/application/openaiLive";
 import { createRealtimePipelineSession } from "~/modules/realtime/application/pipeline";
 import {
   assertRealtimeProxyGrant,
@@ -275,6 +276,37 @@ addRoute(app, "post", "/pipeline/session", {
     }
 
     return result.session;
+  },
+});
+
+addRoute(app, "post", "/openai/live/calls", {
+  tags: ["realtime"],
+  summary: "Exchange a WebRTC offer for a GPT-Live session answer",
+  auth: true,
+  querySchema: realtimeProxyGrantQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: "openai",
+      request: raw.req.raw,
+      sessionId: query.session_id,
+      user,
+    });
+
+    try {
+      return await createOpenAILiveCallResponse({
+        context: raw,
+        env: serviceContext.env,
+        user,
+        model: query.model,
+        instructions: query.instructions,
+        voice: query.voice,
+      });
+    } finally {
+      await reservation.release();
+    }
   },
 });
 

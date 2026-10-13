@@ -1,4 +1,5 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -16,6 +17,7 @@ import {
   type RealtimeModality,
   type RealtimeTransport,
 } from "../modalities.js";
+import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
 
 export const OPENAI_REALTIME_DESCRIPTOR = {
   id: "openai",
@@ -33,6 +35,12 @@ export const OPENAI_REALTIME_DESCRIPTOR = {
 } satisfies RealtimeLiveProviderDescriptor;
 
 const DEFAULT_REALTIME_MODEL = OPENAI_REALTIME_DESCRIPTOR.defaultModelId;
+
+export const OPENAI_LIVE_MODEL = "gpt-live-1";
+export const OPENAI_LIVE_PROTOCOL = "openai-live";
+export const OPENAI_LIVE_SESSIONS_URL = "https://api.openai.com/v1/live/sessions";
+const OPENAI_LIVE_PROXY_PATH = "/realtime/openai/live/calls";
+const DEFAULT_LIVE_DELEGATION_MODEL = "gpt-6-sol";
 const API_KEY_ENVIRONMENT_VARIABLE = "OPENAI_API_KEY";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
@@ -48,7 +56,7 @@ const DEFAULT_MODELS_BY_TYPE = {
   transcription: DEFAULT_TRANSCRIPTION_MODEL,
 } satisfies Record<RealtimeSessionRequest["type"], string>;
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-2.1-mini", "gpt-realtime-2"],
+  realtime: [DEFAULT_REALTIME_MODEL, "gpt-realtime-2.1-mini", "gpt-realtime-2", OPENAI_LIVE_MODEL],
   translation: [DEFAULT_TRANSLATION_MODEL],
   transcription: [DEFAULT_TRANSCRIPTION_MODEL, "gpt-realtime-whisper"],
 };
@@ -95,6 +103,26 @@ const DEFAULT_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeMod
   translation: ["text", "audio"],
   transcription: ["text"],
 };
+
+export function buildOpenAILiveSessionConfig({
+  model,
+  instructions,
+  voice,
+}: {
+  model: string;
+  instructions?: string;
+  voice?: string;
+}): Record<string, unknown> {
+  return {
+    model,
+    ...(instructions ? { instructions } : {}),
+    audio: { output: { voice: voice ?? DEFAULT_VOICE } },
+    delegation: {
+      type: "responses",
+      responses: { model: DEFAULT_LIVE_DELEGATION_MODEL },
+    },
+  };
+}
 
 interface OpenAIRealtimeClientSecretResponse {
   value: string;
@@ -331,6 +359,59 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     };
   }
 
+  private async createLiveSession(
+    request: RealtimeSessionRequest,
+    {
+      model,
+      transport,
+      inputModalities,
+      outputModalities,
+    }: {
+      model: string;
+      transport: RealtimeTransport;
+      inputModalities: RealtimeModality[];
+      outputModalities: RealtimeModality[];
+    },
+  ): Promise<unknown> {
+    const sessionId = generateId();
+    const proxy = await buildGrantedRealtimeProxyUrl({
+      host: this.runtime.host,
+      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      byok: request.credentialAuthority === "byok",
+      env: request.env,
+      model,
+      params: {
+        instructions: request.instructions,
+        voice: request.voice,
+      },
+      path: OPENAI_LIVE_PROXY_PATH,
+      provider: this.name,
+      scheme: "https",
+      sessionId,
+      userId: request.user.id,
+    });
+
+    return {
+      id: sessionId,
+      object: "realtime.session",
+      type: "realtime",
+      provider: this.name,
+      transport,
+      protocol: OPENAI_LIVE_PROTOCOL,
+      model,
+      url: proxy.url,
+      proxy_grant_expires_at: proxy.expiresAt,
+      client_secret: { value: "", expires_at: proxy.expiresAt },
+      input_modalities: inputModalities,
+      output_modalities: outputModalities,
+      modalities: outputModalities,
+      audio: {
+        input: { format: this.buildAudioFormat() },
+        output: { format: this.buildAudioFormat(), voice: request.voice ?? DEFAULT_VOICE },
+      },
+    };
+  }
+
   async createSession(request: RealtimeSessionRequest): Promise<unknown> {
     if (
       request.type !== "realtime" &&
@@ -343,6 +424,20 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
     const transport = this.getTransport(request);
     const inputModalities = this.getInputModalities(request);
     const outputModalities = this.getOutputModalities(request);
+
+    if (request.type === "realtime") {
+      const model = await this.resolveModel(request);
+
+      if (model === OPENAI_LIVE_MODEL) {
+        return this.createLiveSession(request, {
+          model,
+          transport,
+          inputModalities,
+          outputModalities,
+        });
+      }
+    }
+
     const apiKey = await this.getApiKey(request);
     const body =
       request.type === "realtime"
