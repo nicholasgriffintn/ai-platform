@@ -22,30 +22,39 @@ async function authenticatedRequest<T>(path: string, method: string, body?: obje
 export function getConversationOrganisation(
   conversationId: string,
 ): Promise<ConversationOrganisation> {
-  return authenticatedRequest(`/chat/completions/${conversationId}/organisation`, "GET");
+  return authenticatedRequest(
+    `/conversations/${encodeURIComponent(conversationId)}/organisation`,
+    "GET",
+  );
 }
 
 export function updateConversationOrganisation(
   conversationId: string,
   input: UpdateConversationOrganisation,
 ): Promise<ConversationOrganisation> {
-  return authenticatedRequest(`/chat/completions/${conversationId}/organisation`, "PATCH", input);
+  return authenticatedRequest(
+    `/conversations/${encodeURIComponent(conversationId)}/organisation`,
+    "PATCH",
+    input,
+  );
 }
 
 export function moveConversationToGroup(
   conversationId: string,
   groupId: string | null,
 ): Promise<ConversationOrganisation> {
-  return authenticatedRequest(`/chat/completions/${conversationId}/group`, "PUT", { groupId });
+  return authenticatedRequest(`/conversations/${encodeURIComponent(conversationId)}/group`, "PUT", {
+    groupId,
+  });
 }
 
 export function createConversationGroup(
   name: string,
   scope: ConversationGroupScope,
 ): Promise<ConversationGroup> {
-  return authenticatedRequest("/chat/groups", "POST", { name, scope });
+  return authenticatedRequest("/conversations/groups", "POST", { name, scope });
 }
 
 export function deleteConversationGroup(groupId: string): Promise<{ deleted: boolean }> {
-  return authenticatedRequest(`/chat/groups/${groupId}`, "DELETE");
+  return authenticatedRequest(`/conversations/groups/${encodeURIComponent(groupId)}`, "DELETE");
 }

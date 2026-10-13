@@ -20,11 +20,11 @@ enum ModelContinuity {
     static func evaluate(
         model: ModelConfigItem,
         hasConversationHistory: Bool,
-        activeRun: ChatRun?,
+        activeResponse: PlatformResponse?,
         attachmentTypes: [ComposerAttachmentType]
     ) -> ModelContinuityDecision {
-        if let activeRun, activeRun.isActive {
-            let reason = activeRun.isWaiting
+        if let activeResponse, activeResponse.isActive {
+            let reason = activeResponse.isWaiting
                 ? "Resolve or cancel the current approval or question before changing models. It belongs to the model run that requested it."
                 : "Wait for or cancel the current model run before changing models."
             return ModelContinuityDecision(

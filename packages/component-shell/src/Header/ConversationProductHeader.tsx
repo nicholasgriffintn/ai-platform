@@ -70,8 +70,8 @@ export function ConversationProductHeader({
         <div className="flex shrink-0 items-center gap-0.5">
           <ConversationThreadNavigation />
           <ConversationContextSummaryButton
-            context={conversation?.latest_run?.context}
-            usage={conversation?.latest_run?.usage}
+            context={conversation?.latest_response?.context}
+            usage={conversation?.latest_response?.usage}
             entries={traceEntries}
             compactOnMobile
             resolveReferenceHref={(path) => `${API_BASE_URL}${path}`}

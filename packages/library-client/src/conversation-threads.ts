@@ -8,7 +8,7 @@ export async function getConversationBranches(
   conversationId: string,
 ): Promise<ConversationThreadsResponse> {
   const response = await fetchApiOrThrow(
-    `/chat/completions/${encodeURIComponent(conversationId)}/threads`,
+    `/conversations/${encodeURIComponent(conversationId)}/branches`,
     {
       method: "GET",
       headers: await apiService.getHeaders(),

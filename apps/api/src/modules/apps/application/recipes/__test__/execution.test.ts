@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   generateId: vi.fn(),
 }));
 
-vi.mock("~/modules/completions/application/createChatCompletions", () => ({
+vi.mock("~/modules/responses/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 

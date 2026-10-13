@@ -1,5 +1,6 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 
+import { normaliseConversationItems } from "./conversation-response.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
@@ -36,9 +37,18 @@ export async function fetchSharedConversationHistory(
     }
 
     const response = await fetchApiOrThrow(
-      `/chat/shared/${encodeURIComponent(shareId)}?${params.toString()}`,
+      `/conversations/shared/${encodeURIComponent(shareId)}?${params.toString()}`,
     );
-    const pageData = await returnFetchedData<SharedConversationHistory>(response);
+    const page = await returnFetchedData<{
+      items?: unknown;
+      share_id: string;
+      shared_through?: number | null;
+    }>(response);
+    const pageData: SharedConversationHistory = {
+      messages: normaliseConversationItems(page.items ?? []),
+      share_id: page.share_id,
+      shared_through: page.shared_through,
+    };
 
     resolvedShareId = pageData.share_id;
     for (const message of pageData.messages) {

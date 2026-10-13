@@ -1,14 +1,14 @@
-import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationFeedbackSubmission } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { handleChatCompletionFeedbackSubmission } from "~/modules/completions/application/chatCompletionFeedbackSubmission";
+import { handleChatCompletionFeedbackSubmission } from "~/modules/conversations/application/chatCompletionFeedbackSubmission";
 
 import { ConversationManager } from "./manager";
 
 export async function submitConversationFeedback(
   context: ServiceContext,
   completionId: string,
-  request: SubmitChatCompletionFeedbackInput,
+  request: ConversationFeedbackSubmission,
 ) {
   const user = context.requireUser();
 

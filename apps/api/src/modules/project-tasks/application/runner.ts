@@ -10,7 +10,7 @@ import {
   ownershipLostError,
 } from "@ngriffin_uk/polychat-library-tasks";
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   nextFlowStageId,
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
@@ -31,13 +31,13 @@ import {
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { scheduleComposioConnectorRunCleanup } from "~/modules/apps/application/connectors/composio-run";
-import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
@@ -769,7 +769,7 @@ export async function runProjectTaskDispatch(params: {
       );
     }
 
-    const parsedRequest = createChatCompletionsJsonSchema.parse(request);
+    const parsedRequest = responseCommandSchema.parse(request);
     const response = runtime.teammate
       ? await enqueueTeammateRun({
           env,

@@ -259,7 +259,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const event = {
       id: `event_${generateId()}`,
       runId,
-      type: "run.retry_changed",
+      type: "response.retry_changed",
       occurredAt: now,
       data: { retry },
       expectedAttempt: attempt,
@@ -472,7 +472,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const event = {
       id: `event_${generateId()}`,
       runId,
-      type: "run.accepted",
+      type: "response.created",
       occurredAt: now,
       data: { status: "accepted" },
       expectedAttempt: 1,
@@ -607,7 +607,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       const event = {
         id: `event_${generateId()}`,
         runId: params.runId,
-        type: "run.status_changed",
+        type: "response.status_changed",
         occurredAt: now,
         data: { previousStatus: current.status, status: "running" },
         expectedAttempt: nextAttempt,
@@ -741,7 +741,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       const event = {
         id: `event_${generateId()}`,
         runId: params.runId,
-        type: "run.status_changed",
+        type: "response.status_changed",
         occurredAt: now,
         data: { previousStatus: current.status, status: nextStatus },
         expectedAttempt: params.expectedAttempt,
@@ -875,7 +875,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const event = {
       id: `event_${generateId()}`,
       runId: params.runId,
-      type: "run.status_changed",
+      type: "response.status_changed",
       occurredAt: now,
       data: {
         previousStatus: current.status,

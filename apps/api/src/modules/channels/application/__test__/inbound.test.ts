@@ -27,7 +27,7 @@ vi.mock("~/infrastructure/providers/capabilities/messaging/delivery", async (imp
   };
 });
 
-vi.mock("~/modules/completions/application/createChatCompletions", () => ({
+vi.mock("~/modules/responses/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 

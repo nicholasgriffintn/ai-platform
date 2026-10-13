@@ -7,7 +7,7 @@ import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { cleanupCancelledChatRun } from "~/modules/chat-runs/application/cancellation-cleanup";
+import { cleanupCancelledChatRun } from "~/modules/responses/application/runs/cancellation-cleanup";
 
 export async function cancelDelegationChildRun(
   context: ServiceContext,

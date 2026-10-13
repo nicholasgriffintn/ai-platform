@@ -196,24 +196,26 @@ struct ModelTests {
         #expect(message.runId == "run-1")
     }
 
-    @Test func chatRunDecodesVersionedContextWithoutFabricatingReportedUsage() throws {
+    @Test func responseDecodesVersionedContextWithoutFabricatingReportedUsage() throws {
         let data = Data("""
         {
-            "protocolVersion": 1,
+            "object": "response",
             "id": "run-1",
-            "conversationId": "conversation-1",
-            "projectId": "project-1",
-            "projectTaskId": "task-1",
-            "stageId": "build",
-            "initiatorUserId": 1,
-            "status": "running",
+            "conversation_id": "conversation-1",
+            "status": "in_progress",
+            "waiting_on": null,
             "attempt": 1,
-            "createdAt": "2026-09-05T10:00:00.000Z",
-            "updatedAt": "2026-09-05T10:00:00.000Z",
-            "startedAt": "2026-09-05T10:00:00.000Z",
-            "completedAt": null,
-            "terminalReason": null,
-            "lastMessageId": null,
+            "trigger": "user",
+            "initiator_user_id": 1,
+            "project_id": "project-1",
+            "project_task_id": "task-1",
+            "stage_id": "build",
+            "created_at": "2026-09-05T10:00:00.000Z",
+            "updated_at": "2026-09-05T10:00:00.000Z",
+            "started_at": "2026-09-05T10:00:00.000Z",
+            "completed_at": null,
+            "terminal_reason": null,
+            "last_item_id": null,
             "retry": {
                 "protocolVersion": 1,
                 "step": 2,
@@ -262,7 +264,7 @@ struct ModelTests {
         }
         """.utf8)
 
-        let run = try JSONDecoder().decode(ChatRun.self, from: data)
+        let run = try JSONDecoder().decode(PlatformResponse.self, from: data)
 
         #expect(run.context?.usage.source == "estimated")
         #expect(run.stageId == "build")
@@ -274,12 +276,12 @@ struct ModelTests {
     }
 
     @Test func cancellationRequestEncodesTheExactAttemptFence() throws {
-        let request = CancelChatRunRequest(commandId: "cancel-1", expectedAttempt: 3)
+        let request = CancelResponseRequest(expectedAttempt: 3, idempotencyKey: "cancel-1")
         let object = try #require(
             JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
         )
 
-        #expect(object["command_id"] as? String == "cancel-1")
+        #expect(object["idempotency_key"] as? String == "cancel-1")
         #expect(object["expected_attempt"] as? Int == 3)
     }
 
@@ -531,7 +533,7 @@ struct ModelTests {
         #expect(response.recipe.configurationFields.first?.defaultValue == nil)
     }
 
-    @Test func chatCompletionRequestSerializesMessagesForAPI() throws {
+    @Test func createResponseRequestSerializesMessagesForAPI() throws {
         let message = ChatMessage(
             id: "user-1",
             role: "user",
@@ -542,51 +544,50 @@ struct ModelTests {
             ]
         )
 
-        let request = ChatCompletionRequest(
+        let request = CreateResponseRequest(
             messages: [message],
             model: "deepseek-chat",
             provider: "deepseek",
-            completionId: "conversation-1",
+            conversationId: "conversation-1",
             settings: .default,
             stream: true
         )
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let messages = try #require(json["messages"] as? [[String: Any]])
+        let messages = try #require(json["input"] as? [[String: Any]])
         let firstMessage = try #require(messages.first)
         let content = try #require(firstMessage["content"] as? [[String: Any]])
 
         #expect(firstMessage["id"] as? String == "user-1")
         #expect(firstMessage["role"] as? String == "user")
         #expect(content.compactMap { $0["type"] as? String } == ["text", "image_url"])
-        #expect(json["completion_id"] as? String == "conversation-1")
+        #expect((json["conversation"] as? [String: Any])?["id"] as? String == "conversation-1")
         #expect(json["stream"] as? Bool == true)
-        #expect(json["platform"] as? String == "mobile")
-        #expect(json["enabled_tools"] == nil)
-        #expect(json["tool_selection_mode"] as? String == "managed")
+        #expect((json["client"] as? [String: Any])?["platform"] as? String == "mobile")
+        #expect((json["tools"] as? [[String: Any]])?.map { $0["type"] as? String } == ["managed"])
         #expect(json["model_tier"] == nil)
-        #expect((json["command_id"] as? String)?.isEmpty == false)
+        #expect((json["idempotency_key"] as? String)?.isEmpty == false)
     }
 
-    @Test func chatCompletionRequestPreservesCommandAndRunIdentity() throws {
-        let request = ChatCompletionRequest(
+    @Test func createResponseRequestPreservesCommandAndRunIdentity() throws {
+        let request = CreateResponseRequest(
             messages: [ChatMessage(role: "user", content: "Approved")],
             model: "gpt-6-astra",
-            completionId: "conversation-1",
-            commandId: "command-1",
-            runId: "run-1"
+            conversationId: "conversation-1",
+            idempotencyKey: "command-1",
+            responseId: "run-1"
         )
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
-        #expect(json["command_id"] as? String == "command-1")
-        #expect(json["run_id"] as? String == "run-1")
+        #expect(json["idempotency_key"] as? String == "command-1")
+        #expect(json["response_id"] as? String == "run-1")
     }
 
-    @Test func chatCompletionRequestLeavesTheDefaultTierToTheServerWithoutAModel() throws {
-        let request = ChatCompletionRequest(
+    @Test func createResponseRequestLeavesTheDefaultTierToTheServerWithoutAModel() throws {
+        let request = CreateResponseRequest(
             messages: [ChatMessage(role: "user", content: "Hi")],
             model: nil
         )
@@ -599,8 +600,8 @@ struct ModelTests {
         #expect(json["model_tier"] == nil)
     }
 
-    @Test func chatCompletionRequestSendsAnExplicitTierOnlyWithoutAModel() throws {
-        let tiered = ChatCompletionRequest(
+    @Test func createResponseRequestSendsAnExplicitTierOnlyWithoutAModel() throws {
+        let tiered = CreateResponseRequest(
             messages: [ChatMessage(role: "user", content: "Hi")],
             model: nil,
             modelTier: "high"
@@ -611,7 +612,7 @@ struct ModelTests {
 
         #expect(tieredJson["model_tier"] as? String == "high")
 
-        let explicit = ChatCompletionRequest(
+        let explicit = CreateResponseRequest(
             messages: [ChatMessage(role: "user", content: "Hi")],
             model: "gpt-6-astra",
             modelTier: "high"
@@ -623,8 +624,8 @@ struct ModelTests {
         #expect(explicitJson["model_tier"] == nil)
     }
 
-    @Test func chatCompletionRequestSendsSelectedProcessingTier() throws {
-        let request = ChatCompletionRequest(
+    @Test func createResponseRequestSendsSelectedProcessingTier() throws {
+        let request = CreateResponseRequest(
             messages: [ChatMessage(role: "user", content: "Hi")],
             model: "gpt-6-astra",
             settings: ChatSettings(serviceTier: .fast)
@@ -636,7 +637,7 @@ struct ModelTests {
         #expect(json["service_tier"] as? String == "fast")
     }
 
-    @Test func chatCompletionRequestExcludesCompactionMarkers() throws {
+    @Test func createResponseRequestExcludesCompactionMarkers() throws {
         let userMessage = ChatMessage(id: "user-1", role: "user", content: "Continue")
         let compactionMessage = try JSONDecoder().decode(ChatMessage.self, from: Data("""
         {
@@ -653,24 +654,24 @@ struct ModelTests {
         }
         """.utf8))
 
-        let request = ChatCompletionRequest(
+        let request = CreateResponseRequest(
             messages: [userMessage, compactionMessage],
             model: "deepseek-chat",
             provider: "deepseek",
-            completionId: "conversation-1",
+            conversationId: "conversation-1",
             settings: .default,
             stream: true
         )
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let messages = try #require(json["messages"] as? [[String: Any]])
+        let messages = try #require(json["input"] as? [[String: Any]])
 
         #expect(messages.map { $0["id"] as? String } == ["user-1"])
         #expect(messages.map { $0["role"] as? String } == ["user"])
     }
 
-    @Test func chatCompletionRequestSendsSnapshotMessagesAsTextWithoutInternalParts() throws {
+    @Test func createResponseRequestSendsSnapshotMessagesAsTextWithoutInternalParts() throws {
         let snapshotMessage = ChatMessage(
             id: "snapshot-1",
             role: "assistant",
@@ -688,22 +689,22 @@ struct ModelTests {
             ]
         )
 
-        let request = ChatCompletionRequest(
+        let request = CreateResponseRequest(
             messages: [snapshotMessage],
             model: "deepseek-chat",
             provider: "deepseek",
-            completionId: "conversation-1",
+            conversationId: "conversation-1",
             settings: .default,
             stream: true
         )
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let messages = try #require(json["messages"] as? [[String: Any]])
+        let messages = try #require(json["input"] as? [[String: Any]])
         let message = try #require(messages.first)
 
         #expect(message["role"] as? String == "assistant")
-        #expect(message["content"] as? String == "Conversation snapshot\n\nEarlier context summary.")
+        #expect((message["content"] as? [[String: Any]])?.compactMap { $0["text"] as? String } == ["Conversation snapshot\n\nEarlier context summary."])
         #expect(message["parts"] == nil)
     }
 
@@ -728,7 +729,7 @@ struct ModelTests {
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let messages = try #require(json["messages"] as? [[String: Any]])
+        let messages = try #require(json["items"] as? [[String: Any]])
 
         #expect(messages.map { $0["id"] as? String } == ["user-1"])
         #expect(messages.map { $0["role"] as? String } == ["user"])
@@ -760,40 +761,44 @@ struct ModelTests {
 
         let data = try JSONEncoder().encode(request)
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let messages = try #require(json["messages"] as? [[String: Any]])
+        let messages = try #require(json["items"] as? [[String: Any]])
         let message = try #require(messages.first)
         let parts = try #require(message["parts"] as? [[String: Any]])
         let part = try #require(parts.first)
         let metadata = try #require(part["metadata"] as? [String: Any])
+        let messageMetadata = try #require(message["metadata"] as? [String: Any])
 
         #expect(message["id"] as? String == "snapshot-1-compaction")
-        #expect(message["completion_id"] as? String == "conversation-1")
-        #expect(message["created"] as? Double == 1234)
+        #expect(message["type"] as? String == "compaction")
+        #expect(messageMetadata["completion_id"] as? String == "conversation-1")
+        #expect(messageMetadata["created"] as? Double == 1234)
         #expect(part["id"] as? String == "compaction-part-1")
         #expect(metadata["source"] as? String == "manual-compaction")
     }
 }
 
 extension ModelTests {
-    @Test func chatRunUsageKeepsHoldsConsumptionAndUnknownValuesDistinct() throws {
-        let run = try JSONDecoder().decode(ChatRun.self, from: Data("""
+    @Test func responseUsageKeepsHoldsConsumptionAndUnknownValuesDistinct() throws {
+        let run = try JSONDecoder().decode(PlatformResponse.self, from: Data("""
         {
-            "protocolVersion": 1,
+            "object": "response",
             "id": "run-1",
-            "conversationId": "conversation-1",
-            "projectId": null,
-            "projectTaskId": null,
-            "stageId": "build",
-            "initiatorUserId": 7,
-            "status": "running",
+            "conversation_id": "conversation-1",
+            "status": "in_progress",
+            "waiting_on": null,
             "attempt": 2,
-            "createdAt": "2026-09-05T10:00:00.000Z",
-            "updatedAt": "2026-09-05T10:05:00.000Z",
-            "startedAt": null,
-            "completedAt": null,
-            "cancellationRequestedAt": null,
-            "terminalReason": null,
-            "lastMessageId": null,
+            "trigger": "user",
+            "initiator_user_id": 7,
+            "project_id": null,
+            "project_task_id": null,
+            "stage_id": "build",
+            "created_at": "2026-09-05T10:00:00.000Z",
+            "updated_at": "2026-09-05T10:05:00.000Z",
+            "started_at": null,
+            "completed_at": null,
+            "cancellation_requested_at": null,
+            "terminal_reason": null,
+            "last_item_id": null,
             "context": null,
             "retry": null,
             "usage": {

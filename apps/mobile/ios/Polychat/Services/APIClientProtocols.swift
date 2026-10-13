@@ -32,29 +32,29 @@ protocol ConversationAPIClient {
         refreshPending: Bool
     ) async throws -> ConversationDetailResponse
     func fetchConversationMessages(id: String, before: String, limit: Int) async throws -> ConversationMessagePageResponse
-    func streamChatCompletion(
+    func streamResponse(
         messages: [ChatMessage],
         modelId: String?,
         provider: String?,
-        completionId: String?,
+        conversationId: String?,
         settings: ChatSettings?,
-        commandId: String,
+        idempotencyKey: String,
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
-    func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse
-    func fetchChatRunEvents(id: String, after: Int, limit: Int) async throws -> ChatRunReplayResponse
-    func cancelChatRun(id: String, expectedAttempt: Int, commandId: String) async throws -> ChatRunCommandReceipt
+    func fetchResponseSnapshot(id: String) async throws -> ResponseSnapshot
+    func fetchResponseEvents(id: String, after: Int, limit: Int) async throws -> ResponseReplayResponse
+    func cancelResponse(id: String, expectedAttempt: Int, idempotencyKey: String) async throws -> PlatformResponse
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval
     func resolveConnectorApproval(id: String, resolution: String) async throws -> ConnectorApprovalResolution
     func streamApprovedConnectorOperation(
         messages: [ChatMessage],
         modelId: String?,
         provider: String?,
-        completionId: String,
+        conversationId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String,
+        idempotencyKey: String,
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
@@ -126,12 +126,12 @@ extension ConversationAPIClient {
         try await fetchConversationMessages(id: id, before: before, limit: 100)
     }
 
-    func cancelChatRun(id: String, expectedAttempt: Int) async throws -> ChatRunCommandReceipt {
-        try await cancelChatRun(id: id, expectedAttempt: expectedAttempt, commandId: UUID().uuidString)
+    func cancelResponse(id: String, expectedAttempt: Int) async throws -> PlatformResponse {
+        try await cancelResponse(id: id, expectedAttempt: expectedAttempt, idempotencyKey: UUID().uuidString)
     }
 
-    func fetchChatRunEvents(id: String, after: Int) async throws -> ChatRunReplayResponse {
-        try await fetchChatRunEvents(id: id, after: after, limit: 100)
+    func fetchResponseEvents(id: String, after: Int) async throws -> ResponseReplayResponse {
+        try await fetchResponseEvents(id: id, after: after, limit: 100)
     }
 
 }

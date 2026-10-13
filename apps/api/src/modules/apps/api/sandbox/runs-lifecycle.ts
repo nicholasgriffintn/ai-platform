@@ -35,7 +35,7 @@ import {
   handleRecordRunGoalIteration,
   handleSetRunGoal,
   handleUpdateRunGoal,
-} from "~/modules/completions/application/conversationGoal";
+} from "~/modules/conversations/application/conversationGoal";
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
   addRoute(app, "get", "/runs/:runId", {

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveProjectModelTier } from "~/modules/chat/application/policy/project-model-tier";
-import { getConversationBranches } from "~/modules/completions/application/conversationThreads";
+import { getConversationBranches } from "~/modules/conversations/application/conversationThreads";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
 import {

@@ -577,7 +577,7 @@ describe("Auth Middleware", () => {
       const context = createMockContext({
         req: {
           ...createMockRequest(),
-          path: "/chat/completions/123/generate-title",
+          path: "/conversations/123/title",
           method: "POST",
         },
       });
@@ -604,7 +604,7 @@ describe("Auth Middleware", () => {
         const context = createMockContext({
           req: {
             ...createMockRequest(),
-            path: "/chat/completions/conversation-1/goal",
+            path: "/conversations/conversation-1/goal",
             method,
           },
         });
@@ -652,6 +652,26 @@ describe("Auth Middleware", () => {
       await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
         "Tool usage requires authentication",
       );
+    });
+
+    it("lets non-pro users send managed and builtin tool selections on /responses", async () => {
+      const context = createMockContext({
+        req: {
+          ...createMockRequest(),
+          path: "/responses",
+          method: "POST",
+          json: vi.fn().mockResolvedValue({
+            tools: [{ type: "managed" }, { type: "builtin", id: "web_search" }],
+          }),
+        },
+      });
+
+      // @ts-expect-error - mock implementation
+      context.get.mockImplementation((key: string) => (key === "user" ? { id: 7 } : null));
+
+      await allowRestrictedPaths(context, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
     });
 
     it("should block unauthorized paths for non-pro users", async () => {

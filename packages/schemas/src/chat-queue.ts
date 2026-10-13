@@ -1,13 +1,10 @@
 import z from "zod/v4";
 
-import {
-  chatCompletionMessageSchema,
-  chatCompletionsRequestFieldsSchema,
-} from "./chat-completions.js";
+import { chatCompletionMessageSchema, responseCommandFieldsSchema } from "./response-command.js";
 
 export const MAX_QUEUED_CHAT_MESSAGES = 10;
 
-export const queuedChatRequestSchema = chatCompletionsRequestFieldsSchema
+export const queuedChatRequestSchema = responseCommandFieldsSchema
   .omit({
     messages: true,
     command_id: true,

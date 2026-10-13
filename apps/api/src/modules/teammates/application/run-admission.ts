@@ -9,7 +9,7 @@ import {
   type ChatRun,
   type ChatRunTrigger,
   type ConversationType,
-  type ParsedChatCompletionRequestBody,
+  type ParsedResponseCommand,
   type TeammateInvocation,
   type TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
@@ -17,14 +17,14 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  readToolInteractionId,
-  readToolInteractionResolution,
-} from "~/modules/chat-runs/application/interactions";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import {
+  readToolInteractionId,
+  readToolInteractionResolution,
+} from "~/modules/responses/application/runs/interactions";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { CoreChatOptions, IEnv, IUser } from "~/types";
 
@@ -40,7 +40,7 @@ import { readTeammateSkillIds } from "./teammateResponse";
 export interface TeammateRunAdmissionInput {
   env: IEnv;
   context?: ServiceContext;
-  body: ParsedChatCompletionRequestBody;
+  body: ParsedResponseCommand;
   teammateId: string;
   user: IUser | undefined;
   anonymousUser: any;

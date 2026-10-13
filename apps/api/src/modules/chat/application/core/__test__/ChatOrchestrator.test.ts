@@ -1,4 +1,4 @@
-import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
+import { parseResponseStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -86,7 +86,7 @@ vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   threadLockError: () => new AssistantError("Conversation busy", ErrorType.CONFLICT_ERROR, 409),
 }));
 
-vi.mock("~/modules/chat-runs/application/lifecycle", () => ({
+vi.mock("~/modules/responses/application/runs/lifecycle", () => ({
   acceptChatRun: mockAcceptChatRun,
   findAcceptedChatRunCommand: mockFindAcceptedChatRunCommand,
 }));
@@ -376,16 +376,21 @@ describe("ChatOrchestrator", () => {
           throw new Error("Expected streamed result");
         }
 
-        const events = parseChatStreamSseBuffer(await readStream(result.stream), {
+        const events = parseResponseStreamSseBuffer(await readStream(result.stream), {
           flush: true,
         }).events;
 
-        expect(events[0]).toEqual({
-          type: "state",
-          state: "compaction",
-          message: compactionMessage,
+        const compaction = events.find((event) => event.type === "conversation.compacted");
+        const firstDelta = events.findIndex((event) => event.type === "response.output_text.delta");
+
+        expect(compaction).toMatchObject({
+          type: "conversation.compacted",
+          item: { type: "compaction", id: compactionMessage.id },
         });
-        expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
+        expect(events.indexOf(compaction as (typeof events)[number])).toBeLessThan(firstDelta);
+        expect(events).toContainEqual(
+          expect.objectContaining({ type: "response.output_text.delta", delta: "Hello" }),
+        );
       });
 
       it("prepends the compaction marker to single model streaming responses", async () => {
@@ -419,16 +424,21 @@ describe("ChatOrchestrator", () => {
           throw new Error("Expected streamed result");
         }
 
-        const events = parseChatStreamSseBuffer(await readStream(result.stream), {
+        const events = parseResponseStreamSseBuffer(await readStream(result.stream), {
           flush: true,
         }).events;
 
-        expect(events[0]).toEqual({
-          type: "state",
-          state: "compaction",
-          message: compactionMessage,
+        const compaction = events.find((event) => event.type === "conversation.compacted");
+        const firstDelta = events.findIndex((event) => event.type === "response.output_text.delta");
+
+        expect(compaction).toMatchObject({
+          type: "conversation.compacted",
+          item: { type: "compaction", id: compactionMessage.id },
         });
-        expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
+        expect(events.indexOf(compaction as (typeof events)[number])).toBeLessThan(firstDelta);
+        expect(events).toContainEqual(
+          expect.objectContaining({ type: "response.output_text.delta", delta: "Hello" }),
+        );
       });
 
       it("should continue non-streaming tool calls to a final answer when max steps allow it", async () => {
@@ -742,13 +752,15 @@ describe("ChatOrchestrator", () => {
           .split("\n")
           .filter((line) => line.startsWith("data: {"))
           .map((line) => JSON.parse(line.slice("data: ".length)))
-          .find((event) => event.type === "message_delta");
+          .find(
+            (event) => event.type === "response.output_item.done" && event.item?.type === "message",
+          );
 
-        expect(retraction).toMatchObject({
-          content: "Response blocked by safety checks.",
-          tool_calls: [],
+        expect(retraction.item).toMatchObject({
+          content: [{ type: "text", text: "Response blocked by safety checks." }],
+          metadata: { tool_calls: [] },
         });
-        expect(retraction.post_processing.guardrails.passed).toBe(false);
+        expect(retraction.item.metadata.post_processing.guardrails.passed).toBe(false);
         expect(mockHandleToolCalls).not.toHaveBeenCalled();
         expect(mockConversationManager.add).toHaveBeenCalledWith(
           "test-completion-id",

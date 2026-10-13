@@ -60,11 +60,16 @@ export function publishConversationDeleted(
 
 export async function publishRunChanged(publisher: SyncPublisher, run: ChatRun): Promise<void> {
   const audience = await conversationAudience(publisher.env, run.conversationId);
-  const data = { runId: run.id, conversationId: run.conversationId, status: run.status };
+  const data = {
+    responseId: run.id,
+    runId: run.id,
+    conversationId: run.conversationId,
+    status: run.status,
+  };
 
   publishSync(withoutOrigin(publisher), [
-    ...fanOut(audience, syncTopic("conversation", run.conversationId), "run.changed", data),
-    { audience, topic: syncTopic("run", run.id), type: "run.changed", data },
+    ...fanOut(audience, syncTopic("conversation", run.conversationId), "response.changed", data),
+    { audience, topic: syncTopic("response", run.id), type: "response.changed", data },
   ]);
 }
 

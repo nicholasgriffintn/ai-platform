@@ -8,8 +8,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execution-authority";
-import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
+import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
+import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 
 import {
   getSelectedRecipeConnectorAccountId,

@@ -58,7 +58,7 @@ function runEvent(
   sequence: number,
   status: string,
   occurredAt: string,
-  type = "run.status_changed",
+  type = "response.status_changed",
 ): ChatRunEvent {
   return {
     protocolVersion: 1,
@@ -147,7 +147,7 @@ describe("project task activity projection", () => {
         {
           run,
           events: [
-            runEvent(1, "accepted", "2026-09-05T10:01:00.000Z", "run.accepted"),
+            runEvent(1, "accepted", "2026-09-05T10:01:00.000Z", "response.created"),
             runEvent(2, "running", "2026-09-05T10:02:00.000Z"),
           ],
           messages,

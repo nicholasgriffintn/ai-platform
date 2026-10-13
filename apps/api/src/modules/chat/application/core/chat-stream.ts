@@ -7,9 +7,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import type { ChatRunLifecycle } from "~/modules/chat-runs/application/lifecycle";
-import { createPartialCheckpointSink } from "~/modules/chat-runs/application/partial-checkpoint";
-import { createChatRetryStatePublisher } from "~/modules/chat-runs/application/retry-state";
 import {
   runAgentLoop,
   type AgentLoopExecutionParams,
@@ -21,9 +18,13 @@ import {
 import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
+  type ChatStreamPreludeEvent,
 } from "~/modules/chat/application/streaming/emitter";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
+import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
+import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
 import { StreamState } from "~/types";
 
@@ -33,10 +34,14 @@ export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" |
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
   runLifecycle?: ChatRunLifecycle | null;
+  preludeEvents?: ChatStreamPreludeEvent[];
 };
 
 export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): ReadableStream {
-  const stream = createChatSseStreamWriter();
+  const stream = createChatSseStreamWriter({
+    conversationId: receipt.run.conversationId,
+    responseId: receipt.run.id,
+  });
 
   void (async () => {
     try {
@@ -53,7 +58,10 @@ export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): Read
 
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
   const startedAtMs = Date.now();
-  const stream = createChatSseStreamWriter();
+  const stream = createChatSseStreamWriter({
+    conversationId: params.completionId,
+    responseId: params.runLifecycle?.run.id,
+  });
   const tracesAgentEvents = isAgentExecutionMode(params.mode);
   const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
@@ -120,6 +128,10 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
 
       await writeTurnActivity(stream, { kind: "turn_started" });
       await stream.writeEvent("state", { state: StreamState.INIT });
+
+      for (const prelude of params.preludeEvents ?? []) {
+        await stream.writeEvent(prelude.type, prelude.payload);
+      }
 
       const usageLimits = await params.conversationManager.getUsageLimits();
 

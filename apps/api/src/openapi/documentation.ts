@@ -5,12 +5,14 @@ import { authTagDescription } from "./content/tags/authTagDescription.js";
 import { capabilitiesTagDescription } from "./content/tags/capabilitiesTagDescription.js";
 import { chatTagDescription } from "./content/tags/chatTagDescription";
 import { codeTagDescription } from "./content/tags/codeTagDescription.js";
+import { conversationsTagDescription } from "./content/tags/conversationsTagDescription.js";
 import { decisionsTagDescription } from "./content/tags/decisionsTagDescription.js";
 import { flagsTagDescription } from "./content/tags/flagsTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
 import { modelsTagDescription } from "./content/tags/modelsTagDescription.js";
 import { plansTagDescription } from "./content/tags/plansTagDescription.js";
 import { realtimeTagDescription } from "./content/tags/realtimeTagDescription.js";
+import { responsesTagDescription } from "./content/tags/responsesTagDescription.js";
 import { searchTagDescription } from "./content/tags/searchTagDescription.js";
 import { sitesTagDescription } from "./content/tags/sitesTagDescription.js";
 import { stripeTagDescription } from "./content/tags/stripeTagDescription.js";
@@ -27,6 +29,8 @@ export const tagDescriptions = {
   apps: appsTagDescription,
   audio: audioTagDescription,
   auth: authTagDescription,
+  responses: responsesTagDescription,
+  conversations: conversationsTagDescription,
   chat: chatTagDescription,
   code: codeTagDescription,
   decisions: decisionsTagDescription,

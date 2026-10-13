@@ -3,11 +3,11 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { isTaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { projectTaskRunDispatchPayloadSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
 import {
   runProjectTaskDispatch,
   settleFailedProjectTaskDispatch,
 } from "~/modules/project-tasks/application/runner";
+import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import type { IEnv } from "~/types";
 
 import type { TaskExecutionContext, TaskHandler, TaskMessage, TaskResult } from "../types";

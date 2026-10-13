@@ -1,12 +1,12 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   teammateRunConfigurationSchema,
-  type ChatCompletionRequestBody,
+  type ResponseCommand,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { readToolInteractionId } from "~/modules/chat-runs/application/interactions";
+import { readToolInteractionId } from "~/modules/responses/application/runs/interactions";
 import type { AnonymousUser, IEnv, IUser } from "~/types";
 
 import { resumeTeammateRun } from "./run-admission";
@@ -14,13 +14,13 @@ import { resumeTeammateRun } from "./run-admission";
 export async function resumeStoredTeammateInteraction(params: {
   env: IEnv;
   context: ServiceContext;
-  body: ChatCompletionRequestBody;
+  body: ResponseCommand;
   user: IUser | undefined;
   anonymousUser: AnonymousUser | undefined;
   executionCtx?: ExecutionContext;
   signal?: AbortSignal;
 }) {
-  const body = createChatCompletionsJsonSchema.parse(params.body);
+  const body = responseCommandSchema.parse(params.body);
   const interactionId = readToolInteractionId(body.options);
 
   if (!interactionId) {

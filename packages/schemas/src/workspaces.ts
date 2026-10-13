@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { conversationTypeSchema } from "./chat.js";
 import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation.js";
+import { conversationTypeSchema } from "./conversation-type.js";
 import { modelTierSchema } from "./model-lineup.js";
 import { projectFlowSchema } from "./project-tasks.js";
 import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache.js";

@@ -41,15 +41,15 @@ import type {
 import { useChatStore } from "./chatStore.js";
 import { AudioService, type SpeechGenerationResponse } from "./services/audio-service.js";
 import {
-  ChatService,
+  ConversationsService,
   type ConversationUpdateRequest,
-  type GetChatOptions,
-  type StreamChatCompletionsParams,
-} from "./services/chat-service.js";
+  type GetConversationOptions,
+} from "./services/conversations-service.js";
 import { DeviceAuthorisationService } from "./services/device-authorisation-service.js";
 import { MachineService } from "./services/machine-service.js";
 import { PolyService } from "./services/poly-service.js";
 import { ResearchService } from "./services/research-service.js";
+import { ResponsesService, type CreateResponseParams } from "./services/responses-service.js";
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
 import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
@@ -62,7 +62,8 @@ import { getHeaders } from "./utils/headers.js";
 class ApiService {
   private static instance: ApiService;
 
-  private chatService: ChatService;
+  private conversationsService: ConversationsService;
+  private responsesService: ResponsesService;
   private audioService: AudioService;
   private teammateService: TeammateService;
   private userService: UserService;
@@ -74,7 +75,8 @@ class ApiService {
   private researchService: ResearchService;
 
   private constructor() {
-    this.chatService = new ChatService(getHeaders);
+    this.conversationsService = new ConversationsService(getHeaders);
+    this.responsesService = new ResponsesService(getHeaders);
     this.audioService = new AudioService(getHeaders);
     this.teammateService = new TeammateService(getHeaders);
     this.userService = new UserService(getHeaders);
@@ -96,108 +98,87 @@ class ApiService {
 
   public getHeaders = getHeaders;
 
-  listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
-    return this.chatService.listChats(options);
-  };
+  listChats = (options?: ConversationListOptions): Promise<ConversationListPage> =>
+    this.conversationsService.list(options);
 
   setAllConversationsArchived = (options: {
     archived: boolean;
     activity?: ConversationActivityWindow;
     query?: string;
-  }): Promise<number> => {
-    return this.chatService.setAllConversationsArchived(options);
-  };
+  }): Promise<number> => this.conversationsService.setAllArchived(options);
 
-  getChat = (completion_id: string, options?: GetChatOptions): Promise<Conversation> => {
-    return this.chatService.getChat(completion_id, options);
-  };
+  getChat = (conversationId: string, options?: GetConversationOptions): Promise<Conversation> =>
+    this.conversationsService.get(conversationId, options);
 
-  getEarlierChatMessages = (completionId: string, beforeMessageId: string, limit?: number) =>
-    this.chatService.getEarlierChatMessages(completionId, beforeMessageId, limit);
+  getEarlierChatMessages = (conversationId: string, beforeMessageId: string, limit?: number) =>
+    this.conversationsService.getEarlierMessages(conversationId, beforeMessageId, limit);
 
-  generateTitle = (completion_id: string, messages: Message[]): Promise<string> => {
-    return this.chatService.generateTitle(completion_id, messages);
-  };
+  generateTitle = (conversationId: string, messages: Message[]): Promise<string> =>
+    this.conversationsService.generateTitle(conversationId, messages);
 
-  compactConversation = (completion_id: string) => {
-    return this.chatService.compactConversation(completion_id);
-  };
+  compactConversation = (conversationId: string) =>
+    this.conversationsService.compact(conversationId);
 
-  async cancelChatCompletion(completion_id: string): Promise<void> {
-    return this.chatService.cancelChatCompletion(completion_id);
-  }
+  getResponse = (responseId: string, signal?: AbortSignal) =>
+    this.responsesService.get(responseId, signal);
 
-  getChatRun = (runId: string, signal?: AbortSignal) => this.chatService.getChatRun(runId, signal);
+  getResponseSnapshot = (responseId: string, signal?: AbortSignal) =>
+    this.responsesService.getSnapshot(responseId, signal);
 
-  getChatRunSnapshot = (runId: string, signal?: AbortSignal) =>
-    this.chatService.getChatRunSnapshot(runId, signal);
+  getResponseEvents = (responseId: string, after: number, limit?: number, signal?: AbortSignal) =>
+    this.responsesService.getEvents(responseId, after, limit, signal);
 
-  getChatRunEvents = (runId: string, after: number, limit?: number, signal?: AbortSignal) =>
-    this.chatService.getChatRunEvents(runId, after, limit, signal);
+  findResponseByIdempotencyKey = (idempotencyKey: string) =>
+    this.responsesService.findByIdempotencyKey(idempotencyKey);
 
-  getChatRunCommand = (commandId: string) => this.chatService.getChatRunCommand(commandId);
-
-  cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
-    this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
+  cancelResponse = (responseId: string, expectedAttempt: number, idempotencyKey?: string) =>
+    this.responsesService.cancel(responseId, expectedAttempt, idempotencyKey);
 
   readArtifactBinding = (conversationId: string, input: ArtifactBindingReadRequest) =>
-    this.chatService.readArtifactBinding(conversationId, input);
+    this.conversationsService.readArtifactBinding(conversationId, input);
 
   listQueuedChatMessages = (conversationId: string) =>
-    this.chatService.listQueuedChatMessages(conversationId);
+    this.conversationsService.listQueuedMessages(conversationId);
 
   queueChatMessage = (conversationId: string, input: EnqueueChatMessageRequest) =>
-    this.chatService.queueChatMessage(conversationId, input);
+    this.conversationsService.queueMessage(conversationId, input);
 
   removeQueuedChatMessage = (conversationId: string, queuedId: string) =>
-    this.chatService.removeQueuedChatMessage(conversationId, queuedId);
+    this.conversationsService.removeQueuedMessage(conversationId, queuedId);
 
-  getConversationGoal = (completion_id: string) => {
-    return this.chatService.getConversationGoal(completion_id);
-  };
+  getConversationGoal = (conversationId: string) =>
+    this.conversationsService.getGoal(conversationId);
 
-  setConversationGoal = (completion_id: string, objective: string, projectId?: string) => {
-    return this.chatService.setConversationGoal(completion_id, objective, projectId);
-  };
+  setConversationGoal = (conversationId: string, objective: string, projectId?: string) =>
+    this.conversationsService.setGoal(conversationId, objective, projectId);
 
-  updateConversationGoal = (completion_id: string, status: "active" | "paused" | "cleared") => {
-    return this.chatService.updateConversationGoal(completion_id, status);
-  };
+  updateConversationGoal = (conversationId: string, status: "active" | "paused" | "cleared") =>
+    this.conversationsService.updateGoal(conversationId, status);
 
-  updateConversationTitle = (completion_id: string, newTitle: string): Promise<void> => {
-    return this.chatService.updateConversationTitle(completion_id, newTitle);
-  };
+  updateConversationTitle = (conversationId: string, newTitle: string): Promise<void> =>
+    this.conversationsService.updateTitle(conversationId, newTitle);
 
   updateConversation = (
-    completion_id: string,
+    conversationId: string,
     updates: ConversationUpdateRequest,
-  ): Promise<Conversation> => {
-    return this.chatService.updateConversation(completion_id, updates);
-  };
+  ): Promise<Conversation> => this.conversationsService.update(conversationId, updates);
 
-  recordOffPlatformRunUsage = (input: RecordOffPlatformUsageRequest): Promise<void> => {
-    return this.chatService.recordOffPlatformRunUsage(input);
-  };
+  recordOffPlatformRunUsage = (input: RecordOffPlatformUsageRequest): Promise<void> =>
+    this.conversationsService.recordOffPlatformRunUsage(input);
 
-  deleteConversation = (completion_id: string): Promise<void> => {
-    return this.chatService.deleteConversation(completion_id);
-  };
+  deleteConversation = (conversationId: string): Promise<void> =>
+    this.conversationsService.delete(conversationId);
 
-  deleteAllConversations = (): Promise<void> => {
-    return this.chatService.deleteAllConversations();
-  };
+  deleteAllConversations = (): Promise<void> => this.conversationsService.deleteAll();
 
-  shareConversation = (completion_id: string): Promise<ConversationShare> => {
-    return this.chatService.shareConversation(completion_id);
-  };
+  shareConversation = (conversationId: string): Promise<ConversationShare> =>
+    this.conversationsService.share(conversationId);
 
-  unshareConversation = (completion_id: string): Promise<void> => {
-    return this.chatService.unshareConversation(completion_id);
-  };
+  unshareConversation = (conversationId: string): Promise<void> =>
+    this.conversationsService.unshare(conversationId);
 
-  submitFeedback = (completion_id: string, message_id: string, feedback: 1 | -1): Promise<void> => {
-    return this.chatService.submitFeedback(completion_id, message_id, feedback);
-  };
+  submitFeedback = (conversationId: string, itemId: string, feedback: 1 | -1): Promise<void> =>
+    this.conversationsService.submitFeedback(conversationId, itemId, feedback);
 
   generateSpeech = (
     input: string,
@@ -206,17 +187,14 @@ class ApiService {
     return this.audioService.generateSpeech(input, options);
   };
 
-  streamChatCompletions = async ({
+  createResponse = async ({
     onProgress,
     ...params
-  }: Omit<
-    StreamChatCompletionsParams,
-    "selectedTools" | "toolSelectionMode"
-  >): Promise<Message> => {
+  }: Omit<CreateResponseParams, "selectedTools" | "toolSelectionMode">): Promise<Message> => {
     const { selectedTools, toolSelectionMode } = useToolsStore.getState();
     const { isAuthenticated } = useChatStore.getState();
 
-    const assistantMessage = await this.chatService.streamChatCompletions({
+    const assistantMessage = await this.responsesService.create({
       ...params,
       allowTools: isAuthenticated,
       toolSelectionMode,

@@ -15,8 +15,8 @@ import {
 import {
   evaluateModelContinuity,
   getModelInteractionCapabilities,
-  isTerminalChatRunStatus,
-  type ChatRunStatus,
+  isTerminalResponseStatus,
+  type ResponseStatus,
   type ModelConfigItem,
   type ModelSelectionChangeHandler,
   type ModelSelectorScope,
@@ -160,7 +160,7 @@ interface ChatInputProps {
   modelProviderFilter?: string;
   modelScope?: ModelSelectorScope;
   onModelChange?: ModelSelectionChangeHandler;
-  activeRunStatus?: ChatRunStatus | null;
+  activeRunStatus?: ResponseStatus | null;
   runSteering?: ConversationRunSteering;
   hasConversationHistory?: boolean;
   disableAttachments?: boolean;
@@ -273,7 +273,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       },
     });
     const modelSelectionBlocked = Boolean(
-      activeRunStatus && !isTerminalChatRunStatus(activeRunStatus),
+      activeRunStatus && !isTerminalResponseStatus(activeRunStatus),
     );
     const handleBeforeModelChange = useCallback(
       (_modelId: string, nextModel: ModelConfigItem) => {

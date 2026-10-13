@@ -1,4 +1,4 @@
-import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
+import { parseResponseStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -100,12 +100,16 @@ describe("createModelEnsembleStream", () => {
     expect(replaced?.content).toContain("Secondary answer");
     expect(streamed).toContain("Secondary answer");
     expect(
-      parseChatStreamSseBuffer(streamed, { flush: true }).events.filter(
-        (event) => event.type === "turn_activity",
+      parseResponseStreamSseBuffer(streamed, { flush: true }).events.filter(
+        (event) => event.type === "response.activity",
       ),
     ).toEqual([
-      { type: "turn_activity", kind: "turn_started" },
-      { type: "turn_activity", kind: "turn_finished", outcome: "completed" },
+      expect.objectContaining({ type: "response.activity", kind: "turn_started" }),
+      expect.objectContaining({
+        type: "response.activity",
+        kind: "turn_finished",
+        outcome: "completed",
+      }),
     ]);
     expect(mocks.recordModelTurnUsage).toHaveBeenCalledWith(
       expect.anything(),

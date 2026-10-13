@@ -1,4 +1,4 @@
-import { parseChatStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
+import { parseResponseStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
 import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -48,7 +48,7 @@ async function readEvents(stream: ReadableStream) {
 
   body += decoder.decode();
 
-  return parseChatStreamSseBuffer(body, { flush: true }).events;
+  return parseResponseStreamSseBuffer(body, { flush: true }).events;
 }
 
 describe("createChatTurnStream", () => {
@@ -97,9 +97,13 @@ describe("createChatTurnStream", () => {
     const events = await readEvents(stream);
 
     await vi.waitFor(() => expect(mocks.closeComposioConnectorRun).toHaveBeenCalledOnce());
-    expect(events.filter((event) => event.type === "turn_activity")).toEqual([
-      { type: "turn_activity", kind: "turn_started" },
-      { type: "turn_activity", kind: "turn_finished", outcome: "completed" },
+    expect(events.filter((event) => event.type === "response.activity")).toEqual([
+      expect.objectContaining({ type: "response.activity", kind: "turn_started" }),
+      expect.objectContaining({
+        type: "response.activity",
+        kind: "turn_finished",
+        outcome: "completed",
+      }),
     ]);
   });
 
@@ -155,20 +159,22 @@ describe("createChatTurnStream", () => {
 
     const events = await readEvents(createChatTurnStream(createParams()));
     const terminalIndex = events.findIndex((event) => {
-      if (event.type !== "turn_activity") {
+      if (event.type !== "response.activity") {
         return false;
       }
 
       return readStringField(event, "kind") === "turn_finished";
     });
-    const errorIndex = events.findIndex((event) => event.type === "error");
+    const errorIndex = events.findIndex((event) => event.type === "response.error");
 
-    expect(events[terminalIndex]).toEqual({
-      type: "turn_activity",
-      kind: "turn_finished",
-      outcome: "failed",
-      errorType: "PROVIDER_ERROR",
-    });
+    expect(events[terminalIndex]).toEqual(
+      expect.objectContaining({
+        type: "response.activity",
+        kind: "turn_finished",
+        outcome: "failed",
+        errorType: "PROVIDER_ERROR",
+      }),
+    );
     expect(terminalIndex).toBeLessThan(errorIndex);
   });
 });

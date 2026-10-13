@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { apiService } from "./api-service.js";
 import { useChatStore } from "./chatStore.js";
-import { ChatService } from "./services/chat-service.js";
+import { ResponsesService } from "./services/responses-service.js";
 import { useToolsStore } from "./toolsStore.js";
 
 describe("ApiService chat tool selection", () => {
@@ -17,11 +17,9 @@ describe("ApiService chat tool selection", () => {
     useChatStore.setState({ isAuthenticated: true, isPro: false });
     useToolsStore.setState({ selectedTools: ["load_skill", "code_execution", "tool_search"] });
     const response = { role: "assistant", content: "done" } as Message;
-    const stream = vi
-      .spyOn(ChatService.prototype, "streamChatCompletions")
-      .mockResolvedValue(response);
+    const stream = vi.spyOn(ResponsesService.prototype, "create").mockResolvedValue(response);
 
-    await apiService.streamChatCompletions({
+    await apiService.createResponse({
       chatSettings: {},
       completionId: "conversation-1",
       messages: [{ role: "user", content: "Run this code." } as Message],
@@ -44,10 +42,10 @@ describe("ApiService chat tool selection", () => {
     useChatStore.setState({ isAuthenticated: false, isPro: false });
     useToolsStore.setState({ selectedTools: ["code_execution"] });
     const stream = vi
-      .spyOn(ChatService.prototype, "streamChatCompletions")
+      .spyOn(ResponsesService.prototype, "create")
       .mockResolvedValue({ role: "assistant", content: "done" } as Message);
 
-    await apiService.streamChatCompletions({
+    await apiService.createResponse({
       chatSettings: {},
       completionId: "conversation-1",
       messages: [{ role: "user", content: "Hello." } as Message],

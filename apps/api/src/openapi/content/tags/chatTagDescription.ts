@@ -3,50 +3,23 @@ import { md } from "@ngriffin_uk/polychat-utility-server/markdown";
 export const chatTagDescription = md`
 # Chat Completions
 
-OpenAI-compatible chat API with support for streaming, tools, multi-turn conversations, and conversation management.
+An OpenAI-compatible port onto the platform. Point an unmodified OpenAI client at Polychat and it works; a client that knows Polychat can add platform parameters on the same body.
 
-## Overview
-
-The chat completions API provides:
-
-- **OpenAI Compatibility** - Drop-in replacement for OpenAI's chat API
-- **Streaming** - Real-time Server-Sent Events (SSE) responses
-- **Tool Calling** - Function calling and tool use
-- **Conversation Storage** - Save and retrieve conversations
-- **Title Generation** - Auto-generate conversation titles
-- **Sharing** - Public share links for conversations
-- **Feedback** - Submit feedback on responses
-
-## Basic Responses
-
-By default, the chat completions endpoint returns the full response once processing is complete and uses the following format:
+## Compatibility
 
 ~~~json
 {
-  "model": "gpt-4o-2024-08-06",
-  "messages": [{ "role": "user", "content": "Hello, world!" }]
-}
-~~~
-
-## Streaming Responses
-
-You can enable streaming to receive responses as Server-Sent Events:
-
-~~~json
-{
-  "model": "claude-3-5-sonnet-20241022",
-  "messages": [...],
+  "model": "gpt-5.6",
+  "messages": [{ "role": "user", "content": "Hello, world!" }],
   "stream": true
 }
 ~~~
 
-Response format:
+A request with no \`conversation\`, \`agent\` or \`environment\` and no \`store: true\` runs the model directly and bills the caller. Streaming returns \`chat.completion.chunk\` events and ends with \`[DONE]\`.
 
-~~~
-data: {"id":"cmpl_abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":"The"},"index":0}]}
+## Polychat extensions
 
-data: {"id":"cmpl_abc123","object":"chat.completion.chunk","choices":[{"delta":{"content":" capital"},"index":0}]}
+Add \`conversation\`, \`agent\`, \`environment\`, \`model_tier\`, \`permission_mode\`, \`compaction\`, \`budget\`, \`idempotency_key\` or \`response_id\`, or pass tools in the Polychat tool union, and the request runs as a Response. The result keeps the chat completion shape and carries the Response under \`response\`; the final stream chunk does the same.
 
-data: [DONE]
-~~~
+Everything a Response can do is available directly at \`POST /responses\`.
 `;

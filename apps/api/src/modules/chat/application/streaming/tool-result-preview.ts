@@ -1,4 +1,4 @@
-import { CHAT_STREAM_TOOL_PREVIEW_CHARACTERS } from "@ngriffin_uk/polychat-schemas/chat-stream";
+import { RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "~/types";
@@ -145,7 +145,7 @@ export function createStreamedToolResultEvent(result: Message): {
     };
   };
 
-  let previewCharacters = CHAT_STREAM_TOOL_PREVIEW_CHARACTERS;
+  let previewCharacters = RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS;
   let event = buildEvent(previewCharacters, retainPresentationData(result.data));
 
   while (serialisedBytes(event) > CHAT_STREAM_TOOL_EVENT_BYTES && previewCharacters > 0) {

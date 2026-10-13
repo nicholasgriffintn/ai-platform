@@ -4,7 +4,7 @@ enum ChatStreamEvent: Equatable {
     case content(String)
     case reasoning(String)
     case state(String)
-    case run(ChatRunCommandReceipt)
+    case response(PlatformResponse)
     case conversationTitle(String)
     case compaction(ChatMessage)
     case toolUseStart(ChatToolCallEvent)

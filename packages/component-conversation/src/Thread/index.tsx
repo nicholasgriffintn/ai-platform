@@ -20,7 +20,7 @@ import {
   useArtifactWorkbench,
   useChat,
   useChatManager,
-  useChatRunReplay,
+  useResponseReplay,
   useModels,
   usePetNudgeSources,
   usePetFollowEnabled,
@@ -43,7 +43,7 @@ import {
   isImageGenerationOutputModel,
   isReadinessFresh,
   getModelInteractionCapabilities,
-  isTerminalChatRunStatus,
+  isTerminalResponseStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   ConversationModeMetadata,
@@ -198,15 +198,15 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const conversationState: PetConversationState | undefined =
     storageMode.retention === "temporary" ? PET_TEMPORARY_CONVERSATION_STATE : undefined;
 
-  useChatRunReplay(
+  useResponseReplay(
     currentConversationId,
-    currentConversation?.latest_run,
+    currentConversation?.latest_response,
     storageMode.retention === "kept" && computeSite === "hosted" && streamSource !== "local",
   );
   useRemoteConversationActivity(
     currentConversationId,
     currentConversation?.active_operation,
-    currentConversation?.latest_run,
+    currentConversation?.latest_response,
   );
   const {
     goalView,
@@ -246,9 +246,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const isStreamLoading = streamStarted;
   const isModelInitializing = useIsLoading("model-init");
   const followUpQueue = storageMode.retention === "kept" ? modeConfig?.followUpQueue : undefined;
-  const latestRunStatus = currentConversation?.latest_run?.status;
+  const latestResponseStatus = currentConversation?.latest_response?.status;
   const isReplyLive =
-    isStreamLoading || (latestRunStatus !== undefined && !isTerminalChatRunStatus(latestRunStatus));
+    isStreamLoading ||
+    (latestResponseStatus !== undefined && !isTerminalResponseStatus(latestResponseStatus));
   const runSteering = useMemo<ConversationRunSteering | undefined>(() => {
     if (modeConfig?.runSteering) {
       return modeConfig.runSteering;
@@ -1033,11 +1034,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
             onClear={() => void handleGoalCommand({ kind: "clear" })}
           />
         ) : null}
-        {currentConversation?.latest_run &&
-        (currentConversation.latest_run.status === "failed" ||
-          currentConversation.latest_run.status === "cancelled" ||
-          currentConversation.latest_run.status === "interrupted") ? (
-          <ChatRunStatusBanner run={currentConversation.latest_run} />
+        {currentConversation?.latest_response &&
+        (currentConversation.latest_response.status === "failed" ||
+          currentConversation.latest_response.status === "cancelled" ||
+          currentConversation.latest_response.status === "incomplete") ? (
+          <ChatRunStatusBanner response={currentConversation.latest_response} />
         ) : null}
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         {modeConfig?.composerBanner}
@@ -1063,7 +1064,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelProviderFilter={modeConfig?.modelProviderFilter}
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
-          activeRunStatus={currentConversation?.latest_run?.status}
+          activeRunStatus={currentConversation?.latest_response?.status}
           runSteering={runSteering}
           hasConversationHistory={messages.length > 0}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}

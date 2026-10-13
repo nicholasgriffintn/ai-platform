@@ -23,18 +23,19 @@ import {
   useStreamActivityStore,
 } from "@ngriffin_uk/polychat-library-client";
 import {
-  chatRunCommandReceiptSchema,
-  chatTurnActivityEventSchema,
   createRunProvenance,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
   isAgentModelId,
   isBrowserModel,
-  isTerminalChatRunStatus,
+  isTerminalResponseStatus,
   POLY_TEAMMATE_ID,
+  responseActivityEventSchema,
+  responseSchema,
   runsOnDevice,
-  type ChatRun,
-  type ChatRunStatus,
+  type PlatformResponse,
+  type ResponseAgent,
+  type ResponseStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,7 +43,7 @@ import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 import { streamDeviceModelRun } from "../chat/device-run.js";
-import { resolveAcceptedRunCommand } from "../chat/run-command.js";
+import { resolveAcceptedResponse } from "../chat/run-command.js";
 import { createStreamProgressCoalescer } from "../chat/stream-progress-coalescer.js";
 import { getChatStreamLoadingMessage } from "../chat/stream-state.js";
 import { normaliseUsageLimits } from "../chat/usage-limits.js";
@@ -118,7 +119,7 @@ export function useStreamingResponse(
   const assistantResponseRef = useRef<string>("");
   const assistantReasoningRef = useRef<string>("");
   const observedRunsRef = useRef<
-    Record<string, { id: string; attempt: number; status: ChatRunStatus }>
+    Record<string, { id: string; attempt: number; status: ResponseStatus }>
   >({});
   const pendingCommandIdsRef = useRef<Record<string, string>>({});
   const computeSiteFallbackNoticeRef = useRef<Set<string>>(new Set());
@@ -134,36 +135,36 @@ export function useStreamingResponse(
 
   const cancelObservedRun = useCallback(
     async (conversationId: string) => {
-      const cachedRun = queryClient.getQueryData<Conversation>([
+      const cachedResponse = queryClient.getQueryData<Conversation>([
         CHATS_QUERY_KEY,
         conversationId,
-      ])?.latest_run;
-      let observedRun: Pick<ChatRun, "id" | "attempt" | "status"> | null | undefined =
-        observedRunsRef.current[conversationId] ?? cachedRun;
+      ])?.latest_response;
+      let observed: Pick<PlatformResponse, "id" | "attempt" | "status"> | null | undefined =
+        observedRunsRef.current[conversationId] ?? cachedResponse;
       const pendingCommandId = pendingCommandIdsRef.current[conversationId];
 
-      if (!observedRun && pendingCommandId) {
-        observedRun =
-          (await resolveAcceptedRunCommand({
-            fetchCommand: () => apiService.getChatRunCommand(pendingCommandId),
+      if (!observed && pendingCommandId) {
+        observed =
+          (await resolveAcceptedResponse({
+            fetchResponse: () => apiService.findResponseByIdempotencyKey(pendingCommandId),
           })) ?? undefined;
       }
 
-      if (!observedRun || isTerminalChatRunStatus(observedRun.status)) {
+      if (!observed || isTerminalResponseStatus(observed.status)) {
         return;
       }
 
-      const receipt = await apiService.cancelChatRun(observedRun.id, observedRun.attempt);
+      const cancelled = await apiService.cancelResponse(observed.id, observed.attempt);
 
       observedRunsRef.current[conversationId] = {
-        id: receipt.run.id,
-        attempt: receipt.run.attempt,
-        status: receipt.run.status,
+        id: cancelled.id,
+        attempt: cancelled.attempt,
+        status: cancelled.status,
       };
       updateConversationInChatCaches<Conversation>(
         queryClient,
         conversationId,
-        (conversation) => ({ ...conversation, latest_run: receipt.run }),
+        (conversation) => ({ ...conversation, latest_response: cancelled }),
         CHATS_QUERY_KEY,
         getLocalChatScope(user?.id),
       );
@@ -560,7 +561,7 @@ export function useStreamingResponse(
 
           const handleStateChange = (state: string, data?: any) => {
             if (state === "turn_activity") {
-              const activity = chatTurnActivityEventSchema.safeParse(data);
+              const activity = responseActivityEventSchema.safeParse(data);
 
               if (activity.success) {
                 recordTurnActivity(conversationId, activity.data);
@@ -598,19 +599,22 @@ export function useStreamingResponse(
               return;
             }
 
-            if (state === "run") {
-              const receipt = chatRunCommandReceiptSchema.safeParse(data?.receipt);
+            if (state === "response") {
+              const observed = responseSchema.safeParse(data);
 
-              if (receipt.success) {
+              if (observed.success) {
+                const { output: _output, ...latestResponse } = observed.data;
+
+                void _output;
                 observedRunsRef.current[conversationId] = {
-                  id: receipt.data.run.id,
-                  attempt: receipt.data.run.attempt,
-                  status: receipt.data.run.status,
+                  id: latestResponse.id,
+                  attempt: latestResponse.attempt,
+                  status: latestResponse.status,
                 };
                 updateConversationInChatCaches<Conversation>(
                   queryClient,
                   conversationId,
-                  (conversation) => ({ ...conversation, latest_run: receipt.data.run }),
+                  (conversation) => ({ ...conversation, latest_response: latestResponse }),
                   CHATS_QUERY_KEY,
                   getLocalChatScope(user?.id),
                 );
@@ -650,14 +654,16 @@ export function useStreamingResponse(
           let assistantMessage: Message;
 
           try {
-            assistantMessage = await apiService.streamChatCompletions({
+            const agent: ResponseAgent | undefined = effectiveRequestOptions?.poly
+              ? { type: "teammate", id: POLY_TEAMMATE_ID }
+              : chatMode === "agent" && selectedTeammateId
+                ? { type: "teammate", id: selectedTeammateId }
+                : undefined;
+
+            assistantMessage = await apiService.createResponse({
               chatSettings,
               completionId: conversationId,
-              endpoint: effectiveRequestOptions?.poly
-                ? `/teammates/${POLY_TEAMMATE_ID}/completions`
-                : chatMode === "agent"
-                  ? `/teammates/${selectedTeammateId}/completions`
-                  : undefined,
+              agent,
               messages: normalizedMessages,
               mode: chatMode,
               computeSite: effectiveComputeSite,

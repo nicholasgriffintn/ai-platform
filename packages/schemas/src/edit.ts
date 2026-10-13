@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { chatCompletionResponseSchema } from "./chat.js";
+import { chatCompletionResponseSchema } from "./ports/chat-completions.js";
 import { messageSchema } from "./shared.js";
 
 const editRequestBase = z.object({

@@ -3,7 +3,7 @@ struct MessageListView: View {
     let messages: [ChatMessage]
     let isTemporaryConversation: Bool
     let conversationModelId: String?
-    let run: ChatRun?
+    let response: PlatformResponse?
     let taskActivity: ProjectTaskActivityTimeline?
     let taskInteraction: ProjectTaskInteractionControl?
     let connectorApproval: ConnectorApprovalControl?
@@ -49,8 +49,8 @@ struct MessageListView: View {
                     if let taskActivity {
                         ProjectTaskActivityTimelineView(timeline: taskActivity)
                     }
-                    if let run, run.status != "succeeded" {
-                        ChatRunStatusRow(run: run)
+                    if let response, response.status != "completed" {
+                        ResponseStatusRow(response: response)
                     }
                     if let taskInteraction {
                         ProjectTaskInteractionCard(
@@ -144,11 +144,11 @@ struct MessageListView: View {
     }
 }
 
-private struct ChatRunStatusRow: View {
-    let run: ChatRun
+private struct ResponseStatusRow: View {
+    let response: PlatformResponse
 
-    private var presentation: ChatRunPresentation {
-        ChatRunPresentation.resolve(run)
+    private var presentation: ResponsePresentation {
+        ResponsePresentation.resolve(response)
     }
 
     var body: some View {

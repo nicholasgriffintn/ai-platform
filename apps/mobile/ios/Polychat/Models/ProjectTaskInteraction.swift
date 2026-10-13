@@ -105,7 +105,7 @@ struct ProjectTaskStageAttempt: Codable, Equatable, Identifiable {
     let terminalReason: String?
     let provenance: OutputProvenance
     let outputs: [ProjectTaskStageOutput]
-    let usage: ChatRunUsage?
+    let usage: ResponseUsage?
 }
 
 struct ProjectTaskStageOutput: Codable, Equatable, Identifiable {

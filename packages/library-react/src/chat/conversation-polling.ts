@@ -1,10 +1,13 @@
 import type { Conversation } from "@ngriffin_uk/polychat-library-chat/conversation-types";
-import { isTerminalChatRunStatus } from "@ngriffin_uk/polychat-schemas";
+import { isTerminalResponseStatus } from "@ngriffin_uk/polychat-schemas";
 
 export function getConversationRefetchInterval(
   conversation: Conversation | null | undefined,
 ): number | false {
-  if (conversation?.latest_run && !isTerminalChatRunStatus(conversation.latest_run.status)) {
+  if (
+    conversation?.latest_response &&
+    !isTerminalResponseStatus(conversation.latest_response.status)
+  ) {
     return false;
   }
 
