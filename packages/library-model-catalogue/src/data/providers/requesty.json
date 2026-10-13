@@ -2875,6 +2875,15 @@
         "name": "mistral-medium-3-5",
         "description": "Mistral Medium 3.5 is a dense 128B instruction following model from Mistral AI. It supports text and image inputs with text output, and is designed for agentic workflows, coding, and complex multi step reasoning. It is particularly strong at reliable multi tool calling and long horizon tasks, with a 256K context window, configurable reasoning effort per request, and a custom vision encoder that handles variable image sizes and aspect ratios. Self hostable on as few as four GPUs and available under open weights.",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 4,
         "lastUpdated": "April 30, 2026",
         "costPer1kInputTokens": 0.00165,
@@ -3376,6 +3385,7 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "qwen3.8-2.4T-A95B",
       "overrides": {
+        "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "maxTokens": 262144,
         "speed": 2,
         "lastUpdated": "August 12, 2026",

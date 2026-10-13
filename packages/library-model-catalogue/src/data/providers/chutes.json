@@ -953,8 +953,8 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reliability",
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "zai-org/GLM-5-TEE": {

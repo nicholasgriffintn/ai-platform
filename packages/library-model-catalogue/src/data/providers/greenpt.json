@@ -424,9 +424,19 @@
       "model": "mistral-medium/mistral-medium-3-5",
       "matchingModel": "mistral-medium-3.5-128b",
       "overrides": {
+        "name": "Mistral Medium 3.5",
         "openWeights": true,
         "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 4,
         "releaseDate": "April 29, 2026",
         "lastUpdated": "April 29, 2026",
