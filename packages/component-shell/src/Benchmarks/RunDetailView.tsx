@@ -92,7 +92,7 @@ export function RunDetailView({
     run.itemsTotal === 0 ? 0 : Math.round((run.itemsCompleted / run.itemsTotal) * 100);
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-10">
       <header className="space-y-5 pt-2">
         {embedded ? null : (
           <BackLink href={benchmarkPaths.board(benchmark.id)} label={benchmark.name} />
