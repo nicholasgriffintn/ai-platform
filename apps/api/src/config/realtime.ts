@@ -6,14 +6,15 @@ export const REALTIME_RECONCILIATION_BUFFER_SECONDS = 120;
 
 export const REALTIME_PROXY_GRANT_TTL_SECONDS = 60;
 export const MAX_REALTIME_PROXY_SESSIONS_PER_USER = 3;
+export const REALTIME_PROXY_AUDIO_BYTES_PER_SECOND = 16000 * 2;
 
 export const REALTIME_PROXY_LIMITS = {
   clientFrameBytes: 384 * 1024,
   audioFrameBytes: 256 * 1024,
   pendingFrames: 32,
   pendingBytes: 2 * 1024 * 1024,
-  sessionAudioBytes: 25 * 1024 * 1024,
-  sessionDurationMs: 15 * 60 * 1000,
+  sessionAudioBytes: REALTIME_MAX_SESSION_SECONDS_MAX * REALTIME_PROXY_AUDIO_BYTES_PER_SECOND,
+  sessionDurationMs: REALTIME_MAX_SESSION_SECONDS_DEFAULT * 1000,
   upstreamFrameBytes: 2 * 1024 * 1024,
   mappedFramesPerEvent: 32,
   controlMessages: 128,

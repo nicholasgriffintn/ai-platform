@@ -22,6 +22,7 @@ const user = { id: 42 } as IUser;
 
 async function validGrant() {
   return createRealtimeProxyGrant(env, {
+    byok: false,
     model: "scribe-v2",
     provider: "elevenlabs",
     sessionId: "session-1",
@@ -57,7 +58,7 @@ describe("realtime proxy grants", () => {
         sessionId: "session-1",
         user,
       }),
-    ).resolves.toEqual({ release: expect.any(Function) });
+    ).resolves.toEqual({ byok: false, release: expect.any(Function) });
 
     await expect(
       assertRealtimeProxyGrant({
@@ -165,10 +166,37 @@ describe("realtime proxy grants", () => {
 
     await expect(
       connectReservedRealtimeProxy(
-        { release },
+        { byok: false, release },
         async () => new Response("failed", { status: 502 }),
       ),
     ).resolves.toMatchObject({ status: 502 });
+    expect(release).toHaveBeenCalledOnce();
+  });
+
+  it("settles on the measured audio before releasing a finished session", async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    const settle = vi.fn().mockResolvedValue(undefined);
+    const order: string[] = [];
+
+    release.mockImplementation(async () => {
+      order.push("release");
+    });
+    settle.mockImplementation(async () => {
+      order.push("settle");
+    });
+
+    await connectReservedRealtimeProxy(
+      { byok: true, release },
+      async (onSessionEnd) => {
+        await onSessionEnd({ audioBytes: 64_000, audioSeconds: 2 });
+
+        return { status: 101 } as Response;
+      },
+      settle,
+    );
+
+    expect(settle).toHaveBeenCalledWith({ audioBytes: 64_000, audioSeconds: 2 });
+    expect(order).toEqual(["settle", "release"]);
     expect(release).toHaveBeenCalledOnce();
   });
 });

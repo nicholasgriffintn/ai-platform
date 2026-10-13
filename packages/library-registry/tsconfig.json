@@ -1,10 +1,22 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/library",
   "compilerOptions": {
+    "types": ["node"],
+    "composite": true,
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": []
 }

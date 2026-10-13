@@ -175,6 +175,12 @@ export function getModelInputModalities(model?: Pick<ModelConfigItem, "modalitie
   return model?.modalities?.input ?? DEFAULT_MODALITIES;
 }
 
+export function modelAcceptsImageInput(
+  model?: Pick<ModelConfigItem, "modalities" | "multimodal"> | null,
+): boolean {
+  return Boolean(model && (model.multimodal || getModelInputModalities(model).includes("image")));
+}
+
 export function getModelOutputModalities(model?: Pick<ModelConfigItem, "modalities">) {
   return model?.modalities?.output ?? getModelInputModalities(model);
 }

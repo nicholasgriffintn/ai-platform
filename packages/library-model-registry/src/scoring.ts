@@ -1,5 +1,5 @@
 import type { EvalCase, GraderConfig } from "@ngriffin_uk/polychat-schemas";
-import { assertUnreachable } from "@ngriffin_uk/polychat-utility-core";
+import { assertUnreachable, extractNumberTokens } from "@ngriffin_uk/polychat-utility-core";
 
 export type DeterministicGrader = Exclude<GraderConfig, { kind: "judge" }>;
 
@@ -13,6 +13,37 @@ function lastNumber(value: string): number | null {
   return matches ? Number(matches[matches.length - 1]) : null;
 }
 
+function requiredFacts(expected: string | undefined): string[] {
+  return (expected ?? "")
+    .split("\n")
+    .map((fact) => normaliseAnswer(fact))
+    .filter(Boolean);
+}
+
+function scoreFactCoverage(output: string, expected: string | undefined): number {
+  const facts = requiredFacts(expected);
+
+  if (facts.length === 0) {
+    return 0;
+  }
+
+  const answer = normaliseAnswer(output);
+
+  return facts.filter((fact) => answer.includes(fact)).length / facts.length;
+}
+
+function scoreGroundedNumbers(output: string, input: string | undefined): number {
+  const claimed = extractNumberTokens(output);
+
+  if (claimed.length === 0) {
+    return 1;
+  }
+
+  const source = new Set(extractNumberTokens(input ?? ""));
+
+  return claimed.filter((value) => source.has(value)).length / claimed.length;
+}
+
 export function isDeterministicGrader(config: GraderConfig): config is DeterministicGrader {
   return config.kind !== "judge";
 }
@@ -21,6 +52,7 @@ export function scoreDeterministic(
   config: DeterministicGrader,
   output: string,
   expected: string | undefined,
+  input?: string,
 ): number {
   switch (config.kind) {
     case "exact":
@@ -62,6 +94,12 @@ export function scoreDeterministic(
         ? 1
         : 0;
     }
+
+    case "fact_coverage":
+      return scoreFactCoverage(output, expected);
+
+    case "grounded_numbers":
+      return scoreGroundedNumbers(output, input);
 
     default:
       return assertUnreachable(config);

@@ -1,11 +1,14 @@
 import {
   deriveDocumentStatistics,
+  documentMetadataSchema,
+  type DocumentMetadata,
   type Note,
   type NoteCreateRequest,
   type NoteFormatResponse,
+  type NoteSummary,
   type NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId, truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import {
@@ -15,6 +18,9 @@ import {
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
 
 const NOTE_OUTPUT_KIND = "note";
+const NOTE_DESCRIBE_MIN_WORDS = 20;
+const NOTE_REDESCRIBE_GROWTH_RATIO = 2;
+const NOTE_EXCERPT_LENGTH = 240;
 
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -23,14 +29,10 @@ import { describeDocument, formatDocumentBody } from "~/modules/documents/applic
 import { requireOutputRecordAccess } from "~/modules/outputs/application/access";
 import type { IEnv, IUser } from "~/types";
 
-function readNoteMetadata(value: unknown): Record<string, unknown> | undefined {
-  if (!isRecord(value)) {
-    return undefined;
-  }
+function readNoteMetadata(value: unknown): DocumentMetadata | undefined {
+  const parsed = documentMetadataSchema.safeParse(value);
 
-  const { tabSource, ...rest } = value;
-
-  return isRecord(tabSource) ? { ...rest, capturedFrom: tabSource } : value;
+  return parsed.success ? parsed.data : undefined;
 }
 
 function mapOutputToNote(entry: OutputRecord): Note {
@@ -46,17 +48,71 @@ function mapOutputToNote(entry: OutputRecord): Note {
   };
 }
 
+function toNoteSummary(note: Note): NoteSummary {
+  return {
+    id: note.id,
+    title: note.title,
+    excerpt: truncateSingleLine(note.content, NOTE_EXCERPT_LENGTH),
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
+  };
+}
+
+function matchesNoteQuery(note: Note, query: string): boolean {
+  return note.title.toLowerCase().includes(query) || note.content.toLowerCase().includes(query);
+}
+
+function hasDescribedMetadata(metadata: Record<string, unknown>): boolean {
+  return typeof metadata.summary === "string";
+}
+
+function shouldDescribeNote(wordCount: number): boolean {
+  return wordCount >= NOTE_DESCRIBE_MIN_WORDS;
+}
+
+function shouldRedescribeNote({
+  existingMetadata,
+  wordCount,
+  refreshRequested,
+}: {
+  existingMetadata: Record<string, unknown>;
+  wordCount: number;
+  refreshRequested: boolean;
+}): boolean {
+  if (refreshRequested) {
+    return true;
+  }
+
+  if (!shouldDescribeNote(wordCount)) {
+    return false;
+  }
+
+  if (!hasDescribedMetadata(existingMetadata)) {
+    return true;
+  }
+
+  const describedWordCount =
+    typeof existingMetadata.wordCount === "number" && existingMetadata.wordCount > 0
+      ? existingMetadata.wordCount
+      : 1;
+  const ratio = wordCount / describedWordCount;
+
+  return ratio >= NOTE_REDESCRIBE_GROWTH_RATIO || ratio <= 1 / NOTE_REDESCRIBE_GROWTH_RATIO;
+}
+
 export async function listNotes({
   context,
   env,
   userId,
   projectId,
+  query,
 }: {
   context?: ServiceContext;
   env?: IEnv;
   userId: number;
   projectId?: string;
-}): Promise<Note[]> {
+  query?: string;
+}): Promise<NoteSummary[]> {
   if (!userId) {
     throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
   }
@@ -68,8 +124,12 @@ export async function listNotes({
   const list = projectId
     ? await repo.listProjectOutputs(projectId, "notes", { kind: NOTE_OUTPUT_KIND })
     : await repo.listPersonalOutputs(userId, "notes", { kind: NOTE_OUTPUT_KIND });
+  const normalisedQuery = query?.trim().toLowerCase();
+  const notes = list.map(mapOutputToNote);
 
-  return list.map(mapOutputToNote);
+  return (
+    normalisedQuery ? notes.filter((note) => matchesNoteQuery(note, normalisedQuery)) : notes
+  ).map(toNoteSummary);
 }
 
 export async function getNote({
@@ -129,19 +189,21 @@ export async function createNote({
 
   const sanitisedTitle = sanitiseInput(data.title);
   const sanitisedContent = sanitiseInput(data.content);
-
-  const generatedMetadata = await generateNoteMetadata(
-    serviceContext,
-    user,
-    sanitisedTitle,
-    sanitisedContent,
-    data.metadata,
-  );
+  const statistics = deriveDocumentStatistics(sanitisedContent);
+  const generatedMetadata = shouldDescribeNote(statistics.wordCount)
+    ? await generateNoteMetadata(
+        serviceContext,
+        user,
+        sanitisedTitle,
+        sanitisedContent,
+        data.metadata,
+      )
+    : { ...data.metadata, ...statistics };
 
   const appData = {
     title: sanitisedTitle,
     content: sanitisedContent,
-    metadata: { ...generatedMetadata, ...data.metadata },
+    metadata: { ...generatedMetadata, ...data.metadata, ...statistics },
   };
 
   const entry = await repo.createOutput({
@@ -198,14 +260,18 @@ export async function updateNote({
   const sanitisedContent = sanitiseInput(data.content);
 
   const incomingMetadata = isRecord(data.metadata) ? data.metadata : {};
-  const hasExistingMetadata = Object.keys(existingMetadata).length > 0;
-  const shouldRedescribe = data.options?.refreshMetadata === true || !hasExistingMetadata;
+  const statistics = deriveDocumentStatistics(sanitisedContent);
+  const shouldRedescribe = shouldRedescribeNote({
+    existingMetadata,
+    wordCount: statistics.wordCount,
+    refreshRequested: data.options?.refreshMetadata === true,
+  });
   const carried = { ...existingMetadata, ...incomingMetadata };
   const mergedMetadata = {
     ...(shouldRedescribe
       ? await generateNoteMetadata(serviceContext, user, sanitisedTitle, sanitisedContent, carried)
       : carried),
-    ...deriveDocumentStatistics(sanitisedContent),
+    ...statistics,
   };
 
   const finalData = {

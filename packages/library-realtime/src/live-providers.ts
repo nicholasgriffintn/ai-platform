@@ -55,6 +55,18 @@ export function getFirstReadyRealtimeLiveProviderOption(
   return options.find((option) => option.readiness === "ready");
 }
 
+export function supportsRealtimeTranscriptionSession(option: RealtimeLiveProviderOption): boolean {
+  return option.sessionType === "transcription" || option.supportsTranscriptionSession === true;
+}
+
+export function getFirstReadyRealtimeTranscriptionProviderOption(
+  options: RealtimeLiveProviderOption[],
+): RealtimeLiveProviderOption | undefined {
+  return options.find(
+    (option) => option.readiness === "ready" && supportsRealtimeTranscriptionSession(option),
+  );
+}
+
 export function getRealtimeLiveProviderIdForModel(
   model?: { provider?: string; supportsRealtimeSession?: boolean } | null,
   options: RealtimeLiveProviderOption[] = [],

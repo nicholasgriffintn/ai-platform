@@ -1,9 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { workspaceSourceResolve } from "@ngriffin_uk/polychat-config/vitest/workspace";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  ...workspaceSourceResolve,
   plugins: [
     {
       name: "skill-markdown",
@@ -27,6 +29,7 @@ export default defineConfig({
     pool: "threads",
   },
   resolve: {
+    ...workspaceSourceResolve.resolve,
     alias: {
       "~": path.resolve(import.meta.dirname, "./src"),
     },

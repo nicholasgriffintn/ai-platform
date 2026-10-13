@@ -10,7 +10,7 @@ const FALLBACK_CONTEXT_WINDOW = 8000;
 
 type ContextWindowSource = Pick<ModelConfigItem, "contextWindow"> | null | undefined;
 
-function resolveContextWindow(modelConfig: ContextWindowSource): number {
+export function resolveContextWindow(modelConfig: ContextWindowSource): number {
   return modelConfig?.contextWindow || FALLBACK_CONTEXT_WINDOW;
 }
 

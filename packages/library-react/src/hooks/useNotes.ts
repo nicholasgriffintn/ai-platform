@@ -7,14 +7,25 @@ import {
   updateNote,
   generateNotesFromMedia,
 } from "@ngriffin_uk/polychat-library-client";
-import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@ngriffin_uk/polychat-schemas";
+import type {
+  Note,
+  NoteCreateRequest,
+  NoteSummary,
+  NoteUpdateRequest,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useFetchNotes = (projectId?: string, options?: { enabled?: boolean }) => {
-  return useQuery<Note[]>({
-    queryKey: ["notes", projectId],
-    queryFn: () => fetchNotes(projectId),
+export const useFetchNotes = (
+  projectId?: string,
+  options?: { enabled?: boolean; query?: string },
+) => {
+  const query = options?.query?.trim() || undefined;
+
+  return useQuery<NoteSummary[]>({
+    queryKey: ["notes", projectId, query],
+    queryFn: () => fetchNotes(projectId, query),
     enabled: options?.enabled ?? true,
+    placeholderData: (previous) => previous,
   });
 };
 
@@ -86,8 +97,6 @@ export const useGenerateNotesFromMedia = (projectId?: string) => {
         | "action_items"
         | "meeting_minutes"
         | "qa_extraction"
-        | "scene_analysis"
-        | "visual_insights"
         | "smart_timestamps"
       )[];
       noteType:
@@ -105,8 +114,6 @@ export const useGenerateNotesFromMedia = (projectId?: string) => {
         | "other";
       extraPrompt?: string;
       timestamps?: boolean;
-      useVideoAnalysis?: boolean;
-      enableVideoSearch?: boolean;
     }
   >({
     mutationFn: (params) => generateNotesFromMedia(params, projectId),

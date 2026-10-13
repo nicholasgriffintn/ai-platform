@@ -25,7 +25,8 @@
     "./tsconfig/worker": "./tsconfig/worker.json",
     "./vitest/node": "./vitest/node.js",
     "./vitest/react": "./vitest/react.js",
-    "./vitest/react-setup": "./vitest/react-setup.js"
+    "./vitest/react-setup": "./vitest/react-setup.js",
+    "./vitest/workspace": "./vitest/workspace.js"
   },
   "publishConfig": {
     "access": "public"

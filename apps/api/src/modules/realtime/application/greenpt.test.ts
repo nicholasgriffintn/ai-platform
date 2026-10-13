@@ -74,6 +74,15 @@ describe("GreenPT realtime protocol", () => {
     });
   });
 
+  it("defaults the multilingual model to automatic language detection", () => {
+    expect(
+      buildGreenPtRealtimeUpstreamUrl({ model: "green-s-pro" }).searchParams.get("language"),
+    ).toBe("multi");
+    expect(buildGreenPtRealtimeUpstreamUrl({ model: "green-s" }).searchParams.get("language")).toBe(
+      "en",
+    );
+  });
+
   it("passes Token auth and session cleanup to the shared proxy", async () => {
     const onSessionEnd = vi.fn();
     const app = new Hono();

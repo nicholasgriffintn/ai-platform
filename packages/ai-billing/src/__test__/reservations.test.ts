@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { createFakeRuntime } from "../testing/fake-usage-store.js";
 import {
   containerSecondQuantities,
   estimateContainerRunCreditMicros,
@@ -10,7 +11,6 @@ import {
   holdUsageReservation,
 } from "../usage/reservations.js";
 import type { UsageReservationRecord } from "../usage/store.js";
-import { createFakeRuntime } from "./fake-usage-store.js";
 
 function reservation(overrides: Partial<UsageReservationRecord> = {}): UsageReservationRecord {
   return {

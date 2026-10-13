@@ -89,9 +89,8 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run --config vitest.config.mts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-utility-core": "workspace:^",

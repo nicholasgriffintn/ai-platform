@@ -86,6 +86,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
     return {
       status: "success",
       content: result.text,
+      ...(timestamps ? { segments: result.segments, words: result.words } : {}),
     };
   } catch (error) {
     if (error instanceof AssistantError) {

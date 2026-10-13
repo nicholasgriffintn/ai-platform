@@ -105,6 +105,27 @@ describe("ElevenLabs realtime proxy messages", () => {
       { type: "transcription.done", item_id: partial.item_id },
     ]);
   });
+
+  it("surfaces typed ElevenLabs failures as error events with their code", () => {
+    const toClient = createElevenLabsClientMessageMapper();
+
+    expect(
+      JSON.parse(
+        toClient(
+          JSON.stringify({
+            message_type: "session_time_limit_exceeded",
+            error: "Session exceeded the time limit",
+          }),
+        ) as string,
+      ),
+    ).toEqual({
+      type: "error",
+      error: {
+        message: "Session exceeded the time limit",
+        code: "session_time_limit_exceeded",
+      },
+    });
+  });
 });
 
 describe("Cartesia realtime proxy messages", () => {

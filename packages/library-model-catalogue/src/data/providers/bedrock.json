@@ -1007,6 +1007,7 @@
       "matchingModel": "deepseek.v3-v1:0",
       "overrides": {
         "maxTokens": 81920,
+        "contextComplexity": 4,
         "speed": 3,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "September 18, 2025",

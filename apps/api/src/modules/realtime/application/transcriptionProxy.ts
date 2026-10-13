@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Context } from "hono";
 
-import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
+import { REALTIME_PROXY_AUDIO_BYTES_PER_SECOND, REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 
 const logger = getLogger({ prefix: "services/realtime/transcription-proxy" });
@@ -44,11 +44,31 @@ function decodedBase64ByteLength(value: string): number {
   return (value.length / 4) * 3 - padding;
 }
 
+export interface RealtimeProxySessionSummary {
+  audioBytes: number;
+  audioSeconds: number;
+}
+
+export type RealtimeProxySessionEndHandler = (
+  summary: RealtimeProxySessionSummary,
+) => void | Promise<void>;
+
 export class RealtimeProxySessionLimits {
   private pendingBytes = 0;
   private pendingFrames = 0;
   private sessionAudioBytes = 0;
   private controlMessages = 0;
+
+  get audioBytes(): number {
+    return this.sessionAudioBytes;
+  }
+
+  summary(): RealtimeProxySessionSummary {
+    return {
+      audioBytes: this.sessionAudioBytes,
+      audioSeconds: Math.ceil(this.sessionAudioBytes / REALTIME_PROXY_AUDIO_BYTES_PER_SECOND),
+    };
+  }
 
   assertClientFrame(data: unknown): void {
     if (dataByteLength(data) > REALTIME_PROXY_LIMITS.clientFrameBytes) {
@@ -119,7 +139,7 @@ export interface RealtimeTranscriptionProxyOptions {
   headers: Record<string, string>;
   toUpstreamMessage: (message: NormalizedClientRealtimeMessage) => string | ArrayBuffer | null;
   toClientMessage: (message: unknown) => string | string[] | undefined;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
   maxSessionDurationMs?: number;
 }
 
@@ -129,7 +149,8 @@ export type NormalizedClientRealtimeMessage =
   | { type: "input_audio.end" };
 
 export function createRealtimeProxySessionEnd(
-  onSessionEnd?: () => void | Promise<void>,
+  onSessionEnd: RealtimeProxySessionEndHandler | undefined,
+  limits: RealtimeProxySessionLimits,
 ): () => void {
   let hasEnded = false;
 
@@ -139,7 +160,7 @@ export function createRealtimeProxySessionEnd(
     }
 
     hasEnded = true;
-    void Promise.resolve(onSessionEnd?.()).catch(() => {
+    void Promise.resolve(onSessionEnd?.(limits.summary())).catch(() => {
       logger.error("Realtime proxy reservation release failed");
     });
   };
@@ -281,7 +302,7 @@ export function bridgeRealtimeTranscriptionSockets({
   maxSessionDurationMs?: number;
 }): void {
   const limits = new RealtimeProxySessionLimits();
-  const endSession = createRealtimeProxySessionEnd(onSessionEnd);
+  const endSession = createRealtimeProxySessionEnd(onSessionEnd, limits);
   const sessionTimer = setTimeout(() => {
     closeSocket(client, 1008, "Realtime session duration limit reached");
     closeSocket(upstream, 1008, "Realtime session duration limit reached");

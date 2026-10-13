@@ -5,6 +5,7 @@ import {
   createRealtimeLiveProviderOptions,
   getDefaultLiveModelId,
   getFirstReadyRealtimeLiveProviderOption,
+  getFirstReadyRealtimeTranscriptionProviderOption,
   getRealtimeLiveProviderIdForModel,
   getRealtimeLiveProviderOption,
   supportsRealtimeLiveVideoInput,
@@ -24,6 +25,7 @@ const providers: RealtimeLiveProviderCatalogueItem[] = [
     outputModalities: ["audio"],
     description: "WebRTC voice agent",
     defaultModelId: "gpt-realtime-2",
+    supportsTranscriptionSession: true,
     available: true,
     readiness: "setup_required",
     availabilityReason: "Configure an OpenAI API key in provider settings.",
@@ -101,6 +103,41 @@ describe("runtime realtime provider catalogue", () => {
       readiness: "unavailable",
       availabilityReason: "Gemini is not supported by this browser client.",
     });
+  });
+
+  it("picks the first ready provider that can run a transcription-only session", () => {
+    const mistral: RealtimeLiveProviderCatalogueItem = {
+      ...providers[1],
+      id: "mistral",
+      label: "Mistral Realtime",
+      shortLabel: "Mistral",
+      liveMode: "composed",
+      sessionType: "transcription",
+      inputModalities: ["audio"],
+      outputModalities: ["text"],
+      defaultModelId: "voxtral-mini-transcribe-realtime",
+      supportsVideoInput: undefined,
+    };
+
+    expect(
+      getFirstReadyRealtimeTranscriptionProviderOption(
+        createRealtimeLiveProviderOptions(providers),
+      ),
+    ).toBeUndefined();
+    expect(
+      getFirstReadyRealtimeTranscriptionProviderOption(
+        createRealtimeLiveProviderOptions([
+          { ...providers[0], readiness: "ready" },
+          providers[1],
+          mistral,
+        ]),
+      )?.id,
+    ).toBe("openai");
+    expect(
+      getFirstReadyRealtimeTranscriptionProviderOption(
+        createRealtimeLiveProviderOptions([providers[0], providers[1], mistral]),
+      )?.id,
+    ).toBe("mistral");
   });
 
   it("defers message flushing for providers that finalize when the socket closes", () => {

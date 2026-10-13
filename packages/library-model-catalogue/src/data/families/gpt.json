@@ -941,7 +941,6 @@
     },
     "gpt-5-4-image-2": {
       "defaults": {
-        "name": "GPT-5.4 Image 2",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 272000,
         "maxTokens": 128000,
@@ -1227,8 +1226,20 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 400000,
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "October 1, 2024",
         "releaseDate": "October 14, 2025",
+        "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1240,7 +1251,6 @@
     },
     "gpt-5-image-mini": {
       "defaults": {
-        "name": "GPT-5 Image Mini",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 400000,
         "maxTokens": 128000,
@@ -1256,14 +1266,7 @@
           ]
         },
         "releaseDate": "October 16, 2025",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "gpt-6-1-sol-pro": {
@@ -2087,92 +2090,6 @@
         },
         "releaseDate": "December 10, 2025",
         "supportsTemperature": false
-      }
-    },
-    "openai-gpt-5-4-image-2": {
-      "defaults": {
-        "name": "OpenAI: GPT-5.4 Image 2",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 272000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
-        "releaseDate": "April 21, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "openai-gpt-5-image": {
-      "defaults": {
-        "name": "OpenAI: GPT-5 Image ($$$$)",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 400000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
-        "releaseDate": "October 14, 2025",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
-    "openai-gpt-5-image-mini": {
-      "defaults": {
-        "name": "OpenAI: GPT-5 Image Mini",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 400000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
-        "releaseDate": "October 16, 2025",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high"
-          ],
-          "defaultEffort": "high"
-        }
       }
     },
     "openai-gpt-6-1-sol-pro": {

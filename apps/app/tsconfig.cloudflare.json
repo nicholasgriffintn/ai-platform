@@ -35,5 +35,64 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
-  }
+  },
+  "references": [
+    {
+      "path": "../../packages/ai-prompts"
+    },
+    {
+      "path": "../../packages/component-account"
+    },
+    {
+      "path": "../../packages/component-capabilities"
+    },
+    {
+      "path": "../../packages/component-content"
+    },
+    {
+      "path": "../../packages/component-conversation"
+    },
+    {
+      "path": "../../packages/component-experiences"
+    },
+    {
+      "path": "../../packages/component-models"
+    },
+    {
+      "path": "../../packages/component-navigation"
+    },
+    {
+      "path": "../../packages/component-shell"
+    },
+    {
+      "path": "../../packages/component-ui"
+    },
+    {
+      "path": "../../packages/component-workspaces"
+    },
+    {
+      "path": "../../packages/library-chat"
+    },
+    {
+      "path": "../../packages/library-client"
+    },
+    {
+      "path": "../../packages/library-react"
+    },
+    {
+      "path": "../../packages/library-realtime"
+    },
+    {
+      "path": "../../packages/library-surface"
+    },
+    {
+      "path": "../../packages/schemas"
+    },
+    {
+      "path": "../../packages/utility-core"
+    },
+    {
+      "path": "../../packages/utility-react"
+    }
+  ]
 }

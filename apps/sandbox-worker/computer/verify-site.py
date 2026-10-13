@@ -5,6 +5,34 @@ import urllib.parse
 
 from cdp import CdpConnection, page_target
 
+EDGE_GUTTER_PX = 12
+
+HERO_OVERFLOW_CHECK = """function () {
+  const wrapper = this.document.querySelector('#site-root [data-site-type="Hero"]');
+  const hero = wrapper && wrapper.firstElementChild;
+  if (!hero) { return false; }
+  const box = hero.getBoundingClientRect();
+  return box.top < this.innerHeight && box.bottom > this.innerHeight + 4;
+}"""
+
+EDGE_TEXT_CHECK = """function (gutter) {
+  const root = this.document.querySelector('#site-root');
+  if (!root) { return []; }
+  const walker = this.document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const offenders = [];
+  for (let node = walker.nextNode(); node && offenders.length < 3; node = walker.nextNode()) {
+    const text = node.textContent.trim();
+    const parent = node.parentElement;
+    if (!text || !parent || this.getComputedStyle(parent).visibility === 'hidden') { continue; }
+    const range = this.document.createRange();
+    range.selectNodeContents(node);
+    const touches = [...range.getClientRects()].some((rect) =>
+      rect.width > 0 && rect.height > 0 && (rect.left < gutter || rect.right > this.innerWidth - gutter));
+    if (touches) { offenders.push(text.slice(0, 60)); }
+  }
+  return offenders;
+}"""
+
 
 def capture(payload):
     diagnostics = []
@@ -95,6 +123,11 @@ def capture(payload):
                 "function () { return this.document.documentElement.scrollWidth > this.innerWidth + 4; }",
             ):
                 add("assertion", "The page overflows the viewport horizontally")
+            if payload["viewport"] == "desktop" and cdp.call_function(window, HERO_OVERFLOW_CHECK):
+                add("assertion", "The Hero is taller than the first screen; keep it within the first viewport")
+            if payload["viewport"] == "mobile":
+                for text in cdp.call_function(window, EDGE_TEXT_CHECK, EDGE_GUTTER_PX) or []:
+                    add("assertion", f"Text touches the screen edge on mobile; keep copy inside a padded column: {text}")
             if cdp.call_function(
                 window,
                 "function () { return Boolean(this.document.querySelector('[data-site-render-error]')); }",

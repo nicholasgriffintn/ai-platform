@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "contextWindow": 4096,
     "maxTokens": 4096,
     "modalities": {
       "input": [
@@ -9,6 +10,9 @@
         "text"
       ]
     },
+    "knowledgeCutoffDate": "August 2023",
+    "releaseDate": "November 1, 2023",
+    "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -17,44 +21,13 @@
     "command": {
       "defaults": {
         "name": "Command",
-        "description": "Command accepts text and produces text.",
-        "contextWindow": 4096,
-        "knowledgeCutoffDate": "August 2023",
-        "releaseDate": "November 1, 2023",
-        "supportsToolCalls": false
-      }
-    },
-    "command-a": {
-      "defaults": {
-        "name": "Command A",
-        "openWeights": false,
-        "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
-        "contextWindow": 256000,
-        "maxTokens": 8000,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "March 13, 2025",
-        "supportsToolCalls": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "description": "Command accepts text and produces text."
       }
     },
     "command-light": {
       "defaults": {
         "name": "Command Light",
-        "description": "Command Light accepts text and produces text.",
-        "contextWindow": 4096,
-        "knowledgeCutoffDate": "August 2023",
-        "releaseDate": "November 1, 2023",
-        "supportsToolCalls": false
+        "description": "Command Light accepts text and produces text."
       }
     },
     "command-r": {

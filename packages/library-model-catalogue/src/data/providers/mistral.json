@@ -214,10 +214,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "ministral-14b": {
       "model": "mistral/ministral-14b-latest/ministral-14b",

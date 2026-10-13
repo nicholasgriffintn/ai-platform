@@ -75,7 +75,7 @@ export type MessageContent = {
   tool_use_id?: string;
   id?: string;
   name?: string;
-  content?: string;
+  content?: string | Record<string, unknown>[];
   input?: string | Record<string, unknown>;
   cache_control?: {
     type: "ephemeral";

@@ -1,10 +1,80 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/react-library",
   "compilerOptions": {
+    "types": ["vite/client"],
+    "composite": true,
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["vite/client"]
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__test__/**", "src/test/**", "dist"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../component-account"
+    },
+    {
+      "path": "../component-capabilities"
+    },
+    {
+      "path": "../component-content"
+    },
+    {
+      "path": "../component-conversation"
+    },
+    {
+      "path": "../component-experiences"
+    },
+    {
+      "path": "../component-models"
+    },
+    {
+      "path": "../component-navigation"
+    },
+    {
+      "path": "../component-sites"
+    },
+    {
+      "path": "../component-ui"
+    },
+    {
+      "path": "../component-workspaces"
+    },
+    {
+      "path": "../library-chat"
+    },
+    {
+      "path": "../library-client"
+    },
+    {
+      "path": "../library-model-registry"
+    },
+    {
+      "path": "../library-react"
+    },
+    {
+      "path": "../library-realtime"
+    },
+    {
+      "path": "../library-sites"
+    },
+    {
+      "path": "../schemas"
+    },
+    {
+      "path": "../utility-core"
+    },
+    {
+      "path": "../utility-react"
+    }
+  ]
 }

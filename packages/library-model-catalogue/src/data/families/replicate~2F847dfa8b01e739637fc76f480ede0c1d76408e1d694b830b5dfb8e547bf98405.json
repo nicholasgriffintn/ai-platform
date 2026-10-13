@@ -12,7 +12,7 @@
       "creative",
       "video"
     ],
-    "reliability": 1,
+    "reliability": 2,
     "supportsAttachments": false,
     "artificialAnalysis": {
       "intelligenceIndex": null,
@@ -21,12 +21,12 @@
       "intelligenceIndexVersion": null,
       "mediaScores": [
         {
-          "key": "image_to_videoElo",
-          "label": "Image-to-video arena",
-          "value": 921,
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1001,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 13
+          "confidenceInterval95": 8
         }
       ]
     }

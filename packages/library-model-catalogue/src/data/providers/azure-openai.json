@@ -262,7 +262,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "cohere/command-r-08-2024": {
       "model": "command-r/command-r",
@@ -373,6 +376,7 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 131072,
+        "contextComplexity": 4,
         "speed": 3,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "August 21, 2025",
@@ -1214,6 +1218,15 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "May 7, 2025",
@@ -1260,10 +1273,7 @@
         },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "azure/model-router": {
       "model": "model-router/model-router",
