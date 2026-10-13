@@ -87,7 +87,9 @@ export function describeSitePlanDecision(plan: SitePlan) {
       `Use the ${plan.tier} coding tier`,
       `Write in a ${plan.tone} voice`,
       `Use a ${plan.theme.direction} direction with ${plan.theme.density} density`,
-      `Use the ${plan.theme.palette} palette, ${plan.theme.texture} texture and ${plan.theme.font} type`,
+      plan.theme.customPalette || plan.theme.customFonts
+        ? `Use the reference site's colours and type with ${plan.theme.texture} texture`
+        : `Use the ${plan.theme.palette} palette, ${plan.theme.texture} texture and ${plan.theme.font} type`,
       `${plan.interactive ? "Include" : "Do not require"} interactive behaviour`,
       `Support ${plan.capabilities.join(", ")}`,
     ],

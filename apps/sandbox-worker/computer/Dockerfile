@@ -33,6 +33,7 @@ COPY navigate.py /usr/local/bin/navigate
 COPY read-page.py /usr/local/bin/read-page
 COPY cdp.py /usr/local/bin/cdp.py
 COPY verify-site.py /usr/local/bin/verify-site
+COPY read-site-reference.py /usr/local/bin/read-site-reference
 
 RUN chmod 0755 /usr/local/bin/start-computer /usr/local/bin/health-probe /usr/local/bin/check-paint /usr/local/bin/navigate /usr/local/bin/read-page \
     && mkdir -p /workspace/profile

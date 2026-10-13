@@ -1,3 +1,4 @@
+import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
@@ -121,6 +122,29 @@ export type SiteExportTarget = z.infer<typeof siteExportTargetSchema>;
 
 export const DEFAULT_SITE_EXPORT_TARGET: SiteExportTarget = "react-router";
 
+export const siteCustomPaletteSchema = z
+  .object({
+    hue: z.number().min(0).max(360),
+    chroma: z.number().min(0).max(0.37),
+    neutralHue: z.number().min(0).max(360),
+    neutralChroma: z.number().min(0).max(0.04),
+  })
+  .strict();
+export type SiteCustomPalette = z.infer<typeof siteCustomPaletteSchema>;
+
+export const siteFontFamilySchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9 ]{0,59}$/);
+
+export const siteCustomFontsSchema = z
+  .object({
+    heading: siteFontFamilySchema.optional(),
+    body: siteFontFamilySchema.optional(),
+  })
+  .strict();
+export type SiteCustomFonts = z.infer<typeof siteCustomFontsSchema>;
+
 export const siteThemeSchema = z
   .object({
     palette: sitePaletteSchema,
@@ -131,6 +155,8 @@ export const siteThemeSchema = z
     density: siteDensitySchema,
     texture: siteTextureSchema,
     motion: siteMotionLevelSchema,
+    customPalette: siteCustomPaletteSchema.optional(),
+    customFonts: siteCustomFontsSchema.optional(),
   })
   .strict();
 export type SiteTheme = z.infer<typeof siteThemeSchema>;
@@ -459,6 +485,25 @@ export const siteElementTargetSchema = z
   .strict();
 export type SiteElementTarget = z.infer<typeof siteElementTargetSchema>;
 
+export const siteReferenceUrlSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .pipe(z.url())
+  .refine(
+    (value) => {
+      const url = new URL(value);
+
+      return (
+        url.protocol === "https:" &&
+        !url.username &&
+        !url.password &&
+        !isPrivateHostname(url.hostname)
+      );
+    },
+    { message: "Reference sites must be public HTTPS pages without embedded credentials" },
+  );
+
 export const siteGenerateRequestSchema = z
   .object({
     prompt: z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH),
@@ -469,6 +514,7 @@ export const siteGenerateRequestSchema = z
     target: siteElementTargetSchema.optional(),
     model: z.string().min(1).optional(),
     theme: siteThemeSchema.partial().optional(),
+    referenceUrl: siteReferenceUrlSchema.optional(),
   })
   .strict();
 export type SiteGenerateRequest = z.infer<typeof siteGenerateRequestSchema>;

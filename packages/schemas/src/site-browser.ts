@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 import { siteDataIdentifierSchema, siteIntegrationScopeSchema } from "./site-data.js";
-import { siteProjectSchema } from "./sites.js";
+import { siteProjectSchema, siteReferenceUrlSchema } from "./sites.js";
 
 export const siteBrowserViewportSchema = z.enum(["desktop", "mobile"]);
 export const siteBrowserDiagnosticSchema = z
@@ -59,7 +59,33 @@ export const siteBrowserCaptureResultSchema = z
   })
   .strict();
 
+const siteHexColourSchema = z.string().regex(/^#[0-9a-f]{6}$/);
+
+export const siteReferenceCaptureRequestSchema = z
+  .object({
+    resourceId: z.string().regex(/^site-reference-[a-zA-Z0-9-]{1,100}$/),
+    url: siteReferenceUrlSchema,
+  })
+  .strict();
+export const siteReferenceCaptureResultSchema = z.discriminatedUnion("status", [
+  z
+    .object({
+      status: z.literal("captured"),
+      background: siteHexColourSchema.nullable(),
+      foreground: siteHexColourSchema.nullable(),
+      accents: z
+        .array(z.object({ colour: siteHexColourSchema, weight: z.number().min(0) }).strict())
+        .max(40),
+      headingFamily: z.string().max(400).nullable(),
+      bodyFamily: z.string().max(400).nullable(),
+    })
+    .strict(),
+  z.object({ status: z.literal("unavailable") }).strict(),
+]);
+
 export type SiteBrowserEvidence = z.infer<typeof siteBrowserEvidenceSchema>;
 export type SiteBrowserVerificationRequest = z.infer<typeof siteBrowserVerificationRequestSchema>;
 export type SiteBrowserCaptureRequest = z.infer<typeof siteBrowserCaptureRequestSchema>;
 export type SiteBrowserCaptureResult = z.infer<typeof siteBrowserCaptureResultSchema>;
+export type SiteReferenceCaptureRequest = z.infer<typeof siteReferenceCaptureRequestSchema>;
+export type SiteReferenceCaptureResult = z.infer<typeof siteReferenceCaptureResultSchema>;

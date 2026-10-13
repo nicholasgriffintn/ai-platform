@@ -83,13 +83,17 @@ export {
   buildSiteColorVariables,
   buildSiteGoogleFontsUrl,
   buildSiteThemeVariables,
+  nearestSitePalette,
   renderSiteElementPaletteCss,
   renderSiteThemeCss,
+  resolveSiteFonts,
+  siteGoogleFontFamily,
   SITE_FONT_STACKS,
   SITE_PALETTE_DEFINITIONS,
   SITE_RADIUS_VALUES,
   type SiteThemeVariables,
 } from "./theme.js";
+export { readSiteReferenceFontFamily, resolveSiteReferencePalette } from "./reference.js";
 export {
   collectDynamicPropPaths,
   createSiteId,

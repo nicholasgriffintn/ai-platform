@@ -94,6 +94,12 @@ export function buildSitePlanGuidance(plan: SitePlan): string {
     );
   }
 
+  if (plan.theme.customPalette || plan.theme.customFonts) {
+    lines.push(
+      "The theme carries colours and fonts read from a reference site. Keep /theme/customPalette and /theme/customFonts unless the user asks for different colours or type; remove them to switch to a named palette or font.",
+    );
+  }
+
   if (plan.theme.mode === "dark") {
     lines.push("The site renders in dark mode; prefer default and muted section backgrounds.");
   }

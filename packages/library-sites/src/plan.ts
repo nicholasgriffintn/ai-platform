@@ -473,6 +473,8 @@ export function resolveSitePlan({
     density: themeHint?.density ?? density,
     texture: themeHint?.texture ?? texture,
     motion: themeHint?.motion ?? motion,
+    ...(themeHint?.customPalette ? { customPalette: themeHint.customPalette } : {}),
+    ...(themeHint?.customFonts ? { customFonts: themeHint.customFonts } : {}),
   };
   const confidences = Object.values(answers)
     .map(readConfidence)

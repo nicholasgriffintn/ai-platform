@@ -67,6 +67,7 @@ import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
+import { SiteReferenceControl } from "./SiteReferenceControl.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
 import { useSiteComposerSources } from "./useSiteComposerSources.js";
 
@@ -115,6 +116,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const createShare = useCreateOutputShare();
   const queryClient = useQueryClient();
   const [activePageId, setActivePageId] = useState<string | null>(null);
+  const [referenceUrl, setReferenceUrl] = useState<string | null>(null);
   const [viewport, setViewport] = useState<SitePreviewViewport>("desktop");
   const [view, setView] = useState<"preview" | "code">("preview");
   const [exportTarget, setExportTarget] = useState<SiteExportTarget>(DEFAULT_SITE_EXPORT_TARGET);
@@ -216,11 +218,24 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
       siteId: state.site?.id,
       expectedRevision: state.site?.revision,
       sourceIds: composerSources.sourceIds,
+      ...(referenceUrl ? { referenceUrl } : {}),
       ...(state.site && selectedElement && resolvedPageId
         ? { target: { pageId: resolvedPageId, elementKey: selectedKey as string } }
         : {}),
     });
+    setReferenceUrl(null);
   };
+
+  const composerControls = (
+    <>
+      {composerSources.controls}
+      <SiteReferenceControl
+        value={referenceUrl}
+        isDisabled={isBusy || Boolean(revisionPreview)}
+        onChange={setReferenceUrl}
+      />
+    </>
+  );
 
   const handleSelectPage = (pageId: string) => {
     setActivePageId(pageId);
@@ -320,7 +335,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           <SiteStarterPrompt
             onSubmit={handleSubmit}
             attachments={composerSources.attachments}
-            controls={composerSources.controls}
+            controls={composerControls}
             error={composerSources.error}
           />
           <RecentSites basePath={basePath} projectId={projectId} className="max-w-5xl pt-8" />
@@ -446,7 +461,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   : "Describe the site…"
             }
             attachments={composerSources.attachments}
-            controls={composerSources.controls}
+            controls={composerControls}
             error={composerSources.error}
             isDisabled={composerSources.isPending || Boolean(revisionPreview)}
             submitLabel={state.site ? "Refine" : "Build"}
