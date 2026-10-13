@@ -15,8 +15,42 @@
     "types": ["@cloudflare/workers-types", "node"],
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "composite": true,
+    "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../packages/ai-agents"
+    },
+    {
+      "path": "../../packages/ai-prompts"
+    },
+    {
+      "path": "../../packages/library-client"
+    },
+    {
+      "path": "../../packages/library-interactions"
+    },
+    {
+      "path": "../../packages/library-policy"
+    },
+    {
+      "path": "../../packages/library-sandbox"
+    },
+    {
+      "path": "../../packages/library-tools"
+    },
+    {
+      "path": "../../packages/schemas"
+    },
+    {
+      "path": "../../packages/utility-core"
+    },
+    {
+      "path": "../../packages/utility-server"
+    }
+  ]
 }

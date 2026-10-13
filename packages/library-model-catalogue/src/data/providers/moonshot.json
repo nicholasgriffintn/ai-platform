@@ -68,7 +68,10 @@
         "costPer1kOutputTokens": 0.0025
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "kimi-k2-0905-preview": {

@@ -389,8 +389,6 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -1170,7 +1168,6 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "Qwen/Qwen3.8-2.4T-A95B",
       "overrides": {
-        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.0025,

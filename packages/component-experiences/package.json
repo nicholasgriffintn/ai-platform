@@ -13,17 +13,17 @@
   "exports": {
     "./content": {
       "polychat-source": "./src/content/index.tsx",
-      "types": "./dist/content.d.ts",
+      "types": "./dist/content/index.d.ts",
       "import": "./dist/content.js"
     },
     "./media": {
       "polychat-source": "./src/media/index.tsx",
-      "types": "./dist/media.d.ts",
+      "types": "./dist/media/index.d.ts",
       "import": "./dist/media.js"
     },
     "./music": {
       "polychat-source": "./src/music/index.tsx",
-      "types": "./dist/music.d.ts",
+      "types": "./dist/music/index.d.ts",
       "import": "./dist/music.js"
     },
     "./styles.css": {
@@ -37,7 +37,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-component-content": "workspace:^",

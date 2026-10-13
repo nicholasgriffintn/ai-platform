@@ -176,10 +176,7 @@
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "qwen-image": {
       "model": "qwen/qwen-image",

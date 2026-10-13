@@ -292,9 +292,9 @@
         "costPer1kOutputTokens": 0.0015
       },
       "unset": [
+        "strengths",
         "contextComplexity",
-        "supportsResponseFormat",
-        "strengths"
+        "supportsResponseFormat"
       ]
     },
     "gemini-3.8-flash": {

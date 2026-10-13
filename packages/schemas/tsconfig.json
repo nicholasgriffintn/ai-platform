@@ -1,10 +1,26 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/library",
   "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "composite": true,
     "outDir": "dist",
     "rootDir": "src",
-    "lib": ["ES2022", "DOM"]
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../utility-core"
+    }
+  ]
 }

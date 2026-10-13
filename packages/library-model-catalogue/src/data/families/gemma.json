@@ -60,7 +60,6 @@
     },
     "gemma-2-27b": {
       "defaults": {
-        "name": "Gemma 2 27B",
         "openWeights": true,
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 8192,
@@ -690,27 +689,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "google-gemma-2-27b": {
-      "defaults": {
-        "name": "Google: Gemma 2 27B",
-        "openWeights": false,
-        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
-        "contextWindow": 8192,
-        "maxTokens": 2048,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "July 13, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true,
-        "supportsAttachments": false
       }
     },
     "google-gemma-3": {

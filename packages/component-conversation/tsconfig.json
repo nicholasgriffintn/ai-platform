@@ -1,9 +1,61 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/react-library",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/styles.entry.ts", "dist"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../component-content"
+    },
+    {
+      "path": "../component-experiences"
+    },
+    {
+      "path": "../component-models"
+    },
+    {
+      "path": "../component-navigation"
+    },
+    {
+      "path": "../component-ui"
+    },
+    {
+      "path": "../library-chat"
+    },
+    {
+      "path": "../library-client"
+    },
+    {
+      "path": "../library-goals"
+    },
+    {
+      "path": "../library-react"
+    },
+    {
+      "path": "../library-realtime"
+    },
+    {
+      "path": "../schemas"
+    },
+    {
+      "path": "../utility-core"
+    },
+    {
+      "path": "../utility-react"
+    }
+  ]
 }

@@ -18,6 +18,8 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   embedding_provider: "vectorize",
   bedrock_knowledge_base_id: null,
   bedrock_knowledge_base_custom_data_source_id: null,
+  bedrock_agent_runtime_arn: null,
+  bedrock_agent_role_arn: null,
   s3vectors_bucket_name: null,
   s3vectors_index_name: null,
   s3vectors_region: null,
@@ -72,6 +74,8 @@ export function prepareUserSettingsUpdates(
     bedrock_knowledge_base_id: settings.bedrock_knowledge_base_id ?? null,
     bedrock_knowledge_base_custom_data_source_id:
       settings.bedrock_knowledge_base_custom_data_source_id ?? null,
+    bedrock_agent_runtime_arn: settings.bedrock_agent_runtime_arn ?? null,
+    bedrock_agent_role_arn: settings.bedrock_agent_role_arn ?? null,
     s3vectors_bucket_name: settings.s3vectors_bucket_name ?? null,
     s3vectors_index_name: settings.s3vectors_index_name ?? null,
     s3vectors_region: settings.s3vectors_region ?? null,

@@ -1,4 +1,4 @@
-import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getLogger, type LoggerInstance } from "@ngriffin_uk/polychat-ai-telemetry";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { redactSensitiveUrl } from "@ngriffin_uk/polychat-utility-server/redaction";
@@ -85,6 +85,6 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
  * @param routeName A name to identify this route in logs
  * @returns A logger instance specific to this route
  */
-export const createRouteLogger = (routeName: string) => {
+export const createRouteLogger = (routeName: string): LoggerInstance => {
   return getLogger({ prefix: `routes/${routeName}` });
 };

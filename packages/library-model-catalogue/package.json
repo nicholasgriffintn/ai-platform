@@ -28,7 +28,7 @@
   "scripts": {
     "models:sync": "node ./scripts/sync-models-dev.mjs",
     "test": "vitest run --config vitest.config.ts",
-    "typecheck": "tsc -p tsconfig.typecheck.json"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",

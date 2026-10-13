@@ -38,7 +38,7 @@
           "creative",
           "video"
         ],
-        "reliability": 5,
+        "reliability": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -46,12 +46,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "image_to_videoElo",
-              "label": "Image-to-video arena",
-              "value": 1255,
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1179,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -387,6 +387,8 @@
     "minimax-m2-7": {
       "defaults": {
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],

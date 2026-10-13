@@ -31,7 +31,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-component-ui": "workspace:^",

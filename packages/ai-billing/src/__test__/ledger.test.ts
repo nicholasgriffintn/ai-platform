@@ -1,9 +1,9 @@
 import type { RateEntry } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
+import { createFakeRuntime } from "../testing/fake-usage-store.js";
 import { userCreditActor } from "../usage/credit-actor.js";
 import { applyUsageRollup, buildUsageEventRow, emitUsageEvents } from "../usage/ledger.js";
-import { createFakeRuntime } from "./fake-usage-store.js";
 
 const OCCURRED_AT = "2026-08-31T12:00:00.000Z";
 

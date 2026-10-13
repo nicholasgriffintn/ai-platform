@@ -1,11 +1,33 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/library",
   "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "@cloudflare/workers-types/experimental"],
+    "composite": true,
     "outDir": "dist",
     "rootDir": "src",
-    "lib": ["ES2022", "DOM"],
-    "types": ["node", "@cloudflare/workers-types/experimental"]
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../library-policy"
+    },
+    {
+      "path": "../utility-core"
+    },
+    {
+      "path": "../utility-server"
+    }
+  ]
 }

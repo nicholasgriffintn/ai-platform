@@ -17,6 +17,7 @@ export const promptTasks = [
   "document-metadata",
   "document-format",
   "document-notes",
+  "document-digest",
   "content-extraction",
   "article-analysis",
   "article-summary",
