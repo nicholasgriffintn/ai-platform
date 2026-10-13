@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { extractFencedBlock } from "../answers.js";
 import { checkHtmlArtefact, extractHtmlDocument } from "../artefacts/html.js";
 import { checkStrudelCode, extractStrudelCode } from "../artefacts/strudel.js";
 import { getBenchmark } from "../registry.js";
@@ -32,6 +33,17 @@ describe("hamster HTML gate", () => {
       content: HAMSTER,
     });
     expect(hamster.artefact("attempt-1", { html: "<p>no hamster</p>" })).toBeNull();
+  });
+});
+
+describe("fenced block extraction", () => {
+  it("prefers the requested language and stays linear on unterminated fences", () => {
+    expect(extractFencedBlock("```text\nnope\n```\n```html\n<svg/>\n```", ["html"])).toBe("<svg/>");
+
+    const started = Date.now();
+
+    expect(extractFencedBlock(`\`\`\`\n${"\n ".repeat(200_000)}`, ["html"])).toBeNull();
+    expect(Date.now() - started).toBeLessThan(1_000);
   });
 });
 
