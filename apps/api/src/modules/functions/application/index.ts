@@ -24,6 +24,7 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
+import { caption_video } from "./caption_video";
 import { configure_knowledge_sync } from "./configure_knowledge_sync";
 import { review_output, run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
@@ -134,6 +135,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   list_saved_messages,
   load_skill,
   process_recording,
+  caption_video,
   propose_correction,
   save_skill,
   review_output,

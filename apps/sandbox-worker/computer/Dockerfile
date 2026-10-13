@@ -7,6 +7,8 @@ RUN apt-get update \
       ca-certificates \
       coreutils \
       curl \
+      ffmpeg \
+      fonts-noto-core \
       gnupg \
       novnc \
       openbox \
