@@ -69,7 +69,7 @@
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
     "@scalar/hono-api-reference": "0.12.10",
-    "@sentry/cloudflare": "10.76.0",
+    "@sentry/cloudflare": "10.76.1",
     "@tsndr/cloudflare-worker-jwt": "3.2.3",
     "agents": "0.26.0",
     "aws4fetch": "1.0.20",
