@@ -11,6 +11,7 @@ import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
 import { computeSiteSchema, modelTierSchema } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { BedrockManagedAgentSettings } from "./BedrockManagedAgentSettings";
 import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
 import {
@@ -403,6 +404,10 @@ export function UserSettingsForm({
             />
           </div>
         </div>
+      </SettingsSection>
+
+      <SettingsSection title="Bedrock Managed Agents">
+        <BedrockManagedAgentSettings settings={formData} onChange={updateFormData} />
       </SettingsSection>
 
       <SettingsSection title="Guardrails">

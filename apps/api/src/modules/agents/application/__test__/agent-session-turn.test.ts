@@ -1,4 +1,7 @@
-import { bedrockManagedAgentTargetSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  bedrockManagedAgentTargetSchema,
+  updateUserSettingsSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { encodeServerSentEvent } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it, vi } from "vitest";
 
@@ -86,5 +89,12 @@ describe("bedrockManagedAgentTargetSchema", () => {
         roleArn: "arn:aws:iam::210987654321:role/agents",
       }).success,
     ).toBe(false);
+  });
+
+  it("reports a personal Runtime without a role on the role setting", () => {
+    const result = updateUserSettingsSchema.safeParse({ bedrock_agent_runtime_arn: runtimeArn });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path)).toEqual([["bedrock_agent_role_arn"]]);
   });
 });

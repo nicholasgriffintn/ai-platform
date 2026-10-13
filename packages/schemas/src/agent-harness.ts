@@ -114,7 +114,7 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
   "bedrock-managed-agents": {
     id: "bedrock-managed-agents",
     name: "Bedrock Managed Agents",
-    description: "AWS agent sessions on an AgentCore Runtime in your workspace's AWS account.",
+    description: "AWS agent sessions on an AgentCore Runtime in your own AWS account.",
     runtime: "remote",
     capabilities: {
       approvals: false,

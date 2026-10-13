@@ -1,5 +1,6 @@
 import * as z from "zod/v4";
 
+import { bedrockManagedAgentTargetSchema } from "../bedrock-managed-agents.js";
 import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
@@ -85,6 +86,8 @@ export const updateUserSettingsSchema = z
     embedding_provider: embeddingProviderSchema.optional(),
     bedrock_knowledge_base_id: z.string().optional(),
     bedrock_knowledge_base_custom_data_source_id: z.string().optional(),
+    bedrock_agent_runtime_arn: z.string().trim().optional(),
+    bedrock_agent_role_arn: z.string().trim().optional(),
     s3vectors_bucket_name: s3VectorsBucketNameSchema.optional(),
     s3vectors_index_name: s3VectorsIndexNameSchema.optional(),
     s3vectors_region: awsRegionSchema.optional(),
@@ -113,6 +116,23 @@ export const updateUserSettingsSchema = z
     onboarding_seen: onboardingSeenSchema.optional(),
   })
   .superRefine((settings, context) => {
+    if (settings.bedrock_agent_runtime_arn || settings.bedrock_agent_role_arn) {
+      const target = bedrockManagedAgentTargetSchema.safeParse({
+        runtimeArn: settings.bedrock_agent_runtime_arn ?? "",
+        roleArn: settings.bedrock_agent_role_arn ?? "",
+      });
+
+      for (const issue of target.success ? [] : target.error.issues) {
+        context.addIssue({
+          code: "custom",
+          path: [
+            issue.path[0] === "roleArn" ? "bedrock_agent_role_arn" : "bedrock_agent_runtime_arn",
+          ],
+          message: issue.message,
+        });
+      }
+    }
+
     if (settings.embedding_provider === "dynamodb-vectors") {
       for (const field of [
         "dynamodb_vectors_table_name",

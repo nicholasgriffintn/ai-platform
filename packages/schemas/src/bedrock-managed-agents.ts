@@ -21,8 +21,12 @@ export const bedrockManagedAgentTargetSchema = z
   })
   .strict()
   .refine(
-    ({ runtimeArn, roleArn }) =>
-      RUNTIME_ARN_PATTERN.exec(runtimeArn)?.[2] === ROLE_ARN_PATTERN.exec(roleArn)?.[1],
+    ({ runtimeArn, roleArn }) => {
+      const runtimeAccount = RUNTIME_ARN_PATTERN.exec(runtimeArn)?.[2];
+      const roleAccount = ROLE_ARN_PATTERN.exec(roleArn)?.[1];
+
+      return !runtimeAccount || !roleAccount || runtimeAccount === roleAccount;
+    },
     {
       message: "The session role and Runtime must belong to the same AWS account",
       path: ["roleArn"],

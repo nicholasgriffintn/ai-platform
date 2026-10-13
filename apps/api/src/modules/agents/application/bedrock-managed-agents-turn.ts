@@ -1,13 +1,18 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
+import { parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
 import {
   bedrockManagedAgentTargetSchema,
   type AgentHarnessEventRecord,
+  type BedrockManagedAgentTarget,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { BedrockManagedAgentsClient } from "~/infrastructure/providers/agents/BedrockManagedAgentsClient";
+import {
+  BedrockManagedAgentsClient,
+  type BedrockManagedAgentsCredentials,
+} from "~/infrastructure/providers/agents/BedrockManagedAgentsClient";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IUser } from "~/types";
@@ -22,6 +27,11 @@ const HARNESS_NAME = "Bedrock Managed Agents";
 const MANTLE_PROVIDER = "bedrock-mantle";
 const MANTLE_AGENT_MODEL_PREFIX = "openai.";
 const WORKSPACE_DIRECTORY = "/workspace";
+
+interface BedrockManagedAgentAccount {
+  target: BedrockManagedAgentTarget;
+  credentials: BedrockManagedAgentsCredentials;
+}
 
 function isMantleAgentModel(model: ModelConfigItem): boolean {
   return (
@@ -60,15 +70,32 @@ export async function resolveBedrockManagedAgentModel(params: {
   return selected.matchingModel;
 }
 
-async function resolveWorkspaceAccount(context: ServiceContext, projectId?: string) {
-  if (!projectId) {
-    throw new AssistantError(
-      `${HARNESS_NAME} runs in projects whose workspace has an AWS connection`,
-      ErrorType.PARAMS_ERROR,
-      400,
+function missingConfiguration(message: string): AssistantError {
+  return new AssistantError(message, ErrorType.CONFIGURATION_ERROR, 409);
+}
+
+function parseTarget(
+  fields: { runtimeArn?: string | null; roleArn?: string | null },
+  location: string,
+): BedrockManagedAgentTarget {
+  const target = bedrockManagedAgentTargetSchema.safeParse({
+    runtimeArn: fields.runtimeArn ?? "",
+    roleArn: fields.roleArn ?? "",
+  });
+
+  if (!target.success) {
+    throw missingConfiguration(
+      `Add an AgentCore Runtime and role to ${location}: ${target.error.issues[0]?.message}`,
     );
   }
 
+  return target.data;
+}
+
+async function resolveWorkspaceAccount(
+  context: ServiceContext,
+  projectId: string,
+): Promise<BedrockManagedAgentAccount> {
   const { project } = await requireProjectAccess(context, projectId);
   const [connection, secrets] = await Promise.all([
     context.repositories.modelConnections.getConnection(project.workspace_id, "aws"),
@@ -76,34 +103,45 @@ async function resolveWorkspaceAccount(context: ServiceContext, projectId?: stri
   ]);
 
   if (!connection || !secrets.accessKeyId || !secrets.secretAccessKey) {
-    throw new AssistantError(
-      "Connect AWS under Models › Governance in this workspace",
-      ErrorType.CONFIGURATION_ERROR,
-      409,
-    );
-  }
-
-  const target = bedrockManagedAgentTargetSchema.safeParse({
-    runtimeArn: connection.config.agentRuntimeArn ?? "",
-    roleArn: connection.config.roleArn ?? "",
-  });
-
-  if (!target.success) {
-    throw new AssistantError(
-      `Add an AgentCore Runtime ARN to this workspace's AWS connection: ${target.error.issues[0]?.message}`,
-      ErrorType.CONFIGURATION_ERROR,
-      409,
-    );
+    throw missingConfiguration("Connect AWS under Models › Governance in this workspace");
   }
 
   return {
-    target: target.data,
-    client: new BedrockManagedAgentsClient(target.data.region, {
+    target: parseTarget(
+      { runtimeArn: connection.config.agentRuntimeArn, roleArn: connection.config.roleArn },
+      "this workspace's AWS connection",
+    ),
+    credentials: {
       accessKeyId: secrets.accessKeyId,
       secretAccessKey: secrets.secretAccessKey,
       ...(secrets.sessionToken ? { sessionToken: secrets.sessionToken } : {}),
-    }),
+    },
   };
+}
+
+async function resolvePersonalAccount(
+  context: ServiceContext,
+): Promise<BedrockManagedAgentAccount> {
+  const user = context.requireUser();
+  const [settings, apiKey] = await Promise.all([
+    context.repositories.userSettings.getUserSettings(user.id),
+    context.repositories.userSettings.getProviderApiKey(user.id, "bedrock"),
+  ]);
+  const target = parseTarget(
+    {
+      runtimeArn: settings?.bedrock_agent_runtime_arn,
+      roleArn: settings?.bedrock_agent_role_arn,
+    },
+    "your settings",
+  );
+
+  if (!apiKey) {
+    throw missingConfiguration("Add your Amazon Bedrock credentials in provider settings");
+  }
+
+  const { accessKey, secretKey } = parseAwsCredentials(apiKey);
+
+  return { target, credentials: { accessKeyId: accessKey, secretAccessKey: secretKey } };
 }
 
 export async function startBedrockManagedAgentsTurn(params: {
@@ -114,7 +152,10 @@ export async function startBedrockManagedAgentsTurn(params: {
   transcript: readonly AgentSessionTranscriptEntry[];
   operationId: string;
 }): Promise<AsyncGenerator<AgentHarnessEventRecord>> {
-  const { target, client } = await resolveWorkspaceAccount(params.context, params.projectId);
+  const { target, credentials } = params.projectId
+    ? await resolveWorkspaceAccount(params.context, params.projectId)
+    : await resolvePersonalAccount(params.context);
+  const client = new BedrockManagedAgentsClient(target.region, credentials);
 
   return agentSessionTurnRecords(
     {
