@@ -109,6 +109,13 @@ export const teammateConnectionGrantSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
+export const teammateConnectionOperationSchema = z.object({
+  id: z.string().min(1),
+  access: z.enum(["read", "write"]),
+  destructive: z.boolean(),
+  important: z.boolean(),
+});
+
 export const teammateConnectionGrantListResponseSchema = z.object({
   grants: z.array(teammateConnectionGrantSchema),
   connections: z.array(
@@ -117,7 +124,7 @@ export const teammateConnectionGrantListResponseSchema = z.object({
       provider: recipeConnectorProviderSchema,
       providerName: z.string().min(1),
       accountId: z.string().nullable(),
-      allowedOperations: z.array(z.string().min(1)),
+      operations: z.array(teammateConnectionOperationSchema),
     }),
   ),
 });
@@ -202,6 +209,7 @@ export const teammateRunConfigurationSchema = z
 export type TeammateContext = z.infer<typeof teammateContextSchema>;
 export type TeammateContextScope = z.infer<typeof teammateContextScopeSchema>;
 export type TeammateConnectionGrant = z.infer<typeof teammateConnectionGrantSchema>;
+export type TeammateConnectionOperation = z.infer<typeof teammateConnectionOperationSchema>;
 export type TeammateConnectionGrantListResponse = z.infer<
   typeof teammateConnectionGrantListResponseSchema
 >;

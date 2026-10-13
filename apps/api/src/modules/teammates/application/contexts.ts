@@ -234,7 +234,12 @@ export async function listTeammateConnectionGrants(
         provider: provider.id,
         providerName: provider.name,
         accountId: connection.external_id || null,
-        allowedOperations: provider.operations.map((operation) => operation.id),
+        operations: provider.operations.map((operation) => ({
+          id: operation.id,
+          access: operation.access,
+          destructive: operation.destructive === true,
+          important: operation.isImportant === true,
+        })),
       },
     ];
   });
