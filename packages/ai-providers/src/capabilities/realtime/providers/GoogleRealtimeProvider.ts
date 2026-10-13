@@ -23,20 +23,29 @@ export const GOOGLE_REALTIME_DESCRIPTOR = {
   inputModalities: ["audio", "video"],
   outputModalities: ["audio"],
   description: "WebSocket voice and vision",
-  defaultModelId: "gemini-3.1-flash-live-preview",
+  defaultModelId: "gemini-3.8-live",
   supportsVideoInput: true,
+  supportsTranscriptionSession: true,
 } satisfies RealtimeLiveProviderDescriptor;
 
 const DEFAULT_REALTIME_MODEL = GOOGLE_REALTIME_DESCRIPTOR.defaultModelId;
+const DEFAULT_TRANSCRIPTION_MODEL = "gemini-3.5-transcribe-live";
+const DEFAULT_TRANSLATION_MODEL = "gemini-3.5-live-translate-preview";
+const DEFAULT_LANGUAGE = "en";
 const API_KEY_ENVIRONMENT_VARIABLE = "GOOGLE_STUDIO_API_KEY";
+const DEFAULT_MODELS_BY_TYPE: Record<RealtimeSessionType, string> = {
+  realtime: DEFAULT_REALTIME_MODEL,
+  translation: DEFAULT_TRANSLATION_MODEL,
+  transcription: DEFAULT_TRANSCRIPTION_MODEL,
+};
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [
     DEFAULT_REALTIME_MODEL,
-    "gemini-live-2.5-flash",
-    "gemini-live-2.5-flash-preview-native-audio",
+    "gemini-3.8-live-extended-thinking",
+    "gemini-3.1-flash-live-preview",
   ],
-  translation: [],
-  transcription: [],
+  translation: [DEFAULT_TRANSLATION_MODEL],
+  transcription: [DEFAULT_TRANSCRIPTION_MODEL],
 };
 const LIVE_WEBSOCKET_URL =
   "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
@@ -48,26 +57,26 @@ const NEW_SESSION_LIFETIME_MS = 60 * 1000;
 
 const SUPPORTED_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
   realtime: ["text", "audio", "image", "video"],
-  translation: [],
-  transcription: [],
+  translation: ["audio"],
+  transcription: ["audio"],
 };
 
 const SUPPORTED_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
   realtime: ["text", "audio"],
-  translation: [],
-  transcription: [],
+  translation: ["audio"],
+  transcription: ["text"],
 };
 
 const DEFAULT_INPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
   realtime: ["audio"],
-  translation: [],
-  transcription: [],
+  translation: ["audio"],
+  transcription: ["audio"],
 };
 
 const DEFAULT_OUTPUT_MODALITIES_BY_TYPE: Record<RealtimeSessionType, RealtimeModality[]> = {
   realtime: ["audio"],
-  translation: [],
-  transcription: [],
+  translation: ["audio"],
+  transcription: ["text"],
 };
 
 interface GoogleAuthTokenResponse {
@@ -102,11 +111,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
   }
 
   getDefaultModel(type: RealtimeSessionRequest["type"]): string {
-    if (type !== "realtime") {
-      throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
-    }
-
-    return DEFAULT_REALTIME_MODEL;
+    return DEFAULT_MODELS_BY_TYPE[type];
   }
 
   buildAudioFormat(): Record<string, unknown> {
@@ -181,6 +186,30 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     };
   }
 
+  private buildTranscriptionConfig(request: RealtimeSessionRequest): Record<string, unknown> {
+    return {
+      responseModalities: ["TEXT"],
+      inputAudioTranscription: {
+        mode: "VERBATIM",
+        languageCodes: request.language ? [request.language] : [],
+      },
+      sessionResumption: {},
+    };
+  }
+
+  private buildTranslationConfig(request: RealtimeSessionRequest): Record<string, unknown> {
+    return {
+      responseModalities: ["AUDIO"],
+      inputAudioTranscription: {},
+      outputAudioTranscription: {},
+      translationConfig: {
+        targetLanguageCode: request.targetLanguage ?? DEFAULT_LANGUAGE,
+        echoTargetLanguage: false,
+      },
+      sessionResumption: {},
+    };
+  }
+
   private buildLiveConfig({
     request,
     inputModalities,
@@ -190,6 +219,14 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     inputModalities: RealtimeModality[];
     outputModalities: RealtimeModality[];
   }): Record<string, unknown> {
+    if (request.type === "transcription") {
+      return this.buildTranscriptionConfig(request);
+    }
+
+    if (request.type === "translation") {
+      return this.buildTranslationConfig(request);
+    }
+
     const responseModalities = outputModalities.map((modality) => modality.toUpperCase());
     const realtimeInputConfig = this.buildRealtimeInputConfig(inputModalities);
 
@@ -222,13 +259,14 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
   }
 
   private buildLiveSetup(model: string, config: Record<string, unknown>): Record<string, unknown> {
-    const { responseModalities, speechConfig, ...setupConfig } = config;
+    const { responseModalities, speechConfig, translationConfig, ...setupConfig } = config;
 
     return {
       model: formatGoogleStudioModelResource(model),
       generationConfig: {
         responseModalities,
         ...(speechConfig ? { speechConfig } : {}),
+        ...(translationConfig ? { translationConfig } : {}),
       },
       ...setupConfig,
     };
@@ -263,10 +301,6 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
   }
 
   async createSession(request: RealtimeSessionRequest): Promise<unknown> {
-    if (request.type !== "realtime") {
-      throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
-    }
-
     const transport = this.getTransport(request);
     const inputModalities = this.getInputModalities(request);
     const outputModalities = this.getOutputModalities(request);
@@ -311,7 +345,7 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
     return {
       id: token.name,
       object: "realtime.session",
-      type: "realtime",
+      type: request.type,
       provider: this.name,
       transport,
       protocol: "gemini-live",

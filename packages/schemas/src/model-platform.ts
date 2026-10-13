@@ -84,6 +84,8 @@ export const GRADER_KINDS = [
   "regex",
   "json_schema",
   "numeric",
+  "fact_coverage",
+  "grounded_numbers",
   "judge",
 ] as const;
 export const graderKindSchema = z.enum(GRADER_KINDS);
@@ -637,6 +639,8 @@ export const graderConfigSchema = z.discriminatedUnion("kind", [
     requiredKeys: z.array(z.string().min(1).max(100)).max(50).default([]),
   }),
   z.object({ kind: z.literal("numeric"), tolerance: z.number().nonnegative().max(1e9) }),
+  z.object({ kind: z.literal("fact_coverage") }),
+  z.object({ kind: z.literal("grounded_numbers") }),
   z.object({
     kind: z.literal("judge"),
     rubric: z.string().min(1).max(8000),

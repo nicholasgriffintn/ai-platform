@@ -37,7 +37,6 @@ export function buildRealtimeSessionPath(options: CreateRealtimeSessionOptions):
   appendParam(params, "model", options.model);
   appendParam(params, "transport", options.transport);
   appendParam(params, "language", options.language);
-  appendParam(params, "source_language", options.sourceLanguage);
   appendParam(params, "target_language", options.targetLanguage);
   appendParam(params, "voice", options.voice);
   appendParam(params, "instructions", options.instructions);

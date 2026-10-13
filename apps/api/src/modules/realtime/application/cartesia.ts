@@ -10,6 +10,7 @@ import {
   base64AudioToBuffer,
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
+  type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
 
 export function toCartesiaUpstreamMessage(
@@ -77,21 +78,15 @@ export function toCartesiaClientMessage(data: unknown): string | undefined {
   }
 
   const type = getString(payload.type);
-  const text = getString(payload.text);
-
-  if (type === "transcript" && text) {
-    return JSON.stringify({
-      type: payload.is_final === true ? "transcription.segment" : "transcription.text.delta",
-      text,
-    });
-  }
-
-  if (type === "flush_done" || type === "done") {
-    return JSON.stringify({ type: "transcription.done" });
-  }
 
   if (type === "error") {
-    return JSON.stringify({ type: "error", error: { message: getString(payload.message) } });
+    return JSON.stringify({
+      type: "error",
+      error: {
+        message: getString(payload.message) ?? getString(payload.title),
+        code: getString(payload.error_code) ?? payload.status_code,
+      },
+    });
   }
 
   return data;
@@ -110,7 +105,7 @@ export async function createCartesiaRealtimeProxyResponse({
   user: IUser;
   model?: string;
   delay?: RealtimeTranscriptionDelay;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const provider = getRealtimeProvider("cartesia", { env, user });
   const apiKey = await provider.getApiKey?.({
@@ -138,7 +133,6 @@ export async function createCartesiaRealtimeProxyResponse({
     upstreamUrl,
     headers: {
       "X-API-Key": apiKey,
-      "Cartesia-Version": CARTESIA_STT_API_VERSION,
     },
     onSessionEnd,
     toUpstreamMessage: toCartesiaUpstreamMessage,

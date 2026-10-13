@@ -20,6 +20,7 @@ import {
   RealtimeProxyLimitError,
   RealtimeProxySessionLimits,
   serializeNormalizedClientRealtimeMessage,
+  type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
 
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
@@ -44,13 +45,13 @@ function bridgeMistralRealtimeSockets({
   client: WebSocket;
   upstream: WebSocket;
   sessionUpdateMessage: string;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
   maxSessionDurationMs?: number;
 }): void {
   let hasSentSessionUpdate = false;
   const pendingClientMessages: string[] = [];
   const limits = new RealtimeProxySessionLimits();
-  const endSession = createRealtimeProxySessionEnd(onSessionEnd);
+  const endSession = createRealtimeProxySessionEnd(onSessionEnd, limits);
   const sessionTimer = setTimeout(() => {
     closeSocket(client, 1008, "Realtime session duration limit reached");
     closeSocket(upstream, 1008, "Realtime session duration limit reached");
@@ -167,7 +168,7 @@ export async function createMistralRealtimeProxyResponse({
   env: IEnv;
   user: IUser;
   model?: string;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const request = context.req.raw;
   const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";

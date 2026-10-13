@@ -2,10 +2,16 @@ import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
 import type { FunctionToolDescriptor } from "./types";
 
+export const RESEARCH_DEPTHS = ["quick", "standard", "deep"] as const;
+export const RESEARCH_FORMATS = ["report", "data"] as const;
+
+export type ResearchDepth = (typeof RESEARCH_DEPTHS)[number];
+export type ResearchFormat = (typeof RESEARCH_FORMATS)[number];
+
 export const research: FunctionToolDescriptor = {
   name: "research",
   description:
-    "Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
+    "Runs slow, paid deep web research across many sources and returns a cited synthesis. Use it for market analysis, due diligence or questions that need many sources; use web_search for a quick fact. Load the web-research skill first when the brief is vague.",
   type: "byok",
   permissions: ["read"],
   effects: { effectClass: "read" },
@@ -14,79 +20,32 @@ export const research: FunctionToolDescriptor = {
     properties: {
       input: {
         type: "string",
-        description: "Plain-text research brief. Provide this or structured_input.",
-      },
-      structured_input: {
-        type: "object",
         description:
-          "Structured input payload matching a Task API input schema. Overrides input when provided.",
+          "The research brief: the question, why it matters, and any scope such as timeframe, region or sources to prefer.",
       },
-      provider: {
+      depth: {
         type: "string",
+        enum: [...RESEARCH_DEPTHS],
         description:
-          "Optional research provider identifier. Defaults to 'parallel'. Use 'exa' for Exa Research.",
-        enum: ["parallel", "exa"],
+          "quick for a short sourced answer in a minute or two, standard for a thorough report, deep for exhaustive due diligence. Defaults to standard.",
       },
-      processor: {
+      format: {
         type: "string",
+        enum: [...RESEARCH_FORMATS],
         description:
-          "Parallel processor to use (e.g. 'ultra', 'pro', 'core', 'base'). Only applies to the Parallel provider. Defaults to ultra.",
-      },
-      model: {
-        type: "string",
-        description:
-          "Exa model to use (e.g. 'exa-research', 'exa-research-pro'). Only applies to the Exa provider. Defaults to 'exa-research'.",
-        enum: ["exa-research", "exa-research-pro"],
-      },
-      output_mode: {
-        type: "string",
-        description:
-          "Convenience helper for output schema. Supports 'auto' or 'text'. Ignored when task_spec_json or output_schema_json is provided. Only applies to Parallel provider.",
-        enum: ["auto", "text"],
+          "report for prose with citations, data for structured fields. Defaults to report.",
       },
       output_description: {
         type: "string",
-        description: "Optional description to guide text outputs when output_mode is 'text'.",
+        description: "Optional description of what the report or data should contain.",
       },
-      task_spec_json: {
+      provider: {
         type: "string",
-        description:
-          "Full Task API task_spec payload as JSON. Only applies to Parallel provider. Overrides output_mode/output_description when provided.",
-      },
-      output_schema_json: {
-        type: "string",
-        description:
-          "JSON Schema defining the structure of the research output. Only applies to Exa provider. Must be valid JSON.",
-      },
-      enable_events: {
-        type: "boolean",
-        description: "Enable Parallel event streaming for richer internal telemetry.",
-        default: false,
-      },
-      poll_interval_ms: {
-        type: "number",
-        description:
-          "Polling interval in milliseconds when waiting for task completion. Defaults to 5000.",
-      },
-      poll_timeout_seconds: {
-        type: "number",
-        description: "Timeout in seconds for each result poll request. Defaults to 25.",
-      },
-      max_poll_attempts: {
-        type: "number",
-        description:
-          "Maximum number of poll attempts before timing out. Defaults to 120 (~10 minutes at 5s interval).",
-      },
-      metadata: {
-        type: "object",
-        description:
-          "Arbitrary metadata object to forward to Parallel. Useful for tagging or auditing.",
-      },
-      wait_for_completion: {
-        type: "boolean",
-        description:
-          "Set to false to return immediately with a task handle and poll for results separately. Defaults to true for chats, false for dynamic apps.",
+        enum: ["parallel", "exa"],
+        description: "Research provider. Defaults to parallel.",
       },
     },
+    required: ["input"],
+    additionalProperties: false,
   }),
 };

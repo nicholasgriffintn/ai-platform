@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
+import { REALTIME_MAX_SESSION_SECONDS_MAX, REALTIME_PROXY_LIMITS } from "~/config/realtime";
 
 import {
   bridgeRealtimeTranscriptionSockets,
@@ -53,14 +53,23 @@ describe("realtime transcription proxy limits", () => {
   it("caps total audio for a session", () => {
     const limits = new RealtimeProxySessionLimits();
 
-    for (
-      let consumed = 0;
-      consumed < REALTIME_PROXY_LIMITS.sessionAudioBytes;
-      consumed += REALTIME_PROXY_LIMITS.audioFrameBytes
+    let consumed = 0;
+
+    while (
+      consumed + REALTIME_PROXY_LIMITS.audioFrameBytes <=
+      REALTIME_PROXY_LIMITS.sessionAudioBytes
     ) {
       limits.recordAudioFrame(REALTIME_PROXY_LIMITS.audioFrameBytes);
+      consumed += REALTIME_PROXY_LIMITS.audioFrameBytes;
     }
 
+    const remainder = REALTIME_PROXY_LIMITS.sessionAudioBytes - consumed;
+
+    if (remainder > 0) {
+      limits.recordAudioFrame(remainder);
+    }
+
+    expect(limits.summary().audioSeconds).toBe(REALTIME_MAX_SESSION_SECONDS_MAX);
     expect(() => limits.recordAudioFrame(1)).toThrow("Realtime session audio limit reached");
   });
 
@@ -94,7 +103,7 @@ describe("realtime transcription proxy limits", () => {
     ).toThrow("Realtime control message limit reached");
   });
 
-  it("releases the reservation when the client socket actually closes", async () => {
+  it("releases the reservation with the measured audio when the client socket closes", async () => {
     vi.stubGlobal("WebSocket", { CONNECTING: 0, OPEN: 1 });
     const client = new FakeSocket();
     const upstream = new FakeSocket();
@@ -107,9 +116,11 @@ describe("realtime transcription proxy limits", () => {
       toUpstreamMessage: () => null,
       toClientMessage: () => undefined,
     });
+    client.emit("message", { data: new ArrayBuffer(32_000 * 2 + 1) });
     client.emit("close", { code: 1000, reason: "done" });
 
     await vi.waitFor(() => expect(release).toHaveBeenCalledOnce());
+    expect(release).toHaveBeenCalledWith({ audioBytes: 64_001, audioSeconds: 3 });
     expect(upstream.closed).toEqual({ code: 1000, reason: "" });
   });
 

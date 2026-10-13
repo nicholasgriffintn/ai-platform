@@ -99,7 +99,6 @@ describe("Cartesia realtime protocol", () => {
         ),
         headers: {
           "X-API-Key": "cartesia-api-key",
-          "Cartesia-Version": CARTESIA_STT_API_VERSION,
         },
         onSessionEnd,
       }),
@@ -125,5 +124,21 @@ describe("Cartesia realtime protocol", () => {
     });
 
     expect(toCartesiaClientMessage(event)).toBe(event);
+  });
+
+  it("maps Cartesia error envelopes onto the shared error event", () => {
+    const error = JSON.stringify({
+      type: "error",
+      status_code: 401,
+      title: "Unauthorized",
+      message: "Invalid API key",
+      error_code: "invalid_api_key",
+      request_id: "request-1",
+    });
+
+    expect(JSON.parse(toCartesiaClientMessage(error) ?? "")).toEqual({
+      type: "error",
+      error: { message: "Invalid API key", code: "invalid_api_key" },
+    });
   });
 });

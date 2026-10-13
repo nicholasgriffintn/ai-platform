@@ -110,6 +110,7 @@ export class ElevenLabsRealtimeProvider implements RealtimeProvider {
     const proxy = await buildGrantedRealtimeProxyUrl({
       host: this.runtime.host,
       apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
+      byok: request.credentialAuthority === "byok",
       env: request.env,
       model,
       params: {

@@ -21,8 +21,6 @@ type OutputType =
   | "action_items"
   | "meeting_minutes"
   | "qa_extraction"
-  | "scene_analysis"
-  | "visual_insights"
   | "smart_timestamps";
 
 type NoteType =
@@ -65,8 +63,6 @@ export interface MediaGenerationRequest {
   noteType: NoteType;
   extraPrompt: string;
   timestamps: boolean;
-  useVideoAnalysis: boolean;
-  enableVideoSearch: boolean;
 }
 
 export interface MediaGenerationModalProps {
@@ -91,7 +87,6 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
   const [noteType, setNoteType] = useState<NoteType>("general");
   const [extraPrompt, setExtraPrompt] = useState<string>("");
   const [withTimestamps, setWithTimestamps] = useState<boolean>(false);
-  const [useVideoAnalysis, setUseVideoAnalysis] = useState<boolean>(false);
 
   const handleGenerate = async () => {
     if (!mediaUrl || selectedOutputs.length === 0) {
@@ -106,8 +101,6 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
       noteType,
       extraPrompt,
       timestamps: withTimestamps,
-      useVideoAnalysis,
-      enableVideoSearch: false,
     });
 
     if (content === undefined) {
@@ -124,8 +117,8 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
         <DialogHeader>
           <DialogTitle>Generate Notes from Media URL</DialogTitle>
           <DialogDescription>
-            Provide an audio/video URL, choose outputs, and generate structured notes. Enable video
-            intelligence for advanced scene analysis and visual insights.
+            Provide an audio or video URL, choose outputs, and generate structured notes from its
+            transcript.
           </DialogDescription>
         </DialogHeader>
         <div className="mt-2 space-y-4">
@@ -163,112 +156,34 @@ export const MediaGenerationModal = memo(function MediaGenerationModal({
             </label>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <span className="text-sm font-medium">Outputs</span>
-              <div className="mt-2 grid grid-cols-1 gap-2">
-                {(
-                  [
-                    { id: "concise_summary", label: "Concise summary" },
-                    { id: "detailed_outline", label: "Detailed outline" },
-                    { id: "key_takeaways", label: "Key takeaways" },
-                    { id: "action_items", label: "Action items" },
-                    { id: "meeting_minutes", label: "Meeting minutes" },
-                    { id: "qa_extraction", label: "Q&A extraction" },
-                    {
-                      id: "scene_analysis",
-                      label: "Scene analysis",
-                      videoOnly: true,
-                    },
-                    {
-                      id: "visual_insights",
-                      label: "Visual insights",
-                      videoOnly: true,
-                    },
-                    {
-                      id: "smart_timestamps",
-                      label: "Smart timestamps",
-                      videoOnly: true,
-                    },
-                  ] satisfies {
-                    id: OutputType;
-                    label: string;
-                    videoOnly?: boolean;
-                  }[]
-                ).map((opt) => (
-                  <label
-                    key={opt.id}
-                    className={`flex items-center gap-2 text-sm ${
-                      opt.videoOnly && !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
-                    }`}
-                  >
-                    <Checkbox
-                      checked={selectedOutputs.includes(opt.id)}
-                      disabled={opt.videoOnly && !useVideoAnalysis}
-                      onCheckedChange={(checked) => {
-                        setSelectedOutputs((prev) =>
-                          checked === true
-                            ? Array.from(new Set([...prev, opt.id]))
-                            : prev.filter((v) => v !== opt.id),
-                        );
-                      }}
-                    />
-                    {opt.label}
-                    {opt.videoOnly && (
-                      <span className="text-xs font-medium text-active-work">VIDEO</span>
-                    )}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="rounded-lg border border-active-work/45 bg-active-work/12 p-4">
-                <h3 className="mb-3 text-sm font-medium text-active-work">🎥 Video Intelligence</h3>
-                <div className="space-y-3">
-                  <label htmlFor="video-analysis" className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      id="video-analysis"
-                      checked={useVideoAnalysis}
-                      onCheckedChange={(state) => {
-                        const checked = state === true;
-
-                        setUseVideoAnalysis(checked);
-                        if (!checked) {
-                          setSelectedOutputs((prev) =>
-                            prev.filter(
-                              (output) =>
-                                !["scene_analysis", "visual_insights", "smart_timestamps"].includes(
-                                  output,
-                                ),
-                            ),
-                          );
-                        }
-                      }}
-                    />
-                    <div>
-                      <span className="font-medium">Advanced video analysis</span>
-                      <p className="text-xs text-muted-foreground">
-                        Analyze visual content, scenes, gestures, and on-screen text
-                      </p>
-                    </div>
-                  </label>
-
-                  <label
-                    htmlFor="video-search"
-                    className={`flex items-center gap-2 text-sm ${
-                      !useVideoAnalysis ? "cursor-not-allowed opacity-50" : ""
-                    }`}
-                  >
-                    <Checkbox id="video-search" checked={false} disabled />
-                    <div>
-                      <span className="font-medium">Video search unavailable</span>
-                      <p className="text-xs text-muted-foreground">
-                        Multimodal retrieval is being upgraded before this can be enabled safely
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
+          <div>
+            <span className="text-sm font-medium">Outputs</span>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {(
+                [
+                  { id: "concise_summary", label: "Concise summary" },
+                  { id: "detailed_outline", label: "Detailed outline" },
+                  { id: "key_takeaways", label: "Key takeaways" },
+                  { id: "action_items", label: "Action items" },
+                  { id: "meeting_minutes", label: "Meeting minutes" },
+                  { id: "qa_extraction", label: "Q&A extraction" },
+                  { id: "smart_timestamps", label: "Smart timestamps" },
+                ] satisfies { id: OutputType; label: string }[]
+              ).map((opt) => (
+                <label key={opt.id} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={selectedOutputs.includes(opt.id)}
+                    onCheckedChange={(checked) => {
+                      setSelectedOutputs((prev) =>
+                        checked === true
+                          ? Array.from(new Set([...prev, opt.id]))
+                          : prev.filter((v) => v !== opt.id),
+                      );
+                    }}
+                  />
+                  {opt.label}
+                </label>
+              ))}
             </div>
           </div>
 

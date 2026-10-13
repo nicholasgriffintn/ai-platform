@@ -1,7 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import {
   getDurableObjectStub,
   postDurableObjectJson,
@@ -12,19 +11,24 @@ const logger = getLogger({ prefix: "services/realtime/proxy-coordinator/client" 
 const COORDINATOR_ORIGIN = "https://realtime-proxy-coordinator";
 
 export interface RealtimeProxyReservation {
+  byok: boolean;
   release(): Promise<void>;
 }
 
 export async function reserveRealtimeProxySession({
+  byok,
   env,
   expiresAt,
   jti,
+  maxSessionSeconds,
   sessionId,
   userId,
 }: {
+  byok: boolean;
   env: IEnv;
   expiresAt: number;
   jti: string;
+  maxSessionSeconds: number;
   sessionId: string;
   userId: number;
 }): Promise<RealtimeProxyReservation> {
@@ -40,7 +44,7 @@ export async function reserveRealtimeProxySession({
   const response = await postDurableObjectJson(stub, `${COORDINATOR_ORIGIN}/consume`, {
     expiresAt: expiresAt * 1000,
     jti,
-    sessionExpiresAt: Date.now() + REALTIME_PROXY_LIMITS.sessionDurationMs,
+    sessionExpiresAt: Date.now() + maxSessionSeconds * 1000,
     sessionId,
   });
 
@@ -67,6 +71,7 @@ export async function reserveRealtimeProxySession({
   let released = false;
 
   return {
+    byok,
     async release(): Promise<void> {
       if (released) {
         return;

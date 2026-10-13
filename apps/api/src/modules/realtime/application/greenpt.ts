@@ -12,10 +12,21 @@ import {
   base64AudioToBuffer,
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
+  type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
 
 const GREENPT_LIVE_URL = "wss://api.greenpt.ai/v1/listen";
 const DEFAULT_LANGUAGE = "en";
+const MULTILINGUAL_MODEL = "green-s-pro";
+const MULTILINGUAL_LANGUAGE = "multi";
+
+function resolveGreenPtLanguage(model: string, language?: string): string {
+  if (language) {
+    return language;
+  }
+
+  return model === MULTILINGUAL_MODEL ? MULTILINGUAL_LANGUAGE : DEFAULT_LANGUAGE;
+}
 
 export function toGreenPtUpstreamMessage(
   message: NormalizedClientRealtimeMessage,
@@ -45,7 +56,7 @@ export function buildGreenPtRealtimeUpstreamUrl({
   upstreamUrl.searchParams.set("model", model);
   upstreamUrl.searchParams.set("encoding", "linear16");
   upstreamUrl.searchParams.set("sample_rate", "16000");
-  upstreamUrl.searchParams.set("language", language ?? DEFAULT_LANGUAGE);
+  upstreamUrl.searchParams.set("language", resolveGreenPtLanguage(model, language));
   upstreamUrl.searchParams.set("punctuate", "true");
   upstreamUrl.searchParams.set("interim_results", delay === "xhigh" ? "false" : "true");
 
@@ -114,7 +125,7 @@ export async function createGreenPtRealtimeProxyResponse({
   model?: string;
   language?: string;
   delay?: RealtimeTranscriptionDelay;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const provider = getRealtimeProvider("greenpt", { env, user });
   const apiKey = await provider.getApiKey?.({

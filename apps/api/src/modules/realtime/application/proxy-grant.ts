@@ -4,16 +4,23 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { API_LOCAL_HOST, API_PROD_HOST, LOCAL_HOST, PROD_HOST } from "~/config/app";
 import { REALTIME_PROXY_GRANT_TTL_SECONDS } from "~/config/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import {
   reserveRealtimeProxySession,
   type RealtimeProxyReservation,
 } from "~/modules/realtime/infrastructure/proxy-coordinator/client";
 import type { IEnv, IUser } from "~/types";
 
+import type {
+  RealtimeProxySessionEndHandler,
+  RealtimeProxySessionSummary,
+} from "./transcriptionProxy";
+
 const REALTIME_PROXY_GRANT_AUDIENCE = "assistant-realtime-proxy";
 const REALTIME_PROXY_GRANT_PURPOSE = "realtime-proxy";
 
 interface RealtimeProxyGrantScope {
+  byok: boolean;
   model: string;
   provider: string;
   sessionId: string;
@@ -44,6 +51,7 @@ export async function createRealtimeProxyGrant(
       iat: now,
       iss: "assistant",
       jti: generateId(),
+      byok: scope.byok,
       model: scope.model,
       provider: scope.provider,
       purpose: REALTIME_PROXY_GRANT_PURPOSE,
@@ -165,9 +173,11 @@ export async function assertRealtimeProxyGrant({
   }
 
   return reserveRealtimeProxySession({
+    byok: claims["byok"] === true,
     env,
     expiresAt: claims.exp,
     jti: claims.jti,
+    maxSessionSeconds: resolveRealtimeMaxSessionSeconds(env),
     sessionId,
     userId: user.id,
   });
@@ -175,10 +185,19 @@ export async function assertRealtimeProxyGrant({
 
 export async function connectReservedRealtimeProxy(
   reservation: RealtimeProxyReservation,
-  connect: (onSessionEnd: () => Promise<void>) => Promise<Response>,
+  connect: (onSessionEnd: RealtimeProxySessionEndHandler) => Promise<Response>,
+  settle?: (summary: RealtimeProxySessionSummary) => Promise<void>,
 ): Promise<Response> {
+  const onSessionEnd: RealtimeProxySessionEndHandler = async (summary) => {
+    try {
+      await settle?.(summary);
+    } finally {
+      await reservation.release();
+    }
+  };
+
   try {
-    const response = await connect(() => reservation.release());
+    const response = await connect(onSessionEnd);
 
     if (response.status !== 101) {
       await reservation.release();

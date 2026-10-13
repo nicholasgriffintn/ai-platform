@@ -61,10 +61,10 @@ describe("GoogleRealtimeProvider", () => {
         newSessionExpireTime: "2026-08-31T12:01:00.000Z",
       }),
     );
-    getModelConfigByModelMock.mockResolvedValue({
+    getModelConfigByModelMock.mockImplementation(async (model: string) => ({
       provider: "google-ai-studio",
-      matchingModel: "gemini-3.1-flash-live-preview",
-    });
+      matchingModel: model,
+    }));
   });
 
   afterEach(() => {
@@ -86,7 +86,7 @@ describe("GoogleRealtimeProvider", () => {
       expireTime: "2026-08-31T14:00:00.000Z",
       newSessionExpireTime: "2026-08-31T12:01:00.000Z",
       liveConnectConstraints: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         config: {
           responseModalities: ["AUDIO"],
           sessionResumption: {},
@@ -104,11 +104,72 @@ describe("GoogleRealtimeProvider", () => {
         "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained",
       ),
       setup: {
-        model: "models/gemini-3.1-flash-live-preview",
+        model: "models/gemini-3.8-live",
         sessionResumption: {},
         contextWindowCompression: { slidingWindow: {} },
         inputAudioTranscription: {},
         outputAudioTranscription: {},
+      },
+    });
+  });
+
+  it("creates a text-only transcription session on Gemini 3.5 Transcribe Live", async () => {
+    const provider = new GoogleRealtimeProvider(runtime);
+
+    const session = await provider.createSession(
+      createRequest({ type: "transcription", language: "en-GB" }),
+    );
+
+    expect(getLastRequestBody()).toMatchObject({
+      liveConnectConstraints: {
+        model: "models/gemini-3.5-transcribe-live",
+        config: {
+          responseModalities: ["TEXT"],
+          inputAudioTranscription: { mode: "VERBATIM", languageCodes: ["en-GB"] },
+          sessionResumption: {},
+        },
+      },
+    });
+    expect(session).toMatchObject({
+      type: "transcription",
+      protocol: "gemini-live",
+      model: "gemini-3.5-transcribe-live",
+      output_modalities: ["text"],
+      setup: {
+        model: "models/gemini-3.5-transcribe-live",
+        generationConfig: { responseModalities: ["TEXT"] },
+        inputAudioTranscription: { mode: "VERBATIM", languageCodes: ["en-GB"] },
+      },
+    });
+    expect(session).not.toHaveProperty("audio.output");
+  });
+
+  it("creates a translation session with the target language locked into the token", async () => {
+    const provider = new GoogleRealtimeProvider(runtime);
+
+    const session = await provider.createSession(
+      createRequest({ type: "translation", targetLanguage: "pl" }),
+    );
+
+    expect(getLastRequestBody()).toMatchObject({
+      liveConnectConstraints: {
+        model: "models/gemini-3.5-live-translate-preview",
+        config: {
+          responseModalities: ["AUDIO"],
+          translationConfig: { targetLanguageCode: "pl", echoTargetLanguage: false },
+          inputAudioTranscription: {},
+          outputAudioTranscription: {},
+        },
+      },
+    });
+    expect(session).toMatchObject({
+      type: "translation",
+      model: "gemini-3.5-live-translate-preview",
+      setup: {
+        generationConfig: {
+          responseModalities: ["AUDIO"],
+          translationConfig: { targetLanguageCode: "pl", echoTargetLanguage: false },
+        },
       },
     });
   });

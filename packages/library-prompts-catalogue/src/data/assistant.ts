@@ -215,33 +215,24 @@ Return only the JSON object, with no markdown fence around it.`,
     title: "Document notes",
     description:
       "Turns a transcript or video into structured Markdown notes, with optional timestamps and extra context.",
-    text: `You are an expert note taker. {{#useVideoAnalysis}}Analyze this video content{{/useVideoAnalysis}}{{^useVideoAnalysis}}Given a transcript{{/useVideoAnalysis}} from {{documentTypeDescriptor}} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
+    text: `You are an expert note taker. Given a transcript from {{documentTypeDescriptor}} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
 
 Sections to include:
 {{selectedSections}}
 
 Guidelines:
-- Be accurate to the {{#useVideoAnalysis}}audio and visual content{{/useVideoAnalysis}}{{^useVideoAnalysis}}transcript{{/useVideoAnalysis}} while improving clarity
+- Be accurate to the transcript while improving clarity
 - Keep factual details, names, dates
 - Merge duplicates and remove filler
 - Prefer concise language
 - For Action Items, include owner (if identifiable) and due dates if present
 - For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
-- For Q&A Extraction, list Q paired with A succinctly{{#useVideoAnalysis}}
-- For Scene Analysis, break down the content by visual scenes and topics
-- For Visual Insights, highlight important visual elements, diagrams, or on-screen content
-- For Smart Timestamps, provide key moment timestamps with visual and audio descriptions
-- Integrate visual insights with audio content for comprehensive notes{{/useVideoAnalysis}}{{^useVideoAnalysis}}
-- For Smart Timestamps, provide key moment timestamps with descriptions{{/useVideoAnalysis}}{{#timestamps}}
+- For Q&A Extraction, list Q paired with A succinctly
+- For Smart Timestamps, provide key moment timestamps with descriptions{{#timestamps}}
 - Include relevant timestamps where helpful, copied from the [m:ss] markers in the transcript; never estimate one{{/timestamps}}
 
 {{#extraPrompt}}Additional context: {{extraPrompt}}{{/extraPrompt}}`,
     variables: [
-      {
-        name: "useVideoAnalysis",
-        description:
-          "Non-empty when the source includes video, selecting video wording and the visual-analysis guidelines.",
-      },
       {
         name: "documentTypeDescriptor",
         description: "Human-readable description of the document type.",
@@ -309,20 +300,6 @@ Guidelines:
     title: "Note section: Q&A extraction",
     description: "Section label for question and answer extraction in generated notes.",
     text: "Q&A Extraction",
-  },
-  {
-    id: "document/section/scene-analysis",
-    task: "document-notes",
-    title: "Note section: scene analysis",
-    description: "Section label for scene analysis in generated notes.",
-    text: "Scene Analysis",
-  },
-  {
-    id: "document/section/visual-insights",
-    task: "document-notes",
-    title: "Note section: visual insights",
-    description: "Section label for visual insights in generated notes.",
-    text: "Visual Insights",
   },
   {
     id: "document/section/smart-timestamps",

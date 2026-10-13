@@ -8,16 +8,16 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { Plus } from "lucide-react";
 
-export interface NoteSummary {
+export interface NoteCardItem {
   id: string;
   title?: string | null;
-  content?: string | null;
+  excerpt?: string | null;
   updatedAt: string;
   href: string;
 }
 
 export interface NoteCardGridProps {
-  notes: NoteSummary[];
+  notes: NoteCardItem[];
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   newNoteHref: string;
@@ -66,7 +66,7 @@ export function NoteCardGrid({
                   {item.title || "Untitled note"}
                 </h2>
                 <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
-                  {item.content || "Empty note"}
+                  {item.excerpt || "Empty note"}
                 </p>
                 <p className="mt-auto pt-3 text-xs text-muted-foreground">
                   Updated {new Date(item.updatedAt).toLocaleDateString()}

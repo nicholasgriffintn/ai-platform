@@ -1,15 +1,13 @@
-import {
-  userCreditActor,
-  emitUsageEvents,
-  finishUsageReservation,
-  type UsageEventDraft,
-} from "@ngriffin_uk/polychat-ai-billing";
+import { emitUsageEvents, finishUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { rateEntriesFromModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { getModelConfig } from "~/modules/models/application/resolve";
-import type { RealtimeReconciliationPayload } from "~/modules/realtime/application/sessionUsage";
+import {
+  buildRealtimeUsageDraft,
+  type RealtimeReconciliationPayload,
+} from "~/modules/realtime/application/sessionUsage";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { IEnv } from "~/types";
 
@@ -69,21 +67,21 @@ export class RealtimeReconciliationHandler implements TaskHandler {
         ? rateEntriesFromModelConfig(modelConfig, { resource: payload.pricing.resource })
         : [];
 
-      const draft: UsageEventDraft = {
-        idempotencyKey: `realtime:${payload.sessionId}:settlement`,
-        actor: userCreditActor(payload.userId),
-        source: "capability",
-        vendor: payload.pricing.vendor,
-        resource: payload.pricing.resource,
-        unit: payload.pricing.unit,
-        quantity: payload.pricing.quantity,
-        byok: payload.byok === true,
-        completionId: payload.sessionId,
-        rates,
-        raw: { sessionId: payload.sessionId, provider: payload.provider },
-      };
-
-      await emitUsageEvents(runtime, { drafts: [draft] });
+      await emitUsageEvents(runtime, {
+        drafts: [
+          buildRealtimeUsageDraft({
+            userId: payload.userId,
+            sessionId: payload.sessionId,
+            provider: payload.provider,
+            vendor: payload.pricing.vendor,
+            resource: payload.pricing.resource,
+            unit: payload.pricing.unit,
+            quantity: payload.pricing.quantity,
+            byok: payload.byok === true,
+            rates,
+          }),
+        ],
+      });
 
       return {
         status: "success",
