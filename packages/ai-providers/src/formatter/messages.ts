@@ -20,6 +20,30 @@ interface MessageFormatOptions {
   assistantPromptLabel?: string;
 }
 
+const TOOL_IMAGES_INTRODUCTION = "Images returned by the tool results above:";
+
+function isImageUrlPart(part: unknown): part is MessageContent {
+  return isRecord(part) && part.type === "image_url" && isRecord(part.image_url);
+}
+
+function splitToolImages(content: Message["content"]): {
+  content: Message["content"];
+  images: MessageContent[];
+} {
+  if (!Array.isArray(content)) {
+    return { content, images: [] };
+  }
+
+  return {
+    content: content.filter((part) => !isImageUrlPart(part)),
+    images: content.filter(isImageUrlPart),
+  };
+}
+
+function toolImagesMessage(images: MessageContent[]): Message {
+  return { role: "user", content: [{ type: "text", text: TOOL_IMAGES_INTRODUCTION }, ...images] };
+}
+
 export class MessageFormatter {
   static stringifyMessageContent(content: unknown): string {
     if (typeof content === "string") {
@@ -54,7 +78,34 @@ export class MessageFormatter {
   }
 
   static formatOpenAIResponsesInput(messages: Message[]): OpenAIResponsesInputItem[] {
-    return messages.flatMap((message) => MessageFormatter.formatOpenAIResponsesMessage(message));
+    const items: OpenAIResponsesInputItem[] = [];
+    let pendingToolImages: MessageContent[] = [];
+
+    const flushToolImages = () => {
+      if (pendingToolImages.length > 0) {
+        items.push(
+          ...MessageFormatter.formatOpenAIResponsesMessage(toolImagesMessage(pendingToolImages)),
+        );
+        pendingToolImages = [];
+      }
+    };
+
+    for (const message of messages) {
+      if (message.role !== "tool") {
+        flushToolImages();
+        items.push(...MessageFormatter.formatOpenAIResponsesMessage(message));
+        continue;
+      }
+
+      const { content, images } = splitToolImages(message.content);
+
+      items.push(...MessageFormatter.formatOpenAIResponsesMessage({ ...message, content }));
+      pendingToolImages.push(...images);
+    }
+
+    flushToolImages();
+
+    return items;
   }
 
   static formatOpenAIResponsesInstructions(
@@ -149,9 +200,30 @@ export class MessageFormatter {
 
   private static formatMessageContent(messages: Message[], provider: string): Message[] {
     const formattedMessages: Message[] = [];
+    let pendingToolImages: MessageContent[] = [];
+
+    const flushToolImages = () => {
+      if (pendingToolImages.length > 0) {
+        formattedMessages.push(
+          ...MessageFormatter.formatMessageContent(
+            [toolImagesMessage(pendingToolImages)],
+            provider,
+          ),
+        );
+        pendingToolImages = [];
+      }
+    };
 
     for (const message of messages) {
-      const content = MessageFormatter.formatContent(message.content, provider);
+      if (message.role !== "tool") {
+        flushToolImages();
+      }
+
+      const toolImages =
+        message.role === "tool"
+          ? splitToolImages(message.content)
+          : { content: message.content, images: [] };
+      const content = MessageFormatter.formatContent(toolImages.content, provider);
 
       if (message.role === "tool") {
         if (
@@ -199,18 +271,28 @@ export class MessageFormatter {
             ],
           });
 
+          const imageBlocks =
+            toolImages.images.length > 0
+              ? MessageFormatter.formatContent(toolImages.images, provider)
+              : [];
+
           formattedMessages.push({
             role: "user",
             content: [
               {
                 type: "tool_result" as ContentType,
                 tool_use_id: message.tool_call_id,
-                content: toolResultContent,
+                content:
+                  Array.isArray(imageBlocks) && imageBlocks.length > 0
+                    ? [MessageFormatter.createAnthropicTextBlock(toolResultContent), ...imageBlocks]
+                    : toolResultContent,
               },
             ],
           });
           continue;
         }
+
+        pendingToolImages.push(...toolImages.images);
 
         const toolMessage: Message = {
           role: "tool",
@@ -297,6 +379,8 @@ export class MessageFormatter {
           }
       }
     }
+
+    flushToolImages();
 
     return formattedMessages;
   }

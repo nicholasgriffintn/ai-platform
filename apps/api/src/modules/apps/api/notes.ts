@@ -4,6 +4,7 @@ import {
   noteDetailResponseSchema,
   noteFormatResponseSchema,
   noteFormatSchema,
+  noteListQuerySchema,
   noteUpdateSchema,
   generateNotesFromMediaSchema,
   generateNotesFromMediaResponseSchema,
@@ -54,7 +55,7 @@ addRoute(app, "get", "/", {
     },
   },
   auth: true,
-  querySchema: projectScopeQuerySchema,
+  querySchema: projectScopeQuerySchema.extend(noteListQuerySchema.shape),
   middleware: [requirePlan("pro")],
   handler: async ({ query, serviceContext, user }) => {
     try {
@@ -69,6 +70,7 @@ addRoute(app, "get", "/", {
         context: serviceContext,
         userId: user.id,
         projectId: query.projectId,
+        query: query.q,
       });
 
       return { notes };
@@ -350,9 +352,6 @@ addRoute(app, "post", "/generate-from-media", {
         documentType: body.noteType,
         extraPrompt: body.extraPrompt,
         timestamps: body.timestamps,
-        useVideoAnalysis: body.useVideoAnalysis,
-        enableVideoSearch: body.enableVideoSearch,
-        projectId: query.projectId,
       });
 
       return { content: result.content };

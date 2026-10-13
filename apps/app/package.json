@@ -22,7 +22,8 @@
     "sync": "npx cap sync",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "typecheck": "react-router typegen && tsc -b",
+    "typecheck": "pnpm typegen && tsc -b",
+    "typegen": "react-router typegen",
     "watch": "react-router build --watch",
     "wrangler:dev": "pnpm run build && wrangler dev --remote"
   },
@@ -96,7 +97,7 @@
   "devDependencies": {
     "@babel/core": "8.0.6",
     "@babel/preset-typescript": "8.0.1",
-    "@cloudflare/vite-plugin": "1.62.5",
+    "@cloudflare/vite-plugin": "1.63.0",
     "@cloudflare/workers-types": "catalog:",
     "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
     "@ngriffin_uk/polychat-config": "workspace:^",

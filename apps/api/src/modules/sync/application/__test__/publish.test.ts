@@ -1,3 +1,4 @@
+import { createFakeUsageStore } from "@ngriffin_uk/polychat-ai-billing/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSandboxSyncNotifier } from "~/modules/apps/application/sandbox/sync-events";
@@ -6,7 +7,6 @@ import { publishUsageChanged } from "~/modules/usage/application/events";
 import { publishWorkspaceUsageChanged } from "~/modules/usage/application/workspace-events";
 import type { IEnv } from "~/types";
 
-import { createFakeUsageStore } from "../../../../../../../packages/ai-billing/src/__test__/fake-usage-store";
 import { clearAudienceCache, conversationAudience } from "../audience";
 import { publishConversationChanged, publishRunChanged } from "../conversation-events";
 import { publishResourceEvent } from "../resource-events";

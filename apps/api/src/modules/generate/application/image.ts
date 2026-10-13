@@ -1,5 +1,6 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+import { randomUint32 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
@@ -20,6 +21,7 @@ export interface ImageGenerationParams {
   aspect_ratio?: string;
   width?: number;
   height?: number;
+  seed?: number;
 }
 
 export interface ImageResponse {
@@ -64,6 +66,11 @@ export async function generateImage({
 
     const diffusionSteps = args.steps === undefined || args.steps === 0 ? 4 : args.steps;
 
+    const seed =
+      typeof args.seed === "number" && Number.isInteger(args.seed) && args.seed >= 0
+        ? args.seed
+        : randomUint32();
+
     if (diffusionSteps < 1 || diffusionSteps > 8) {
       return {
         status: "error",
@@ -105,6 +112,7 @@ export async function generateImage({
       width: args.width,
       height: args.height,
       steps: diffusionSteps,
+      seed,
       model: args.model,
       metadata: {
         steps: diffusionSteps,
@@ -120,8 +128,8 @@ export async function generateImage({
     return {
       status: "success",
       name: "create_image",
-      content: "Image generated successfully",
-      data: imageData,
+      content: `Image generated successfully with seed ${seed}. Pass the same seed with an edited prompt to keep the composition.`,
+      data: { ...imageData, seed },
     };
   } catch (error) {
     return {

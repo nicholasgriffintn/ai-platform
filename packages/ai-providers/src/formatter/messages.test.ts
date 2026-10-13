@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { Message } from "../types/index.js";
 import { MessageFormatter } from "./messages.js";
 
 describe("OpenAI Responses history formatting", () => {
@@ -226,5 +227,65 @@ describe("Google Vertex history formatting", () => {
     });
 
     expect(formatted.some((message) => message.role === "system")).toBe(false);
+  });
+});
+
+describe("tool result images", () => {
+  const image = { type: "image_url" as const, image_url: { url: "data:image/png;base64,aGk=" } };
+  const toolMessage: Message = {
+    role: "tool",
+    name: "inspo",
+    tool_call_id: "call-1",
+    content: [{ type: "text", text: "One screen [image 1 attached]" }, image],
+  };
+  const history: Message[] = [
+    {
+      role: "assistant",
+      content: "",
+      tool_calls: [
+        { id: "call-1", type: "function", function: { name: "inspo", arguments: "{}" } },
+        { id: "call-2", type: "function", function: { name: "weather", arguments: "{}" } },
+      ],
+    },
+    toolMessage,
+    { role: "tool", name: "weather", tool_call_id: "call-2", content: "Sunny" },
+  ];
+
+  it("keeps tool replies together and sends their images in one user message after them", () => {
+    const formatted = MessageFormatter.formatMessages(history, { provider: "openai" });
+
+    expect(formatted.map((message) => message.role)).toEqual(["assistant", "tool", "tool", "user"]);
+    expect(String(formatted[1]?.content)).not.toContain("base64");
+    expect(formatted[3]?.content).toEqual([
+      { type: "text", text: "Images returned by the tool results above:" },
+      image,
+    ]);
+  });
+
+  it("puts images inside the Anthropic tool result", () => {
+    const formatted = MessageFormatter.formatMessages([toolMessage], { provider: "anthropic" });
+    const [, resultMessage] = formatted;
+    const toolResult = Array.isArray(resultMessage?.content) ? resultMessage.content[0] : undefined;
+
+    expect(toolResult?.content).toEqual([
+      expect.objectContaining({ type: "text" }),
+      { type: "image", source: { type: "base64", media_type: "image/png", data: "aGk=" } },
+    ]);
+  });
+
+  it("adds a Responses input image after the function outputs", () => {
+    const items = MessageFormatter.formatOpenAIResponsesInput(history);
+
+    expect(items.map((item) => item.type)).toEqual([
+      "function_call",
+      "function_call",
+      "function_call_output",
+      "function_call_output",
+      "message",
+    ]);
+    expect(items.at(-1)).toMatchObject({
+      role: "user",
+      content: [{ type: "input_text" }, { type: "input_image", image_url: image.image_url.url }],
+    });
   });
 });

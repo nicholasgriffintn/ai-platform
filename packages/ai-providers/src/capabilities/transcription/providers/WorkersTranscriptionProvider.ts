@@ -1,30 +1,23 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveAiGatewayId } from "../../../gateway.js";
 import { BaseTranscriptionProvider } from "../base.js";
 import type { TranscriptionRequest, TranscriptionResult } from "../index.js";
+import { readTranscriptionTimings } from "../timings.js";
 
 async function getAudioForProvider(model: string, file: Blob) {
   if (model === "@cf/deepgram/nova-3") {
     return file.stream();
   }
 
+  const audioData = await file.arrayBuffer();
+
   if (model === "@cf/openai/whisper-large-v3-turbo") {
-    throw new AssistantError("Not implemented", ErrorType.CONFIGURATION_ERROR);
-  } else {
-    const audioData = await file.arrayBuffer();
-
-    return [...new Uint8Array(audioData)];
-  }
-}
-
-function readTranscriptText(response: unknown): string | null {
-  if (!isRecord(response) || typeof response.text !== "string") {
-    return null;
+    return bufferToBase64(audioData);
   }
 
-  return response.text;
+  return [...new Uint8Array(audioData)];
 }
 
 export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
@@ -78,7 +71,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
         },
       });
 
-      const text = readTranscriptText(response);
+      const { text, segments, words } = readTranscriptionTimings(response);
 
       if (!text) {
         throw new AssistantError("No response from the model");
@@ -86,6 +79,8 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 
       return {
         text,
+        segments,
+        words,
         data: response,
       };
     } catch (error) {

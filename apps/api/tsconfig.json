@@ -2,7 +2,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",
@@ -10,13 +9,11 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
-    /* Strictness */
     "noImplicitAny": false,
     "noImplicitThis": true,
     "strictNullChecks": false,
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    /* If NOT transpiling with TypeScript: */
     "moduleResolution": "Bundler",
     "module": "es2022",
     "noEmit": true,
@@ -24,7 +21,97 @@
     "types": ["@types/node", "@cloudflare/workers-types/experimental"],
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "composite": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "references": [
+    {
+      "path": "../../packages/ai-agents"
+    },
+    {
+      "path": "../../packages/ai-billing"
+    },
+    {
+      "path": "../../packages/ai-experiments"
+    },
+    {
+      "path": "../../packages/ai-functions"
+    },
+    {
+      "path": "../../packages/ai-integrations"
+    },
+    {
+      "path": "../../packages/ai-model-providers"
+    },
+    {
+      "path": "../../packages/ai-models"
+    },
+    {
+      "path": "../../packages/ai-prompts"
+    },
+    {
+      "path": "../../packages/ai-providers"
+    },
+    {
+      "path": "../../packages/ai-sandbox"
+    },
+    {
+      "path": "../../packages/ai-skills"
+    },
+    {
+      "path": "../../packages/ai-telemetry"
+    },
+    {
+      "path": "../../packages/ai-workflows"
+    },
+    {
+      "path": "../../packages/library-benchmarks"
+    },
+    {
+      "path": "../../packages/library-chat"
+    },
+    {
+      "path": "../../packages/library-flags"
+    },
+    {
+      "path": "../../packages/library-goals"
+    },
+    {
+      "path": "../../packages/library-interactions"
+    },
+    {
+      "path": "../../packages/library-model-registry"
+    },
+    {
+      "path": "../../packages/library-policy"
+    },
+    {
+      "path": "../../packages/library-registry"
+    },
+    {
+      "path": "../../packages/library-sandbox"
+    },
+    {
+      "path": "../../packages/library-sites"
+    },
+    {
+      "path": "../../packages/library-skills-catalogue"
+    },
+    {
+      "path": "../../packages/library-tasks"
+    },
+    {
+      "path": "../../packages/library-tools"
+    },
+    {
+      "path": "../../packages/schemas"
+    },
+    {
+      "path": "../../packages/utility-core"
+    },
+    {
+      "path": "../../packages/utility-server"
+    }
+  ]
 }

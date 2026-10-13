@@ -172,6 +172,30 @@ Do not repeat information across sections. Do not include tool output verbatim.`
 Return only the JSON object, with no markdown fence around it.`,
   },
   {
+    id: "document/digest/section",
+    task: "document-digest",
+    title: "Document digest: section",
+    description:
+      "Summarises one excerpt of a long document with a short title, for a digest that replaces text too long for the model.",
+    text: `You summarise one excerpt of a longer document. Another step combines your summary with the others, so cover only this excerpt.
+
+- Preserve names, dates, quantities, decisions and causal relationships exactly as written.
+- Do not add facts that are absent from the excerpt.
+- Keep the summary under 400 words, as plain Markdown paragraphs and bullet lists without headings, links or tables.
+- Give the excerpt a short descriptive title that names what it covers.`,
+  },
+  {
+    id: "document/digest/overview",
+    task: "document-digest",
+    title: "Document digest: overview",
+    description: "Combines the section summaries of a long document into one short overview.",
+    text: `You are given the section summaries of one long document, in order. Write an overview of the whole document.
+
+- One short paragraph saying what the document is and what it concludes, then up to five bullets with the most important points.
+- Keep names, dates and figures exactly as the summaries state them, and add nothing they do not say.
+- Stay under 250 words, in plain Markdown without headings.`,
+  },
+  {
     id: "document/format",
     task: "document-format",
     title: "Document formatting",
@@ -191,33 +215,24 @@ Return only the JSON object, with no markdown fence around it.`,
     title: "Document notes",
     description:
       "Turns a transcript or video into structured Markdown notes, with optional timestamps and extra context.",
-    text: `You are an expert note taker. {{#useVideoAnalysis}}Analyze this video content{{/useVideoAnalysis}}{{^useVideoAnalysis}}Given a transcript{{/useVideoAnalysis}} from {{documentTypeDescriptor}} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
+    text: `You are an expert note taker. Given a transcript from {{documentTypeDescriptor}} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
 
 Sections to include:
 {{selectedSections}}
 
 Guidelines:
-- Be accurate to the {{#useVideoAnalysis}}audio and visual content{{/useVideoAnalysis}}{{^useVideoAnalysis}}transcript{{/useVideoAnalysis}} while improving clarity
+- Be accurate to the transcript while improving clarity
 - Keep factual details, names, dates
 - Merge duplicates and remove filler
 - Prefer concise language
 - For Action Items, include owner (if identifiable) and due dates if present
 - For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
-- For Q&A Extraction, list Q paired with A succinctly{{#useVideoAnalysis}}
-- For Scene Analysis, break down the content by visual scenes and topics
-- For Visual Insights, highlight important visual elements, diagrams, or on-screen content
-- For Smart Timestamps, provide key moment timestamps with visual and audio descriptions
-- Integrate visual insights with audio content for comprehensive notes{{/useVideoAnalysis}}{{^useVideoAnalysis}}
-- For Smart Timestamps, provide key moment timestamps with descriptions{{/useVideoAnalysis}}{{#timestamps}}
-- Include relevant timestamps where helpful{{/timestamps}}
+- For Q&A Extraction, list Q paired with A succinctly
+- For Smart Timestamps, provide key moment timestamps with descriptions{{#timestamps}}
+- Include relevant timestamps where helpful, copied from the [m:ss] markers in the transcript; never estimate one{{/timestamps}}
 
 {{#extraPrompt}}Additional context: {{extraPrompt}}{{/extraPrompt}}`,
     variables: [
-      {
-        name: "useVideoAnalysis",
-        description:
-          "Non-empty when the source includes video, selecting video wording and the visual-analysis guidelines.",
-      },
       {
         name: "documentTypeDescriptor",
         description: "Human-readable description of the document type.",
@@ -285,20 +300,6 @@ Guidelines:
     title: "Note section: Q&A extraction",
     description: "Section label for question and answer extraction in generated notes.",
     text: "Q&A Extraction",
-  },
-  {
-    id: "document/section/scene-analysis",
-    task: "document-notes",
-    title: "Note section: scene analysis",
-    description: "Section label for scene analysis in generated notes.",
-    text: "Scene Analysis",
-  },
-  {
-    id: "document/section/visual-insights",
-    task: "document-notes",
-    title: "Note section: visual insights",
-    description: "Section label for visual insights in generated notes.",
-    text: "Visual Insights",
   },
   {
     id: "document/section/smart-timestamps",

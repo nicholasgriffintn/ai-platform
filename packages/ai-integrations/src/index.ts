@@ -100,7 +100,13 @@ export { normaliseConnectorKnowledge, type ConnectorKnowledgeDocument } from "./
 export { MCP_PROTOCOL_VERSION, type McpTool, type McpToolCallResult } from "./mcp/contracts.js";
 export { McpRequestError, type McpFailureCode } from "./mcp/errors.js";
 export { McpHttpClient, type McpHttpClientOptions } from "./mcp/McpHttpClient.js";
-export { formatMcpToolResult, type FormattedMcpToolResult } from "./mcp/results.js";
+export {
+  formatMcpToolResult,
+  MCP_RESULT_IMAGE_TYPES,
+  type FormattedMcpToolResult,
+  type McpResultImage,
+  type McpResultImageOptions,
+} from "./mcp/results.js";
 export { parseMcpServerUrl } from "./mcp/server-url.js";
 export {
   buildMcpAuthorizationUrl,

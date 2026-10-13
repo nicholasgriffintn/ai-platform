@@ -22,7 +22,7 @@
   },
   "scripts": {
     "test": "vitest run --config vitest.config.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",

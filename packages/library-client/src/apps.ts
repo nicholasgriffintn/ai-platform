@@ -13,6 +13,7 @@ import type {
   ListNotesResponse,
   ListRecordingsResponse,
   Note,
+  NoteSummary,
   NoteCreateRequest,
   NoteDetailResponse,
   NoteFormatResponse,
@@ -321,7 +322,7 @@ export const fetchSourceArticlesByIds = async (
   return await returnFetchedData<FetchMultipleArticlesResponse>(response);
 };
 
-export const fetchNotes = async (projectId?: string): Promise<Note[]> => {
+export const fetchNotes = async (projectId?: string, query?: string): Promise<NoteSummary[]> => {
   let headers = {};
 
   try {
@@ -330,7 +331,9 @@ export const fetchNotes = async (projectId?: string): Promise<Note[]> => {
     console.error("Error fetching notes:", e);
   }
 
-  const response = await fetchApi(withProjectScope("/apps/notes", projectId), {
+  const search = query?.trim();
+  const path = search ? `/apps/notes?q=${encodeURIComponent(search)}` : "/apps/notes";
+  const response = await fetchApi(withProjectScope(path, projectId), {
     method: "GET",
     headers,
   });
@@ -552,8 +555,6 @@ export const generateNotesFromMedia = async (
       | "action_items"
       | "meeting_minutes"
       | "qa_extraction"
-      | "scene_analysis"
-      | "visual_insights"
       | "smart_timestamps"
     )[];
     noteType:
@@ -571,8 +572,6 @@ export const generateNotesFromMedia = async (
       | "other";
     extraPrompt?: string;
     timestamps?: boolean;
-    useVideoAnalysis?: boolean;
-    enableVideoSearch?: boolean;
   },
   projectId?: string,
 ): Promise<{ content: string }> => {

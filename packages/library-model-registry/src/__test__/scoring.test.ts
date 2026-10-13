@@ -42,6 +42,43 @@ describe("grader scoring", () => {
     expect(scoreDeterministic({ kind: "numeric", tolerance: 0.01 }, "About 3", "3.2")).toBe(0);
   });
 
+  it("scores the share of required facts a summary keeps", () => {
+    const facts = "14 July\n18%\nNo customer data was lost\n75%";
+
+    expect(
+      scoreDeterministic(
+        { kind: "fact_coverage" },
+        "On 14 July errors peaked at 18%. No customer data was lost.",
+        facts,
+      ),
+    ).toBe(0.75);
+    expect(scoreDeterministic({ kind: "fact_coverage" }, "Anything", undefined)).toBe(0);
+  });
+
+  it("scores the share of a summary's numbers that appear in the source", () => {
+    const source = "Revenue was 4,200,000 euros in Q2, up 18% from 3.5 million.";
+
+    expect(
+      scoreDeterministic(
+        { kind: "grounded_numbers" },
+        "Revenue reached 4200000 euros, up 18%.",
+        undefined,
+        source,
+      ),
+    ).toBe(1);
+    expect(
+      scoreDeterministic(
+        { kind: "grounded_numbers" },
+        "Up 18%, with 25 new hires.",
+        undefined,
+        source,
+      ),
+    ).toBe(0.5);
+    expect(
+      scoreDeterministic({ kind: "grounded_numbers" }, "Revenue grew.", undefined, source),
+    ).toBe(1);
+  });
+
   it("maps judge scores onto zero to one", () => {
     expect(parseJudgeScore('{"score": 5, "reason": "great"}')).toBe(1);
     expect(parseJudgeScore("I'd give it 2/5")).toBe(0.25);

@@ -187,3 +187,9 @@ export function percentile(values: readonly number[], fraction: number): number 
 
   return sorted[index];
 }
+
+const NUMBER_TOKEN_PATTERN = /\d+(?:,\d{3})*(?:\.\d+)?/g;
+
+export function extractNumberTokens(text: string): string[] {
+  return (text.match(NUMBER_TOKEN_PATTERN) ?? []).map((token) => token.replaceAll(",", ""));
+}

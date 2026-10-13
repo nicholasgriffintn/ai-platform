@@ -10,6 +10,7 @@ import type { IEnv, IUser } from "~/types";
 import {
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
+  type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
 
 const ELEVENLABS_SAMPLE_RATE = 16000;
@@ -20,6 +21,23 @@ const MIN_COMMIT_AUDIO_BYTES =
 
 type ElevenLabsUpstreamMessageMapper = (message: NormalizedClientRealtimeMessage) => string | null;
 type ElevenLabsClientMessageMapper = (message: unknown) => string | string[] | undefined;
+
+const ELEVENLABS_ERROR_MESSAGE_TYPES = new Set([
+  "auth_error",
+  "quota_exceeded",
+  "transcriber_error",
+  "input_error",
+  "invalid_request",
+  "error",
+  "commit_throttled",
+  "unaccepted_terms",
+  "rate_limited",
+  "queue_overflow",
+  "resource_exhausted",
+  "session_time_limit_exceeded",
+  "chunk_size_exceeded",
+  "insufficient_audio_activity",
+]);
 
 function createInputAudioChunkMessage({
   audio,
@@ -121,8 +139,7 @@ export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMa
 
     if (
       (messageType === "committed_transcript" ||
-        messageType === "committed_transcript_with_timestamps" ||
-        messageType === "final_transcript") &&
+        messageType === "committed_transcript_with_timestamps") &&
       text
     ) {
       const itemId = getCommittedSegmentId(text);
@@ -137,8 +154,14 @@ export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMa
       return JSON.stringify({ type: "session.created" });
     }
 
-    if (messageType === "error") {
-      return JSON.stringify({ type: "error", error: { message: getString(payload.message) } });
+    if (messageType && ELEVENLABS_ERROR_MESSAGE_TYPES.has(messageType)) {
+      return JSON.stringify({
+        type: "error",
+        error: {
+          message: getString(payload.error) ?? getString(payload.message) ?? messageType,
+          code: messageType,
+        },
+      });
     }
 
     return data;
@@ -158,7 +181,7 @@ export async function createElevenLabsRealtimeProxyResponse({
   user: IUser;
   model?: string;
   language?: string;
-  onSessionEnd?: () => void | Promise<void>;
+  onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const provider = getRealtimeProvider("elevenlabs", { env, user });
   const apiKey = await provider.getApiKey?.({

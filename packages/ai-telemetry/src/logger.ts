@@ -249,6 +249,8 @@ class LoggerAdapter {
   }
 }
 
+export type LoggerInstance = Logger | LoggerAdapter;
+
 function resolveLogLevelFromEnv(): LogLevel {
   const value =
     (typeof globalThis !== "undefined" &&
@@ -279,7 +281,7 @@ function resolveLogLevelFromEnv(): LogLevel {
   }
 }
 
-export const getLogger = (options?: LoggerOptions) => {
+export const getLogger = (options?: LoggerOptions): LoggerInstance => {
   const instanceOptions: LoggerOptions = {
     prefix: options?.prefix,
     level: options?.level,

@@ -45,7 +45,7 @@ export async function scoreWithGrader(
   },
 ): Promise<number | null> {
   if (isDeterministicGrader(config)) {
-    return scoreDeterministic(config, item.output, item.expected);
+    return scoreDeterministic(config, item.output, item.expected, item.input);
   }
 
   const prompt = buildJudgePrompt({

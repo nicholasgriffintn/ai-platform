@@ -1,19 +1,25 @@
 import {
   checkContextWindowLimits,
   pruneMessagesToFitContext,
+  resolveContextWindow,
 } from "@ngriffin_uk/polychat-ai-agents";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { getAllAttachments } from "~/modules/chat/application/messages/attachments";
+import {
+  attachmentTokenBudget,
+  fitMarkdownAttachments,
+} from "~/modules/chat/application/preparation/attachment-budget";
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
-import type { CoreChatOptions } from "~/types";
+import { digestDocument, formatDocumentDigest } from "~/modules/documents/application/digest";
+import type { Attachment, CoreChatOptions } from "~/types";
 
 export class ContextLimitValidator implements Validator {
-  async validate(_options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
+  async validate(options: CoreChatOptions, context: ValidationContext): Promise<ValidatorResult> {
     if (!context.sanitisedMessages || !context.lastMessage || !context.modelConfig) {
       return {
         validation: {
@@ -37,8 +43,12 @@ export class ContextLimitValidator implements Validator {
 
       const lastMessageContentText = lastMessageContent.find((c) => c.type === "text")?.text || "";
 
-      const { markdownAttachments } = getAllAttachments(lastMessageContent);
       const finalUserMessage = sanitiseInput(lastMessageContentText);
+      const markdownAttachments = await this.fitAttachments(
+        options,
+        getAllAttachments(lastMessageContent).markdownAttachments,
+        attachmentTokenBudget(resolveContextWindow(context.modelConfig), finalUserMessage),
+      );
 
       const messageWithContext =
         markdownAttachments.length > 0
@@ -74,5 +84,24 @@ export class ContextLimitValidator implements Validator {
         context: {},
       };
     }
+  }
+
+  private fitAttachments(
+    options: CoreChatOptions,
+    attachments: Attachment[],
+    budgetTokens: number,
+  ): Promise<Attachment[]> {
+    const user = options.context?.user;
+
+    if (!user?.id) {
+      return Promise.resolve(attachments);
+    }
+
+    return fitMarkdownAttachments(attachments, budgetTokens, async (attachment) =>
+      formatDocumentDigest(
+        attachment.name,
+        await digestDocument({ env: options.env, user, markdown: attachment.markdown ?? "" }),
+      ),
+    );
   }
 }

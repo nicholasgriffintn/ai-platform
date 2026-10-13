@@ -30,7 +30,6 @@ export interface RealtimeSessionRequest {
   apiBaseUrl?: string;
   model?: string;
   language?: string;
-  sourceLanguage?: string;
   targetLanguage?: string;
   voice?: string;
   instructions?: string;

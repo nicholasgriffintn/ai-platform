@@ -56,6 +56,7 @@ export class WorkersAiImageProvider implements ImageProvider {
             height: request.height,
             steps: request.steps,
             num_steps: request.steps,
+            seed: request.seed,
             ...request.metadata,
           },
         },

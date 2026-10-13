@@ -6,6 +6,7 @@ import { resolveAiGatewayId } from "../../../gateway.js";
 import { formatProviderError } from "../../../utils/errors.js";
 import { BaseTranscriptionProvider } from "../base.js";
 import type { TranscriptionRequest, TranscriptionResult } from "../index.js";
+import { readTranscriptionTimings } from "../timings.js";
 
 const logger = getLogger({ prefix: "lib/transcription/mistral" });
 
@@ -67,9 +68,10 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
         );
       }
 
-      const result = (await response.json()) as { text?: string };
+      const result: unknown = await response.json();
+      const { text, segments, words } = readTranscriptionTimings(result);
 
-      if (!result.text) {
+      if (!text) {
         throw new AssistantError(
           "No transcription text returned from Mistral",
           ErrorType.EXTERNAL_API_ERROR,
@@ -77,7 +79,9 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
       }
 
       return {
-        text: result.text,
+        text,
+        segments,
+        words,
         data: result,
       };
     } catch (error) {

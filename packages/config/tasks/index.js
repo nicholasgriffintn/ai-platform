@@ -2,6 +2,12 @@ const dependencyBuilds = [{ task: "build", from: ["dependencies", "devDependenci
 
 const styleOutputs = ["dist/styles.js", "dist/*.css", "dist/*.css.map"];
 
+const cleanOutput = "rm -rf dist";
+
+function withClean(command) {
+  return `${cleanOutput} && ${command}`;
+}
+
 export function packageTaskConfig({ build }) {
   const [bundle, ...styles] = Array.isArray(build) ? build : [build];
   const input = [{ auto: true }, "!dist/**"];
@@ -11,7 +17,7 @@ export function packageTaskConfig({ build }) {
       run: {
         tasks: {
           build: {
-            command: bundle,
+            command: withClean(bundle),
             dependsOn: dependencyBuilds,
             cache: {
               input,
@@ -27,7 +33,7 @@ export function packageTaskConfig({ build }) {
     run: {
       tasks: {
         "build:styles": {
-          command: styles.join(" && "),
+          command: withClean(styles.join(" && ")),
           dependsOn: dependencyBuilds,
           cache: {
             input,

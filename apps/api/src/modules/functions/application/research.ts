@@ -1,54 +1,68 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import z from "zod/v4";
 
 import { handleResearchTask, startResearchTask } from "~/modules/research/application/task";
-import type { ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
+import type { ResearchOptions } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
-import { research as researchDescriptor } from "./definitions/research";
+import {
+  RESEARCH_DEPTHS,
+  RESEARCH_FORMATS,
+  research as researchDescriptor,
+  type ResearchDepth,
+} from "./definitions/research";
 
-function coercePollingOptions(args: any): ResearchOptions["polling"] | undefined {
-  const interval =
-    typeof args?.poll_interval_ms === "number" ? Math.floor(args.poll_interval_ms) : undefined;
-  const timeout =
-    typeof args?.poll_timeout_seconds === "number"
-      ? Math.floor(args.poll_timeout_seconds)
-      : undefined;
-  const maxAttempts =
-    typeof args?.max_poll_attempts === "number" ? Math.floor(args.max_poll_attempts) : undefined;
+const PARALLEL_PROCESSORS: Record<ResearchDepth, string> = {
+  quick: "base",
+  standard: "pro",
+  deep: "ultra",
+};
 
-  if (interval === undefined && timeout === undefined && maxAttempts === undefined) {
-    return undefined;
+const EXA_MODELS: Record<ResearchDepth, string> = {
+  quick: "exa-research",
+  standard: "exa-research",
+  deep: "exa-research-pro",
+};
+
+const DEFAULT_POLL_INTERVAL_MS = 5000;
+
+const researchArgsSchema = z.object({
+  input: z.string().trim().min(1, "Provide a research brief in input"),
+  depth: z.enum(RESEARCH_DEPTHS).default("standard"),
+  format: z.enum(RESEARCH_FORMATS).default("report"),
+  output_description: z.string().trim().optional(),
+  provider: z.enum(["parallel", "exa"]).default("parallel"),
+});
+
+type ResearchArgs = z.infer<typeof researchArgsSchema>;
+
+export function researchOptionsFor(args: ResearchArgs): ResearchOptions {
+  if (args.provider === "exa") {
+    return { model: EXA_MODELS[args.depth] };
   }
 
   return {
-    interval_ms: interval,
-    timeout_seconds: timeout,
-    max_attempts: maxAttempts,
+    processor: PARALLEL_PROCESSORS[args.depth],
+    task_spec: {
+      output_schema: {
+        type: args.format === "data" ? "auto" : "text",
+        ...(args.output_description ? { description: args.output_description } : {}),
+      },
+    },
   };
 }
 
-function buildTaskSpec(args: any): ParallelTaskSpec | undefined {
-  if (typeof args?.task_spec_json === "string") {
-    const parsed = safeParseJson(args.task_spec_json);
+function parseResearchArgs(args: unknown): ResearchArgs {
+  const parsed = researchArgsSchema.safeParse(args ?? {});
 
-    return parsed;
+  if (!parsed.success) {
+    throw new AssistantError(
+      parsed.error.issues.map((issue) => issue.message).join("; "),
+      ErrorType.PARAMS_ERROR,
+    );
   }
 
-  if (typeof args?.output_mode === "string") {
-    const mode = args.output_mode.toLowerCase();
-
-    if (mode === "auto" || mode === "text") {
-      return {
-        output_schema: {
-          type: mode as "auto" | "text",
-          description: args.output_description,
-        },
-      };
-    }
-  }
-
-  return undefined;
+  return parsed.data;
 }
 
 export const research: ApiToolDefinition = {
@@ -56,90 +70,16 @@ export const research: ApiToolDefinition = {
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
-
-    const {
-      input,
-      structured_input,
-      provider,
-      processor,
-      model,
-      enable_events,
-      metadata,
-      output_schema_json,
-    } = args || {};
-
-    const payload =
-      structured_input !== undefined && structured_input !== null ? structured_input : input;
-
-    if (
-      payload === undefined ||
-      payload === null ||
-      (typeof payload === "string" && payload.trim().length === 0)
-    ) {
-      throw new AssistantError(
-        "You must provide either input or structured_input",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const options: ResearchOptions = {};
-
-    if (typeof processor === "string" && processor.trim().length > 0) {
-      options.processor = processor;
-    }
-
-    const taskSpec = buildTaskSpec(args);
-
-    if (taskSpec) {
-      options.task_spec = taskSpec;
-    }
-
-    if (typeof enable_events === "boolean") {
-      options.enable_events = enable_events;
-    }
-
-    if (typeof model === "string" && model.trim().length > 0) {
-      options.model = model;
-    }
-
-    if (typeof output_schema_json === "string") {
-      const parsed = safeParseJson(output_schema_json);
-
-      if (!parsed) {
-        throw new AssistantError("Invalid output_schema_json provided", ErrorType.PARAMS_ERROR);
-      }
-
-      options.exa_spec = {
-        output_schema: parsed,
-      };
-    }
-
-    const polling = coercePollingOptions(args);
-
-    if (polling) {
-      options.polling = polling;
-    }
-
-    if (metadata && typeof metadata === "object") {
-      options.metadata = metadata as Record<string, unknown>;
-    }
-
-    const providerName =
-      typeof provider === "string" && provider.trim().length > 0
-        ? (provider.trim().toLowerCase() as ResearchProviderName)
-        : undefined;
-
-    const waitForCompletionArg =
-      typeof args?.wait_for_completion === "boolean" ? args.wait_for_completion : undefined;
-    const isToolRun = req.request?.platform === "tool-run";
-    const shouldWait = waitForCompletionArg !== undefined ? waitForCompletionArg : !isToolRun;
+    const parsed = parseResearchArgs(args);
+    const options = researchOptionsFor(parsed);
+    const shouldWait = req.request?.platform !== "tool-run";
 
     if (shouldWait) {
       const response = await handleResearchTask({
         env: req.env,
         user: req.user,
-        input: payload,
-        provider: providerName,
+        input: parsed.input,
+        provider: parsed.provider,
         options,
       });
 
@@ -157,15 +97,10 @@ export const research: ApiToolDefinition = {
     const handle = await startResearchTask({
       env: req.env,
       user: req.user,
-      input: payload,
-      provider: providerName,
+      input: parsed.input,
+      provider: parsed.provider,
       options,
     });
-
-    const pollInterval =
-      options.polling?.interval_ms && options.polling.interval_ms >= 500
-        ? options.polling.interval_ms
-        : 5000;
 
     const runId =
       "run_id" in handle.run
@@ -188,7 +123,7 @@ export const research: ApiToolDefinition = {
           id: runId,
           type: "research",
           status: "in_progress",
-          pollIntervalMs: pollInterval,
+          pollIntervalMs: DEFAULT_POLL_INTERVAL_MS,
           poll: {
             url: `/apps/retrieval/research/${runId}`,
             method: "GET",

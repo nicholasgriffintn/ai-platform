@@ -10,9 +10,13 @@ import { Link } from "@ngriffin_uk/polychat-component-ui";
 import {
   useNoteFormatter,
   useGenerateNotesFromMedia,
+  useRealtimeLiveSession,
+  useRealtimeProviders,
+  useSpeechActivity,
   useTabAudioCapture,
-  useTranscription,
 } from "@ngriffin_uk/polychat-library-react";
+import { getFirstReadyRealtimeTranscriptionProviderOption } from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import {
   formatTextWithSpacing,
@@ -73,8 +77,6 @@ export function NoteEditor({
   const [themeMode, setThemeMode] = useState<string>(initialThemeMode);
   const [fontSize, setFontSize] = useState<number>(initialFontSize);
   const [partialTranscript, setPartialTranscript] = useState<string>("");
-  const [isSpeechDetected, setIsSpeechDetected] = useState<boolean>(false);
-  const [lastSilenceTime, setLastSilenceTime] = useState<number>(0);
   const [currentMetadata, setCurrentMetadata] = useState<NoteMetadataType>(initialMetadata || {});
   const [prevThemeMode, setPrevThemeMode] = useState(initialThemeMode);
   const [prevFontFamily, setPrevFontFamily] = useState(initialFontFamily);
@@ -136,33 +138,48 @@ export function NoteEditor({
     }
   }, [noteId, forceSave]);
 
-  const handleTranscriptionReceived = useCallback((newText: string, isPartial?: boolean) => {
-    if (isPartial) {
-      setPartialTranscript((prev) => formatTextWithSpacing(prev, newText));
-    } else {
-      setPartialTranscript("");
-      setText((prev) => formatTextWithSpacing(prev, newText));
-    }
+  const partialTranscriptRef = useRef("");
+
+  const updatePartialTranscript = useCallback((value: string) => {
+    partialTranscriptRef.current = value;
+    setPartialTranscript(value);
   }, []);
 
-  const handleSpeechDetected = useCallback((isActive: boolean) => {
-    setIsSpeechDetected(isActive);
-    if (!isActive) {
-      setLastSilenceTime(Date.now());
-    } else {
-      setLastSilenceTime(0);
-    }
-  }, []);
+  const handleTranscript = useCallback(
+    (transcript: RealtimeTranscriptResult) => {
+      if (transcript.source === "output") {
+        return;
+      }
 
-  const {
-    isTranscribing,
-    status: transcriptionStatus,
-    startTranscription,
-    stopTranscription,
-  } = useTranscription({
-    onTranscriptionReceived: handleTranscriptionReceived,
-    onSpeechDetected: handleSpeechDetected,
+      const merged = transcript.isDelta
+        ? formatTextWithSpacing(partialTranscriptRef.current, transcript.text)
+        : transcript.text;
+
+      if (!transcript.isFinal) {
+        updatePartialTranscript(merged);
+
+        return;
+      }
+
+      updatePartialTranscript("");
+      if (merged.trim()) {
+        setText((current) => formatTextWithSpacing(current, merged.trim()));
+      }
+    },
+    [updatePartialTranscript],
+  );
+
+  const { data: realtimeProviders = [], isLoading: isLoadingProviders } = useRealtimeProviders();
+  const transcription = useRealtimeLiveSession({
+    providers: realtimeProviders,
+    sessionType: "transcription",
+    onTranscript: handleTranscript,
   });
+  const isTranscribing = transcription.status !== "idle";
+  const { isSpeechDetected, lastSilenceAt } = useSpeechActivity(
+    transcription.inputAudioLevel,
+    transcription.isActive,
+  );
 
   useKeyboardShortcuts({
     onSave: () => void forceSave(),
@@ -228,32 +245,58 @@ export function NoteEditor({
     [onFontSizeChange],
   );
 
+  const startTranscription = useCallback(
+    (inputStream?: MediaStream) => {
+      const provider = getFirstReadyRealtimeTranscriptionProviderOption(realtimeProviders);
+
+      if (!provider) {
+        toast.error(
+          isLoadingProviders
+            ? "Realtime providers are still loading"
+            : "Configure a realtime transcription provider in provider settings",
+        );
+
+        return false;
+      }
+
+      updatePartialTranscript("");
+      void transcription.start(provider.id, undefined, { inputStream });
+
+      return true;
+    },
+    [isLoadingProviders, realtimeProviders, transcription, updatePartialTranscript],
+  );
+
+  const stopTranscription = useCallback(() => {
+    transcription.stop();
+    updatePartialTranscript("");
+  }, [transcription, updatePartialTranscript]);
+
   const handleTranscriptionToggle = useCallback(() => {
     if (isTranscribing) {
-      stopTranscription(true);
-      setPartialTranscript("");
-      setIsSpeechDetected(false);
-      setLastSilenceTime(0);
+      stopTranscription();
+      if (tabCapture.isCapturing) {
+        tabCapture.stop();
+      }
     } else {
-      void startTranscription();
+      startTranscription();
     }
-  }, [isTranscribing, stopTranscription, startTranscription]);
+  }, [isTranscribing, startTranscription, stopTranscription, tabCapture]);
 
   const handleTabCaptureToggle = useCallback(async () => {
     if (tabCapture.isCapturing) {
-      stopTranscription(true);
+      stopTranscription();
       tabCapture.stop();
-      setPartialTranscript("");
-      setIsSpeechDetected(false);
-      setLastSilenceTime(0);
-    } else {
-      const stream = await tabCapture.start();
 
-      if (stream) {
-        void startTranscription(stream);
-      }
+      return;
     }
-  }, [tabCapture, stopTranscription, startTranscription]);
+
+    const stream = await tabCapture.start();
+
+    if (stream && !startTranscription(stream)) {
+      tabCapture.stop();
+    }
+  }, [startTranscription, stopTranscription, tabCapture]);
 
   const handleNotesGenerated = useCallback((content: string) => {
     setText((prev) => formatTextWithSpacing(prev, `\n\n${content}`));
@@ -304,9 +347,9 @@ export function NoteEditor({
     >
       <TranscriptionOverlay
         isVisible={isTranscribing}
-        transcriptionStatus={transcriptionStatus}
+        transcriptionStatus={transcription.status}
         isSpeechDetected={isSpeechDetected}
-        lastSilenceTime={lastSilenceTime}
+        lastSilenceTime={lastSilenceAt}
         partialTranscript={partialTranscript}
       />
 
@@ -328,7 +371,7 @@ export function NoteEditor({
         onOpenMediaModal={() => setIsMediaModalOpen(true)}
         onOpenFormatModal={openFormatModal}
         isTranscribing={isTranscribing}
-        transcriptionStatus={transcriptionStatus}
+        transcriptionStatus={transcription.status}
         isSpeechDetected={isSpeechDetected}
         onTranscriptionToggle={handleTranscriptionToggle}
         tabCapture={tabCapture}

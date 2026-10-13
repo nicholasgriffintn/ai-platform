@@ -17,6 +17,8 @@ const KIND_LABELS: Record<GraderKind, string> = {
   regex: "Matches a pattern",
   json_schema: "Valid JSON with required keys",
   numeric: "Numeric answer within a tolerance",
+  fact_coverage: "Share of the reference's facts the answer keeps",
+  grounded_numbers: "Share of the answer's numbers found in the input",
   judge: "Scored against a rubric by a judge model",
 };
 
@@ -24,6 +26,8 @@ function configFor(kind: GraderKind, detail: string): GraderConfig {
   switch (kind) {
     case "exact":
     case "contains":
+    case "fact_coverage":
+    case "grounded_numbers":
       return { kind };
     case "regex":
       return { kind, pattern: detail };
@@ -47,6 +51,13 @@ const DETAIL_LABELS: Partial<Record<GraderKind, string>> = {
   json_schema: "Required keys, comma separated",
   numeric: "Tolerance",
   judge: "Rubric",
+};
+
+const KIND_HINTS: Partial<Record<GraderKind, string>> = {
+  fact_coverage:
+    "Put the facts each answer must keep in the case's expected value, one per line. The score is the share it keeps.",
+  grounded_numbers:
+    "Scores the share of numbers in the answer that also appear in the case input, so summaries cannot invent figures.",
 };
 
 export function GraderDialog({
@@ -112,6 +123,7 @@ export function GraderDialog({
           onValueChange={setKind}
           options={GRADER_KINDS.map((value) => ({ value, label: KIND_LABELS[value] }))}
         />
+        {KIND_HINTS[kind] && <p className="text-sm text-muted-foreground">{KIND_HINTS[kind]}</p>}
         {needsDetail &&
           (kind === "judge" ? (
             <FormTextarea

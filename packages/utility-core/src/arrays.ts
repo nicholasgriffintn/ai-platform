@@ -52,12 +52,37 @@ export function chunkArray<T>(values: readonly T[], size: number): T[][] {
   return chunks;
 }
 
-export function pickRandom<T>(values: readonly T[]): T | undefined {
-  if (values.length === 0) {
-    return undefined;
+const UINT32_RANGE = 0x1_0000_0000;
+
+export function randomIndex(length: number): number {
+  if (!Number.isInteger(length) || length <= 0 || length > UINT32_RANGE) {
+    throw new RangeError("Length must be a positive 32-bit integer");
   }
 
-  const [random = 0] = crypto.getRandomValues(new Uint32Array(1));
+  const limit = UINT32_RANGE - (UINT32_RANGE % length);
+  const buffer = new Uint32Array(1);
 
-  return values[random % values.length];
+  for (;;) {
+    crypto.getRandomValues(buffer);
+
+    if (buffer[0] < limit) {
+      return buffer[0] % length;
+    }
+  }
+}
+
+export function pickRandom<T>(values: readonly T[]): T | undefined {
+  return values.length === 0 ? undefined : values[randomIndex(values.length)];
+}
+
+export function shuffleCopy<T>(values: readonly T[]): T[] {
+  const shuffled = [...values];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swap = randomIndex(index + 1);
+
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+
+  return shuffled;
 }

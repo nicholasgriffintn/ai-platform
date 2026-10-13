@@ -182,6 +182,17 @@ describe("Cedar authorisation", () => {
     expect(new Set(contexts.map((context) => canExecute(context))).size).toBe(2);
   });
 
+  it("lets free accounts benchmark only on their own keys", () => {
+    const run = { signedIn: true, plan: "free", byok: false };
+
+    expect(authorise("benchmark.run.start", run).allowed).toBe(false);
+    expect(authorise("benchmark.run.start", { ...run, byok: true }).allowed).toBe(true);
+    expect(authorise("benchmark.run.start", { ...run, plan: "pro" }).allowed).toBe(true);
+    expect(
+      authorise("benchmark.run.start", { signedIn: false, plan: "pro", byok: true }).allowed,
+    ).toBe(false);
+  });
+
   it("decides each action with its own policies exactly as the full policy set does", () => {
     const partitioned = createAuthorizer(authorisationBundle(), { preparse: true });
     const full = createAuthorizer(authorisationBundle());

@@ -3,6 +3,12 @@ import {
   getPromptText,
   tryGetPrompt,
 } from "@ngriffin_uk/polychat-ai-prompts";
+import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
+import {
+  buildCaptionCues,
+  formatTimedTranscript,
+  type TimedSegment,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/infrastructure/ai";
@@ -13,6 +19,18 @@ import { resolveAuthorisedTranscriptionSource } from "~/modules/audio/applicatio
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IUser } from "~/types";
 
+const TIMED_LINE_OPTIONS = { maxWords: 60, maxSeconds: 30, minWordsBeforeSentenceBreak: 20 };
+
+function readTimedLines(transcription: TranscriptionResult): TimedSegment[] {
+  if (transcription.segments?.length) {
+    return transcription.segments;
+  }
+
+  return transcription.words?.length
+    ? buildCaptionCues(transcription.words, TIMED_LINE_OPTIONS)
+    : [];
+}
+
 export async function generateDocumentFromMedia({
   context,
   user,
@@ -21,8 +39,6 @@ export async function generateDocumentFromMedia({
   documentType,
   extraPrompt,
   timestamps,
-  useVideoAnalysis = false,
-  enableVideoSearch = false,
 }: {
   context: ServiceContext;
   user: IUser;
@@ -34,16 +50,11 @@ export async function generateDocumentFromMedia({
     | "action_items"
     | "meeting_minutes"
     | "qa_extraction"
-    | "scene_analysis"
-    | "visual_insights"
     | "smart_timestamps"
   )[];
   documentType: string;
   extraPrompt?: string;
   timestamps?: boolean;
-  useVideoAnalysis?: boolean;
-  enableVideoSearch?: boolean;
-  projectId?: string;
 }): Promise<{ content: string }> {
   const env = context.env;
 
@@ -51,13 +62,7 @@ export async function generateDocumentFromMedia({
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
   }
 
-  if (enableVideoSearch) {
-    throw new AssistantError(
-      "Multimodal video search is not available while its retrieval index is being upgraded",
-      ErrorType.CONFIGURATION_ERROR,
-      501,
-    );
-  }
+  const wantsTimings = timestamps === true || outputs.includes("smart_timestamps");
 
   try {
     const toPromptSegment = (value: string) => value.replace(/_/g, "-");
@@ -71,20 +76,9 @@ export async function generateDocumentFromMedia({
     const notePrompt = buildDocumentNotesPrompt({
       documentTypeDescriptor,
       sections: selectedSections,
-      useVideoAnalysis,
-      timestamps,
+      timestamps: wantsTimings,
       extraPrompt,
     });
-
-    if (useVideoAnalysis) {
-      throw new AssistantError(
-        "Video analysis by remote URL is disabled",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-
-    let transcriptText = "";
 
     const audio = await resolveAuthorisedTranscriptionSource({
       context,
@@ -112,10 +106,24 @@ export async function generateDocumentFromMedia({
       audio,
       allowVideo: true,
       provider: transcriptionProviderToUse,
-      timestamps,
+      timestamps: wantsTimings,
     });
 
-    transcriptText = transcription.content;
+    let transcriptText = transcription.content;
+
+    if (wantsTimings) {
+      const timedLines = readTimedLines(transcription);
+
+      if (timedLines.length === 0) {
+        throw new AssistantError(
+          "The transcription came back without timings, so timestamps cannot be added. Turn timestamps off and try again.",
+          ErrorType.EXTERNAL_API_ERROR,
+          502,
+        );
+      }
+
+      transcriptText = formatTimedTranscript(timedLines);
+    }
 
     if (!transcriptText) {
       throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);

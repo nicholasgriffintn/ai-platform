@@ -5,6 +5,13 @@ export interface AudioCommitGateConfig {
   startLevelThreshold: number;
 }
 
+export const DEFAULT_AUDIO_COMMIT_GATE: AudioCommitGateConfig = {
+  continueLevelThreshold: 0.045,
+  minSpeechMs: 220,
+  silenceMs: 700,
+  startLevelThreshold: 0.075,
+};
+
 export interface AudioCommitGateState {
   lastSpeechAt: number;
   speechStartedAt: number;

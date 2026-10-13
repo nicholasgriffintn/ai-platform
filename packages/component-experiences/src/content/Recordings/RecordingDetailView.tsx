@@ -2,10 +2,18 @@ import { Markdown } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
-import { FileText } from "lucide-react";
+import { Captions, FileText } from "lucide-react";
+import { useMemo } from "react";
 
+import {
+  formatRecordingCaptions,
+  recordingCaptionCues,
+  recordingSpeakerNames,
+  type RecordingCaptionFormat,
+} from "./captions";
 import { RecordingNotes, type RecordingNotesProps } from "./RecordingNotes";
 import { TranscriptViewer } from "./TranscriptViewer";
+import { useCaptionTrack } from "./useCaptionTrack";
 
 export interface RecordingDetailViewProps extends Pick<
   RecordingNotesProps,
@@ -13,16 +21,28 @@ export interface RecordingDetailViewProps extends Pick<
 > {
   recording: Recording;
   onDownloadTranscript?: () => void;
+  onDownloadCaptions?: (format: RecordingCaptionFormat) => void;
 }
 
 export function RecordingDetailView({
   recording,
   onDownloadTranscript,
+  onDownloadCaptions,
   onAddActionItem,
   addedActionItems,
   addingActionItem,
 }: RecordingDetailViewProps) {
   const duration = formatDuration(recording.duration) || "Unknown duration";
+  const timedTranscript =
+    recording.transcript && typeof recording.transcript !== "string" ? recording.transcript : null;
+  const captionsVtt = useMemo(
+    () =>
+      timedTranscript && recordingCaptionCues(timedTranscript).length > 0
+        ? formatRecordingCaptions(timedTranscript, "vtt")
+        : null,
+    [timedTranscript],
+  );
+  const captionTrackRef = useCaptionTrack(captionsVtt);
 
   return (
     <div className="space-y-8">
@@ -43,8 +63,14 @@ export function RecordingDetailView({
           </div>
           <div className="mt-6">
             <h3 className="mb-3 text-lg font-semibold text-foreground">Listen</h3>
-            {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided recording audio has no captions track available; transcript is rendered separately below */}
             <audio controls className="w-full" src={recording.audioUrl}>
+              <track
+                ref={captionTrackRef}
+                kind="captions"
+                srcLang={timedTranscript?.language ?? "en"}
+                label="Captions"
+                default
+              />
               Your browser does not support the audio element.
             </audio>
           </div>
@@ -85,15 +111,36 @@ export function RecordingDetailView({
             <div className="pt-6">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-foreground">Transcript</h2>
-                <Button
-                  onClick={onDownloadTranscript}
-                  variant="secondary"
-                  size="sm"
-                  className="ml-auto"
-                  icon={<FileText size={16} />}
-                >
-                  Download
-                </Button>
+                <div className="ml-auto flex flex-wrap gap-2">
+                  {captionsVtt && onDownloadCaptions && (
+                    <>
+                      <Button
+                        onClick={() => onDownloadCaptions("srt")}
+                        variant="secondary"
+                        size="sm"
+                        icon={<Captions size={16} />}
+                      >
+                        SRT
+                      </Button>
+                      <Button
+                        onClick={() => onDownloadCaptions("vtt")}
+                        variant="secondary"
+                        size="sm"
+                        icon={<Captions size={16} />}
+                      >
+                        VTT
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    onClick={onDownloadTranscript}
+                    variant="secondary"
+                    size="sm"
+                    icon={<FileText size={16} />}
+                  >
+                    Download
+                  </Button>
+                </div>
               </div>
               <div className="max-h-[500px] overflow-y-auto rounded-lg border border-border bg-surface p-5">
                 {typeof recording.transcript === "string" ? (
@@ -101,22 +148,7 @@ export function RecordingDetailView({
                 ) : (
                   <TranscriptViewer
                     transcript={recording.transcript}
-                    speakerNames={recording.transcript.segments.reduce<Record<string, string>>(
-                      (acc, segment, index) => {
-                        const speakerId = segment.speaker ?? `Segment ${index + 1}`;
-
-                        if (!acc[speakerId]) {
-                          const speakerNum = speakerId.startsWith("SPEAKER_")
-                            ? Number.parseInt(speakerId.replace("SPEAKER_", ""))
-                            : index;
-
-                          acc[speakerId] = `Speaker ${speakerNum + 1}`;
-                        }
-
-                        return acc;
-                      },
-                      {},
-                    )}
+                    speakerNames={recordingSpeakerNames(recording.transcript)}
                   />
                 )}
               </div>

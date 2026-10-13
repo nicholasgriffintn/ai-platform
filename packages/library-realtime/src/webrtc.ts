@@ -1,6 +1,12 @@
 import type { RealtimeConnection, RealtimeSession } from "./types";
 
 const DEFAULT_OPENAI_REALTIME_CALL_URL = "https://api.openai.com/v1/realtime/calls";
+const OPENAI_LIVE_PROTOCOL = "openai-live";
+const OPENAI_LIVE_CLOSE_MESSAGE = JSON.stringify({ type: "session.close" });
+
+function isOpenAILiveSession(session: RealtimeSession): boolean {
+  return session.protocol === OPENAI_LIVE_PROTOCOL;
+}
 
 export interface RealtimeWebRTCConnection extends RealtimeConnection {
   peerConnection: RTCPeerConnection;
@@ -46,8 +52,12 @@ export function preferOpusAudioCodec(peerConnection: RTCPeerConnection): void {
   }
 }
 
-function requireOpenAIClientSecret(session: RealtimeSession): string {
+function requireOpenAIClientSecret(session: RealtimeSession): string | undefined {
   const clientSecret = session.client_secret?.value;
+
+  if (isOpenAILiveSession(session)) {
+    return clientSecret || undefined;
+  }
 
   if (!clientSecret) {
     throw new Error("OpenAI realtime session is missing a client secret");
@@ -66,10 +76,14 @@ function validateOpenAIWebRTCSession(session: RealtimeSession): void {
   }
 }
 
-function requireOpenAIRealtimeCallUrl(value: string): string {
+function requireOpenAIRealtimeCallUrl(value: string, session: RealtimeSession): string {
   const url = new URL(value);
 
-  if (url.protocol !== "https:" || url.hostname !== "api.openai.com") {
+  if (url.protocol !== "https:") {
+    throw new Error("OpenAI realtime calls require an HTTPS endpoint");
+  }
+
+  if (!isOpenAILiveSession(session) && url.hostname !== "api.openai.com") {
     throw new Error("OpenAI realtime calls require an HTTPS api.openai.com endpoint");
   }
 
@@ -79,7 +93,14 @@ function requireOpenAIRealtimeCallUrl(value: string): string {
 function closeWebRTCConnection(
   peerConnection: RTCPeerConnection,
   dataChannel?: RTCDataChannel,
+  session?: RealtimeSession,
 ): void {
+  try {
+    if (session && isOpenAILiveSession(session) && dataChannel?.readyState === "open") {
+      dataChannel.send(OPENAI_LIVE_CLOSE_MESSAGE);
+    }
+  } catch {}
+
   try {
     dataChannel?.close();
   } catch {
@@ -112,7 +133,11 @@ export async function connectOpenAIRealtimeWebRTC({
 }: ConnectOpenAIRealtimeWebRTCOptions): Promise<RealtimeWebRTCConnection> {
   validateOpenAIWebRTCSession(session);
   const clientSecret = requireOpenAIClientSecret(session);
-  const callUrl = requireOpenAIRealtimeCallUrl(session.url ?? DEFAULT_OPENAI_REALTIME_CALL_URL);
+  const callUrl = requireOpenAIRealtimeCallUrl(
+    session.url ?? DEFAULT_OPENAI_REALTIME_CALL_URL,
+    session,
+  );
+  const isLiveSession = isOpenAILiveSession(session);
 
   const peerConnection = new RTCPeerConnection(peerConnectionConfig);
   let dataChannel: RTCDataChannel | undefined;
@@ -159,9 +184,10 @@ export async function connectOpenAIRealtimeWebRTC({
       method: "POST",
       body: offer.sdp,
       headers: {
-        Authorization: `Bearer ${clientSecret}`,
+        ...(clientSecret ? { Authorization: `Bearer ${clientSecret}` } : {}),
         "Content-Type": "application/sdp",
       },
+      ...(isLiveSession ? { credentials: "include" as const } : {}),
       signal,
     });
 
@@ -177,7 +203,7 @@ export async function connectOpenAIRealtimeWebRTC({
       session,
       peerConnection,
       dataChannel,
-      close: () => closeWebRTCConnection(peerConnection, dataChannel),
+      close: () => closeWebRTCConnection(peerConnection, dataChannel, session),
     };
   } catch (error) {
     closeWebRTCConnection(peerConnection, dataChannel);

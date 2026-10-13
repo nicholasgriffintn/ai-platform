@@ -1,6 +1,7 @@
 export * from "./arrays.js";
 export * from "./async-queue.js";
 export * from "./binary.js";
+export * from "./captions.js";
 export * from "./collections.js";
 export * from "./colors.js";
 export * from "./crypto.js";
@@ -8,7 +9,9 @@ export * from "./csv.js";
 export * from "./dates.js";
 export * from "./delay.js";
 export * from "./errors.js";
+export * from "./geo.js";
 export * from "./ids.js";
+export * from "./jpeg.js";
 export * from "./json.js";
 export * from "./markdown.js";
 export * from "./modelGrouping.js";
