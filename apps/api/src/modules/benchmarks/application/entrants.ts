@@ -11,6 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
@@ -62,6 +63,20 @@ export function findPlatformModel(env: IEnv, modelId: string): ModelConfigItem |
   return config && isProviderPlatformEnabled(config.provider, env)
     ? { ...config, id: modelId }
     : null;
+}
+
+export function isOfficialProvider(provider: string): boolean {
+  return (BENCHMARKS_CONFIG.officialProviders as readonly string[]).includes(provider);
+}
+
+/**
+ * A model the official queue may run: on the platform's own credentials and from an approved lab.
+ * Explicit admin requests go through the same gate, so nothing else ever reaches a public board.
+ */
+export function findOfficialModel(env: IEnv, modelId: string): ModelConfigItem | null {
+  const config = findPlatformModel(env, modelId);
+
+  return config && isOfficialProvider(config.provider) ? config : null;
 }
 
 export async function resolveModelTarget(

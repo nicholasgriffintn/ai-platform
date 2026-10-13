@@ -81,9 +81,25 @@ export function PlayPanel({ benchmark }: { benchmark: BenchmarkSummary }) {
   return (
     <div className="space-y-5 rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-xs text-muted-foreground tabular-nums">
-          Round {play.index + 1} of {items.length}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="font-mono text-xs text-muted-foreground tabular-nums">
+            Round {play.index + 1} of {items.length}
+          </p>
+          <ol className="flex gap-1" aria-hidden>
+            {items.map((round, roundIndex) => (
+              <li
+                key={round.id}
+                className={
+                  roundIndex === play.index
+                    ? "h-1.5 w-5 rounded-full bg-accent-amber"
+                    : play.answers[round.id] !== undefined
+                      ? "h-1.5 w-5 rounded-full bg-accent-amber/40"
+                      : "h-1.5 w-5 rounded-full bg-selection"
+                }
+              />
+            ))}
+          </ol>
+        </div>
         <Button type="button" variant="link" onClick={play.reset}>
           Give up
         </Button>

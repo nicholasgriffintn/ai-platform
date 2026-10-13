@@ -23,7 +23,7 @@ import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
-import { resolveEntrantTarget, type EntrantTarget } from "./entrants";
+import { isOfficialProvider, resolveEntrantTarget, type EntrantTarget } from "./entrants";
 import { invokeEntrant } from "./invoke";
 
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
@@ -217,6 +217,22 @@ export async function executeBenchmarkRun(
 
   if (benchmark.summary.version !== run.version) {
     return failRun(repositories, run.id, "The benchmark changed version before this run finished");
+  }
+
+  if (
+    run.scope === "official" &&
+    run.entrant.kind === "model" &&
+    !isOfficialProvider(run.entrant.provider)
+  ) {
+    await repositories.benchmarkRuns.update(run.id, {
+      status: "cancelled",
+      failure_reason: `Official runs only go to approved labs, not ${run.entrant.provider}`,
+    });
+
+    return {
+      status: "success" as const,
+      message: `Benchmark run ${run.id} cancelled: ${run.entrant.provider} is not an approved provider`,
+    };
   }
 
   try {

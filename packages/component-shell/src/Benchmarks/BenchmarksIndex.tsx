@@ -60,23 +60,28 @@ function CleverButCan({ boards }: { boards: readonly BenchmarkBoard[] }) {
               role="tab"
               aria-selected={candidate.benchmark.id === board.benchmark.id}
               onClick={() => setSelected(candidate.benchmark.id)}
-              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground aria-selected:border-accent-amber aria-selected:bg-accent-amber/10 aria-selected:text-foreground"
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground aria-selected:border-accent-amber aria-selected:bg-accent-amber/10 aria-selected:text-foreground"
             >
               {candidate.benchmark.name}
             </button>
           ))}
         </div>
       </div>
-      <ScatterPlot
-        points={intelligencePoints(board)}
-        ariaLabel={`Artificial Analysis Intelligence Index against ${board.benchmark.name} score`}
-        x={{ label: "Artificial Analysis Intelligence Index", format: (value) => value.toFixed(0) }}
-        y={{
-          label: board.benchmark.scoring === "votes" ? "Win rate" : board.benchmark.name,
-          format: (value) => `${Math.round(value * 100)}`,
-        }}
-        quadrants={{ topRight: "Clever and capable", bottomRight: "Clever, somehow lost" }}
-      />
+      <div className="rounded-2xl border border-border bg-surface p-4">
+        <ScatterPlot
+          points={intelligencePoints(board)}
+          ariaLabel={`Artificial Analysis Intelligence Index against ${board.benchmark.name} score`}
+          x={{
+            label: "Artificial Analysis Intelligence Index",
+            format: (value) => value.toFixed(0),
+          }}
+          y={{
+            label: board.benchmark.scoring === "votes" ? "Win rate" : board.benchmark.name,
+            format: (value) => `${Math.round(value * 100)}`,
+          }}
+          quadrants={{ topRight: "Clever and capable", bottomRight: "Clever, somehow lost" }}
+        />
+      </div>
     </section>
   );
 }
@@ -109,7 +114,7 @@ export function BenchmarksIndex() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} className="h-56 rounded-2xl" />
+            <Skeleton key={index} className="h-64 rounded-2xl" />
           ))}
         </div>
       ) : null}

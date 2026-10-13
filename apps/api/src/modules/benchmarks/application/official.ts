@@ -13,7 +13,13 @@ import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { IEnv } from "~/types";
 
-import { findPlatformModel, isDecisionModel, modelEntrant, modelIneligibility } from "./entrants";
+import {
+  findOfficialModel,
+  isDecisionModel,
+  isOfficialProvider,
+  modelEntrant,
+  modelIneligibility,
+} from "./entrants";
 import { toBenchmarkRun } from "./mappers";
 import { enqueueBenchmarkRunTask } from "./runner";
 
@@ -33,6 +39,10 @@ export function officialCandidateModelIds(env: IEnv): string[] {
     Object.values(roles).flatMap((candidates) => [...candidates]),
   );
   const fromLineup = lineup.flatMap((candidate) => {
+    if (!isOfficialProvider(candidate.provider)) {
+      return [];
+    }
+
     const resolved = findModelByReference(models, candidate);
 
     return resolved ? [resolved.id] : [];
@@ -42,7 +52,7 @@ export function officialCandidateModelIds(env: IEnv): string[] {
     .map(([id]) => id);
 
   return [...new Set([...fromLineup, ...decisionModels])].filter((id) =>
-    Boolean(findPlatformModel(env, id)),
+    Boolean(findOfficialModel(env, id)),
   );
 }
 
@@ -76,7 +86,7 @@ export async function queueOfficialRuns(
         return { queued, skippedForBudget: false, spentThisMonthUsd };
       }
 
-      const config = findPlatformModel(env, modelId);
+      const config = findOfficialModel(env, modelId);
 
       if (!config || modelIneligibility(benchmark, config)) {
         continue;
