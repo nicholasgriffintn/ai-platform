@@ -19,6 +19,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "create_qr_code",
     "create_speech",
     "create_video",
+    "caption_video",
   ],
   Code: [
     "apply_edit_completion",

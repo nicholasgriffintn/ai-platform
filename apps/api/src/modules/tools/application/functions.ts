@@ -46,6 +46,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   create_image: { icon: "image" },
   capture_screenshot: { icon: "image" },
   create_video: { icon: "video" },
+  caption_video: { icon: "video" },
   create_music: { icon: "music" },
   create_speech: { icon: "speech" },
   create_qr_code: { icon: "qr-code" },

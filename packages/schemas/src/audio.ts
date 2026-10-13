@@ -66,3 +66,5 @@ export const textToSpeechSchema = z.object({
     description: "Whether to store the generated audio artifact.",
   }),
 });
+
+export const CAPTION_VIDEO_MAX_BYTES = 25 * 1024 * 1024;

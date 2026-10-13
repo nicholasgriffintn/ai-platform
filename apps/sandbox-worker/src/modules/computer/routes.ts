@@ -1,6 +1,7 @@
 import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
 
 import type { Env } from "../../types";
+import { handleCaptionVideo } from "./caption-video";
 import { INTERNAL_COMPUTER_ORIGIN } from "./config";
 import { handleComputerRequest } from "./lifecycle";
 import { handleScreenRequest } from "./screen";
@@ -29,6 +30,10 @@ export async function handleComputerTraffic(request: Request, env: Env): Promise
 
   if (url.pathname === "/computer/site-verify") {
     return handleSiteVerification(request, env);
+  }
+
+  if (url.pathname === "/computer/caption-video") {
+    return handleCaptionVideo(request, env);
   }
 
   if (!url.pathname.startsWith("/computer/")) {

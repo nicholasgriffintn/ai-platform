@@ -60,9 +60,15 @@ export abstract class ContainerHost extends DurableObject<Env> {
     return (await new Files(this.container).readFile(path)).text();
   }
 
-  async writeFile(path: string, content: string): Promise<void> {
+  async writeFile(path: string, content: string | ArrayBuffer): Promise<void> {
     await this.ensureStarted();
     await new Files(this.container).writeFile(path, content);
+  }
+
+  async readFileBytes(path: string): Promise<ArrayBuffer> {
+    await this.ensureStarted();
+
+    return (await new Files(this.container).readFile(path)).arrayBuffer();
   }
 
   async exists(path: string): Promise<boolean> {
