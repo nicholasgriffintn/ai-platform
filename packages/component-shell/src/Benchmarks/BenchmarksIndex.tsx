@@ -90,7 +90,7 @@ export function BenchmarksIndex() {
   const { data, isLoading, error } = useBenchmarkIndex();
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-14 px-4 pb-16 sm:px-6">
+    <div className="w-full space-y-14 pb-16">
       <header className="space-y-5 pt-2">
         <p className="polychat-eyebrow">Benchmarks</p>
         <h1 className="max-w-3xl font-display text-4xl font-medium tracking-tight text-balance text-foreground md:text-5xl">

@@ -192,7 +192,7 @@ export function BenchmarkBoardView({ benchmarkId }: { benchmarkId: BenchmarkId }
   const { data, isLoading, error } = useBenchmarkBoard(benchmarkId);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-12 px-4 pb-16 sm:px-6">
+    <div className="w-full space-y-12 pb-16">
       {isLoading ? (
         <div className="space-y-6 pt-2">
           <Skeleton className="h-5 w-32" />
