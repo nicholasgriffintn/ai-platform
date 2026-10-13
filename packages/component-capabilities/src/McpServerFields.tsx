@@ -1,5 +1,5 @@
 import { Button, FormInput, FormSelect } from "@ngriffin_uk/polychat-component-ui";
-import type { McpConnection } from "@ngriffin_uk/polychat-schemas";
+import { MCP_SERVER_PRESETS, type McpConnection } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -90,15 +90,34 @@ export function McpServerFields({
           />
         </div>
       ))}
-      <Button
-        type="button"
-        variant="secondary"
-        icon={<Plus className="h-4 w-4" />}
-        disabled={disabled}
-        onClick={() => onChange([...servers, { id: generateId(), label: "", url: "" }])}
-      >
-        Add server
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          icon={<Plus className="h-4 w-4" />}
+          disabled={disabled}
+          onClick={() => onChange([...servers, { id: generateId(), label: "", url: "" }])}
+        >
+          Add server
+        </Button>
+        {MCP_SERVER_PRESETS.filter(
+          (preset) => !servers.some((server) => server.url === preset.url),
+        ).map((preset) => (
+          <Button
+            key={preset.url}
+            type="button"
+            variant="outline"
+            title={preset.description}
+            icon={<Plus className="h-4 w-4" />}
+            disabled={disabled}
+            onClick={() =>
+              onChange([...servers, { id: generateId(), label: preset.label, url: preset.url }])
+            }
+          >
+            {preset.label}
+          </Button>
+        ))}
+      </div>
       <p className="text-xs text-muted-foreground">
         Use an HTTPS endpoint and do not put credentials in the URL.
       </p>

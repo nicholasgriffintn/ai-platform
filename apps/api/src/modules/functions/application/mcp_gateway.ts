@@ -1,8 +1,10 @@
 import {
   formatMcpToolResult,
   McpRequestError,
+  type FormattedMcpToolResult,
   type McpTool,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { modelAcceptsImageInput } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
@@ -11,11 +13,13 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
+import { findModelConfig } from "~/modules/models/application/resolve";
 import {
   findMcpGatewayServer,
   openMcpGatewaySession,
   readMcpGatewayServers,
 } from "~/modules/tools/application/mcp-gateway-servers";
+import type { IRequest, MessageContent } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
@@ -28,6 +32,35 @@ import {
 const MAX_LISTED_TOOLS = 40;
 const MAX_RESULT_CHARS = 16_000;
 const MAX_DESCRIPTION_CHARS = 480;
+const RESULT_IMAGE_OPTIONS = { maxImages: 6, maxImageBytes: 800 * 1024 };
+
+async function activeModelReadsImages(request: IRequest): Promise<boolean> {
+  const model = request.request?.model;
+
+  if (typeof model !== "string" || !model) {
+    return false;
+  }
+
+  return modelAcceptsImageInput(
+    await findModelConfig(model, request.env, request.request?.provider, request.user?.id),
+  );
+}
+
+function resultContent(result: FormattedMcpToolResult): string | MessageContent[] {
+  const text = result.truncated ? `${result.text}\n[result truncated]` : result.text;
+
+  if (result.images.length === 0) {
+    return text;
+  }
+
+  return [
+    { type: "text", text },
+    ...result.images.map((image): MessageContent => ({
+      type: "image_url",
+      image_url: { url: `data:${image.mimeType};base64,${image.data}`, detail: "low" },
+    })),
+  ];
+}
 
 function describeTool(tool: McpTool): string {
   const description = tool.description?.replace(/\s+/g, " ").trim().slice(0, MAX_DESCRIPTION_CHARS);
@@ -117,13 +150,19 @@ export const mcp_call_tool: ApiToolDefinition = {
       const result = formatMcpToolResult(
         await session.client.callTool(toolName, toolArguments),
         MAX_RESULT_CHARS,
+        (await activeModelReadsImages(context.request)) ? RESULT_IMAGE_OPTIONS : undefined,
       );
 
       return {
         status: result.isError ? "error" : "success",
         name: MCP_CALL_TOOL_NAME,
-        content: result.truncated ? `${result.text}\n[result truncated]` : result.text,
-        data: { integration: server.label, tool: toolName, truncated: result.truncated },
+        content: resultContent(result),
+        data: {
+          integration: server.label,
+          tool: toolName,
+          truncated: result.truncated,
+          images: result.images.length,
+        },
       };
     } catch (error) {
       return failure(MCP_CALL_TOOL_NAME, error);

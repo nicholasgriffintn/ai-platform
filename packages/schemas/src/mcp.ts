@@ -139,3 +139,14 @@ export function getUniqueMcpServerLabel(base: string, index: number, used: Set<s
 
   return label;
 }
+
+export const MCP_SERVER_PRESETS = [
+  {
+    label: "Inspo",
+    url: "https://inspomcp.dev/api/mcp?profile=lite&images=thumbs",
+    description:
+      "Captures of real production websites, palettes and reference components to design from.",
+  },
+] as const;
+
+export type McpServerPreset = (typeof MCP_SERVER_PRESETS)[number];
