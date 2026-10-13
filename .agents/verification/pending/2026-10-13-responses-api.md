@@ -1,7 +1,7 @@
 # Verify the Responses API transition
 
 - **Change:** Chat, Work, teammates and Poly run through `POST /responses`, read conversations through `/conversations`, and stream one sequenced event envelope. `/chat/completions` is a compatible port that also serves the hosted agent harnesses.
-- **Surfaces:** web, desktop, API, agent worker. iOS still calls the previous routes and is not covered.
+- **Surfaces:** web, desktop, iOS, API, agent worker.
 - **Prerequisites:** a signed-in Pro account with a project, a teammate, and one hosted harness model available.
 - **Risk if wrong:** a turn streams but never settles, an approval or question cannot be answered, a replayed response disagrees with the stream, or a harness cannot reach its model.
 
@@ -15,5 +15,6 @@
 - [ ] Run a Pi or OpenCode harness turn and confirm the agent worker reaches `POST /chat/completions` with the delegation token and streams `chat.completion.chunk` events.
 - [ ] Point an unmodified OpenAI SDK at `/chat/completions` with an API key and confirm a plain completion and a streamed completion both work.
 - [ ] Compact a long conversation and confirm `POST /responses/compact` returns items including the compaction marker.
+- [ ] On iOS, send a turn and confirm the conversation list, the thread, tool results and the status row render from `/conversations` and `/responses`. Lock the phone mid-turn, reopen, and confirm the response settles through `GET /responses/:id/events`. Stop a turn and confirm `POST /responses/:id/cancel`.
 
 **Stop and report if:** a stream has gaps or repeats in `sequence_number`, an approval cannot be answered, a response stays `in_progress` after the stream closed, or a harness turn fails to reach a model.

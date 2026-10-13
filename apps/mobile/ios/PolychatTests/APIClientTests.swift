@@ -20,15 +20,15 @@ struct APIClientTests {
         """.utf8))
     }
 
-    @Test func createChatCompletionRejectsRequestsWithNoProviderMessages() async throws {
+    @Test func createResponseRejectsRequestsWithNoProviderMessages() async throws {
         let client = APIClient(baseURL: URL(string: "https://example.test")!)
 
         do {
-            _ = try await client.createChatCompletion(
+            _ = try await client.createResponse(
                 messages: [try makeCompactionMessage()],
                 modelId: "deepseek-chat",
                 provider: "deepseek",
-                completionId: "conversation-1",
+                conversationId: "conversation-1",
                 settings: .default
             )
             Issue.record("Expected invalid request")
@@ -39,13 +39,13 @@ struct APIClientTests {
         }
     }
 
-    @Test func streamChatCompletionRejectsRequestsWithNoProviderMessages() async throws {
+    @Test func streamResponseRejectsRequestsWithNoProviderMessages() async throws {
         let client = APIClient(baseURL: URL(string: "https://example.test")!)
-        let stream = client.streamChatCompletion(
+        let stream = client.streamResponse(
             messages: [try makeCompactionMessage()],
             modelId: "deepseek-chat",
             provider: "deepseek",
-            completionId: "conversation-1",
+            conversationId: "conversation-1",
             settings: .default
         )
 

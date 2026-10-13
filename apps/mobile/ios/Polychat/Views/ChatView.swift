@@ -56,8 +56,8 @@ struct ChatView: View {
         modelsStore.readinessMessage(for: activeModelId)
     }
 
-    private var currentRun: ChatRun? {
-        conversationManager.currentConversation?.latestRun
+    private var currentResponse: PlatformResponse? {
+        conversationManager.currentConversation?.latestResponse
     }
 
     private var allArtifacts: [Artifact] {
@@ -76,7 +76,7 @@ struct ChatView: View {
                 messages: messages,
                 isTemporaryConversation: isTemporaryConversation,
                 conversationModelId: activeModelId,
-                run: currentRun,
+                response: currentResponse,
                 taskActivity: conversationManager.currentTaskActivity,
                 taskInteraction: conversationManager.currentTaskInteraction,
                 connectorApproval: conversationManager.currentConnectorApproval,
@@ -125,11 +125,11 @@ struct ChatView: View {
                     isMessageInputFocused = false
                 }
             )
-            if let machineRun = currentRun, machineRun.provenance?.site == "machine", !machineRun.isActive {
+            if let machineResponse = currentResponse, machineResponse.provenance?.site == "machine", !machineResponse.isActive {
                 HStack(spacing: 12) {
                     Image(systemName: "desktopcomputer")
                         .foregroundStyle(.secondary)
-                    Text("This conversation last ran on \(machineRun.provenance?.vendor ?? "another machine").")
+                    Text("This conversation last ran on \(machineResponse.provenance?.vendor ?? "another machine").")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -155,8 +155,8 @@ struct ChatView: View {
                 activeModelProvider: activeModelProvider,
                 isTemporaryConversation: isTemporaryConversation,
                 modelReadinessMessage: modelReadinessMessage,
-                isRunActive: currentRun?.isActive == true || (conversationManager.activeMachineRun != nil && conversationManager.activeMachineRun?.conversationId == conversationManager.currentConversation?.id),
-                isCancellationPending: currentRun?.status == "cancelling",
+                isRunActive: currentResponse?.isActive == true || (conversationManager.activeMachineRun != nil && conversationManager.activeMachineRun?.conversationId == conversationManager.currentConversation?.id),
+                isCancellationPending: currentResponse?.status == "cancelling",
                 onFilesPicked: uploadFiles,
                 onVoiceTapped: {
                     isMessageInputFocused = false
@@ -210,7 +210,7 @@ struct ChatView: View {
                 }) {
                     Label("Context", systemImage: "book.pages")
                 }
-                .disabled(currentRun?.context == nil && currentRun?.usage == nil)
+                .disabled(currentResponse?.context == nil && currentResponse?.usage == nil)
             }
 
             ToolbarItem(placement: .secondaryAction) {
@@ -237,7 +237,7 @@ struct ChatView: View {
                     let decision = ModelContinuity.evaluate(
                         model: model,
                         hasConversationHistory: !messages.isEmpty,
-                        activeRun: currentRun,
+                        activeResponse: currentResponse,
                         attachmentTypes: selectedAttachments.map(\.type)
                     )
                     return decision.allowsSelection ? nil : decision.reason
@@ -251,11 +251,11 @@ struct ChatView: View {
             ArtifactsView(artifacts: allArtifacts)
         }
         .sheet(isPresented: $showingContext) {
-            if let run = currentRun {
-                ChatContextView(context: run.context, usage: run.usage)
+            if let response = currentResponse {
+                ChatContextView(context: response.context, usage: response.usage)
             }
         }
-        .task(id: currentRun.map { "\($0.id):\($0.attempt)" }) {
+        .task(id: currentResponse.map { "\($0.id):\($0.attempt)" }) {
             await conversationManager.observeCurrentRun()
         }
         .task(id: activeModelId) {

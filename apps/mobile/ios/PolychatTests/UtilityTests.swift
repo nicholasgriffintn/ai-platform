@@ -4,11 +4,10 @@ import UniformTypeIdentifiers
 @testable import Polychat
 
 struct UtilityTests {
-    @Test func chatRunReplayAppliesAndClearsRetryState() {
-        let initial = ChatRunSnapshotResponse(
-            protocolVersion: 1,
+    @Test func responseReplayAppliesAndClearsRetryState() {
+        let initial = ResponseSnapshot(
             cursor: 1,
-            run: makeChatRun(),
+            response: makeResponse(),
             messages: []
         )
         let retry: [String: JSONValue] = [
@@ -24,42 +23,38 @@ struct UtilityTests {
             "scheduledAt": .string("2026-09-05T12:00:02.000Z"),
             "retryAt": .string("2026-09-05T12:00:03.000Z")
         ]
-        let waiting = ChatRunReplay.apply(
-            state: ChatRunReplayState(cursor: 1, snapshot: initial),
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+        let waiting = ResponseReplay.apply(
+            state: ResponseReplayState(cursor: 1, snapshot: initial),
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 1,
                 nextCursor: 2,
                 resetRequired: false,
-                events: [ChatRunEvent(
-                    protocolVersion: 1,
+                events: [ResponseEventRecord(
                     id: "event-2",
-                    runId: "run-1",
+                    responseId: "run-1",
                     sequence: 2,
                     attempt: 1,
-                    type: "run.retry_changed",
+                    type: "response.retry_changed",
                     occurredAt: "2026-09-05T12:00:02.000Z",
                     data: ["retry": .object(retry)]
                 )],
                 snapshot: nil
             )
         )
-        let cleared = ChatRunReplay.apply(
+        let cleared = ResponseReplay.apply(
             state: waiting.state,
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 2,
                 nextCursor: 3,
                 resetRequired: false,
-                events: [ChatRunEvent(
-                    protocolVersion: 1,
+                events: [ResponseEventRecord(
                     id: "event-3",
-                    runId: "run-1",
+                    responseId: "run-1",
                     sequence: 3,
                     attempt: 1,
-                    type: "run.retry_changed",
+                    type: "response.retry_changed",
                     occurredAt: "2026-09-05T12:00:03.000Z",
                     data: ["retry": .null]
                 )],
@@ -67,16 +62,15 @@ struct UtilityTests {
             )
         )
 
-        #expect(waiting.state.snapshot.run.retry?.phase == "waiting")
-        #expect(waiting.state.snapshot.run.attempt == 1)
-        #expect(cleared.state.snapshot.run.retry == nil)
+        #expect(waiting.state.snapshot.response.retry?.phase == "waiting")
+        #expect(waiting.state.snapshot.response.attempt == 1)
+        #expect(cleared.state.snapshot.response.retry == nil)
     }
 
-    @Test func chatRunReplayDeduplicatesOrdersAndRejectsTerminalRegression() {
-        let initial = ChatRunSnapshotResponse(
-            protocolVersion: 1,
+    @Test func responseReplayDeduplicatesOrdersAndRejectsTerminalRegression() {
+        let initial = ResponseSnapshot(
             cursor: 1,
-            run: makeChatRun(status: "running"),
+            response: makeResponse(status: "in_progress"),
             messages: []
         )
         let events = [
@@ -84,11 +78,10 @@ struct UtilityTests {
             makeRunEvent(sequence: 2, status: "cancelling"),
             makeRunEvent(sequence: 2, status: "cancelling")
         ]
-        let outcome = ChatRunReplay.apply(
-            state: ChatRunReplayState(cursor: 1, snapshot: initial),
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+        let outcome = ResponseReplay.apply(
+            state: ResponseReplayState(cursor: 1, snapshot: initial),
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 1,
                 nextCursor: 3,
                 resetRequired: false,
@@ -99,88 +92,83 @@ struct UtilityTests {
 
         #expect(outcome.requiresSnapshot == false)
         #expect(outcome.state.cursor == 3)
-        #expect(outcome.state.snapshot.run.status == "cancelled")
+        #expect(outcome.state.snapshot.response.status == "cancelled")
 
-        let stale = ChatRunReplay.apply(
+        let stale = ResponseReplay.apply(
             state: outcome.state,
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 3,
                 nextCursor: 4,
                 resetRequired: false,
-                events: [makeRunEvent(sequence: 4, status: "running")],
+                events: [makeRunEvent(sequence: 4, status: "in_progress")],
                 snapshot: nil
             )
         )
 
         #expect(stale.state.cursor == 4)
-        #expect(stale.state.snapshot.run.status == "cancelled")
+        #expect(stale.state.snapshot.response.status == "cancelled")
     }
 
-    @Test func chatRunReplayRequestsSnapshotsForGapsUnknownEventsAndNewerProtocols() {
-        let snapshot = ChatRunSnapshotResponse(
-            protocolVersion: 1,
+    @Test func responseReplayRequestsSnapshotsForGapsAndUnknownEventsAndAcceptsResets() {
+        let snapshot = ResponseSnapshot(
             cursor: 2,
-            run: makeChatRun(status: "running"),
+            response: makeResponse(status: "in_progress"),
             messages: []
         )
-        let state = ChatRunReplayState(cursor: 2, snapshot: snapshot)
-        let gap = ChatRunReplay.apply(
+        let state = ResponseReplayState(cursor: 2, snapshot: snapshot)
+        let gap = ResponseReplay.apply(
             state: state,
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 2,
                 nextCursor: 4,
                 resetRequired: false,
-                events: [makeRunEvent(sequence: 4, status: "succeeded")],
+                events: [makeRunEvent(sequence: 4, status: "completed")],
                 snapshot: nil
             )
         )
-        let unknown = ChatRunReplay.apply(
+        let unknown = ResponseReplay.apply(
             state: state,
-            response: ChatRunReplayResponse(
-                protocolVersion: 1,
-                runId: "run-1",
+            response: ResponseReplayResponse(
+                responseId: "run-1",
                 fromCursor: 2,
                 nextCursor: 3,
                 resetRequired: false,
-                events: [makeRunEvent(sequence: 3, status: "running", type: "future.event")],
+                events: [makeRunEvent(sequence: 3, status: "in_progress", type: "future.event")],
                 snapshot: nil
             )
         )
-        let future = ChatRunReplay.apply(
+        let reset = ResponseReplay.apply(
             state: state,
-            response: ChatRunReplayResponse(
-                protocolVersion: 2,
-                runId: "run-1",
-                fromCursor: 2,
-                nextCursor: 2,
-                resetRequired: false,
+            response: ResponseReplayResponse(
+                responseId: "run-1",
+                fromCursor: 0,
+                nextCursor: 5,
+                resetRequired: true,
                 events: [],
-                snapshot: nil
+                snapshot: ResponseSnapshot(cursor: 5, response: makeResponse(status: "completed"), messages: [])
             )
         )
 
         #expect(gap.requiresSnapshot)
         #expect(unknown.requiresSnapshot)
-        #expect(unknown.unsupportedProtocol == false)
-        #expect(future.requiresSnapshot)
-        #expect(future.unsupportedProtocol)
+        #expect(reset.requiresSnapshot == false)
+        #expect(reset.state.cursor == 5)
+        #expect(reset.state.snapshot.response.status == "completed")
     }
 
-    @Test func chatRunPresentationDistinguishesWaitingAndTerminalStates() {
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_input")).label == "Answer needed")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_approval")).label == "Approval needed")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_takeover")).label == "Takeover needed")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "cancelling")).label == "Stop requested")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "cancelled")).label == "Task cancelled")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "failed")).detail == "Provider unavailable")
-        #expect(ChatRunPresentation.resolve(makeChatRun(status: "interrupted")).label == "Task interrupted")
+    @Test func responsePresentationDistinguishesWaitingAndTerminalStates() {
+        #expect(ResponsePresentation.resolve(makeResponse(status: "awaiting_input")).label == "Answer needed")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "awaiting_approval")).label == "Approval needed")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "awaiting_takeover")).label == "Takeover needed")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "cancelling")).label == "Stop requested")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "cancelled")).label == "Task cancelled")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "failed")).detail == "Provider unavailable")
+        #expect(ResponsePresentation.resolve(makeResponse(status: "incomplete")).label == "Task interrupted")
     }
 
-    @Test func chatRunPresentationShowsExactRetryAttempt() {
+    @Test func responsePresentationShowsExactRetryAttempt() {
         let retry = ChatRetrySnapshot(
             protocolVersion: 1,
             step: 2,
@@ -194,7 +182,7 @@ struct UtilityTests {
             scheduledAt: "2026-09-05T12:00:00.000Z",
             retryAt: "2026-09-05T12:00:01.000Z"
         )
-        let presentation = ChatRunPresentation.resolve(makeChatRun(retry: retry))
+        let presentation = ResponsePresentation.resolve(makeResponse(retry: retry))
 
         #expect(presentation.label == "Retry scheduled")
         #expect(presentation.detail == "Attempt 2 of 2 · run retry 1 of 2 · The model provider connection failed temporarily.")
@@ -328,13 +316,33 @@ struct UtilityTests {
         #expect(MarkdownFixer.fix("| A | B\n| --- | --- |\n| 1 | 2", isStreaming: true).hasSuffix(" |"))
     }
 
-    @Test func chatStreamParserHandlesProviderShapesAndErrors() throws {
+    @Test func chatStreamParserHandlesPlatformEventsAndErrors() throws {
         #expect(try ChatStreamEventParser.events(from: "[DONE]") == [.done])
-        #expect(try ChatStreamEventParser.events(from: #"{"type":"content_block_delta","delta":{"text":"Hello"}}"#) == [.content("Hello")])
-        #expect(try ChatStreamEventParser.events(from: #"{"candidates":[{"content":{"parts":[{"text":"A"},{"text":"B"}]}}]}"#) == [.content("AB")])
+        #expect(try ChatStreamEventParser.events(
+            from: #"{"type":"response.output_text.delta","item_id":"m1","output_index":0,"delta":"Hello","sequence_number":1}"#
+        ) == [.content("Hello")])
+        #expect(try ChatStreamEventParser.events(
+            from: #"{"type":"response.reasoning.delta","item_id":"m1","output_index":0,"delta":"Thinking","sequence_number":2}"#
+        ) == [.reasoning("Thinking")])
+        #expect(try ChatStreamEventParser.events(from: #"{"type":"future.additive_event","detail":"ignored"}"#) == [])
 
-        let metadataEvents = try ChatStreamEventParser.events(from: #"{"type":"message_delta","message_id":"m1","model":"gpt-4o","content":"Final"}"#)
-        #expect(metadataEvents.count == 2)
+        let metadataEvents = try ChatStreamEventParser.events(from: """
+        {
+            "type": "response.output_item.done",
+            "output_index": 0,
+            "sequence_number": 3,
+            "finish_reason": "stop",
+            "item": {
+                "type": "message",
+                "role": "assistant",
+                "id": "m1",
+                "status": "complete",
+                "content": [{"type": "text", "text": "Final"}],
+                "metadata": {"model": "gpt-4o", "log_id": "log-1"}
+            }
+        }
+        """)
+        #expect(metadataEvents.count == 1)
         guard case .metadata(let metadata) = metadataEvents[0] else {
             Issue.record("Expected stream metadata")
             return
@@ -342,10 +350,16 @@ struct UtilityTests {
         #expect(metadata.messageId == "m1")
         #expect(metadata.model == "gpt-4o")
         #expect(metadata.content == "Final")
-        #expect(metadataEvents[1] == .done)
+        #expect(metadata.status == "complete")
+        #expect(metadata.logId == "log-1")
+        #expect(try ChatStreamEventParser.events(
+            from: #"{"type":"response.content_part.done","item_id":"m1","sequence_number":4}"#
+        ) == [.done])
 
         do {
-            _ = try ChatStreamEventParser.events(from: #"{"type":"error","error":{"message":"Nope"}}"#)
+            _ = try ChatStreamEventParser.events(
+                from: #"{"type":"response.error","error":{"message":"Nope"},"sequence_number":5}"#
+            )
             Issue.record("Expected streaming error")
         } catch APIClientError.streaming(let message) {
             #expect(message == "Nope")
@@ -354,23 +368,23 @@ struct UtilityTests {
         }
     }
 
-    @Test func chatStreamParserPreservesCompactionStateMessage() throws {
+    @Test func chatStreamParserPreservesCompactedConversationItem() throws {
         let events = try ChatStreamEventParser.events(from: """
         {
-            "type": "state",
-            "state": "compaction",
-            "message": {
+            "type": "conversation.compacted",
+            "sequence_number": 4,
+            "item": {
+                "type": "compaction",
                 "id": "snapshot-1-compaction",
-                "completion_id": "conversation-1",
-                "role": "compaction",
-                "content": "Context automatically compacted",
+                "content": [{"type": "text", "text": "Context automatically compacted"}],
                 "parts": [
                     {
                         "type": "compaction",
                         "status": "completed",
                         "label": "Context automatically compacted"
                     }
-                ]
+                ],
+                "metadata": {"completion_id": "conversation-1"}
             }
         }
         """)
@@ -387,55 +401,58 @@ struct UtilityTests {
     }
 
     @Test func chatStreamParserPreservesBareCompactionState() throws {
-        let events = try ChatStreamEventParser.events(from: #"{"type":"state","state":"compaction"}"#)
+        let events = try ChatStreamEventParser.events(
+            from: #"{"type":"response.state","state":"compaction","sequence_number":1}"#
+        )
 
         #expect(events == [.state("compaction")])
     }
 
-    @Test func chatStreamParserPreservesRunReceipts() throws {
+    @Test func chatStreamParserPreservesResponseLifecycleEvents() throws {
         let events = try ChatStreamEventParser.events(from: """
         {
-            "type": "state",
-            "state": "run",
-            "receipt": {
-                "protocolVersion": 1,
-                "commandId": "command-1",
-                "kind": "turn",
-                "acceptedAt": "2026-09-05T12:00:00.000Z",
-                "duplicate": false,
-                "run": {
-                    "protocolVersion": 1,
-                    "id": "run-1",
-                    "conversationId": "conversation-1",
-                    "projectId": null,
-                    "projectTaskId": null,
-                    "initiatorUserId": 7,
-                    "status": "running",
-                    "attempt": 1,
-                    "createdAt": "2026-09-05T12:00:00.000Z",
-                    "updatedAt": "2026-09-05T12:00:00.000Z",
-                    "startedAt": "2026-09-05T12:00:00.000Z",
-                    "completedAt": null,
-                    "terminalReason": null,
-                    "lastMessageId": null
+            "type": "response.created",
+            "sequence_number": 0,
+            "response": {
+                "object": "response",
+                "id": "run-1",
+                "conversation_id": "conversation-1",
+                "status": "in_progress",
+                "waiting_on": null,
+                "attempt": 1,
+                "trigger": "user",
+                "initiator_user_id": 7,
+                "project_id": null,
+                "project_task_id": null,
+                "created_at": "2026-09-05T12:00:00.000Z",
+                "updated_at": "2026-09-05T12:00:00.000Z",
+                "started_at": "2026-09-05T12:00:00.000Z",
+                "completed_at": null,
+                "terminal_reason": null,
+                "last_item_id": null,
+                "receipt": {
+                    "idempotency_key": "command-1",
+                    "kind": "turn",
+                    "accepted_at": "2026-09-05T12:00:00.000Z",
+                    "duplicate": false
                 }
             }
         }
         """)
 
-        guard case .run(let receipt) = events.first else {
-            Issue.record("Expected run receipt")
+        guard case .response(let response) = events.first else {
+            Issue.record("Expected response lifecycle event")
             return
         }
 
-        #expect(receipt.commandId == "command-1")
-        #expect(receipt.run.id == "run-1")
-        #expect(receipt.run.status == "running")
+        #expect(response.receipt?.idempotencyKey == "command-1")
+        #expect(response.id == "run-1")
+        #expect(response.status == "in_progress")
     }
 
     @Test func chatStreamParserReadsConversationTitle() throws {
         let events = try ChatStreamEventParser.events(
-            from: #"{"type":"state","state":"conversation_title","title":"Durable Object concurrency"}"#
+            from: #"{"type":"conversation.title_changed","title":"Durable Object concurrency","sequence_number":2}"#
         )
 
         #expect(events == [.conversationTitle("Durable Object concurrency")])
@@ -489,12 +506,14 @@ struct UtilityTests {
 
     @Test func chatStreamParserTypesToolCallLifecycle() throws {
         let start = try ChatStreamEventParser.events(
-            from: #"{"type":"tool_use_start","tool_id":"call-1","tool_name":"web_search"}"#
+            from: #"{"type":"response.output_item.added","output_index":1,"item":{"type":"tool_call","call_id":"call-1","id":"call-1","name":"web_search"},"sequence_number":1}"#
         )
         let delta = try ChatStreamEventParser.events(
-            from: #"{"type":"tool_use_delta","tool_id":"call-1","parameters":"{\"query\":\"polychat\"}"}"#
+            from: #"{"type":"response.tool_call.arguments.delta","item_id":"call-1","call_id":"call-1","delta":"{\"query\":\"polychat\"}","sequence_number":2}"#
         )
-        let stop = try ChatStreamEventParser.events(from: #"{"type":"tool_use_stop","tool_id":"call-1"}"#)
+        let stop = try ChatStreamEventParser.events(
+            from: #"{"type":"response.output_item.done","output_index":1,"item":{"type":"tool_call","call_id":"call-1","id":"call-1","name":"web_search","arguments":{"query":"polychat"}},"sequence_number":3}"#
+        )
 
         #expect(start == [.toolUseStart(ChatToolCallEvent(toolCallId: "call-1", name: "web_search"))])
         #expect(delta == [.toolUseDelta(
@@ -508,16 +527,16 @@ struct UtilityTests {
 
     @Test func chatStreamParserTypesSemanticTurnActivityAndIgnoresUnknownKinds() throws {
         let started = try ChatStreamEventParser.events(
-            from: #"{"type":"turn_activity","kind":"tool_execution_started","step":2,"toolCallId":"call-1","toolName":"web_search"}"#
+            from: #"{"type":"response.activity","kind":"tool_execution_started","step":2,"toolCallId":"call-1","toolName":"web_search"}"#
         )
         let waiting = try ChatStreamEventParser.events(
-            from: #"{"type":"turn_activity","kind":"waiting_for_user","step":2,"toolCallId":"call-2","toolName":"ask_user","reason":"question"}"#
+            from: #"{"type":"response.activity","kind":"waiting_for_user","step":2,"toolCallId":"call-2","toolName":"ask_user","reason":"question"}"#
         )
         let selection = try ChatStreamEventParser.events(
-            from: #"{"type":"turn_activity","kind":"waiting_for_user","step":2,"toolCallId":"call-3","toolName":"select_council_members","reason":"selection"}"#
+            from: #"{"type":"response.activity","kind":"waiting_for_user","step":2,"toolCallId":"call-3","toolName":"select_council_members","reason":"selection"}"#
         )
         let unknown = try ChatStreamEventParser.events(
-            from: #"{"type":"turn_activity","kind":"future_phase","step":2}"#
+            from: #"{"type":"response.activity","kind":"future_phase","step":2}"#
         )
 
         #expect(started == [
@@ -651,17 +670,19 @@ struct UtilityTests {
         #expect(inputsByName["weather"] == JSONValue.object(["city": .string("London")]))
     }
 
-    @Test func chatStreamParserReadsToolResponseResult() throws {
+    @Test func chatStreamParserReadsToolOutputItems() throws {
         let events = try ChatStreamEventParser.events(from: """
         {
-            "type": "tool_response",
-            "tool_id": "message-1",
-            "result": {
-                "role": "tool",
+            "type": "response.output_item.done",
+            "output_index": 2,
+            "sequence_number": 5,
+            "item": {
+                "type": "tool_output",
                 "id": "message-1",
+                "call_id": "call-1",
                 "name": "web_search",
                 "status": "success",
-                "content": "Three results",
+                "content": [{"type": "text", "text": "Three results"}],
                 "data": {
                     "humanInTheLoop": {
                         "type": "question",
@@ -670,9 +691,7 @@ struct UtilityTests {
                     },
                     "questions": [{"id": "tone", "prompt": "Which tone?", "options": [], "allowOther": true}]
                 },
-                "tool_call_id": "call-1",
-                "log_id": "log-1",
-                "timestamp": 1774000000
+                "metadata": {"log_id": "log-1", "timestamp": 1774000000}
             }
         }
         """)
@@ -744,7 +763,7 @@ struct UtilityTests {
 
     @Test func chatStreamParserReadsUsageLimits() throws {
         let events = try ChatStreamEventParser.events(
-            from: #"{"type":"usage_limits","usage_limits":{"credits":{"included":500,"used":125,"reserved":25,"grace":50,"overrun":0,"overage":0,"overage_enabled":false,"state":"ok"}}}"#
+            from: #"{"type":"response.usage_limits","usage_limits":{"credits":{"included":500,"used":125,"reserved":25,"grace":50,"overrun":0,"overage":0,"overage_enabled":false,"state":"ok"}}}"#
         )
 
         #expect(events == [.usageLimits(
@@ -813,10 +832,10 @@ struct UtilityTests {
     }
 
     @Test func connectorApprovalCandidateKeepsStructuredExactRunIdentity() {
-        let run = makeChatRun(status: "awaiting_approval")
+        let run = makeResponse(status: "awaiting_approval")
         let candidate = ConnectorApprovalCandidate.latest(
             in: [makeConnectorApprovalMessage()],
-            run: run
+            response: run
         )
 
         #expect(candidate == ConnectorApprovalCandidate(
@@ -827,25 +846,18 @@ struct UtilityTests {
             operation: "GMAIL_SEND_EMAIL"
         ))
 
-        let successor = ChatRun(
-            protocolVersion: 1,
+        let successor = PlatformResponse(
             id: "run-2",
             conversationId: "conversation-1",
-            projectId: nil,
-            projectTaskId: nil,
-            initiatorUserId: 7,
             status: "awaiting_approval",
             attempt: 1,
+            initiatorUserId: 7,
             createdAt: "2026-09-05T12:05:00.000Z",
-            updatedAt: "2026-09-05T12:05:00.000Z",
-            startedAt: nil,
-            completedAt: nil,
-            terminalReason: nil,
-            lastMessageId: nil
+            updatedAt: "2026-09-05T12:05:00.000Z"
         )
         #expect(ConnectorApprovalCandidate.latest(
             in: [makeConnectorApprovalMessage()],
-            run: successor
+            response: successor
         ) == nil)
     }
 
@@ -873,12 +885,11 @@ struct UtilityTests {
 private func makeRunEvent(
     sequence: Int,
     status: String,
-    type: String = "run.status_changed"
-) -> ChatRunEvent {
-    ChatRunEvent(
-        protocolVersion: 1,
+    type: String = "response.status_changed"
+) -> ResponseEventRecord {
+    ResponseEventRecord(
         id: "event-\(sequence)",
-        runId: "run-1",
+        responseId: "run-1",
         sequence: sequence,
         attempt: 1,
         type: type,
@@ -888,14 +899,14 @@ private func makeRunEvent(
 }
 
 extension UtilityTests {
-    @Test func chatRunUsagePresentationDoesNotPresentUnknownConsumptionAsZero() throws {
-        let run = try JSONDecoder().decode(ChatRun.self, from: Data("""
+    @Test func responseUsagePresentationDoesNotPresentUnknownConsumptionAsZero() throws {
+        let run = try JSONDecoder().decode(PlatformResponse.self, from: Data("""
         {
-            "protocolVersion": 1, "id": "run-1", "conversationId": "conversation-1",
-            "projectId": null, "projectTaskId": null, "initiatorUserId": 7,
-            "status": "running", "attempt": 1,
-            "createdAt": "2026-09-05T10:00:00.000Z", "updatedAt": "2026-09-05T10:00:00.000Z",
-            "startedAt": null, "completedAt": null, "terminalReason": null, "lastMessageId": null,
+            "object": "response", "id": "run-1", "conversation_id": "conversation-1",
+            "status": "in_progress", "waiting_on": null, "attempt": 1, "trigger": "user",
+            "initiator_user_id": 7, "project_id": null, "project_task_id": null,
+            "created_at": "2026-09-05T10:00:00.000Z", "updated_at": "2026-09-05T10:00:00.000Z",
+            "started_at": null, "completed_at": null, "terminal_reason": null, "last_item_id": null,
             "usage": {
                 "protocolVersion": 1, "runId": "run-1", "currentAttempt": 1,
                 "measurement": "unknown", "reservation": null,
@@ -907,7 +918,7 @@ extension UtilityTests {
         """.utf8))
         let usage = try #require(run.usage)
 
-        #expect(ChatRunUsagePresentation.summary(usage) == "unknown usage · consumption unknown · released")
+        #expect(ResponseUsagePresentation.summary(usage) == "unknown usage · consumption unknown · released")
     }
 
     @Test func outputReviewDeepLinksAcceptNativeAndWebPaths() throws {

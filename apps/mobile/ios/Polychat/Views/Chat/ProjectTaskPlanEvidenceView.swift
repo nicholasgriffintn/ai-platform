@@ -40,7 +40,7 @@ struct ProjectTaskPlanEvidenceView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                 if let usage = attempt.usage {
-                                    Text(ChatRunUsagePresentation.summary(usage))
+                                    Text(ResponseUsagePresentation.summary(usage))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }

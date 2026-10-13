@@ -19,17 +19,17 @@ class ConversationManager: ObservableObject {
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
-    private var chatRunReplayPolicy = ChatRunReplayPolicy()
+    private var responseReplayPolicy = ResponseReplayPolicy()
     private var locallyStreamingConversationIds: Set<String> = []
 
     func configure(
         apiClient: any ConversationAPIClient,
         modelsStore: ModelsStore? = nil,
-        chatRunReplayPolicy: ChatRunReplayPolicy = ChatRunReplayPolicy()
+        responseReplayPolicy: ResponseReplayPolicy = ResponseReplayPolicy()
     ) {
         self.apiClient = apiClient
         self.modelsStore = modelsStore
-        self.chatRunReplayPolicy = chatRunReplayPolicy
+        self.responseReplayPolicy = responseReplayPolicy
     }
 
     func reset() {
@@ -70,7 +70,7 @@ class ConversationManager: ObservableObject {
                     modelTier: summary.modelTier,
                     isLoadedFromAPI: true,
                     lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
-                    messageCount: summary.messageCount ?? summary.messages.count
+                    messageCount: summary.messageCount ?? 0
                 )
             }
 
@@ -193,47 +193,45 @@ class ConversationManager: ObservableObject {
     }
 
     func observeCurrentRun() async {
-        var replayState: ChatRunReplayState?
-        var snapshotOnly = false
+        var replayState: ResponseReplayState?
 
         while !Task.isCancelled {
             guard let apiClient,
                   let conversation = currentConversation,
-                  let run = conversation.latestRun,
+                  let response = conversation.latestResponse,
                   !locallyStreamingConversationIds.contains(conversation.id) else {
                 return
             }
 
-            await refreshProjectTaskInteraction(run: run, conversationId: conversation.id)
-            await refreshConnectorApproval(run: run, conversationId: conversation.id)
+            await refreshProjectTaskInteraction(response: response, conversationId: conversation.id)
+            await refreshConnectorApproval(response: response, conversationId: conversation.id)
 
-            guard run.isActive else {
+            guard response.isActive else {
                 return
             }
 
             do {
-                if replayState == nil || snapshotOnly {
-                    let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
-                    replayState = ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
+                if replayState == nil {
+                    let snapshot = try await apiClient.fetchResponseSnapshot(id: response.id)
+                    replayState = ResponseReplayState(cursor: snapshot.cursor, snapshot: snapshot)
                 } else if let currentState = replayState {
-                    let replay = try await apiClient.fetchChatRunEvents(
-                        id: run.id,
+                    let replay = try await apiClient.fetchResponseEvents(
+                        id: response.id,
                         after: currentState.cursor
                     )
-                    let outcome = ChatRunReplay.apply(state: currentState, response: replay)
-                    snapshotOnly = outcome.unsupportedProtocol
+                    let outcome = ResponseReplay.apply(state: currentState, response: replay)
 
                     if outcome.requiresSnapshot {
-                        let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
-                        replayState = ChatRunReplayState(cursor: snapshot.cursor, snapshot: snapshot)
+                        let snapshot = try await apiClient.fetchResponseSnapshot(id: response.id)
+                        replayState = ResponseReplayState(cursor: snapshot.cursor, snapshot: snapshot)
                     } else {
                         replayState = outcome.state
                     }
 
-                    if replayState?.snapshot.run.isTerminal == true {
-                        let snapshot = try await apiClient.fetchChatRunSnapshot(id: run.id)
+                    if replayState?.snapshot.response.isTerminal == true {
+                        let snapshot = try await apiClient.fetchResponseSnapshot(id: response.id)
                         if let currentReplayState = replayState {
-                            replayState = ChatRunReplay.reconcile(
+                            replayState = ResponseReplay.reconcile(
                                 state: currentReplayState,
                                 snapshot: snapshot
                             )
@@ -242,17 +240,17 @@ class ConversationManager: ObservableObject {
                 }
 
                 guard currentConversation?.id == conversation.id,
-                      currentConversation?.latestRun?.id == run.id,
+                      currentConversation?.latestResponse?.id == response.id,
                       let replayState else {
                     return
                 }
 
-                _ = applyRunSnapshot(
+                _ = applyResponseSnapshot(
                     conversationId: conversation.id,
-                    snapshot: replayState.snapshot.recoveryResponse
+                    snapshot: replayState.snapshot
                 )
 
-                if replayState.snapshot.run.isTerminal {
+                if replayState.snapshot.response.isTerminal {
                     return
                 }
             } catch {
@@ -260,7 +258,7 @@ class ConversationManager: ObservableObject {
             }
 
             do {
-                try await chatRunReplayPolicy.sleep(chatRunReplayPolicy.pollInterval)
+                try await responseReplayPolicy.sleep(responseReplayPolicy.pollInterval)
             } catch {
                 return
             }
@@ -268,22 +266,22 @@ class ConversationManager: ObservableObject {
     }
 
     func refreshCurrentTaskInteraction() async {
-        guard let conversation = currentConversation, let run = conversation.latestRun else {
+        guard let conversation = currentConversation, let response = conversation.latestResponse else {
             currentTaskInteraction = nil
             currentTaskActivity = nil
             return
         }
 
-        await refreshProjectTaskInteraction(run: run, conversationId: conversation.id)
+        await refreshProjectTaskInteraction(response: response, conversationId: conversation.id)
     }
 
     func refreshCurrentConnectorApproval() async {
-        guard let conversation = currentConversation, let run = conversation.latestRun else {
+        guard let conversation = currentConversation, let response = conversation.latestResponse else {
             currentConnectorApproval = nil
             return
         }
 
-        await refreshConnectorApproval(run: run, conversationId: conversation.id)
+        await refreshConnectorApproval(response: response, conversationId: conversation.id)
     }
 
     func answerCurrentTaskQuestions(_ answers: [UserQuestionAnswer]) async {
@@ -422,23 +420,23 @@ class ConversationManager: ObservableObject {
 
         guard let apiClient,
               let conversation = currentConversation,
-              let run = conversation.latestRun,
-              run.isActive else {
+              let response = conversation.latestResponse,
+              response.isActive else {
             return
         }
 
         do {
-            let receipt = try await apiClient.cancelChatRun(
-                id: run.id,
-                expectedAttempt: run.attempt
+            let cancelled = try await apiClient.cancelResponse(
+                id: response.id,
+                expectedAttempt: response.attempt
             )
             guard currentConversation?.id == conversation.id,
-                  currentConversation?.latestRun?.id == run.id,
-                  currentConversation?.latestRun?.attempt == run.attempt else {
+                  currentConversation?.latestResponse?.id == response.id,
+                  currentConversation?.latestResponse?.attempt == response.attempt else {
                 return
             }
 
-            updateRun(receipt.run, conversationId: conversation.id)
+            updateResponse(cancelled, conversationId: conversation.id)
         } catch {
             self.error = "The task could not be stopped: \(error.localizedDescription)"
         }
@@ -736,20 +734,20 @@ class ConversationManager: ObservableObject {
                     messages: requestMessages,
                     modelId: modelToUse,
                     provider: providerToUse,
-                    completionId: conversationId,
+                    conversationId: conversationId,
                     settings: settings,
                     approvalId: $0,
-                    commandId: commandId,
+                    idempotencyKey: commandId,
                     modelTier: requestedModelTier,
                     computeSite: "hosted"
                 )
-            } ?? apiClient.streamChatCompletion(
+            } ?? apiClient.streamResponse(
                 messages: requestMessages,
                 modelId: modelToUse,
                 provider: providerToUse,
-                completionId: conversationId,
+                conversationId: conversationId,
                 settings: settings,
-                commandId: commandId,
+                idempotencyKey: commandId,
                 modelTier: requestedModelTier,
                 computeSite: "hosted"
             )
@@ -806,8 +804,8 @@ class ConversationManager: ObservableObject {
                             beforeMessageId: assistantMessageId
                         )
                     }
-                case .run(let receipt):
-                    updateRun(receipt.run, conversationId: conversationId)
+                case .response(let response):
+                    updateResponse(response, conversationId: conversationId)
                 case .toolUseStart(let toolCall):
                     toolActivity.start(toolCall)
                 case .toolUseDelta(let toolCall):
@@ -933,9 +931,9 @@ class ConversationManager: ObservableObject {
         return turnActivities[conversationId]?.label
     }
 
-    private func applyRunSnapshot(
+    private func applyResponseSnapshot(
         conversationId: String,
-        snapshot: ChatRunRecoveryResponse,
+        snapshot: ResponseSnapshot,
         placeholderIds: Set<String> = []
     ) -> Bool {
         guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
@@ -946,7 +944,7 @@ class ConversationManager: ObservableObject {
         let authoritativeIds = Set(snapshot.messages.map(\.id))
         conversation.messages.removeAll { message in
             !authoritativeIds.contains(message.id)
-                && (placeholderIds.contains(message.id) || message.runId == snapshot.run.id)
+                && (placeholderIds.contains(message.id) || message.runId == snapshot.response.id)
         }
 
         for message in snapshot.messages {
@@ -957,7 +955,7 @@ class ConversationManager: ObservableObject {
             }
         }
 
-        conversation.latestRun = snapshot.run
+        conversation.latestResponse = snapshot.response
         conversation.isLoadedFromAPI = true
         conversation.messageCount = conversation.messages.count
         conversation.lastMessageAt = Date()
@@ -970,12 +968,12 @@ class ConversationManager: ObservableObject {
         return true
     }
 
-    private func updateRun(_ run: ChatRun, conversationId: String) {
+    private func updateResponse(_ response: PlatformResponse, conversationId: String) {
         if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
-            conversations[index].latestRun = run
+            conversations[index].latestResponse = response
         }
         if currentConversation?.id == conversationId {
-            currentConversation?.latestRun = run
+            currentConversation?.latestResponse = response
         }
     }
 
@@ -1107,7 +1105,7 @@ class ConversationManager: ObservableObject {
         updatedConversation.modelTier = detail.modelTier
         updatedConversation.lastMessageAt = AppDateParser.parse(detail.lastMessageAt ?? detail.updatedAt)
         updatedConversation.messageCount = detail.messageCount ?? detail.messages.count
-        updatedConversation.latestRun = detail.latestRun
+        updatedConversation.latestResponse = detail.latestResponse
         updatedConversation.hasMoreMessages = detail.hasMoreMessages
         updatedConversation.oldestMessageId = detail.oldestMessageId ?? detail.messages.first?.id
 
@@ -1335,8 +1333,8 @@ class ConversationManager: ObservableObject {
         }
     }
 
-    private func refreshProjectTaskInteraction(run: ChatRun, conversationId: String) async {
-        guard let projectId = run.projectId, let taskId = run.projectTaskId else {
+    private func refreshProjectTaskInteraction(response: PlatformResponse, conversationId: String) async {
+        guard let projectId = response.projectId, let taskId = response.projectTaskId else {
             currentTaskInteraction = nil
             currentTaskActivity = nil
             return
@@ -1345,7 +1343,7 @@ class ConversationManager: ObservableObject {
         if currentTaskInteraction?.task.projectId != projectId ||
             currentTaskInteraction?.task.id != taskId ||
             (currentTaskInteraction?.interaction.runId != nil &&
-                currentTaskInteraction?.interaction.runId != run.id) ||
+                currentTaskInteraction?.interaction.runId != response.id) ||
             currentTaskActivity?.projectId != projectId ||
             currentTaskActivity?.taskId != taskId {
             currentTaskInteraction = nil
@@ -1360,17 +1358,17 @@ class ConversationManager: ObservableObject {
             let detail = try await apiClient.fetchProjectTask(projectId: projectId, taskId: taskId)
 
             guard currentConversation?.id == conversationId,
-                  currentConversation?.latestRun?.id == run.id,
+                  currentConversation?.latestResponse?.id == response.id,
                   detail.task.projectId == projectId,
                   detail.task.id == taskId,
-                  detail.task.runId == run.id,
+                  detail.task.runId == response.id,
                   detail.activity.protocolVersion == 1,
                   detail.activity.projectId == projectId,
                   detail.activity.taskId == taskId,
                   detail.activity.items.allSatisfy({ item in
                       item.projectId == projectId && item.taskId == taskId
                   }),
-                  detail.interaction?.runId == nil || detail.interaction?.runId == run.id else {
+                  detail.interaction?.runId == nil || detail.interaction?.runId == response.id else {
                 return
             }
 
@@ -1392,9 +1390,9 @@ class ConversationManager: ObservableObject {
         }
     }
 
-    private func refreshConnectorApproval(run: ChatRun, conversationId: String) async {
+    private func refreshConnectorApproval(response: PlatformResponse, conversationId: String) async {
         guard let conversation = currentConversation, conversation.id == conversationId,
-              let candidate = ConnectorApprovalCandidate.latest(in: conversation.messages, run: run) else {
+              let candidate = ConnectorApprovalCandidate.latest(in: conversation.messages, response: response) else {
             currentConnectorApproval = nil
             return
         }
@@ -1411,9 +1409,9 @@ class ConversationManager: ObservableObject {
             let approval = try await apiClient.fetchConnectorApproval(id: candidate.approvalId)
 
             guard currentConversation?.id == conversationId,
-                  currentConversation?.latestRun?.id == run.id,
+                  currentConversation?.latestResponse?.id == response.id,
                   approval.id == candidate.approvalId,
-                  approval.runId == run.id,
+                  approval.runId == response.id,
                   approval.completionId == conversationId,
                   approval.provider == candidate.provider,
                   approval.operation == candidate.operation else {

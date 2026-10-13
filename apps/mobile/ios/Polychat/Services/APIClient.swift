@@ -110,83 +110,83 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func createChatCompletion(
+    func createResponse(
         messages: [ChatMessage],
         modelId: String?,
         provider: String? = nil,
-        completionId: String? = nil,
+        conversationId: String? = nil,
         settings: ChatSettings? = nil
-    ) async throws -> ChatCompletionResponse {
-        let requestBody = ChatCompletionRequest(
+    ) async throws -> PlatformResponse {
+        let requestBody = CreateResponseRequest(
             messages: messages,
             model: modelId,
             provider: provider,
             store: true,
-            completionId: completionId,
+            conversationId: conversationId,
             settings: settings
         )
-        try validateChatCompletionRequest(requestBody)
+        try validateResponseRequest(requestBody)
 
-        return try await send(path: "/chat/completions", method: "POST", body: requestBody)
+        return try await send(path: "/responses", method: "POST", body: requestBody)
     }
 
-    func streamChatCompletion(
+    func streamResponse(
         messages: [ChatMessage],
         modelId: String?,
         provider: String? = nil,
-        completionId: String? = nil,
+        conversationId: String? = nil,
         settings: ChatSettings? = nil,
-        commandId: String = UUID().uuidString,
+        idempotencyKey: String = UUID().uuidString,
         modelTier: String? = nil,
         computeSite: String = "hosted"
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
-        let requestBody = ChatCompletionRequest(
+        let requestBody = CreateResponseRequest(
             messages: messages,
             model: modelId,
             provider: provider,
             store: true,
-            completionId: completionId,
+            conversationId: conversationId,
             settings: settings,
             stream: true,
             modelTier: modelTier,
             computeSite: computeSite,
-            commandId: commandId
+            idempotencyKey: idempotencyKey
         )
-        guard !requestBody.messages.isEmpty else {
+        guard requestBody.hasMessages else {
             return AsyncThrowingStream { continuation in
                 continuation.finish(throwing: APIClientError.invalidRequest(missingChatMessagesErrorMessage))
             }
         }
 
-        return chatCompletionStream(requestBody)
+        return responseStream(requestBody)
     }
 
     func streamApprovedConnectorOperation(
         messages: [ChatMessage],
         modelId: String?,
         provider: String?,
-        completionId: String,
+        conversationId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String,
+        idempotencyKey: String,
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
-        let requestBody = ChatCompletionRequest(
+        let requestBody = CreateResponseRequest(
             messages: messages,
             model: modelId,
             provider: provider,
             store: true,
-            completionId: completionId,
+            conversationId: conversationId,
             settings: settings,
             stream: true,
             modelTier: modelTier,
             computeSite: computeSite,
-            commandId: commandId,
+            idempotencyKey: idempotencyKey,
             connectorApprovalId: approvalId
         )
 
-        return chatCompletionStream(requestBody)
+        return responseStream(requestBody)
     }
 
     func streamMachineModelRun(
@@ -215,13 +215,13 @@ final class APIClient: ObservableObject {
         )
     }
 
-    private func chatCompletionStream(
-        _ requestBody: ChatCompletionRequest
+    private func responseStream(
+        _ requestBody: CreateResponseRequest
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task(priority: .userInitiated) {
                 do {
-                    try await self.stream(path: "/chat/completions", method: "POST", body: requestBody, continuation: continuation)
+                    try await self.stream(path: "/responses", method: "POST", body: requestBody, continuation: continuation)
                 } catch {
                     continuation.finish(throwing: error)
                 }
@@ -416,7 +416,7 @@ final class APIClient: ObservableObject {
 
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse {
         try await send(
-            path: "/chat/completions/\(conversationId)/generate-title",
+            path: "/conversations/\(conversationId)/title",
             method: "POST",
             body: TitleGenerationRequest(messages: messages)
         )
@@ -428,12 +428,12 @@ final class APIClient: ObservableObject {
         includeArchived: Bool = false
     ) async throws -> ConversationListResponse {
         try await send(
-            path: "/chat/completions",
+            path: "/conversations",
             method: "GET",
             queryItems: [
                 URLQueryItem(name: "limit", value: String(limit)),
                 URLQueryItem(name: "page", value: String(page)),
-                URLQueryItem(name: "include_archived", value: String(includeArchived))
+                URLQueryItem(name: "archived", value: includeArchived ? "all" : "active")
             ]
         )
     }
@@ -442,14 +442,14 @@ final class APIClient: ObservableObject {
         id: String,
         refreshPending: Bool = true
     ) async throws -> ConversationDetailResponse {
-        var queryItems = [URLQueryItem(name: "message_limit", value: "100")]
+        var queryItems = [URLQueryItem(name: "item_limit", value: "100")]
 
         if refreshPending {
             queryItems.insert(URLQueryItem(name: "refresh_pending", value: "true"), at: 0)
         }
 
         return try await send(
-            path: "/chat/completions/\(id)",
+            path: "/conversations/\(id)",
             method: "GET",
             queryItems: queryItems
         )
@@ -461,7 +461,7 @@ final class APIClient: ObservableObject {
         limit: Int = 100
     ) async throws -> ConversationMessagePageResponse {
         try await send(
-            path: "/chat/completions/\(id)/messages",
+            path: "/conversations/\(id)/items",
             method: "GET",
             queryItems: [
                 URLQueryItem(name: "before", value: before),
@@ -470,17 +470,17 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
-        try await send(path: "/chat/runs/\(id)/snapshot", method: "GET")
+    func fetchResponseSnapshot(id: String) async throws -> ResponseSnapshot {
+        try await send(path: "/responses/\(id)", method: "GET")
     }
 
-    func fetchChatRunEvents(
+    func fetchResponseEvents(
         id: String,
         after: Int,
         limit: Int = 100
-    ) async throws -> ChatRunReplayResponse {
+    ) async throws -> ResponseReplayResponse {
         try await send(
-            path: "/chat/runs/\(id)/events",
+            path: "/responses/\(id)/events",
             method: "GET",
             queryItems: [
                 URLQueryItem(name: "after", value: String(after)),
@@ -489,18 +489,16 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func cancelChatRun(
+    func cancelResponse(
         id: String,
         expectedAttempt: Int,
-        commandId: String = UUID().uuidString
-    ) async throws -> ChatRunCommandReceipt {
-        let response: ChatRunCommandReceiptResponse = try await send(
-            path: "/chat/runs/\(id)/cancel",
+        idempotencyKey: String = UUID().uuidString
+    ) async throws -> PlatformResponse {
+        try await send(
+            path: "/responses/\(id)/cancel",
             method: "POST",
-            body: CancelChatRunRequest(commandId: commandId, expectedAttempt: expectedAttempt)
+            body: CancelResponseRequest(expectedAttempt: expectedAttempt, idempotencyKey: idempotencyKey)
         )
-
-        return response.run
     }
 
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval {
@@ -569,8 +567,8 @@ final class APIClient: ObservableObject {
         parentMessageId: String? = nil
     ) async throws {
         let _: EmptyResponse = try await send(
-            path: "/chat/completions/\(id)",
-            method: "PUT",
+            path: "/conversations/\(id)",
+            method: "PATCH",
             body: UpdateConversationRequest(
                 title: title,
                 messages: messages,
@@ -581,7 +579,7 @@ final class APIClient: ObservableObject {
     }
 
     func deleteConversation(id: String) async throws {
-        let _: SuccessResponse = try await send(path: "/chat/completions/\(id)", method: "DELETE")
+        let _: SuccessResponse = try await send(path: "/conversations/\(id)", method: "DELETE")
     }
 
     func uploadFile(
@@ -761,8 +759,9 @@ final class APIClient: ObservableObject {
             yieldStreamEvents(from: try eventParser.finish(), continuation: continuation)
             continuation.finish()
         } else {
-            let response = try decodeResponse(ChatCompletionResponse.self, from: responseData)
-            let content = response.choices.first?.message.content.textValue ?? ""
+            let response = try decodeResponse(PlatformResponse.self, from: responseData)
+            continuation.yield(.response(response))
+            let content = response.lastAssistantText ?? ""
             if !content.isEmpty {
                 continuation.yield(.content(content))
             }
@@ -846,8 +845,8 @@ final class APIClient: ObservableObject {
         }
     }
 
-    private func validateChatCompletionRequest(_ request: ChatCompletionRequest) throws {
-        guard !request.messages.isEmpty else {
+    private func validateResponseRequest(_ request: CreateResponseRequest) throws {
+        guard request.hasMessages else {
             throw APIClientError.invalidRequest(missingChatMessagesErrorMessage)
         }
     }

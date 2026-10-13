@@ -50,13 +50,13 @@ struct ViewPresentationTests {
         let pending = ModelContinuity.evaluate(
             model: model,
             hasConversationHistory: true,
-            activeRun: makeChatRun(status: "awaiting_approval"),
+            activeResponse: makeResponse(status: "awaiting_approval"),
             attachmentTypes: []
         )
         let attachment = ModelContinuity.evaluate(
             model: model,
             hasConversationHistory: true,
-            activeRun: nil,
+            activeResponse: nil,
             attachmentTypes: [.image]
         )
 
@@ -75,7 +75,7 @@ struct ViewPresentationTests {
         let decision = ModelContinuity.evaluate(
             model: imageModel,
             hasConversationHistory: true,
-            activeRun: nil,
+            activeResponse: nil,
             attachmentTypes: []
         )
 

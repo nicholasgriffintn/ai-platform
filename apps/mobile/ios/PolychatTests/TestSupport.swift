@@ -73,54 +73,40 @@ func makeConversation(
     )
 }
 
-func makeConversationDetail(id: String, messagesJSON: String) throws -> ConversationDetailResponse {
+func makeConversationDetail(id: String, itemsJSON: String) throws -> ConversationDetailResponse {
     let json = """
     {
         "id": "\(id)",
         "created_at": "2026-01-01T00:00:00Z",
         "updated_at": "2026-01-01T00:00:00Z",
         "is_archived": false,
-        "messages": [\(messagesJSON)]
+        "items": [\(itemsJSON)]
     }
     """
 
     return try JSONDecoder().decode(ConversationDetailResponse.self, from: Data(json.utf8))
 }
 
-func makeChatRun(
-    status: String = "running",
+func makeResponse(
+    status: String = "in_progress",
     attempt: Int = 1,
     projectId: String? = nil,
     projectTaskId: String? = nil,
     retry: ChatRetrySnapshot? = nil
-) -> ChatRun {
-    ChatRun(
-        protocolVersion: 1,
+) -> PlatformResponse {
+    PlatformResponse(
         id: "run-1",
         conversationId: "conversation-1",
-        projectId: projectId,
-        projectTaskId: projectTaskId,
-        initiatorUserId: 7,
         status: status,
         attempt: attempt,
+        initiatorUserId: 7,
+        projectId: projectId,
+        projectTaskId: projectTaskId,
         createdAt: "2026-09-05T12:00:00.000Z",
         updatedAt: "2026-09-05T12:00:01.000Z",
         startedAt: "2026-09-05T12:00:01.000Z",
-        completedAt: nil,
         terminalReason: status == "failed" ? "Provider unavailable" : nil,
-        lastMessageId: nil,
         retry: retry
-    )
-}
-
-func makeChatRunReceipt(run: ChatRun, commandId: String = "command-1") -> ChatRunCommandReceipt {
-    ChatRunCommandReceipt(
-        protocolVersion: 1,
-        commandId: commandId,
-        run: run,
-        kind: "turn",
-        acceptedAt: "2026-09-05T12:00:01.000Z",
-        duplicate: false
     )
 }
 
@@ -276,8 +262,8 @@ func makeConnectorApprovalMessage() -> ChatMessage {
     )
 }
 
-func makeInstantChatRunReplayPolicy() -> ChatRunReplayPolicy {
-    ChatRunReplayPolicy(pollInterval: .zero, sleep: { _ in })
+func makeInstantResponseReplayPolicy() -> ResponseReplayPolicy {
+    ResponseReplayPolicy(pollInterval: .zero, sleep: { _ in })
 }
 
 func makeIsolatedUserDefaults() throws -> UserDefaults {
@@ -319,9 +305,9 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamEvents: [ChatStreamEvent] = []
     var streamedMessages: [ChatMessage] = []
     var streamedModelId: String?
-    var streamedCompletionId: String?
+    var streamedConversationId: String?
     var streamCallCount = 0
-    var streamedCommandId: String?
+    var streamedIdempotencyKey: String?
     var streamError: Error?
     var updatedConversationTitles: [(id: String, title: String)] = []
     var updatedConversationPayloads: [(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?)] = []
@@ -330,11 +316,11 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var conversationDetail: ConversationDetailResponse?
     var conversationMessagePage: ConversationMessagePageResponse?
     var fetchConversationCallCount = 0
-    var chatRunEventSnapshot: ChatRunSnapshotResponse?
-    var chatRunEventSnapshots: [ChatRunSnapshotResponse] = []
-    var chatRunReplayResponse: ChatRunReplayResponse?
-    var chatRunCommandReceipt: ChatRunCommandReceipt?
-    var cancelledRuns: [(id: String, expectedAttempt: Int, commandId: String)] = []
+    var responseSnapshot: ResponseSnapshot?
+    var responseSnapshots: [ResponseSnapshot] = []
+    var responseReplay: ResponseReplayResponse?
+    var cancelledResponse: PlatformResponse?
+    var cancelledResponses: [(id: String, expectedAttempt: Int, idempotencyKey: String)] = []
     var connectorApprovals: [ConnectorOperationApproval] = []
     var connectorApprovalFetchError: Error?
     var connectorApprovalResolutionError: Error?
@@ -347,8 +333,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var resolveProjectTaskApprovalError: Error?
     var answeredProjectTaskQuestions: [(projectId: String, taskId: String, interactionId: String, answers: [UserQuestionAnswer])] = []
     var resolvedProjectTaskApprovals: [(projectId: String, taskId: String, interactionId: String, resolution: String)] = []
-    var fetchChatRunSnapshotCallCount = 0
-    var fetchChatRunEventsCallCount = 0
+    var fetchResponseSnapshotCallCount = 0
+    var fetchResponseEventsCallCount = 0
     func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
     }
@@ -382,21 +368,21 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         return conversationMessagePage
     }
 
-    func streamChatCompletion(
+    func streamResponse(
         messages: [ChatMessage],
         modelId: String?,
         provider: String?,
-        completionId: String?,
+        conversationId: String?,
         settings: ChatSettings?,
-        commandId: String,
+        idempotencyKey: String,
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         streamCallCount += 1
         streamedMessages = messages
         streamedModelId = modelId
-        streamedCompletionId = completionId
-        streamedCommandId = commandId
+        streamedConversationId = conversationId
+        streamedIdempotencyKey = idempotencyKey
 
         return AsyncThrowingStream { continuation in
             for event in streamEvents {
@@ -410,43 +396,43 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         }
     }
 
-    func fetchChatRunSnapshot(id: String) async throws -> ChatRunSnapshotResponse {
-        fetchChatRunSnapshotCallCount += 1
-        if !chatRunEventSnapshots.isEmpty {
-            return chatRunEventSnapshots.removeFirst()
+    func fetchResponseSnapshot(id: String) async throws -> ResponseSnapshot {
+        fetchResponseSnapshotCallCount += 1
+        if !responseSnapshots.isEmpty {
+            return responseSnapshots.removeFirst()
         }
-        guard let chatRunEventSnapshot else {
+        guard let responseSnapshot else {
             throw TestFailure.unexpectedCall
         }
 
-        return chatRunEventSnapshot
+        return responseSnapshot
     }
 
-    func fetchChatRunEvents(
+    func fetchResponseEvents(
         id: String,
         after: Int,
         limit: Int
-    ) async throws -> ChatRunReplayResponse {
-        fetchChatRunEventsCallCount += 1
-        guard let chatRunReplayResponse else {
+    ) async throws -> ResponseReplayResponse {
+        fetchResponseEventsCallCount += 1
+        guard let responseReplay else {
             throw TestFailure.unexpectedCall
         }
 
-        return chatRunReplayResponse
+        return responseReplay
     }
 
-    func cancelChatRun(
+    func cancelResponse(
         id: String,
         expectedAttempt: Int,
-        commandId: String
-    ) async throws -> ChatRunCommandReceipt {
-        cancelledRuns.append((id: id, expectedAttempt: expectedAttempt, commandId: commandId))
+        idempotencyKey: String
+    ) async throws -> PlatformResponse {
+        cancelledResponses.append((id: id, expectedAttempt: expectedAttempt, idempotencyKey: idempotencyKey))
 
-        guard let chatRunCommandReceipt else {
+        guard let cancelledResponse else {
             throw TestFailure.unexpectedCall
         }
 
-        return chatRunCommandReceipt
+        return cancelledResponse
     }
 
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval {
@@ -478,21 +464,21 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         messages: [ChatMessage],
         modelId: String?,
         provider: String?,
-        completionId: String,
+        conversationId: String,
         settings: ChatSettings?,
         approvalId: String,
-        commandId: String,
+        idempotencyKey: String,
         modelTier: String?,
         computeSite: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         resumedConnectorApprovalId = approvalId
-        return streamChatCompletion(
+        return streamResponse(
             messages: messages,
             modelId: modelId,
             provider: provider,
-            completionId: completionId,
+            conversationId: conversationId,
             settings: settings,
-            commandId: commandId,
+            idempotencyKey: idempotencyKey,
             modelTier: modelTier,
             computeSite: computeSite
         )

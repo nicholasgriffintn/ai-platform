@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ChatContextView: View {
     let context: ChatContextSnapshot?
-    let usage: ChatRunUsage?
+    let usage: ResponseUsage?
 
     var body: some View {
         NavigationStack {
@@ -61,13 +61,13 @@ struct ChatContextView: View {
                     .font(.subheadline)
                 Text(
                     usage.reservation.map {
-                        "Reserved estimate: \(ChatRunUsagePresentation.credits($0.creditMicros)) credits · not a charge"
+                        "Reserved estimate: \(ResponseUsagePresentation.credits($0.creditMicros)) credits · not a charge"
                     } ?? "Reserved estimate: none recorded"
                 )
                 .font(.caption)
                 Text(
                     usage.consumption.creditMicros.map {
-                        "Recorded consumption: \(ChatRunUsagePresentation.credits($0)) credits"
+                        "Recorded consumption: \(ResponseUsagePresentation.credits($0)) credits"
                     } ?? "Recorded consumption: unknown"
                 )
                 .font(.caption)

@@ -240,7 +240,7 @@ struct ServiceStoreTests {
 
         try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
 
-        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedConversationId == conversation.id)
         #expect(apiClient.streamedModelId == "gpt-4o")
         #expect(apiClient.streamedMessages.map(\.role) == ["user"])
         #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
@@ -348,33 +348,26 @@ struct ServiceStoreTests {
     }
 
     @MainActor
-    @Test func conversationManagerKeepsTheAuthoritativeRunFromTheStream() async throws {
-        let run = ChatRun(
-            protocolVersion: 1,
+    @Test func conversationManagerKeepsTheAuthoritativeResponseFromTheStream() async throws {
+        let response = PlatformResponse(
             id: "run-1",
             conversationId: "conversation-1",
-            projectId: nil,
-            projectTaskId: nil,
-            initiatorUserId: 7,
-            status: "running",
+            status: "in_progress",
             attempt: 1,
+            initiatorUserId: 7,
             createdAt: "2026-09-05T12:00:00.000Z",
             updatedAt: "2026-09-05T12:00:00.000Z",
             startedAt: "2026-09-05T12:00:00.000Z",
-            completedAt: nil,
-            terminalReason: nil,
-            lastMessageId: nil
-        )
-        let apiClient = ConversationAPIClientStub()
-        apiClient.streamEvents = [
-            .run(ChatRunCommandReceipt(
-                protocolVersion: 1,
-                commandId: "command-1",
-                run: run,
+            receipt: ResponseReceipt(
+                idempotencyKey: "command-1",
                 kind: "turn",
                 acceptedAt: "2026-09-05T12:00:00.000Z",
                 duplicate: false
-            )),
+            )
+        )
+        let apiClient = ConversationAPIClientStub()
+        apiClient.streamEvents = [
+            .response(response),
             .content("Working"),
             .done
         ]
@@ -397,8 +390,8 @@ struct ServiceStoreTests {
 
         try await manager.addMessage(ChatMessage(role: "user", content: "Continue"))
 
-        #expect(manager.currentConversation?.latestRun?.id == "run-1")
-        #expect(manager.conversations.first?.latestRun?.status == "running")
+        #expect(manager.currentConversation?.latestResponse?.id == "run-1")
+        #expect(manager.conversations.first?.latestResponse?.status == "in_progress")
     }
 
     @MainActor
@@ -495,38 +488,30 @@ struct ServiceStoreTests {
     @MainActor
     @Test func conversationManagerAcceptsStopBeforeReportingCancellationComplete() async throws {
         let apiClient = ConversationAPIClientStub()
-        let running = makeChatRun(status: "running", attempt: 2)
-        let cancelling = makeChatRun(status: "cancelling", attempt: 2)
-        apiClient.chatRunCommandReceipt = ChatRunCommandReceipt(
-            protocolVersion: 1,
-            commandId: "cancel-1",
-            run: cancelling,
-            kind: "cancel",
-            acceptedAt: "2026-09-05T12:00:02.000Z",
-            duplicate: false
-        )
+        let running = makeResponse(status: "in_progress", attempt: 2)
+        let cancelling = makeResponse(status: "cancelling", attempt: 2)
+        apiClient.cancelledResponse = cancelling
 
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = running
+        conversation.latestResponse = running
         manager.currentConversation = conversation
         manager.conversations = [conversation]
 
         await manager.cancelCurrentRun()
 
-        #expect(apiClient.cancelledRuns.first?.id == "run-1")
-        #expect(apiClient.cancelledRuns.first?.expectedAttempt == 2)
-        #expect(manager.currentConversation?.latestRun?.status == "cancelling")
+        #expect(apiClient.cancelledResponses.first?.id == "run-1")
+        #expect(apiClient.cancelledResponses.first?.expectedAttempt == 2)
+        #expect(manager.currentConversation?.latestResponse?.status == "cancelling")
     }
 
     @MainActor
     @Test func conversationManagerObservesAStopRequestedOnAnotherDevice() async throws {
         let apiClient = ConversationAPIClientStub()
-        apiClient.chatRunEventSnapshot = ChatRunSnapshotResponse(
-            protocolVersion: 1,
+        apiClient.responseSnapshot = ResponseSnapshot(
             cursor: 4,
-            run: makeChatRun(status: "cancelled", attempt: 2),
+            response: makeResponse(status: "cancelled", attempt: 2),
             messages: [
                 ChatMessage(id: "user-1", role: "user", content: "Search please"),
                 ChatMessage(id: "assistant-1", role: "assistant", content: "Partial result")
@@ -536,56 +521,52 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(
             apiClient: apiClient,
-            chatRunReplayPolicy: makeInstantChatRunReplayPolicy()
+            responseReplayPolicy: makeInstantResponseReplayPolicy()
         )
         var conversation = makeConversation(
             id: "conversation-1",
             messages: [ChatMessage(id: "user-1", role: "user", content: "Search please")]
         )
-        conversation.latestRun = makeChatRun(status: "running", attempt: 2)
+        conversation.latestResponse = makeResponse(status: "in_progress", attempt: 2)
         manager.currentConversation = conversation
         manager.conversations = [conversation]
 
         await manager.observeCurrentRun()
 
-        #expect(apiClient.fetchChatRunSnapshotCallCount == 1)
-        #expect(manager.currentConversation?.latestRun?.status == "cancelled")
+        #expect(apiClient.fetchResponseSnapshotCallCount == 1)
+        #expect(manager.currentConversation?.latestResponse?.status == "cancelled")
         #expect(manager.currentConversation?.messages.last?.textContent == "Partial result")
     }
 
     @MainActor
     @Test func conversationManagerReplaysAnOutOfOrderCrossDeviceCancellationOnce() async throws {
         let apiClient = ConversationAPIClientStub()
-        apiClient.chatRunEventSnapshot = ChatRunSnapshotResponse(
-            protocolVersion: 1,
+        apiClient.responseSnapshot = ResponseSnapshot(
             cursor: 2,
-            run: makeChatRun(status: "running", attempt: 2),
+            response: makeResponse(status: "in_progress", attempt: 2),
             messages: [ChatMessage(id: "user-1", role: "user", content: "Search please")]
         )
-        apiClient.chatRunReplayResponse = ChatRunReplayResponse(
-            protocolVersion: 1,
-            runId: "run-1",
+        apiClient.responseReplay = ResponseReplayResponse(
+            responseId: "run-1",
             fromCursor: 2,
             nextCursor: 4,
             resetRequired: false,
             events: [
-                ChatRunEvent(
-                    protocolVersion: 1,
+                ResponseEventRecord(
                     id: "event-4",
-                    runId: "run-1",
+                    responseId: "run-1",
                     sequence: 4,
                     attempt: 2,
-                    type: "run.status_changed",
+                    type: "response.status_changed",
                     occurredAt: "2026-09-05T12:00:04.000Z",
                     data: ["status": .string("cancelled")]
                 ),
-                ChatRunEvent(
-                    protocolVersion: 1,
+                ResponseEventRecord(
                     id: "event-3",
-                    runId: "run-1",
+                    responseId: "run-1",
                     sequence: 3,
                     attempt: 2,
-                    type: "run.status_changed",
+                    type: "response.status_changed",
                     occurredAt: "2026-09-05T12:00:03.000Z",
                     data: ["status": .string("cancelling")]
                 )
@@ -596,42 +577,18 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(
             apiClient: apiClient,
-            chatRunReplayPolicy: makeInstantChatRunReplayPolicy()
+            responseReplayPolicy: makeInstantResponseReplayPolicy()
         )
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(status: "running", attempt: 2)
+        conversation.latestResponse = makeResponse(status: "in_progress", attempt: 2)
         manager.currentConversation = conversation
         manager.conversations = [conversation]
 
         await manager.observeCurrentRun()
 
-        #expect(apiClient.fetchChatRunSnapshotCallCount == 2)
-        #expect(apiClient.fetchChatRunEventsCallCount == 1)
-        #expect(manager.currentConversation?.latestRun?.status == "cancelled")
-    }
-
-    @MainActor
-    @Test func conversationManagerUsesOnlySnapshotsAfterAnUnsupportedReplayProtocol() async throws {
-        let apiClient = ConversationAPIClientStub()
-        apiClient.chatRunEventSnapshots = ["running", "running", "succeeded"].enumerated().map { index, status in
-            ChatRunSnapshotResponse(protocolVersion: 1, cursor: index + 1, run: makeChatRun(status: status), messages: [])
-        }
-        apiClient.chatRunReplayResponse = ChatRunReplayResponse(
-            protocolVersion: 2, runId: "run-1", fromCursor: 1, nextCursor: 2,
-            resetRequired: false, events: [], snapshot: nil
-        )
-        let manager = ConversationManager()
-        manager.configure(apiClient: apiClient, chatRunReplayPolicy: makeInstantChatRunReplayPolicy())
-        var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(status: "running")
-        manager.currentConversation = conversation
-        manager.conversations = [conversation]
-
-        await manager.observeCurrentRun()
-
-        #expect(apiClient.fetchChatRunSnapshotCallCount == 3)
-        #expect(apiClient.fetchChatRunEventsCallCount == 1)
-        #expect(manager.currentConversation?.latestRun?.status == "succeeded")
+        #expect(apiClient.fetchResponseSnapshotCallCount == 2)
+        #expect(apiClient.fetchResponseEventsCallCount == 1)
+        #expect(manager.currentConversation?.latestResponse?.status == "cancelled")
     }
 
     @MainActor
@@ -686,7 +643,7 @@ struct ServiceStoreTests {
         await manager.regenerateAssistantMessage("assistant-1")
 
         #expect(apiClient.streamCallCount == 1)
-        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedConversationId == conversation.id)
         #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
         #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
         #expect(manager.currentConversation?.messages.last?.textContent == "Updated answer")
@@ -750,7 +707,7 @@ struct ServiceStoreTests {
         await manager.editUserMessage("user-1", text: "  Edited question  ")
 
         #expect(apiClient.streamCallCount == 1)
-        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedConversationId == conversation.id)
         #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
         #expect(apiClient.streamedMessages.first?.textContent == "Edited question")
         #expect(manager.currentConversation?.messages.map(\.role) == ["user", "assistant"])
@@ -819,7 +776,7 @@ struct ServiceStoreTests {
 
         await manager.editUserMessage("user-1", text: "Updated caption")
 
-        #expect(apiClient.streamedCompletionId == conversation.id)
+        #expect(apiClient.streamedConversationId == conversation.id)
         #expect(apiClient.streamedMessages.first?.textContent == "Updated caption")
         guard case .multimodal(let streamedBlocks)? = apiClient.streamedMessages.first?.content else {
             Issue.record("Expected multimodal content to be preserved")
@@ -963,7 +920,7 @@ struct ServiceStoreTests {
         let branch = try #require(manager.currentConversation)
         #expect(branch.id != "parent-1")
         #expect(apiClient.streamCallCount == 1)
-        #expect(apiClient.streamedCompletionId == branch.id)
+        #expect(apiClient.streamedConversationId == branch.id)
         #expect(apiClient.streamedMessages.map(\.id) == ["user-1"])
         #expect(branch.messages.map(\.role) == ["user", "assistant"])
         #expect(branch.messages.last?.textContent == "Branched answer")
@@ -1000,7 +957,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_input",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1042,7 +999,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_input",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1074,7 +1031,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_input",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1109,7 +1066,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_approval",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1161,7 +1118,7 @@ struct ServiceStoreTests {
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_approval",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1183,15 +1140,15 @@ struct ServiceStoreTests {
         apiClient.projectTaskDetails = [
             makeProjectTaskDetail(interaction: makeProjectTaskInteraction())
         ]
-        apiClient.chatRunCommandReceipt = makeChatRunReceipt(run: makeChatRun(
+        apiClient.cancelledResponse = makeResponse(
             status: "cancelling",
             projectId: "project-1",
             projectTaskId: "task-1"
-        ))
+        )
         let manager = ConversationManager()
         manager.configure(apiClient: apiClient)
         var conversation = makeConversation(id: "conversation-1")
-        conversation.latestRun = makeChatRun(
+        conversation.latestResponse = makeResponse(
             status: "awaiting_input",
             projectId: "project-1",
             projectTaskId: "task-1"
@@ -1202,8 +1159,8 @@ struct ServiceStoreTests {
         await manager.refreshCurrentTaskInteraction()
         await manager.cancelCurrentRun()
 
-        #expect(apiClient.cancelledRuns.first?.id == "run-1")
-        #expect(apiClient.cancelledRuns.first?.expectedAttempt == 1)
+        #expect(apiClient.cancelledResponses.first?.id == "run-1")
+        #expect(apiClient.cancelledResponses.first?.expectedAttempt == 1)
         #expect(manager.currentTaskInteraction?.interaction.status == "pending")
         #expect(manager.currentTaskInteraction?.submission == .idle)
     }
@@ -1222,7 +1179,7 @@ struct ServiceStoreTests {
             id: "conversation-1",
             messages: [makeConnectorApprovalMessage()]
         )
-        conversation.latestRun = makeChatRun(status: "awaiting_approval")
+        conversation.latestResponse = makeResponse(status: "awaiting_approval")
         manager.conversations = [conversation]
         manager.currentConversation = conversation
 
@@ -1253,7 +1210,7 @@ struct ServiceStoreTests {
             id: "conversation-1",
             messages: [makeConnectorApprovalMessage()]
         )
-        conversation.latestRun = makeChatRun(status: "awaiting_approval")
+        conversation.latestResponse = makeResponse(status: "awaiting_approval")
         manager.conversations = [conversation]
         manager.currentConversation = conversation
 

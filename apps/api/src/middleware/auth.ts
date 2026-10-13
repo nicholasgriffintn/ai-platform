@@ -5,6 +5,7 @@ import {
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
 import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
@@ -257,6 +258,25 @@ export async function requireAuth(context: Context, next: Next) {
   await next();
 }
 
+const CUSTOM_TOOL_TYPES: ReadonlySet<string> = new Set(["function", "mcp"]);
+
+function requestsCustomTools(body: unknown): boolean {
+  if (!isRecord(body)) {
+    return false;
+  }
+
+  if (body.tool_choice) {
+    return true;
+  }
+
+  return (
+    Array.isArray(body.tools) &&
+    body.tools.some(
+      (tool) => isRecord(tool) && typeof tool.type === "string" && CUSTOM_TOOL_TYPES.has(tool.type),
+    )
+  );
+}
+
 /**
  * Middleware that allows restricted access to certain paths with model validation
  * @param context - The context of the request
@@ -308,7 +328,7 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
       try {
         const body = await context.req.json();
 
-        if (body?.tools?.length > 0 || body?.tool_choice) {
+        if (requestsCustomTools(body)) {
           throw new AssistantError(
             "Tool usage requires authentication. Please provide a valid access token.",
             ErrorType.AUTHENTICATION_ERROR,

@@ -37,8 +37,8 @@ struct ConnectorApprovalCandidate: Equatable {
     let provider: String
     let operation: String
 
-    static func latest(in messages: [ChatMessage], run: ChatRun) -> ConnectorApprovalCandidate? {
-        for message in messages.reversed() where message.runId == nil || message.runId == run.id {
+    static func latest(in messages: [ChatMessage], response: PlatformResponse) -> ConnectorApprovalCandidate? {
+        for message in messages.reversed() where message.runId == nil || message.runId == response.id {
             for part in (message.parts ?? []).reversed() {
                 guard part.type == "tool_result",
                       let data = part.data?.objectValue,
@@ -51,8 +51,8 @@ struct ConnectorApprovalCandidate: Equatable {
 
                 return ConnectorApprovalCandidate(
                     approvalId: approvalId,
-                    runId: run.id,
-                    completionId: run.conversationId,
+                    runId: response.id,
+                    completionId: response.conversationId,
                     provider: provider,
                     operation: operation
                 )

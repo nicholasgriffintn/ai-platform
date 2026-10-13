@@ -18,4 +18,4 @@ A Response is the unit of execution and the only shape a run is reported in. `PO
 
 ## Consequences
 
-Chat, Work, teammates, Poly and the OpenAI-compatible port read the same object and the same status names. The client holds one `latest_response` per conversation and one cancel path. Replacing the engine's command with a typed `ResponseCommand` plus `ResponseAuthority` for the internal callers is the next step; the public wire is already clean of trusted fields. iOS still speaks the previous shape and must move to `/responses`.
+Chat, Work, teammates, Poly and the OpenAI-compatible port read the same object and the same status names. The client holds one `latest_response` per conversation and one cancel path. Replacing the engine's command with a typed `ResponseCommand` plus `ResponseAuthority` for the internal callers is the next step; the public wire is already clean of trusted fields. iOS decodes the same Response and items and streams from `/responses`.
