@@ -197,7 +197,7 @@ export default {
 };
 `;
 
-const mockComputerWorker = `
+const mockSandboxWorker = `
 const OBSERVATION = {
   title: "Example Domain",
   screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
@@ -218,7 +218,11 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
-    if (url.origin !== "https://computer.internal" || request.method !== "POST") {
+    if (url.origin !== "https://computer.internal") {
+      return new Response("Sandbox is outside release checks", { status: 503 });
+    }
+
+    if (request.method !== "POST") {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -1463,21 +1467,8 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           SANDBOX_WORKER: { name: "sandbox" },
-          COMPUTER_WORKER: { name: "computer" },
         },
         outboundService: mockExternalRequest,
-      },
-      {
-        name: "sandbox",
-        modules: [
-          {
-            type: "ESModule",
-            path: "sandbox.js",
-            contents:
-              'export default { fetch() { return new Response("Sandbox is outside release checks", { status: 503 }); } };',
-          },
-        ],
-        compatibilityDate,
       },
       {
         name: "external-services",
@@ -1487,9 +1478,9 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
         compatibilityFlags: ["service_binding_extra_handlers"],
       },
       {
-        name: "computer",
+        name: "sandbox",
         modules: true,
-        script: mockComputerWorker,
+        script: mockSandboxWorker,
         compatibilityDate,
       },
       {

@@ -82,7 +82,7 @@ export async function verifySiteInBrowser(
   const origin = context.env.APP_BASE_URL ? new URL(context.env.APP_BASE_URL) : null;
 
   if (
-    !context.env.COMPUTER_WORKER ||
+    !context.env.SANDBOX_WORKER ||
     !origin ||
     origin.protocol !== "https:" ||
     isPrivateHostname(origin.hostname)
@@ -110,7 +110,7 @@ export async function verifySiteInBrowser(
     signal?.throwIfAborted();
     await requireActiveExecutionRun(context);
     try {
-      const response = await context.env.COMPUTER_WORKER.fetch(
+      const response = await context.env.SANDBOX_WORKER.fetch(
         "https://computer.internal/computer/site-verify",
         {
           method: "POST",

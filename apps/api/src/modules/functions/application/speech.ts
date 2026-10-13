@@ -1,10 +1,14 @@
+import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
+
 import { generateSpeech } from "~/modules/generate/application/speech";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_speech as create_speechDescriptor } from "./definitions/speech";
 
-export const create_speech: ApiToolDefinition = {
-  ...create_speechDescriptor,
+export const create_speech: ApiToolDefinition = extendPreservingAccessors<
+  typeof create_speechDescriptor,
+  Pick<ApiToolDefinition, "execute">
+>(create_speechDescriptor, {
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
@@ -21,4 +25,4 @@ export const create_speech: ApiToolDefinition = {
 
     return response;
   },
-};
+});

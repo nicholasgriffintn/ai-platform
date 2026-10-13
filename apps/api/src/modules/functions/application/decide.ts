@@ -1,3 +1,4 @@
+import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
 import type z from "zod/v4";
 
 import { decide as runDecision } from "~/modules/decisions/application/decide";
@@ -11,8 +12,7 @@ type DecisionToolContext = Pick<ApiToolExecutionContext, "completionId"> & {
   request?: Pick<IRequest, "env" | "user">;
 };
 
-export const decide = {
-  ...decideDescriptor,
+export const decide = extendPreservingAccessors(decideDescriptor, {
   execute: async (
     args: z.infer<typeof decideDescriptor.inputSchema>,
     context: DecisionToolContext,
@@ -54,4 +54,4 @@ export const decide = {
       },
     };
   },
-} satisfies ApiToolDefinition;
+}) satisfies ApiToolDefinition;

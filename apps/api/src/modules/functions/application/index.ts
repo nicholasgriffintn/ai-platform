@@ -154,25 +154,31 @@ const functionDefinitions: ApiToolDefinition[] = [
 
 export type RegisteredFunctionTool = ApiToolDefinition;
 
-export const functionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> = createToolCatalogue(
-  functionDefinitions
-    .filter((fn): fn is RegisteredFunctionTool => Boolean(fn))
-    .map((fn) => ({ ...fn, effects: requireToolEffects(fn.name, fn.effects) })),
-);
+let cachedFunctionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> | undefined;
+
+export function getFunctionToolCatalogue(): ToolCatalogue<RegisteredFunctionTool> {
+  cachedFunctionToolCatalogue ??= createToolCatalogue(
+    functionDefinitions
+      .filter((fn): fn is RegisteredFunctionTool => Boolean(fn))
+      .map((fn) => ({ ...fn, effects: requireToolEffects(fn.name, fn.effects) })),
+  );
+
+  return cachedFunctionToolCatalogue;
+}
 
 export const listFunctionTools = (
   options?: FunctionToolCatalogueOptions,
-): RegisteredFunctionTool[] => applyConnectorScope(functionToolCatalogue.list(), options);
+): RegisteredFunctionTool[] => applyConnectorScope(getFunctionToolCatalogue().list(), options);
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
-  functionToolCatalogue.repeatLimit(functionName);
+  getFunctionToolCatalogue().repeatLimit(functionName);
 
 export const expandFunctionToolNames = (toolNames: readonly string[]): string[] =>
-  functionToolCatalogue.expandCompanions(toolNames);
+  getFunctionToolCatalogue().expandCompanions(toolNames);
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool => {
   try {
-    return functionToolCatalogue.resolve(functionName);
+    return getFunctionToolCatalogue().resolve(functionName);
   } catch (error) {
     throw isToolError(error) ? fromToolError(error) : error;
   }

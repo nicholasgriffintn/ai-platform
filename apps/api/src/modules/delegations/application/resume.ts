@@ -20,7 +20,7 @@ import {
   findUnsettledToolCalls,
   settleInterruptedCall,
 } from "~/modules/delegations/domain/interrupted-calls";
-import { functionToolDescriptors } from "~/modules/functions/application/definitions";
+import { getFunctionToolDescriptors } from "~/modules/functions/application/definitions";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IUser, Message } from "~/types";
 
@@ -59,7 +59,8 @@ async function settleUnsettledToolCalls(
   const settlements = unsettled.map((call) => {
     const effectClass = resolveToolCallEffectClass({
       toolName: call.name,
-      effects: functionToolDescriptors.find((descriptor) => descriptor.name === call.name)?.effects,
+      effects: getFunctionToolDescriptors().find((descriptor) => descriptor.name === call.name)
+        ?.effects,
       rawArguments: call.arguments,
     });
 

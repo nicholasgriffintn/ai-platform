@@ -7,7 +7,7 @@ import { SandboxError } from "@ngriffin_uk/polychat-library-sandbox";
 import { toToolDeclaration } from "@ngriffin_uk/polychat-library-tools";
 
 import {
-  functionToolCatalogue,
+  getFunctionToolCatalogue,
   handleFunctions,
   type RegisteredFunctionTool,
 } from "~/modules/functions/application";
@@ -38,7 +38,7 @@ function resolveScriptableTools(
   excludeTool: string,
 ): RegisteredFunctionTool[] {
   return toolNames.map((name) => {
-    const tool = functionToolCatalogue.find(name);
+    const tool = getFunctionToolCatalogue().find(name);
 
     if (!tool || !isScriptableTool(tool, excludeTool)) {
       throw new SandboxError("tool_unavailable", `Tool "${name}" cannot be used from code`, {

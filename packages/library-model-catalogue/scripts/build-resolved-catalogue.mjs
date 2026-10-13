@@ -8,14 +8,18 @@ import { readCatalogue } from "./sync-models-dev/catalogue-files.mjs";
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const RESOLVED_TYPES = `import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
-export declare const modelConfig: ModelConfig;
-export declare const providerModelIds: Record<string, Record<string, string>>;
+export interface ResolvedModelCatalogue {
+  modelConfig: ModelConfig;
+  providerModelIds: Record<string, Record<string, string>>;
+}
+
+export declare function loadResolvedCatalogue(): ResolvedModelCatalogue;
 `;
 
 export function renderResolvedCatalogueModule(catalogue) {
-  const { modelConfig, providerModelIds } = resolveModelCatalogueWithProviderIds(catalogue);
+  const resolved = JSON.stringify(resolveModelCatalogueWithProviderIds(catalogue));
 
-  return `export const modelConfig=${JSON.stringify(modelConfig)};\nexport const providerModelIds=${JSON.stringify(providerModelIds)};\n`;
+  return `const source=${JSON.stringify(resolved)};\nlet resolved;\nexport function loadResolvedCatalogue(){return resolved??=JSON.parse(source);}\n`;
 }
 
 export async function buildResolvedCatalogue({

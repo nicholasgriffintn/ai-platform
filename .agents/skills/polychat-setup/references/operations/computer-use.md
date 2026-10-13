@@ -6,8 +6,8 @@ Use **Use Computer** (`use_computer`) for both providers. Choose `openai` to run
 
 - **Personal account:** add an OpenAI API key in provider settings. Platform credentials do not enable this capability.
 - **Workspace account:** connect **OpenAI** under Work › Models › Governance. Project conversations prefer that workspace connection, then fall back to the personal OpenAI key when no workspace key is configured. The OpenAI-compatible endpoint connection does not provide Agents API access.
-- **Deployment:** use the API's current migration set and deploy the API with the existing `COMPUTER_WORKER` binding. No new worker or package dependency is required.
-- **Built-in computer:** configure the existing `COMPUTER_WORKER` binding and use a premium account. An OpenAI key is unnecessary for this provider.
+- **Deployment:** use the API's current migration set and deploy the API with the existing `SANDBOX_WORKER` binding. No new worker or package dependency is required.
+- **Built-in computer:** configure the existing `SANDBOX_WORKER` binding and use a premium account. An OpenAI key is unnecessary for this provider.
 - **Access:** enable Use Computer in the tool selection or teammate configuration. Project conversations also require the project tool grant. Workspace membership and conversation access remain required. `/computer-use/availability` lists configured providers, their modes and supported operations.
 - **OpenAI account:** confirm the connected account can create Agents API sessions with computer use and the chosen model. The default is `gpt-6-astra`. Checking the connection verifies read access to the Agents API, while session creation can still require additional permissions.
 

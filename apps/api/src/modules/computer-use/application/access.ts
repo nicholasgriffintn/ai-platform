@@ -104,7 +104,7 @@ export async function getComputerUseAvailability(
 ): Promise<ComputerUseAvailability> {
   const browser = await getBrowserAvailability(context, projectId, workspaceId);
   const hostedAvailable =
-    hasProEntitlement(context.requireUser()) && Boolean(context.env.COMPUTER_WORKER);
+    hasProEntitlement(context.requireUser()) && Boolean(context.env.SANDBOX_WORKER);
 
   return {
     available: browser.available || hostedAvailable,

@@ -33,7 +33,7 @@ export function getComputerUseProvider(
         sessions: new OpenAIAgentsBrowserProvider(new OpenAIAgentsClient(configuration.apiKey)),
       };
     case "hosted":
-      if (!configuration.env.COMPUTER_WORKER) {
+      if (!configuration.env.SANDBOX_WORKER) {
         throw new AssistantError(
           "Hosted computers are not configured",
           ErrorType.CONFIGURATION_ERROR,
@@ -44,7 +44,7 @@ export function getComputerUseProvider(
       return {
         id: "hosted",
         mode: "interactive",
-        control: new WorkerComputerProvider(configuration.env.COMPUTER_WORKER),
+        control: new WorkerComputerProvider(configuration.env.SANDBOX_WORKER),
       };
   }
 

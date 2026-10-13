@@ -1,10 +1,14 @@
+import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
+
 import { generateImage } from "~/modules/generate/application/image";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_image as create_imageDescriptor } from "./definitions/image";
 
-export const create_image: ApiToolDefinition = {
-  ...create_imageDescriptor,
+export const create_image: ApiToolDefinition = extendPreservingAccessors<
+  typeof create_imageDescriptor,
+  Pick<ApiToolDefinition, "execute">
+>(create_imageDescriptor, {
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
@@ -21,4 +25,4 @@ export const create_image: ApiToolDefinition = {
 
     return response;
   },
-};
+});

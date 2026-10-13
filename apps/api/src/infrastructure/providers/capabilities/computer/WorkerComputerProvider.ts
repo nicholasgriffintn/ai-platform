@@ -11,7 +11,7 @@ import type { ComputerProvider, ComputerResource, ComputerScreenConnection } fro
 import { STALE_COMPUTER_LEASE_ERROR_CODE } from "./types";
 
 export class WorkerComputerProvider implements ComputerProvider {
-  constructor(private readonly worker: NonNullable<IEnv["COMPUTER_WORKER"]>) {}
+  constructor(private readonly worker: NonNullable<IEnv["SANDBOX_WORKER"]>) {}
 
   private async request(
     path: string,

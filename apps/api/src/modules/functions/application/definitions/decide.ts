@@ -4,16 +4,10 @@ import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "./types";
 
-const decisionModels = Object.entries(getModelsByOutputModality("decision"));
+function buildInputSchema() {
+  const decisionModels = Object.entries(getModelsByOutputModality("decision"));
 
-export const decide = {
-  name: "decide",
-  description:
-    "Ask a fast decision model (Jev, Clef, Clef Flash or Clef Omni) typed questions about some text or structured state and get calibrated probabilities back in a single call. Use it to classify, rate, rank, verify or gate before acting: routing a request, checking whether a message is urgent, scoring several candidates on the same rubric, or confirming a statement is supported by evidence. It never writes text. Put every question you might need in one call; questions are independent and evaluated in parallel. Question types: choice (pick one of named options), score (position along ordered levels), noul (probability a statement is true). Reference parts of a structured state with backticked paths in the instructions, such as `ticket.message`.",
-  type: "normal",
-  permissions: ["read"],
-  effects: { effectClass: "read" },
-  inputSchema: z.object({
+  return z.object({
     model: z
       .enum(["auto", ...decisionModels.map(([id]) => id)])
       .optional()
@@ -28,5 +22,21 @@ export const decide = {
     questions: decisionQuestionsSchema.describe(
       "Enter a JSON object mapping question ids to questions. choice needs criteria as an object of option name to description (null is fine); score needs criteria as an ordered array of 2 to 10 level descriptions from low to high; noul optionally takes criteria with true and false descriptions.",
     ),
-  }),
+  });
+}
+
+let cachedInputSchema: ReturnType<typeof buildInputSchema> | undefined;
+
+export const decide = {
+  name: "decide",
+  description:
+    "Ask a fast decision model (Jev, Clef, Clef Flash or Clef Omni) typed questions about some text or structured state and get calibrated probabilities back in a single call. Use it to classify, rate, rank, verify or gate before acting: routing a request, checking whether a message is urgent, scoring several candidates on the same rubric, or confirming a statement is supported by evidence. It never writes text. Put every question you might need in one call; questions are independent and evaluated in parallel. Question types: choice (pick one of named options), score (position along ordered levels), noul (probability a statement is true). Reference parts of a structured state with backticked paths in the instructions, such as `ticket.message`.",
+  type: "normal",
+  permissions: ["read"],
+  effects: { effectClass: "read" },
+  get inputSchema() {
+    cachedInputSchema ??= buildInputSchema();
+
+    return cachedInputSchema;
+  },
 } satisfies FunctionToolDescriptor;

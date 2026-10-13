@@ -14,7 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { describe, expect, it } from "vitest";
 
-import { functionToolCatalogue } from "~/modules/functions/application";
+import { getFunctionToolCatalogue } from "~/modules/functions/application";
 
 import { listSkillAvailability } from "../availability";
 import { getSkillResource, listSkillDefinitions, loadSkill } from "../catalog";
@@ -189,7 +189,11 @@ describe("built-in skill catalogue", () => {
   });
 
   it("only requires and suggests tools the registry actually publishes", async () => {
-    const registered = new Set(functionToolCatalogue.list().map((tool) => tool.name));
+    const registered = new Set(
+      getFunctionToolCatalogue()
+        .list()
+        .map((tool) => tool.name),
+    );
     const declared = (await listSkillDefinitions()).flatMap((skill) => [
       ...skill.requirement.tools,
       ...skill.requirement.suggestedTools,

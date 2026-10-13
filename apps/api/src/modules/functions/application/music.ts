@@ -1,10 +1,14 @@
+import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
+
 import { generateMusic } from "~/modules/generate/application/music";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_music as create_musicDescriptor } from "./definitions/music";
 
-export const create_music: ApiToolDefinition = {
-  ...create_musicDescriptor,
+export const create_music: ApiToolDefinition = extendPreservingAccessors<
+  typeof create_musicDescriptor,
+  Pick<ApiToolDefinition, "execute">
+>(create_musicDescriptor, {
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
@@ -21,4 +25,4 @@ export const create_music: ApiToolDefinition = {
 
     return response;
   },
-};
+});

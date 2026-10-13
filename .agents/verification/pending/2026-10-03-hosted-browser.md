@@ -2,7 +2,7 @@
 
 - **Change:** Use Computer supports managed OpenAI browser sessions and the hosted computer worker.
 - **Surfaces:** web, desktop, API and computer worker.
-- **Prerequisites:** an OpenAI connection with Agents API computer-use access, or a premium account with `COMPUTER_WORKER` configured.
+- **Prerequisites:** an OpenAI connection with Agents API computer-use access, or a premium account with `SANDBOX_WORKER` configured.
 - **Risk if wrong:** credentials or browser activity may cross user or project boundaries, or a provider session may remain active after the local task ends.
 
 ## Verify

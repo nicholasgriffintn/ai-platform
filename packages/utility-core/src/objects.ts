@@ -175,3 +175,15 @@ export function readTrimmedStringArray(value: unknown): string[] {
     .map((item) => item.trim())
     .filter(Boolean);
 }
+
+export function extendPreservingAccessors<T extends object, U extends object>(
+  base: T,
+  extension: U,
+): T & U {
+  const extended: T & U = Object.create(Object.getPrototypeOf(base));
+
+  return Object.defineProperties(extended, {
+    ...Object.getOwnPropertyDescriptors(base),
+    ...Object.getOwnPropertyDescriptors(extension),
+  });
+}

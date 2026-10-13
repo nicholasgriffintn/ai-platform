@@ -139,11 +139,17 @@ const descriptors: FunctionToolDescriptor[] = [
   ...polyNavigationToolDescriptors,
 ];
 
-export const functionToolDescriptors: FunctionToolDescriptor[] = descriptors.map((descriptor) => ({
-  ...descriptor,
-  permissions: requireToolPermissions(descriptor.name, descriptor.permissions),
-  effects: requireToolEffects(descriptor.name, descriptor.effects),
-}));
+let cachedFunctionToolDescriptors: FunctionToolDescriptor[] | undefined;
+
+export function getFunctionToolDescriptors(): FunctionToolDescriptor[] {
+  cachedFunctionToolDescriptors ??= descriptors.map((descriptor) => ({
+    ...descriptor,
+    permissions: requireToolPermissions(descriptor.name, descriptor.permissions),
+    effects: requireToolEffects(descriptor.name, descriptor.effects),
+  }));
+
+  return cachedFunctionToolDescriptors;
+}
 
 export function applyConnectorScope<T extends FunctionToolDescriptor>(
   definitions: readonly T[],
@@ -182,5 +188,5 @@ export function applyConnectorScope<T extends FunctionToolDescriptor>(
 export function listFunctionToolDefinitions(
   options?: FunctionToolCatalogueOptions,
 ): FunctionToolDescriptor[] {
-  return applyConnectorScope(functionToolDescriptors, options);
+  return applyConnectorScope(getFunctionToolDescriptors(), options);
 }
