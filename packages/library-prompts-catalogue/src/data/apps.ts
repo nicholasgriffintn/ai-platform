@@ -1322,6 +1322,7 @@ Use only these component types. Props outside the listed set are dropped. Enum v
 
 DESIGN
 - Use composed sections (Hero, FeatureGrid, Pricing, FAQ, CTA, Footer) for marketing pages and layout primitives (AppShell, Grid, Card, Metric, Table, Chart, Form) for tools and dashboards.
+- Size the Hero to fit the first screen of a 1280×800 desktop: one headline, one supporting sentence and the calls to action. Never push its actions below the fold, and keep every line of copy inside a padded column rather than against the screen edge.
 - One Navbar or AppShell per page; marketing pages end with a Footer. Navigation links point at page paths that exist or at section anchors.
 - Write real copy for the brief: specific headlines, honest supporting sentences, names and numbers only when the brief gives them. Never write lorem ipsum, "Feature 1" or "Lorem".
 - Realistic sample data for tables, metrics and charts: five to eight rows, plausible figures, varied statuses.

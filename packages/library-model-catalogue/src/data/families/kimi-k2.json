@@ -81,6 +81,7 @@
         "name": "Kimi K2 0711",
         "description": "Kimi model for long-context chat, coding, and agentic reasoning",
         "contextWindow": 131072,
+        "maxTokens": 98304,
         "modalities": {
           "input": [
             "text"
@@ -89,7 +90,18 @@
             "text"
           ]
         },
-        "supportsAttachments": false
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "December 31, 2024",
+        "releaseDate": "July 11, 2025",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "kimi-k2-0905": {
@@ -501,37 +513,6 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 5, 2025",
         "supportsAttachments": false
-      }
-    },
-    "moonshotai-kimi-k2-0711": {
-      "defaults": {
-        "name": "MoonshotAI: Kimi K2 0711",
-        "openWeights": false,
-        "description": "Kimi model for long-context chat, coding, and agentic reasoning",
-        "contextWindow": 131072,
-        "maxTokens": 98304,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "July 11, 2025",
-        "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 12.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
       }
     }
   }

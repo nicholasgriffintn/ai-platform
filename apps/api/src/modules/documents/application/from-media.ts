@@ -3,6 +3,12 @@ import {
   getPromptText,
   tryGetPrompt,
 } from "@ngriffin_uk/polychat-ai-prompts";
+import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
+import {
+  buildCaptionCues,
+  formatTimedTranscript,
+  type TimedSegment,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/infrastructure/ai";
@@ -12,6 +18,18 @@ import { handleTranscribe } from "~/modules/audio/application/transcribe";
 import { resolveAuthorisedTranscriptionSource } from "~/modules/audio/application/transcription-input";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IUser } from "~/types";
+
+const TIMED_LINE_OPTIONS = { maxWords: 60, maxSeconds: 30, minWordsBeforeSentenceBreak: 20 };
+
+function readTimedLines(transcription: TranscriptionResult): TimedSegment[] {
+  if (transcription.segments?.length) {
+    return transcription.segments;
+  }
+
+  return transcription.words?.length
+    ? buildCaptionCues(transcription.words, TIMED_LINE_OPTIONS)
+    : [];
+}
 
 export async function generateDocumentFromMedia({
   context,
@@ -44,6 +62,8 @@ export async function generateDocumentFromMedia({
     throw new AssistantError("Missing media URL", ErrorType.PARAMS_ERROR);
   }
 
+  const wantsTimings = timestamps === true || outputs.includes("smart_timestamps");
+
   try {
     const toPromptSegment = (value: string) => value.replace(/_/g, "-");
     const selectedSections = outputs.map(
@@ -56,7 +76,7 @@ export async function generateDocumentFromMedia({
     const notePrompt = buildDocumentNotesPrompt({
       documentTypeDescriptor,
       sections: selectedSections,
-      timestamps,
+      timestamps: wantsTimings,
       extraPrompt,
     });
 
@@ -86,10 +106,24 @@ export async function generateDocumentFromMedia({
       audio,
       allowVideo: true,
       provider: transcriptionProviderToUse,
-      timestamps,
+      timestamps: wantsTimings,
     });
 
-    const transcriptText = transcription.content;
+    let transcriptText = transcription.content;
+
+    if (wantsTimings) {
+      const timedLines = readTimedLines(transcription);
+
+      if (timedLines.length === 0) {
+        throw new AssistantError(
+          "The transcription came back without timings, so timestamps cannot be added. Turn timestamps off and try again.",
+          ErrorType.EXTERNAL_API_ERROR,
+          502,
+        );
+      }
+
+      transcriptText = formatTimedTranscript(timedLines);
+    }
 
     if (!transcriptText) {
       throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);

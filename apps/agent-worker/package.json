@@ -8,7 +8,7 @@
     "cf-typegen": "wrangler types",
     "deploy": "pnpm typecheck && wrangler deploy",
     "dev": "WRANGLER_BUILD_CONDITIONS=workerd,worker,browser wrangler dev src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "1.1.0",

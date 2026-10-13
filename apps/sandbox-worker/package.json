@@ -14,7 +14,7 @@
     "start": "vp run --filter=@ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@cloudflare/sandbox": "1.0.0",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "wrangler": "catalog:"

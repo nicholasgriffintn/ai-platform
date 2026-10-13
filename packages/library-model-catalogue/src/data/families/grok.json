@@ -34,10 +34,20 @@
         "releaseDate": "August 20, 2024",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7.1,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 926,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 14
+            }
+          ]
         }
       }
     },
@@ -1154,7 +1164,7 @@
           "video",
           "creative"
         ],
-        "reliability": 5,
+        "reliability": 4,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1165,12 +1175,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "image_to_videoElo",
-              "label": "Image-to-video arena",
-              "value": 1328,
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1232,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -1362,7 +1372,7 @@
             "video"
           ]
         },
-        "reliability": 5,
+        "reliability": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1370,12 +1380,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "image_to_videoElo",
-              "label": "Image-to-video arena",
-              "value": 1328,
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1232,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -1396,9 +1406,10 @@
           ]
         },
         "strengths": [
-          "video"
+          "video",
+          "creative"
         ],
-        "reliability": 2,
+        "reliability": 5,
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1410,9 +1421,9 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1036,
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1331,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

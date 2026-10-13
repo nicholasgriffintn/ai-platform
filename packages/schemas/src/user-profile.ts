@@ -47,6 +47,8 @@ export interface UserSettings {
   embedding_provider?: string;
   bedrock_knowledge_base_id?: string;
   bedrock_knowledge_base_custom_data_source_id?: string;
+  bedrock_agent_runtime_arn?: string;
+  bedrock_agent_role_arn?: string;
   s3vectors_bucket_name?: string;
   s3vectors_index_name?: string;
   s3vectors_region?: string;

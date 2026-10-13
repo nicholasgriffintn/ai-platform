@@ -1,3 +1,5 @@
+import type { TranscriptionSegment, TranscriptionWord } from "@ngriffin_uk/polychat-schemas";
+
 import type { ProviderEnv, ProviderUser } from "../../env.js";
 
 export type TranscriptionAudioSource = { kind: "file"; file: Blob };
@@ -14,6 +16,8 @@ export interface TranscriptionRequest {
 
 export interface TranscriptionResult {
   text: string;
+  segments?: TranscriptionSegment[];
+  words?: TranscriptionWord[];
   data?: unknown;
   metadata?: Record<string, unknown>;
 }

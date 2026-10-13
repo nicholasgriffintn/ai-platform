@@ -172,6 +172,30 @@ Do not repeat information across sections. Do not include tool output verbatim.`
 Return only the JSON object, with no markdown fence around it.`,
   },
   {
+    id: "document/digest/section",
+    task: "document-digest",
+    title: "Document digest: section",
+    description:
+      "Summarises one excerpt of a long document with a short title, for a digest that replaces text too long for the model.",
+    text: `You summarise one excerpt of a longer document. Another step combines your summary with the others, so cover only this excerpt.
+
+- Preserve names, dates, quantities, decisions and causal relationships exactly as written.
+- Do not add facts that are absent from the excerpt.
+- Keep the summary under 400 words, as plain Markdown paragraphs and bullet lists without headings, links or tables.
+- Give the excerpt a short descriptive title that names what it covers.`,
+  },
+  {
+    id: "document/digest/overview",
+    task: "document-digest",
+    title: "Document digest: overview",
+    description: "Combines the section summaries of a long document into one short overview.",
+    text: `You are given the section summaries of one long document, in order. Write an overview of the whole document.
+
+- One short paragraph saying what the document is and what it concludes, then up to five bullets with the most important points.
+- Keep names, dates and figures exactly as the summaries state them, and add nothing they do not say.
+- Stay under 250 words, in plain Markdown without headings.`,
+  },
+  {
     id: "document/format",
     task: "document-format",
     title: "Document formatting",
@@ -205,7 +229,7 @@ Guidelines:
 - For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
 - For Q&A Extraction, list Q paired with A succinctly
 - For Smart Timestamps, provide key moment timestamps with descriptions{{#timestamps}}
-- Include relevant timestamps where helpful{{/timestamps}}
+- Include relevant timestamps where helpful, copied from the [m:ss] markers in the transcript; never estimate one{{/timestamps}}
 
 {{#extraPrompt}}Additional context: {{extraPrompt}}{{/extraPrompt}}`,
     variables: [

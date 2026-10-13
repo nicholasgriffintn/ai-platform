@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.typecheck.json"
+    "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
     "@ngriffin_uk/auth-encoding": "^0.2.4",
@@ -68,10 +68,10 @@
     "@tanstack/react-query-devtools": "5.104.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "idb": "8.0.3",
+    "idb": "8.0.4",
     "isbot": "5.2.2",
     "lucide-react": "1.52.0",
-    "posthog-js": "1.436.1",
+    "posthog-js": "1.438.1",
     "react-markdown": "10.1.0",
     "react-router": "8.4.0",
     "rehype-highlight": "7.0.2",

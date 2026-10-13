@@ -440,7 +440,20 @@
       "model": "gemini/gemini-2-5-pro-preview-06-05",
       "matchingModel": "gemini-2.5-pro-preview-06-05",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "isFree": true,
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 5, 2025",
         "dataRetention": {
           "maxDays": 55,
@@ -1374,13 +1387,30 @@
           "creative"
         ],
         "contextComplexity": 2,
+        "reliability": 4,
         "lastUpdated": "January 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1223,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
       }
     },
     "veo-3.1-lite-generate-preview": {

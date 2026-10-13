@@ -12,7 +12,7 @@
     "tauri": "tauri",
     "test": "vitest run",
     "test:e2e": "node --test tests/e2e/*.spec.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@ngriffin_uk/polychat-component-account": "workspace:^",

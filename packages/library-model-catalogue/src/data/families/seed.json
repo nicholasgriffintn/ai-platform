@@ -252,7 +252,7 @@
           "vision"
         ],
         "contextComplexity": 4,
-        "reliability": 5,
+        "reliability": 4,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -261,12 +261,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "image_to_videoElo",
-              "label": "Image-to-video arena",
-              "value": 1256,
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1179,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -286,12 +286,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "image_to_videoElo",
-              "label": "Image-to-video arena",
-              "value": 1339,
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1273,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }

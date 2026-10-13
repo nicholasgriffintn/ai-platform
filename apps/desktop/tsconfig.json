@@ -6,7 +6,49 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "composite": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"],
+  "references": [
+    {
+      "path": "../../packages/component-account"
+    },
+    {
+      "path": "../../packages/component-content"
+    },
+    {
+      "path": "../../packages/component-conversation"
+    },
+    {
+      "path": "../../packages/component-experiences"
+    },
+    {
+      "path": "../../packages/component-models"
+    },
+    {
+      "path": "../../packages/component-navigation"
+    },
+    {
+      "path": "../../packages/component-shell"
+    },
+    {
+      "path": "../../packages/component-ui"
+    },
+    {
+      "path": "../../packages/library-chat"
+    },
+    {
+      "path": "../../packages/library-client"
+    },
+    {
+      "path": "../../packages/library-react"
+    },
+    {
+      "path": "../../packages/schemas"
+    },
+    {
+      "path": "../../packages/utility-core"
+    }
+  ]
 }

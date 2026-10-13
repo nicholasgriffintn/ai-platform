@@ -2,6 +2,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { BaseTranscriptionProvider } from "../base.js";
 import type { TranscriptionRequest, TranscriptionResult } from "../index.js";
+import { readTranscriptionTimings } from "../timings.js";
 
 const REPLICATE_TRANSCRIBE_VERSION =
   "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f";
@@ -51,22 +52,7 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
         context,
       });
 
-      let text = "";
-
-      try {
-        const out: any = transcriptionData?.output ?? transcriptionData;
-
-        if (Array.isArray(out?.segments)) {
-          text = out.segments
-            .map((segment: any) => segment.text)
-            .join(" ")
-            .trim();
-        } else if (typeof out?.text === "string") {
-          text = out.text;
-        } else if (typeof transcriptionData?.text === "string") {
-          text = transcriptionData.text;
-        }
-      } catch {}
+      const { text, segments, words } = readTranscriptionTimings(transcriptionData);
 
       if (!text) {
         throw new AssistantError(
@@ -77,6 +63,8 @@ export class ReplicateTranscriptionProvider extends BaseTranscriptionProvider {
 
       return {
         text,
+        segments,
+        words,
         data: transcriptionData,
       };
     } catch (error) {

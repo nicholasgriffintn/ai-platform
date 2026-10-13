@@ -1,6 +1,7 @@
 import { creditMicrosFromCredits } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
+import { createFakeRuntime, createFakeUsageStore } from "../testing/fake-usage-store.js";
 import { userCreditActor } from "../usage/credit-actor.js";
 import { admitTurn, readCreditPosition } from "../usage/credits.js";
 import {
@@ -8,7 +9,6 @@ import {
   resolvePlanAllowanceCredits,
   resolveUsagePlanSeed,
 } from "../usage/plan-seed.js";
-import { createFakeRuntime, createFakeUsageStore } from "./fake-usage-store.js";
 
 const configuredPlan = { included_credits: 100, grace_credits: null };
 

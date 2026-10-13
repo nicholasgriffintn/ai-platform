@@ -266,6 +266,9 @@ importers:
       sherif:
         specifier: ^1.11.1
         version: 1.13.0
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vite-plus:
         specifier: 1.0.0
         version: 1.0.0(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.2)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
@@ -439,8 +442,8 @@ importers:
         specifier: 0.12.10
         version: 0.12.10(hono@4.13.13)
       '@sentry/cloudflare':
-        specifier: 10.76.0
-        version: 10.76.0(@cloudflare/workers-types@5.20260918.1)(wrangler@4.147.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.4))
+        specifier: 10.76.1
+        version: 10.76.1(@cloudflare/workers-types@5.20260918.1)(wrangler@4.147.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.4))
       '@tsndr/cloudflare-worker-jwt':
         specifier: 3.2.3
         version: 3.2.3
@@ -478,6 +481,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
         version: 5.20260918.1
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../../packages/config
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.4
@@ -647,8 +653,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       idb:
-        specifier: 8.0.3
-        version: 8.0.3
+        specifier: 8.0.4
+        version: 8.0.4
       isbot:
         specifier: 5.2.2
         version: 5.2.2
@@ -656,8 +662,8 @@ importers:
         specifier: 1.52.0
         version: 1.52.0(@types/react@19.3.0)(react@19.3.0)
       posthog-js:
-        specifier: 1.436.1
-        version: 1.436.1(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.438.1
+        version: 1.438.1(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -936,6 +942,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
         version: 5.20260918.1
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../../packages/config
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.4
@@ -2611,8 +2620,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       idb:
-        specifier: 8.0.3
-        version: 8.0.3
+        specifier: 8.0.4
+        version: 8.0.4
       isbot:
         specifier: 5.2.2
         version: 5.2.2
@@ -2620,8 +2629,8 @@ importers:
         specifier: 1.52.0
         version: 1.52.0(@types/react@19.3.0)(react@19.3.0)
       posthog-js:
-        specifier: 1.436.1
-        version: 1.436.1(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.438.1
+        version: 1.438.1(@types/react@19.3.0)(react@19.3.0)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
@@ -7014,8 +7023,8 @@ packages:
     resolution: {integrity: sha512-ur7Oyr1vJmvX9+GTXfDXTvVOJD6JRgMtwV44hI6uUFja4IUDvSzuZ+qDpZYQ32uhV/50oT8siFE6JfiZbeJwng==}
     engines: {node: '>=20'}
 
-  '@sentry/cloudflare@10.76.0':
-    resolution: {integrity: sha512-4GdaARNRk17Jd0cvLFfGh+nIXYkCzttBggCf1aJ5Ny5P//nrGz3DSnGRoSZvV8TgZpKbySEi13n+H1NmL5TPbA==}
+  '@sentry/cloudflare@10.76.1':
+    resolution: {integrity: sha512-cP5OO1zWvinXcMIcnpyk3+snifCavF9hJA5O/iFRK7/KdCjy+PW7gpvKME0UV6RcbjOthPWPHcuG+7KhPOrN5Q==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cloudflare/workers-types': ^4.x || ^5.x
@@ -7030,12 +7039,12 @@ packages:
     resolution: {integrity: sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==}
     engines: {node: '>=14'}
 
-  '@sentry/core@10.76.0':
-    resolution: {integrity: sha512-H9irBNXHdkgvl86EKlQrPTGYyzvI8GUZ8eoWLay9IuqqZC6pWesf0nH7z/glxKBo7BEw3PIG+unQByHugBnsCg==}
+  '@sentry/core@10.76.1':
+    resolution: {integrity: sha512-WZ1D30FDrvZPWcEgbCgaVHROBOaVGxNUcEeF5O5xRAdGu6UB7Epg+CQBeoatw/SxEctQq0BPbMIwtBgbe1QK3g==}
     engines: {node: '>=18'}
 
-  '@sentry/server-utils@10.76.0':
-    resolution: {integrity: sha512-PJT8i3xsaSEAwVjgVrVClpFVB9+caxn4AVlUbgjt3/NwkoggKmSaoSUq5vpvzFPO11H1V+50qz9xxCw9gc9EzQ==}
+  '@sentry/server-utils@10.76.1':
+    resolution: {integrity: sha512-E4BHBU2F975eQW/eo4w73DvxN2LNac3wqWzd8lvk4A6jXt8nJwtGSxxdPaTM0Il82aJkbZXJ3IIO/Px6rlX+lQ==}
     engines: {node: '>=18'}
 
   '@sigstore/bundle@4.0.0':
@@ -9822,8 +9831,8 @@ packages:
     resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
     engines: {node: '>=0.10.0'}
 
-  idb@8.0.3:
-    resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
+  idb@8.0.4:
+    resolution: {integrity: sha512-jd0ITCrN+Zah4J7R/Z2jnR3W7A4BXDAjmo62MwWuSjxCiueUAf7X5rbodEdidWzeknwXHmLpdZkoiiCppNi30Q==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -11042,8 +11051,8 @@ packages:
     resolution: {integrity: sha512-49cGhUbXj8Qenv0iTMxA1cFBzxXoctpC9Ujd77t1WcbJIr6nF/eI7g/8MgxrYldFRuAXvja7xQRwavoW7kgrxQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.436.1:
-    resolution: {integrity: sha512-+uPcck+hcaBbjtxBwOtiiZ9BcBXyJmewumUMVP5MrIZO36BHHZ+SzvHTxFsA5soNbPo2fuLppsWfpNnuSjbNeA==}
+  posthog-js@1.438.1:
+    resolution: {integrity: sha512-0ro5G2kkl2SJrXPmKRh/bzPa016hJ9FbbKXojgs7Q2aMLjzXiu3U7ogyBjbnz1XkgWwU6a5IrRMqycdHGuDHeg==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -16454,11 +16463,11 @@ snapshots:
 
   '@scalar/validation@0.6.6': {}
 
-  '@sentry/cloudflare@10.76.0(@cloudflare/workers-types@5.20260918.1)(wrangler@4.147.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.4))':
+  '@sentry/cloudflare@10.76.1(@cloudflare/workers-types@5.20260918.1)(wrangler@4.147.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.4))':
     dependencies:
       '@opentelemetry/api': 1.9.1
-      '@sentry/core': 10.76.0
-      '@sentry/server-utils': 10.76.0
+      '@sentry/core': 10.76.1
+      '@sentry/server-utils': 10.76.1
       magic-string: 0.30.21
     optionalDependencies:
       '@cloudflare/workers-types': 5.20260918.1
@@ -16466,14 +16475,14 @@ snapshots:
 
   '@sentry/conventions@0.16.0': {}
 
-  '@sentry/core@10.76.0':
+  '@sentry/core@10.76.1':
     dependencies:
       '@sentry/conventions': 0.16.0
 
-  '@sentry/server-utils@10.76.0':
+  '@sentry/server-utils@10.76.1':
     dependencies:
       '@sentry/conventions': 0.16.0
-      '@sentry/core': 10.76.0
+      '@sentry/core': 10.76.1
 
   '@sigstore/bundle@4.0.0':
     dependencies:
@@ -19267,7 +19276,7 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  idb@8.0.3: {}
+  idb@8.0.4: {}
 
   ieee754@1.2.1: {}
 
@@ -20666,7 +20675,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  posthog-js@1.436.1(@types/react@19.3.0)(react@19.3.0):
+  posthog-js@1.438.1(@types/react@19.3.0)(react@19.3.0):
     dependencies:
       '@posthog/browser-common': 0.9.4
       '@posthog/core': 1.58.0

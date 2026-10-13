@@ -17,7 +17,6 @@
   "models": {
     "hy-mt2-1-8b": {
       "defaults": {
-        "name": "Hy-MT2-1.8B",
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
@@ -27,7 +26,6 @@
     },
     "hy-mt2-30b-a3b": {
       "defaults": {
-        "name": "Hy-MT2-30B-A3B",
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
@@ -37,7 +35,6 @@
     },
     "hy-mt2-7b": {
       "defaults": {
-        "name": "Hy-MT2-7B",
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
@@ -121,39 +118,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "tencent-hy-mt2-1-8b": {
-      "defaults": {
-        "name": "Tencent: Hy-MT2-1.8B",
-        "openWeights": false,
-        "description": "Hy-MT2-1.8B is a compact 1.8B-parameter translation model from Tencent. It supports 33 language pairs and five Chinese dialect and minority-language pairs, with workflows for structured, delimiter-based, contextual, glossary-based, and style-guided...",
-        "contextWindow": 8192,
-        "maxTokens": 4096,
-        "releaseDate": "August 20, 2026",
-        "supportsResponseFormat": false
-      }
-    },
-    "tencent-hy-mt2-30b-a3b": {
-      "defaults": {
-        "name": "Tencent: Hy-MT2-30B-A3B",
-        "openWeights": false,
-        "description": "Hy-MT2-30B-A3B is Tencent's flagship translation model in the Hy-MT2 family. It supports 33 language pairs and five Chinese dialect and minority-language pairs, with workflows for structured, delimiter-based, contextual, glossary-based, and...",
-        "contextWindow": 8192,
-        "maxTokens": 4096,
-        "releaseDate": "August 20, 2026",
-        "supportsResponseFormat": true
-      }
-    },
-    "tencent-hy-mt2-7b": {
-      "defaults": {
-        "name": "Tencent: Hy-MT2-7B",
-        "openWeights": false,
-        "description": "Hy-MT2-7B is a 7B-parameter translation model from Tencent. It supports 33 language pairs and five Chinese dialect and minority-language pairs, with workflows for structured, delimiter-based, contextual, glossary-based, and style-guided translation.",
-        "contextWindow": 8192,
-        "maxTokens": 4096,
-        "releaseDate": "August 19, 2026",
-        "supportsResponseFormat": true
       }
     },
     "tencent-hy-mt2-lite": {

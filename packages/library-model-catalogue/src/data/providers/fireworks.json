@@ -120,6 +120,7 @@
         "name": "DeepSeek V3.1",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 163840,
+        "contextComplexity": 4,
         "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "August 21, 2025",
@@ -759,6 +760,7 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "accounts/fireworks/models/qwen3p8-2p4t-a95b",
       "overrides": {
+        "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,

@@ -1,5 +1,29 @@
 {
   "extends": "@ngriffin_uk/polychat-config/tsconfig/react-library",
-  "compilerOptions": { "noEmit": true },
-  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts"]
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "emitDeclarationOnly": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__test__/**/*",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../schemas"
+    },
+    {
+      "path": "../utility-core"
+    }
+  ]
 }

@@ -323,39 +323,6 @@
         }
       }
     },
-    "mistral-mixtral-8x22b-instruct": {
-      "defaults": {
-        "name": "Mistral: Mixtral 8x22B Instruct",
-        "openWeights": false,
-        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "contextWindow": 65536,
-        "maxTokens": 52428,
-        "modalities": {
-          "input": [
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "releaseDate": "April 17, 2024",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 5.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
     "mistral-moderation": {
       "defaults": {
         "name": "Mistral Moderation",
@@ -422,39 +389,6 @@
           "ocr",
           "vision"
         ]
-      }
-    },
-    "mistral-saba": {
-      "defaults": {
-        "name": "Mistral: Saba",
-        "openWeights": false,
-        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "contextWindow": 32768,
-        "maxTokens": 26214,
-        "modalities": {
-          "input": [
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "releaseDate": "February 17, 2025",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 6.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
       }
     },
     "mistral-small-24b-instruct-2501": {
@@ -584,7 +518,6 @@
     },
     "mixtral-8x22b-instruct": {
       "defaults": {
-        "name": "Mixtral 8x22B Instruct",
         "openWeights": true,
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 65536,
@@ -677,7 +610,6 @@
     },
     "saba": {
       "defaults": {
-        "name": "Saba",
         "openWeights": false,
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 32768,
