@@ -478,7 +478,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     candidates: [
       { model: "whisper", provider: "workers-ai" },
       { model: "whisper-large-v3-turbo", provider: "groq" },
-      { model: "gpt-4o-transcribe", provider: "openai" },
+      { model: "gpt-transcribe", provider: "openai" },
     ],
   },
   {
