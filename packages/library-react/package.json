@@ -68,7 +68,7 @@
     "@tanstack/react-query-devtools": "5.104.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "idb": "8.0.3",
+    "idb": "8.0.4",
     "isbot": "5.2.2",
     "lucide-react": "1.52.0",
     "posthog-js": "1.438.1",
