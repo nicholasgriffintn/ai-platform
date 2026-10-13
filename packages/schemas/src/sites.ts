@@ -492,6 +492,10 @@ export const siteReferenceUrlSchema = z
   .pipe(z.url())
   .refine(
     (value) => {
+      if (!URL.canParse(value)) {
+        return false;
+      }
+
       const url = new URL(value);
 
       return (
