@@ -211,7 +211,8 @@ public struct ResponseReplayResponse: Decodable, Equatable {
     public let snapshot: ResponseSnapshot?
 
     enum CodingKeys: String, CodingKey {
-        case events, snapshot
+        case snapshot
+        case events = "data"
         case responseId = "response_id"
         case fromCursor = "from_cursor"
         case nextCursor = "next_cursor"
@@ -450,15 +451,13 @@ public struct UpdateConversationRequest: Encodable {
 
 public struct ConversationListResponse: Decodable {
     public let conversations: [ConversationSummary]
-    public let totalPages: Int
-    public let pageNumber: Int
-    public let pageSize: Int
+    public let hasMore: Bool
+    public let lastId: String?
 
     enum CodingKeys: String, CodingKey {
         case conversations = "data"
-        case totalPages = "pages"
-        case pageNumber = "page"
-        case pageSize = "limit"
+        case hasMore = "has_more"
+        case lastId = "last_id"
     }
 
     public struct ConversationSummary: Decodable, Identifiable {
@@ -560,7 +559,7 @@ public struct ConversationMessagePageResponse: Decodable {
     enum CodingKeys: String, CodingKey {
         case messages = "data"
         case hasMore = "has_more"
-        case oldestMessageId = "oldest_item_id"
+        case oldestMessageId = "last_id"
     }
 
     public init(messages: [ChatMessage], hasMore: Bool, oldestMessageId: String?) {

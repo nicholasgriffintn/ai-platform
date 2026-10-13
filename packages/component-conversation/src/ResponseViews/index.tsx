@@ -9,7 +9,7 @@ import {
   WeatherView,
   WebSearchView,
 } from "@ngriffin_uk/polychat-component-content";
-import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { delegationCardDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { ComputerObservationView } from "./ComputerObservationView.js";
 import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
@@ -63,7 +63,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   document_search: ({ data }) => <DocumentSearchView data={data} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
   delegation_card: ({ data, onToolInteraction }) => {
-    const parsed = delegationListResponseSchema.safeParse(data);
+    const parsed = delegationCardDataSchema.safeParse(data);
 
     if (!parsed.success) {
       return null;

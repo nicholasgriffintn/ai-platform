@@ -23,6 +23,7 @@ import { ConversationOrganisationRepository } from "~/modules/conversations/infr
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { SavedItemRepository } from "~/modules/conversations/infrastructure/SavedItemRepository";
 import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
@@ -55,7 +56,6 @@ import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetReposito
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
@@ -247,8 +247,8 @@ export class RepositoryManager {
     return this.resolve("corrections", (env) => new CorrectionRepository(env));
   }
 
-  public get savedMessages(): SavedMessageRepository {
-    return this.resolve("savedMessages", (env) => new SavedMessageRepository(env));
+  public get savedItems(): SavedItemRepository {
+    return this.resolve("savedItems", (env) => new SavedItemRepository(env));
   }
 
   public get audit(): AuditRepository {

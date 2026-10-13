@@ -335,7 +335,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var resolvedProjectTaskApprovals: [(projectId: String, taskId: String, interactionId: String, resolution: String)] = []
     var fetchResponseSnapshotCallCount = 0
     var fetchResponseEventsCallCount = 0
-    func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse {
+    func fetchConversations(limit: Int, after: String?, includeArchived: Bool) async throws -> ConversationListResponse {
         throw TestFailure.unexpectedCall
     }
 

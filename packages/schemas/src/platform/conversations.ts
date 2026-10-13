@@ -7,6 +7,7 @@ import { permissionModeSchema } from "../providers.js";
 import { messageSchema } from "../shared.js";
 import { threadOperationSchema } from "../thread-operations.js";
 import { storedItemSchema } from "./items.js";
+import { listQuerySchema, listSchema } from "./list.js";
 import { responseSchema } from "./responses.js";
 
 export const conversationParamsSchema = z.object({
@@ -35,9 +36,13 @@ export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilter
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
 export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
 
-export const listConversationsQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).optional().default(25),
-  page: z.coerce.number().int().min(1).optional().default(1),
+export const conversationFilterQuerySchema = z.object({
+  archived: conversationArchiveFilterSchema.optional(),
+  q: z.string().trim().max(200).optional(),
+  updated_after: z.iso.datetime().optional(),
+});
+
+export const listConversationsQuerySchema = listQuerySchema.extend({
   archived: conversationArchiveFilterSchema.optional(),
   q: z.string().trim().max(200).optional(),
   sort_by: conversationSortBySchema.optional().default("updated"),
@@ -61,13 +66,9 @@ export const conversationSummarySchema = z
   })
   .passthrough();
 
-export const conversationListResponseSchema = z.object({
-  data: z.array(conversationSummarySchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  pages: z.number(),
-});
+export const conversationListResponseSchema = listSchema(conversationSummarySchema);
+
+export const conversationCountResponseSchema = z.object({ count: z.number().int() });
 
 export const archiveConversationsRequestSchema = z.object({
   archived: z.boolean(),
@@ -128,7 +129,7 @@ export const conversationItemsResponseSchema = z.object({
   conversation_id: z.string(),
   data: z.array(storedItemSchema),
   has_more: z.boolean(),
-  oldest_item_id: z.string().nullable(),
+  last_id: z.string().nullable(),
 });
 
 export type ConversationItemsResponse = z.infer<typeof conversationItemsResponseSchema>;
@@ -197,7 +198,7 @@ export const shareConversationResponseSchema = z.object({
 });
 
 export const sharedConversationParamsSchema = z.object({
-  share_id: z.string().min(1),
+  token: z.string().min(1),
 });
 
 export const sharedConversationQuerySchema = z.object({

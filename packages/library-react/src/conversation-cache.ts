@@ -9,9 +9,8 @@ const DEFAULT_CHATS_QUERY_KEY = "chats";
 
 export interface ConversationListPage<T extends ConversationSummary> {
   conversations: T[];
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
+  hasMore: boolean;
+  lastId: string | null;
 }
 
 type ConversationListUpdater<T> = (conversation: T) => T;

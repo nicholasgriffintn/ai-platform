@@ -79,10 +79,33 @@ export async function getConversationOrganisation(
   return readOrganisation(context, conversationId, user.id, conversationProjectId(conversation));
 }
 
-export async function updateConversationOrganisation(
+export async function changeConversationOrganisation(
   context: ServiceContext,
   conversationId: string,
   input: UpdateConversationOrganisation,
+): Promise<ConversationOrganisation> {
+  const { groupId, expectedRevision, ...state } = input;
+  const changesState =
+    state.isPinned !== undefined || state.isUnread !== undefined || state.snooze !== undefined;
+  let organisation =
+    groupId === undefined ? null : await moveConversationToGroup(context, conversationId, groupId);
+
+  if (changesState && expectedRevision !== undefined) {
+    organisation = await updateConversationOrganisation(context, conversationId, {
+      ...state,
+      expectedRevision,
+    });
+  }
+
+  return organisation ?? getConversationOrganisation(context, conversationId);
+}
+
+async function updateConversationOrganisation(
+  context: ServiceContext,
+  conversationId: string,
+  input: Omit<UpdateConversationOrganisation, "groupId" | "expectedRevision"> & {
+    expectedRevision: number;
+  },
 ): Promise<ConversationOrganisation> {
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
@@ -195,7 +218,7 @@ export async function deleteConversationGroup(
   await context.repositories.conversationOrganisation.deleteGroup(groupId);
 }
 
-export async function moveConversationToGroup(
+async function moveConversationToGroup(
   context: ServiceContext,
   conversationId: string,
   groupId: string | null,

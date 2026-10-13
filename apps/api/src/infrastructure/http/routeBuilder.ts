@@ -20,7 +20,7 @@ import {
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import type { AnonymousUser, IUser } from "~/types";
 
-type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
+export type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
 interface RouteResponseSpec {
   description: string;
@@ -53,7 +53,7 @@ export interface ServiceHandlerContext<
   service: InternalServiceTokenClaims;
 }
 
-interface BaseRouteConfig<TBody, TParams, TQuery> {
+export interface BaseRouteConfig<TBody, TParams, TQuery> {
   tags: string[];
   summary?: string;
   description?: string;
@@ -71,7 +71,7 @@ export interface RouteCacheConfig {
   staleWhileRevalidate?: number;
 }
 
-type RouteConfig<TBody, TParams, TQuery> =
+export type RouteConfig<TBody, TParams, TQuery> =
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
       auth: true;
       handler: (ctx: AuthenticatedHandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
@@ -90,10 +90,11 @@ type RouteConfig<TBody, TParams, TQuery> =
       handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     });
 
-interface HonoLike {
+export interface HonoLike {
   get(path: string, ...handlers: MiddlewareHandler[]): unknown;
   post(path: string, ...handlers: MiddlewareHandler[]): unknown;
   put(path: string, ...handlers: MiddlewareHandler[]): unknown;
+  patch(path: string, ...handlers: MiddlewareHandler[]): unknown;
   delete(path: string, ...handlers: MiddlewareHandler[]): unknown;
 }
 

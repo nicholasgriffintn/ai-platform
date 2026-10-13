@@ -70,7 +70,7 @@ export * from "./hooks/useResearchStatus.js";
 export * from "./hooks/useResponsiveSidebar.js";
 export * from "./hooks/useRunnableTools.js";
 export * from "./hooks/useSandbox.js";
-export * from "./hooks/useSavedMessages.js";
+export * from "./hooks/useSavedItems.js";
 export * from "./hooks/useCorrections.js";
 export * from "./hooks/useSharedConversation.js";
 export * from "./hooks/useSharedTeammates.js";

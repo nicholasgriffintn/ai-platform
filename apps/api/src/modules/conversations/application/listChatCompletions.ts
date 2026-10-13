@@ -1,26 +1,29 @@
+import type { ListPage } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   ConversationManager,
   type ConversationListOptions,
 } from "~/modules/conversations/application/manager";
 
-export const handleListChatCompletions = async (
-  context: ServiceContext,
-  options: ConversationListOptions = {},
-): Promise<{
-  conversations: Record<string, unknown>[];
-  totalPages: number;
-  pageNumber: number;
-  pageSize: number;
-}> => {
+function managerFor(context: ServiceContext): ConversationManager {
   const user = context.requireUser();
 
   context.ensureDatabase();
 
-  const conversationManager = ConversationManager.getInstance({
-    database: context.database,
-    user,
-  });
+  return ConversationManager.getInstance({ database: context.database, user });
+}
 
-  return await conversationManager.list(options);
-};
+export function handleListChatCompletions(
+  context: ServiceContext,
+  options: ConversationListOptions = {},
+): Promise<ListPage<Record<string, unknown>>> {
+  return managerFor(context).list(options);
+}
+
+export async function handleCountConversations(
+  context: ServiceContext,
+  options: ConversationListOptions = {},
+): Promise<{ count: number }> {
+  return { count: await managerFor(context).count(options) };
+}

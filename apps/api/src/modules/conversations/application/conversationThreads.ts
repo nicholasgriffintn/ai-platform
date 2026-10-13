@@ -1,5 +1,5 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type { ConversationThreadsResponse } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationThread, ListPage } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -10,7 +10,7 @@ const MAX_BRANCHES = 200;
 export async function getConversationBranches(
   context: ServiceContext,
   conversationId: string,
-): Promise<ConversationThreadsResponse> {
+): Promise<ListPage<ConversationThread>> {
   const user = context.requireUser();
   const conversation = await context.repositories.conversations.getConversation(conversationId);
 
@@ -40,8 +40,10 @@ export async function getConversationBranches(
   const ids = new Set(page.map((row) => row.id));
 
   return {
-    truncated: rows.length > MAX_BRANCHES,
-    threads: page.map((row) => ({
+    object: "list",
+    has_more: rows.length > MAX_BRANCHES,
+    last_id: page.at(-1)?.id ?? null,
+    data: page.map((row) => ({
       ...row,
       parent_conversation_id:
         row.parent_conversation_id && ids.has(row.parent_conversation_id)

@@ -1,16 +1,17 @@
-import type {
-  ConversationThread,
-  ConversationArchiveFilter,
-  ConversationSortBy,
-  ConversationType,
-  ModelTier,
-  PermissionMode,
+import {
+  type ConversationThread,
+  type ConversationArchiveFilter,
+  type ConversationSortBy,
+  type ConversationType,
+  type ListPage,
+  type ModelTier,
+  type PermissionMode,
+  toListPage,
 } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { PaginationHelper } from "~/infrastructure/database/PaginationHelper";
 import {
   listedConversationTypesSql,
   searchableConversationTypesSql,
@@ -19,13 +20,20 @@ import { publishUserEvent } from "~/modules/sync/application/conversation-events
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
 
-export interface GetUserConversationsOptions {
+export interface PersonalConversationFilter {
   archiveFilter?: ConversationArchiveFilter;
-  limit?: number;
-  page?: number;
   query?: string;
-  sortBy?: ConversationSortBy;
   updatedAfter?: string;
+}
+
+export interface ListUserConversationsOptions extends PersonalConversationFilter {
+  limit?: number;
+  after?: string;
+  sortBy?: ConversationSortBy;
+}
+
+function conversationRowId(row: Record<string, unknown>): string {
+  return typeof row.id === "string" ? row.id : "";
 }
 
 export interface SetConversationsArchivedOptions {
@@ -197,35 +205,11 @@ export class ConversationRepository extends BaseRepository {
     return this.runQuery<Record<string, unknown>>(query, values, true);
   }
 
-  public async getUserConversations(
+  private personalListFilter(
     userId: number,
-    optionsOrLimit: GetUserConversationsOptions | number = {},
-    pageArg = 1,
-    includeArchivedArg = false,
-  ): Promise<{
-    conversations: Record<string, unknown>[];
-    total: number;
-    totalPages: number;
-    pageNumber: number;
-    pageSize: number;
-  }> {
-    const options: GetUserConversationsOptions =
-      typeof optionsOrLimit === "number"
-        ? {
-            archiveFilter: includeArchivedArg ? "all" : "active",
-            limit: optionsOrLimit,
-            page: pageArg,
-          }
-        : optionsOrLimit;
-    const {
-      archiveFilter = "active",
-      limit = 25,
-      page = 1,
-      query,
-      sortBy = "updated",
-      updatedAfter,
-    } = options;
-    const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
+    options: PersonalConversationFilter,
+  ): { whereClause: string; values: unknown[] } {
+    const { archiveFilter = "active", query, updatedAfter } = options;
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
@@ -265,19 +249,52 @@ export class ConversationRepository extends BaseRepository {
       values.push(`%${escapeSqlLikePattern(trimmedQuery)}%`);
     }
 
-    const whereClause = whereClauses.join(" AND ");
-    const orderByClause = `${sortBy === "created" ? "c.created_at" : "c.updated_at"} DESC, c.id DESC`;
+    return { whereClause: whereClauses.join(" AND "), values };
+  }
 
-    const countQuery = `SELECT COUNT(*) as total
-      FROM conversation c
-      LEFT JOIN user_resource_state state
-        ON state.conversation_id = c.id AND state.user_id = ?
-      WHERE ${whereClause}`;
+  public async countUserConversations(
+    userId: number,
+    options: PersonalConversationFilter = {},
+  ): Promise<number> {
+    const { whereClause, values } = this.personalListFilter(userId, options);
+    const row = await this.runQuery<{ total: number }>(
+      `SELECT COUNT(*) as total
+       FROM conversation c
+       LEFT JOIN user_resource_state state
+         ON state.conversation_id = c.id AND state.user_id = ?
+       WHERE ${whereClause}`,
+      [userId, ...values],
+      true,
+    );
 
-    const listQuery =
-      sortBy === "title"
-        ? `
-        SELECT c.*,
+    return Number(row?.total ?? 0);
+  }
+
+  public async listUserConversations(
+    userId: number,
+    options: ListUserConversationsOptions = {},
+  ): Promise<ListPage<Record<string, unknown>>> {
+    const { limit = 25, after, sortBy = "updated" } = options;
+    const { whereClause, values } = this.personalListFilter(userId, options);
+    const sortColumn =
+      sortBy === "created" ? "c.created_at" : "COALESCE(c.updated_at, c.created_at)";
+    const cursorColumn =
+      sortBy === "created" ? "cursor.created_at" : "COALESCE(cursor.updated_at, cursor.created_at)";
+    const keyset =
+      after && sortBy !== "title"
+        ? `AND (COALESCE(state.is_pinned, 0), ${sortColumn}, c.id) < (
+            SELECT COALESCE(cursor_state.is_pinned, 0), ${cursorColumn}, cursor.id
+            FROM conversation cursor
+            LEFT JOIN user_resource_state cursor_state
+              ON cursor_state.conversation_id = cursor.id AND cursor_state.user_id = ?
+            WHERE cursor.id = ?
+          )`
+        : "";
+    const keysetValues = keyset ? [userId, after] : [];
+    const pageClause = sortBy === "title" ? "" : "LIMIT ?";
+    const pageValues = sortBy === "title" ? [] : [limit + 1];
+    const rows = await this.runQuery<Record<string, unknown>>(
+      `SELECT c.*,
           COALESCE(c.model_id, (
             SELECT message.model
             FROM message
@@ -310,80 +327,31 @@ export class ConversationRepository extends BaseRepository {
         FROM conversation c
         LEFT JOIN user_resource_state state
           ON state.conversation_id = c.id AND state.user_id = ?
-        WHERE ${whereClause}
-      `
-        : `
-        SELECT c.*,
-          COALESCE(c.model_id, (
-            SELECT message.model
-            FROM message
-            WHERE message.conversation_id = c.id
-              AND message.role = 'assistant'
-              AND message.model IS NOT NULL
-            ORDER BY message.created_at DESC, message.id DESC
-            LIMIT 1
-          )) AS model_id,
-          COALESCE(state.is_pinned, 0) AS is_pinned,
-          COALESCE(state.is_unread, 0) AS is_unread,
-          state.snoozed_until,
-          state.snoozed_next_response_at,
-          EXISTS (
-            SELECT 1 FROM message response
-            WHERE response.conversation_id = c.id
-              AND response.role = 'assistant'
-              AND state.snoozed_next_response_at IS NOT NULL
-              AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
-          ) AS next_response_arrived,
-          (
-            SELECT json_object(
-              'id', grp.id,
-              'name', grp.title,
-              'scope', json_object('kind', 'personal')
-            )
-            FROM resource_collection grp
-            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id AND grp.owner_user_id = c.user_id
-          ) AS "group"
-        FROM conversation c
-        LEFT JOIN user_resource_state state
-          ON state.conversation_id = c.id AND state.user_id = ?
-        WHERE ${whereClause}
-        ORDER BY COALESCE(state.is_pinned, 0) DESC, ${orderByClause}
-        LIMIT ? OFFSET ?
-      `;
+        WHERE ${whereClause} ${keyset}
+        ORDER BY COALESCE(state.is_pinned, 0) DESC, ${sortColumn} DESC, c.id DESC
+        ${pageClause}`,
+      [userId, ...values, ...keysetValues, ...pageValues],
+    );
 
-    const queryValues =
-      sortBy === "title" ? [userId, ...values] : [userId, ...values, safeLimit, offset];
-    const [countResult, listResult] = await this.executeBatch<Record<string, unknown>>([
-      this.env.DB.prepare(countQuery).bind(userId, ...values),
-      this.env.DB.prepare(listQuery).bind(...queryValues),
-    ]);
-    const total = Number(countResult?.results[0]?.total ?? 0);
-    const totalPages = Math.ceil(total / safeLimit);
-    const results = listResult?.results ?? [];
-    const conversations =
-      sortBy === "title"
-        ? sortCopy(
-            sortCopy(results, (left, right) => {
-              const leftTitle = typeof left.title === "string" ? left.title : "New conversation";
-              const rightTitle = typeof right.title === "string" ? right.title : "New conversation";
-              const leftId = typeof left.id === "string" ? left.id : "";
-              const rightId = typeof right.id === "string" ? right.id : "";
+    if (sortBy !== "title") {
+      return toListPage(rows, limit, conversationRowId);
+    }
 
-              return (
-                compareNaturalText(leftTitle, rightTitle) || compareNaturalText(rightId, leftId)
-              );
-            }),
-            (left, right) => Number(Boolean(right.is_pinned)) - Number(Boolean(left.is_pinned)),
-          ).slice(offset, offset + safeLimit)
-        : results;
+    const sorted = sortCopy(
+      sortCopy(rows, (left, right) => {
+        const leftTitle = typeof left.title === "string" ? left.title : "New conversation";
+        const rightTitle = typeof right.title === "string" ? right.title : "New conversation";
 
-    return {
-      conversations,
-      total,
-      totalPages,
-      pageNumber: page,
-      pageSize: safeLimit,
-    };
+        return (
+          compareNaturalText(leftTitle, rightTitle) ||
+          compareNaturalText(conversationRowId(right), conversationRowId(left))
+        );
+      }),
+      (left, right) => Number(Boolean(right.is_pinned)) - Number(Boolean(left.is_pinned)),
+    );
+    const start = after ? sorted.findIndex((row) => conversationRowId(row) === after) + 1 : 0;
+
+    return toListPage(sorted.slice(start, start + limit + 1), limit, conversationRowId);
   }
 
   public async setPersonalConversationsArchived(

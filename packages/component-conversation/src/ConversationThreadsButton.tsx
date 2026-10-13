@@ -33,7 +33,7 @@ export function ConversationThreadsButton({
   onRetry,
   onSelect,
 }: ConversationBranchesButtonProps) {
-  const rows = flattenConversationThreads(data?.threads ?? []);
+  const rows = flattenConversationThreads(data?.data ?? []);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -61,7 +61,7 @@ export function ConversationThreadsButton({
           {data && (
             <span className="text-xs text-muted-foreground tabular-nums">
               {rows.length}
-              {data.truncated ? "+" : ""} conversations
+              {data.has_more ? "+" : ""} conversations
             </span>
           )}
         </div>
@@ -163,7 +163,7 @@ export function ConversationThreadsButton({
             </ul>
           </nav>
         )}
-        {data?.truncated && (
+        {data?.has_more && (
           <p className="border-t border-border px-3.5 py-2 text-xs text-muted-foreground">
             Showing the first 200 conversations.
           </p>

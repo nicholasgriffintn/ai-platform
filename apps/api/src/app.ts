@@ -33,7 +33,6 @@ import chatCompletionsPort from "~/modules/ports/chat-completions/api/routes";
 import notifications from "~/modules/project-tasks/api/notifications";
 import realtime from "~/modules/realtime/api/routes";
 import responses from "~/modules/responses/api/routes";
-import savedMessages from "~/modules/saved-messages/api/routes";
 import search from "~/modules/search/api/routes";
 import sites from "~/modules/sites/api/routes";
 import skills from "~/modules/skills/api/routes";
@@ -60,7 +59,6 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/auth", auth);
   app.route("/activity", activity);
   app.route("/responses", responses);
-  app.route("/conversations/saved-messages", savedMessages);
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
   app.route("/code", code);

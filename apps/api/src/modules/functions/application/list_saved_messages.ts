@@ -4,7 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { listSavedMessages } from "~/modules/saved-messages/application/saved-messages";
+import { listSavedItems } from "~/modules/conversations/application/saved-items";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -25,7 +25,9 @@ export const list_saved_messages: ApiToolDefinition = {
       );
     }
 
-    const { messages } = await listSavedMessages(request.context, args.limit ?? DEFAULT_LIMIT);
+    const { data: messages } = await listSavedItems(request.context, {
+      limit: args.limit ?? DEFAULT_LIMIT,
+    });
 
     if (messages.length === 0) {
       return {
@@ -38,7 +40,7 @@ export const list_saved_messages: ApiToolDefinition = {
 
     const lines = messages.map(
       (message) =>
-        `- ${message.conversationTitle ?? "Untitled conversation"}: ${message.excerpt}${
+        `- ${message.conversation_title ?? "Untitled conversation"}: ${message.excerpt}${
           message.note ? ` (note: ${message.note})` : ""
         }`,
     );

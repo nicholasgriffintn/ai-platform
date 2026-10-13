@@ -32,6 +32,7 @@ import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
 const DEFAULT_CHAT_LIST_LIMIT = 30;
+const FIRST_CHAT_PAGE: string | undefined = undefined;
 const CHAT_LIST_STALE_TIME = 2 * 60 * 1000;
 const CHAT_DETAIL_STALE_TIME = 2 * 60 * 1000;
 const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
@@ -41,7 +42,7 @@ export function useChats(options: ConversationListOptions = {}) {
     useChatStore();
   const localScope = getLocalChatScope(user?.id);
   const fetchSortBy = options.sortBy === "title" ? "updated" : (options.sortBy ?? "updated");
-  const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
+  const queryOptions = useMemo<Omit<ConversationListOptions, "after">>(
     () => ({
       activity: options.activity ?? "all",
       archived: options.archived ?? "active",
@@ -54,17 +55,20 @@ export function useChats(options: ConversationListOptions = {}) {
 
   const remoteChatsQuery = useInfiniteQuery({
     queryKey: [CHATS_QUERY_KEY, "remote", queryOptions],
-    queryFn: ({ pageParam }) => apiService.listChats({ ...queryOptions, page: pageParam || 1 }),
-    initialPageParam: 1,
+    queryFn: ({ pageParam }) => apiService.listChats({ ...queryOptions, after: pageParam }),
+    initialPageParam: FIRST_CHAT_PAGE,
     staleTime: CHAT_LIST_STALE_TIME,
     gcTime: CHAT_QUERY_GC_TIME,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pageNumber >= lastPage.totalPages) {
-        return undefined;
-      }
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore && lastPage.lastId ? lastPage.lastId : undefined,
+    enabled: isAuthenticated && isPro,
+  });
 
-      return lastPage.pageNumber + 1;
-    },
+  const remoteCountQuery = useQuery({
+    queryKey: [CHATS_QUERY_KEY, "remote-count", queryOptions],
+    queryFn: () => apiService.countChats(queryOptions),
+    staleTime: CHAT_LIST_STALE_TIME,
+    gcTime: CHAT_QUERY_GC_TIME,
     enabled: isAuthenticated && isPro,
   });
 
@@ -91,7 +95,7 @@ export function useChats(options: ConversationListOptions = {}) {
           chat.id === currentConversationId ||
           Boolean(chat.id && locallyCreatedConversationIds[chat.id])),
     );
-    const remoteTotal = remoteChatsQuery.data?.pages[0]?.total ?? remoteChats.length;
+    const remoteTotal = remoteCountQuery.data ?? remoteChats.length;
 
     return {
       chats: [...remoteChats, ...uniqueLocalChats],
@@ -99,6 +103,7 @@ export function useChats(options: ConversationListOptions = {}) {
     };
   }, [
     remoteChatsQuery.data,
+    remoteCountQuery.data,
     localChatsQuery.data,
     isAuthenticated,
     queryOptions,

@@ -424,18 +424,19 @@ final class APIClient: ObservableObject {
 
     func fetchConversations(
         limit: Int = 50,
-        page: Int = 1,
+        after: String? = nil,
         includeArchived: Bool = false
     ) async throws -> ConversationListResponse {
-        try await send(
-            path: "/conversations",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "limit", value: String(limit)),
-                URLQueryItem(name: "page", value: String(page)),
-                URLQueryItem(name: "archived", value: includeArchived ? "all" : "active")
-            ]
-        )
+        var queryItems = [
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "archived", value: includeArchived ? "all" : "active")
+        ]
+
+        if let after {
+            queryItems.append(URLQueryItem(name: "after", value: after))
+        }
+
+        return try await send(path: "/conversations", method: "GET", queryItems: queryItems)
     }
 
     func fetchConversation(

@@ -18,6 +18,7 @@ import {
   parseResponseStreamSseBuffer,
   responseEnvironmentSchema,
   responseReplayResponseSchema,
+  responseListSchema,
   responseSchema,
   responseSnapshotSchema,
   type CreateResponseRequest,
@@ -337,7 +338,13 @@ export class ResponsesService {
       headers: await this.getHeaders(),
     });
 
-    return responseSchema.parse(await returnFetchedData<unknown>(response));
+    const [found] = responseListSchema.parse(await returnFetchedData<unknown>(response)).data;
+
+    if (!found) {
+      throw new Error("No response was accepted for that idempotency key");
+    }
+
+    return found;
   }
 
   async cancel(

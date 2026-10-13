@@ -284,17 +284,15 @@ export interface ConversationListOptions {
   activity?: ConversationActivityWindow;
   archived?: ConversationArchiveFilter;
   limit?: number;
-  page?: number;
+  after?: string;
   query?: string;
   sortBy?: ConversationSortBy;
 }
 
 export interface ConversationListPage {
   conversations: Conversation[];
-  pageNumber: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
+  hasMore: boolean;
+  lastId: string | null;
 }
 
 export interface Memory {

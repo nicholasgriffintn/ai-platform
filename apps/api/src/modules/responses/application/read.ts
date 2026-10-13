@@ -1,9 +1,11 @@
 import {
   chatRunStatusSchema,
+  listPageOf,
   messagesToItems,
   responseStatusFromRunStatus,
   toResponse,
   type CancelResponseRequest,
+  type ListPage,
   type PlatformResponse,
   type ResponseReplayQuery,
   type ResponseReplayResponse,
@@ -47,11 +49,14 @@ export async function replayResponseEvents(
   const replay = await handleReplayChatRunEvents(context, responseId, query);
 
   return {
+    object: "list",
+    has_more: replay.events.length >= query.limit,
+    last_id: replay.events.at(-1)?.id ?? null,
     response_id: replay.runId,
     from_cursor: replay.fromCursor,
     next_cursor: replay.nextCursor,
     reset_required: replay.resetRequired,
-    events: replay.events.map((event) => ({
+    data: replay.events.map((event) => ({
       id: event.id,
       response_id: event.runId,
       sequence: event.sequence,
@@ -79,10 +84,10 @@ function presentEventData(data: Record<string, unknown>): Record<string, unknown
 export async function findResponseByIdempotencyKey(
   context: ServiceContext,
   idempotencyKey: string,
-): Promise<PlatformResponse> {
+): Promise<ListPage<PlatformResponse>> {
   const { run: receipt } = await handleGetChatRunCommand(context, idempotencyKey);
 
-  return toResponse(receipt.run, { receipt });
+  return listPageOf([toResponse(receipt.run, { receipt })], (response) => response.id);
 }
 
 export async function cancelResponse(

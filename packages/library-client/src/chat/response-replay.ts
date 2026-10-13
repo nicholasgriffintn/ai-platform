@@ -107,7 +107,7 @@ export function applyResponseReplay(
     };
   }
 
-  const events = [...replay.events].sort((left, right) => left.sequence - right.sequence);
+  const events = [...replay.data].sort((left, right) => left.sequence - right.sequence);
   const { messages, cursor: _cursor, ...response } = state.snapshot;
   let next: PlatformResponse = response;
   let nextCursor = state.cursor;

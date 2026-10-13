@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { chatRunIdSchema } from "./chat-runs.js";
 import { delegationStateSchema } from "./delegation-state.js";
 import { outputStatusSchema } from "./outputs.js";
+import { listSchema } from "./platform/list.js";
 import { creditMicrosFromCredits } from "./pricing/constants.js";
 import { userQuestionSchema } from "./user-questions.js";
 
@@ -120,13 +121,20 @@ export const conversationHandleListResponseSchema = z.object({
 });
 export type ConversationHandleListResponse = z.infer<typeof conversationHandleListResponseSchema>;
 
-export const delegationListResponseSchema = z.object({
+export const delegationListResponseSchema = listSchema(delegationSchema).extend({
+  canControl: z.boolean().optional(),
+  teammates: z.array(delegationTeammateReferenceSchema).optional(),
+  outputs: z.array(delegationOutputReferenceSchema).optional(),
+});
+
+export const delegationCardDataSchema = z.object({
   delegations: z.array(delegationSchema),
   canControl: z.boolean().optional(),
   teammates: z.array(delegationTeammateReferenceSchema).optional(),
   outputs: z.array(delegationOutputReferenceSchema).optional(),
 });
 export type DelegationListResponse = z.infer<typeof delegationListResponseSchema>;
+export type DelegationCardData = z.infer<typeof delegationCardDataSchema>;
 
 export const DELEGATION_RUN_EVENT_TYPES = [
   "delegation.created",

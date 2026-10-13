@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
 import { chatCompletionMessageSchema, responseCommandFieldsSchema } from "./response-command.js";
 
 export const MAX_QUEUED_CHAT_MESSAGES = 10;
@@ -52,9 +53,7 @@ export const queuedChatMessageItemParamsSchema = queuedChatMessageParamsSchema.e
   queued_id: z.string().min(1),
 });
 
-export const queuedChatMessagesResponseSchema = z.object({
-  messages: z.array(queuedChatMessageSchema),
-});
+export const queuedChatMessagesResponseSchema = listSchema(queuedChatMessageSchema);
 
 export const queuedChatTaskDataSchema = z.object({
   conversationId: z.string().min(1),

@@ -65,11 +65,14 @@ function replay(
   overrides: Partial<AppResponseReplayResponse> = {},
 ): AppResponseReplayResponse {
   return {
+    object: "list",
+    data: events,
+    has_more: false,
+    last_id: events.at(-1)?.id ?? null,
     response_id: "resp-1",
     from_cursor: fromCursor,
     next_cursor: events.at(-1)?.sequence ?? fromCursor,
     reset_required: false,
-    events,
     snapshot: null,
     ...overrides,
   };

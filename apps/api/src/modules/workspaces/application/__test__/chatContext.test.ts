@@ -379,13 +379,11 @@ describe("conversation branch access", () => {
     );
     const result = await getConversationBranches(context, "c200");
 
-    expect(result.truncated).toBe(true);
-    expect(result.threads).toHaveLength(200);
-    expect(result.threads.some((thread) => thread.id === "c200")).toBe(true);
+    expect(result.has_more).toBe(true);
+    expect(result.data).toHaveLength(200);
+    expect(result.data.some((thread) => thread.id === "c200")).toBe(true);
     expect(
-      result.threads.every(
-        (thread) => thread.parent_conversation_id === null && thread.is_archived,
-      ),
+      result.data.every((thread) => thread.parent_conversation_id === null && thread.is_archived),
     ).toBe(true);
   });
 });

@@ -8,10 +8,9 @@ import {
   sharedConversationQuerySchema,
   sharedConversationResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import type { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import type { ResourceBuilder } from "~/infrastructure/http/resource";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 
 import { handleCheckChatCompletion } from "../application/checkChatCompletion";
@@ -21,8 +20,9 @@ import { presentItems } from "../application/present";
 import { handleShareConversation } from "../application/shareConversation";
 import { handleUnshareConversation } from "../application/unshareConversation";
 
-export function registerConversationSharingRoutes(app: Hono): void {
-  addRoute(app, "post", "/:conversation_id/check", {
+export function defineConversationSharing(conversations: ResourceBuilder): void {
+  conversations.action("check", {
+    auth: "user-or-anonymous",
     tags: ["conversations", "guardrails"],
     summary: "Check a conversation against guardrails",
     paramSchema: conversationParamsSchema,
@@ -46,8 +46,7 @@ export function registerConversationSharingRoutes(app: Hono): void {
     }),
   });
 
-  addRoute(app, "post", "/:conversation_id/feedback", {
-    tags: ["conversations"],
+  conversations.action("feedback", {
     summary: "Submit feedback about an item",
     auth: true,
     paramSchema: conversationParamsSchema,
@@ -70,8 +69,10 @@ export function registerConversationSharingRoutes(app: Hono): void {
     }),
   });
 
-  addRoute(app, "post", "/:conversation_id/share", {
-    tags: ["conversations"],
+  const share = conversations.singleton("share");
+
+  share.create({
+    auth: "user-or-anonymous",
     summary: "Share a conversation publicly",
     paramSchema: conversationParamsSchema,
     responses: {
@@ -83,8 +84,8 @@ export function registerConversationSharingRoutes(app: Hono): void {
       handleShareConversation(serviceContext, params.conversation_id),
   });
 
-  addRoute(app, "delete", "/:conversation_id/share", {
-    tags: ["conversations"],
+  share.delete({
+    auth: "user-or-anonymous",
     summary: "Unshare a conversation",
     paramSchema: conversationParamsSchema,
     responses: {
@@ -95,8 +96,8 @@ export function registerConversationSharingRoutes(app: Hono): void {
       handleUnshareConversation(serviceContext, params.conversation_id),
   });
 
-  addRoute(app, "get", "/shared/:share_id", {
-    tags: ["conversations"],
+  conversations.shared({
+    auth: false,
     summary: "Read a shared conversation",
     description: "Returns the items of a publicly shared conversation by its share ID.",
     paramSchema: sharedConversationParamsSchema,
@@ -108,7 +109,7 @@ export function registerConversationSharingRoutes(app: Hono): void {
     handler: async ({ serviceContext, params, query, raw }) => {
       const result = await handleGetSharedConversation(
         serviceContext,
-        params.share_id,
+        params.token,
         query.limit,
         query.after,
       );
