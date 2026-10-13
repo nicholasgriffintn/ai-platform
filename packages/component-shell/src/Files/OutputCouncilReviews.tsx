@@ -2,6 +2,7 @@ import { CouncilReviewCard } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { useOutputReviews, useRequestOutputReview } from "@ngriffin_uk/polychat-library-react";
 import type { Output } from "@ngriffin_uk/polychat-schemas";
+import { Scale } from "lucide-react";
 
 export function OutputCouncilReviews({ output }: { output: Output }) {
   const { data: reviews, error } = useOutputReviews(output.id);
@@ -10,11 +11,13 @@ export function OutputCouncilReviews({ output }: { output: Output }) {
   const isCurrent = latest?.outputRevision === output.revision;
 
   return (
-    <section aria-label="Council review" className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <section aria-label="Council review" className="space-y-4 rounded-lg border p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Council review</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <Scale size={16} aria-hidden /> Council review
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
             {latest
               ? isCurrent
                 ? "Reviewed at this revision."
