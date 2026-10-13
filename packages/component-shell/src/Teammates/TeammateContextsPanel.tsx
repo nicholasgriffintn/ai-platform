@@ -154,17 +154,17 @@ export function TeammateContextsPanel({
                   ]}
                 />
               </div>
-              <div className="grid gap-4 p-5 md:grid-cols-2">
-                <div id="memory" className="scroll-mt-6 md:col-span-2">
+              <div className="flex flex-col gap-4 p-4 sm:p-5">
+                <div id="memory" className="min-w-0 scroll-mt-6">
                   <TeammateMemoryPanel contextId={current.id} />
                 </div>
-                <div id="connections" className="scroll-mt-6">
+                <div id="connections" className="min-w-0 scroll-mt-6">
                   <TeammateConnectionGrantsPanel contextId={current.id} />
                 </div>
-                <div id="routines" className="scroll-mt-6">
+                <div id="routines" className="min-w-0 scroll-mt-6">
                   <TeammateRoutinesPanel contextId={current.id} projectId={projectId} />
                 </div>
-                <div id="computer" className="scroll-mt-6 md:col-span-2">
+                <div id="computer" className="min-w-0 scroll-mt-6">
                   <TeammateComputerPanel contextId={current.id} />
                 </div>
               </div>

@@ -14,6 +14,7 @@ import type {
   TeammateConnectionGrantListResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { BookOpen, ListChecks, ListX, RotateCcw, Save, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -152,8 +153,8 @@ function ConnectionGrantEditor({
   );
 
   return (
-    <div className="space-y-3 rounded-lg border p-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="@container space-y-3 rounded-lg border p-3 sm:p-4">
+      <div className="flex flex-col gap-3 @lg:flex-row @lg:items-start @lg:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">{connection.providerName}</p>
           <p className="text-xs text-muted-foreground">{accountLabel}</p>
@@ -163,11 +164,12 @@ function ConnectionGrantEditor({
               : `${summary.selected} of ${summary.total} operations granted · ${summary.read} read, ${summary.write} write${summary.destructive > 0 ? `, ${summary.destructive} destructive` : ""}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {dirty && (
             <Button
               size="sm"
               variant="ghost"
+              icon={<RotateCcw className="size-4" />}
               disabled={disabled}
               onClick={() => setSelected(new Set(savedOperations))}
             >
@@ -177,6 +179,7 @@ function ConnectionGrantEditor({
           <Button
             size="sm"
             variant={dirty ? "default" : "outline"}
+            icon={<Save className="size-4" />}
             disabled={disabled || !dirty}
             onClick={() => onSave([...selected].sort((a, b) => a.localeCompare(b)))}
           >
@@ -185,9 +188,9 @@ function ConnectionGrantEditor({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 @2xl:flex-row @2xl:items-center">
         <SearchInput
-          className="flex-1"
+          className="min-w-0 flex-1"
           value={query}
           onChange={(value) => changeFilter(() => setQuery(value))}
           placeholder="Search operations…"
@@ -204,9 +207,14 @@ function ConnectionGrantEditor({
             }
           }}
           aria-label="Filter operations by access"
+          className="w-full @2xl:w-auto"
         >
           {ACCESS_FILTERS.map((filter) => (
-            <ToggleGroupItem key={filter.value} value={filter.value} className="px-3 text-xs">
+            <ToggleGroupItem
+              key={filter.value}
+              value={filter.value}
+              className="h-9 px-3 text-xs @2xl:flex-none"
+            >
               {filter.label}
               {filter.value === "selected" && summary.selected > 0 && ` (${summary.selected})`}
             </ToggleGroupItem>
@@ -214,16 +222,20 @@ function ConnectionGrantEditor({
         </ToggleGroup>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>
+      <div className="flex flex-col gap-2 @xl:flex-row @xl:items-center @xl:justify-between">
+        <span className="text-xs text-muted-foreground">
           {isFiltering
             ? `${filtered.length} of ${operations.length} operations match`
             : `${operations.length} operations`}
         </span>
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="flex flex-wrap gap-2 @xl:flex-nowrap">
           <Button
-            size="xs"
-            variant="ghost"
+            size="sm"
+            variant="outline"
+            className="grow @xl:grow-0"
+            icon={
+              allFilteredSelected ? <ListX className="size-4" /> : <ListChecks className="size-4" />
+            }
             disabled={disabled || filtered.length === 0}
             onClick={() =>
               updateSelection(
@@ -235,8 +247,10 @@ function ConnectionGrantEditor({
             {allFilteredSelected ? "Deselect" : "Select"} {isFiltering ? "matching" : "all"}
           </Button>
           <Button
-            size="xs"
-            variant="ghost"
+            size="sm"
+            variant="outline"
+            className="grow @xl:grow-0"
+            icon={<BookOpen className="size-4" />}
             disabled={disabled}
             onClick={() =>
               updateSelection(
@@ -248,8 +262,10 @@ function ConnectionGrantEditor({
             Allow all read
           </Button>
           <Button
-            size="xs"
-            variant="ghost"
+            size="sm"
+            variant="outline"
+            className="grow @xl:grow-0"
+            icon={<X className="size-4" />}
             disabled={disabled || summary.selected === 0}
             onClick={() => setSelected(new Set())}
           >
@@ -258,9 +274,9 @@ function ConnectionGrantEditor({
         </div>
       </div>
 
-      <div className="max-h-[28rem] space-y-4 overflow-y-auto rounded-md border bg-surface p-2">
+      <div className="@container max-h-[28rem] overflow-y-auto rounded-md border bg-surface">
         {filtered.length === 0 && (
-          <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">
             {access === "selected" && !query
               ? "Nothing selected yet."
               : "No operations match this search."}
@@ -272,17 +288,18 @@ function ConnectionGrantEditor({
 
           return (
             <section key={group.access} aria-label={`${group.title} operations`}>
-              <div className="flex items-center justify-between gap-2 px-2 pb-1">
-                <div>
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b bg-surface/95 px-3 py-2 backdrop-blur-sm">
+                <div className="min-w-0">
                   <span className="text-xs font-medium text-foreground">{group.title}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="ml-2 text-xs text-muted-foreground tabular-nums">
                     {groupSelected}/{group.operations.length}
                   </span>
                   <p className="text-[11px] text-muted-foreground">{group.description}</p>
                 </div>
                 <Button
                   size="xs"
-                  variant="ghost"
+                  variant="outline"
+                  className="shrink-0"
                   disabled={disabled}
                   onClick={() =>
                     updateSelection(groupIds, groupSelected !== group.operations.length)
@@ -292,7 +309,7 @@ function ConnectionGrantEditor({
                   {group.title.toLowerCase()}
                 </Button>
               </div>
-              <div className="grid gap-0.5 lg:grid-cols-2">
+              <div className="grid gap-0.5 p-2 @2xl:grid-cols-2">
                 {visible.map((operation) => (
                   <OperationRow
                     key={operation.id}
@@ -308,7 +325,7 @@ function ConnectionGrantEditor({
           );
         })}
         {hiddenCount > 0 && (
-          <div className="flex justify-center pb-1">
+          <div className="flex justify-center border-t p-3">
             <Button
               size="sm"
               variant="outline"
