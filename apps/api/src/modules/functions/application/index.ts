@@ -1,13 +1,19 @@
 import {
   createToolCatalogue,
   isToolError,
+  requireToolEffects,
   validateToolInput,
   type ToolCatalogue,
 } from "@ngriffin_uk/polychat-library-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { fromToolError } from "~/infrastructure/errors";
-import { filterToolsForConversationType } from "~/modules/chat/application/policy/meta-assistant";
+import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
+import {
+  hasStandingApproval,
+  resolveToolCallDestination,
+  resolveToolCallEffectClass,
+} from "~/modules/chat/application/tools/effects";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -18,7 +24,8 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
-import { run_council, select_council_members } from "./council";
+import { configure_knowledge_sync } from "./configure_knowledge_sync";
+import { review_output, run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
 import { decide } from "./decide";
@@ -28,24 +35,27 @@ import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
+import { get_document } from "./get_document";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
+import { grade_writing } from "./grade_writing";
 import { get_hacker_news_stories } from "./hacker_news";
 import { hostedMcpApproval } from "./hosted_mcp_approval";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
-import { search_memories, store_memory } from "./memory";
+import { mcp_call_tool, mcp_list_tools } from "./mcp_gateway";
+import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
-import { metaTools } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { polyNavigationTools } from "./poly-navigation";
 import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
-import { propose_skill_revision } from "./propose_skill_revision";
+import { propose_correction } from "./propose_correction";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
@@ -58,12 +68,12 @@ import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
 import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
+import { search_conversations } from "./search_conversations";
 import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import { use_computer } from "./use_computer";
-import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
@@ -72,7 +82,9 @@ import { write_document } from "./write_document";
 const permissionChecker = new PermissionChecker();
 
 const functionDefinitions: ApiToolDefinition[] = [
+  configure_knowledge_sync,
   get_weather,
+  grade_writing,
   decide,
   audit_evidence,
   build_site,
@@ -84,6 +96,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   apply_edit_completion,
   web_search,
   write_document,
+  get_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,
@@ -92,6 +105,10 @@ const functionDefinitions: ApiToolDefinition[] = [
   search_documents,
   extract_content,
   search_memories,
+  search_conversations,
+  mcp_list_tools,
+  mcp_call_tool,
+  read_memory_document,
   store_memory,
   analyse_article,
   create_automation,
@@ -111,15 +128,15 @@ const functionDefinitions: ApiToolDefinition[] = [
   update_task,
   capture_screenshot,
   create_speech,
-  v0_code_generation,
   discover_capabilities,
   set_goal,
   complete_goal,
   list_saved_messages,
   load_skill,
   process_recording,
-  propose_skill_revision,
+  propose_correction,
   save_skill,
+  review_output,
   run_council,
   select_council_members,
   second_opinion,
@@ -132,28 +149,36 @@ const functionDefinitions: ApiToolDefinition[] = [
   run_code,
   use_computer,
   hostedMcpApproval,
-  ...metaTools,
+  ...polyNavigationTools,
 ];
 
 export type RegisteredFunctionTool = ApiToolDefinition;
 
-export const functionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> = createToolCatalogue(
-  functionDefinitions.filter((fn): fn is RegisteredFunctionTool => Boolean(fn)),
-);
+let cachedFunctionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> | undefined;
+
+export function getFunctionToolCatalogue(): ToolCatalogue<RegisteredFunctionTool> {
+  cachedFunctionToolCatalogue ??= createToolCatalogue(
+    functionDefinitions
+      .filter((fn): fn is RegisteredFunctionTool => Boolean(fn))
+      .map((fn) => ({ ...fn, effects: requireToolEffects(fn.name, fn.effects) })),
+  );
+
+  return cachedFunctionToolCatalogue;
+}
 
 export const listFunctionTools = (
   options?: FunctionToolCatalogueOptions,
-): RegisteredFunctionTool[] => applyConnectorScope(functionToolCatalogue.list(), options);
+): RegisteredFunctionTool[] => applyConnectorScope(getFunctionToolCatalogue().list(), options);
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
-  functionToolCatalogue.repeatLimit(functionName);
+  getFunctionToolCatalogue().repeatLimit(functionName);
 
 export const expandFunctionToolNames = (toolNames: readonly string[]): string[] =>
-  functionToolCatalogue.expandCompanions(toolNames);
+  getFunctionToolCatalogue().expandCompanions(toolNames);
 
 export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool => {
   try {
-    return functionToolCatalogue.resolve(functionName);
+    return getFunctionToolCatalogue().resolve(functionName);
   } catch (error) {
     throw isToolError(error) ? fromToolError(error) : error;
   }
@@ -187,8 +212,10 @@ export const handleFunctions = async ({
   emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
   if (
-    filterToolsForConversationType([{ name: functionName }], request.request?.conversation_type)
-      .length === 0
+    filterToolsForPolyTurn([{ name: functionName }], {
+      conversationType: request.request?.conversation_type,
+      trigger: request.request?.trigger,
+    }).length === 0
   ) {
     throw new AssistantError(
       `Tool "${functionName}" is not allowed in this conversation`,
@@ -210,6 +237,21 @@ export const handleFunctions = async ({
     requireApprovalFor: request.request?.require_approval_for,
     deniedTools: request.request?.denied_tools,
     enforceModePolicy: request.request?.enforce_mode_tool_policy,
+    effectClass: resolveToolCallEffectClass({
+      toolName: functionName,
+      effects: foundFunction.effects,
+      rawArguments: args,
+    }),
+    autonomyLevel: request.request?.autonomy_level,
+    standingApproval: hasStandingApproval({
+      approvals: request.request?.standing_approvals,
+      toolName: functionName,
+      destination: resolveToolCallDestination({
+        effects: foundFunction.effects,
+        rawArguments: args,
+      }),
+      now: Date.now(),
+    }),
   });
 
   if (!permissionResult.allowed) {

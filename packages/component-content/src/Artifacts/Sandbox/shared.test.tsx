@@ -38,7 +38,7 @@ describe("artifact sandbox isolation", () => {
 
     expect(document).toContain("default-src 'none'");
     expect(document).toContain(
-      "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+      "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js",
     );
     expect(document).toContain("connect-src 'none'");
     expect(document).toContain("form-action 'none'");

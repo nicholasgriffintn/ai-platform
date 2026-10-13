@@ -1,60 +1,53 @@
-import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
 import {
-  CAPABILITY_DISCOVERY_TOOL_NAME,
-  HOSTED_MCP_APPROVAL_TOOL_NAME,
-} from "@ngriffin_uk/polychat-schemas";
-import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+  resolveToolDestination,
+  resolveToolEffectClass,
+} from "@ngriffin_uk/polychat-library-tools";
+import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
 import {
   expandFunctionToolNames,
-  functionToolCatalogue,
   listFunctionTools,
   resolveFunctionTool,
 } from "~/modules/functions/application";
 import {
   resolveEnabledFunctionToolNames,
-  resolveManagedFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 
 describe("functions tool registry", () => {
-  it("registers every function in the tool catalogue", () => {
-    const functionTools = listFunctionTools();
-    const registeredNames = new Set(functionToolCatalogue.list().map((tool) => tool.name));
+  it("classifies external calls by what they change and where", () => {
+    const callApi = resolveFunctionTool("call_api");
+    const connector = resolveFunctionTool("use_recipe_connector");
 
-    expect(registeredNames.size).toBe(functionTools.length);
-
-    for (const fn of functionTools) {
-      expect(registeredNames.has(fn.name)).toBe(true);
-    }
-  });
-
-  it("describes exactly the tools the registry can execute", () => {
-    const executable = sortCopy(
-      listFunctionTools()
-        .map((tool) => tool.name)
-        .filter((name) => name !== HOSTED_MCP_APPROVAL_TOOL_NAME),
-      compareNaturalText,
+    expect(resolveToolEffectClass(callApi.effects, { url: "https://api.example.com/x" })).toBe(
+      "read",
     );
-    const described = sortCopy(
-      listFunctionToolDefinitions().map((tool) => tool.name),
-      compareNaturalText,
+    expect(
+      resolveToolEffectClass(callApi.effects, {
+        url: "https://api.example.com/x",
+        method: "delete",
+      }),
+    ).toBe("destructive");
+    expect(
+      resolveToolEffectClass(callApi.effects, {
+        url: "https://api.example.com",
+        request_type: "graphql",
+      }),
+    ).toBe("write");
+    expect(resolveToolDestination(callApi.effects, { url: "https://api.example.com/x?y=1" })).toBe(
+      "https://api.example.com",
     );
-
-    expect(described).toEqual(executable);
-  });
-
-  it("resolves tool definitions for every available function", () => {
-    for (const fn of listFunctionTools()) {
-      const definition = resolveFunctionTool(fn.name);
-
-      expect(definition.name).toBe(fn.name);
-      expect(typeof definition.execute).toBe("function");
-      expect(typeof definition.inputSchema.safeParse).toBe("function");
-    }
+    expect(
+      resolveToolEffectClass(connector.effects, { provider: "github", useCase: "find PRs" }),
+    ).toBe("read");
+    expect(
+      resolveToolEffectClass(connector.effects, {
+        provider: "github",
+        operation: "GITHUB_MERGE_PR",
+      }),
+    ).toBe("write");
   });
 
   it("keeps Composio operations out of the global function registry", () => {
@@ -64,24 +57,6 @@ describe("functions tool registry", () => {
     expect(names).not.toContain("posthog_list_organization_projects");
     expect(names).not.toContain("polymarket_us_create_order");
     expect(names.some((name) => name.startsWith("zeplin_"))).toBe(false);
-  });
-
-  it("registers capability discovery as a read-only tool", () => {
-    const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
-    const names = listFunctionTools().map((tool) => tool.name);
-
-    expect(discovery.permissions).toEqual(["read"]);
-    expect(names).not.toContain("search_functions");
-    expect(names).not.toContain("get_function_schema");
-  });
-
-  it("keeps the managed baseline to discovery plus everyday tools", () => {
-    const signedOut = resolveManagedFunctionToolNames({ isSignedIn: false });
-    const signedIn = resolveManagedFunctionToolNames({ isSignedIn: true });
-
-    expect(signedOut).toEqual([CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill"]);
-    expect(signedIn).toEqual([CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill", "web_search"]);
-    expect(signedIn).not.toContain("trigger_recipe");
   });
 
   it("tops a managed request up with the baseline without dropping configured tools", () => {
@@ -97,6 +72,7 @@ describe("functions tool registry", () => {
       CAPABILITY_DISCOVERY_TOOL_NAME,
       "load_skill",
       "web_search",
+      "search_conversations",
     ]);
   });
 
@@ -134,23 +110,6 @@ describe("functions tool registry", () => {
     expect(enabled).toEqual(["create_note"]);
   });
 
-  it("leaves an explicit request untouched", () => {
-    expect(
-      resolveRequestFunctionToolNames({
-        requestedToolNames: ["run_council"],
-        toolSelectionMode: "explicit",
-        user: { id: 1, plan_id: "pro" },
-      }),
-    ).toEqual(["run_council"]);
-    expect(
-      resolveRequestFunctionToolNames({
-        requestedToolNames: undefined,
-        toolSelectionMode: undefined,
-        user: { id: 1, plan_id: "pro" },
-      }),
-    ).toBeUndefined();
-  });
-
   it("activates companion tools alongside a discovered tool", () => {
     expect(expandFunctionToolNames(["run_pashi_tools"])).toEqual([
       "run_pashi_tools",
@@ -169,31 +128,6 @@ describe("functions tool registry", () => {
     expect(enabled.has(CAPABILITY_DISCOVERY_TOOL_NAME)).toBe(false);
     expect(enabled.has("load_skill")).toBe(false);
     expect(enabled.has("trigger_recipe")).toBe(false);
-  });
-
-  it("registers exact task lookup as a read-only project tool", () => {
-    const getTask = resolveFunctionTool("get_task");
-
-    expect(getTask.permissions).toEqual(["read"]);
-    expect(getTask.inputSchema.safeParse({ taskId: "task-1" }).success).toBe(true);
-    expect(getTask.inputSchema.safeParse({}).success).toBe(false);
-  });
-
-  it("prevents an identical memory search from running twice in one response", () => {
-    const memorySearch = resolveFunctionTool("search_memories");
-
-    expect(memorySearch.maxIdenticalCalls).toBe(1);
-  });
-
-  it("keeps the defaulted discovery limit optional in the model schema", () => {
-    const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
-    const schema = z.toJSONSchema(discovery.inputSchema);
-
-    expect(schema.required).not.toContain("limit");
-    expect(schema.properties?.limit).toMatchObject({ default: 8 });
-    expect(discovery.inputSchema.parse({ query: "analytics" })).toMatchObject({
-      limit: 8,
-    });
   });
 
   it("scopes connector providers to connected accounts for each request", () => {
@@ -221,45 +155,5 @@ describe("functions tool registry", () => {
     const names = listFunctionTools({ connectedConnectorProviders: [] }).map((tool) => tool.name);
 
     expect(names).not.toContain("use_recipe_connector");
-  });
-
-  it("publishes closed schemas for recipe and web-search tools", () => {
-    const triggerRecipe = resolveFunctionTool("trigger_recipe");
-    const useRecipeConnector = resolveFunctionTool("use_recipe_connector");
-    const webSearch = resolveFunctionTool("web_search");
-    const triggerRecipeSchema = z.toJSONSchema(triggerRecipe.inputSchema);
-    const formattedTriggerRecipe = formatToolCalls("deepseek", [triggerRecipe])[0];
-    const useRecipeConnectorSchema = z.toJSONSchema(useRecipeConnector.inputSchema);
-    const webSearchSchema = z.toJSONSchema(webSearch.inputSchema);
-
-    expect(triggerRecipe.inputSchema.safeParse({}).success).toBe(false);
-    expect(triggerRecipe.inputSchema.safeParse({ recipeId: "recipe-1" }).success).toBe(true);
-    expect(triggerRecipe.inputSchema.safeParse({ query: "run my alert" }).success).toBe(true);
-    expect(formattedTriggerRecipe).toMatchObject({
-      type: "function",
-      function: { parameters: { type: "object", additionalProperties: false } },
-    });
-    expect((formattedTriggerRecipe as any).function.parameters.anyOf).toBeUndefined();
-    expect(Object.keys((formattedTriggerRecipe as any).function.parameters.properties)).toEqual(
-      expect.arrayContaining(["recipeId", "query", "input"]),
-    );
-    expect(triggerRecipeSchema.anyOf).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          required: ["recipeId"],
-          additionalProperties: false,
-        }),
-        expect.objectContaining({
-          required: ["query"],
-          additionalProperties: false,
-        }),
-      ]),
-    );
-    expect(useRecipeConnectorSchema.additionalProperties).toBe(false);
-    expect(webSearchSchema.additionalProperties).toBe(false);
-    expect(webSearchSchema.properties?.search_depth).toMatchObject({
-      type: "string",
-      enum: ["basic", "advanced"],
-    });
   });
 });

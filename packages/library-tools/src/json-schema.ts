@@ -11,16 +11,32 @@ export function flattenObjectRootSchema(schema: Record<string, unknown>): Record
     return schema;
   }
 
-  const objectAlternatives = alternatives as Array<Record<string, unknown>>;
+  const objectAlternatives = alternatives.filter(isRecord);
   const { anyOf: _alternatives, ...root } = schema;
-  const properties: Record<string, unknown> = isRecord(root.properties)
-    ? { ...root.properties }
-    : {};
+  const properties = new Map<string, unknown>(
+    isRecord(root.properties) ? Object.entries(root.properties) : [],
+  );
   const requiredCounts = new Map<string, number>();
 
   for (const alternative of objectAlternatives) {
     if (isRecord(alternative.properties)) {
-      Object.assign(properties, alternative.properties);
+      for (const [key, value] of Object.entries(alternative.properties)) {
+        const existing = properties.get(key);
+
+        properties.set(
+          key,
+          existing === undefined
+            ? value
+            : {
+                anyOf: [
+                  ...(isRecord(existing) && Array.isArray(existing.anyOf)
+                    ? existing.anyOf
+                    : [existing]),
+                  value,
+                ],
+              },
+        );
+      }
     }
 
     const required = Array.isArray(alternative.required) ? alternative.required : [];
@@ -42,7 +58,7 @@ export function flattenObjectRootSchema(schema: Record<string, unknown>): Record
   return {
     ...root,
     type: "object",
-    properties,
+    properties: Object.fromEntries(properties),
     ...(required.length > 0 ? { required } : {}),
     ...(closed ? { additionalProperties: false } : {}),
   };

@@ -71,6 +71,7 @@ export {
   buildSitePlanGuidance,
   buildSiteRefineUserPrompt,
   serialiseSiteProjectForPrompt,
+  type SitePromptSource,
 } from "./prompt.js";
 export {
   buildSiteSandboxTask,
@@ -127,6 +128,7 @@ export {
   type SiteRefineIntentAnswers,
   type SiteRefineTargetCandidate,
 } from "./quality.js";
+export { buildSiteBrowserRepairPrompt } from "./browser-verification.js";
 export {
   catalogueSubsetId,
   componentsForSiteKind,
@@ -139,3 +141,12 @@ export {
   validateSiteProject,
   type SiteValidationResult,
 } from "./validate.js";
+
+export {
+  normaliseSiteSourceRows,
+  validateSiteCollectionValues,
+  projectSiteSourceRows,
+  normaliseSiteIntegrations,
+  getSitePageBoundState,
+} from "./data.js";
+export { buildSiteFrameDocument, type BuildSiteFrameDocumentOptions } from "./preview-document.js";

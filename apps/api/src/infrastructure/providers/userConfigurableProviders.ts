@@ -1,4 +1,7 @@
-import { listConfigurableChatProviders } from "~/infrastructure/providers/capabilities/chat";
+import {
+  listChatProviders,
+  listConfigurableChatProviders,
+} from "~/infrastructure/providers/capabilities/chat";
 import {
   getDecisionProviderVendor,
   listConfigurableDecisionProviders,
@@ -12,7 +15,7 @@ import {
 export interface UserConfigurableProvider {
   id: string;
   name: string;
-  type: "chat" | "messaging" | "decision";
+  type: "chat" | "messaging" | "decision" | "embedding";
   description?: string;
   configurationFields?: Array<{
     key: string;
@@ -24,17 +27,31 @@ export interface UserConfigurableProvider {
   }>;
 }
 
+function isChatProviderId(providerId: string): boolean {
+  return listChatProviders().includes(providerId);
+}
+
 export function listConfigurableUserProviderIds(): string[] {
   return Array.from(
     new Set([
+      "dynamodb-vectors",
       ...listConfigurableChatProviders(),
-      ...listConfigurableDecisionProviders(),
+      ...listConfigurableDecisionProviders().filter((providerId) => !isChatProviderId(providerId)),
       ...listConfigurableMessagingProviders(),
     ]),
   ).sort();
 }
 
 export function getUserConfigurableProviderMetadata(providerId: string): UserConfigurableProvider {
+  if (providerId === "dynamodb-vectors") {
+    return {
+      id: providerId,
+      name: "DynamoDB Vectors",
+      type: "embedding",
+      description: "Store document and memory vectors in Amazon DynamoDB.",
+    };
+  }
+
   if (isMessagingProviderId(providerId)) {
     const metadata = getMessagingProviderMetadata(providerId);
 
@@ -49,7 +66,9 @@ export function getUserConfigurableProviderMetadata(providerId: string): UserCon
     }
   }
 
-  const decisionVendor = getDecisionProviderVendor(providerId);
+  const decisionVendor = isChatProviderId(providerId)
+    ? undefined
+    : getDecisionProviderVendor(providerId);
 
   if (decisionVendor) {
     return {

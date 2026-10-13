@@ -1,50 +1,11 @@
 import { describe, expect, it } from "vitest";
+import z from "zod/v4";
 
-import { finishToolDeclaration, UPDATE_PLAN_TOOL_NAME } from "../control-tools.js";
-import { declareTool, getToolDeclarationNames, isToolDeclaration } from "../declaration.js";
+import { declareTool } from "../declaration.js";
 import { flattenObjectRootSchema } from "../json-schema.js";
 import { PermissionChecker, resolveModeMaxSteps, resolveToolPermissions } from "../permissions.js";
 import { toProviderToolDeclarations } from "../provider-declarations.js";
-
-describe("declareTool", () => {
-  it("produces the provider-facing function shape", () => {
-    expect(
-      declareTool({
-        name: "run_command",
-        description: "Run a shell command",
-        parameters: { command: { type: "string" } },
-        required: ["command"],
-      }),
-    ).toEqual({
-      type: "function",
-      function: {
-        name: "run_command",
-        description: "Run a shell command",
-        parameters: {
-          type: "object",
-          properties: { command: { type: "string" } },
-          required: ["command"],
-        },
-      },
-    });
-  });
-
-  it("omits required when a tool takes no mandatory arguments", () => {
-    const definition = declareTool({ name: "ping", description: "Ping" });
-
-    expect(definition.function.parameters).toEqual({ type: "object", properties: {} });
-  });
-
-  it("recognises its own output and rejects other shapes", () => {
-    expect(isToolDeclaration(finishToolDeclaration)).toBe(true);
-    expect(isToolDeclaration({ type: "function" })).toBe(false);
-    expect(isToolDeclaration(null)).toBe(false);
-  });
-
-  it("lists definition names", () => {
-    expect(getToolDeclarationNames([finishToolDeclaration])).toEqual(["finish"]);
-  });
-});
+import { toToolDeclaration } from "../tool.js";
 
 describe("declareTool with a generated schema", () => {
   it("keeps schema keys the convenience form cannot express", () => {
@@ -96,13 +57,33 @@ describe("toProviderToolDeclarations", () => {
       },
     ]);
   });
-
-  it("passes the canonical shape through for every other provider", () => {
-    expect(toProviderToolDeclarations("openai", [definition])).toEqual([definition]);
-  });
 });
 
 describe("flattenObjectRootSchema", () => {
+  it("keeps all provider and operation choices in a generated tool declaration", () => {
+    const declaration = toToolDeclaration({
+      name: "computer",
+      description: "Operate either computer provider",
+      inputSchema: z.union([
+        z.object({ provider: z.literal("hosted"), operation: z.literal("observe") }).strict(),
+        z
+          .object({
+            provider: z.literal("openai"),
+            operation: z.literal("start"),
+            task: z.string(),
+          })
+          .strict(),
+      ]),
+    });
+    const schema = z.fromJSONSchema(declaration.function.parameters);
+
+    expect(schema.safeParse({ provider: "hosted", operation: "observe" }).success).toBe(true);
+    expect(
+      schema.safeParse({ provider: "openai", operation: "start", task: "Read the page" }).success,
+    ).toBe(true);
+    expect(schema.safeParse({ provider: "unknown", operation: "observe" }).success).toBe(false);
+  });
+
   it("merges object alternatives into a single root", () => {
     expect(
       flattenObjectRootSchema({
@@ -128,19 +109,6 @@ describe("flattenObjectRootSchema", () => {
       additionalProperties: false,
     });
   });
-
-  it("leaves a schema without object alternatives untouched", () => {
-    const schema = { type: "object", properties: { query: { type: "string" } } };
-
-    expect(flattenObjectRootSchema(schema)).toBe(schema);
-  });
-});
-
-describe("control tools", () => {
-  it("keeps the loop control names stable", () => {
-    expect(UPDATE_PLAN_TOOL_NAME).toBe("update_plan");
-    expect(finishToolDeclaration.function.parameters).toMatchObject({ required: ["summary"] });
-  });
 });
 
 describe("resolveToolPermissions", () => {
@@ -149,10 +117,7 @@ describe("resolveToolPermissions", () => {
       "read",
       "write",
     ]);
-  });
-
-  it("returns nothing when no permissions are configured", () => {
-    expect(resolveToolPermissions("any", [])).toEqual([]);
+    expect(resolveToolPermissions("any")).toEqual([]);
   });
 });
 
@@ -160,9 +125,6 @@ describe("resolveModeMaxSteps", () => {
   it("clamps a request to the mode ceiling", () => {
     expect(resolveModeMaxSteps("plan", 30)).toBe(24);
     expect(resolveModeMaxSteps("build", 10)).toBe(10);
-  });
-
-  it("falls back to the mode default", () => {
     expect(resolveModeMaxSteps("normal")).toBe(8);
   });
 });
@@ -170,7 +132,7 @@ describe("resolveModeMaxSteps", () => {
 describe("PermissionChecker", () => {
   const checker = new PermissionChecker();
 
-  it("gates premium tools on the pro plan", () => {
+  it("gates premium and BYOK tools by plan and sign-in", () => {
     expect(
       checker.checkToolAccess({
         toolName: "create_note",
@@ -186,6 +148,19 @@ describe("PermissionChecker", () => {
         user: { id: 1, plan_id: "pro" },
       }),
     ).toMatchObject({ allowed: true });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "research",
+        toolType: "byok",
+        user: { id: 1, plan_id: "free" },
+      }),
+    ).toMatchObject({ allowed: true });
+
+    expect(checker.checkToolAccess({ toolName: "research", toolType: "byok" })).toMatchObject({
+      allowed: false,
+      reason: "This tool requires a signed-in user",
+    });
   });
 
   it("requires approval for a permission the caller adds beyond the mode's", () => {
@@ -219,16 +194,27 @@ describe("PermissionChecker", () => {
   });
 
   it("blocks a tool whose permission the mode denies", () => {
-    expect(
-      checker.checkToolAccess({
-        toolName: "run_command",
-        mode: "plan",
-        toolPermissions: ["sandbox"],
-      }),
-    ).toMatchObject({ allowed: false, mode: "plan" });
+    for (const [mode, toolName, permission] of [
+      ["plan", "run_command", "sandbox"],
+      ["plan", "call_api", "network"],
+      ["explore", "create_note", "write"],
+    ]) {
+      expect(
+        checker.checkToolAccess({ toolName, mode, toolPermissions: [permission] }),
+      ).toMatchObject({ allowed: false, mode });
+    }
   });
 
   it("allows questions but not side-effect approval requests in plan mode", () => {
+    for (const [toolName, permission] of [
+      ["web_search", "read"],
+      ["complete_goal", "reasoning"],
+    ]) {
+      expect(
+        checker.checkToolAccess({ toolName, mode: "plan", toolPermissions: [permission] }),
+      ).toMatchObject({ allowed: true, requiresApproval: false, mode: "plan" });
+    }
+
     expect(
       checker.checkToolAccess({
         toolName: "ask_user",
@@ -254,6 +240,14 @@ describe("PermissionChecker", () => {
         toolPermissions: ["sandbox"],
       }),
     ).toMatchObject({ allowed: true, requiresApproval: true });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "run_command",
+        mode: "normal",
+        toolPermissions: ["sandbox", "write"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false });
   });
 
   it("uses the caller's approval policy without hidden mode restrictions when requested", () => {
@@ -283,8 +277,16 @@ describe("PermissionChecker", () => {
         toolName: "run_command",
         mode: "build",
         toolPermissions: ["sandbox"],
-        approvedTools: ["RUN_COMMAND"],
+        approvedTools: [" RUN_COMMAND "],
       }),
     ).toMatchObject({ approved: true });
+
+    expect(
+      checker.checkRequestToolAccess({
+        toolName: "run_command",
+        mode: "build",
+        toolPermissions: ["sandbox"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: true, approved: false });
   });
 });

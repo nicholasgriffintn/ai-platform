@@ -1,4 +1,5 @@
 import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integrations";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 
 import type { ComposioConnectorSessionRecord } from "~/modules/apps/infrastructure/ComposioConnectorSessionRepository";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
@@ -10,6 +11,7 @@ import {
   type ResolveConnectorApprovalAuthority,
   type StoredConnectorOperationCall,
 } from "./connector-approval-authority";
+import { encodeConnectorReplayScope } from "./connector-replay-scope";
 
 function requireSessionMatchesApproval(params: {
   approval: ConnectorOperationApprovalRecord;
@@ -19,25 +21,28 @@ function requireSessionMatchesApproval(params: {
 }): ComposioConnectorSessionRecord {
   const { approval, session, call, userId } = params;
 
-  if (
-    !session ||
-    session.id !== call.sessionId ||
-    session.kind !== "tool" ||
-    session.userId !== userId ||
-    session.provider !== approval.provider ||
-    session.runId !== approval.runId ||
-    session.completionId !== approval.completionId ||
-    session.connectedAccountId !== approval.connectedAccountId ||
-    (session.recipeId ?? undefined) !== approval.recipeId ||
-    (session.installationId ?? undefined) !== approval.installationId ||
-    (session.projectId ?? undefined) !== approval.projectId ||
-    (session.teammateContextId ?? undefined) !== approval.teammateContextId ||
-    !session.allowedOperationIds.includes(approval.operation) ||
-    !session.authConfigId ||
-    !session.connectedAccountId ||
-    (session.state !== "active" && session.state !== "claimed") ||
-    session.expiresAt <= new Date().toISOString()
-  ) {
+  if (!session) {
+    rejectConnectorApprovalAuthority();
+  }
+
+  const isAuthorised = authorise("connector.replay", {
+    sessionId: session.id,
+    requestSessionId: call.sessionId ?? "",
+    kind: session.kind,
+    actorId: String(userId),
+    ownerId: String(session.userId),
+    sessionScope: encodeConnectorReplayScope(session),
+    approvalScope: encodeConnectorReplayScope(approval),
+    operations: [...session.allowedOperationIds],
+    operation: approval.operation,
+    hasAuthConfig: Boolean(session.authConfigId),
+    hasConnectedAccount: Boolean(session.connectedAccountId),
+    state: session.state,
+    expiresAt: new Date(session.expiresAt).getTime(),
+    now: Date.now(),
+  }).allowed;
+
+  if (!isAuthorised) {
     rejectConnectorApprovalAuthority();
   }
 
@@ -70,9 +75,14 @@ export const resolveComposioApprovalAuthority: ResolveConnectorApprovalAuthority
     });
 
     if (
-      authority.connectedAccountId !== session.connectedAccountId ||
-      authority.grantRevision !== params.approval.authorityRevision ||
-      !authority.allowedOperations.includes(params.approval.operation)
+      !authorise("grant.revision", {
+        connectionId: authority.connectedAccountId ?? "",
+        approvedConnectionId: session.connectedAccountId ?? "",
+        revision: authority.grantRevision,
+        approvedRevision: params.approval.authorityRevision,
+        operations: authority.allowedOperations,
+        operation: params.approval.operation,
+      }).allowed
     ) {
       rejectConnectorApprovalAuthority();
     }

@@ -12,10 +12,16 @@ export const formatFunctionName = (name: string): string => titleCaseSlug(name);
 const DEFAULT_ICON = "app";
 
 const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
+  use_computer: {
+    icon: "monitor",
+    responseType: ToolResponseType.CUSTOM,
+  },
   get_weather: { renderer: "weather", icon: "cloud" },
   web_search: { renderer: "web_search", icon: "search" },
   search_documents: { renderer: "document_search", icon: "search" },
   search_memories: { icon: "search", responseType: ToolResponseType.HIDDEN },
+  search_conversations: { renderer: "conversation_search", icon: "search" },
+  list_attention: { icon: "list-checks", responseType: ToolResponseType.HIDDEN },
   store_memory: { icon: "plus-circle" },
   discover_capabilities: { renderer: "capability_discovery", icon: "sparkles" },
   research: { renderer: "research", icon: "search" },
@@ -27,6 +33,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   delegate: { renderer: "delegation_card", icon: "bot" },
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   run_code: { icon: "terminal", responseType: ToolResponseType.JSON },
+  grade_writing: { renderer: "editorial_grade", icon: "file-text" },
   decide: { icon: "sparkles", responseType: ToolResponseType.JSON },
   audit_evidence: { renderer: "evidence_audit", icon: "search" },
   build_site: {

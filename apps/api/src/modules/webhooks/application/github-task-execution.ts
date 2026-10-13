@@ -1,5 +1,5 @@
 import type { SandboxWebhookCommand } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { isPlainObject } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -98,6 +98,7 @@ export async function postWebhookSandboxResultComment(params: {
   issueNumber: number;
   result: SandboxExecutionResult;
   connection: GitHubConnectionCredentials;
+  body?: string;
 }): Promise<void> {
   const token = await getGitHubAppInstallationToken({
     appId: params.connection.appId,
@@ -108,14 +109,15 @@ export async function postWebhookSandboxResultComment(params: {
   await postCommentToIssue(
     params.repo,
     params.issueNumber,
-    formatResultComment({
-      command: params.command,
-      success: params.result.success,
-      summary: params.result.summary,
-      diff: params.result.diff,
-      error: params.result.error,
-      responseId: params.result.responseId,
-    }),
+    params.body ??
+      formatResultComment({
+        command: params.command,
+        success: params.result.success,
+        summary: params.result.summary,
+        diff: params.result.diff,
+        error: params.result.error,
+        responseId: params.result.responseId,
+      }),
     token,
   );
 }

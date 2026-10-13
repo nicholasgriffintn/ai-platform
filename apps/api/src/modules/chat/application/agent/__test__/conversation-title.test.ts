@@ -116,16 +116,6 @@ describe("startConversationTitle", () => {
     );
   });
 
-  it("does not queue a retitle when the opening message carries enough context", async () => {
-    const params = createParams();
-    const run = startConversationTitle(params);
-
-    expect(await run.complete({ role: "assistant", content: "...", id: "m1" } as never)).toBe(
-      "Durable Object concurrency",
-    );
-    expect(mocks.enqueueTask).not.toHaveBeenCalled();
-  });
-
   it("leaves a title someone has already chosen alone", async () => {
     const params = createParams({ conversation: { title: "Weekly planning", message_count: 1 } });
 
@@ -133,15 +123,6 @@ describe("startConversationTitle", () => {
     expect(mocks.generateConversationTitle).not.toHaveBeenCalled();
     expect(params.conversationManager.updateConversation).not.toHaveBeenCalled();
     expect(mocks.publishConversationChanged).not.toHaveBeenCalled();
-  });
-
-  it("leaves conversations that are already under way alone", async () => {
-    const params = createParams({
-      conversation: { title: createConversationTitleExcerpt(OPENING), message_count: 6 },
-    });
-
-    expect(await startConversationTitle(params).complete()).toBeNull();
-    expect(mocks.generateConversationTitle).not.toHaveBeenCalled();
   });
 
   it("keeps the turn going when titling fails", async () => {

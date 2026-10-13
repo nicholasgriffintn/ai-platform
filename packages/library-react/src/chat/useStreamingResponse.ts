@@ -28,13 +28,15 @@ import {
   createRunProvenance,
   EMPTY_MODEL_CONFIG,
   getModelProvider,
+  isAgentModelId,
   isBrowserModel,
   isTerminalChatRunStatus,
+  POLY_TEAMMATE_ID,
   runsOnDevice,
   type ChatRun,
   type ChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
@@ -271,7 +273,7 @@ export function useStreamingResponse(
         ? { ...assistantMessageData, provenance: localRunProvenance }
         : assistantMessageData;
       let shouldRefreshStoredConversation = false;
-      const commandId = effectiveRequestOptions?.command_id ?? crypto.randomUUID();
+      const commandId = effectiveRequestOptions?.command_id ?? generateId();
 
       pendingCommandIdsRef.current[conversationId] = commandId;
 
@@ -651,14 +653,20 @@ export function useStreamingResponse(
             assistantMessage = await apiService.streamChatCompletions({
               chatSettings,
               completionId: conversationId,
-              endpoint:
-                chatMode === "agent" ? `/teammates/${selectedTeammateId}/completions` : undefined,
+              endpoint: effectiveRequestOptions?.poly
+                ? `/teammates/${POLY_TEAMMATE_ID}/completions`
+                : chatMode === "agent"
+                  ? `/teammates/${selectedTeammateId}/completions`
+                  : undefined,
               messages: normalizedMessages,
               mode: chatMode,
               computeSite: effectiveComputeSite,
               model: modelToSend,
               modelConfig: modelConfigToSend,
-              modelTier: selectedModel ? undefined : (modelTier ?? undefined),
+              modelTier:
+                selectedModel && !isAgentModelId(modelToSend)
+                  ? undefined
+                  : (modelTier ?? undefined),
               permissionMode,
               models: modelsToSend?.length ? modelsToSend : undefined,
               onProgress: streamProgress.handleUpdate,

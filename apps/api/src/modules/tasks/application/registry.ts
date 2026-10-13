@@ -1,5 +1,8 @@
 import {
   CONVERSATION_TITLE_TASK_TYPE,
+  MEMORY_REFLECTION_TASK_TYPE,
+  SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
   DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
@@ -14,15 +17,18 @@ import {
   MODEL_UPLOAD_FINALISE_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  PROJECT_REVIEW_INTAKE_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   STRIPE_USAGE_SYNC_TASK_TYPE,
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  QUEUED_CHAT_MESSAGE_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { ProjectReviewIntakeHandler } from "~/modules/project-tasks/application/review-intake";
 import { TaskNotificationDeliveryHandler } from "~/modules/task-notifications/application/delivery";
 
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
@@ -35,7 +41,7 @@ import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
-import { memorySynthesis } from "./handlers/memory-synthesis";
+import { memorySynthesis, memoryReflection } from "./handlers/memory-synthesis";
 import {
   modelDatasetProcessing,
   modelDeploymentSync,
@@ -49,12 +55,15 @@ import {
 } from "./handlers/ModelRegistryHandlers";
 import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
 import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
+import { QueuedChatMessageHandler } from "./handlers/QueuedChatMessageHandler";
 import { RealtimeReconciliationHandler } from "./handlers/RealtimeReconciliationHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
 import { recordingTranscriptionPolling } from "./handlers/recording-transcription-polling";
 import { replicatePolling } from "./handlers/replicate-polling";
 import { researchPolling } from "./handlers/research-polling";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
+import { sourceKnowledgeIndex } from "./handlers/source-knowledge";
+import { sourceKnowledgeSync } from "./handlers/source-sync";
 import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
 import { TeammateContextCleanupHandler } from "./handlers/TeammateContextCleanupHandler";
 import { TeammateRunReconciliationHandler } from "./handlers/TeammateRunReconciliationHandler";
@@ -64,6 +73,9 @@ import { workflows } from "./workflows";
 import "./schedules";
 
 workflows.on("memory_synthesis", memorySynthesis);
+workflows.on(MEMORY_REFLECTION_TASK_TYPE, memoryReflection);
+workflows.on(SOURCE_KNOWLEDGE_INDEX_TASK_TYPE, sourceKnowledgeIndex);
+workflows.on(SOURCE_KNOWLEDGE_SYNC_TASK_TYPE, sourceKnowledgeSync);
 workflows.on(USAGE_ROLLUP_TASK_TYPE, usageRollup);
 workflows.on(MODEL_PLATFORM_RECONCILE_TASK_TYPE, modelPlatformReconcile);
 
@@ -83,6 +95,7 @@ workflows.register("artificial_analysis_ingest", new ArtificialAnalysisIngestHan
 workflows.register("artificial_analysis_scoring", new ArtificialAnalysisScoringHandler());
 workflows.register(SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler());
 workflows.register(PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler());
+workflows.register(PROJECT_REVIEW_INTAKE_TASK_TYPE, new ProjectReviewIntakeHandler());
 workflows.register(DELEGATION_RUN_TASK_TYPE, new DelegationRunHandler());
 workflows.register(DELEGATION_MESSAGE_TASK_TYPE, new DelegationMessageHandler());
 workflows.register(DELEGATION_EXPIRY_TASK_TYPE, new DelegationExpiryHandler());
@@ -95,6 +108,7 @@ workflows.register(TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDel
 workflows.register(TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, new TeammateRunReconciliationHandler());
 workflows.register(TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE, new TeammateContextCleanupHandler());
 workflows.register(CONVERSATION_TITLE_TASK_TYPE, new ConversationTitleHandler());
+workflows.register(QUEUED_CHAT_MESSAGE_TASK_TYPE, new QueuedChatMessageHandler());
 workflows.register(MODEL_REGISTRY_INSPECT_TASK_TYPE, new ModelRegistryInspectHandler());
 workflows.register(MODEL_REGISTRY_EVAL_TASK_TYPE, new ModelRegistryEvalHandler());
 

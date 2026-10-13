@@ -11,9 +11,12 @@ import type {
   AgentMode,
   ComputeSite,
   ConversationType,
-  MetaAssistantRequest,
+  PolyRequest,
   PermissionMode,
   RunProvenance,
+  TeammateAutonomyLevel,
+  TeammateApprovalStreak,
+  TeammateStandingApproval,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -50,7 +53,7 @@ export type {
 export interface IBody {
   completion_id: string;
   conversation_type?: ConversationType;
-  meta_assistant?: MetaAssistantRequest;
+  poly?: PolyRequest;
   input: ChatInput;
   attachments?: Attachment[];
   date: string;
@@ -75,6 +78,9 @@ export interface IBody {
   run_id?: string;
   run_attempt?: number;
   teammate_context_id?: string;
+  autonomy_level?: TeammateAutonomyLevel | null;
+  standing_approvals?: TeammateStandingApproval[];
+  approval_streaks?: TeammateApprovalStreak[];
   [other: string]: any;
 }
 
@@ -94,6 +100,9 @@ export interface IRequest {
 export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "env" | "context"> & {
   env: IEnv;
   context?: ServiceContext;
+  autonomy_level?: TeammateAutonomyLevel | null;
+  standing_approvals?: TeammateStandingApproval[];
+  approval_streaks?: TeammateApprovalStreak[];
 };
 
 export type ChatCompletionParametersWithModel = ChatCompletionParameters;

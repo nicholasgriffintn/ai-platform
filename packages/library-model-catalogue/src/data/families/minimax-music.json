@@ -14,7 +14,7 @@
       "document"
     ],
     "contextComplexity": 4,
-    "reliability": 3,
+    "reliability": 2,
     "supportsToolCalls": false,
     "supportsAttachments": true,
     "supportsTemperature": false,
@@ -27,10 +27,10 @@
         {
           "key": "music_with_vocalsElo",
           "label": "Music with vocals arena",
-          "value": 1089,
+          "value": 1001,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 8
+          "confidenceInterval95": 14
         }
       ]
     }

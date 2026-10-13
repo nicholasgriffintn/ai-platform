@@ -76,7 +76,7 @@ export async function getGitHubAppConnectionForUserRepo(
 ): Promise<GitHubAppConnection> {
   const records = (
     await context.repositories.providerConnections.listConnections(userId, "github")
-  ).filter((record) => record.kind === GITHUB_CONNECTION_KIND);
+  ).filter((record) => record.kind === GITHUB_CONNECTION_KIND && record.status === "connected");
 
   for (const record of records) {
     const parsed = await decodeConnectionRecord(context, record);
@@ -95,12 +95,12 @@ export async function getGitHubAppConnectionForUserRepo(
   throw new AssistantError("GitHub App connection not found for repository", ErrorType.NOT_FOUND);
 }
 
-export async function getGitHubAppConnectionForUserInstallation(
+export async function getGitHubTaskConnection(
   context: ServiceContext,
   userId: number,
   installationId: number,
   repo?: string,
-): Promise<GitHubAppConnection> {
+): Promise<{ connection: GitHubAppConnection; connectionId: string }> {
   const installationKey = String(installationId);
   const connection = await context.repositories.providerConnections.getConnection(
     userId,
@@ -109,7 +109,7 @@ export async function getGitHubAppConnectionForUserInstallation(
     installationKey,
   );
 
-  if (!connection) {
+  if (!connection || connection.status !== "connected") {
     throw new AssistantError(
       "GitHub App connection not found for installation",
       ErrorType.NOT_FOUND,
@@ -133,7 +133,16 @@ export async function getGitHubAppConnectionForUserInstallation(
     );
   }
 
-  return parsed.connection;
+  return { connection: parsed.connection, connectionId: connection.id };
+}
+
+export async function getGitHubAppConnectionForUserInstallation(
+  context: ServiceContext,
+  userId: number,
+  installationId: number,
+  repo?: string,
+): Promise<GitHubAppConnection> {
+  return (await getGitHubTaskConnection(context, userId, installationId, repo)).connection;
 }
 
 export async function getGitHubAppConnectionForInstallation(
@@ -147,7 +156,7 @@ export async function getGitHubAppConnectionForInstallation(
     installationKey,
   );
 
-  if (!connection) {
+  if (!connection || connection.status !== "connected") {
     throw new AssistantError(
       "GitHub App connection not found for installation",
       ErrorType.NOT_FOUND,
@@ -172,7 +181,7 @@ export async function listGitHubAppConnectionsForUser(
 ): Promise<GitHubAppConnectionSummary[]> {
   const records = (
     await context.repositories.providerConnections.listConnections(userId, "github")
-  ).filter((record) => record.kind === GITHUB_CONNECTION_KIND);
+  ).filter((record) => record.kind === GITHUB_CONNECTION_KIND && record.status === "connected");
 
   const summaries: GitHubAppConnectionSummary[] = [];
 

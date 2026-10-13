@@ -1,6 +1,8 @@
 import {
   agentModeSchema,
   mergeToolIds,
+  POLY_NAVIGATION_TOOL_NAMES,
+  POLY_TEAMMATE_ID,
   readToolIds,
   SKILL_LOAD_TOOL_NAME,
   type ChatHostedToolSettings,
@@ -107,7 +109,10 @@ class TeammateCompletionRequestPreparer {
     const stored = readToolIds(this.input.teammate.enabled_tools) ?? undefined;
     const configured =
       (this.input.mcpServers?.length ?? 0) > 0 ? mergeToolIds(stored ?? [], "mcp") : stored;
-    const requested = this.input.body.enabled_tools;
+    const requested =
+      this.input.teammate.id === POLY_TEAMMATE_ID && this.input.body.enabled_tools !== undefined
+        ? [...new Set([...this.input.body.enabled_tools, ...POLY_NAVIGATION_TOOL_NAMES])]
+        : this.input.body.enabled_tools;
     let permitted =
       configured && requested
         ? intersectEnabledTools(configured, requested)
@@ -140,6 +145,10 @@ class TeammateCompletionRequestPreparer {
               require_approval: "always",
               server_label: server.label,
               server_url: new URL(server.url).toString(),
+              ...(server.credentialConnectionId
+                ? { credential_connection_id: server.credentialConnectionId }
+                : {}),
+              ...(server.allowedTools ? { allowed_tools: server.allowedTools } : {}),
             })),
           }
         : {}),

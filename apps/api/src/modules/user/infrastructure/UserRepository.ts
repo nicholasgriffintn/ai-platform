@@ -14,8 +14,8 @@ export class UserRepository extends BaseRepository {
   ): Promise<User | null> {
     const result = this.runQuery<User>(
       `SELECT u.* FROM user u
-       JOIN oauth_account oa ON u.id = oa.user_id
-       WHERE oa.provider_id = ? AND oa.provider_user_id = ?`,
+       JOIN user_credential oa ON u.id = oa.user_id AND oa.kind = 'oauth'
+       WHERE oa.provider = ? AND oa.external_id = ?`,
       [providerId, providerUserId],
       true,
     );
@@ -168,8 +168,8 @@ export class UserRepository extends BaseRepository {
     providerUserId: string,
   ): Promise<void> {
     await this.executeRun(
-      `INSERT INTO oauth_account (provider_id, provider_user_id, user_id)
-       VALUES (?, ?, ?)`,
+      `INSERT INTO user_credential (kind, provider, external_id, user_id)
+       VALUES ('oauth', ?, ?, ?)`,
       [providerId, providerUserId, userId],
     );
   }

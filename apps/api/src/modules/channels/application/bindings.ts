@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -9,8 +10,15 @@ import {
   requireTeammateAccess,
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import type { IEnv } from "~/types";
 
-function toBinding(row: ChannelBindingRow): ChannelBinding {
+import { requireChannelBindingAccess } from "./access";
+
+function toBinding(
+  row: ChannelBindingRow,
+  canManage: boolean,
+  env: Pick<IEnv, "EMAIL_INBOUND_ADDRESS">,
+): ChannelBinding {
   return {
     id: row.id,
     channel: row.channel,
@@ -22,6 +30,8 @@ function toBinding(row: ChannelBindingRow): ChannelBinding {
     interactionMode: row.interaction_mode,
     enabled: Number(row.enabled) === 1,
     createdAt: row.created_at,
+    canManage,
+    contactAddress: row.channel === "email" ? (env.EMAIL_INBOUND_ADDRESS ?? null) : null,
   };
 }
 
@@ -41,6 +51,8 @@ export async function createChannelBinding(
     );
   }
 
+  const externalId =
+    input.channel === "email" ? input.externalId.trim().toLowerCase() : input.externalId;
   const scopeType = input.projectId ? "project" : "personal";
 
   if (!adapter.scopes.includes(scopeType)) {
@@ -52,15 +64,7 @@ export async function createChannelBinding(
   }
 
   if (input.projectId) {
-    const { role } = await requireProjectAccess(context, input.projectId);
-
-    if (role === "member") {
-      throw new AssistantError(
-        "Only project admins can connect a channel to a project",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
+    await requireProjectAccess(context, input.projectId, ["owner", "admin"]);
   }
 
   if (input.teammateId) {
@@ -73,7 +77,7 @@ export async function createChannelBinding(
 
   const existing = await context.repositories.channelBindings.getByExternalId(
     input.channel,
-    input.externalId,
+    externalId,
   );
 
   if (existing) {
@@ -88,7 +92,7 @@ export async function createChannelBinding(
     channel: input.channel,
     scopeType,
     scopeId: input.projectId ?? String(user.id),
-    externalId: input.externalId,
+    externalId,
     label: input.label ?? null,
     teammateId: input.teammateId ?? null,
     interactionMode: input.interactionMode ?? "automated",
@@ -99,7 +103,7 @@ export async function createChannelBinding(
     throw new AssistantError("Could not connect that channel", ErrorType.DATABASE_ERROR);
   }
 
-  return toBinding(created);
+  return toBinding(created, true, context.env);
 }
 
 export async function listChannelBindings(
@@ -108,8 +112,19 @@ export async function listChannelBindings(
   context.ensureDatabase();
   const user = context.requireUser();
   const rows = await context.repositories.channelBindings.listForUser(user.id);
+  const accessibleRows = hasProEntitlement(user)
+    ? rows
+    : rows.filter((row) => row.scope_type === "personal");
 
-  return { bindings: rows.map(toBinding) };
+  const bindings = await Promise.all(
+    accessibleRows.map(async (row) => {
+      const { canManage } = await requireChannelBindingAccess(context, row.id);
+
+      return toBinding(row, canManage, context.env);
+    }),
+  );
+
+  return { bindings };
 }
 
 export async function deleteChannelBinding(
@@ -119,6 +134,7 @@ export async function deleteChannelBinding(
   context.ensureDatabase();
   const user = context.requireUser();
 
+  await requireChannelBindingAccess(context, bindingId, true);
   await context.repositories.channelBindings.delete(bindingId, user.id);
 }
 

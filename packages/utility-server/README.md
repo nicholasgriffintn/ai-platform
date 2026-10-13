@@ -6,7 +6,6 @@ Import from the root or from a subpath so a Worker only pulls what it uses:
 
 ```ts
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { withRetries } from "@ngriffin_uk/polychat-utility-server/retries";
 ```
 

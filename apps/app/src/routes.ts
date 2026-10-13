@@ -58,6 +58,7 @@ export default [
   route("/models", "pages/models.tsx"),
   route("/apps", "pages/apps.tsx"),
   route("/pricing", "pages/pricing.tsx"),
+  route("/device", "pages/device.tsx"),
   route("/downloads", "pages/downloads.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),

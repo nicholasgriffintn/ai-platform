@@ -18,7 +18,7 @@
   "workers_dev": false,
   "preview_urls": false,
   "placement": {
-    "mode": "smart"
+    "region": "gcp:europe-southwest1"
   },
   "cache": {
     "enabled": false
@@ -49,6 +49,7 @@
     "APPLE_IOS_CLIENT_ID": "<REPLACE_ME>",
     "APPLE_WEB_CLIENT_ID": "<REPLACE_ME>",
     "SES_EMAIL_FROM": "<REPLACE_ME>",
+    "EMAIL_INBOUND_ADDRESS": "<REPLACE_ME>",
     "PUBLIC_ASSETS_URL": "<REPLACE_ME>",
     "PRIVATE_ASSETS_BUCKET_NAME": "assistant-private-assets",
     "PUBLIC_ASSETS_BUCKET": "assistant-assets",
@@ -94,12 +95,13 @@
       "service": "assistant-sandbox-worker"
     },
     {
-      "binding": "COMPUTER_WORKER",
-      "service": "assistant-computer-worker"
+      "binding": "AGENT_WORKER",
+      "service": "assistant-agent-worker"
     }
   ],
   "durable_objects": {
     "bindings": [
+      { "name": "SITES_RUNTIME", "class_name": "SiteRuntime" },
       { "name": "MACHINE_RUN_COORDINATOR", "class_name": "MachineRunCoordinator" },
       {
         "name": "SANDBOX_RUN_COORDINATOR",
@@ -129,7 +131,8 @@
       ]
     },
     { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] },
-    { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] }
+    { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] },
+    { "tag": "v6-sites-runtime", "new_sqlite_classes": ["SiteRuntime"] }
   ],
   "analytics_engine_datasets": [
     {

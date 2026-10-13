@@ -85,7 +85,11 @@ export function FilesPage({
       {tab === "memory" ? (
         <MemoryLibrary projectId={projectId} />
       ) : tab === "given" ? (
-        <SourcesLibrary projectId={projectId} createRequestKey={createRequestKey} />
+        <SourcesLibrary
+          key={projectId ?? "personal"}
+          projectId={projectId}
+          createRequestKey={createRequestKey}
+        />
       ) : (
         <OutputsLibrary
           basePath={getFilesTabPath(basePath, "made")}

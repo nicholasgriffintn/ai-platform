@@ -14,21 +14,21 @@ import {
   PROD_HOST,
 } from "~/config/app";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  createAssistantUserStore,
-  resolveAssistantEmailUser,
-} from "~/modules/auth/application/authUser";
+import { resolveAssistantEmailUser } from "~/modules/auth/application/authUser";
 import { resolveGitHubIdentity } from "~/modules/auth/application/github";
 import { createAssistantIdentityStore } from "~/modules/auth/application/identity";
+import { createAssistantSessionStores } from "~/modules/auth/application/sessionStore";
 
 export type { AssistantAuthUser } from "~/modules/auth/application/authUser";
 
 const MAGIC_LINK_TTL_MS = MAGIC_LINK_EXPIRATION_MINUTES * 60 * 1_000;
 
 export function createAssistantAuth(context: ServiceContext) {
+  const { sessions, users } = createAssistantSessionStores(context);
+
   return createAuth({
-    users: createAssistantUserStore(context),
-    sessions: context.repositories.sessions,
+    users,
+    sessions,
     identities: createAssistantIdentityStore(context),
     challenges: context.repositories.authChallenges,
     sessionTtlMs: AUTH_SESSION_TTL_MS,

@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 1, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nvidia/nvidia/usdcode family includes models that produce text.",
+  "models": {
+    "usdcode": {
+      "defaults": {
+        "name": "usdcode",
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents"
+      }
+    }
+  }
+}

@@ -1,17 +1,20 @@
 import { buildMemorySynthesisPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { memoryReflectionTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
 import { ai } from "~/infrastructure/ai";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { reflectTeammateMemory } from "~/modules/memory-documents/application/reflection";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import {
   SourceRepository,
   type SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import { defineTask } from "../workflows";
 
@@ -66,7 +69,15 @@ export const memorySynthesis = defineTask({
       }),
     );
 
-    const synthesis = await generateSynthesis(categorized, existingSynthesis, env);
+    const synthesisOwner = await createServiceContext({ env }).repositories.users.getUserById(
+      message.user_id,
+    );
+    const synthesis = await generateSynthesis(
+      categorized,
+      existingSynthesis,
+      env,
+      synthesisOwner ?? undefined,
+    );
 
     const synthesisRecord = await memorySynthesisRepository.createSynthesis({
       user_id: message.user_id,
@@ -130,6 +141,7 @@ async function generateSynthesis(
   categorized: CategorizedMemories,
   existing: any,
   env: IEnv,
+  user?: IUser,
 ): Promise<string> {
   const memoriesText = Object.entries(categorized)
     .map(
@@ -147,7 +159,11 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
   });
 
   try {
-    const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModel(env, user);
 
     return await ai.generateText({
       env,
@@ -168,3 +184,33 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
       .join("\n\n");
   }
 }
+
+export const memoryReflection = defineTask({
+  payload: memoryReflectionTaskDataSchema,
+  handle: async (input, { env, message, execution }) => {
+    if (!message.user_id) {
+      return { status: "error", message: "Memory maintenance requires an owner" };
+    }
+
+    const user = await createServiceContext({ env }).repositories.users.getUserById(
+      message.user_id,
+    );
+
+    if (!user) {
+      return { status: "skipped", message: "Memory owner no longer exists" };
+    }
+
+    const outcome = await reflectTeammateMemory(
+      createServiceContext({ env, user }),
+      input,
+      message.taskId,
+      execution,
+    );
+
+    return {
+      status: "success",
+      message: outcome === "applied" ? "Teammate memory corrected" : "Memory is current",
+      data: { outcome },
+    };
+  },
+});

@@ -16,11 +16,10 @@
           "agents",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "MiniMax-M2.7": {
@@ -29,25 +28,27 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "coding",
           "agents",
           "reasoning",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "supportsResponseFormat": true
       }
     },
     "MiniMax-M2.1": {
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMax-M2.1",
       "overrides": {
-        "name": "MiniMax-M2.1",
-        "contextWindow": 204800,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -57,9 +58,8 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "MiniMax-M2.5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -80,6 +80,7 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024
@@ -91,7 +92,8 @@
       "overrides": {
         "contextWindow": 1000000,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 25, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

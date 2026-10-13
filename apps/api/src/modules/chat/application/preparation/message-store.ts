@@ -1,5 +1,5 @@
 import type { ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { getAllAttachments } from "~/modules/chat/application/messages/attachments";
 import { messagesMatchStoredPrefix } from "~/modules/chat/application/messages/comparison";

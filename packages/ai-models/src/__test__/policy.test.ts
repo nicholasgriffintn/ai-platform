@@ -5,6 +5,7 @@ import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
   resolveDefaultChatModel,
+  resolveHostedAgentModel,
   resolveTierModel,
 } from "../policy.js";
 
@@ -25,8 +26,8 @@ describe("resolveDefaultChatModel", () => {
         provider: "google-ai-studio",
         isFree: true,
       }),
-      "gpt-5.6-luna": model({
-        matchingModel: "gpt-5.6-luna",
+      "gpt-6.1-sol": model({
+        matchingModel: "gpt-6.1-sol",
         provider: "openai",
       }),
     };
@@ -34,7 +35,7 @@ describe("resolveDefaultChatModel", () => {
     expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe(
       "google-ai-studio/gemini-3.5-flash",
     );
-    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-5.6-luna");
+    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-6.1-sol");
   });
 
   it("falls back to an enabled BYOK provider when nothing in the lineup is executable", () => {
@@ -88,17 +89,76 @@ describe("resolveDefaultChatModel", () => {
 describe("resolveTierModel", () => {
   it("resolves the coding role separately from the agent role", () => {
     const models: ModelConfig = {
-      "gpt-5.6-luna": model({ matchingModel: "gpt-5.6-luna", provider: "openai" }),
-      "gpt-5.6-sol": model({ matchingModel: "gpt-5.6-sol", provider: "openai" }),
+      "google-ai-studio/gemini-3.8-flash": model({
+        matchingModel: "gemini-3.8-flash",
+        provider: "google-ai-studio",
+      }),
+      "@cf/moonshotai/kimi-k2.7-code": model({
+        matchingModel: "@cf/moonshotai/kimi-k2.7-code",
+        provider: "workers-ai",
+      }),
     };
 
     expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
-      "gpt-5.6-luna",
+      "google-ai-studio/gemini-3.8-flash",
     );
     expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "gpt-5.6-sol",
+      "@cf/moonshotai/kimi-k2.7-code",
     );
     expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
+  });
+});
+
+describe("resolveHostedAgentModel", () => {
+  const models: ModelConfig = {
+    "google-ai-studio/gemini-3.8-flash": model({
+      matchingModel: "gemini-3.8-flash",
+      provider: "google-ai-studio",
+    }),
+    "@cf/moonshotai/kimi-k2.7-code": model({
+      matchingModel: "kimi-k2.7-code",
+      provider: "workers-ai",
+    }),
+  };
+
+  it("prefers an explicit executable model by id or matching model", () => {
+    expect(
+      resolveHostedAgentModel(
+        models,
+        { plan_id: "pro" },
+        "medium",
+        "agent",
+        "@cf/moonshotai/kimi-k2.7-code",
+      )?.id,
+    ).toBe("@cf/moonshotai/kimi-k2.7-code");
+    expect(
+      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "gemini-3.8-flash")
+        ?.id,
+    ).toBe("google-ai-studio/gemini-3.8-flash");
+  });
+
+  it("returns null for an explicit model the account cannot execute", () => {
+    expect(
+      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "no-such-model"),
+    ).toBeNull();
+    expect(
+      resolveHostedAgentModel(
+        models,
+        { plan_id: "free" },
+        "medium",
+        "agent",
+        "@cf/moonshotai/kimi-k2.7-code",
+      ),
+    ).toBeNull();
+  });
+
+  it("falls back to the tier lineup for the requested role", () => {
+    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
+      "google-ai-studio/gemini-3.8-flash",
+    );
+    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
+      "@cf/moonshotai/kimi-k2.7-code",
+    );
   });
 });
 

@@ -1,4 +1,5 @@
 import { connectorOperationRequiresApproval } from "@ngriffin_uk/polychat-ai-integrations";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, isDeadlinePassed } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -182,7 +183,7 @@ export async function authoriseConnectorOperation(params: {
 
   if (
     !run ||
-    run.initiatorUserId !== params.userId ||
+    !ownsResource(params.userId, run.initiatorUserId) ||
     run.conversationId !== params.scope.completionId ||
     run.status !== "running"
   ) {

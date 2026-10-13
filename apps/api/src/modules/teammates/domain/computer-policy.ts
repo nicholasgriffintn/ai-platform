@@ -1,13 +1,11 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { TeammateComputerInput } from "@ngriffin_uk/polychat-schemas";
 
-const COMMITTING_KEYS = new Set(["Return", "Tab", "ctrl+v"]);
-
 export function computerInputRequiresTakeover(input: TeammateComputerInput): boolean {
-  if (input.type === "type") {
-    return true;
-  }
-
-  return input.type === "key" && COMMITTING_KEYS.has(input.key);
+  return !authorise("computer.unattended", {
+    inputType: input.type,
+    key: input.type === "key" ? input.key : "",
+  }).allowed;
 }
 
 export function describeComputerTakeoverInput(input: TeammateComputerInput): string {

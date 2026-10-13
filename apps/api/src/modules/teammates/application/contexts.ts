@@ -2,16 +2,18 @@ import {
   getConnectorProviderConfig,
   isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
-import type {
-  MemoryDocument,
-  UpdateMemoryDocumentInput,
-  TeammateConnectionGrant,
-  TeammateConnectionGrantListResponse,
-  TeammateContext,
-  TeammateContextScope,
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+import {
+  isPolyTeammateId,
+  type MemoryDocument,
+  type UpdateMemoryDocumentInput,
+  type TeammateConnectionGrant,
+  type TeammateConnectionGrantListResponse,
+  type TeammateContext,
+  type TeammateContextScope,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatMemoryDocument } from "~/modules/memory-documents/application/memory-documents";
@@ -87,6 +89,8 @@ export async function ensureTeammateContext(
       actorUserId: user.id,
       scope,
       homeConversationId,
+      homeConversationType: isPolyTeammateId(teammateId) ? "poly" : "chat",
+      autonomyLevel: isPolyTeammateId(teammateId) ? "assistant" : null,
       memoryDocumentId,
       memoryDocumentName: `teammate-${generateId().toLowerCase()}`,
     });
@@ -126,7 +130,7 @@ export async function requireOwnedTeammateContext(
   const user = context.requireUser();
   const teammateContext = await context.repositories.teammateContexts.getById(contextId);
 
-  if (!teammateContext || teammateContext.actorUserId !== user.id) {
+  if (!teammateContext || !ownsResource(user.id, teammateContext.actorUserId)) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -258,7 +262,11 @@ export async function upsertTeammateConnectionGrant(
     input.connectionId,
   );
 
-  if (!connection || connection.user_id !== user.id || connection.status !== "connected") {
+  if (
+    !connection ||
+    !ownsResource(user.id, connection.user_id) ||
+    connection.status !== "connected"
+  ) {
     throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
   }
 

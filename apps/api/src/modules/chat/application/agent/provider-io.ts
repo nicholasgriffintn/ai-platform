@@ -4,8 +4,8 @@ import {
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-ai-agents";
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { isPlainObject } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import { normaliseMessageParts } from "~/modules/chat/application/messages/parts";

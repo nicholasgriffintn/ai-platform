@@ -1,10 +1,15 @@
 import {
+  parseTeammateApprovalStreaks,
+  parseTeammateStandingApprovals,
   teammateConnectionGrantSchema,
+  type TeammateApprovalStreak,
+  type TeammateAutonomyLevel,
   type TeammateConnectionGrant,
   type TeammateContext,
   type TeammateContextScope,
+  type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -23,6 +28,10 @@ function formatContext(row: TeammateContextRow): TeammateContext {
     homeConversationId: row.home_conversation_id,
     memoryDocumentId: row.memory_document_id,
     status: row.status,
+    autonomyLevel: row.autonomy_level ?? null,
+    standingApprovals: parseTeammateStandingApprovals(row.standing_approvals),
+    approvalStreaks: parseTeammateApprovalStreaks(row.approval_streaks),
+    ownerSeenAt: row.owner_seen_at ?? row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -55,15 +64,17 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     actorUserId: number;
     scope: TeammateContextScope;
     homeConversationId: string;
+    homeConversationType: "chat" | "poly";
+    autonomyLevel: TeammateAutonomyLevel | null;
     memoryDocumentId: string;
     memoryDocumentName: string;
   }): Promise<TeammateContext> {
     const revisionId = generateId();
     const statements = [
       this.env.DB.prepare(
-        `INSERT INTO memory_document (
-           id, scope_type, scope_id, kind, name, content, revision, created_by
-         ) VALUES (?, 'personal', ?, 'teammate_context', ?, '', 1, ?)`,
+        `INSERT INTO resource (
+           resource_type, id, scope_type, scope_id, kind, title, content, revision, created_by_user_id
+         ) VALUES ('memory', ?, 'personal', ?, 'teammate_context', ?, '', 1, ?)`,
       ).bind(
         params.memoryDocumentId,
         String(params.actorUserId),
@@ -71,26 +82,27 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
         params.actorUserId,
       ),
       this.env.DB.prepare(
-        `INSERT INTO memory_document_revision (
-           id, document_id, revision, content, change_note, created_by
-         ) VALUES (?, ?, 1, '', 'Created', ?)`,
+        `INSERT INTO resource_revision (resource_type, 
+           id, document_id, revision, text_content, change_note, created_by
+         ) VALUES ('memory', ?, ?, 1, '', 'Created', ?)`,
       ).bind(revisionId, params.memoryDocumentId, params.actorUserId),
       this.env.DB.prepare(
         `INSERT INTO conversation (
            id, user_id, type, title, project_id, permission_mode, created_at, updated_at
-         ) VALUES (?, ?, 'chat', (SELECT name FROM teammates WHERE id = ?), ?,
+         ) VALUES (?, ?, ?, (SELECT name FROM teammates WHERE id = ?), ?,
            'auto_accept_edits', datetime('now'), datetime('now'))`,
       ).bind(
         params.homeConversationId,
         params.actorUserId,
+        params.homeConversationType,
         params.teammateId,
         params.scope.type === "project" ? params.scope.id : null,
       ),
       this.env.DB.prepare(
         `INSERT INTO teammate_context (
            id, teammate_id, actor_user_id, scope_type, scope_id, home_conversation_id,
-           memory_document_id
-         ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           memory_document_id, autonomy_level, owner_seen_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         params.id,
         params.teammateId,
@@ -99,6 +111,8 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
         params.scope.id,
         params.homeConversationId,
         params.memoryDocumentId,
+        params.autonomyLevel,
+        new Date().toISOString(),
       ),
     ];
 
@@ -201,6 +215,48 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return rows.map(formatContext);
   }
 
+  async updateAutonomyLevel(
+    id: string,
+    autonomyLevel: TeammateAutonomyLevel,
+  ): Promise<TeammateContext | null> {
+    await this.executeRun(
+      "UPDATE teammate_context SET autonomy_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [autonomyLevel, id],
+    );
+
+    return this.getById(id);
+  }
+
+  async updateStandingApprovals(
+    id: string,
+    approvals: readonly TeammateStandingApproval[],
+  ): Promise<TeammateContext | null> {
+    await this.executeRun(
+      "UPDATE teammate_context SET standing_approvals = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [JSON.stringify(approvals), id],
+    );
+
+    return this.getById(id);
+  }
+
+  async updateApprovalStreaks(
+    id: string,
+    streaks: readonly TeammateApprovalStreak[],
+  ): Promise<void> {
+    await this.executeRun("UPDATE teammate_context SET approval_streaks = ? WHERE id = ?", [
+      JSON.stringify(streaks),
+      id,
+    ]);
+  }
+
+  async markOwnerSeen(id: string, seenAt: string, staleBefore: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE teammate_context SET owner_seen_at = ?
+       WHERE id = ? AND (owner_seen_at IS NULL OR owner_seen_at < ?)`,
+      [seenAt, id, staleBefore],
+    );
+  }
+
   async updateStatus(
     id: string,
     status: TeammateContext["status"],
@@ -222,7 +278,9 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
     if (status === "archived") {
       statements.push(
-        this.env.DB.prepare("DELETE FROM teammate_connection_grant WHERE context_id = ?").bind(id),
+        this.env.DB.prepare(
+          "DELETE FROM resource_grant WHERE kind = 'connection' AND context_id = ?",
+        ).bind(id),
       );
     }
 
@@ -258,7 +316,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
            AND json_extract(configuration, '$.teammateContextId') IN (${placeholders})`,
       ).bind(...contextIds),
       this.env.DB.prepare(
-        `DELETE FROM teammate_connection_grant WHERE context_id IN (${placeholders})`,
+        `DELETE FROM resource_grant WHERE kind = 'connection' AND context_id IN (${placeholders})`,
       ).bind(...contextIds),
       this.env.DB.prepare(
         `UPDATE teammate_context
@@ -283,7 +341,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
            AND json_extract(configuration, '$.teammateContextId') IN (${contextIds})`,
       ).bind(workspaceId, actorUserId),
       this.env.DB.prepare(
-        `DELETE FROM teammate_connection_grant WHERE context_id IN (${contextIds})`,
+        `DELETE FROM resource_grant WHERE kind = 'connection' AND context_id IN (${contextIds})`,
       ).bind(workspaceId, actorUserId),
       this.env.DB.prepare(
         `UPDATE teammate_context
@@ -295,8 +353,8 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async listConnectionGrants(contextId: string): Promise<TeammateConnectionGrant[]> {
     const rows = await this.runQuery<TeammateConnectionGrantRow>(
-      `SELECT * FROM teammate_connection_grant
-       WHERE context_id = ? ORDER BY created_at ASC`,
+      `SELECT * FROM resource_grant
+       WHERE kind = 'connection' AND context_id = ? ORDER BY created_at ASC`,
       [contextId],
     );
 
@@ -311,14 +369,14 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
   }): Promise<TeammateConnectionGrant | null> {
     const id = `teammate_grant_${generateId()}`;
     const row = await this.runQuery<TeammateConnectionGrantRow>(
-      `INSERT INTO teammate_connection_grant (
-         id, context_id, connection_id, allowed_operations, revision
-       ) VALUES (?, ?, ?, ?, 1)
-       ON CONFLICT(context_id, connection_id) DO UPDATE SET
+      `INSERT INTO resource_grant (
+         kind, id, context_id, connection_id, allowed_operations, revision
+       ) VALUES ('connection', ?, ?, ?, ?, 1)
+       ON CONFLICT(context_id, connection_id) WHERE context_id IS NOT NULL DO UPDATE SET
          allowed_operations = excluded.allowed_operations,
-         revision = teammate_connection_grant.revision + 1,
+         revision = resource_grant.revision + 1,
          updated_at = CURRENT_TIMESTAMP
-       WHERE ? IS NULL OR teammate_connection_grant.revision = ?
+       WHERE ? IS NULL OR resource_grant.revision = ?
        RETURNING *`,
       [
         id,

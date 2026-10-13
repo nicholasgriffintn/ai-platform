@@ -4,10 +4,12 @@ import type {
   D1Database,
   KVNamespace,
   Queue,
+  RateLimit,
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
+import type { AgentHarnessRpc } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -41,8 +43,15 @@ export type IEnv = {
   SANDBOX_API_BASE_URL?: string;
   ANTHROPIC_API_KEY?: string;
   AI_GATEWAY_TOKEN?: string;
+  CLOUDFLARE_WEB_SEARCH_TOKEN?: string;
+  CLOUDFLARE_WEB_SEARCH_PROVIDER?: string;
+  CLOUDFLARE_WEB_SEARCH_BYOK_ALIAS?: string;
+  CLOUDFLARE_AI_SEARCH_TOKEN?: string;
+  CLOUDFLARE_AI_SEARCH_NAMESPACE?: string;
+  CLOUDFLARE_AI_SEARCH_INSTANCE?: string;
   SANDBOX_WORKER?: Fetcher;
-  COMPUTER_WORKER?: Fetcher;
+  AGENT_WORKER?: Fetcher & AgentHarnessRpc;
+  SITES_RUNTIME?: DurableObjectNamespace;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
@@ -142,6 +151,7 @@ export type IEnv = {
   SLACK_BOT_TOKEN?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
   TELEGRAM_BOT_TOKEN?: string;
+  EMAIL_INBOUND_ADDRESS?: string;
   SANDBOX_DEFAULT_TIMEOUT_SECONDS?: string;
   SANDBOX_MAX_TIMEOUT_SECONDS?: string;
   SANDBOX_MAX_CONCURRENT_RUNS?: string;
@@ -149,7 +159,6 @@ export type IEnv = {
   SANDBOX_MAX_RUN_STARTS_PER_MINUTE?: string;
   SANDBOX_ALLOWED_MODELS?: string;
   SANDBOX_BLOCKED_MODELS?: string;
-  SANDBOX_INSTANCE_TYPE?: string;
   SANDBOX_PREVIEW_HOST?: string;
   REALTIME_MAX_SESSION_SECONDS?: string;
   CLOUDFLARE_ANALYTICS_API_TOKEN?: string;
@@ -176,8 +185,8 @@ export type IEnv = {
   SES_EMAIL_FROM?: string;
   HCAPTCHA_SECRET_KEY?: string;
   HCAPTCHA_SITE_KEY?: string;
-  FREE_RATE_LIMITER?: unknown;
-  PRO_RATE_LIMITER?: unknown;
+  FREE_RATE_LIMITER?: RateLimit;
+  PRO_RATE_LIMITER?: RateLimit;
   ENV?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EMBEDDINGS_OUTPUT_BUCKET?: string;

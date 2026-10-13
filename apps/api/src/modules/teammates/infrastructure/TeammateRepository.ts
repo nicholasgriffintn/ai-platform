@@ -8,9 +8,10 @@ import type {
 import {
   PLATFORM_TEAMMATE_AUTHOR_USER_ID,
   PLATFORM_TEAMMATE_SCOPE_ID,
+  POLY_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { Teammate } from "~/infrastructure/database/schema";
@@ -112,9 +113,9 @@ export class TeammateRepository extends BaseRepository {
     return this.runQuery<Teammate>(
       `SELECT * FROM teammates
 			 WHERE (owner_scope_type = 'user' AND owner_scope_id = ?)${workspaceClause}
-				OR owner_scope_type = 'platform'
+				OR (owner_scope_type = 'platform' AND id != ?)
 			 ORDER BY created_at DESC`,
-      [String(userId), ...uniqueWorkspaceIds],
+      [String(userId), ...uniqueWorkspaceIds, POLY_TEAMMATE_ID],
     );
   }
 
@@ -280,9 +281,9 @@ export class TeammateRepository extends BaseRepository {
   public async deleteTeammate(teammateId: string): Promise<void> {
     await this.executeBatch([
       this.env.DB.prepare(
-        `UPDATE memory_document
+        `UPDATE resource
          SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-         WHERE id IN (
+         WHERE resource_type = 'memory' AND id IN (
            SELECT memory_document_id FROM teammate_context WHERE teammate_id = ?
          ) AND deleted_at IS NULL`,
       ).bind(teammateId),

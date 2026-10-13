@@ -19,7 +19,8 @@
         "openWeights": true,
         "description": "DeepSeek's latest model optimized for coding, analysis, and mathematical tasks with strong reasoning capabilities.",
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "December 1, 2025"
+        "releaseDate": "December 1, 2025",
+        "supportsResponseFormat": true
       }
     },
     "deepseek-chat-v3-1": {
@@ -33,6 +34,133 @@
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-pro-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek Pro Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek Pro family.",
+        "contextWindow": 1048576,
+        "maxTokens": 393216,
+        "releaseDate": "September 14, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v3-0324": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3 0324",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 128000,
+        "maxTokens": 115200,
+        "releaseDate": "March 24, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-deepseek-v3-1": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.1",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 32768,
+        "releaseDate": "August 21, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v3-1-terminus": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.1 Terminus",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 147456,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "September 22, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "deepseek-deepseek-v3-2-exp": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.2 Exp",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 147456,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "September 29, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "deepseek-deepseek-v4-flash-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V4 Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek V4 Flash family.",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "releaseDate": "August 1, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -64,18 +192,7 @@
         "name": "DeepSeek Pro Latest",
         "openWeights": false,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 1048576,
-        "maxTokens": 943718,
-        "releaseDate": "September 14, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsResponseFormat": true
       }
     },
     "deepseek-r1-05-28": {
@@ -96,10 +213,10 @@
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "May 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.6,
+          "intelligenceIndex": 13.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -112,10 +229,10 @@
         "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
+          "intelligenceIndex": 13.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -133,10 +250,10 @@
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "May 29, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.4,
+          "intelligenceIndex": 8.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -154,10 +271,10 @@
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "May 29, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.4,
+          "intelligenceIndex": 8.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -175,10 +292,10 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.9,
+          "intelligenceIndex": 7.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -209,10 +326,10 @@
         "releaseDate": "January 29, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 9.8,
+          "intelligenceIndex": 7.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -294,10 +411,10 @@
         "releaseDate": "December 26, 2024",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 8.5,
+          "codingIndex": 23,
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -318,10 +435,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "March 24, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 9.7,
+          "codingIndex": 21.2,
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -336,10 +453,10 @@
         "reliability": 1,
         "releaseDate": "March 24, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 9.7,
+          "codingIndex": 21.2,
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -375,10 +492,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 21,
+          "intelligenceIndex": 13.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -415,18 +532,16 @@
         "name": "DeepSeek V3.1 Terminus",
         "openWeights": true,
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "maxTokens": 32768,
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "September 22, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.4,
+          "intelligenceIndex": 13.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -444,10 +559,10 @@
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "September 22, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.4,
+          "intelligenceIndex": 13.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -463,6 +578,7 @@
     },
     "deepseek-v3-2": {
       "defaults": {
+        "name": "DeepSeek V3.2",
         "openWeights": true,
         "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes, sparse attention, and tool-use",
         "contextWindow": 163840,
@@ -482,10 +598,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": 16,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -508,10 +624,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 21.3,
+          "intelligenceIndex": 13.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -531,10 +647,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.2,
+          "intelligenceIndex": 14.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -613,10 +729,11 @@
         "contextWindow": 1048576,
         "maxTokens": 384000,
         "strengths": [
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "supportsResponseFormat": false,
@@ -629,10 +746,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -641,7 +758,7 @@
         "name": "DeepSeek V4 Flash Latest",
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 943718,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
@@ -652,35 +769,6 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
-      }
-    },
-    "deepseek-v4-pro": {
-      "defaults": {
-        "name": "DeepSeek V4 Pro",
-        "openWeights": true,
-        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 512000,
-        "maxTokens": 384000,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "April 24, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -718,10 +806,10 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -764,10 +852,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

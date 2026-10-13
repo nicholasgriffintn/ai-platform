@@ -1,4 +1,8 @@
-import { councilDecisionInputSchema, councilMemberIds } from "@ngriffin_uk/polychat-schemas";
+import {
+  councilDecisionInputSchema,
+  councilMemberIds,
+  reviewOutputInputSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
@@ -11,6 +15,7 @@ export const select_council_members: FunctionToolDescriptor = {
     "Ask the user which council members should debate their question. Renders a picker in the conversation, pre-ticked with the members you recommend. Call this before run_council whenever the user has not already named the members they want, then convene the council with what they choose.",
   type: "normal",
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: z.object({
     question: z
       .string()
@@ -43,6 +48,7 @@ export const run_council: FunctionToolDescriptor = {
     "Convene a council of named perspectives to debate one question. Each member answers in its own completion using the conversation's model, reading what came before, and each turn chooses who speaks next until the chamber converges. Turns appear in the conversation as they happen. Use for genuinely contested decisions and designs, not for questions with a retrievable answer.",
   type: "normal",
   permissions: ["orchestration"],
+  effects: { effectClass: "read" },
   intentEvidence: (input) => ({
     operation: "run_council",
     question: input.question,
@@ -77,4 +83,15 @@ export const run_council: FunctionToolDescriptor = {
         "Optional concrete options and evaluation criteria. After the debate, an independent decision model returns the recommended option and calibrated probabilities.",
       ),
   }),
+};
+
+export const review_output: FunctionToolDescriptor = {
+  name: "review_output",
+  description:
+    "Ask a four-seat council (sceptic, researcher, customer, strategist) to review a finished Output before it is sent or published. Each seat critiques it, reads the others and votes; an adjudicator returns ship, revise or hold with a revision brief and any dissent, saved on the Output. Use it before sending or publishing work that matters, or when the user asks for a review. It costs about nine model calls.",
+  type: "normal",
+  permissions: ["orchestration"],
+  effects: { effectClass: "draft" },
+  intentEvidence: (input) => ({ operation: "review_output", outputId: input.outputId }),
+  inputSchema: reviewOutputInputSchema,
 };

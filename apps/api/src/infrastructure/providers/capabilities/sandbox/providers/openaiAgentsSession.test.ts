@@ -24,6 +24,7 @@ describe("OpenAI Agents sandbox adapter", () => {
           runtimes: [],
           setupTimeoutSeconds: 600,
           environment: [],
+          networkHosts: [],
         },
       },
     });
@@ -71,6 +72,7 @@ describe("OpenAI Agents sandbox adapter", () => {
           runtimes: [],
           setupTimeoutSeconds: 600,
           environment: [],
+          networkHosts: [],
         },
       },
     });

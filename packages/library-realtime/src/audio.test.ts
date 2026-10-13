@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   decodePcm16Audio,
+  encodePcm16Wav,
   requestRealtimeAudioStream,
   requestRealtimeVideoStream,
   startPcm16MicrophoneStream,
@@ -44,6 +45,10 @@ class FakeAudioWorkletNode extends FakeAudioNode {
 
   port = {
     listeners: new Set<FakeWorkletMessageHandler>(),
+    started: false,
+    start: () => {
+      this.port.started = true;
+    },
     postMessage: vi.fn(),
     addEventListener: (_type: string, listener: FakeWorkletMessageHandler) => {
       this.port.listeners.add(listener);
@@ -63,6 +68,10 @@ class FakeAudioWorkletNode extends FakeAudioNode {
   }
 
   emit(input: Float32Array) {
+    if (!this.port.started) {
+      return;
+    }
+
     for (const listener of this.port.listeners) {
       listener({ data: { input } });
     }
@@ -74,6 +83,10 @@ class FakeAudioContext {
 
   audioWorklet?: { addModule: ReturnType<typeof vi.fn> };
   close = vi.fn();
+  state: AudioContextState = "suspended";
+  resume = vi.fn(async () => {
+    this.state = "running";
+  });
   createGain = vi.fn(() => new FakeGainNode() as unknown as GainNode);
   createMediaStreamSource = vi.fn(
     () => new FakeAudioNode() as unknown as MediaStreamAudioSourceNode,
@@ -135,6 +148,19 @@ describe("realtime audio helpers", () => {
     vi.unstubAllGlobals();
   });
 
+  it("wraps PCM16 chunks in a mono WAV header that decoders accept", () => {
+    const wav = encodePcm16Wav([new Int16Array([1, -1]).buffer, new Int16Array([7]).buffer], 16000);
+    const view = new DataView(wav);
+    const ascii = (offset: number) =>
+      String.fromCharCode(...new Uint8Array(wav.slice(offset, offset + 4)));
+
+    expect([ascii(0), ascii(8), ascii(12), ascii(36)]).toEqual(["RIFF", "WAVE", "fmt ", "data"]);
+    expect(view.getUint32(4, true)).toBe(42);
+    expect(view.getUint32(24, true)).toBe(16000);
+    expect(view.getUint32(40, true)).toBe(6);
+    expect(Array.from(new Int16Array(wav.slice(44)))).toEqual([1, -1, 7]);
+  });
+
   it("captures microphone PCM through an AudioWorklet when available", async () => {
     installAudioContext({ withAudioWorklet: true });
     const onChunk = vi.fn();
@@ -151,6 +177,7 @@ describe("realtime audio helpers", () => {
       "/realtime/pcm16-microphone-processor.js",
     );
     expect(audioContext.createScriptProcessor).not.toHaveBeenCalled();
+    expect(audioContext.resume).toHaveBeenCalled();
 
     const worklet = FakeAudioWorkletNode.instances[0];
 

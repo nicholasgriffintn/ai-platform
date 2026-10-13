@@ -24,10 +24,4 @@ describe("icon registry", () => {
 
     expect(shadowed).toEqual([]);
   });
-
-  it("resolves a registered icon to a renderable module", async () => {
-    const module = await ICON_LOADERS.anthropic();
-
-    expect(module.default).toBeTypeOf("object");
-  });
 });

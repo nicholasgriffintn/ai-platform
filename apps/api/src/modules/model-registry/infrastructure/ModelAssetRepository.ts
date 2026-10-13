@@ -7,22 +7,33 @@ import type {
   ModelVersionStatus,
   WeightFormat,
 } from "@ngriffin_uk/polychat-schemas";
-import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, desc, eq, getTableColumns, inArray } from "drizzle-orm";
+import { chunkArray, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { and, desc, eq, getTableColumns, inArray, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
+  type ModelAssetRecord,
   modelAsset,
+  type ModelAssetFileRecord as ModelFileRecord,
   modelAssetFile,
+  modelAssetValues,
+  modelAssetFileValues,
+} from "~/infrastructure/database/model-storage";
+import {
   modelAssetVersion,
-  modelLineageEdge,
+  resourceLink,
+  modelConfiguration,
+  modelRecord,
 } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
-export type ModelAssetRecord = typeof modelAsset.$inferSelect;
-export type ModelVersionRecord = typeof modelAssetVersion.$inferSelect;
-export type ModelFileRecord = typeof modelAssetFile.$inferSelect;
+export type { ModelAssetRecord } from "~/infrastructure/database/model-storage";
+export type ModelVersionRecord = Omit<
+  typeof modelAssetVersion.$inferSelect,
+  "dataset_profile" | "asset_kind"
+>;
+export type { ModelAssetFileRecord as ModelFileRecord } from "~/infrastructure/database/model-storage";
 
 export interface CreateVersionInput {
   assetId: string;
@@ -34,19 +45,27 @@ export interface CreateVersionInput {
   files: Array<{ path: string; size: number; sha256: string | null; format: WeightFormat | null }>;
 }
 
-const FILE_COLUMN_COUNT = Object.keys(getTableColumns(modelAssetFile)).length;
+const {
+  dataset_profile: _datasetProfile,
+  asset_kind: _assetKind,
+  ...versionColumns
+} = getTableColumns(modelAssetVersion);
+
+const FILE_COLUMN_COUNT = Object.keys(getTableColumns(modelRecord)).length + 6;
 
 export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
   private fileInserts(versionId: string, files: CreateVersionInput["files"]) {
     return chunkArray(files, BaseRepository.rowsPerInsert(FILE_COLUMN_COUNT)).map((page) =>
-      this.database.insert(modelAssetFile).values(
-        page.map((file) => ({
-          version_id: versionId,
-          path: file.path,
-          size: file.size,
-          sha256: file.sha256,
-          format: file.format,
-        })),
+      this.database.insert(modelRecord).values(
+        page.map((file) =>
+          modelAssetFileValues({
+            version_id: versionId,
+            path: file.path,
+            size: file.size,
+            sha256: file.sha256,
+            format: file.format,
+          }),
+        ),
       ),
     );
   }
@@ -58,14 +77,17 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     sourceRef: string;
   }): Promise<ModelAssetRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelAsset)
+      .select(modelAsset)
+      .from(modelConfiguration)
       .where(
         and(
-          eq(modelAsset.workspace_id, input.workspaceId),
-          eq(modelAsset.kind, input.kind),
-          eq(modelAsset.source, input.source),
-          eq(modelAsset.source_ref, input.sourceRef),
+          eq(modelConfiguration.kind, "asset"),
+          and(
+            eq(modelAsset.workspace_id, input.workspaceId),
+            eq(modelAsset.kind, input.kind),
+            eq(modelAsset.source, input.source),
+            eq(modelAsset.source_ref, input.sourceRef),
+          ),
         ),
       )
       .limit(1);
@@ -82,20 +104,24 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     createdBy: number | null;
   }): Promise<ModelAssetRecord> {
     const [record] = await this.database
-      .insert(modelAsset)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        kind: input.kind,
-        source: input.source,
-        source_ref: input.sourceRef,
-        display_name: input.displayName,
-        created_by: input.createdBy,
-      })
+      .insert(modelConfiguration)
+      .values(
+        modelAssetValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          kind: input.kind,
+          source: input.source,
+          source_ref: input.sourceRef,
+          display_name: input.displayName,
+          created_by: input.createdBy,
+        }),
+      )
       .onConflictDoNothing()
-      .returning();
+      .returning(modelAsset);
 
     if (record) {
+      await publishModelPlatformChanged(this.env, record?.workspace_id);
+
       return record;
     }
 
@@ -110,21 +136,29 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async listAssets(workspaceId: string, kind?: ModelAssetKind): Promise<ModelAssetRecord[]> {
     return this.database
-      .select()
-      .from(modelAsset)
+      .select(modelAsset)
+      .from(modelConfiguration)
       .where(
-        kind
-          ? and(eq(modelAsset.workspace_id, workspaceId), eq(modelAsset.kind, kind))
-          : eq(modelAsset.workspace_id, workspaceId),
+        and(
+          eq(modelConfiguration.kind, "asset"),
+          kind
+            ? and(eq(modelAsset.workspace_id, workspaceId), eq(modelAsset.kind, kind))
+            : eq(modelAsset.workspace_id, workspaceId),
+        ),
       )
       .orderBy(desc(modelAsset.created_at));
   }
 
   async getAsset(workspaceId: string, assetId: string): Promise<ModelAssetRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelAsset)
-      .where(and(eq(modelAsset.workspace_id, workspaceId), eq(modelAsset.id, assetId)))
+      .select(modelAsset)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "asset"),
+          and(eq(modelAsset.workspace_id, workspaceId), eq(modelAsset.id, assetId)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -132,7 +166,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async findVersion(assetId: string, revision: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(and(eq(modelAssetVersion.asset_id, assetId), eq(modelAssetVersion.revision, revision)))
       .limit(1);
@@ -153,18 +187,20 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
         attributes: input.attributes,
         created_by: input.createdBy,
       })
-      .returning();
+      .returning(versionColumns);
     const [[record]] = await this.database.batch([
       versionInsert,
       ...this.fileInserts(id, input.files),
     ]);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record;
   }
 
   async getVersion(workspaceId: string, versionId: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(
         and(eq(modelAssetVersion.workspace_id, workspaceId), eq(modelAssetVersion.id, versionId)),
@@ -176,7 +212,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getVersionById(versionId: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(eq(modelAssetVersion.id, versionId))
       .limit(1);
@@ -186,9 +222,9 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getAssetById(assetId: string): Promise<ModelAssetRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelAsset)
-      .where(eq(modelAsset.id, assetId))
+      .select(modelAsset)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "asset"), eq(modelAsset.id, assetId)))
       .limit(1);
 
     return record ?? null;
@@ -197,7 +233,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listVersions(workspaceId: string, versionIds?: string[]): Promise<ModelVersionRecord[]> {
     if (!versionIds) {
       return this.database
-        .select()
+        .select(versionColumns)
         .from(modelAssetVersion)
         .where(eq(modelAssetVersion.workspace_id, workspaceId))
         .orderBy(desc(modelAssetVersion.created_at));
@@ -205,7 +241,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     const records = await this.selectInChunks(versionIds, (page) =>
       this.database
-        .select()
+        .select(versionColumns)
         .from(modelAssetVersion)
         .where(
           and(eq(modelAssetVersion.workspace_id, workspaceId), inArray(modelAssetVersion.id, page)),
@@ -217,7 +253,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async listAssetVersions(assetId: string): Promise<ModelVersionRecord[]> {
     return this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(eq(modelAssetVersion.asset_id, assetId))
       .orderBy(desc(modelAssetVersion.created_at));
@@ -227,10 +263,13 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     versionId: string,
     updates: Partial<Pick<ModelVersionRecord, "status" | "attributes" | "failure_reason">>,
   ): Promise<void> {
-    await this.database
+    const [changed] = await this.database
       .update(modelAssetVersion)
       .set({ ...updates, updated_at: new Date().toISOString() })
-      .where(eq(modelAssetVersion.id, versionId));
+      .where(eq(modelAssetVersion.id, versionId))
+      .returning({ workspaceId: modelAssetVersion.workspace_id });
+
+    await publishModelPlatformChanged(this.env, changed?.workspaceId);
   }
 
   async finaliseRevision(
@@ -251,9 +290,14 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
           updated_at: new Date().toISOString(),
         })
         .where(eq(modelAssetVersion.id, versionId)),
-      this.database.delete(modelAssetFile).where(eq(modelAssetFile.version_id, versionId)),
+      this.database
+        .delete(modelRecord)
+        .where(and(eq(modelRecord.kind, "file"), eq(modelAssetFile.version_id, versionId))),
       ...this.fileInserts(versionId, input.files),
     ]);
+    const version = await this.getVersionById(versionId);
+
+    await publishModelPlatformChanged(this.env, version?.workspace_id);
   }
 
   async retryFailedVersion(
@@ -270,16 +314,18 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
           eq(modelAssetVersion.status, "failed"),
         ),
       )
-      .returning();
+      .returning(versionColumns);
+
+    await publishModelPlatformChanged(this.env, version?.workspace_id);
 
     return version ?? null;
   }
 
   async listFiles(versionId: string): Promise<ModelFileRecord[]> {
     return this.database
-      .select()
-      .from(modelAssetFile)
-      .where(eq(modelAssetFile.version_id, versionId))
+      .select(modelAssetFile)
+      .from(modelRecord)
+      .where(and(eq(modelRecord.kind, "file"), eq(modelAssetFile.version_id, versionId)))
       .orderBy(modelAssetFile.path);
   }
 
@@ -289,8 +335,9 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     relation: LineageRelation;
   }): Promise<void> {
     await this.database
-      .insert(modelLineageEdge)
+      .insert(resourceLink)
       .values({
+        kind: "model_lineage",
         from_version_id: edge.fromVersionId,
         to_version_id: edge.toVersionId,
         relation: edge.relation,
@@ -301,13 +348,18 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listLineage(workspaceId: string): Promise<LineageEdge[]> {
     const rows = await this.database
       .select({
-        fromVersionId: modelLineageEdge.from_version_id,
-        toVersionId: modelLineageEdge.to_version_id,
-        relation: modelLineageEdge.relation,
+        fromVersionId: sql<string>`${resourceLink.from_version_id}`,
+        toVersionId: sql<string>`${resourceLink.to_version_id}`,
+        relation: sql<LineageRelation>`${resourceLink.relation}`,
       })
-      .from(modelLineageEdge)
-      .innerJoin(modelAssetVersion, eq(modelAssetVersion.id, modelLineageEdge.to_version_id))
-      .where(eq(modelAssetVersion.workspace_id, workspaceId));
+      .from(resourceLink)
+      .innerJoin(modelAssetVersion, eq(modelAssetVersion.id, resourceLink.to_version_id))
+      .where(
+        and(
+          eq(resourceLink.kind, "model_lineage"),
+          eq(modelAssetVersion.workspace_id, workspaceId),
+        ),
+      );
 
     return rows;
   }

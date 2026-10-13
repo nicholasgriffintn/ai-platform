@@ -1,5 +1,83 @@
 # @ngriffin_uk/polychat-component-models
 
+## 1.1.1
+
+### Patch Changes
+
+- 6967a07: Host agent harnesses on Polychat's own ports. The agent worker now runs the Pi and OpenCode harnesses and a Hermes container behind one RPC contract, with models served by the API's OpenAI-compatible `/agents/model` port, workspace tools gated by the permission mode, and every reply streamed into chat as it is generated. OpenAI Agents joins as a remote harness through the same `agent-harness` chat provider. The sandbox worker moves to Sandbox SDK 1.0 with app-owned `Workspace` and `Computer` classes, absorbs the computer worker, and keeps caches and browser profiles with `DirectoryBackup`.
+- Updated dependencies [6967a07]
+  - @ngriffin_uk/polychat-schemas@1.3.0
+  - @ngriffin_uk/polychat-utility-core@0.3.1
+
+## 1.1.0
+
+### Minor Changes
+
+- 462cbe7: Record how long providers keep API prompts and replies. Model configs gain an optional `dataRetention` block with the documented maximum days, how zero retention is reached (`default`, `account_setting` or `on_request`) and the policy URL. OpenAI, Azure OpenAI, Anthropic, Gemini API, Groq, Mistral and Bedrock carry their published defaults, and the model picker's hover preview shows them with a link to the policy.
+- c126d04: Add model governance to Work. Workspaces can search Hugging Face, import models and datasets pinned to a commit, and review static inspection evidence that never loads the weights. Approvals follow versioned policies with dry runs, exceptions and expiry. Suites can be compared across serving routes with confidence intervals, and fine-tunes run on Hugging Face Jobs from governed conversation snapshots with lineage and a compute record. Approved versions can be served on dedicated Inference Endpoints, drift is caught by nightly replays, and any route or version exports as a CycloneDX ML-BOM. Workspaces can enforce approved routes in project chats, and generations carry route and version tags. Each workspace connects its own Hugging Face account or organisation under Govern, with the platform token as an optional default, and retiring a deployed route deletes its endpoint. Training moves from Profile to Models › Build, and Hub staging for Bedrock imports is keyed by commit.
+- 90f7110: Turn Work › Models into a model platform on the workspace's own provider accounts. Connect Hugging Face, AWS, Together, Fireworks, Nebius, Google Vertex, Azure AI Foundry, RunPod, Cloudflare Workers AI or any OpenAI-compatible endpoint, then upload weights or register them from a bucket, build governed datasets from files, the Hub, buckets, rated conversations or a teacher model, and train with supervised, preference, reinforcement, distillation, embedding, merge or quantise runs after comparing trainers on fit and cost. Deployments are sized and priced per host, serve through aliases with eval gates, canaries and rollback, and appear in chat as models. Governance adds per-action permissions with separation of duties, budgets with spend approval, idle pause, revocation across lineage, erasure requests, an audit trail and CycloneDX, SPDX, model card and training content exports.
+
+  The personal Training app, the training Worker and `component-experiences/training` are removed, and the API now mounts the platform under `/model-platform`.
+
+### Patch Changes
+
+- b105d00: Expose approved workspace aliases in Chat, resolve each alias once per request, and enforce workspace membership, current approval and deployment availability. Apply promotion checks to initial targets and rollbacks, and create deployment aliases without a target until explicitly promoted.
+
+  Claim spend approvals before execution to prevent duplicate starts. Add executing and failed request states, enforce separate approval when configured, and recheck budgets before starting approved work.
+
+  Preserve multipart upload progress under concurrent requests and order alias approval events reliably when timestamps tie. Keep internal evaluation and synthetic dataset calls scoped to their workspace deployment.
+
+- b105d00: Claim provider creation atomically to prevent duplicate training jobs and deployments. Preserve cancellation requests during submission, expose the cancelling state, and register jobs that finish immediately. Recheck model approval before creation and require reconciliation for interrupted provider requests.
+
+  Settle hosting intervals and replace training costs atomically, and preserve accrued costs when pausing, scaling or deleting a deployment. Apply migration 0055 before deploying the API.
+
+- 1df361b: Remove unused public exports and dead helpers, consolidate duplicated duration, identifier, status, model-grouping, JSON, SMS and timing-safe comparison logic into shared modules, narrow the desktop backend option types to the interfaces each runner uses, and surface previously silent validation and rewrite failures in the UI.
+- Updated dependencies [6db7a00]
+- Updated dependencies [ece96c4]
+- Updated dependencies [33133cc]
+- Updated dependencies [4968623]
+- Updated dependencies [b4c0c65]
+- Updated dependencies [dd4389b]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [297b848]
+- Updated dependencies [3c23660]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [d25fd94]
+- Updated dependencies [5ead2cc]
+- Updated dependencies [dd4389b]
+- Updated dependencies [462cbe7]
+- Updated dependencies [b105d00]
+- Updated dependencies [c126d04]
+- Updated dependencies [b105d00]
+- Updated dependencies [90f7110]
+- Updated dependencies [b105d00]
+- Updated dependencies [251ac59]
+- Updated dependencies [41bb6a8]
+- Updated dependencies [67b52ed]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [67b52ed]
+- Updated dependencies [ee31a6d]
+- Updated dependencies [169e2f5]
+- Updated dependencies [5deae3a]
+- Updated dependencies [6966643]
+- Updated dependencies [1e5cafb]
+- Updated dependencies [462cbe7]
+- Updated dependencies [e4ba666]
+- Updated dependencies [1df361b]
+- Updated dependencies [6e76041]
+- Updated dependencies [d3f1df3]
+- Updated dependencies [57f8a16]
+- Updated dependencies [07290f2]
+- Updated dependencies [cb9ddcc]
+  - @ngriffin_uk/polychat-schemas@1.2.0
+  - @ngriffin_uk/polychat-utility-core@0.3.0
+  - @ngriffin_uk/polychat-library-chat@1.1.0
+  - @ngriffin_uk/polychat-component-ui@0.4.0
+  - @ngriffin_uk/polychat-utility-react@0.3.0
+
 ## 1.0.1
 
 ### Patch Changes

@@ -24,8 +24,15 @@ import {
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
   chatRunCommandReceiptSchema,
+  artifactBindingReadResponseSchema,
   conversationGroupSchema,
+  queuedChatMessageSchema,
+  queuedChatMessagesResponseSchema,
+  type ArtifactBindingReadRequest,
+  type ArtifactBindingReadResponse,
   type ChatCompletionResponseBody,
+  type EnqueueChatMessageRequest,
+  type QueuedChatMessage,
   type ChatRun,
   type ChatRunCommandReceipt,
   type ChatRunSnapshotResponse,
@@ -48,7 +55,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { projectChatRequestSettings } from "../chat-request-settings.js";
 import {
@@ -61,6 +68,7 @@ import { parseCompactConversationResponse } from "../compact-conversation-respon
 import { normaliseConversationResponse } from "../conversation-response.js";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper.js";
 import { ApiError, createApiErrorFromResponse, returnFetchedData } from "../http.js";
+import type { ConversationShare } from "../shared-conversation.js";
 import { getSandboxTaskToolNames } from "../task-tools.js";
 import { yieldToMainThread } from "../yield-to-main-thread.js";
 
@@ -128,7 +136,7 @@ export interface StreamChatCompletionsParams {
   onProgress: StreamProgressHandler;
   onStateChange: (state: string, data?: any) => void;
   provider?: string;
-  requestOptions?: ChatRequestOptions;
+  requestOptions?: ChatRequestOptions & { approved_tools?: string[] };
   selectedTools?: string[];
   signal: AbortSignal;
   toolSelectionMode?: ToolSelectionMode;
@@ -575,7 +583,7 @@ export class ChatService {
     }
   }
 
-  async shareConversation(completion_id: string): Promise<{ share_id: string }> {
+  async shareConversation(completion_id: string): Promise<ConversationShare> {
     if (!completion_id) {
       throw new Error("No completion ID provided");
     }
@@ -597,7 +605,7 @@ export class ChatService {
       throw new Error(`Failed to share conversation: ${response.statusText}`);
     }
 
-    return await returnFetchedData<{ share_id: string }>(response);
+    return await returnFetchedData<ConversationShare>(response);
   }
 
   async cancelChatCompletion(completion_id: string): Promise<void> {
@@ -682,10 +690,51 @@ export class ChatService {
     return parsed.run;
   }
 
+  async readArtifactBinding(
+    conversationId: string,
+    input: ArtifactBindingReadRequest,
+  ): Promise<ArtifactBindingReadResponse> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/artifact-bindings/read`,
+      { method: "POST", headers: await this.getHeaders(), body: input },
+    );
+
+    return artifactBindingReadResponseSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
+  async listQueuedChatMessages(conversationId: string): Promise<QueuedChatMessage[]> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages`,
+      { method: "GET", headers: await this.getHeaders() },
+    );
+
+    return queuedChatMessagesResponseSchema.parse(await returnFetchedData<unknown>(response))
+      .messages;
+  }
+
+  async queueChatMessage(
+    conversationId: string,
+    input: EnqueueChatMessageRequest,
+  ): Promise<QueuedChatMessage> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages`,
+      { method: "POST", headers: await this.getHeaders(), body: input },
+    );
+
+    return queuedChatMessageSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
+  async removeQueuedChatMessage(conversationId: string, queuedId: string): Promise<void> {
+    await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages/${encodeURIComponent(queuedId)}`,
+      { method: "DELETE", headers: await this.getHeaders() },
+    );
+  }
+
   async cancelChatRun(
     runId: string,
     expectedAttempt: number,
-    commandId: string = crypto.randomUUID(),
+    commandId: string = generateId(),
   ): Promise<ChatRunCommandReceipt> {
     const response = await fetchApiOrThrow(`/chat/runs/${runId}/cancel`, {
       method: "POST",
@@ -798,7 +847,11 @@ export class ChatService {
     const requestEnabledTools = sandboxOptions
       ? normaliseToolIds([...(selectedToolIds ?? []), ...getSandboxTaskToolNames()])
       : selectedToolIds;
-    const requestApprovedTools = sandboxOptions ? getSandboxTaskToolNames() : undefined;
+    const approvedToolIds = normaliseToolIds([
+      ...(sandboxOptions ? getSandboxTaskToolNames() : []),
+      ...(requestOptions?.approved_tools ?? []),
+    ]);
+    const requestApprovedTools = approvedToolIds.length > 0 ? approvedToolIds : undefined;
 
     const {
       enabledTools: settingsEnabledTools,
@@ -809,7 +862,7 @@ export class ChatService {
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
     const requestBody: Record<string, any> = {
       ...requestOptionFields,
-      command_id: requestOptionFields.command_id ?? crypto.randomUUID(),
+      command_id: requestOptionFields.command_id ?? generateId(),
       completion_id: completionId,
       messages: formattedMessages,
       platform: "web",
@@ -1059,7 +1112,7 @@ export class ChatService {
         : toAppMessage({
             role: "assistant",
             content: "",
-            id: crypto.randomUUID(),
+            id: generateId(),
             model,
           }))
     );

@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "releaseDate": "October 6, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/topaz/proteus family includes models that produce video.",
+  "models": {
+    "proteus": {
+      "defaults": {
+        "name": "Proteus",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+      }
+    }
+  }
+}

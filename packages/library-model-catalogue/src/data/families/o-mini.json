@@ -5,6 +5,7 @@
     "maxTokens": 100000,
     "contextComplexity": 4,
     "reliability": 1,
+    "knowledgeCutoffDate": "May 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -101,16 +102,15 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14,
+          "intelligenceIndex": 9.8,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "o3-mini": {
       "defaults": {
-        "name": "o3 Mini",
         "description": "Smaller o-series reasoner for economical coding, math, and planning tasks",
         "modalities": {
           "input": [
@@ -125,20 +125,12 @@
           "document",
           "tool_use"
         ],
-        "knowledgeCutoffDate": "May 2024",
         "releaseDate": "December 20, 2024",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 19,
+          "intelligenceIndex": 12.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -146,6 +138,16 @@
       "defaults": {
         "name": "o4 Mini",
         "description": "Fast o-series model for compact reasoning, coding, and tool use",
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "multimodal": true,
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
@@ -156,17 +158,16 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.6,
+          "intelligenceIndex": 16.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "o4-mini-deep-research": {
       "defaults": {
         "description": "o4-mini-deep-research accepts text, image and produces text.",
-        "knowledgeCutoffDate": "May 2024",
         "releaseDate": "June 26, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -195,7 +196,6 @@
           "document",
           "tool_use"
         ],
-        "knowledgeCutoffDate": "May 2024",
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -208,10 +208,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.6,
+          "intelligenceIndex": 16.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -234,7 +234,6 @@
           "document",
           "tool_use"
         ],
-        "knowledgeCutoffDate": "May 2024",
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -245,10 +244,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.6,
+          "intelligenceIndex": 16.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Polychat",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "identifier": "uk.co.nicholasgriffin.polychat.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev:renderer",
@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.polychat.app https://assets.polychat.app https://avatars.githubusercontent.com https://icons.duckduckgo.com https://logos.composio.dev https://openweathermap.org; font-src 'self'; media-src 'self' blob: https://api.polychat.app https://assets.polychat.app; connect-src 'self' ipc: http://ipc.localhost https://api.polychat.app wss://api.polychat.app https://assets.polychat.app; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.polychat.app https://assets.polychat.app https://avatars.githubusercontent.com https://imagedelivery.net https://icons.duckduckgo.com https://logos.composio.dev https://openweathermap.org https://pashi.app; font-src 'self'; media-src 'self' blob: https://api.polychat.app https://assets.polychat.app; connect-src 'self' ipc: http://ipc.localhost https://api.polychat.app wss://api.polychat.app https://assets.polychat.app; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
       "capabilities": ["default"]
     }
   },
@@ -29,7 +29,7 @@
     "updater": {
       "active": false,
       "dialog": true,
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZCQUU3NUI5NENCNDkzM0MKUldROGs3Uk11WFd1YXhLUThPdk5NMTZEbDFZay84ai92TGU2dnhETnJYWjZjbFoyeWpOQVdiOVcK",
       "endpoints": [
         "https://api.polychat.app/desktop/releases/{{target}}/{{arch}}/{{current_version}}"
       ]

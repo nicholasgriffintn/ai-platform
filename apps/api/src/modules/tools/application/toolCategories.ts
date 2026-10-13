@@ -12,6 +12,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "web_search",
   ],
   Creative: [
+    "grade_writing",
     "build_site",
     "create_image",
     "create_music",
@@ -25,19 +26,20 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "next_edit_completion",
     "run_code",
     "run_sandbox_task",
-    "v0_code_generation",
   ],
   Productivity: [
     "configure_recipe",
     "create_note",
     "get_note",
     "get_recipe",
+    "search_conversations",
     "search_memories",
     "store_memory",
     "trigger_recipe",
     "use_recipe_connector",
   ],
   Automation: [
+    "use_computer",
     "call_api",
     "decide",
     "discover_capabilities",
@@ -46,6 +48,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   ],
   Collaboration: [
     "ask_user",
+    "review_output",
     "run_council",
     "select_council_members",
     "request_approval",

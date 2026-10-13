@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
@@ -15,6 +15,12 @@ import {
   checkToolCallRepeat,
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
+import {
+  hasStandingApproval,
+  isStandingApprovalEligible,
+  resolveToolCallDestination,
+  resolveToolCallEffectClass,
+} from "~/modules/chat/application/tools/effects";
 import {
   evaluateToolIntentGate,
   requiresToolIntentVerification,
@@ -32,6 +38,7 @@ import {
 } from "~/modules/functions/application";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import { applyFunctionRequestContext } from "~/modules/functions/application/request-context";
+import { approvalsInARow } from "~/modules/poly/domain/earned-trust";
 import type { IRequest, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/tools/execution" });
@@ -163,6 +170,16 @@ export const handleToolCalls = async (
       const functionDefinition =
         functionName === "memory" ? null : resolveFunctionTool(functionName);
 
+      const rawToolArguments = toolCall.function?.arguments ?? toolCall.arguments;
+      const callEffectClass = resolveToolCallEffectClass({
+        toolName: functionName,
+        effects: functionDefinition?.effects,
+        rawArguments: rawToolArguments,
+      });
+      const callDestination = resolveToolCallDestination({
+        effects: functionDefinition?.effects,
+        rawArguments: rawToolArguments,
+      });
       const permissionResult = permissionChecker.checkRequestToolAccess({
         toolName: functionName,
         mode,
@@ -173,6 +190,14 @@ export const handleToolCalls = async (
         requireApprovalFor: req.request?.require_approval_for,
         deniedTools: req.request?.denied_tools,
         enforceModePolicy: req.request?.enforce_mode_tool_policy,
+        effectClass: callEffectClass,
+        autonomyLevel: req.request?.autonomy_level,
+        standingApproval: hasStandingApproval({
+          approvals: req.request?.standing_approvals,
+          toolName: functionName,
+          destination: callDestination,
+          now: Date.now(),
+        }),
       });
 
       if (!permissionResult.allowed) {
@@ -288,6 +313,18 @@ export const handleToolCalls = async (
             toolCallId: toolCall.id,
             toolCallArguments: toolCall.arguments || toolCall.function?.arguments,
             reason: approvalReason,
+            standingEligible: isStandingApprovalEligible({
+              autonomyLevel: req.request?.autonomy_level,
+              conversationType: req.request?.conversation_type,
+              effectClass: callEffectClass,
+              destination: callDestination,
+            }),
+            approvedInARow: approvalsInARow({
+              streaks: req.request?.approval_streaks,
+              toolName: functionName,
+              destination: callDestination,
+              now: Date.now(),
+            }),
             logId: modelResponseLogId || "",
             timestamp,
             model: req.request?.model || "unknown",

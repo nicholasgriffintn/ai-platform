@@ -1,6 +1,6 @@
 # ADR 0034: Advertise machines through a control plane that never carries content
 
-Status: Implemented in the API, shared clients and desktop shell; the desktop application is not released.
+Status: Implemented in the API, shared clients and desktop shell.
 
 ## Problem
 

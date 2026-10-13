@@ -28,7 +28,8 @@
         "xhigh",
         "max"
       ],
-      "defaultEffort": "low"
+      "defaultEffort": "low",
+      "thinkingApi": "adaptive"
     }
   },
   "description": "The claude mythos family includes models that produce text.",

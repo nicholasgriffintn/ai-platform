@@ -17,6 +17,8 @@ const COMPUTER_SCREEN_FRAME_SOURCE = computerScreenFrameSource(
 export const APP_NAME = "Polychat";
 export const CONTACT_LINK = "https://nicholasgriffin.dev/contact";
 export const SOURCE_CODE_URL = "https://github.com/nicholasgriffintn/personal-ai-assistant";
+export const CLI_PACKAGE_NAME = "@ngriffin_uk/polychat-cli";
+export const CLI_LOGIN_COMMAND = `npx ${CLI_PACKAGE_NAME} login`;
 export const JURISDICTION = "United Kingdom";
 export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
 export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
@@ -80,8 +82,11 @@ const COMMON_CSP = {
     "https://github.githubassets.com/images/modules/logos_page/",
     "https://ticktick.com",
     "https://www.cloudflare.com",
+    "https://pashi.app",
+    "https://imagedelivery.net",
     "'self'",
     "data:",
+    "blob:",
     API_BASE_URL,
   ],
   connectSrc: [
@@ -121,6 +126,8 @@ const SCRIPT_SRC = [
   "https://appleid.cdn-apple.com",
   "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js",
   "https://unpkg.com/react@18/umd/react.development.js",
   "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
   "https://unpkg.com/@strudel/embed@latest",

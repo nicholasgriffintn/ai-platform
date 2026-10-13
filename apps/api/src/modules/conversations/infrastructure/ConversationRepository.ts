@@ -3,31 +3,21 @@ import type {
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
-  ListedConversationType,
   ModelTier,
   PermissionMode,
-  SearchableConversationType,
-} from "@ngriffin_uk/polychat-schemas";
-import {
-  LISTED_CONVERSATION_TYPES,
-  SEARCHABLE_CONVERSATION_TYPES,
 } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { PaginationHelper } from "~/infrastructure/database/PaginationHelper";
+import {
+  listedConversationTypesSql,
+  searchableConversationTypesSql,
+} from "~/modules/conversations/infrastructure/conversation-type-sql";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
-
-const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map(
-  (type: ListedConversationType) => `'${type}'`,
-).join(", ");
-
-const searchableConversationTypesSql = SEARCHABLE_CONVERSATION_TYPES.map(
-  (type: SearchableConversationType) => `'${type}'`,
-).join(", ");
 
 export interface GetUserConversationsOptions {
   archiveFilter?: ConversationArchiveFilter;
@@ -76,9 +66,9 @@ export interface GlobalConversationSearchRow {
 export class ConversationRepository extends BaseRepository {
   public async markUnreadForUser(conversationId: string, userId: number): Promise<void> {
     await this.executeRun(
-      `INSERT INTO conversation_user_state (conversation_id, user_id, is_unread, updated_at)
-       VALUES (?, ?, 1, CURRENT_TIMESTAMP)
-       ON CONFLICT(conversation_id, user_id) DO UPDATE SET
+      `INSERT INTO user_resource_state (resource_type, conversation_id, user_id, is_unread, updated_at)
+       VALUES ('conversation', ?, ?, 1, CURRENT_TIMESTAMP)
+       ON CONFLICT(conversation_id, user_id) WHERE conversation_id IS NOT NULL DO UPDATE SET
          is_unread = 1,
          revision = revision + 1,
          updated_at = CURRENT_TIMESTAMP`,
@@ -148,13 +138,19 @@ export class ConversationRepository extends BaseRepository {
            ORDER BY message.created_at DESC, message.id DESC
            LIMIT 1
          )) AS model_id,
-         EXISTS (
-         SELECT 1 FROM conversation related
-         WHERE (related.id = c.parent_conversation_id OR related.parent_conversation_id = c.id)
-           AND related.id != c.id
-           AND related.project_id IS c.project_id
-           AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
-       ) AS has_threads
+         (EXISTS (
+           SELECT 1 FROM conversation related
+           WHERE related.id = c.parent_conversation_id
+             AND related.id != c.id
+             AND +related.project_id IS c.project_id
+             AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
+         ) OR EXISTS (
+           SELECT 1 FROM conversation related
+           WHERE related.parent_conversation_id = c.id
+             AND related.id != c.id
+             AND +related.project_id IS c.project_id
+             AND (c.project_id IS NOT NULL OR related.user_id = c.user_id)
+         )) AS has_threads
        FROM conversation c WHERE c.id = ?`,
       [conversationId],
       true,
@@ -172,7 +168,7 @@ export class ConversationRepository extends BaseRepository {
     return this.runQuery(
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation
-         WHERE project_id IS ? AND (? IS NOT NULL OR user_id = ?)
+         WHERE +project_id IS ? AND (? IS NOT NULL OR user_id = ?)
            AND type IN (${listedConversationTypesSql})
            AND NOT EXISTS (
              SELECT 1 FROM teammate_context tc
@@ -274,18 +270,9 @@ export class ConversationRepository extends BaseRepository {
 
     const countQuery = `SELECT COUNT(*) as total
       FROM conversation c
-      LEFT JOIN conversation_user_state state
+      LEFT JOIN user_resource_state state
         ON state.conversation_id = c.id AND state.user_id = ?
       WHERE ${whereClause}`;
-
-    const countResult = await this.runQuery<{ total: number }>(
-      countQuery,
-      [userId, ...values],
-      true,
-    );
-
-    const total = countResult?.total || 0;
-    const totalPages = Math.ceil(total / safeLimit);
 
     const listQuery =
       sortBy === "title"
@@ -314,15 +301,14 @@ export class ConversationRepository extends BaseRepository {
           (
             SELECT json_object(
               'id', grp.id,
-              'name', grp.name,
+              'name', grp.title,
               'scope', json_object('kind', 'personal')
             )
-            FROM conversation_group_membership membership
-            JOIN conversation_group grp ON grp.id = membership.group_id
-            WHERE membership.conversation_id = c.id AND grp.owner_user_id = c.user_id
+            FROM resource_collection grp
+            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id AND grp.owner_user_id = c.user_id
           ) AS "group"
         FROM conversation c
-        LEFT JOIN conversation_user_state state
+        LEFT JOIN user_resource_state state
           ON state.conversation_id = c.id AND state.user_id = ?
         WHERE ${whereClause}
       `
@@ -351,15 +337,14 @@ export class ConversationRepository extends BaseRepository {
           (
             SELECT json_object(
               'id', grp.id,
-              'name', grp.name,
+              'name', grp.title,
               'scope', json_object('kind', 'personal')
             )
-            FROM conversation_group_membership membership
-            JOIN conversation_group grp ON grp.id = membership.group_id
-            WHERE membership.conversation_id = c.id AND grp.owner_user_id = c.user_id
+            FROM resource_collection grp
+            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id AND grp.owner_user_id = c.user_id
           ) AS "group"
         FROM conversation c
-        LEFT JOIN conversation_user_state state
+        LEFT JOIN user_resource_state state
           ON state.conversation_id = c.id AND state.user_id = ?
         WHERE ${whereClause}
         ORDER BY COALESCE(state.is_pinned, 0) DESC, ${orderByClause}
@@ -368,7 +353,13 @@ export class ConversationRepository extends BaseRepository {
 
     const queryValues =
       sortBy === "title" ? [userId, ...values] : [userId, ...values, safeLimit, offset];
-    const results = await this.runQuery<Record<string, unknown>>(listQuery, queryValues);
+    const [countResult, listResult] = await this.executeBatch<Record<string, unknown>>([
+      this.env.DB.prepare(countQuery).bind(userId, ...values),
+      this.env.DB.prepare(listQuery).bind(...queryValues),
+    ]);
+    const total = Number(countResult?.results[0]?.total ?? 0);
+    const totalPages = Math.ceil(total / safeLimit);
+    const results = listResult?.results ?? [];
     const conversations =
       sortBy === "title"
         ? sortCopy(
@@ -444,6 +435,7 @@ export class ConversationRepository extends BaseRepository {
       "message_count",
       "is_public",
       "share_id",
+      "shared_through",
       "model_id",
       "model_tier",
       "permission_mode",
@@ -547,23 +539,22 @@ export class ConversationRepository extends BaseRepository {
               (
                 SELECT json_object(
                   'id', grp.id,
-                  'name', grp.name,
+                  'name', grp.title,
                   'scope', CASE
                     WHEN grp.project_id IS NOT NULL
                     THEN json_object('kind', 'project', 'projectId', grp.project_id)
                     ELSE json_object('kind', 'personal')
                   END
                 )
-                FROM conversation_group_membership membership
-                JOIN conversation_group grp ON grp.id = membership.group_id
-                WHERE membership.conversation_id = c.id
+                FROM resource_collection grp
+            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id
                   AND (grp.project_id = c.project_id OR grp.owner_user_id = ?)
               ) AS "group"
 			 FROM conversation c
 			 LEFT JOIN project p ON p.id = c.project_id AND p.archived_at IS NULL
 			 LEFT JOIN workspace w ON w.id = p.workspace_id
 			 LEFT JOIN conversation parent ON parent.id = c.parent_conversation_id
-			 LEFT JOIN conversation_user_state state
+			 LEFT JOIN user_resource_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
 			   AND c.type IN (${searchableConversationTypesSql})
@@ -573,8 +564,8 @@ export class ConversationRepository extends BaseRepository {
 			       c.project_id IS NOT NULL
 			       AND p.id IS NOT NULL
 			       AND EXISTS (
-			         SELECT 1 FROM workspace_member wm
-			         WHERE wm.workspace_id = p.workspace_id AND wm.user_id = ?
+			         SELECT 1 FROM resource_grant wm
+			         WHERE wm.kind = 'membership' AND wm.workspace_id = p.workspace_id AND wm.user_id = ?
 			       )
 			     )
 			   )
@@ -587,11 +578,10 @@ export class ConversationRepository extends BaseRepository {
            OR c.title LIKE ? ESCAPE '\\'
            OR EXISTS (
              SELECT 1
-             FROM conversation_group_membership membership
-             JOIN conversation_group grp ON grp.id = membership.group_id
-             WHERE membership.conversation_id = c.id
+             FROM resource_collection grp
+            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id
                AND (grp.project_id = c.project_id OR grp.owner_user_id = ?)
-               AND grp.name LIKE ? ESCAPE '\\'
+               AND grp.title LIKE ? ESCAPE '\\'
            )
          )
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,

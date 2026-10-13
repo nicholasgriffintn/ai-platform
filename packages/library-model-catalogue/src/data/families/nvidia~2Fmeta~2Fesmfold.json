@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 15, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nvidia/meta/esmfold family includes models that produce text.",
+  "models": {
+    "esmfold": {
+      "defaults": {
+        "name": "esmfold",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    }
+  }
+}

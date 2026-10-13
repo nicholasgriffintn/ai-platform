@@ -127,18 +127,11 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.4,
+          "intelligenceIndex": 15.2,
           "codingIndex": 39.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -148,6 +141,16 @@
         "description": "Deliberate o-series reasoner for hard math, coding, and multi-step analysis",
         "contextWindow": 200000,
         "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -170,10 +173,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 30.4,
+          "intelligenceIndex": 20.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -235,10 +238,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 30.4,
+          "intelligenceIndex": 20.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -262,7 +265,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "February 12, 2025",
         "supportsToolCalls": true,
@@ -276,10 +279,10 @@
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 18.4,
-          "codingIndex": 42.1,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 11,
+          "codingIndex": 16.3,
+          "agenticIndex": 0.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -300,6 +303,75 @@
           ]
         },
         "knowledgeCutoffDate": "June 30, 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o3-mini-high": {
+      "defaults": {
+        "name": "OpenAI: o3 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "February 12, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11,
+          "codingIndex": 16.3,
+          "agenticIndex": 0.9,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "openai-o4-mini-high": {
+      "defaults": {
+        "name": "OpenAI: o4 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
@@ -355,7 +427,27 @@
             "audio"
           ]
         },
-        "releaseDate": "July 28, 2026"
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1143,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
       }
     },
     "s2-1-pro-free": {
@@ -370,7 +462,27 @@
             "audio"
           ]
         },
-        "releaseDate": "July 28, 2026"
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1143,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
       }
     },
     "s2-pro": {
@@ -399,10 +511,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1117,
+              "value": 1116,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 14
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -516,10 +628,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1091,
+              "value": 1090,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -552,10 +664,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1099,
+              "value": 1106,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 12
+              "confidenceInterval95": 11
             }
           ]
         }

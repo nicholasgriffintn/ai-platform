@@ -11,6 +11,7 @@ import type {
   ModelInventoryItem,
   TrainingContentSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
@@ -85,7 +86,7 @@ async function bomInput(
   ]);
 
   return {
-    serialNumber: crypto.randomUUID(),
+    serialNumber: generateId(),
     generatedAt: new Date().toISOString(),
     subject: {
       asset: toModelAsset(asset),

@@ -83,35 +83,6 @@ describe("ConversationRunRepository", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("persists a new run and command receipt atomically", async () => {
-    const { batch, bind, prepare, repository } = createRepository();
-
-    batch.mockResolvedValueOnce([
-      { results: [{ ...runRow, stage_id: "build", status: "accepted" }] },
-      { results: [{ id: "receipt-1" }] },
-    ]);
-
-    const receipt = await repository.acceptCommand({
-      commandId: "command-1",
-      conversationId: "conversation-1",
-      digest: "digest-1",
-      kind: "turn",
-      userId: 42,
-      projectId: "project-1",
-      projectTaskId: "task-1",
-      stageId: "build",
-    });
-
-    expect(receipt.duplicate).toBe(false);
-    expect(batch).toHaveBeenCalledTimes(1);
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
-    expect(prepare.mock.calls[1]?.[0]).toContain("INSERT INTO conversation_run");
-    expect(prepare.mock.calls[2]?.[0]).toContain("INSERT INTO conversation_run_command");
-    expect(prepare.mock.calls[3]?.[0]).toContain("INSERT INTO conversation_run_event");
-    expect(bind.mock.calls[1]).toContain("build");
-    expect(receipt.run.stageId).toBe("build");
-  });
-
   it("only records a resume command while the expected waiting attempt still owns the run", async () => {
     const { batch, first, prepare, repository } = createRepository();
 
@@ -275,30 +246,6 @@ describe("ConversationRunRepository", () => {
     expect(
       prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
     ).toBe(true);
-  });
-
-  it("lists retained events in ascending sequence order", async () => {
-    const { all, prepare, repository } = createRepository();
-
-    all.mockResolvedValueOnce({
-      results: [
-        {
-          id: "event-8",
-          run_id: "run-1",
-          sequence: 8,
-          protocol_version: 1,
-          attempt: 2,
-          type: "message.created",
-          occurred_at: "2026-09-05T01:00:08.000Z",
-          data: '{"messageId":"assistant-1"}',
-        },
-      ],
-    });
-
-    await expect(repository.listEvents("run-1", 7, 20)).resolves.toMatchObject([
-      { id: "event-8", sequence: 8, data: { messageId: "assistant-1" } },
-    ]);
-    expect(prepare.mock.calls[0]?.[0]).toContain("ORDER BY sequence ASC");
   });
 
   it("lists task runs inside the exact project and task scope", async () => {

@@ -16,7 +16,15 @@
     "releaseDate": "August 3, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The sakana namazu family includes models that produce text.",
   "models": {

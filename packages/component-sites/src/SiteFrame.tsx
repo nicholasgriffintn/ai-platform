@@ -1,9 +1,11 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { buildSiteGoogleFontsUrl } from "@ngriffin_uk/polychat-library-sites";
+import {
+  buildSiteFrameDocument,
+  buildSiteGoogleFontsUrl,
+} from "@ngriffin_uk/polychat-library-sites";
 import { useEffect, useId, useMemo, useState } from "react";
 
 import SITE_PREVIEW_RUNTIME_URL from "../dist/preview-runtime.global.js?url";
-import { buildSiteFrameDocument } from "./frame-document.js";
 import {
   isSitePreviewRuntimeMessage,
   SITE_PREVIEW_CHANNEL,

@@ -1,3 +1,4 @@
+import { operationIsGranted, authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   SANDBOX_RUNS_CAPABILITY_ID,
   sandboxGitBranchNameSchema,
@@ -82,7 +83,7 @@ function requireOperation(
   claims: SandboxCredentialBrokerClaims,
   operation: SandboxCredentialBrokerOperation,
 ): void {
-  if (!claims.operations.includes(operation)) {
+  if (!operationIsGranted(claims.operations, operation)) {
     throw new AssistantError(
       "Sandbox credential broker grant does not allow this operation",
       ErrorType.AUTHORISATION_ERROR,
@@ -116,7 +117,7 @@ async function authoriseBrokerRequest(params: {
     !record ||
     !run ||
     control?.state !== "running" ||
-    record.created_by_user_id !== Number(claims.sub) ||
+    !ownsResource(Number(claims.sub), record.created_by_user_id) ||
     run.repo !== claims.repo ||
     run.installationId !== claims.installation_id ||
     run.status !== "running"
@@ -237,10 +238,14 @@ export async function proxySandboxGitOperation(params: {
   if (params.route.operation === "git-receive-pack") {
     const inspected = await inspectGitReceivePackBody(body);
 
-    if (
-      inspected.refs.length === 0 ||
-      inspected.refs.some((ref) => !claims.write_refs.includes(ref))
-    ) {
+    const isAuthorised = authorise("git.write", {
+      refs: inspected.refs,
+      allowedRefs: claims.write_refs,
+      targetRef: "",
+      approvedTargetRef: "",
+    }).allowed;
+
+    if (!isAuthorised) {
       await inspected.body.cancel();
       throw new AssistantError(
         "Sandbox credential broker grant does not allow this Git ref",
@@ -311,7 +316,14 @@ export async function proxySandboxBranchDelivery(params: {
   const headRef = `refs/heads/${params.body.head}`;
   const targetRef = `refs/heads/${params.body.target}`;
 
-  if (!claims.write_refs.includes(headRef) || claims.delivery_target_ref !== targetRef) {
+  const isAuthorised = authorise("git.write", {
+    refs: [headRef],
+    allowedRefs: claims.write_refs,
+    targetRef,
+    approvedTargetRef: claims.delivery_target_ref ?? "",
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Sandbox credential broker grant does not allow this branch delivery",
       ErrorType.AUTHORISATION_ERROR,
@@ -432,7 +444,14 @@ export function proxySandboxPullRequestCreate(params: {
     method: "POST",
     body: params.body,
     validateClaims: (claims) => {
-      if (!claims.write_refs.includes(`refs/heads/${params.body.head}`)) {
+      const isAuthorised = authorise("git.write", {
+        refs: [`refs/heads/${params.body.head}`],
+        allowedRefs: claims.write_refs,
+        targetRef: "",
+        approvedTargetRef: "",
+      }).allowed;
+
+      if (!isAuthorised) {
         throw new AssistantError(
           "Sandbox credential broker grant does not allow this pull request head",
           ErrorType.AUTHORISATION_ERROR,

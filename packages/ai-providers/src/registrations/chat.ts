@@ -2,6 +2,7 @@ import { AlibabaProvider } from "../capabilities/chat/providers/alibaba.js";
 import { AnthropicProvider } from "../capabilities/chat/providers/anthropic.js";
 import { AzureOpenAIProvider } from "../capabilities/chat/providers/azure.js";
 import type { AIProvider } from "../capabilities/chat/providers/base.js";
+import { BasetenProvider } from "../capabilities/chat/providers/baseten.js";
 import { BedrockMantleProvider } from "../capabilities/chat/providers/bedrock-mantle.js";
 import { BedrockProvider } from "../capabilities/chat/providers/bedrock.js";
 import { CerebrasProvider } from "../capabilities/chat/providers/cerebras.js";
@@ -27,6 +28,7 @@ import { HyperbolicProvider } from "../capabilities/chat/providers/hyperbolic.js
 import { IdeogramProvider } from "../capabilities/chat/providers/ideogram.js";
 import { InceptionProvider } from "../capabilities/chat/providers/inception.js";
 import { InferenceProvider } from "../capabilities/chat/providers/inference.js";
+import { KiloProvider } from "../capabilities/chat/providers/kilo.js";
 import { KimiForCodingProvider } from "../capabilities/chat/providers/kimi-for-coding.js";
 import { LucidQueryProvider } from "../capabilities/chat/providers/lucidquery.js";
 import { MetaProvider } from "../capabilities/chat/providers/meta.js";
@@ -34,7 +36,9 @@ import { MiniMaxProvider } from "../capabilities/chat/providers/minimax.js";
 import { MistralProvider } from "../capabilities/chat/providers/mistral.js";
 import { MoonshotProvider } from "../capabilities/chat/providers/moonshot.js";
 import { MorphProvider } from "../capabilities/chat/providers/morph.js";
+import { NebiusProvider } from "../capabilities/chat/providers/nebius.js";
 import { AmazonNovaProvider } from "../capabilities/chat/providers/nova.js";
+import { NvidiaProvider } from "../capabilities/chat/providers/nvidia.js";
 import { OllamaCloudProvider } from "../capabilities/chat/providers/ollama-cloud.js";
 import { OpenAIProvider } from "../capabilities/chat/providers/openai.js";
 import { OpencodeGoProvider } from "../capabilities/chat/providers/opencode-go.js";
@@ -54,7 +58,6 @@ import { TheGridProvider } from "../capabilities/chat/providers/the-grid-ai.js";
 import { ThinkingMachinesProvider } from "../capabilities/chat/providers/thinkingmachines.js";
 import { TogetherAiProvider } from "../capabilities/chat/providers/together-ai.js";
 import { UpstageProvider } from "../capabilities/chat/providers/upstage.js";
-import { V0Provider } from "../capabilities/chat/providers/v0.js";
 import { VercelGatewayProvider } from "../capabilities/chat/providers/vercel.js";
 import { WorkersProvider } from "../capabilities/chat/providers/workers.js";
 import { ZaiProvider } from "../capabilities/chat/providers/zai.js";
@@ -230,11 +233,6 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       metadata: { vendor: "Upstage", categories: ["chat"] },
     },
     {
-      name: "v0",
-      create: () => new V0Provider(runtime),
-      metadata: { vendor: "Vercel", categories: ["chat"] },
-    },
-    {
       name: "vercel",
       aliases: ["vercel-gateway"],
       create: () => new VercelGatewayProvider(runtime),
@@ -368,6 +366,27 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       aliases: ["kimi-coding"],
       create: () => new KimiForCodingProvider(runtime),
       metadata: { vendor: "Moonshot AI", categories: ["chat"], tags: ["coding"] },
+    },
+    {
+      name: "kilo",
+      create: () => new KiloProvider(runtime),
+      metadata: { vendor: "Kilo", categories: ["chat"] },
+    },
+    {
+      name: "nebius",
+      create: () => new NebiusProvider(runtime),
+      metadata: { vendor: "Nebius", categories: ["chat"] },
+    },
+    {
+      name: "baseten",
+      create: () => new BasetenProvider(runtime),
+      metadata: { vendor: "Baseten", categories: ["chat"] },
+    },
+    {
+      name: "nvidia",
+      aliases: ["nvidia-nim"],
+      create: () => new NvidiaProvider(runtime),
+      metadata: { vendor: "NVIDIA", categories: ["chat"] },
     },
     {
       name: "thinkingmachines",

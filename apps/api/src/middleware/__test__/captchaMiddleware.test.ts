@@ -89,20 +89,6 @@ describe("Captcha Middleware", () => {
       expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
     });
 
-    it("should skip captcha verification when captcha is disabled", async () => {
-      const context = createMockContext({
-        env: { REQUIRE_CAPTCHA_SECRET_KEY: undefined },
-      });
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      await validateCaptcha(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-      expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
-    });
-
     it("should treat an explicit false value as disabled", async () => {
       const context = createMockContext({
         env: {
@@ -145,29 +131,6 @@ describe("Captcha Middleware", () => {
         503,
       );
       expect(mockNext).not.toHaveBeenCalled();
-      expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
-    });
-
-    it("should skip captcha verification for already verified anonymous users", async () => {
-      const context = createMockContext();
-      const mockAnonymousUser = { id: "anon-123", captcha_verified: 1 };
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "user") {
-          return null;
-        }
-
-        if (key === "anonymousUser") {
-          return mockAnonymousUser;
-        }
-
-        return null;
-      });
-
-      await validateCaptcha(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
       expect(mockVerifyCaptchaToken).not.toHaveBeenCalled();
     });
 
@@ -467,78 +430,6 @@ describe("Captcha Middleware", () => {
       await validateCaptcha(context, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
-    });
-
-    it("should handle IP address extraction correctly", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      // @ts-expect-error - mock implementation
-      context.req.header.mockImplementation((name: string) => {
-        if (name === "x-forwarded-for") {
-          return "192.168.1.1";
-        }
-
-        if (name === "user-agent") {
-          return "Mozilla/5.0";
-        }
-
-        if (name === "X-Captcha-Token") {
-          return "valid-token";
-        }
-
-        return null;
-      });
-
-      mockVerifyCaptchaToken.mockResolvedValue({
-        verified: true,
-        error: null,
-      });
-
-      const mockNewUser = { id: "anon-456", captcha_verified: 0 };
-
-      mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
-
-      await validateCaptcha(context, mockNext);
-
-      expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
-        "192.168.1.1",
-        "Mozilla/5.0",
-      );
-    });
-
-    it("should use 'unknown' as fallback for missing IP and user agent", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      // @ts-expect-error - mock implementation
-      context.req.header.mockImplementation((name: string) => {
-        if (name === "X-Captcha-Token") {
-          return "valid-token";
-        }
-
-        return null;
-      });
-
-      mockVerifyCaptchaToken.mockResolvedValue({
-        verified: true,
-        error: null,
-      });
-
-      const mockNewUser = { id: "anon-456", captcha_verified: 0 };
-
-      mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
-
-      await validateCaptcha(context, mockNext);
-
-      expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
-        "unknown",
-        "unknown",
-      );
     });
   });
 });

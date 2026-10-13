@@ -1,4 +1,9 @@
-import { isRecord, safeParseJson, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import {
+  quoteShellArgument,
+  isRecord,
+  safeParseJson,
+  truncateForModel,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import {
   MAX_CONTEXT_FILES,
@@ -7,7 +12,6 @@ import {
   MAX_READ_FILE_LINES,
   MAX_SNIPPET_CHARS,
 } from "../../../../config/agent";
-import { quoteForShell } from "../commands";
 import type {
   FileContextSnippet,
   ReadFileResult,
@@ -44,7 +48,7 @@ function discoverRepoFiles(params: {
   const { sandbox, repoTargetDir, findExpression, maxFiles } = params;
 
   return sandbox
-    .exec(`find ${quoteForShell(repoTargetDir)} -maxdepth 4 -type f ${findExpression} | sort`)
+    .exec(`find ${quoteShellArgument(repoTargetDir)} -maxdepth 4 -type f ${findExpression} | sort`)
     .then((result) => {
       if (!result.success) {
         return [];
@@ -243,14 +247,10 @@ async function loadRalphPrdContextForPath(params: {
   }
 
   const absolutePath = `${repoTargetDir}/${path}`;
-  const fullFileResult = await sandbox.readFile(absolutePath);
+  const fullFileContent = await sandbox.readFile(absolutePath).catch(() => "");
 
-  if (
-    fullFileResult.success &&
-    typeof fullFileResult.content === "string" &&
-    fullFileResult.content.trim()
-  ) {
-    const parsed = parseRalphPrdContext(path, fullFileResult.content);
+  if (fullFileContent.trim()) {
+    const parsed = parseRalphPrdContext(path, fullFileContent);
 
     if (parsed) {
       return parsed;
@@ -281,7 +281,7 @@ export async function readRepositoryFileSnippet(params: {
   );
   const targetPath = `${repoTargetDir}/${path}`;
   const result = await sandbox.exec(
-    `sed -n "${startLine},${boundedEndLine}p" ${quoteForShell(targetPath)}`,
+    `sed -n "${startLine},${boundedEndLine}p" ${quoteShellArgument(targetPath)}`,
   );
 
   if (!result.success) {
@@ -312,7 +312,7 @@ export async function collectRepositoryContext(params: {
   repoTargetDir: string;
 }): Promise<RepositoryContext> {
   const { sandbox, repoTargetDir } = params;
-  const topLevelResult = await sandbox.exec(`ls -1 ${quoteForShell(repoTargetDir)}`);
+  const topLevelResult = await sandbox.exec(`ls -1 ${quoteShellArgument(repoTargetDir)}`);
   const topLevelEntries = topLevelResult.success
     ? topLevelResult.stdout
         .split("\n")

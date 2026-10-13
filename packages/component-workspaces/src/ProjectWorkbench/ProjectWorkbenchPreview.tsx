@@ -7,10 +7,13 @@ import {
   cn,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { SandboxPreviewAccess } from "@ngriffin_uk/polychat-schemas";
-import type {
-  ProjectWorkbenchPreviewDisplayState,
-  ProjectWorkbenchPreviewFeedback,
-  ProjectWorkbenchPreviewViewport,
+import { getErrorMessage, normaliseSameOriginRoute } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getProjectWorkbenchPreviewRegionStyle,
+  isProjectWorkbenchPreviewReady,
+  type ProjectWorkbenchPreviewDisplayState,
+  type ProjectWorkbenchPreviewFeedback,
+  type ProjectWorkbenchPreviewViewport,
 } from "@ngriffin_uk/polychat-utility-react";
 import {
   ExternalLink,
@@ -125,36 +128,6 @@ interface PreviewRouteState {
   frameUrl: string;
 }
 
-function normaliseRoute(route: string, previewOrigin: string): string | null {
-  try {
-    const parsed = new URL(route.trim() || "/", previewOrigin);
-
-    if (parsed.origin !== previewOrigin) {
-      return null;
-    }
-
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return null;
-  }
-}
-
-function statusAllowsFrame(
-  state: ProjectWorkbenchPreviewDisplayState,
-  preview?: SandboxPreviewAccess,
-): preview is SandboxPreviewAccess & { url: string } {
-  return state === "healthy" && Boolean(preview?.url);
-}
-
-function selectionStyle(region: ProjectWorkbenchPreviewRegion) {
-  return {
-    left: `${region.x}%`,
-    top: `${region.y}%`,
-    width: `${region.width}%`,
-    height: `${region.height}%`,
-  };
-}
-
 function PreviewStateMessage({
   state,
   canCreate,
@@ -194,7 +167,7 @@ function PreviewStatus({ state }: { state: ProjectWorkbenchPreviewDisplayState }
         className={cn(
           "size-2 shrink-0 rounded-full",
           presentation.tone,
-          presentation.animated && "polychat-motion-active-execution",
+          presentation.animated && "animate-pulse",
         )}
       />
       <span className="truncate text-xs font-medium">{presentation.label}</span>
@@ -242,7 +215,7 @@ function PreviewFrame({
           <div
             aria-hidden="true"
             className="pointer-events-none absolute border-2 border-active-work bg-active-work/10"
-            style={selectionStyle(visibleRegion)}
+            style={getProjectWorkbenchPreviewRegionStyle(visibleRegion)}
           />
         ) : null}
         {isSelecting ? (
@@ -296,7 +269,7 @@ export function ProjectWorkbenchPreview({
             frameUrl: preview.url,
           }
         : undefined;
-  const activePreview = statusAllowsFrame(state, preview) ? preview : undefined;
+  const activePreview = isProjectWorkbenchPreviewReady(state, preview) ? preview : undefined;
   const busy = isCreating || isRevoking;
 
   const runAction = async (action: () => Promise<void>) => {
@@ -305,7 +278,7 @@ export function ProjectWorkbenchPreview({
     try {
       await action();
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Preview action failed");
+      setLocalError(getErrorMessage(error, "Preview action failed"));
     }
   };
 
@@ -315,7 +288,7 @@ export function ProjectWorkbenchPreview({
     }
 
     const previewOrigin = new URL(preview.url).origin;
-    const route = normaliseRoute(activeRouteState.draftRoute, previewOrigin);
+    const route = normaliseSameOriginRoute(activeRouteState.draftRoute, previewOrigin);
 
     if (!route) {
       setLocalError("Enter a path on this preview origin, such as /settings.");
@@ -349,7 +322,7 @@ export function ProjectWorkbenchPreview({
       opened.location.replace(await onOpenExternal());
     } catch (error) {
       opened.close();
-      setLocalError(error instanceof Error ? error.message : "Preview could not be opened");
+      setLocalError(getErrorMessage(error, "Preview could not be opened"));
     }
   };
 
@@ -375,7 +348,7 @@ export function ProjectWorkbenchPreview({
       setElementReference("");
       regionSelection.clear();
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Feedback could not be sent");
+      setLocalError(getErrorMessage(error, "Feedback could not be sent"));
     }
   };
 

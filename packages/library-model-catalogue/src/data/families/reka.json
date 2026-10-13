@@ -1,6 +1,5 @@
 {
   "defaults": {
-    "openWeights": true,
     "supportsResponseFormat": true,
     "supportsTemperature": true
   },
@@ -47,18 +46,11 @@
         "releaseDate": "March 12, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 4.1,
+          "intelligenceIndex": 5.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

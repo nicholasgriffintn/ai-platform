@@ -19,6 +19,7 @@
         ],
         "contextComplexity": 3,
         "speed": 5,
+        "isFeatured": true,
         "lastUpdated": "June 10, 2026",
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.00075
@@ -30,6 +31,8 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 40960,
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "September 3, 2026",
         "costPer1kInputTokens": 0.00099,
         "costPer1kOutputTokens": 0.00149,

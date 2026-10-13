@@ -29,7 +29,7 @@ const links: SidebarSettingsLinks = {
 
 export function SidebarSettingsPopover() {
   const setShowKeyboardShortcuts = useUIStore((state) => state.setShowKeyboardShortcuts);
-  const { openSignIn, signOut } = useShellHost();
+  const { openSignIn, signOut, downloadsPath } = useShellHost();
   const { user, isLoading } = useAuthStatus();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const usageLimits = useUsageStore((state) => state.usageLimits);
@@ -53,7 +53,7 @@ export function SidebarSettingsPopover() {
       isAuthenticated={isAuthenticated}
       isLoading={isLoading}
       isUsageLoading={isLoading || (isAuthenticated && usageBalance.isLoading)}
-      links={links}
+      links={downloadsPath ? { ...links, downloads: downloadsPath } : links}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
       usage={getSidebarUsageItems(usageLimits, usageBalance.data?.credits)}
       theme={{ value: themePreference, onChange: setThemePreference }}

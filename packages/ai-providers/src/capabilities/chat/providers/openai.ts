@@ -13,7 +13,11 @@ import {
 } from "../../../async-invocation.js";
 import { resolveAiGatewayId } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
-import { extractTextFromMessageContent, requireMessages } from "../../../messages.js";
+import {
+  extractTextFromMessageContent,
+  findMessageContent,
+  requireMessages,
+} from "../../../messages.js";
 import {
   createCommonParameters,
   getToolsForProvider,
@@ -22,6 +26,7 @@ import {
 import { resolveRequestUser } from "../../../request-user.js";
 import type { ChatCompletionParameters, MessageContent } from "../../../types/index.js";
 import { safeParseJSON } from "../../../utils/helpers.js";
+import { resolveHostedMcpCredentials } from "../../../utils/mcpCredentials.js";
 import {
   buildOpenAIResponsesBody,
   shouldUseOpenAIResponsesApi,
@@ -59,10 +64,7 @@ export class OpenAIProvider extends BaseProvider {
 
   protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
     if (this.isImageGeneration(params)) {
-      const hasAttachments = params.messages?.some(
-        (message) =>
-          Array.isArray(message.content) && message.content.some((c) => c.type === "image_url"),
-      );
+      const hasAttachments = findMessageContent(params.messages ?? [], "image_url") !== undefined;
 
       return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
     }
@@ -131,16 +133,11 @@ export class OpenAIProvider extends BaseProvider {
     storageService: ProviderStorage,
     imageRequestInput: Partial<OpenAIImageParams>,
   ): Promise<FormData> {
-    const messageWithImage = params.messages?.find(
-      (message) =>
-        Array.isArray(message.content) && message.content.some((item) => item.type === "image_url"),
-    );
+    const imageItem = findMessageContent(params.messages ?? [], "image_url");
 
-    if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
+    if (!imageItem) {
       throw new AssistantError("No valid image found for image editing", ErrorType.PARAMS_ERROR);
     }
-
-    const imageItem = messageWithImage.content.find((item) => item.type === "image_url");
 
     if (!imageItem?.image_url?.url) {
       throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
@@ -365,11 +362,7 @@ export class OpenAIProvider extends BaseProvider {
       const prompt =
         imageRequestInput.prompt || extractTextFromMessageContent(promptMessage?.content);
 
-      const hasImages = messages.some(
-        (message) =>
-          Array.isArray(message.content) &&
-          message.content.some((item) => item.type === "image_url"),
-      );
+      const hasImages = findMessageContent(messages, "image_url") !== undefined;
 
       const endpoint = await this.getEndpoint(params);
 
@@ -451,13 +444,24 @@ export class OpenAIProvider extends BaseProvider {
     const user = providerParams.context?.user;
 
     if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
-      return buildOpenAIResponsesBody(
+      const responseStreamingParams = createStreamingParameters(
+        modelConfig,
+        this.supportsStreaming,
+        providerParams.stream,
+        { includeUsage: false },
+      );
+      const responseBody = buildOpenAIResponsesBody(
         providerParams,
         modelConfig,
         toolsParams.tools || [],
-        createStreamingParameters(modelConfig, this.supportsStreaming, providerParams.stream, {
-          includeUsage: false,
-        }),
+        responseStreamingParams,
+      );
+
+      return resolveHostedMcpCredentials(
+        responseBody,
+        this.runtime.host,
+        this.name,
+        params.context,
       );
     }
 

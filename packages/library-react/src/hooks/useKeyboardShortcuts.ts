@@ -16,8 +16,8 @@ export function useKeyboardShortcuts() {
     sidebarVisible,
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
-    showMetaAssistant,
-    setShowMetaAssistant,
+    showPoly,
+    setShowPoly,
   } = useUIStore();
   const { clearCurrentConversation, setShowSearch } = useChatStore();
 
@@ -39,9 +39,9 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         setShowKeyboardShortcuts(!showKeyboardShortcuts);
       },
-      "toggle-meta-assistant": (e) => {
+      "toggle-poly": (e) => {
         e.preventDefault();
-        setShowMetaAssistant(!showMetaAssistant);
+        setShowPoly(!showPoly);
       },
     };
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,8 +96,8 @@ export function useKeyboardShortcuts() {
     showKeyboardShortcuts,
     setShowKeyboardShortcuts,
     setShowSearch,
-    showMetaAssistant,
-    setShowMetaAssistant,
+    showPoly,
+    setShowPoly,
   ]);
 
   return {};

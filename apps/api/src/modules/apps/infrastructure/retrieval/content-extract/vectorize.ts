@@ -1,10 +1,7 @@
-import type { InsertEmbeddingInput } from "@ngriffin_uk/polychat-schemas";
-import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { createSourceSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { deleteEmbedding } from "~/modules/apps/application/embeddings/delete";
-import { insertEmbedding } from "~/modules/apps/application/embeddings/insert";
-import { parseInsertEmbeddingRequest } from "~/modules/apps/application/embeddings/requests";
+import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import type {
   ContentExtractParams,
   ContentExtractProvider,
@@ -12,54 +9,10 @@ import type {
   ExtractedContentPayload,
 } from "~/modules/apps/application/ports/content-extract";
 import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
+import { createSource } from "~/modules/sources/application/sources";
 import type { IRequest } from "~/types";
 
-async function generateShortId(text: string): Promise<string> {
-  return `tx_${(await sha256Hex(text)).slice(0, 24)}`;
-}
-
-const MAX_VECTORIZED_ENTRIES = 10;
-
-const requirePersonalVectorization = (params: ContentExtractParams, req: IRequest): void => {
-  if (params.namespace || resolveRequestProjectId(req)) {
-    throw new AssistantError(
-      "Only personal document storage is available",
-      ErrorType.CONFIGURATION_ERROR,
-      501,
-    );
-  }
-};
-
-const getExtractionSource = (
-  provider: ContentExtractProvider,
-  params: ContentExtractParams,
-): string => {
-  if (provider === "cloudflare") {
-    return `cloudflare_${params.cloudflareCrawlOptions?.enabled ? "crawl" : (params.cloudflareFormat ?? "markdown")}`;
-  }
-
-  return provider === "greenpt" ? "greenpt_scrape" : "tavily_extract";
-};
-
-const createEmbeddingRequest = async ({
-  entry,
-  params,
-  provider,
-}: {
-  entry: ExtractedContentPayload["results"][number];
-  params: ContentExtractParams;
-  provider: ContentExtractProvider;
-}): Promise<InsertEmbeddingInput> =>
-  parseInsertEmbeddingRequest({
-    id: await generateShortId(entry.url),
-    type: "webpage",
-    title: entry.url.slice(0, 200),
-    content: entry.raw_content,
-    metadata: {
-      url: entry.url,
-      source: getExtractionSource(provider, params),
-    },
-  });
+const MAX_STORED_ENTRIES = 10;
 
 export async function maybeVectorizeExtractedContent({
   params,
@@ -79,43 +32,41 @@ export async function maybeVectorizeExtractedContent({
   }
 
   try {
-    requirePersonalVectorization(params, req);
-
-    if (extracted.results.length > MAX_VECTORIZED_ENTRIES) {
+    if (extracted.results.length > MAX_STORED_ENTRIES) {
       throw new AssistantError(
-        `At most ${MAX_VECTORIZED_ENTRIES} extracted entries can be stored`,
+        `At most ${MAX_STORED_ENTRIES} extracted entries can be stored`,
         ErrorType.PARAMS_ERROR,
         400,
       );
     }
 
-    const requests = await Promise.all(
-      extracted.results.map((entry) => createEmbeddingRequest({ entry, params, provider })),
+    const requests = extracted.results.map((entry) =>
+      createSourceSchema.parse({
+        kind: "url",
+        title: entry.url.slice(0, 200),
+        content: entry.raw_content,
+        externalUri: entry.url,
+        provider,
+        metadata: { url: entry.url },
+      }),
     );
+    const context = resolveServiceContext(req);
+    const user = context.requireUser();
+    const projectId = resolveRequestProjectId(req);
     const insertedIds: string[] = [];
 
     try {
       for (const request of requests) {
-        const response = await insertEmbedding({
-          context: req.context,
-          env: req.env,
-          user: req.user,
-          request,
-        });
+        const response = await createSource(context, user.id, { ...request, projectId });
 
-        insertedIds.push(response.data.id);
+        insertedIds.push(response.id);
       }
     } catch (error) {
       if (insertedIds.length > 0) {
         try {
-          await deleteEmbedding({
-            context: req.context,
-            env: req.env,
-            user: req.user,
-            request: { ids: insertedIds },
-          });
+          await context.repositories.sources.removeCreatedSources(user.id, projectId, insertedIds);
         } catch {
-          // Delete-pending records remain excluded from retrieval and can be retried safely.
+          context.getLogger().warn("Extracted source rollback deferred");
         }
       }
 

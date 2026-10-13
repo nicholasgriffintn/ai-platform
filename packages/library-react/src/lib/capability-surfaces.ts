@@ -21,6 +21,7 @@ export interface EnabledCapability {
   kind: ProjectCapabilityKind;
   capabilityId: string;
   configuration: Record<string, unknown>;
+  excluded?: boolean;
   createdAt: string;
   createdBy?: number;
   projectId?: string;

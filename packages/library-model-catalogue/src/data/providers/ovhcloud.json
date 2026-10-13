@@ -10,26 +10,14 @@
       "model": "gpt/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "openWeights": true,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 4,
         "speed": 5,
         "releaseDate": "August 28, 2025",
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.00009,
-        "costPer1kOutputTokens": 0.00047,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00047
       }
     },
     "qwen3-32b": {
@@ -179,7 +167,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "May 18, 2026",
         "lastUpdated": "May 18, 2026",
         "costPer1kInputTokens": 0.00071,
@@ -203,6 +191,21 @@
         "name": "Qwen3.5-9B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00012,
@@ -226,7 +229,22 @@
         "name": "Qwen3.6-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
+        "isFeatured": true,
         "releaseDate": "June 1, 2026",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.00047,
@@ -294,8 +312,9 @@
       "overrides": {
         "name": "Qwen3.8-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
         "maxTokens": 262144,
+        "speed": 2,
+        "isFeatured": true,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00047,

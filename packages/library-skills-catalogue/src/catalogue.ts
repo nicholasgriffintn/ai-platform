@@ -117,7 +117,11 @@ function withoutContent(resource: SkillResource): SkillResourceDescriptor {
 export class SkillCatalog {
   private readonly index = new Map<string, IndexedSkill>();
 
-  constructor(documents: readonly SkillCatalogDocument[]) {
+  constructor(documents: readonly SkillCatalogDocument[], base?: SkillCatalog) {
+    for (const [id, skill] of base?.index ?? []) {
+      this.index.set(id, skill);
+    }
+
     for (const entry of documents) {
       const document =
         entry.trust === "user-authored"
@@ -245,28 +249,38 @@ export class SkillCatalog {
   listSummaries(): SkillSummary[] {
     return this.listDefinitions().map(toSkillSummary);
   }
+
+  extend(documents: readonly SkillCatalogDocument[]): SkillCatalog {
+    return new SkillCatalog(documents, this);
+  }
 }
 
 export const builtInSkillDocuments: readonly SkillCatalogDocument[] = builtInSkillDocumentSources;
 
-export const builtInSkillCatalogue = new SkillCatalog(builtInSkillDocuments);
+let builtInSkillCatalogue: SkillCatalog | undefined;
+
+export function getBuiltInSkillCatalogue(): SkillCatalog {
+  builtInSkillCatalogue ??= new SkillCatalog(builtInSkillDocuments);
+
+  return builtInSkillCatalogue;
+}
 
 export function listBuiltInSkillDefinitions(): SkillDefinition[] {
-  return builtInSkillCatalogue.listDefinitions();
+  return getBuiltInSkillCatalogue().listDefinitions();
 }
 
 export function getBuiltInSkillDefinition(skillId: string): SkillDefinition | undefined {
-  return builtInSkillCatalogue.getDefinition(skillId);
+  return getBuiltInSkillCatalogue().getDefinition(skillId);
 }
 
 export function loadBuiltInSkill(skillId: string): SkillContent | null {
-  return builtInSkillCatalogue.load(skillId);
+  return getBuiltInSkillCatalogue().load(skillId);
 }
 
 export function getBuiltInSkillResource(skillId: string, path: string): SkillResource | null {
-  return builtInSkillCatalogue.readResource(skillId, path);
+  return getBuiltInSkillCatalogue().readResource(skillId, path);
 }
 
 export function listBuiltInSkillSummaries(): SkillSummary[] {
-  return builtInSkillCatalogue.listSummaries();
+  return getBuiltInSkillCatalogue().listSummaries();
 }

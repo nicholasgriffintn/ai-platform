@@ -1,8 +1,30 @@
 import { describe, expect, it } from "vitest";
 
-import { hasUrlExtension, readUrlExtension, readUrlPath } from "./urls";
+import {
+  hasUrlExtension,
+  isCookieSameSite,
+  normaliseSameOriginRoute,
+  readUrlExtension,
+  readUrlPath,
+} from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
+
+describe("normaliseSameOriginRoute", () => {
+  it.each([
+    ["  ", "/"],
+    ["  /settings?tab=profile#name  ", "/settings?tab=profile#name"],
+    ["https://preview.test/settings", "/settings"],
+    ["https://other.test/settings", null],
+    ["//other.test/settings", null],
+    ["http://preview.test/settings", null],
+    ["https://preview.test:444/settings", null],
+    ["javascript:alert(1)", null],
+    ["https://[", null],
+  ])("keeps preview navigation on its origin for %s", (route, expected) => {
+    expect(normaliseSameOriginRoute(route, "https://preview.test")).toBe(expected);
+  });
+});
 
 describe("readUrlPath", () => {
   it("drops the query and fragment", () => {
@@ -50,5 +72,19 @@ describe("hasUrlExtension", () => {
 
     expect(hasUrlExtension(hostile, VIDEO)).toBe(false);
     expect(performance.now() - startedAt).toBeLessThan(100);
+  });
+});
+
+describe("isCookieSameSite", () => {
+  it.each([
+    ["https://polychat.app", "https://api.polychat.app", true],
+    ["http://localhost:5173", "http://localhost:8787", true],
+    ["tauri://localhost", "https://api.polychat.app", false],
+    ["https://preview.pages.dev", "https://api.polychat.app", false],
+    ["http://polychat.app", "https://api.polychat.app", false],
+    ["https://notpolychat.app", "https://api.polychat.app", false],
+    [undefined, "https://api.polychat.app", false],
+  ])("treats %s calling %s as same-site: %s", (page, api, expected) => {
+    expect(isCookieSameSite(page, api)).toBe(expected);
   });
 });

@@ -5,7 +5,7 @@ import {
   type ChatCompletionResponseBody,
   type ChatStreamMessage,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { ApiError } from "./http.js";
 
@@ -199,8 +199,7 @@ export function toCompletionResponseAppMessage(
     parts: responseMessage?.parts,
     data: isRecord(responseMessage?.data) ? responseMessage.data : undefined,
     reasoning: responseMessageReasoning(responseMessageRecord.reasoning),
-    id:
-      responseString(responseMessage?.id) ?? responseString(responseBody.id) ?? crypto.randomUUID(),
+    id: responseString(responseMessage?.id) ?? responseString(responseBody.id) ?? generateId(),
     created,
     timestamp: responseTimestamp(responseMessage?.timestamp) ?? created,
     model: responseString(responseMessageRecord.model) ?? responseBody.model ?? fallbackModel,

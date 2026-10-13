@@ -51,11 +51,17 @@ export {
   moduleHasDefaultExport,
 } from "./module-exports.js";
 export {
+  containerEgressBlockedResponse,
+  decideContainerEgress,
   decideOutbound,
   isHostAllowed,
   outboundNeedsGateway,
+  parseContainerEgressPolicy,
   parseToolRequest,
+  SANDBOX_PACKAGE_REGISTRY_HOSTS,
   TOOLS_ORIGIN,
+  type ContainerEgressDecision,
+  type ContainerEgressPolicy,
   type OutboundAllowlist,
   type OutboundDecision,
   type OutboundGatewayProps,
@@ -74,3 +80,36 @@ export {
   type EvaluationLogLevel,
   type EvaluationOutcome,
 } from "./evaluation-result.js";
+export {
+  COMMAND_TIMEOUT_EXIT_CODE,
+  containerCommandArgv,
+  runContainerArgv,
+  runContainerCommand,
+  runContainerScript,
+  WORKSPACE_ROOT,
+  type ContainerCommandOptions,
+  type ContainerCommandOutput,
+  type ContainerCommandResult,
+  type ContainerExecutor,
+  type ContainerScriptLanguage,
+} from "./container-command.js";
+export {
+  readContainerProcess,
+  readContainerProcessLogs,
+  startContainerProcess,
+  stopContainerProcess,
+  type ContainerProcessState,
+  type ContainerProcessStatus,
+} from "./container-processes.js";
+export {
+  CONTAINER_INTERCEPTION_CA,
+  interceptContainerEgress,
+  trustContainerInterception,
+  waitForContainerPort,
+  type ContainerPortProbe,
+} from "./container-runtime.js";
+export {
+  parseInotifyLine,
+  watchContainerFiles,
+  type ContainerFileChange,
+} from "./container-watch.js";

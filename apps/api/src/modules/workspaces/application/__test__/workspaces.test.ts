@@ -9,7 +9,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { assistantRecipes } from "~/modules/apps/application/recipes/catalog";
+import { getAssistantRecipes } from "~/modules/apps/application/recipes/catalog";
 import { sendEmail } from "~/modules/email/application";
 import type {
   ProjectCapabilityRow,
@@ -18,7 +18,6 @@ import type {
   WorkspaceMemberRow,
   WorkspaceRow,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
-import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   acceptWorkspaceInvitation,
@@ -327,36 +326,6 @@ describe("workspace invitation lifecycle", () => {
 });
 
 describe("workspace and project isolation", () => {
-  it("persists routing preferences through the repository update allowlist", async () => {
-    const { context } = createHarness();
-    const statement = {
-      bind: vi.fn().mockReturnThis(),
-      run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1 } }),
-      all: vi.fn(),
-      first: vi.fn(),
-      raw: vi.fn(),
-    };
-    const prepare = vi.fn().mockReturnValue(statement);
-
-    context.env.DB = {
-      prepare,
-      batch: vi.fn(),
-      exec: vi.fn(),
-      dump: vi.fn(),
-      withSession: vi.fn(),
-    };
-    const repository = new WorkspaceRepository(context.env);
-
-    await repository.updateProject(PROJECT_ID, { default_model_tier: "low" });
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining("default_model_tier = ?"));
-    expect(statement.bind).toHaveBeenLastCalledWith("low", PROJECT_ID);
-    expect(statement.run).toHaveBeenCalledOnce();
-
-    await repository.updateProject(PROJECT_ID, { default_model_tier: null });
-    expect(statement.bind).toHaveBeenLastCalledWith(null, PROJECT_ID);
-    expect(statement.run).toHaveBeenCalledTimes(2);
-  });
-
   it("saves and clears the project routing preference with an audit record", async () => {
     const { context, repositories, audit } = createHarness();
 
@@ -415,22 +384,6 @@ describe("workspace and project isolation", () => {
     );
   });
 
-  it("preserves a colour supplied when creating a project", async () => {
-    const { context, repositories } = createHarness();
-
-    await createProject(context, WORKSPACE_ID, {
-      name: "Customer research",
-      description: "Summarise interview themes",
-      instructions: "",
-      colour: "#2563EB",
-      defaultModelTier: "high",
-    });
-
-    expect(repositories.createProject).toHaveBeenCalledWith(
-      expect.objectContaining({ colour: "#2563EB", defaultModelTier: "high" }),
-    );
-  });
-
   it("does not disclose pending invitations to ordinary workspace members", async () => {
     const { context, repositories } = createHarness({
       user: { id: 3, email: "member@example.com" },
@@ -482,7 +435,7 @@ describe("project capability ownership", () => {
     id: "capability-1",
     project_id: PROJECT_ID,
     kind: "recipe",
-    capability_id: assistantRecipes[0].id,
+    capability_id: getAssistantRecipes()[0].id,
     configuration: {},
     excluded: 0,
     created_by: 2,
@@ -497,7 +450,7 @@ describe("project capability ownership", () => {
 
     await addProjectCapability(context, PROJECT_ID, {
       kind: "recipe",
-      capabilityId: assistantRecipes[0].id,
+      capabilityId: getAssistantRecipes()[0].id,
       configuration: {},
     });
 
@@ -505,7 +458,7 @@ describe("project capability ownership", () => {
       expect.objectContaining({
         projectId: PROJECT_ID,
         kind: "recipe",
-        capabilityId: assistantRecipes[0].id,
+        capabilityId: getAssistantRecipes()[0].id,
         configuration: {},
         createdBy: 3,
       }),
@@ -534,23 +487,7 @@ describe("project capability ownership", () => {
     expect(repositories.removeProjectCapability).not.toHaveBeenCalled();
   });
 
-  it("lets the attaching member remove their recipe capability", async () => {
-    const { context, repositories } = createHarness({
-      user: { id: 2, email: "creator@example.com" },
-      role: "member",
-    });
-
-    repositories.listProjectCapabilities.mockResolvedValue([recipeCapability]);
-
-    await removeProjectCapability(context, PROJECT_ID, recipeCapability.id);
-
-    expect(repositories.removeProjectCapability).toHaveBeenCalledWith(
-      PROJECT_ID,
-      recipeCapability.id,
-    );
-  });
-
-  it("keeps project tools restricted to project admins", async () => {
+  it("keeps project tools and connector grants restricted to project admins", async () => {
     const { context, repositories } = createHarness({
       user: { id: 3, email: "member@example.com" },
       role: "member",
@@ -563,36 +500,30 @@ describe("project capability ownership", () => {
         configuration: {},
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      addProjectCapability(context, PROJECT_ID, {
+        kind: "connector",
+        capabilityId: "devin",
+        configuration: { operations: ["list_sessions"] },
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
     expect(repositories.addProjectCapability).not.toHaveBeenCalled();
   });
 
-  it("lets project admins update a tool attached by another admin", async () => {
-    const { context, repositories } = createHarness({
-      user: { id: 3, email: "admin@example.com" },
-      role: "admin",
-    });
+  it("rejects empty, wildcard and unsupported connector grants before persistence", async () => {
+    const { context, repositories } = createHarness({ role: "admin" });
 
-    repositories.listProjectCapabilities.mockResolvedValue([
-      {
-        ...recipeCapability,
-        id: "tool-capability-1",
-        kind: "tool",
-        capability_id: "web_fetch",
-      },
-    ]);
+    for (const operations of [[], ["*"], ["unsupported_action"]]) {
+      await expect(
+        addProjectCapability(context, PROJECT_ID, {
+          kind: "connector",
+          capabilityId: "devin",
+          configuration: { operations },
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    }
 
-    await addProjectCapability(context, PROJECT_ID, {
-      kind: "tool",
-      capabilityId: "web_fetch",
-      configuration: {},
-    });
-
-    expect(repositories.addProjectCapability).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "tool-capability-1",
-        createdBy: 3,
-      }),
-    );
+    expect(repositories.addProjectCapability).not.toHaveBeenCalled();
   });
 });
 

@@ -28,7 +28,7 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 4,
+        "reliability": 2,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -38,10 +38,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1210,
+              "value": 964,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -71,7 +71,7 @@
       "defaults": {
         "name": "Veo 3.1",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "October 15, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -82,10 +82,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1208,
+              "value": 969,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -114,7 +114,7 @@
           "creative"
         ],
         "contextComplexity": 2,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "October 15, 2025",
         "supportsAttachments": true,
         "supportsTemperature": false,
@@ -127,10 +127,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1218,
+              "value": 964,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -168,7 +168,7 @@
           "creative"
         ],
         "contextComplexity": 2,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "March 31, 2026",
         "supportsAttachments": true,
         "supportsTemperature": false,
@@ -181,10 +181,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1218,
+              "value": 955,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 11
             }
           ]
         }

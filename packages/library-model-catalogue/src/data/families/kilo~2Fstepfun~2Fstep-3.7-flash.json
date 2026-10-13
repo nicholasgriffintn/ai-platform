@@ -1,0 +1,54 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 256000,
+    "maxTokens": 230400,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "knowledgeCutoffDate": "March 1, 2026",
+    "releaseDate": "May 29, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 19.5,
+      "codingIndex": 39.6,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
+    }
+  },
+  "description": "The kilo/stepfun/step 3.7 flash family includes models that produce text.",
+  "models": {
+    "step-3-7-flash": {
+      "defaults": {
+        "name": "Step 3.7 Flash",
+        "description": "Step 3.7 Flash is StepFun's latest high-efficiency multimodal Mixture-of-Experts model. It pairs a 196B-parameter language backbone with a vision encoder for native image and video understanding, activating roughly 11B parameters..."
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps.js";
@@ -11,6 +12,61 @@ export const teammateContextScopeSchema = z.object({
 export const teammateContextStatusSchema = z.enum(["active", "paused", "archived"]);
 export type TeammateContextStatus = z.infer<typeof teammateContextStatusSchema>;
 
+export const TEAMMATE_AUTONOMY_LEVELS = ["observer", "assistant", "partner"] as const;
+
+export const teammateAutonomyLevelSchema = z
+  .enum(TEAMMATE_AUTONOMY_LEVELS)
+  .describe(
+    "How much the teammate may do without asking. observer only reads and drafts; assistant asks before writes; partner writes within its grants. Sends, spending, deletes, credentials and exports always ask.",
+  );
+
+export type TeammateAutonomyLevel = z.infer<typeof teammateAutonomyLevelSchema>;
+
+export const TEAMMATE_STANDING_APPROVAL_DAYS = 30;
+
+export const STANDING_APPROVAL_OPTION = "Always allow here";
+
+export const teammateStandingApprovalSchema = z.object({
+  toolName: z.string().min(1),
+  destination: z.string().min(1),
+  grantedAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime(),
+});
+
+export type TeammateStandingApproval = z.infer<typeof teammateStandingApprovalSchema>;
+
+const teammateStandingApprovalListSchema = z.array(teammateStandingApprovalSchema);
+
+export function parseTeammateStandingApprovals(value: unknown): TeammateStandingApproval[] {
+  const candidate: unknown = typeof value === "string" ? safeParseJson(value) : value;
+  const parsed = teammateStandingApprovalListSchema.safeParse(candidate);
+
+  return parsed.success ? parsed.data : [];
+}
+
+export const TEAMMATE_STANDING_OFFER_STREAK = 5;
+
+export const TEAMMATE_OWNER_ABSENCE_DAYS = 7;
+
+export const teammateApprovalStreakSchema = z.object({
+  toolName: z.string().min(1),
+  destination: z.string().min(1),
+  approvals: z.number().int().positive(),
+  lastInteractionId: z.string().min(1),
+  lastApprovedAt: z.iso.datetime(),
+});
+
+export type TeammateApprovalStreak = z.infer<typeof teammateApprovalStreakSchema>;
+
+const teammateApprovalStreakListSchema = z.array(teammateApprovalStreakSchema);
+
+export function parseTeammateApprovalStreaks(value: unknown): TeammateApprovalStreak[] {
+  const candidate: unknown = typeof value === "string" ? safeParseJson(value) : value;
+  const parsed = teammateApprovalStreakListSchema.safeParse(candidate);
+
+  return parsed.success ? parsed.data : [];
+}
+
 export const teammateContextSchema = z.object({
   id: z.string().min(1),
   teammateId: z.string().min(1),
@@ -19,6 +75,10 @@ export const teammateContextSchema = z.object({
   homeConversationId: z.string().min(1),
   memoryDocumentId: z.string().min(1),
   status: teammateContextStatusSchema,
+  autonomyLevel: teammateAutonomyLevelSchema.nullable(),
+  standingApprovals: z.array(teammateStandingApprovalSchema),
+  approvalStreaks: z.array(teammateApprovalStreakSchema),
+  ownerSeenAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });
@@ -33,6 +93,10 @@ export const ensureTeammateContextSchema = z.object({
 
 export const updateTeammateContextStatusSchema = z.object({
   status: teammateContextStatusSchema,
+});
+
+export const updateTeammateContextAutonomySchema = z.object({
+  autonomyLevel: teammateAutonomyLevelSchema,
 });
 
 export const teammateConnectionGrantSchema = z.object({
@@ -82,6 +146,10 @@ export const teammateInvocationSchema = z.discriminatedUnion("source", [
     source: z.literal("channel"),
     bindingId: z.string().min(1),
     messageId: z.string().min(1),
+    senderMappingId: z.string().min(1),
+    senderRevision: z.number().int().positive(),
+    threadId: z.string().min(1).max(998).optional(),
+    subject: z.string().max(998).optional(),
   }),
   z.object({
     source: z.literal("project_task"),

@@ -1,10 +1,14 @@
+import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
+
 import { generateVideo } from "~/modules/generate/application/video";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_video as create_videoDescriptor } from "./definitions/video";
 
-export const create_video: ApiToolDefinition = {
-  ...create_videoDescriptor,
+export const create_video: ApiToolDefinition = extendPreservingAccessors<
+  typeof create_videoDescriptor,
+  Pick<ApiToolDefinition, "execute">
+>(create_videoDescriptor, {
   execute: async (args, context) => {
     const req = context.request;
     const completion_id = context.completionId;
@@ -21,4 +25,4 @@ export const create_video: ApiToolDefinition = {
 
     return response;
   },
-};
+});

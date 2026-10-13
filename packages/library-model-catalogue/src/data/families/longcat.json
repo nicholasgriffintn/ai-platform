@@ -24,7 +24,57 @@
   "models": {
     "longcat-2-0": {
       "defaults": {
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "artificialAnalysis": {
+          "intelligenceIndex": 19.1,
+          "codingIndex": 45.3,
+          "agenticIndex": 14,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "longcat-2-5-preview": {
+      "defaults": {
+        "name": "LongCat 2.5 Preview",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 26, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "longcat-2-5-preview-free": {
+      "defaults": {
+        "name": "LongCat 2.5 Preview Free",
+        "description": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 25, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
       }
     },
     "longcat-flash-chat": {
@@ -45,6 +95,34 @@
         "maxTokens": 32768,
         "releaseDate": "January 15, 2026",
         "supportsToolCalls": false
+      }
+    },
+    "meituan-longcat-2-0": {
+      "defaults": {
+        "name": "Meituan: LongCat 2.0",
+        "description": "LongCat 2.0 is a sparse mixture-of-experts language model from Meituan, with 48B active parameters out of 1.6T total. It is suited for coding, repository-level changes, long-horizon problem solving, and agentic...",
+        "contextWindow": 1048756,
+        "maxTokens": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "July 20, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 19.1,
+          "codingIndex": 45.3,
+          "agenticIndex": 14,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     }
   }

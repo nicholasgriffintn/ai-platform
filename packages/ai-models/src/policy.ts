@@ -1,9 +1,9 @@
+import { authorise, createAuthorisationPass } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_MODEL_TIER,
   getModelDisplayName,
   isActiveModel,
   isLineupEligibleModel,
-  isModelSelectableForAccount,
   isTextInputChatModel,
   resolveLineupCandidate,
   resolveModelTierAlternate,
@@ -23,14 +23,18 @@ export function getExecutableModelsForAccount(
   models: ModelConfig,
   user?: AccountPlan,
 ): ModelConfig {
-  const isPro = user?.plan_id === "pro";
+  const canExecute = createAuthorisationPass("model.execute");
 
   return Object.fromEntries(
-    Object.entries(models).filter(
-      ([, model]) =>
-        isActiveModel(model) &&
-        isModelSelectableForAccount(model, isPro) &&
-        (model.isPlatformEnabled !== false || model.isByokEnabled === true),
+    Object.entries(models).filter(([, model]) =>
+      canExecute({
+        plan: user?.plan_id ?? "",
+        active: isActiveModel(model),
+        free: model.isFree === true,
+        byok: model.isByokEnabled === true,
+        onDevice: model.runsOn === "device",
+        platformEnabled: model.isPlatformEnabled !== false,
+      }),
     ),
   );
 }
@@ -39,13 +43,16 @@ export function getModelCredentialAuthority(
   model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "isPlatformEnabled">,
   user?: AccountPlan,
 ): CredentialAuthority {
-  if (model.isPlatformEnabled === false && model.isByokEnabled) {
-    return "byok";
-  }
-
-  const requiresByok = user?.plan_id !== "pro" && !model.isFree && model.isByokEnabled;
-
-  return requiresByok ? "byok" : "platform";
+  return authorise("model.platform", {
+    plan: user?.plan_id ?? "",
+    active: true,
+    free: model.isFree === true,
+    byok: model.isByokEnabled === true,
+    onDevice: false,
+    platformEnabled: model.isPlatformEnabled !== false,
+  }).allowed
+    ? "platform"
+    : "byok";
 }
 
 export interface TierModelOptions {
@@ -75,6 +82,44 @@ export function resolveTierModel(
     role,
     { isEligible: tierEligibility(options) },
   );
+}
+
+export interface HostedAgentModelSelection {
+  id: string;
+  config: ModelConfigItem;
+  effort?: ResolvedLineupCandidate["effort"];
+}
+
+export function resolveHostedAgentModel(
+  models: ModelConfig,
+  user: AccountPlan | undefined,
+  tier: ModelTier,
+  role: ModelTierRole,
+  explicitModel?: string,
+  options: TierModelOptions = {},
+): HostedAgentModelSelection | null {
+  const executable = getExecutableModelsForAccount(models, user);
+  const requested = explicitModel?.trim();
+
+  if (requested) {
+    const match = Object.entries(executable).find(
+      ([id, config]) => id === requested || config.matchingModel === requested,
+    );
+
+    return match ? { id: match[0], config: match[1] } : null;
+  }
+
+  const selected = resolveModelTierSelection(executable, "hosted", tier, role, {
+    isEligible: tierEligibility(options),
+  });
+
+  return selected
+    ? {
+        id: selected.id,
+        config: selected.config,
+        ...(selected.effort ? { effort: selected.effort } : {}),
+      }
+    : null;
 }
 
 export function resolveTierAlternateModel(

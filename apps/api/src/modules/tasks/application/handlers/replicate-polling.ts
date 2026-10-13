@@ -1,6 +1,7 @@
 import type { AsyncInvocationMetadata } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { PENDING } from "@ngriffin_uk/polychat-ai-workflows";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
@@ -33,7 +34,7 @@ export const replicatePolling = definePoll({
       };
     }
 
-    if (prediction.created_by_user_id !== data.userId) {
+    if (!ownsResource(data.userId, prediction.created_by_user_id)) {
       return {
         status: "error",
         message: "Unauthorized access to prediction",

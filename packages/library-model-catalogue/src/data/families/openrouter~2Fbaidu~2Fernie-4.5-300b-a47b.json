@@ -19,10 +19,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 9,
+      "intelligenceIndex": 7.5,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The openrouter/baidu/ernie 4.5 300b a47b family includes models that produce text.",

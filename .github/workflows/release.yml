@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -75,6 +76,7 @@ jobs:
     secrets: inherit
     with:
       retention-days: 30
+      signed: true
 
   publish:
     name: Publish GitHub releases

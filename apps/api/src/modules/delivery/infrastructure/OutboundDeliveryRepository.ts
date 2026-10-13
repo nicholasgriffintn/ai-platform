@@ -49,10 +49,10 @@ export class OutboundDeliveryRepository extends BaseRepository {
     const now = new Date().toISOString();
 
     await this.executeRun(
-      `INSERT OR IGNORE INTO outbound_delivery (
-         id, user_id, kind, scope_id, operation_id, payload_digest,
+      `INSERT OR IGNORE INTO delivery (
+         delivery_type, id, user_id, kind, scope_id, operation_id, payload_digest,
          payload_json, state, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, 'prepared', ?, ?)`,
+       ) VALUES ('outbound', ?, ?, ?, ?, ?, ?, ?, 'prepared', ?, ?)`,
       [
         input.id,
         input.userId,
@@ -66,7 +66,7 @@ export class OutboundDeliveryRepository extends BaseRepository {
       ],
     );
     const row = await this.runQuery<OutboundDeliveryRow>(
-      "SELECT * FROM outbound_delivery WHERE id = ? AND user_id = ?",
+      "SELECT * FROM delivery WHERE delivery_type = 'outbound' AND id = ? AND user_id = ?",
       [input.id, input.userId],
       true,
     );
@@ -96,9 +96,9 @@ export class OutboundDeliveryRepository extends BaseRepository {
     leaseExpiresAt: string;
   }): Promise<"execute" | "sent" | "in_progress" | "indeterminate"> {
     const claimed = await this.runQuery<OutboundDeliveryRow>(
-      `UPDATE outbound_delivery
+      `UPDATE delivery
        SET state = 'sending', execution_token = ?, execution_lease_expires_at = ?, updated_at = ?
-       WHERE id = ? AND user_id = ? AND state = 'prepared'
+       WHERE delivery_type = 'outbound' AND id = ? AND user_id = ? AND state = 'prepared'
        RETURNING *`,
       [input.executionToken, input.leaseExpiresAt, input.now, input.id, input.userId],
       true,
@@ -109,7 +109,7 @@ export class OutboundDeliveryRepository extends BaseRepository {
     }
 
     const current = await this.runQuery<OutboundDeliveryRow>(
-      "SELECT * FROM outbound_delivery WHERE id = ? AND user_id = ?",
+      "SELECT * FROM delivery WHERE delivery_type = 'outbound' AND id = ? AND user_id = ?",
       [input.id, input.userId],
       true,
     );
@@ -135,9 +135,9 @@ export class OutboundDeliveryRepository extends BaseRepository {
     }
 
     await this.executeRun(
-      `UPDATE outbound_delivery
+      `UPDATE delivery
        SET state = 'indeterminate', updated_at = ?
-       WHERE id = ? AND user_id = ? AND state = 'sending'`,
+       WHERE delivery_type = 'outbound' AND id = ? AND user_id = ? AND state = 'sending'`,
       [input.now, input.id, input.userId],
     );
 
@@ -151,9 +151,9 @@ export class OutboundDeliveryRepository extends BaseRepository {
     sentAt: string;
   }): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE outbound_delivery
+      `UPDATE delivery
        SET state = 'sent', sent_at = ?, updated_at = ?
-       WHERE id = ? AND user_id = ? AND state = 'sending' AND execution_token = ?`,
+       WHERE delivery_type = 'outbound' AND id = ? AND user_id = ? AND state = 'sending' AND execution_token = ?`,
       [input.sentAt, input.sentAt, input.id, input.userId, input.executionToken],
     );
 
@@ -167,9 +167,9 @@ export class OutboundDeliveryRepository extends BaseRepository {
     recordedAt: string;
   }): Promise<void> {
     await this.executeRun(
-      `UPDATE outbound_delivery
+      `UPDATE delivery
        SET state = 'indeterminate', updated_at = ?
-       WHERE id = ? AND user_id = ? AND state = 'sending' AND execution_token = ?`,
+       WHERE delivery_type = 'outbound' AND id = ? AND user_id = ? AND state = 'sending' AND execution_token = ?`,
       [input.recordedAt, input.id, input.userId, input.executionToken],
     );
   }

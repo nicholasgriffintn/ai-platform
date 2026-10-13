@@ -36,6 +36,7 @@ export interface SkillDocumentInput {
   name: string;
   description: string;
   instructions: string;
+  activation?: "per-message";
 }
 
 export class SkillDocumentError extends Error {
@@ -48,7 +49,9 @@ export class SkillDocumentError extends Error {
 export function buildSkillDocument(input: SkillDocumentInput): string {
   const description = input.description.trim().replace(/\s+/gu, " ");
 
-  return `---\nname: ${input.name}\ndescription: ${JSON.stringify(description)}\n---\n\n${input.instructions.trim()}\n`;
+  const metadata = input.activation ? `metadata:\n  activation: ${input.activation}\n` : "";
+
+  return `---\nname: ${input.name}\ndescription: ${JSON.stringify(description)}\n${metadata}---\n\n${input.instructions.trim()}\n`;
 }
 
 export function validateSkillResourcePath(path: string): string | null {

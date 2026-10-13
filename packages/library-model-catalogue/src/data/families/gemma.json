@@ -1,11 +1,44 @@
 {
   "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The gemma family includes models that produce embedding, text.",
   "models": {
+    "diffusiongemma-26b-a4b-it": {
+      "defaults": {
+        "name": "DiffusionGemma 26B A4B IT",
+        "openWeights": true,
+        "description": "Gemma 4 based discrete text diffusion model for fast chat, reasoning, and tool use",
+        "contextWindow": 250000,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "June 9, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "embeddinggemma-300m": {
       "defaults": {
         "name": "EmbeddingGemma 300M",
@@ -124,15 +157,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 32768,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document"
@@ -144,10 +168,10 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 3.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 3.8,
+          "codingIndex": 5.8,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -157,15 +181,6 @@
         "description": "Gemma 3 12B (free) accepts text, image and produces text.",
         "contextWindow": 32768,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document"
@@ -176,10 +191,10 @@
         "releaseDate": "March 13, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 3.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 3.8,
+          "codingIndex": 5.8,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -189,15 +204,6 @@
         "openWeights": true,
         "description": "Open multimodal Gemma instruction model for multilingual text generation and image understanding",
         "contextWindow": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "March 12, 2025",
         "supportsResponseFormat": true,
@@ -215,15 +221,6 @@
         "name": "Gemma 3 27B",
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -234,10 +231,10 @@
         "releaseDate": "March 12, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 4.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 4.9,
+          "codingIndex": 10.1,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -247,15 +244,6 @@
         "description": "Gemma 3 27B (free) accepts text, image and produces text.",
         "contextWindow": 131072,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -266,10 +254,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "March 12, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 4.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 4.9,
+          "codingIndex": 10.1,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -279,15 +267,6 @@
         "openWeights": true,
         "description": "Largest open Gemma 3 instruction model for multilingual text generation and visual understanding",
         "contextWindow": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "March 12, 2025",
         "supportsResponseFormat": true,
@@ -306,15 +285,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 32768,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document"
@@ -325,10 +295,10 @@
         "releaseDate": "March 13, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 1.1,
-          "codingIndex": null,
+          "intelligenceIndex": 4.8,
+          "codingIndex": 2.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -338,15 +308,6 @@
         "description": "Gemma 3 4B (free) accepts text, image and produces text.",
         "contextWindow": 32768,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document"
@@ -357,10 +318,10 @@
         "releaseDate": "March 13, 2025",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 1.1,
-          "codingIndex": null,
+          "intelligenceIndex": 4.8,
+          "codingIndex": 2.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -370,15 +331,6 @@
         "openWeights": true,
         "description": "Open multimodal Gemma instruction model for efficient text generation and image understanding",
         "contextWindow": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "March 12, 2025",
         "supportsResponseFormat": true
@@ -479,10 +431,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 1.2,
-          "codingIndex": null,
+          "intelligenceIndex": 4.8,
+          "codingIndex": 3.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -522,10 +474,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.7,
+          "codingIndex": 39.3,
+          "agenticIndex": 2.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -535,15 +487,6 @@
         "openWeights": true,
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -591,10 +534,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 14.7,
+          "codingIndex": 43.4,
+          "agenticIndex": 4.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -605,15 +548,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 7, 2026",
         "supportsResponseFormat": true,
@@ -632,15 +566,6 @@
         "openWeights": true,
         "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -659,15 +584,6 @@
         "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
         "contextWindow": 131072,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -744,15 +660,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -774,15 +681,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
         "reasoningConfig": {
@@ -794,6 +692,27 @@
         }
       }
     },
+    "google-gemma-2-27b": {
+      "defaults": {
+        "name": "Google: Gemma 2 27B",
+        "openWeights": false,
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "contextWindow": 8192,
+        "maxTokens": 2048,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 13, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      }
+    },
     "google-gemma-3": {
       "defaults": {
         "name": "Google Gemma 3",
@@ -801,15 +720,6 @@
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 125000,
         "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "analysis",
@@ -821,6 +731,18 @@
         "multimodal": true,
         "knowledgeCutoffDate": "December 2024",
         "releaseDate": "January 1, 2025"
+      }
+    },
+    "paligemma": {
+      "defaults": {
+        "name": "paligemma",
+        "openWeights": true,
+        "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "releaseDate": "May 14, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
       }
     },
     "pearl-ai-gemma-4-31b-instruct": {

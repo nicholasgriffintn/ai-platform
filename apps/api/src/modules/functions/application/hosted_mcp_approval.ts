@@ -19,6 +19,7 @@ export const hostedMcpApproval: ApiToolDefinition = {
   description: "Persist an exact approval request emitted by a hosted MCP server.",
   type: "normal",
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: hostedMcpApprovalInputSchema,
   execute: async (input, context) => {
     if (!context.toolCallId || context.toolCallId !== input.approvalRequestId) {

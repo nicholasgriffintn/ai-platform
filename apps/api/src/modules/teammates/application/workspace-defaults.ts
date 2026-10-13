@@ -1,5 +1,5 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -18,15 +18,7 @@ export async function removeInheritedTeammateFromProject(
 ): Promise<void> {
   context.ensureDatabase();
   const user = context.requireUser();
-  const { project, role } = await requireProjectAccess(context, projectId);
-
-  if (role === "member") {
-    throw new AssistantError(
-      "Only project admins can remove a default teammate",
-      ErrorType.FORBIDDEN,
-      403,
-    );
-  }
+  const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
   const teammate = await context.repositories.teammates.getTeammateById(teammateId);
   const isPlatformDefault = teammate?.owner_scope_type === "platform";
@@ -68,15 +60,7 @@ export async function restoreInheritedTeammateToProject(
 ): Promise<void> {
   context.ensureDatabase();
   const user = context.requireUser();
-  const { project, role } = await requireProjectAccess(context, projectId);
-
-  if (role === "member") {
-    throw new AssistantError(
-      "Only project admins can restore a default teammate",
-      ErrorType.FORBIDDEN,
-      403,
-    );
-  }
+  const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
   await context.repositories.workspaces.removeProjectCapabilityByCapabilityId(
     projectId,

@@ -103,4 +103,7 @@ export const ICON_LOADERS: Record<string, () => Promise<IconModule>> = {
   xai: () => import("./Icons/xai"),
   xiaomi: () => import("./Icons/xiaomi"),
   zai: () => import("./Icons/zai"),
+  kilo: () => import("./Icons/kilo"),
+  nebius: () => import("./Icons/nebius"),
+  baseten: () => import("./Icons/baseten"),
 };

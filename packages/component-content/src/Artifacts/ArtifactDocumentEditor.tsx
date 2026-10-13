@@ -1,13 +1,6 @@
 import { Button, Textarea } from "@ngriffin_uk/polychat-component-ui";
-import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import {
-  applyMarkdownEdit,
-  extractMarkdownOutline,
-  type MarkdownEditAction,
-} from "@ngriffin_uk/polychat-library-chat/markdown-editor";
-import { measureTextareaSelectionActionPosition } from "@ngriffin_uk/polychat-library-chat/textarea-selection-position";
-import { getCharCount, getErrorMessage, getWordCount } from "@ngriffin_uk/polychat-utility-core";
-import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
+import type { MarkdownEditAction } from "@ngriffin_uk/polychat-library-chat/markdown-editor";
+import type { TextAnchor } from "@ngriffin_uk/polychat-utility-core";
 import {
   Bold,
   Download,
@@ -21,27 +14,23 @@ import {
   Save,
   Wand2,
 } from "lucide-react";
-import { type ReactNode, type SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import type { ReactNode } from "react";
 
 import { MemoizedMarkdown } from "../markdown";
-import type { ArtifactProps } from "./artifact";
-import { buildArtifactDownload, createArtifactSelectionAttachment } from "./artifact-actions";
+import { useDocumentEditor, type DocumentEditorOptions } from "./useDocumentEditor";
 
-interface ArtifactDocumentEditorProps {
-  artifact: ArtifactProps;
-  onAddSelectionToChat?: (attachment: AttachmentData) => void;
-  onSave?: (content: string) => Promise<void>;
+interface ArtifactDocumentEditorProps extends DocumentEditorOptions {
   isSaving?: boolean;
   saveErrorMessage?: string;
-  onDownload?: () => void;
-  onRewrite?: () => Promise<string>;
   isRewriting?: boolean;
   rewriteErrorMessage?: string;
+  renderDiscussion?: (selection: TextAnchor | null, hasUnsavedChanges: boolean) => ReactNode;
 }
 
 export const ArtifactDocumentEditor = ({
   artifact,
+  sourceRevision,
+  renderDiscussion,
   onAddSelectionToChat,
   onSave,
   isSaving,
@@ -51,148 +40,34 @@ export const ArtifactDocumentEditor = ({
   isRewriting,
   rewriteErrorMessage,
 }: ArtifactDocumentEditorProps) => {
-  const editorContainerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
-  const [content, setContent] = useState(artifact.content);
-  const [selection, setSelection] = useState<{
-    text: string;
-    start: number;
-    end: number;
-    top: number;
-    left: number;
-  } | null>(null);
-  const [activeView, setActiveView] = useState<"edit" | "preview">("edit");
-  const [prevContent, setPrevContent] = useState(artifact.content);
-  const [prevIdentifier, setPrevIdentifier] = useState(artifact.identifier);
-
-  if (prevContent !== artifact.content || prevIdentifier !== artifact.identifier) {
-    setPrevContent(artifact.content);
-    setPrevIdentifier(artifact.identifier);
-    setContent(artifact.content);
-    setSelection(null);
-    setActiveView("edit");
-  }
-
-  const outline = useMemo(() => extractMarkdownOutline(content), [content]);
-
-  const documentStats = useMemo(
-    () => ({
-      words: getWordCount(content),
-      characters: getCharCount(content),
-    }),
-    [content],
-  );
-
-  const handleSelectionChange = useCallback(
-    (event: SyntheticEvent<HTMLTextAreaElement>) => {
-      const target = event.currentTarget;
-      const selectedText = content.slice(target.selectionStart, target.selectionEnd).trim();
-
-      if (!selectedText) {
-        setSelection(null);
-
-        return;
-      }
-
-      const container = editorContainerRef.current;
-
-      if (!container) {
-        return;
-      }
-
-      const position = measureTextareaSelectionActionPosition({
-        textarea: target,
-        container,
-        content,
-        selectionStart: target.selectionStart,
-        selectionEnd: target.selectionEnd,
-      });
-
-      setSelection({
-        text: selectedText,
-        start: target.selectionStart,
-        end: target.selectionEnd,
-        top: position.top,
-        left: position.left,
-      });
-    },
-    [content],
-  );
-
-  const handleAddSelectionToChat = useCallback(() => {
-    if (!selection || !onAddSelectionToChat) {
-      return;
-    }
-
-    onAddSelectionToChat(
-      createArtifactSelectionAttachment({
-        artifact,
-        selectedText: selection.text,
-      }),
-    );
-    setSelection(null);
-  }, [artifact, onAddSelectionToChat, selection]);
-
-  const handleApplyMarkdownEdit = useCallback(
-    (action: MarkdownEditAction) => {
-      const editor = editorRef.current;
-
-      if (!editor) {
-        return;
-      }
-
-      const edit = applyMarkdownEdit(content, editor.selectionStart, editor.selectionEnd, action);
-
-      setContent(edit.content);
-      setSelection(null);
-
-      window.requestAnimationFrame(() => {
-        editor.focus();
-        editor.setSelectionRange(edit.selectionStart, edit.selectionEnd);
-      });
-    },
-    [content],
-  );
-
-  const handleOutlineClick = useCallback((line: number) => {
-    const editor = editorRef.current;
-
-    if (!editor) {
-      return;
-    }
-
-    setActiveView("edit");
-    editor.focus();
-    editor.scrollTop = Math.max((line - 1) * 28, 0);
-  }, []);
-
-  const handleDownload = useCallback(() => {
-    if (onDownload) {
-      onDownload();
-
-      return;
-    }
-
-    const download = buildArtifactDownload(artifact, content);
-
-    downloadTextFile(download.filename, download.content, download.mimeType);
-  }, [artifact, content, onDownload]);
-
-  const handleRewrite = async () => {
-    if (!onRewrite) {
-      return;
-    }
-
-    try {
-      const rewritten = await onRewrite();
-
-      setContent(rewritten);
-      setActiveView("edit");
-    } catch (error) {
-      console.error("Failed to rewrite artifact", error);
-      toast.error(getErrorMessage(error, "Failed to rewrite document"));
-    }
-  };
+  const {
+    editorContainerRef,
+    editorRef,
+    content,
+    selection,
+    activeView,
+    setActiveView,
+    isDirty,
+    remoteChanged,
+    outline,
+    documentStats,
+    handleContentChange,
+    resetToLatest,
+    handleSelectionChange,
+    handleAddSelectionToChat,
+    handleApplyMarkdownEdit,
+    handleOutlineClick,
+    handleDownload,
+    handleRewrite,
+    handleSave,
+  } = useDocumentEditor({
+    artifact,
+    sourceRevision,
+    onAddSelectionToChat,
+    onSave,
+    onDownload,
+    onRewrite,
+  });
 
   return (
     <div className="flex h-full flex-col bg-surface-elevated text-foreground">
@@ -269,6 +144,7 @@ export const ArtifactDocumentEditor = ({
             size="xs"
             variant="outline"
             isLoading={isRewriting}
+            disabled={isDirty || isSaving}
             onClick={() => {
               void handleRewrite();
             }}
@@ -278,12 +154,12 @@ export const ArtifactDocumentEditor = ({
           </Button>
         ) : null}
 
-        {onSave && content !== artifact.content ? (
+        {onSave && isDirty ? (
           <Button
             size="xs"
             variant="outline"
             disabled={isSaving || isRewriting}
-            onClick={() => setContent(artifact.content)}
+            onClick={resetToLatest}
           >
             Cancel
           </Button>
@@ -294,8 +170,8 @@ export const ArtifactDocumentEditor = ({
             size="xs"
             variant="outline"
             isLoading={isSaving}
-            disabled={content === artifact.content}
-            onClick={() => void onSave(content)}
+            disabled={!isDirty || sourceRevision === undefined || isRewriting}
+            onClick={() => void handleSave()}
             icon={<Save size={13} />}
           >
             Save
@@ -306,6 +182,13 @@ export const ArtifactDocumentEditor = ({
           Download
         </Button>
       </div>
+
+      {remoteChanged && isDirty ? (
+        <output className="block border-b border-border px-3 py-2 text-xs text-muted-foreground">
+          A newer revision is available. Your draft is kept here. Download it or cancel to use the
+          latest revision.
+        </output>
+      ) : null}
 
       {(saveErrorMessage ?? rewriteErrorMessage) ? (
         <p
@@ -335,36 +218,48 @@ export const ArtifactDocumentEditor = ({
         </nav>
       )}
 
-      {activeView === "edit" ? (
-        <div ref={editorContainerRef} className="relative min-h-0 flex-1">
-          <Textarea
-            ref={editorRef}
-            aria-label="Document content"
-            value={content}
-            onChange={(event) => setContent(event.currentTarget.value)}
-            onSelect={handleSelectionChange}
-            className="h-full resize-none rounded-none border-0 bg-surface px-6 py-5 font-serif text-[15px] leading-7 focus:ring-0 focus-visible:ring-0"
-            spellCheck
-          />
-          {selection && onAddSelectionToChat && (
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={handleAddSelectionToChat}
-              data-selection-action="true"
-              style={{ top: selection.top, left: selection.left }}
-              className="absolute z-10 bg-surface shadow-lg"
-              icon={<MessageSquarePlus size={13} />}
-            >
-              Add selection to chat
-            </Button>
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <div className="flex min-h-0 min-w-0 flex-1">
+          {activeView === "edit" ? (
+            <div ref={editorContainerRef} className="relative min-h-0 min-w-0 flex-1">
+              <Textarea
+                ref={editorRef}
+                aria-label="Document content"
+                value={content}
+                onChange={(event) => handleContentChange(event.currentTarget.value)}
+                onSelect={handleSelectionChange}
+                className="h-full resize-none rounded-none border-0 bg-surface px-6 py-5 font-serif text-[15px] leading-7 focus:ring-0 focus-visible:ring-0"
+                spellCheck
+              />
+              {selection && onAddSelectionToChat && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleAddSelectionToChat}
+                  data-selection-action="true"
+                  style={{ top: selection.top, left: selection.left }}
+                  className="absolute z-10 bg-surface shadow-lg"
+                  icon={<MessageSquarePlus size={13} />}
+                >
+                  Add selection to chat
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="min-h-0 min-w-0 flex-1 overflow-auto bg-surface px-6 py-5">
+              <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>
+            </div>
           )}
         </div>
-      ) : (
-        <div className="min-h-0 flex-1 overflow-auto bg-surface px-6 py-5">
-          <MemoizedMarkdown className="max-w-none">{content}</MemoizedMarkdown>
-        </div>
-      )}
+        {renderDiscussion ? (
+          <aside
+            aria-label="Document discussion"
+            className="max-h-[50%] w-full overflow-auto border-t border-border bg-surface-elevated md:max-h-none md:w-80 md:shrink-0 md:border-t-0 md:border-l"
+          >
+            {renderDiscussion(selection?.anchor ?? null, isDirty)}
+          </aside>
+        ) : null}
+      </div>
     </div>
   );
 };

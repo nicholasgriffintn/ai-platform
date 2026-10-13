@@ -13,6 +13,7 @@ export interface UserQuestion {
   prompt: string;
   options: UserQuestionOption[];
   allowOther: boolean;
+  requestsFile: boolean;
 }
 
 export interface UserQuestionSet {
@@ -55,6 +56,7 @@ function readQuestion(value: unknown): UserQuestion | null {
           .filter((option): option is UserQuestionOption => option !== null)
       : [],
     allowOther: value.allowOther !== false,
+    requestsFile: value.requestsFile === true,
   };
 }
 

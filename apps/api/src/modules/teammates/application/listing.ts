@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { TeammateResponse, TeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { findPlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 
@@ -68,7 +69,7 @@ async function resolvePersonalScopeAvailability(
   return {
     skillIds: new Set([...builtInIds, ...authoredSkills.map((skill) => skill.name)]),
     toolIds: new Set([
-      ...getAvailableTools(context.user?.plan_id === "pro", true).map((tool) => tool.id),
+      ...getAvailableTools(hasProEntitlement(context.user), true).map((tool) => tool.id),
       ...MODEL_TOOL_DEFINITIONS.map((definition) => definition.id),
     ]),
   };

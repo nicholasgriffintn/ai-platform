@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-chat",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reusable chat policies and conversation state helpers for Polychat",
   "license": "Apache-2.0",
   "files": [
@@ -31,6 +31,16 @@
       "polychat-source": "./src/run-activity.ts",
       "types": "./dist/run-activity.d.ts",
       "import": "./dist/run-activity.js"
+    },
+    "./artifact-bindings": {
+      "polychat-source": "./src/artifact-bindings.ts",
+      "types": "./dist/artifact-bindings.d.ts",
+      "import": "./dist/artifact-bindings.js"
+    },
+    "./artifact-edits": {
+      "polychat-source": "./src/artifact-edits.ts",
+      "types": "./dist/artifact-edits.d.ts",
+      "import": "./dist/artifact-edits.js"
     },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",

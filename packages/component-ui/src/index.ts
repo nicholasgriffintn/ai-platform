@@ -27,6 +27,7 @@ export * from "./label";
 export * from "./Link";
 export * from "./ListItem";
 export * from "./LoadingSpinner";
+export * from "./ProgressLine";
 export * from "./NotificationBar";
 export * from "./OptionsMenu";
 export * from "./PetBubble";

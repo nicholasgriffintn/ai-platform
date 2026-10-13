@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 16, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The nvidia/nvidia/synthetic video detector family includes models that produce text.",
+  "models": {
+    "synthetic-video-detector": {
+      "defaults": {
+        "name": "synthetic-video-detector",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+      }
+    }
+  }
+}

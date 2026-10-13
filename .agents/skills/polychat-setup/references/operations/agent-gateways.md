@@ -8,6 +8,8 @@ Point the gateway at `POST /chat/completions` with a personal API key in `Author
 
 Issue one key per gateway rather than reusing a personal key, and name it after the machine it runs on. That name is the only thing distinguishing the traffic later, and revoking it is how a lost or retired machine is cut off.
 
+A gateway or CLI can ask for its own key instead of having one pasted in. It posts a `client_name` to `POST /auth/device/code`, shows the person the returned user code and `verification_uri`, and polls `POST /auth/device/token` with the `device_code` and the RFC 8628 grant type at the returned interval. The person approves the code at `/device`, and the next poll returns a key named after the client. Both endpoints take JSON, codes expire after ten minutes, and polling faster than the interval returns `slow_down`.
+
 Usage from a gateway is attributed to the account that owns the key and is spent against that account's plan. A gateway can run a long autonomous loop without a person watching it, so agree a budget before handing one a key.
 
 ## Polychat as a surface

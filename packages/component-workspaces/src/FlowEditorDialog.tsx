@@ -18,11 +18,13 @@ import {
   createProjectFlowFromWorkflow,
   createSuggestedProjectFlow,
   platformTeammateCategoryLabels,
+  projectFlowAdvanceSchema,
   PROJECT_WORKFLOWS,
   type ProjectFlow,
   type ProjectFlowStage,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 
@@ -50,6 +52,7 @@ const STAGE_MODE_OPTIONS: FormSelectOption[] = [
 const STAGE_ADVANCE_OPTIONS: FormSelectOption[] = [
   { value: "on_goal_complete", label: "Hand off automatically" },
   { value: "on_human_accept", label: "Stop for human review" },
+  { value: "on_council_ship", label: "Hand off when the council ships it" },
 ];
 
 const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
@@ -72,7 +75,7 @@ const WORKFLOW_OPTIONS: FormSelectOption[] = [
 
 function newStage(): ProjectFlowStage {
   return {
-    id: `stage-${crypto.randomUUID().slice(0, 8)}`,
+    id: `stage-${generateId().slice(0, 8)}`,
     name: "",
     instructions: null,
     teammateId: null,
@@ -381,12 +384,13 @@ export function FlowEditorDialog({
                       label="When the goal completes"
                       value={stage.advance}
                       options={STAGE_ADVANCE_OPTIONS}
-                      onValueChange={(advance) =>
+                      onValueChange={(value) => {
+                        const advance = projectFlowAdvanceSchema.safeParse(value);
+
                         updateStage(index, {
-                          advance:
-                            advance === "on_human_accept" ? "on_human_accept" : "on_goal_complete",
-                        })
-                      }
+                          advance: advance.success ? advance.data : "on_goal_complete",
+                        });
+                      }}
                     />
 
                     <fieldset>

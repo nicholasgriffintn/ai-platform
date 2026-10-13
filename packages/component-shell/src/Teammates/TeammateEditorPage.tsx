@@ -1,7 +1,7 @@
 import { TeammateEditor, ConfirmDeleteModal } from "@ngriffin_uk/polychat-component-account";
 import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
-import { NEW_TEAMMATE_ID } from "@ngriffin_uk/polychat-library-react";
+import { NEW_TEAMMATE_ID, useMcpConnections } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { getTeammatePagePaths, TeammatePageHeader } from "./TeammatePageHeader.js";
@@ -24,6 +24,7 @@ export function TeammateEditorPage({
   projectId,
   workspaceId,
 }: TeammateEditorPageProps) {
+  const mcpConnections = useMcpConnections();
   const controller = useTeammateEditorController({
     teammateId,
     teammatesPath,
@@ -75,6 +76,7 @@ export function TeammateEditorPage({
       />
 
       <TeammateEditor
+        mcpConnections={mcpConnections.query.data?.connections}
         teammate={controller.teammate}
         models={controller.models}
         tools={controller.tools}

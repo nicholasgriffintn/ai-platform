@@ -1,11 +1,12 @@
 import {
+  describeModelDataRetention,
   formatTokenCount,
   formatTokenPrice,
   hasProviderReasoningOptions,
   type ModelConfigItem,
   modelSupportsVisualModality,
 } from "@ngriffin_uk/polychat-schemas";
-import { Gauge, WalletCards } from "lucide-react";
+import { Gauge, ShieldCheck, WalletCards } from "lucide-react";
 import { type RefObject, useLayoutEffect, useState } from "react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
@@ -202,6 +203,26 @@ export function ModelHoverPreview({
             </div>
           </div>
         )}
+
+        {model.dataRetention ? (
+          <div className="rounded-lg border border-border/70 p-2.5">
+            <div className="mb-1 flex items-center gap-1 text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span className="font-semibold">Data retention</span>
+            </div>
+            <p className="break-words whitespace-normal text-foreground">
+              {describeModelDataRetention(model.dataRetention)}
+            </p>
+            <a
+              href={model.dataRetention.source}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="mt-1 inline-block text-muted-foreground underline underline-offset-2"
+            >
+              Provider policy
+            </a>
+          </div>
+        ) : null}
 
         {model.artificialAnalysis ? (
           <ArtificialAnalysisScorePanel analysis={model.artificialAnalysis} />

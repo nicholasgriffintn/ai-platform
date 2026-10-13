@@ -30,10 +30,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 11.9,
-      "codingIndex": null,
+      "intelligenceIndex": 8.6,
+      "codingIndex": 14.7,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The cortecs/magistral small 2509 family includes models that produce text.",

@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1000000,
+    "maxTokens": 128000,
     "modalities": {
       "input": [
         "text",
@@ -19,11 +20,57 @@
   },
   "description": "The claude sonnet family includes models that produce text.",
   "models": {
+    "anthropic-claude-sonnet-4": {
+      "defaults": {
+        "name": "Anthropic: Claude Sonnet 4",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "May 22, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "anthropic-claude-sonnet-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Sonnet Latest",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "April 27, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "au-anthropic-claude-sonnet-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Sonnet 4.6",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
@@ -66,10 +113,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.5,
+          "intelligenceIndex": 15.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -94,6 +141,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.5",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "contextWindow": 200000,
         "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
@@ -239,7 +287,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -247,14 +294,14 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 47.2,
-          "codingIndex": 63,
-          "agenticIndex": 40.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -268,14 +315,14 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 47.2,
-          "codingIndex": 63,
-          "agenticIndex": 40.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -283,7 +330,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (Global)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -291,7 +337,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
@@ -305,10 +351,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 47.2,
-          "codingIndex": 63,
-          "agenticIndex": 40.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -316,7 +362,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (JP)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -324,7 +369,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
@@ -338,10 +383,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 47.2,
-          "codingIndex": 63,
-          "agenticIndex": 40.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -349,7 +394,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (US)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -357,7 +401,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
@@ -371,10 +415,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 47.2,
-          "codingIndex": 63,
-          "agenticIndex": 40.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -408,18 +452,164 @@
       "defaults": {
         "name": "Claude Sonnet 5",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsTemperature": false,
-        "supportsTopP": false
+        "supportsTopP": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-sonnet-5-5": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-sonnet-5-5-eu": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (EU)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-sonnet-5-5-global": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (Global)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-sonnet-5-5-us": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (US)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-sonnet-5-au": {
       "defaults": {
         "name": "Claude Sonnet 5 (AU)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -435,6 +625,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -442,18 +638,38 @@
       "defaults": {
         "name": "Claude Sonnet 5 (EU)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsTemperature": false,
-        "supportsTopP": false
+        "supportsTopP": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-sonnet-5-global": {
       "defaults": {
         "name": "Claude Sonnet 5 (Global)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -469,6 +685,48 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-sonnet-5-india": {
+      "defaults": {
+        "name": "Claude Sonnet 5 (India)",
+        "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -476,7 +734,14 @@
       "defaults": {
         "name": "Claude Sonnet 5 (JP)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -492,6 +757,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -499,7 +770,14 @@
       "defaults": {
         "name": "Claude Sonnet 5 (US)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -515,6 +793,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.2,
+          "codingIndex": 71.5,
+          "agenticIndex": 43.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -522,7 +806,6 @@
       "defaults": {
         "name": "Anthropic Claude Sonnet Latest",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 27, 2026",
         "supportsTemperature": false,
@@ -535,7 +818,44 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "stealth-claude-sonnet-4-6-20-off": {
+      "defaults": {
+        "name": "Stealth: Claude Sonnet 4.6 (20% off)",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

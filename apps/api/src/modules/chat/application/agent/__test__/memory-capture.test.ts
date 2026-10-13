@@ -46,20 +46,6 @@ describe("captureRunMemories", () => {
     ]);
   });
 
-  it("records what it stored as a tool message on the conversation", async () => {
-    const params = createParams();
-    const messages = await captureRunMemories(params);
-
-    expect(messages).toHaveLength(1);
-    expect(messages[0]).toMatchObject({
-      role: "tool",
-      name: "memory",
-      status: "success",
-    });
-    expect(messages[0].content).toContain("Uses Neovim.");
-    expect(params.conversationManager.add).toHaveBeenCalledOnce();
-  });
-
   it("skips classification when the run already stored a memory itself", async () => {
     const messages = await captureRunMemories(
       createParams({
@@ -69,19 +55,6 @@ describe("captureRunMemories", () => {
 
     expect(messages).toEqual([]);
     expect(mocks.handleMemory).not.toHaveBeenCalled();
-  });
-
-  it("classifies against the scope the request resolved", async () => {
-    await captureRunMemories(
-      createParams({
-        memoryScope: { type: "project", projectId: "project-1" },
-      }),
-    );
-
-    expect(mocks.getInstance).toHaveBeenCalledWith(expect.anything(), proUser, expect.anything(), {
-      type: "project",
-      projectId: "project-1",
-    });
   });
 
   it("stays out of the way for users without memory enabled", async () => {
@@ -102,5 +75,19 @@ describe("captureRunMemories", () => {
     mocks.handleMemory.mockRejectedValue(new Error("auxiliary model unavailable"));
 
     await expect(captureRunMemories(createParams())).resolves.toEqual([]);
+  });
+  it("classifies against the scope the request resolved", async () => {
+    const params = createParams({ memoryScope: { type: "project", projectId: "project-1" } });
+    const messages = await captureRunMemories(params);
+
+    expect(mocks.getInstance).toHaveBeenCalledWith(expect.anything(), proUser, expect.anything(), {
+      type: "project",
+      projectId: "project-1",
+    });
+    expect(messages).toEqual([
+      expect.objectContaining({ role: "tool", name: "memory", status: "success" }),
+    ]);
+    expect(messages[0].content).toContain("Uses Neovim.");
+    expect(params.conversationManager.add).toHaveBeenCalledOnce();
   });
 });

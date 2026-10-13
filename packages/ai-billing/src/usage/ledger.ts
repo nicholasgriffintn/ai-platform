@@ -6,8 +6,8 @@ import type {
   UsageSource,
   UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { priceUsageDraft, type PricedUsageDraft } from "../usage-pricing.js";
 import { applyActorCreditDeltas, creditActorUserId, type CreditActor } from "./credit-actor.js";
@@ -155,7 +155,8 @@ export async function applyUsageRollup(
   const seeds = new Map<number, UsagePlanSeed>();
   const knownUsers = new Map<number, boolean>();
   const knownConversations = new Map<string, boolean>();
-  const changedBalances = new Map<number, string>();
+  const changedPeriods = new Map<string, { userId: number; period: string }>();
+  const changedWorkspaces = new Map<string, { workspaceId: string; period: string }>();
   let inserted = 0;
 
   for (const event of events) {
@@ -195,14 +196,28 @@ export async function applyUsageRollup(
 
     inserted += 1;
 
-    if (event.billable && event.credit_micros !== 0) {
-      changedBalances.set(event.user_id, event.period);
+    changedPeriods.set(`${event.user_id}:${event.period}`, {
+      userId: event.user_id,
+      period: event.period,
+    });
+
+    if (eventWithValidAttribution.workspace_id) {
+      const workspaceId = eventWithValidAttribution.workspace_id;
+
+      changedWorkspaces.set(`${workspaceId}:${event.period}`, {
+        workspaceId,
+        period: event.period,
+      });
     }
   }
 
   if (publisher) {
-    for (const [userId, period] of changedBalances) {
-      publisher.usageChanged(userId, period);
+    for (const { userId, period } of changedPeriods.values()) {
+      await publisher.usageChanged(userId, period);
+    }
+
+    for (const { workspaceId, period } of changedWorkspaces.values()) {
+      await publisher.workspaceUsageChanged?.(workspaceId, period);
     }
   }
 

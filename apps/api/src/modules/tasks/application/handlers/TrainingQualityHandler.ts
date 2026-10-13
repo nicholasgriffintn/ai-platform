@@ -4,9 +4,10 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { normaliseDecisionScore } from "@ngriffin_uk/polychat-schemas";
 
 import { ai } from "~/infrastructure/ai";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
@@ -64,9 +65,14 @@ export class TrainingQualityHandler implements TaskHandler {
       let scoredCount = 0;
       let errors = 0;
 
+      const scoringUser = message.user_id
+        ? ((await createServiceContext({ env }).repositories.users.getUserById(message.user_id)) ??
+          undefined)
+        : undefined;
+
       for (const example of unscoredExamples) {
         try {
-          const qualityScore = await this.scoreExample(example, env);
+          const qualityScore = await this.scoreExample(example, env, scoringUser);
 
           await trainingRepository.updateQualityScore(example.id, qualityScore);
           scoredCount++;
@@ -101,7 +107,7 @@ export class TrainingQualityHandler implements TaskHandler {
     }
   }
 
-  private async scoreExample(example: any, env: IEnv): Promise<number> {
+  private async scoreExample(example: any, env: IEnv, user?: IUser): Promise<number> {
     const decided = await ai
       .tryDecide({
         env,
@@ -131,7 +137,11 @@ export class TrainingQualityHandler implements TaskHandler {
     });
 
     try {
-      const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
+      const {
+        model: modelToUse,
+        provider: providerToUse,
+        effort,
+      } = await getAuxiliaryModel(env, user);
       const response = await ai.generateText({
         env,
         model: modelToUse,

@@ -11,6 +11,10 @@ import type {
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL } from "./catalog/shared";
+import {
+  buildRecipeInvocationContext,
+  isRequiredRecipeConfigurationValueMissing,
+} from "./configuration";
 
 export interface RecipeRuntimeContext {
   allowedConnectorOperations: Record<string, string[]>;
@@ -50,30 +54,6 @@ export function getBlockingConnections(connections: AssistantRecipeConnection[])
       isUnavailableConnectionStatus(connection.status) &&
       (!connection.connectionGroup || !connectedGroups.has(connection.connectionGroup)),
   );
-}
-
-export function isRequiredRecipeConfigurationValueMissing(
-  field: RecipeConfigurationField,
-  value: RecipeConfiguration[string] | undefined,
-) {
-  const resolvedValue = value ?? field.defaultValue;
-
-  if (field.type === "boolean") {
-    return resolvedValue !== true;
-  }
-
-  if (field.type === "number") {
-    return typeof resolvedValue !== "number" || !Number.isFinite(resolvedValue);
-  }
-
-  if (field.type === "string_list") {
-    return (
-      !Array.isArray(resolvedValue) ||
-      resolvedValue.map((item) => item.trim()).filter(Boolean).length === 0
-    );
-  }
-
-  return typeof resolvedValue !== "string" || !resolvedValue.trim();
 }
 
 export function buildRecipeSetupRuntime(params: {
@@ -122,7 +102,12 @@ export function buildRecipeInvocationRuntime(params: {
     enabledTools,
     configuration: params.configuration,
     input: params.input,
-    prompt,
+    prompt: [
+      prompt,
+      params.installation ? buildRecipeInvocationContext(params.recipe, params.configuration) : "",
+    ]
+      .filter(Boolean)
+      .join("\n"),
   });
 
   return {
@@ -340,9 +325,13 @@ function buildConnectorSelectionGuidance(params: {
     }
   }
 
-  const unsatisfiedGroups = Array.from(groups.values()).filter(
-    (group) => !group.some((connection) => connection.status === "connected"),
-  );
+  const unsatisfiedGroups: AssistantRecipeConnection[][] = [];
+
+  for (const group of groups.values()) {
+    if (!group.some((connection) => connection.status === "connected")) {
+      unsatisfiedGroups.push(group);
+    }
+  }
 
   for (const group of unsatisfiedGroups) {
     lines.push(

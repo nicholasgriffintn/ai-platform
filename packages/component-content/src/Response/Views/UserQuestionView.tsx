@@ -1,5 +1,6 @@
 import { Button, Input, cn } from "@ngriffin_uk/polychat-component-ui";
-import { ChevronLeft, ChevronRight, CircleQuestionMark, PencilLine } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleQuestionMark, Paperclip, PencilLine } from "lucide-react";
+import { useRef } from "react";
 
 import type { ToolInteractionHandler } from "../registry";
 import { readUserQuestionSet } from "./userQuestionData";
@@ -15,6 +16,7 @@ export function UserQuestionView({
   onToolInteraction?: ToolInteractionHandler;
 }) {
   const questionSet = readUserQuestionSet(data);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     answerCurrent,
     currentIndex,
@@ -100,6 +102,40 @@ export function UserQuestionView({
                   />
                 </button>
               ))}
+            </div>
+          ) : null}
+
+          {currentQuestion.requestsFile ? (
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="sr-only"
+                aria-label={`Attach a file: ${currentQuestion.prompt}`}
+                onChange={(event) => {
+                  const selected = Array.from(event.target.files ?? []);
+
+                  event.target.value = "";
+
+                  if (selected.length > 0) {
+                    void answerCurrent(
+                      `Attached ${selected.map((file) => file.name).join(", ")}`,
+                      selected,
+                    );
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                icon={<Paperclip size={14} />}
+                disabled={isSubmitting}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Attach a file
+              </Button>
             </div>
           ) : null}
 

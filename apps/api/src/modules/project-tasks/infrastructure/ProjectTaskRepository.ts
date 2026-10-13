@@ -1,29 +1,36 @@
 import type {
   ProjectTask,
+  ProjectTaskAssumption,
   ProjectTaskBlockedReason,
   ProjectTaskCompletion,
   ProjectTaskConstraints,
   ProjectTaskContext,
   ProjectTaskCriterion,
+  ProjectTaskKillCondition,
+  ProjectTaskRetrospective,
   ProjectFlow,
   ProjectTaskRunner,
   ProjectTaskSource,
   ProjectTaskStatus,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ProjectTaskRow } from "~/infrastructure/database/schema";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
 
 export interface CreateProjectTaskParams {
+  id?: string;
+  executionProfile?: "diff_review";
   projectId: string;
   workspaceId: string;
   objective: string;
   acceptanceCriteria?: ProjectTaskCriterion[];
+  assumptions?: ProjectTaskAssumption[];
+  killConditions?: ProjectTaskKillCondition[];
   expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
@@ -43,6 +50,9 @@ export interface CreateProjectTaskParams {
 export interface UpdateProjectTaskParams {
   objective?: string;
   acceptanceCriteria?: ProjectTaskCriterion[];
+  assumptions?: ProjectTaskAssumption[];
+  killConditions?: ProjectTaskKillCondition[];
+  retrospective?: ProjectTaskRetrospective | null;
   expectedOutput?: string | null;
   context?: ProjectTaskContext | null;
   constraints?: ProjectTaskConstraints | null;
@@ -73,20 +83,13 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
-function parseJsonColumn<T>(value: unknown, fallback: T): T {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? safeParseJson<T>(value) : (value as T);
-}
-
 function formatProjectTask(row: ProjectTaskRow): ProjectTask {
   return {
     id: row.id,
     projectId: row.project_id,
     workspaceId: row.workspace_id,
     objective: row.objective,
+    executionProfile: row.execution_profile,
     status: row.status,
     source: row.source,
     blockedReason: row.blocked_reason,
@@ -95,6 +98,9 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     flowSnapshot: parseJsonColumn<ProjectFlow | null>(row.flow_snapshot, null),
     runner: parseJsonColumn<ProjectTaskRunner | null>(row.runner, null),
     acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria, []),
+    assumptions: parseJsonColumn<ProjectTaskAssumption[]>(row.assumptions, []),
+    killConditions: parseJsonColumn<ProjectTaskKillCondition[]>(row.kill_conditions, []),
+    retrospective: parseJsonColumn<ProjectTaskRetrospective | null>(row.retrospective, null),
     expectedOutput: row.expected_output,
     context: parseJsonColumn<ProjectTaskContext | null>(row.context, null),
     constraints: parseJsonColumn<ProjectTaskConstraints | null>(row.constraints, null),
@@ -121,15 +127,18 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 }
 
 export class ProjectTaskRepository extends BaseRepository {
-  async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
+  private buildTaskInsert(params: CreateProjectTaskParams) {
     const insert = this.buildInsertQuery(
       "project_task",
       {
-        id: generateId(),
+        id: params.id ?? generateId(),
         project_id: params.projectId,
         workspace_id: params.workspaceId,
         objective: params.objective,
+        execution_profile: params.executionProfile ?? null,
         acceptance_criteria: params.acceptanceCriteria ?? [],
+        assumptions: params.assumptions ?? [],
+        kill_conditions: params.killConditions ?? [],
         expected_output: params.expectedOutput ?? null,
         context: params.context ?? null,
         constraints: params.constraints ?? null,
@@ -150,6 +159,8 @@ export class ProjectTaskRepository extends BaseRepository {
       {
         jsonFields: [
           "acceptance_criteria",
+          "assumptions",
+          "kill_conditions",
           "context",
           "constraints",
           "depends_on_task_ids",
@@ -166,13 +177,42 @@ export class ProjectTaskRepository extends BaseRepository {
       throw new AssistantError("Failed to build the task insert", ErrorType.INTERNAL_ERROR);
     }
 
-    const row = await this.runQuery<ProjectTaskRow>(insert.query, insert.values, true);
+    return insert;
+  }
+
+  prepareTaskCreation(params: CreateProjectTaskParams): D1PreparedStatement {
+    const insert = this.buildTaskInsert(params);
+
+    return this.env.DB.prepare(insert.query).bind(...insert.values);
+  }
+
+  async createTask(
+    params: CreateProjectTaskParams,
+  ): Promise<{ task: ProjectTask; created: boolean }> {
+    const insert = this.buildTaskInsert(params);
+    const row = await this.runQuery<ProjectTaskRow>(
+      params.id
+        ? insert.query.replace(" RETURNING ", " ON CONFLICT(id) DO NOTHING RETURNING ")
+        : insert.query,
+      insert.values,
+      true,
+    );
 
     if (!row) {
+      const existing = params.id ? await this.getTaskById(params.id) : null;
+
+      if (
+        existing &&
+        existing.projectId === params.projectId &&
+        existing.createdByUserId === params.createdByUserId
+      ) {
+        return { task: existing, created: false };
+      }
+
       throw new AssistantError("Failed to create the task", ErrorType.DATABASE_ERROR);
     }
 
-    return formatProjectTask(row);
+    return { task: formatProjectTask(row), created: true };
   }
 
   async getTaskById(taskId: string): Promise<ProjectTask | null> {
@@ -289,6 +329,18 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.acceptanceCriteria !== undefined) {
       set("acceptance_criteria", JSON.stringify(updates.acceptanceCriteria));
+    }
+
+    if (updates.assumptions !== undefined) {
+      set("assumptions", JSON.stringify(updates.assumptions));
+    }
+
+    if (updates.killConditions !== undefined) {
+      set("kill_conditions", JSON.stringify(updates.killConditions));
+    }
+
+    if (updates.retrospective !== undefined) {
+      set("retrospective", updates.retrospective ? JSON.stringify(updates.retrospective) : null);
     }
 
     if (updates.expectedOutput !== undefined) {
@@ -465,6 +517,9 @@ export class ProjectTaskRepository extends BaseRepository {
     runner: ProjectTaskRunner;
     tokenBudget: number;
     stageId?: string | null;
+    expectedStatus: ProjectTaskStatus;
+    expectedDispatchTaskId: string | null;
+    automaticReviewPolicyRevision?: string;
   }): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
@@ -480,7 +535,21 @@ export class ProjectTaskRepository extends BaseRepository {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
          AND project_id = ?
-         AND status IN ('backlog', 'queued', 'blocked', 'review', 'running')
+         AND status = ?
+         AND dispatch_task_id IS ?
+         ${
+           params.automaticReviewPolicyRevision
+             ? `AND EXISTS (
+           SELECT 1 FROM scoped_configuration p JOIN project_task_integration r ON r.kind = 'review' AND r.policy_id = p.id AND r.project_id = p.project_id AND r.workspace_id = p.workspace_id
+           WHERE p.kind = 'review_policy' AND r.task_id = project_task.id AND p.enabled = 1 AND p.revision = ? AND r.policy_revision = p.revision
+             AND p.owner_user_id = ? AND r.owner_user_id = p.owner_user_id AND r.workspace_id = project_task.workspace_id
+             AND p.connection_id = json_extract(r.target, '$.connectionId')
+             AND p.target_kind = json_extract(r.target, '$.provider')
+             AND p.account_id = json_extract(r.target, '$.accountId')
+             AND p.target_id = json_extract(r.target, '$.repository')
+         )`
+             : ""
+         }
        RETURNING *`,
       [
         params.runnerIdentityUserId,
@@ -490,6 +559,11 @@ export class ProjectTaskRepository extends BaseRepository {
         params.stageId ?? null,
         params.taskId,
         params.projectId,
+        params.expectedStatus,
+        params.expectedDispatchTaskId,
+        ...(params.automaticReviewPolicyRevision
+          ? [params.automaticReviewPolicyRevision, params.runnerIdentityUserId]
+          : []),
       ],
       true,
     );

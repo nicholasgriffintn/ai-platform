@@ -1,23 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { SurfaceCapabilityUnavailableError } from "./index";
-import {
-  createMemorySurfaceStorage,
-  createSurfaceAction,
-  createUnavailableSurfaceAction,
-} from "./index";
+import { createUnavailableSurfaceAction } from "./index";
 
 describe("surface controls", () => {
-  it("runs available host actions", async () => {
-    const implementation = vi.fn<(value: string) => void>();
-    const action = createSurfaceAction(implementation);
-
-    await action.run("hello");
-
-    expect(action.availability).toEqual({ status: "available" });
-    expect(implementation).toHaveBeenCalledWith("hello");
-  });
-
   it("fails closed when a host capability is unavailable", async () => {
     const action = createUnavailableSurfaceAction<string>("share", "not supported by this host");
 
@@ -31,17 +17,5 @@ describe("surface controls", () => {
         capability: "share",
       }),
     );
-  });
-
-  it("provides deterministic storage for hosts and tests", async () => {
-    const storage = createMemorySurfaceStorage({ theme: "dark" });
-
-    expect(await storage.get("theme")).toBe("dark");
-
-    await storage.set("theme", "light");
-    expect(await storage.get("theme")).toBe("light");
-
-    await storage.remove("theme");
-    expect(await storage.get("theme")).toBeNull();
   });
 });

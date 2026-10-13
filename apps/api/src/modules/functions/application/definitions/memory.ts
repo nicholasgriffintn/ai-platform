@@ -1,6 +1,11 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { readMemoryDocumentSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME } from "~/modules/chat/domain/memory";
+import {
+  MEMORY_READ_TOOL_NAME,
+  MEMORY_SEARCH_TOOL_NAME,
+  MEMORY_STORE_TOOL_NAME,
+} from "~/modules/chat/domain/memory";
 
 import type { FunctionToolDescriptor } from "./types";
 
@@ -27,12 +32,13 @@ export const search_memories: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };
 
 export const store_memory: FunctionToolDescriptor = {
   name: MEMORY_STORE_TOOL_NAME,
   description:
-    "Stores concise, durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, or important context that should be remembered in future conversations.",
+    "Stores concise, durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, or important context that should be remembered in future conversations. For a teammate's private memory, queues source-backed maintenance from the current user message; the returned task ID does not mean the correction is saved yet.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -54,10 +60,21 @@ export const store_memory: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({
     operation: "store_memory",
     text: input.text,
     category: input.category,
     documentId: input.document_id,
   }),
+};
+
+export const read_memory_document: FunctionToolDescriptor = {
+  name: MEMORY_READ_TOOL_NAME,
+  description:
+    "Read a bounded page of a memory document in this run's memory scope. Use the documentId and revision from the memory index or search_memories results, then nextOffset for further pages. Bound teammate and delegated runs can only read explicitly granted documents. If the revision changes, refresh the index or search before combining pages.",
+  inputSchema: readMemoryDocumentSchema,
+  type: "normal",
+  permissions: ["read"],
+  effects: { effectClass: "read" },
 };

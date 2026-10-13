@@ -1,4 +1,5 @@
 import { extractMessageNotification } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   isTerminalChatRunStatus,
   recipeExecutionTaskDataSchema,
@@ -20,6 +21,7 @@ import {
   buildDelegationResultFromMessage,
   listDelegationResultOutputIds,
 } from "~/modules/delegations/application/result";
+import { resumeInterruptedDelegation } from "~/modules/delegations/application/resume";
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
@@ -200,6 +202,18 @@ async function reconcileDelegationRun(params: {
     return;
   }
 
+  if (
+    params.run.status === "interrupted" &&
+    (await resumeInterruptedDelegation({
+      context: params.context,
+      user: params.user,
+      run: params.run,
+      delegation,
+    }))
+  ) {
+    return;
+  }
+
   let state: Extract<DelegationState, "done" | "failed" | "cancelled">;
   let result;
 
@@ -270,7 +284,11 @@ async function reconcileRoutineRun(params: {
     params.installationId,
   );
 
-  if (!teammateContext || !installation || teammateContext.actorUserId !== params.user.id) {
+  if (
+    !teammateContext ||
+    !installation ||
+    !ownsResource(params.user.id, teammateContext.actorUserId)
+  ) {
     return;
   }
 
@@ -307,7 +325,7 @@ async function reconcileRoutineRun(params: {
 
   const taskId = getRecipeExecutionTaskId(params.run.conversationId);
 
-  if (homeDelivery === "delivered" && params.run.status === "succeeded" && taskId) {
+  if (homeDelivery !== "skipped" && params.run.status === "succeeded" && taskId) {
     const task = await params.context.repositories.tasks.getTaskById(taskId);
     const taskData = recipeExecutionTaskDataSchema.safeParse(task?.task_data);
 

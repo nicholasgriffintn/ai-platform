@@ -20,7 +20,7 @@ describe("ConnectorOperationApprovalRepository", () => {
     await repository.getByIdsForUser(["coa_first", "coa_second", "coa_first"], 42);
 
     expect(prepare).toHaveBeenCalledWith(
-      expect.stringContaining("WHERE user_id = ? AND id IN (?, ?)"),
+      expect.stringContaining("WHERE kind = 'connector' AND user_id = ? AND id IN (?, ?)"),
     );
     expect(bind).toHaveBeenCalledWith(42, "coa_first", "coa_second");
   });

@@ -47,10 +47,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.3,
+          "intelligenceIndex": 7.2,
           "codingIndex": 26,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -110,6 +110,7 @@
         "openWeights",
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "reasoningConfig",
         "supportsResponseFormat"
       ]
@@ -150,10 +151,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.5,
+          "intelligenceIndex": 15.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -214,6 +215,7 @@
         "openWeights",
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "reasoningConfig",
         "supportsResponseFormat"
       ]
@@ -315,7 +317,15 @@
         },
         "lastUpdated": "October 15, 2025",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
+        "costPer1kOutputTokens": 0.005,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -335,7 +345,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -392,7 +402,6 @@
       "model": "claude-sonnet/claude-sonnet-4-5",
       "matchingModel": "claude-sonnet-4.5",
       "overrides": {
-        "contextWindow": 200000,
         "maxTokens": 32000,
         "modalities": {
           "input": [
@@ -455,7 +464,7 @@
         "name": "GPT-5-mini",
         "contextWindow": 264000,
         "maxTokens": 64000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -474,7 +483,7 @@
       "model": "gpt/gpt-5-2",
       "matchingModel": "gpt-5.2",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -491,6 +500,7 @@
       "model": "gpt-codex/gpt-5-2-codex",
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
+        "name": "GPT-5.2-Codex",
         "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
@@ -552,6 +562,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -587,6 +598,7 @@
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -642,7 +654,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -670,7 +682,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015
@@ -680,6 +692,7 @@
       "model": "gpt-mini/gpt-5-4-mini",
       "matchingModel": "gpt-5.4-mini",
       "overrides": {
+        "name": "GPT-5.4 Mini",
         "modalities": {
           "input": [
             "text",
@@ -708,7 +721,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
@@ -740,19 +753,10 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.009,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "costPer1kOutputTokens": 0.009
       }
     },
     "claude-opus-4.8": {
@@ -776,6 +780,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -827,7 +832,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
@@ -854,20 +859,13 @@
       "model": "claude-fable/claude-fable-5",
       "matchingModel": "claude-fable-5",
       "overrides": {
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "apiBaseUrl": "https://api.githubcopilot.com/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -877,10 +875,12 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -938,6 +938,7 @@
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "gpt-5.6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
@@ -948,6 +949,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -958,6 +960,7 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "gpt-5.6-terra",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
@@ -969,10 +972,13 @@
       "matchingModel": "claude-opus-5",
       "overrides": {
         "maxTokens": 64000,
+        "contextComplexity": 4,
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -983,10 +989,7 @@
           ],
           "defaultEffort": "low"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
@@ -1004,6 +1007,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -1023,6 +1033,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -1032,6 +1043,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1066,6 +1078,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -1076,6 +1095,7 @@
       "matchingModel": "grok-4.6",
       "overrides": {
         "maxTokens": 128000,
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -1085,10 +1105,12 @@
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "claude-fable-5.1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -1110,6 +1132,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -1122,6 +1151,7 @@
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "gpt-6-astra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -1133,6 +1163,7 @@
       "matchingModel": "grok-4.7",
       "overrides": {
         "maxTokens": 128000,
+        "speed": 2,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -1142,16 +1173,20 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5.5",
       "overrides": {
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     },
     "gpt-6-luna": {
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
@@ -1162,10 +1197,48 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
+      }
+    },
+    "claude-sonnet-5.5": {
+      "model": "claude-sonnet/claude-sonnet-5-5",
+      "matchingModel": "claude-sonnet-5.5",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1"
+      }
+    },
+    "gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "gpt-6.1-sol",
+      "overrides": {
+        "speed": 2,
+        "isFeatured": true,
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "claude-haiku-5.5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "claude-haiku-5.5",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": true,
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     }
   }

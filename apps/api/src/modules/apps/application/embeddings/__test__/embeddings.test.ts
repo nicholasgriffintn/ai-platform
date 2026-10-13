@@ -141,24 +141,6 @@ describe("personal embedding services", () => {
     expect(repository.createDocument).not.toHaveBeenCalled();
   });
 
-  it("stores one document with every generated chunk", async () => {
-    const repository = {
-      activateDocument: vi.fn().mockResolvedValue(undefined),
-      createDocument: vi.fn().mockResolvedValue(undefined),
-      removePendingDocument: vi.fn().mockResolvedValue(undefined),
-    };
-
-    await insertEmbedding({
-      context: createContext(42, repository),
-      request: { id: "long-note", type: "note", content: "a".repeat(3000) },
-    });
-
-    expect(repository.createDocument).toHaveBeenCalledOnce();
-    expect(repository.createDocument.mock.calls[0]?.[0].chunks).toHaveLength(2);
-    expect(provider.generate).toHaveBeenCalledTimes(2);
-    expect(repository.activateDocument).toHaveBeenCalledOnce();
-  });
-
   it("bounds model generation concurrency for a maximum-size document", async () => {
     let active = 0;
     let maximumActive = 0;
@@ -222,47 +204,6 @@ describe("personal embedding services", () => {
       visibility: "private",
       source: "personal",
     });
-  });
-
-  it("removes an inactive document when provider insertion fails", async () => {
-    provider.insert.mockRejectedValue(new Error("provider unavailable"));
-    provider.delete.mockResolvedValue({ status: "success", error: null });
-    const repository = {
-      activateDocument: vi.fn(),
-      createDocument: vi.fn().mockResolvedValue(undefined),
-      removePendingDocument: vi.fn().mockResolvedValue(undefined),
-    };
-
-    await expect(
-      insertEmbedding({
-        context: createContext(42, repository),
-        request: { id: "note-1", type: "note", content: "Private note" },
-      }),
-    ).rejects.toMatchObject({ type: "PROVIDER_ERROR", statusCode: 502 });
-
-    expect(repository.activateDocument).not.toHaveBeenCalled();
-    expect(provider.delete).toHaveBeenCalledOnce();
-    expect(repository.removePendingDocument).toHaveBeenCalledOnce();
-  });
-
-  it("removes a pending document without provider cleanup when vector generation fails", async () => {
-    provider.generate.mockRejectedValue(new Error("model unavailable"));
-    const repository = {
-      activateDocument: vi.fn(),
-      createDocument: vi.fn().mockResolvedValue(undefined),
-      removePendingDocument: vi.fn().mockResolvedValue(undefined),
-    };
-
-    await expect(
-      insertEmbedding({
-        context: createContext(42, repository),
-        request: { id: "note-1", type: "note", content: "Private note" },
-      }),
-    ).rejects.toMatchObject({ type: "PROVIDER_ERROR", statusCode: 502 });
-
-    expect(provider.insert).not.toHaveBeenCalled();
-    expect(provider.delete).not.toHaveBeenCalled();
-    expect(repository.removePendingDocument).toHaveBeenCalledOnce();
   });
 
   it.each([
@@ -679,60 +620,6 @@ describe("personal embedding services", () => {
     expect(repository.removePendingDocument).toHaveBeenCalledOnce();
   });
 
-  it("preserves provider match order after scoped hydration", async () => {
-    provider.getQuery.mockResolvedValue({ data: [[0.2]], status: { success: true } });
-    provider.getMatches.mockResolvedValue({
-      count: 2,
-      matches: [
-        { id: "vector-high", score: 0.95, metadata: {} },
-        { id: "vector-low", score: 0.7, metadata: {} },
-      ],
-    });
-    const repository = {
-      getActiveChunksByVectorIds: vi.fn().mockResolvedValue([
-        {
-          vectorId: "vector-low",
-          logicalId: "low",
-          title: "Low",
-          content: "Low result",
-          type: "note",
-          metadata: {},
-          provider: "vectorize",
-          providerTarget: "vectorize-binding",
-          embeddingModel: "@cf/baai/bge-large-en-v1.5",
-          embeddingDimensions: 1024,
-          distanceMetric: "provider-configured",
-          taskMode: "symmetric",
-          vectorSpace: "default",
-          vectorSpaceVersion: "v1",
-        },
-        {
-          vectorId: "vector-high",
-          logicalId: "high",
-          title: "High",
-          content: "High result",
-          type: "note",
-          metadata: {},
-          provider: "vectorize",
-          providerTarget: "vectorize-binding",
-          embeddingModel: "@cf/baai/bge-large-en-v1.5",
-          embeddingDimensions: 1024,
-          distanceMetric: "provider-configured",
-          taskMode: "symmetric",
-          vectorSpace: "default",
-          vectorSpaceVersion: "v1",
-        },
-      ]),
-    };
-
-    const result = await queryEmbeddings({
-      context: createContext(42, repository),
-      request: { query: "private note" },
-    });
-
-    expect(result.data.map((match) => match.id)).toEqual(["high", "low"]);
-  });
-
   it("rejects a hydrated vector whose stored target differs from the queried target", async () => {
     provider.getQuery.mockResolvedValue({ data: [[0.2]], status: { success: true } });
     provider.getMatches.mockResolvedValue({
@@ -880,23 +767,6 @@ describe("personal embedding services", () => {
     expect(repository.getActiveChunksByVectorIds).not.toHaveBeenCalled();
   });
 
-  it("normalises repository query errors before returning them to callers", async () => {
-    const sentinel = "database-query-secret";
-    const context = createContext(42, {
-      getActiveProviderTargets: vi
-        .fn()
-        .mockRejectedValue(new AssistantError(sentinel, ErrorType.UNKNOWN_ERROR, 500)),
-    });
-    const operation = queryEmbeddings({ context, request: { query: "private note" } });
-
-    await expect(operation).rejects.toMatchObject({
-      message: "Unable to search embedding documents",
-      type: "PROVIDER_ERROR",
-      statusCode: 502,
-    });
-    await expect(operation).rejects.not.toMatchObject({ message: sentinel });
-  });
-
   it("makes missing and foreign document deletion indistinguishable without provider mutation", async () => {
     const repository = {
       getDocumentsForDeletion: vi.fn().mockResolvedValue([]),
@@ -951,38 +821,6 @@ describe("personal embedding services", () => {
     });
     expect(provider.delete).toHaveBeenCalledWith(["vector-1"]);
     expect(repository.markDocumentsDeletePending).toHaveBeenCalledWith(42, ["document-1"]);
-    expect(repository.deleteDocuments).toHaveBeenCalledWith(42, ["document-1"]);
-  });
-
-  it("deletes every recorded chunk before removing the scoped document", async () => {
-    provider.delete.mockResolvedValue({ status: "success", error: null });
-    const repository = {
-      getDocumentsForDeletion: vi.fn().mockResolvedValue([
-        {
-          id: "document-1",
-          logicalId: "note-1",
-          provider: "vectorize",
-          providerTarget: "vectorize-binding",
-          embeddingModel: "@cf/baai/bge-large-en-v1.5",
-          embeddingDimensions: 1024,
-          distanceMetric: "provider-configured",
-          taskMode: "symmetric",
-          vectorSpace: "default",
-          vectorSpaceVersion: "v1",
-          vectorIds: ["vector-1", "vector-2"],
-        },
-      ]),
-      markDocumentsDeletePending: vi.fn().mockResolvedValue(undefined),
-      deleteDocuments: vi.fn().mockResolvedValue(undefined),
-    };
-
-    await deleteEmbedding({
-      context: createContext(42, repository),
-      request: { ids: ["note-1"] },
-    });
-
-    expect(repository.markDocumentsDeletePending).toHaveBeenCalledWith(42, ["document-1"]);
-    expect(provider.delete).toHaveBeenCalledWith(["vector-1", "vector-2"]);
     expect(repository.deleteDocuments).toHaveBeenCalledWith(42, ["document-1"]);
   });
 

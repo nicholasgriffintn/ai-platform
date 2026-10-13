@@ -1,4 +1,5 @@
 import type { SiteProject } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const SITE_PREVIEW_CHANNEL = "polychat-site-preview";
 
@@ -7,6 +8,7 @@ export interface SitePreviewRenderPayload {
   pageId: string | null;
   inspecting: boolean;
   selectedKey: string | null;
+  data?: Record<string, unknown>;
 }
 
 export interface SitePreviewRenderMessage {
@@ -40,10 +42,6 @@ export type SitePreviewRuntimeMessage =
   | SitePreviewReadyMessage
   | SitePreviewNavigateMessage
   | SitePreviewSelectMessage;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
 export function isSitePreviewRenderMessage(value: unknown): value is SitePreviewRenderMessage {
   return (

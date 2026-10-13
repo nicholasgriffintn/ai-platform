@@ -147,6 +147,78 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     tags: ["notes", "workspace"],
     type: "premium",
   },
+  {
+    id: "verbatim",
+    runtime: "verbatim",
+    capabilityId: "featured-verbatim",
+    name: "Verbatim",
+    category: "Decisions",
+    when: "You want a live transcript you can trust word for word, not one that fills the gaps with guesses.",
+    uses: "Your microphone. Each phrase is transcribed, then Clef Omni listens again and checks every word.",
+    produces:
+      "A live transcript with a probability on every word, fluency and verbatim checks, and words the audio never said struck out.",
+    ios: "web-only",
+    description:
+      "Live transcription that listens twice: every word is checked against the audio and anything it cannot hear is struck out",
+    icon: "audio-lines",
+    theme: "emerald",
+    tags: ["audio", "transcription", "decisions"],
+    type: "premium",
+  },
+  {
+    id: "charades",
+    runtime: "charades",
+    capabilityId: "featured-charades",
+    name: "Charades",
+    category: "Decisions",
+    when: "You fancy performing to an audience that scores in probabilities.",
+    uses: "Your camera and microphone for a short clip. Clef Omni watches the video with its soundtrack.",
+    produces:
+      "A ranked list of guesses, a verdict on whether you cheated by talking, and a theatricality score you can argue with.",
+    ios: "web-only",
+    description:
+      "Act out a card on camera and let Clef Omni guess. Sound effects are fine, words are not, and it is listening",
+    icon: "clapperboard",
+    theme: "rose",
+    tags: ["video", "game", "decisions"],
+    type: "normal",
+  },
+  {
+    id: "photo-sorter",
+    runtime: "photo-sorter",
+    capabilityId: "featured-photo-sorter",
+    name: "Photo Sorter",
+    category: "Decisions",
+    when: "You have a pile of images and want them in sensible heaps without looking at each one.",
+    uses: "Images you drop in and the piles you name. Clef Omni files each one with a calibrated confidence.",
+    produces:
+      "Images sorted into your piles, with flags for faces, text and blur, and the ones it is unsure about left for you.",
+    ios: "web-only",
+    description:
+      "Name some piles, drop in a stack of photos and watch them sort themselves. The doubtful ones wait for you",
+    icon: "images",
+    theme: "amber",
+    tags: ["image", "classification", "decisions"],
+    type: "normal",
+  },
+  {
+    id: "twenty-questions",
+    runtime: "twenty-questions",
+    capabilityId: "featured-twenty-questions",
+    name: "Twenty Questions",
+    category: "Decisions",
+    when: "You have a few minutes and a suspicion you could out-think a decision model.",
+    uses: "Your yes or no questions. The secret stays sealed on the server until you guess it or give up.",
+    produces:
+      "Calibrated answers rather than a flat yes or no, plus a warmth reading that tells you when you are close.",
+    ios: "web-only",
+    description:
+      "Guess the secret in twenty yes or no questions. Answers come back as probabilities, so 'probably not' means something",
+    icon: "message-circle-question",
+    theme: "violet",
+    tags: ["text", "game", "decisions"],
+    type: "normal",
+  },
 ];
 
 export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
@@ -188,7 +260,8 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
     capability: "supportsMcp",
     category: "Integrations",
     command: "mcp",
-    description: "Let supported models use configured remote MCP servers.",
+    description:
+      "Let models use your configured remote MCP servers. OpenAI models can use OpenAI's hosted MCP tool, and every other model goes through Polychat's gateway.",
     id: "mcp",
     label: "MCP",
     requiresConfiguration: true,

@@ -9,6 +9,20 @@ type DialogWidth = React.CSSProperties["width"];
 type DialogRootProps = React.ComponentProps<typeof DialogPrimitive.Root> & {
   width?: DialogWidth;
 };
+type DialogContentProps = React.ComponentProps<typeof DialogPrimitive.Content> & {
+  fullScreen?: boolean;
+};
+
+const fullScreenDialogStyle: React.CSSProperties = {
+  inset: 0,
+  width: "100vw",
+  maxWidth: "100vw",
+  height: "100dvh",
+  maxHeight: "100dvh",
+  translate: "none",
+  transform: "none",
+  borderRadius: 0,
+};
 
 const DialogWidthContext = createContext<DialogWidth | undefined>(undefined);
 
@@ -51,9 +65,10 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
+  fullScreen = false,
   style,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: DialogContentProps) {
   const dialogWidth = useContext(DialogWidthContext);
   const widthStyle = dialogWidth
     ? {
@@ -71,7 +86,7 @@ function DialogContent({
           "fixed top-[50%] left-[50%] z-50 grid max-h-[calc(100vh-4rem)] w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 overflow-y-auto rounded-lg border border-border bg-background p-6 text-foreground shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
           className,
         )}
-        style={{ ...widthStyle, ...style }}
+        style={{ ...widthStyle, ...(fullScreen ? fullScreenDialogStyle : undefined), ...style }}
         {...props}
       >
         {children}

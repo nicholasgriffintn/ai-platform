@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8192,
+    "maxTokens": 1024,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 30, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The bge family includes models that produce text.",
+  "models": {
+    "bge-m3": {
+      "defaults": {
+        "name": "BGE M3",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+      }
+    }
+  }
+}

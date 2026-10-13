@@ -10,6 +10,7 @@ export const run_code: FunctionToolDescriptor = {
     "Run JavaScript in an isolated sandbox and return the value it produces. Write the body of an async function: the last `return` is the result and console output is captured. Name the tools the code may call in `tools`; each becomes `await tools.<name>(args)` inside the script with the same arguments as calling the tool directly. Use it to combine several tool calls, filter or reshape large results, or do calculations without round-tripping through the conversation. There is no network access unless `network` lists the hosts to allow.",
   type: "normal",
   permissions: ["sandbox"],
+  effects: { effectClass: "write" },
   maxIdenticalCalls: 3,
   intentEvidence: (input) => ({
     operation: "run_code",

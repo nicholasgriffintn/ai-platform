@@ -16,9 +16,12 @@ import {
   type SandboxPreviewSessionRecord,
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
 
+import { processSandboxRunDispatch } from "~/modules/apps/application/sandbox/dispatch";
+import { createSandboxSyncNotifier } from "~/modules/apps/application/sandbox/sync-events";
 import type { IEnv } from "~/types";
 
 import {
@@ -89,6 +92,8 @@ function isInstructionReplay(
 }
 
 export class SandboxRunCoordinator extends Agent<IEnv> {
+  private notifySync = createSandboxSyncNotifier(this.env, (work) => this.ctx.waitUntil(work));
+
   private get storage(): DurableObjectStorage {
     return this.ctx.storage;
   }
@@ -124,6 +129,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
   private async putControl(control: CoordinatorState): Promise<void> {
     await this.storage.put(CONTROL_KEY, JSON.stringify(control));
+    this.notifySync(control.runId);
   }
 
   private async appendEvent(event: SandboxRunEvent): Promise<CoordinatorEventEnvelope> {
@@ -173,6 +179,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
     }
 
     this.broadcastEnvelope(envelope);
+    this.notifySync(event.runId);
 
     return envelope;
   }
@@ -194,6 +201,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     await this.storage.put(INSTRUCTION_INDEX_KEY, nextIndex);
     await this.storage.put(INSTRUCTIONS_KEY, JSON.stringify(nextInstructions));
+    this.notifySync(instruction.runId);
 
     return envelope;
   }
@@ -206,6 +214,10 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
   private async putInstructions(instructions: CoordinatorInstructionEnvelope[]): Promise<void> {
     await this.storage.put(INSTRUCTIONS_KEY, JSON.stringify(instructions.slice(-500)));
+
+    if (instructions[0]) {
+      this.notifySync(instructions[0].instruction.runId);
+    }
   }
 
   private async getPreviewSession(previewId: string): Promise<SandboxPreviewSessionRecord | null> {
@@ -225,6 +237,11 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
       `${PREVIEW_SESSION_PREFIX}${session.previewId}`,
       JSON.stringify(session),
     );
+    const control = await this.getControl();
+
+    if (control) {
+      this.notifySync(control.runId);
+    }
   }
 
   private async settleClosedInspectionWindow(
@@ -269,6 +286,11 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
         await this.storage.put(key, JSON.stringify({ ...parsed.data, revokedAt }));
       }),
     );
+    const control = await this.getControl();
+
+    if (control) {
+      this.notifySync(control.runId);
+    }
   }
 
   private applyInstructionLifecycleTransitions(
@@ -362,8 +384,6 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     stash("running");
     try {
-      const { processSandboxRunDispatch } = await import("../../../application/sandbox/dispatch");
-
       await processSandboxRunDispatch({
         env: this.env,
         message,
@@ -800,7 +820,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
             Math.max(1, timeoutSeconds - 1),
           );
           const instruction: SandboxRunInstruction = {
-            id: crypto.randomUUID(),
+            id: generateId(),
             idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
@@ -865,7 +885,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           await this.putInstructions(instructions);
 
           const instruction: SandboxRunInstruction = {
-            id: crypto.randomUUID(),
+            id: generateId(),
             idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
@@ -900,7 +920,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
         }
 
         const instruction: SandboxRunInstruction = {
-          id: crypto.randomUUID(),
+          id: generateId(),
           idempotencyKey: idempotencyKey || undefined,
           runId: control?.runId ?? "unknown",
           kind,

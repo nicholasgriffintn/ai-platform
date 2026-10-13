@@ -1,34 +1,7 @@
-import {
-  buildOpenAIHostedToolParts,
-  buildOpenAIResponseOutputParts,
-} from "@ngriffin_uk/polychat-ai-providers";
+import { buildOpenAIResponseOutputParts } from "@ngriffin_uk/polychat-ai-providers";
 import { describe, expect, it } from "vitest";
 
 describe("OpenAI Responses message parts", () => {
-  it.each([
-    ["code_interpreter_call", "code_execution"],
-    ["web_search_call", "search_grounding"],
-    ["file_search_call", "file_search"],
-    ["shell_call", "hosted_shell"],
-    ["tool_search_call", "tool_search"],
-    ["mcp_call", "mcp"],
-    ["image_generation_call", "image_generation"],
-    ["computer_call", "computer_use"],
-  ])("maps %s to a visible %s result", (type, name) => {
-    const parts = buildOpenAIHostedToolParts({
-      id: `${type}-1`,
-      type,
-      status: "completed",
-      action: { query: "example" },
-      results: [{ value: "result" }],
-    });
-
-    expect(parts).toEqual([
-      expect.objectContaining({ type: "tool_use", name }),
-      expect.objectContaining({ type: "tool_result", name, status: "completed" }),
-    ]);
-  });
-
   it("preserves output order without exposing generated image base64 as tool text", () => {
     const parts = buildOpenAIResponseOutputParts([
       {

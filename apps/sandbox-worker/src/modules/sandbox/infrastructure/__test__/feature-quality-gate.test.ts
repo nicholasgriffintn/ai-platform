@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { SandboxExecInstance } from "../commands";
 import { deriveQualityGateCommands, runQualityGate } from "../feature-implementation/quality-gate";
-import type { SandboxExecInstance } from "../feature-implementation/types";
 
 function buildExecResult(params: {
   command: string;

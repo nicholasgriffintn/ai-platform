@@ -6,6 +6,7 @@ import { ai } from "~/infrastructure/ai";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { extractQuotes } from "~/modules/apps/application/articles/extract";
 import { verifyQuotes } from "~/modules/apps/application/articles/verify";
+import { gradeEditorialQuality } from "~/modules/documents/application/editorial-quality";
 import {
   findModelConfig,
   getAuxiliaryModelForRetrieval,
@@ -102,6 +103,12 @@ export async function analyseArticle({
 
     const quotes = extractQuotes(analysisData.text);
     const verifiedQuotes = verifyQuotes(sanitisedArticle, quotes);
+    const editorial = await gradeEditorialQuality({
+      env: serviceContext.env,
+      user,
+      completionId: completion_id,
+      text: sanitisedArticle,
+    });
 
     const analysisResult = {
       content: analysisData.text,
@@ -110,6 +117,7 @@ export async function analyseArticle({
       citations: analysisData.citations,
       log_id: analysisData.logId,
       verifiedQuotes,
+      ...(editorial ? { editorial } : {}),
     };
 
     serviceContext.ensureDatabase();

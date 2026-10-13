@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { teammateRunReconciliationTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
@@ -19,7 +20,7 @@ export class TeammateRunReconciliationHandler implements TaskHandler {
 
     const user = await baseContext.repositories.users.getUserById(run.initiatorUserId);
 
-    if (!user || (message.user_id !== undefined && message.user_id !== user.id)) {
+    if (!user || (message.user_id !== undefined && !ownsResource(user.id, message.user_id))) {
       return { status: "error", message: "Teammate run initiator is unavailable" };
     }
 

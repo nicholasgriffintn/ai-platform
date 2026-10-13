@@ -76,7 +76,10 @@
         "lastUpdated": "January 1, 2025",
         "costPer1kInputTokens": 0.000025,
         "costPer1kOutputTokens": 0.000025
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "meta/llama-3.2-3b-instruct": {
       "model": "llama/llama-3-2-3b-instruct",

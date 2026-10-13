@@ -11,7 +11,8 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { sandboxPreviewRefreshInterval } from "../lib/sandbox-preview-refresh.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 const ACTIVE_REFRESH_MS = 2_000;
 
@@ -66,6 +67,7 @@ export function useProjectWorkbenchPreview({
   services: ProjectWorkbenchServiceItem[];
   isRunLoading: boolean;
 }) {
+  const liveOrPoll = useLiveOrPoll();
   const [preferredServiceName, setPreferredServiceName] = useState<string>();
   const [localAccess, setLocalAccess] = useState<SandboxPreviewAccess>();
   const selectedService =
@@ -88,14 +90,9 @@ export function useProjectWorkbenchPreview({
     enabled: Boolean(runId && scopedAccess),
     initialData: scopedAccess,
     refetchInterval: (query) =>
-      liveOrPoll(
-        query,
-        (currentQuery) =>
-          currentQuery.state.data?.state === "healthy" ||
-          currentQuery.state.data?.state === "starting"
-            ? ACTIVE_REFRESH_MS
-            : false,
-        "workbench_preview.changed",
+      sandboxPreviewRefreshInterval(
+        query.state.data,
+        liveOrPoll(query, ACTIVE_REFRESH_MS, "workbench_run.changed"),
       ),
     refetchIntervalInBackground: true,
   });

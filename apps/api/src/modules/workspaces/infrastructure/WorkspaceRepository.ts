@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ConversationType,
   ModelTier,
@@ -12,9 +13,8 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
+import { WORKSPACE_INVITATION_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { buildCapabilityConfigurationUpsert } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
-import { buildOwnedProjectCapabilityConfigurationUpsert } from "~/modules/capabilities/infrastructure/projectCapabilityConfigurationStatements";
 
 const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map((type) => `'${type}'`).join(", ");
 
@@ -157,8 +157,8 @@ export class WorkspaceRepository extends BaseRepository {
         .bind(params.id, params.name, params.description, params.colour, params.userId),
       database
         .prepare(
-          `INSERT INTO workspace_member (workspace_id, user_id, role)
-					 VALUES (?, ?, 'owner')`,
+          `INSERT INTO resource_grant (kind, workspace_id, user_id, role)
+					 VALUES ('membership', ?, ?, 'owner')`,
         )
         .bind(params.id, params.userId),
     ]);
@@ -170,8 +170,8 @@ export class WorkspaceRepository extends BaseRepository {
 				COUNT(DISTINCT members.user_id) AS member_count,
 				COUNT(DISTINCT p.id) AS project_count
 			 FROM workspace w
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
-			 LEFT JOIN workspace_member members ON members.workspace_id = w.id
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
+			 LEFT JOIN resource_grant members ON members.kind = 'membership' AND members.workspace_id = w.id
 			 LEFT JOIN project p ON p.workspace_id = w.id AND p.archived_at IS NULL
 			 GROUP BY w.id, wm.role
 			 ORDER BY w.updated_at DESC, w.created_at DESC`,
@@ -190,7 +190,7 @@ export class WorkspaceRepository extends BaseRepository {
     return this.runQuery<GlobalWorkspaceSearchRow>(
       `SELECT w.id, w.name, w.description, w.updated_at
 			 FROM workspace w
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE (? = '' OR w.name LIKE ? ESCAPE '\\' OR w.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(w.updated_at, w.created_at) DESC, w.id DESC
 			 LIMIT ?`,
@@ -211,7 +211,7 @@ export class WorkspaceRepository extends BaseRepository {
 			        p.name, p.description, p.updated_at
 			 FROM project p
 			 JOIN workspace w ON w.id = p.workspace_id
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE p.archived_at IS NULL
 			   AND (? = '' OR p.name LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.id DESC
@@ -229,7 +229,7 @@ export class WorkspaceRepository extends BaseRepository {
     userId: number,
   ): Promise<{ role: WorkspaceRole } | null> {
     return this.runQuery<{ role: WorkspaceRole }>(
-      "SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?",
+      "SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [workspaceId, userId],
       true,
     );
@@ -237,9 +237,9 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listMembers(workspaceId: string): Promise<WorkspaceMemberRow[]> {
     return this.runQuery<WorkspaceMemberRow>(
-      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.joined_at
-			 FROM workspace_member wm
-			 JOIN user u ON u.id = wm.user_id
+      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.created_at AS joined_at
+			 FROM resource_grant wm
+			 JOIN user u ON wm.kind = 'membership' AND u.id = wm.user_id
 			 WHERE wm.workspace_id = ?
 			 ORDER BY CASE wm.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, u.name, u.email`,
       [workspaceId],
@@ -252,16 +252,16 @@ export class WorkspaceRepository extends BaseRepository {
     role: Exclude<WorkspaceRole, "owner">,
   ): Promise<void> {
     await this.executeRun(
-      "UPDATE workspace_member SET role = ? WHERE workspace_id = ? AND user_id = ?",
+      "UPDATE resource_grant SET role = ? WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [role, workspaceId, userId],
     );
   }
 
   async removeMember(workspaceId: string, userId: number): Promise<void> {
-    await this.executeRun("DELETE FROM workspace_member WHERE workspace_id = ? AND user_id = ?", [
-      workspaceId,
-      userId,
-    ]);
+    await this.executeRun(
+      "DELETE FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
+      [workspaceId, userId],
+    );
   }
 
   async transferOwnership(
@@ -270,11 +270,11 @@ export class WorkspaceRepository extends BaseRepository {
     newOwnerUserId: number,
   ): Promise<void> {
     const result = await this.executeRun(
-      `UPDATE workspace_member
+      `UPDATE resource_grant
 			 SET role = CASE WHEN user_id = ? THEN 'admin' ELSE 'owner' END
-			 WHERE workspace_id = ? AND user_id IN (?, ?)
-			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) = 'owner'
-			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
+			 WHERE kind = 'membership' AND workspace_id = ? AND user_id IN (?, ?)
+			 AND (SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?) = 'owner'
+			 AND (SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
       [
         currentOwnerUserId,
         workspaceId,
@@ -324,9 +324,9 @@ export class WorkspaceRepository extends BaseRepository {
     await database.batch([
       database
         .prepare(
-          `UPDATE memory_document
+          `UPDATE resource
            SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-           WHERE deleted_at IS NULL AND (
+           WHERE resource_type = 'memory' AND deleted_at IS NULL AND (
              (scope_type = 'project' AND scope_id IN (${projectIds}))
              OR id IN (
                SELECT memory_document_id FROM teammate_context
@@ -337,8 +337,8 @@ export class WorkspaceRepository extends BaseRepository {
         .bind(workspaceId, workspaceId),
       database
         .prepare(
-          `DELETE FROM capability_configuration
-					 WHERE scope_type = 'project' AND scope_id IN (${projectIds})`,
+          `DELETE FROM scoped_configuration
+					 WHERE kind = 'capability' AND project_id IN (${projectIds})`,
         )
         .bind(workspaceId),
       database
@@ -390,20 +390,20 @@ export class WorkspaceRepository extends BaseRepository {
     expiresAt: string;
   }): Promise<WorkspaceInvitationRow | null> {
     return this.runQuery<WorkspaceInvitationRow>(
-      `INSERT INTO workspace_invitation
-				(id, workspace_id, email, role, token_hash, status, invited_by, expires_at)
-			 VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
-			 ON CONFLICT(workspace_id, email) DO UPDATE SET
+      `INSERT INTO resource_grant
+				(kind, id, workspace_id, email, role, token_hash, status, created_by_user_id, expires_at)
+			 VALUES ('invitation', ?, ?, ?, ?, ?, 'pending', ?, ?)
+			 ON CONFLICT(workspace_id, email) WHERE kind = 'invitation' DO UPDATE SET
 				id = excluded.id,
 				role = excluded.role,
 				token_hash = excluded.token_hash,
 				status = 'pending',
-				invited_by = excluded.invited_by,
+				created_by_user_id = excluded.created_by_user_id,
 				accepted_by = NULL,
 				accepted_at = NULL,
 				expires_at = excluded.expires_at,
 				updated_at = CURRENT_TIMESTAMP
-			 RETURNING *`,
+			 RETURNING ${WORKSPACE_INVITATION_COLUMNS}`,
       [
         params.id,
         params.workspaceId,
@@ -419,14 +419,14 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listInvitations(workspaceId: string): Promise<WorkspaceInvitationRow[]> {
     return this.runQuery<WorkspaceInvitationRow>(
-      "SELECT * FROM workspace_invitation WHERE workspace_id = ? ORDER BY created_at DESC",
+      `SELECT ${WORKSPACE_INVITATION_COLUMNS} FROM resource_grant WHERE kind = 'invitation' AND workspace_id = ? ORDER BY created_at DESC`,
       [workspaceId],
     );
   }
 
   async getInvitationByTokenHash(tokenHash: string): Promise<WorkspaceInvitationRow | null> {
     return this.runQuery<WorkspaceInvitationRow>(
-      "SELECT * FROM workspace_invitation WHERE token_hash = ?",
+      `SELECT ${WORKSPACE_INVITATION_COLUMNS} FROM resource_grant WHERE kind = 'invitation' AND token_hash = ?`,
       [tokenHash],
       true,
     );
@@ -442,19 +442,19 @@ export class WorkspaceRepository extends BaseRepository {
     const [acceptResult, membershipResult] = await database.batch([
       database
         .prepare(
-          `UPDATE workspace_invitation
+          `UPDATE resource_grant
 					 SET status = 'accepted', accepted_by = ?, accepted_at = CURRENT_TIMESTAMP,
 					     token_hash = 'consumed:' || id, updated_at = CURRENT_TIMESTAMP
-					 WHERE id = ? AND status = 'pending' AND token_hash = ?`,
+					 WHERE kind = 'invitation' AND id = ? AND status = 'pending' AND token_hash = ?`,
         )
         .bind(userId, invitation.id, invitation.token_hash),
       database
         .prepare(
-          `INSERT INTO workspace_member (workspace_id, user_id, role)
-					 SELECT workspace_id, ?, role
-					 FROM workspace_invitation
-					 WHERE id = ? AND status = 'accepted' AND accepted_by = ?
-					 ON CONFLICT(workspace_id, user_id) DO NOTHING`,
+          `INSERT INTO resource_grant (kind, workspace_id, user_id, role)
+					 SELECT 'membership', workspace_id, ?, role
+					 FROM resource_grant
+					 WHERE kind = 'invitation' AND id = ? AND status = 'accepted' AND accepted_by = ? AND changes() = 1
+					 ON CONFLICT(workspace_id, user_id) WHERE kind = 'membership' DO NOTHING`,
         )
         .bind(userId, invitation.id, userId),
     ]);
@@ -470,9 +470,9 @@ export class WorkspaceRepository extends BaseRepository {
 
   async revokeInvitation(workspaceId: string, invitationId: string): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE workspace_invitation
+      `UPDATE resource_grant
 			 SET status = 'revoked', token_hash = 'revoked:' || id, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ? AND workspace_id = ? AND status = 'pending'`,
+			 WHERE kind = 'invitation' AND id = ? AND workspace_id = ? AND status = 'pending'`,
       [invitationId, workspaceId],
     );
 
@@ -584,29 +584,19 @@ export class WorkspaceRepository extends BaseRepository {
       ...capabilities.map((capability) =>
         database
           .prepare(
-            `INSERT INTO project_capability
-						 (id, project_id, kind, capability_id, configuration, created_by)
-						 VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO scoped_configuration
+             (kind, id, project_id, target_kind, target_id, payload, created_by, attached)
+             VALUES ('capability', ?, ?, ?, ?, ?, ?, 1)`,
           )
           .bind(
             capability.id,
             params.id,
             capability.kind,
             capability.capabilityId,
-            JSON.stringify({}),
+            JSON.stringify(capability.configuration),
             params.createdBy,
           ),
       ),
-      ...capabilities.map((capability) => {
-        const statement = buildCapabilityConfigurationUpsert({
-          scope: { type: "project", id: params.id },
-          capabilityKind: capability.kind,
-          capabilityId: capability.capabilityId,
-          configuration: capability.configuration,
-        });
-
-        return database.prepare(statement.query).bind(...statement.values);
-      }),
     ]);
   }
 
@@ -617,7 +607,7 @@ export class WorkspaceRepository extends BaseRepository {
 				COUNT(DISTINCT pc.id) AS capability_count
 			 FROM project p
 			 LEFT JOIN conversation c ON c.project_id = p.id AND c.is_archived = 0
-			 LEFT JOIN project_capability pc ON pc.project_id = p.id
+			 LEFT JOIN scoped_configuration pc ON pc.project_id = p.id AND pc.kind = 'capability' AND pc.attached = 1
 			 WHERE p.workspace_id = ? AND p.archived_at IS NULL
 			 GROUP BY p.id
 			 ORDER BY p.updated_at DESC, p.created_at DESC`,
@@ -632,7 +622,7 @@ export class WorkspaceRepository extends BaseRepository {
 				COUNT(DISTINCT pc.id) AS capability_count
 			 FROM project p
 			 LEFT JOIN conversation c ON c.project_id = p.id AND c.is_archived = 0
-			 LEFT JOIN project_capability pc ON pc.project_id = p.id
+			 LEFT JOIN scoped_configuration pc ON pc.project_id = p.id AND pc.kind = 'capability' AND pc.attached = 1
 			 WHERE p.id = ? AND p.archived_at IS NULL
 			 GROUP BY p.id`,
       [projectId],
@@ -738,7 +728,7 @@ export class WorkspaceRepository extends BaseRepository {
          AND json_extract(
            CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
            END,
-           '$.backupId'
+           '$.backup.id'
          ) = ?`,
       [cache, projectId, expectedGeneration, backupId],
     );
@@ -765,7 +755,7 @@ export class WorkspaceRepository extends BaseRepository {
          AND json_extract(
            CASE WHEN json_valid(coding_environment_cache) THEN coding_environment_cache ELSE '{}'
            END,
-           '$.backupId'
+           '$.backup.id'
          ) = ?`,
       [cache, projectId, expectedGeneration, expectedBackupId],
     );
@@ -775,17 +765,11 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listProjectCapabilities(projectId: string): Promise<ProjectCapabilityRow[]> {
     return this.runQuery<ProjectCapabilityRow>(
-      `SELECT pc.id, pc.project_id, pc.kind, pc.capability_id,
-				COALESCE(cc.configuration, pc.configuration) AS configuration,
-				pc.excluded, pc.created_by, pc.created_at
-			 FROM project_capability pc
-			 LEFT JOIN capability_configuration cc
-				ON cc.scope_type = 'project'
-				AND cc.scope_id = pc.project_id
-				AND cc.capability_kind = pc.kind
-				AND cc.capability_id = pc.capability_id
-			 WHERE pc.project_id = ?
-			 ORDER BY pc.created_at`,
+      `SELECT id, project_id, target_kind AS kind, target_id AS capability_id,
+              payload AS configuration, excluded, created_by, created_at
+       FROM scoped_configuration
+       WHERE kind = 'capability' AND attached = 1 AND project_id = ?
+       ORDER BY created_at`,
       [projectId],
     );
   }
@@ -796,10 +780,10 @@ export class WorkspaceRepository extends BaseRepository {
   ): Promise<ProjectReferenceRow[]> {
     return this.runQuery<ProjectReferenceRow>(
       `SELECT DISTINCT p.id, p.name
-			 FROM project p
-			 JOIN project_capability pc ON pc.project_id = p.id
-			 WHERE pc.kind = ? AND pc.capability_id = ? AND p.archived_at IS NULL
-			 ORDER BY p.name`,
+       FROM project p
+       JOIN scoped_configuration pc ON pc.project_id = p.id AND pc.kind = 'capability' AND pc.attached = 1
+       WHERE pc.target_kind = ? AND pc.target_id = ? AND p.archived_at IS NULL
+       ORDER BY p.name`,
       [kind, capabilityId],
     );
   }
@@ -835,38 +819,35 @@ export class WorkspaceRepository extends BaseRepository {
       return;
     }
 
-    const configurationStatement = buildOwnedProjectCapabilityConfigurationUpsert({
-      scope: { type: "project", id: params.projectId },
-      capabilityKind: params.kind,
-      capabilityId: params.capabilityId,
-      configuration: params.configuration ?? {},
-      createdBy: params.createdBy,
-    });
-    const results = await database.batch([
-      database
-        .prepare(
-          `INSERT INTO project_capability
-						(id, project_id, kind, capability_id, configuration, created_by, excluded)
-					 VALUES (?, ?, ?, ?, ?, ?, ?)
-					 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
-						created_by = project_capability.created_by,
-						excluded = excluded.excluded
-					 WHERE project_capability.kind = 'tool'
-						OR project_capability.created_by = excluded.created_by`,
-        )
-        .bind(
-          params.id,
-          params.projectId,
-          params.kind,
-          params.capabilityId,
-          JSON.stringify({}),
-          params.createdBy,
-          params.excluded ? 1 : 0,
-        ),
-      database.prepare(configurationStatement.query).bind(...configurationStatement.values),
-    ]);
+    const result = await database
+      .prepare(
+        `INSERT INTO scoped_configuration
+       (kind, id, project_id, target_kind, target_id, payload, created_by, excluded, attached)
+       VALUES ('capability', ?, ?, ?, ?, ?, ?, ?, 1)
+       ON CONFLICT(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability' DO UPDATE SET
+         id = CASE WHEN scoped_configuration.attached = 1 THEN scoped_configuration.id ELSE excluded.id END,
+         created_by = CASE WHEN scoped_configuration.attached = 1 THEN scoped_configuration.created_by ELSE excluded.created_by END,
+         configuration_created_at = COALESCE(scoped_configuration.configuration_created_at, scoped_configuration.created_at),
+         created_at = CASE WHEN scoped_configuration.attached = 1 THEN scoped_configuration.created_at ELSE excluded.created_at END,
+         attached = 1,
+         excluded = excluded.excluded,
+         payload = excluded.payload,
+         updated_at = CURRENT_TIMESTAMP
+       WHERE scoped_configuration.attached = 0 OR scoped_configuration.target_kind IN ('tool', 'connector')
+         OR scoped_configuration.created_by = excluded.created_by`,
+      )
+      .bind(
+        params.id,
+        params.projectId,
+        params.kind,
+        params.capabilityId,
+        JSON.stringify(params.configuration ?? {}),
+        params.createdBy,
+        params.excluded ? 1 : 0,
+      )
+      .run();
 
-    if (results[0]?.meta.changes === 0) {
+    if (result.meta.changes === 0) {
       throw new AssistantError(
         "Only the member who attached this capability can manage it",
         ErrorType.FORBIDDEN,
@@ -880,45 +861,17 @@ export class WorkspaceRepository extends BaseRepository {
     kind: ProjectCapabilityKind,
     capabilityId: string,
   ): Promise<void> {
-    const database = this.env.DB;
-
-    if (!database) {
-      return;
-    }
-
-    await database
-      .prepare(
-        "DELETE FROM project_capability WHERE project_id = ? AND kind = ? AND capability_id = ?",
-      )
-      .bind(projectId, kind, capabilityId)
-      .run();
+    await this.executeRun(
+      "UPDATE scoped_configuration SET attached = 0 WHERE kind = 'capability' AND project_id = ? AND target_kind = ? AND target_id = ?",
+      [projectId, kind, capabilityId],
+    );
   }
 
   async removeProjectCapability(projectId: string, capabilityId: string): Promise<void> {
-    const database = this.env.DB;
-
-    if (!database) {
-      return;
-    }
-
-    await database.batch([
-      database
-        .prepare(
-          `DELETE FROM capability_configuration
-					 WHERE scope_type = 'project' AND scope_id = ?
-						AND EXISTS (
-							SELECT 1 FROM project_capability pc
-							WHERE pc.id = ?
-								AND pc.project_id = capability_configuration.scope_id
-								AND pc.kind = capability_configuration.capability_kind
-								AND pc.capability_id = capability_configuration.capability_id
-						)`,
-        )
-        .bind(projectId, capabilityId),
-      database
-        .prepare("DELETE FROM project_capability WHERE project_id = ? AND id = ?")
-        .bind(projectId, capabilityId),
-    ]);
+    await this.executeRun(
+      "DELETE FROM scoped_configuration WHERE kind = 'capability' AND project_id = ? AND id = ?",
+      [projectId, capabilityId],
+    );
   }
 
   async listProjectConversations(
@@ -942,16 +895,15 @@ export class WorkspaceRepository extends BaseRepository {
         (
           SELECT json_object(
             'id', grp.id,
-            'name', grp.name,
+            'name', grp.title,
             'scope', json_object('kind', 'project', 'projectId', grp.project_id)
           )
-          FROM conversation_group_membership membership
-          JOIN conversation_group grp ON grp.id = membership.group_id
-          WHERE membership.conversation_id = c.id AND grp.project_id = c.project_id
+          FROM resource_collection grp
+            WHERE grp.collection_type = 'conversation' AND grp.id = c.group_id AND grp.project_id = c.project_id
         ) AS "group"
 			 FROM conversation c
 			 JOIN user u ON u.id = c.user_id
-			 LEFT JOIN conversation_user_state state
+			 LEFT JOIN user_resource_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.project_id = ? AND c.is_archived = 0
         AND c.type IN (${listedConversationTypesSql})
@@ -979,30 +931,36 @@ export class WorkspaceRepository extends BaseRepository {
   }
 
   async canAccessConversation(conversationId: string, userId: number): Promise<boolean> {
-    const row = await this.runQuery<{ allowed: number }>(
-      `SELECT EXISTS(
-				SELECT 1 FROM conversation c
-				JOIN user access_user ON access_user.id = ?
-				LEFT JOIN project p ON p.id = c.project_id
-				LEFT JOIN workspace_member wm
-					ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
-				WHERE c.id = ? AND (
-					(c.project_id IS NULL AND c.user_id = access_user.id)
-					OR (
-						c.project_id IS NOT NULL
-						AND access_user.plan_id = 'pro'
-						AND wm.user_id IS NOT NULL
-					)
-				)
-				AND NOT EXISTS (
-					SELECT 1 FROM teammate_context tc
-					WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != access_user.id
-				)
-			) AS allowed`,
+    const row = await this.runQuery<{
+      user_id: number;
+      project_id: string | null;
+      plan_id: string | null;
+      member_user_id: number | null;
+      teammate_actor_id: number | null;
+    }>(
+      `SELECT c.user_id, c.project_id, access_user.plan_id,
+        wm.user_id AS member_user_id, tc.actor_user_id AS teammate_actor_id
+       FROM conversation c
+       JOIN user access_user ON access_user.id = ?
+       LEFT JOIN project p ON p.id = c.project_id
+       LEFT JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
+       LEFT JOIN teammate_context tc ON tc.home_conversation_id = c.id
+       WHERE c.id = ?`,
       [userId, conversationId],
       true,
     );
 
-    return row?.allowed === 1;
+    if (!row) {
+      return false;
+    }
+
+    return authorise("conversation.access", {
+      actorId: String(userId),
+      ownerId: String(row.user_id),
+      project: row.project_id !== null,
+      plan: row.plan_id ?? "",
+      member: row.member_user_id !== null,
+      teammateActorId: row.teammate_actor_id === null ? "" : String(row.teammate_actor_id),
+    }).allowed;
   }
 }

@@ -24,3 +24,5 @@ export * from "./routes.js";
 export * from "./scoring.js";
 export * from "./sizing.js";
 export * from "./stats.js";
+
+export { toCedarPolicyRule, validateGovernanceRules, GOVERNANCE_SCHEMA } from "./cedar-policy.js";

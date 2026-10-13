@@ -8,6 +8,7 @@ import {
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { returnFetchedData } from "../http.js";
+import { withProjectScope, withWorkspaceScope } from "../project-scope.js";
 
 export interface ProviderSetting {
   id: string;
@@ -125,7 +126,7 @@ export class UserService {
     return decodeModelConfig(await returnFetchedData<unknown>(response));
   }
 
-  async fetchTools(): Promise<Tool[]> {
+  async fetchTools(projectId?: string, workspaceId?: string): Promise<Tool[]> {
     let headers = {};
 
     try {
@@ -134,11 +135,14 @@ export class UserService {
       console.error("Error fetching tools:", error);
     }
 
-    const response = await fetchApi("/tools", {
-      method: "GET",
-      headers,
-      timeoutMs: 10000,
-    });
+    const response = await fetchApi(
+      withWorkspaceScope(withProjectScope("/tools", projectId), workspaceId),
+      {
+        method: "GET",
+        headers,
+        timeoutMs: 10000,
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch tools: ${response.statusText}`);

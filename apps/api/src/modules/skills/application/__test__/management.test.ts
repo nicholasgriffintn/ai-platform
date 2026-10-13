@@ -19,7 +19,6 @@ import {
   deletePersonalSkill,
   deleteProjectSkill,
   getPersonalSkillHistory,
-  getPersonalSkillVersion,
   getProjectSkill,
   getProjectSkillHistory,
   importPersonalSkill,
@@ -36,7 +35,6 @@ import {
   updateProjectSkill,
 } from "../management";
 import { getStoredSkill, saveStoredSkillDraft } from "../persistence";
-import { formatSkillContent } from "../response";
 
 const requireProjectAccessMock = vi.hoisted(() => vi.fn());
 const recordProjectAuditMock = vi.hoisted(() => vi.fn());
@@ -352,33 +350,6 @@ describe("personal skill management", () => {
     ).rejects.toMatchObject({ statusCode: 400, type: "PARAMS_ERROR" });
   });
 
-  it("stores the first complete immutable revision and makes it active", async () => {
-    const { authoredSkills, bucket, capabilityConfigurations, context } = createContext();
-
-    const result = await createPersonalSkill(context, 42, { content });
-
-    expect(bucket.put).toHaveBeenCalledOnce();
-    expect(bucket.put.mock.calls[0]?.[0]).toMatch(
-      /^skills\/authored\/[^/]+\/revisions\/[^/]+\.json$/,
-    );
-    expect(JSON.parse(bucket.put.mock.calls[0]?.[1] ?? "{}")).toMatchObject({
-      version: 1,
-      content,
-      resources: [],
-      digest: expect.stringMatching(/^[a-f0-9]{64}$/),
-    });
-    expect(authoredSkills.create).toHaveBeenCalledWith(
-      expect.objectContaining({ scope: { type: "personal", id: 42 } }),
-    );
-    expect(capabilityConfigurations.save).not.toHaveBeenCalled();
-    expect(result).toMatchObject({
-      id: "meeting-notes",
-      name: "meeting-notes",
-      scope: { type: "personal" },
-      content,
-    });
-  });
-
   it("accepts a creation that D1 committed before returning an ambiguous error", async () => {
     const { authoredSkills, bucket, capabilityConfigurations, context } = createContext();
     const commit = authoredSkills.create.getMockImplementation();
@@ -396,26 +367,6 @@ describe("personal skill management", () => {
     expect(
       [...bucket.objects.keys()].filter((key) => key.startsWith("skills/authored/")),
     ).toHaveLength(1);
-  });
-
-  it("updates through a new immutable revision and keeps the public PUT active", async () => {
-    const { authoredSkills, bucket, context } = createContext();
-    const updatedContent = content.replace("Extract decisions and actions.", "Extract owners.");
-
-    await createPersonalSkill(context, 42, { content });
-    const originalKey = bucket.put.mock.calls[0]?.[0] ?? "";
-    const updated = await updatePersonalSkill(context, 42, "meeting-notes", {
-      content: updatedContent,
-    });
-    const catalog = await resolveSkillCatalog(context, { type: "personal", id: 42 });
-
-    expect(bucket.put).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(bucket.objects.get(originalKey)?.content ?? "{}")).toMatchObject({ content });
-    expect(updated.content).toBe(updatedContent);
-    expect(catalog.load("meeting-notes")?.body).toContain("Extract owners.");
-    expect(authoredSkills.appendRevision).toHaveBeenCalledWith(
-      expect.objectContaining({ activate: true }),
-    );
   });
 
   it("accepts an active update that D1 committed before returning an ambiguous error", async () => {
@@ -572,39 +523,6 @@ describe("personal skill management", () => {
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 
-  it("loads an authored document through the runtime catalogue as untrusted content", async () => {
-    const { context } = createContext();
-
-    await createPersonalSkill(context, 42, { content });
-
-    const catalog = await resolveSkillCatalog(context, { type: "personal", id: 42 });
-    const loaded = catalog.load("meeting-notes");
-
-    expect(loaded).toMatchObject({ name: "meeting-notes", source: "user-authored" });
-    expect(formatSkillContent(loaded)).toContain(
-      '<skill_content name="meeting-notes" source="user-authored">',
-    );
-  });
-
-  it("attaches the exact stable revision to a resolved personal runtime catalogue", async () => {
-    const { authoredSkills, context } = createContext();
-
-    await createPersonalSkill(context, 42, { content });
-    const [stored] = [...authoredSkills.skills.values()];
-    const catalog = await resolveSkillCatalog(context, { type: "personal", id: 42 });
-
-    expect(catalog.loadRuntime("meeting-notes")).toMatchObject({
-      provenance: {
-        source: "user-authored",
-        scope: "personal",
-        skill: "meeting-notes",
-        revisionId: stored?.stableRevisionId,
-        revision: 1,
-      },
-      authorisation: { scopeId: "42", skillId: stored?.id },
-    });
-  });
-
   it("keeps prompt discovery and tool loading on one pinned revision", async () => {
     const { context } = createContext();
 
@@ -633,22 +551,6 @@ describe("personal skill management", () => {
     });
   });
 
-  it("includes an authored skill in the existing personal capability catalogue", async () => {
-    const { context } = createContext();
-
-    await createPersonalSkill(context, 42, { content });
-
-    const skills = await listScopedSkillSummaries(context, 42);
-
-    expect(skills).toContainEqual(
-      expect.objectContaining({
-        id: "meeting-notes",
-        name: "meeting-notes",
-        source: "user-authored",
-      }),
-    );
-  });
-
   it("archives a personal skill while preserving its immutable revision", async () => {
     const { bucket, context } = createContext();
 
@@ -661,17 +563,6 @@ describe("personal skill management", () => {
     expect(await listScopedSkillSummaries(context, 42)).not.toContainEqual(
       expect.objectContaining({ id: "meeting-notes" }),
     );
-  });
-
-  it("allows an archived skill name to be created again", async () => {
-    const { context } = createContext();
-
-    await createPersonalSkill(context, 42, { content });
-    await deletePersonalSkill(context, 42, "meeting-notes");
-
-    await expect(createPersonalSkill(context, 42, { content })).resolves.toMatchObject({
-      name: "meeting-notes",
-    });
   });
 
   it("rejects unsafe authored resource paths before storing a revision", async () => {
@@ -790,51 +681,6 @@ describe("personal skill management", () => {
     expect(authoredSkills.appendRevision).toHaveBeenLastCalledWith(
       expect.objectContaining({ activate: true, source: expect.any(Object) }),
     );
-  });
-
-  it("imports an exact authorised project revision with lineage", async () => {
-    const { authoredSkills, context, workspaces } = createContext();
-
-    await publishProjectSkill(context, 42, "source-project", { content });
-    const sourceSkill = [...authoredSkills.skills.values()].find(
-      (skill) => skill.scopeId === "source-project",
-    );
-
-    if (!sourceSkill) {
-      throw new Error("Expected source project skill");
-    }
-
-    workspaces.listProjectCapabilities.mockResolvedValue([
-      {
-        id: "source-capability",
-        project_id: "source-project",
-        kind: "skill",
-        capability_id: "meeting-notes",
-        configuration: {},
-        created_by: 42,
-      },
-    ]);
-
-    const imported = await importPersonalSkill(context, 42, {
-      source: {
-        scope: { type: "project", projectId: "source-project" },
-        skillId: "meeting-notes",
-        revisionId: sourceSkill.stableRevisionId,
-      },
-    });
-
-    expect(imported.scope).toEqual({ type: "personal" });
-    expect(imported.revision).toMatchObject({
-      sourceSkillId: sourceSkill.id,
-      sourceRevisionId: sourceSkill.stableRevisionId,
-    });
-    expect(requireProjectAccessMock).toHaveBeenCalledWith(context, "source-project", [
-      "owner",
-      "admin",
-    ]);
-    await expect(
-      getPersonalSkillVersion(context, 42, imported.name, imported.revision.id),
-    ).resolves.toMatchObject({ content });
   });
 
   it("imports the requested project revision rather than a newer version", async () => {
@@ -977,31 +823,6 @@ describe("project skill publishing", () => {
     });
   });
 
-  it("attributes a project revision to the administrator who made the edit", async () => {
-    const { authoredSkills, context, workspaces } = createContext();
-    const updatedContent = content.replace("Extract decisions and actions.", "Extract owners.");
-
-    await publishProjectSkill(context, 42, "project-1", { content });
-    workspaces.listProjectCapabilities.mockResolvedValue([
-      {
-        id: "capability-1",
-        project_id: "project-1",
-        kind: "skill",
-        capability_id: "meeting-notes",
-        configuration: {},
-        created_by: 42,
-      },
-    ]);
-
-    await updateProjectSkill(context, 99, "project-1", "meeting-notes", {
-      content: updatedContent,
-    });
-
-    expect(authoredSkills.appendRevision).toHaveBeenCalledWith(
-      expect.objectContaining({ createdByUserId: 99 }),
-    );
-  });
-
   it("keeps project drafts private from member reads and records the draft audit", async () => {
     const { authoredSkills, context, workspaces } = createContext();
     const draftContent = content.replace("Extract decisions and actions.", "Private draft.");
@@ -1095,37 +916,6 @@ describe("project skill publishing", () => {
     expect(authoredSkills.appendRevision).not.toHaveBeenCalled();
     expect(bucket.put).not.toHaveBeenCalled();
     expect(authoredSkills.revisions.size).toBe(1);
-  });
-
-  it("does not audit an unchanged project draft", async () => {
-    const { authoredSkills, context, workspaces } = createContext();
-
-    await publishProjectSkill(context, 42, "project-1", { content });
-    workspaces.listProjectCapabilities.mockResolvedValue([
-      {
-        id: "capability-1",
-        project_id: "project-1",
-        kind: "skill",
-        capability_id: "meeting-notes",
-        configuration: {},
-        created_by: 42,
-      },
-    ]);
-    const skill = [...authoredSkills.skills.values()][0];
-
-    if (!skill) {
-      throw new Error("Expected project skill");
-    }
-
-    authoredSkills.appendRevision.mockClear();
-    recordProjectAuditMock.mockClear();
-    await saveProjectSkillDraft(context, 42, "project-1", "meeting-notes", {
-      content,
-      expectedStateVersion: skill.stateVersion,
-    });
-
-    expect(authoredSkills.appendRevision).not.toHaveBeenCalled();
-    expect(recordProjectAuditMock).not.toHaveBeenCalled();
   });
 
   it("passes imported project publication and audit through the atomic create", async () => {

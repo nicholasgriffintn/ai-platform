@@ -3,7 +3,7 @@ import type {
   RealtimePipelineSessionResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";

@@ -27,6 +27,8 @@ const pashi = getPashiClient(env);
 
 `getConnectorProviderOperationAccess` and `connectorOperationRequiresApproval` encode read, write and destructive policy, and `normaliseConnectorOperationFailure` classifies uncertain or rate-limited writes so callers never blindly repeat a non-idempotent action. The Composio client validates auth configs and session scope before every upstream call and exposes opaque session handles; the trigger client manages Composio trigger instances. The Pashi client parses the vendor catalogue, validates tool fields and exposes coded errors. The API keeps the function tool descriptors and response shaping.
 
+`McpHttpClient` speaks MCP Streamable HTTP to public HTTPS servers only, reuses one session per client and never follows redirects. `discoverMcpAuthorization`, `registerMcpOAuthClient`, `createPkcePair`, `exchangeMcpAuthorizationCode` and `refreshMcpAccessToken` cover MCP sign-in: protected resource and authorisation server metadata, dynamic client registration, PKCE S256 and resource-bound tokens. The API stores credentials and decides which tools a conversation may call.
+
 ## Host
 
 The Composio clients read `COMPOSIO_API_KEY` and `COMPOSIO_USER_NAMESPACE` from a structural environment, the Pashi client reads `PASHI_API_KEY`, and GitHub App helpers read the matching `GITHUB_APP_*` and `APP_BASE_URL` fields, so the API passes its own `IEnv` without importing host types.

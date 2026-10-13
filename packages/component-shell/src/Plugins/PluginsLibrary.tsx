@@ -10,6 +10,7 @@ import {
 } from "../Capabilities/useCapabilityLibraryController.js";
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel.js";
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { ProjectConnectorGrantPanel } from "../Connectors/ProjectConnectorGrantPanel.js";
 import { PluginsConnectorGroup } from "./PluginsConnectorGroup.js";
 import { usePluginsController } from "./usePluginsController.js";
 
@@ -69,10 +70,18 @@ export function PluginsLibrary({
         isDisconnecting={controller.isDisconnecting}
         accountsSlot={
           controller.selectedConnector ? (
-            <ConnectorAccountsPanel
-              provider={controller.selectedConnector.id}
-              providerName={controller.selectedConnector.name}
-            />
+            <div className="space-y-6">
+              <ConnectorAccountsPanel
+                provider={controller.selectedConnector.id}
+                providerName={controller.selectedConnector.name}
+              />
+              {scope.requiresExplicitEnablement && (
+                <ProjectConnectorGrantPanel
+                  connector={controller.selectedConnector}
+                  scope={scope}
+                />
+              )}
+            </div>
           ) : null
         }
       />
@@ -82,7 +91,7 @@ export function PluginsLibrary({
         title="Disconnect Connector"
         description={
           controller.connectorToDisconnect
-            ? `Disconnect ${controller.connectorToDisconnect.name}? Recipes using it will stop working until you reconnect.`
+            ? `Disconnect ${controller.connectorToDisconnect.name}? Projects and recipes using this account will stop working until you reconnect.`
             : ""
         }
         confirmText="Disconnect Connector"

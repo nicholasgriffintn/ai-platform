@@ -1,8 +1,14 @@
 import type { R2PutOptions } from "@cloudflare/workers-types";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
 
 import type { ProviderKeyStore } from "./api-keys";
 import type { ProviderEnv, ProviderRequestContext, ProviderUser } from "./env";
+
+export interface AuxiliaryModelRef {
+  model: string;
+  provider: string;
+  effort?: string;
+}
 
 export interface ProviderModelResolver {
   getModelConfig(
@@ -36,6 +42,19 @@ export interface ProviderModelResolver {
     defaultProvider: string;
     env?: ProviderEnv;
   }): Promise<string>;
+  getDefaultChatModel(
+    env: ProviderEnv,
+    user?: ProviderUser,
+  ): Promise<{ model: string; provider: string }>;
+  getSystemModel(
+    env: ProviderEnv,
+    user: ProviderUser | undefined,
+    role: string,
+  ): Promise<AuxiliaryModelRef | null>;
+  getAuxiliaryModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
+  getTitlingModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
+  getCompactionModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
+  getAuxiliaryModelForRetrieval(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
   getAuxiliaryGuardrailsModel(
     env: ProviderEnv,
     user?: ProviderUser,
@@ -43,8 +62,14 @@ export interface ProviderModelResolver {
   getAuxiliaryDecisionModel(
     env: ProviderEnv,
     user?: ProviderUser,
+    inputs?: readonly ModelModality[],
   ): Promise<{ model: string; provider: string } | null>;
   resolveRerankingModel(
+    env: ProviderEnv,
+    user?: ProviderUser,
+    selection?: RerankingModelSelection,
+  ): Promise<{ model: string; provider: string } | null>;
+  getAuxiliaryRerankingModel(
     env: ProviderEnv,
     user?: ProviderUser,
     selection?: RerankingModelSelection,
@@ -53,6 +78,14 @@ export interface ProviderModelResolver {
     env: ProviderEnv,
     user?: ProviderUser,
   ): Promise<{ model: string; provider: string; transcriptionProvider: string }>;
+  getOcrModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getImageModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getVideoModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getMusicModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getSpeechSynthesisModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getFimModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getNextEditModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
+  getApplyEditModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
 }
 
 export interface RerankingModelSelection {
@@ -156,6 +189,12 @@ export interface ProviderHost {
   storage: ProviderStorageFactory;
   metrics?: ProviderMetrics;
   keyStore(env: ProviderEnv): ProviderKeyStore | undefined;
+  mcp?: {
+    resolveCredential(
+      context: ProviderRequestContext,
+      input: { connectionId: string; url: string; provider: string; allowedTools?: string[] },
+    ): Promise<{ authorization: string; allowedTools: string[] }>;
+  };
   realtime?: {
     createProxyGrant(env: ProviderEnv, scope: RealtimeProxyGrantScope): Promise<RealtimeProxyGrant>;
   };

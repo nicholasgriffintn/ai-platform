@@ -1,4 +1,4 @@
-import { requireToolPermissions } from "@ngriffin_uk/polychat-library-tools";
+import { requireToolEffects, requireToolPermissions } from "@ngriffin_uk/polychat-library-tools";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import { analyse_article } from "./analyse_article";
@@ -6,7 +6,8 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
-import { run_council, select_council_members } from "./council";
+import { configure_knowledge_sync } from "./configure_knowledge_sync";
+import { review_output, run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
 import { decide } from "./decide";
@@ -15,23 +16,26 @@ import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
+import { get_document } from "./get_document";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
+import { grade_writing } from "./grade_writing";
 import { get_hacker_news_stories } from "./hacker_news";
 import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
-import { search_memories, store_memory } from "./memory";
+import { mcp_call_tool, mcp_list_tools } from "./mcp_gateway";
+import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
-import { metaToolDescriptors } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { polyNavigationToolDescriptors } from "./poly-navigation";
 import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
-import { propose_skill_revision } from "./propose_skill_revision";
+import { propose_correction } from "./propose_correction";
 import { create_qr_code } from "./qr";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
@@ -46,13 +50,13 @@ import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
 import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
+import { search_conversations } from "./search_conversations";
 import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import type { FunctionToolDescriptor } from "./types";
 import { use_computer } from "./use_computer";
-import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
@@ -66,7 +70,9 @@ export interface FunctionToolCatalogueOptions {
 }
 
 const descriptors: FunctionToolDescriptor[] = [
+  configure_knowledge_sync,
   get_weather,
+  grade_writing,
   decide,
   audit_evidence,
   build_site,
@@ -78,6 +84,7 @@ const descriptors: FunctionToolDescriptor[] = [
   apply_edit_completion,
   web_search,
   write_document,
+  get_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,
@@ -86,6 +93,10 @@ const descriptors: FunctionToolDescriptor[] = [
   search_documents,
   extract_content,
   search_memories,
+  search_conversations,
+  mcp_list_tools,
+  mcp_call_tool,
+  read_memory_document,
   store_memory,
   analyse_article,
   create_automation,
@@ -106,15 +117,15 @@ const descriptors: FunctionToolDescriptor[] = [
   update_task,
   capture_screenshot,
   create_speech,
-  v0_code_generation,
   discover_capabilities,
   set_goal,
   complete_goal,
   list_saved_messages,
   load_skill,
   process_recording,
-  propose_skill_revision,
+  propose_correction,
   save_skill,
+  review_output,
   run_council,
   select_council_members,
   second_opinion,
@@ -125,13 +136,20 @@ const descriptors: FunctionToolDescriptor[] = [
   run_prediction,
   run_code,
   use_computer,
-  ...metaToolDescriptors,
+  ...polyNavigationToolDescriptors,
 ];
 
-export const functionToolDescriptors: FunctionToolDescriptor[] = descriptors.map((descriptor) => ({
-  ...descriptor,
-  permissions: requireToolPermissions(descriptor.name, descriptor.permissions),
-}));
+let cachedFunctionToolDescriptors: FunctionToolDescriptor[] | undefined;
+
+export function getFunctionToolDescriptors(): FunctionToolDescriptor[] {
+  cachedFunctionToolDescriptors ??= descriptors.map((descriptor) => ({
+    ...descriptor,
+    permissions: requireToolPermissions(descriptor.name, descriptor.permissions),
+    effects: requireToolEffects(descriptor.name, descriptor.effects),
+  }));
+
+  return cachedFunctionToolDescriptors;
+}
 
 export function applyConnectorScope<T extends FunctionToolDescriptor>(
   definitions: readonly T[],
@@ -170,5 +188,5 @@ export function applyConnectorScope<T extends FunctionToolDescriptor>(
 export function listFunctionToolDefinitions(
   options?: FunctionToolCatalogueOptions,
 ): FunctionToolDescriptor[] {
-  return applyConnectorScope(functionToolDescriptors, options);
+  return applyConnectorScope(getFunctionToolDescriptors(), options);
 }

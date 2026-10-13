@@ -2,6 +2,7 @@ import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
 
 import { createDatabaseClient, type DatabaseClient } from "~/infrastructure/database/client";
 import { QueryBuilder } from "~/infrastructure/database/QueryBuilder";
@@ -43,12 +44,12 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
       const bound = stmt.bind(...params);
 
       if (returnFirst) {
-        const result = await bound.first();
+        const result = await timeServerPhase("db", () => bound.first());
 
         return result as T | null;
       }
 
-      const result = await bound.all();
+      const result = await timeServerPhase("db", () => bound.all());
 
       recordD1ResultMeta(result.meta);
 
@@ -91,7 +92,7 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
     try {
       const stmt = this.env.DB.prepare(query);
       const bound = stmt.bind(...params);
-      const result = await bound.run();
+      const result = await timeServerPhase("db", () => bound.run());
 
       recordD1ResultMeta(result.meta);
 
@@ -121,7 +122,7 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
     statements: D1PreparedStatement[],
   ): Promise<D1Result<T>[]> {
     try {
-      const results = await this.env.DB.batch<T>(statements);
+      const results = await timeServerPhase("db", () => this.env.DB.batch<T>(statements));
 
       for (const result of results) {
         recordD1ResultMeta(result.meta);

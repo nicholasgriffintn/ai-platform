@@ -3,11 +3,29 @@
     "openWeights": false,
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
-    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The alpha family includes models that produce text.",
   "models": {
+    "mancer-weaver-alpha": {
+      "defaults": {
+        "name": "Mancer: Weaver (alpha)",
+        "description": "An attempt to recreate Claude-style verbosity, but don't expect the same level of coherence or memory. Meant for use in roleplay/narrative situations.",
+        "contextWindow": 8000,
+        "maxTokens": 6000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 2, 2023",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
     "owl-alpha": {
       "defaults": {
         "name": "Owl Alpha",
@@ -44,6 +62,7 @@
           ]
         },
         "releaseDate": "August 20, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -70,6 +89,7 @@
           ]
         },
         "releaseDate": "September 23, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -97,7 +117,8 @@
             "text"
           ]
         },
-        "releaseDate": "September 16, 2026"
+        "releaseDate": "September 16, 2026",
+        "supportsAttachments": true
       }
     },
     "weaver-alpha": {

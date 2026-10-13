@@ -4,7 +4,8 @@
     "contextWindow": 1000000,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "description": "The fugu family includes models that produce text.",
   "models": {
@@ -22,7 +23,6 @@
           ]
         },
         "releaseDate": "June 15, 2026",
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -51,8 +51,7 @@
             "text"
           ]
         },
-        "releaseDate": "June 15, 2026",
-        "supportsTemperature": false
+        "releaseDate": "June 15, 2026"
       }
     },
     "fugu-ultra-v2": {
@@ -60,6 +59,58 @@
         "name": "Fugu Ultra v2",
         "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
         "knowledgeCutoffDate": "August 28, 2026"
+      }
+    },
+    "sakana-fugu-max": {
+      "defaults": {
+        "name": "Sakana: Fugu Max",
+        "description": "Fugu Max is the cost-performance model in Sakana AI's Fugu family. Rather than a single monolithic model, Fugu is a learned multi-agent orchestration system: a language model trained to route...",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "sakana-fugu-ultra-v2": {
+      "defaults": {
+        "name": "Sakana: Fugu Ultra v2",
+        "description": "Fugu Ultra v2 is the higher-performance model in Sakana AI's Fugu family. Rather than a single monolithic model, Fugu is a learned multi-agent orchestration system: a language model trained to...",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     }
   }

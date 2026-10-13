@@ -153,86 +153,97 @@ const hostedFreeCoding = {
 const HOSTED_LINEUP: TierLineup = {
   ultra: {
     agent: [
+      { model: "claude-opus-5-5", provider: "anthropic", effort: "max" },
+      { model: "anthropic/claude-opus-5.5", provider: "openrouter", effort: "max" },
       { model: "gpt-6-astra", provider: "openai", effort: "max" },
       { model: "openai/gpt-6-astra", provider: "openrouter", effort: "max" },
       { model: "claude-fable-5-1", provider: "anthropic", effort: "max" },
       { model: "anthropic/claude-fable-5.1", provider: "openrouter", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
       { model: "moonshot/kimi-k3", provider: "moonshot", effort: "max" },
       { model: "moonshotai/kimi-k3", provider: "openrouter", effort: "max" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
       ...hostedFreeAgent.ultra,
     ],
     coding: [
-      { model: "gpt-6-astra", provider: "openai", effort: "max" },
-      { model: "openai/gpt-6-astra", provider: "openrouter", effort: "max" },
       { model: "claude-fable-5-1", provider: "anthropic", effort: "max" },
       { model: "anthropic/claude-fable-5.1", provider: "openrouter", effort: "max" },
+      { model: "gpt-6-astra", provider: "openai", effort: "max" },
+      { model: "openai/gpt-6-astra", provider: "openrouter", effort: "max" },
+      { model: "claude-opus-5-5", provider: "anthropic", effort: "max" },
+      { model: "anthropic/claude-opus-5.5", provider: "openrouter", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
       { model: "moonshot/kimi-k3", provider: "moonshot", effort: "max" },
       { model: "moonshotai/kimi-k3", provider: "openrouter", effort: "max" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
       ...hostedFreeCoding.ultra,
     ],
   },
   high: {
     agent: [
-      { model: "gpt-5.6-luna", provider: "openai", effort: "xhigh" },
-      { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "xhigh" },
-      { model: "gpt-5.6-sol", provider: "openai", effort: "xhigh" },
-      { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "xhigh" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
+      { model: "gpt-6.1-sol", provider: "openai", effort: "xhigh" },
+      { model: "openai/gpt-6.1-sol", provider: "openrouter", effort: "xhigh" },
+      { model: "claude-opus-5-5", provider: "anthropic", effort: "high" },
+      { model: "anthropic/claude-opus-5.5", provider: "openrouter", effort: "high" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
       { model: "z-ai/glm-5.3", provider: "openrouter", effort: "max" },
-      { model: "google-ai-studio/gemini-3.8-flash", provider: "google-ai-studio", effort: "high" },
       ...hostedFreeAgent.high,
     ],
     coding: [
-      { model: "gpt-5.6-sol", provider: "openai", effort: "xhigh" },
-      { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "xhigh" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "high" },
+      { model: "gpt-6.1-sol", provider: "openai", effort: "xhigh" },
+      { model: "openai/gpt-6.1-sol", provider: "openrouter", effort: "xhigh" },
+      { model: "claude-opus-5-5", provider: "anthropic", effort: "high" },
+      { model: "anthropic/claude-opus-5.5", provider: "openrouter", effort: "high" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "max" },
       { model: "z-ai/glm-5.3", provider: "openrouter", effort: "max" },
       ...hostedFreeCoding.high,
     ],
   },
   medium: {
     agent: [
-      { model: "gpt-5.6-luna", provider: "openai", effort: "medium" },
-      { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "medium" },
+      { model: "gpt-6.1-sol", provider: "openai", effort: "medium" },
+      { model: "openai/gpt-6.1-sol", provider: "openrouter", effort: "medium" },
+      { model: "claude-haiku-5-5", provider: "anthropic", effort: "max" },
+      { model: "anthropic/claude-haiku-5.5", provider: "openrouter", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "high" },
+      { model: "glm-5.3-flash", provider: "zai", effort: "high" },
+      { model: "claude-sonnet-5-5", provider: "anthropic", effort: "medium" },
+      { model: "anthropic/claude-sonnet-5.5", provider: "openrouter", effort: "medium" },
       {
         model: "google-ai-studio/gemini-3.8-flash",
         provider: "google-ai-studio",
         effort: "medium",
       },
       { model: "google/gemini-3.8-flash", provider: "openrouter", effort: "medium" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "low" },
       ...hostedFreeAgent.medium,
     ],
     coding: [
-      { model: "gpt-5.6-sol", provider: "openai", effort: "medium" },
-      { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "medium" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "low" },
+      { model: "gpt-6.1-sol", provider: "openai", effort: "medium" },
+      { model: "openai/gpt-6.1-sol", provider: "openrouter", effort: "medium" },
+      { model: "claude-haiku-5-5", provider: "anthropic", effort: "max" },
+      { model: "anthropic/claude-haiku-5.5", provider: "openrouter", effort: "max" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "high" },
       { model: "@cf/moonshotai/kimi-k2.7-code", provider: "workers-ai", effort: "medium" },
       ...hostedFreeCoding.medium,
     ],
   },
   low: {
     agent: [
-      { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
-      { model: "glm-5.3-flash", provider: "zai", effort: "low" },
-      { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
-      {
-        model: "google-ai-studio/gemini-3.1-flash-lite",
-        provider: "google-ai-studio",
-        effort: "low",
-      },
+      { model: "gpt-6-luna", provider: "openai", effort: "max" },
+      { model: "openai/gpt-6-luna", provider: "openrouter", effort: "max" },
+      { model: "claude-haiku-5-5", provider: "anthropic", effort: "high" },
+      { model: "anthropic/claude-haiku-5.5", provider: "openrouter", effort: "high" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "high" },
+      { model: "glm-5.3-flash", provider: "zai", effort: "high" },
+      { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "high" },
       ...hostedFreeAgent.low,
     ],
     coding: [
-      { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
-      { model: "glm-5.3-flash", provider: "zai", effort: "low" },
-      { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
+      { model: "gpt-6-luna", provider: "openai", effort: "max" },
+      { model: "openai/gpt-6-luna", provider: "openrouter", effort: "max" },
+      { model: "claude-haiku-5-5", provider: "anthropic", effort: "high" },
+      { model: "anthropic/claude-haiku-5.5", provider: "openrouter", effort: "high" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "high" },
+      { model: "glm-5.3-flash", provider: "zai", effort: "high" },
+      { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "high" },
       ...hostedFreeCoding.low,
     ],
   },
@@ -440,7 +451,13 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Decisions",
     description:
       "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
-    candidates: [{ model: "jev-latest", provider: "typesafe" }],
+    candidates: [
+      { model: "jev-latest", provider: "typesafe" },
+      { model: "@cf/cloudflare/clef-flash", provider: "workers-ai" },
+      { model: "@cf/cloudflare/clef", provider: "workers-ai" },
+      { model: "@cf/cloudflare/clef-omni", provider: "workers-ai" },
+      { model: "gpt-6-luna", provider: "openai" },
+    ],
   },
   {
     id: "reranking",
@@ -554,12 +571,14 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "decision",
 ];
 
+const LINEUP_OUTPUTS: ModelModality[] = ["text", "decision"];
+
 export function isLineupEligibleModel(model: ModelConfigItem) {
   return (
     isActiveModel(model) &&
     model.modalities?.input.includes("text") === true &&
-    model.modalities.output?.length === 1 &&
-    model.modalities.output[0] === "text" &&
+    model.modalities.output?.includes("text") === true &&
+    model.modalities.output.every((output) => LINEUP_OUTPUTS.includes(output)) &&
     !model.supportsRealtimeSession &&
     !NON_CHAT_STRENGTHS.some((strength) => model.strengths?.includes(strength)) &&
     !isStealthModel(model)

@@ -1,8 +1,15 @@
 import type { SourceCollectionKind, SourceKind, SourceStatus } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import {
+  sourceResourceSql,
+  sourceResourceColumns,
+  resourceScope,
+} from "~/infrastructure/database/resource-storage";
+
+import { sourceVisibilitySql } from "./source-visibility";
 
 export interface SourceRecord {
   id: string;
@@ -82,13 +89,72 @@ export interface SourceCollectionRecord {
 }
 
 export class SourceRepository extends BaseRepository {
+  async upsertRepositorySource(input: {
+    id: string;
+    userId: number;
+    projectId?: string;
+    title: string;
+    content: string;
+    metadata: Record<string, unknown>;
+  }): Promise<void> {
+    const result = await this.executeRun(
+      `INSERT INTO resource AS source (resource_type, id, created_by_user_id, scope_type, scope_id, kind, title, status, content, metadata)
+      VALUES ('source', ?, ?, ?, ?, 'repository', ?, 'available', ?, ?)
+      ON CONFLICT(resource_type, id) DO UPDATE SET title = excluded.title, status = 'available', content = excluded.content,
+        metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
+      WHERE source.created_by_user_id = excluded.created_by_user_id
+        AND source.project_id IS excluded.project_id AND source.kind = 'repository'`,
+      [
+        input.id,
+        input.userId,
+        input.projectId ? "project" : "personal",
+        input.projectId ?? String(input.userId),
+        input.title,
+        input.content,
+        JSON.stringify(input.metadata),
+      ],
+    );
+
+    if (result.meta.changes === 0) {
+      throw new AssistantError("Repository source scope mismatch", ErrorType.CONFLICT_ERROR, 409);
+    }
+  }
+
+  async removeCreatedSources(
+    userId: number,
+    projectId: string | null,
+    ids: string[],
+  ): Promise<void> {
+    await this.selectInChunks(ids, async (page) => {
+      await this.executeRun(
+        `DELETE FROM resource WHERE resource_type = 'source' AND created_by_user_id = ? AND project_id IS ? AND id IN (${page.map(() => "?").join(", ")})`,
+        [userId, projectId, ...page],
+      );
+
+      return [];
+    });
+  }
+
   async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
+    const { source, created } = await this.createSourceWithOutcome(input);
+
+    if (!created) {
+      throw new AssistantError("Source already exists", ErrorType.DATABASE_ERROR);
+    }
+
+    return source;
+  }
+
+  async createSourceWithOutcome(
+    input: CreateSourceRecord,
+  ): Promise<{ source: SourceRecord; created: boolean }> {
     const insert = this.buildInsertQuery(
-      "source",
+      "resource",
       {
+        resource_type: "source",
         id: input.id ?? generateId(),
         created_by_user_id: input.createdByUserId,
-        project_id: input.projectId ?? null,
+        ...resourceScope(input.createdByUserId, input.projectId),
         conversation_id: input.conversationId ?? null,
         connection_id: input.connectionId ?? null,
         kind: input.kind,
@@ -104,30 +170,49 @@ export class SourceRepository extends BaseRepository {
         filename: input.filename ?? null,
         byte_size: input.byteSize ?? null,
       },
-      { jsonFields: ["metadata"], returning: "*" },
+      { jsonFields: ["metadata"], returning: sourceResourceColumns },
     );
 
     if (!insert) {
       throw new AssistantError("Failed to build source insert", ErrorType.INTERNAL_ERROR);
     }
 
-    const source = await this.runQuery<SourceRecord>(insert.query, insert.values, true);
+    const source = await this.runQuery<SourceRecord>(
+      input.id
+        ? insert.query.replace(
+            " RETURNING ",
+            " ON CONFLICT(resource_type, id) DO NOTHING RETURNING ",
+          )
+        : insert.query,
+      insert.values,
+      true,
+    );
 
     if (!source) {
+      const existing = input.id ? await this.getSource(input.id) : null;
+
+      if (
+        existing &&
+        existing.project_id === (input.projectId ?? null) &&
+        existing.created_by_user_id === input.createdByUserId
+      ) {
+        return { source: existing, created: false };
+      }
+
       throw new AssistantError("Failed to create source", ErrorType.DATABASE_ERROR);
     }
 
-    return source;
+    return { source, created: true };
   }
 
   async getSource(sourceId: string): Promise<SourceRecord | null> {
     return this.selectOne({ id: sourceId });
   }
 
-  async getSourcesByIds(sourceIds: string[]): Promise<SourceRecord[]> {
+  async getSourcesByIds(sourceIds: readonly string[]): Promise<SourceRecord[]> {
     return this.selectInChunks(sourceIds, (page) =>
       this.runQuery<SourceRecord>(
-        `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,
+        `SELECT * FROM ${sourceResourceSql} source WHERE id IN (${page.map(() => "?").join(", ")}) AND ${sourceVisibilitySql("source")}`,
         page,
       ),
     );
@@ -177,10 +262,10 @@ export class SourceRepository extends BaseRepository {
     },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
-      "source",
+      "resource",
       updates,
       ["title", "status", "content", "metadata"],
-      "id = ?",
+      "resource_type = 'source' AND id = ?",
       [sourceId],
       { jsonFields: ["metadata"] },
     );
@@ -200,9 +285,9 @@ export class SourceRepository extends BaseRepository {
     }
 
     const result = await this.executeRun(
-      `UPDATE source
+      `UPDATE resource
           SET status = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ? AND status IN (${expectedStatuses.map(() => "?").join(", ")})`,
+        WHERE resource_type = 'source' AND id = ? AND status IN (${expectedStatuses.map(() => "?").join(", ")})`,
       [status, sourceId, ...expectedStatuses],
     );
 
@@ -214,10 +299,10 @@ export class SourceRepository extends BaseRepository {
     updates: { title?: string; description?: string | null },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
-      "source_collection",
+      "resource_collection",
       updates,
       ["title", "description"],
-      "id = ?",
+      "collection_type = 'source' AND id = ?",
       [collectionId],
     );
 
@@ -227,7 +312,10 @@ export class SourceRepository extends BaseRepository {
   }
 
   async deleteSource(sourceId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source", { id: sourceId });
+    const { query, values } = this.buildDeleteQuery("resource", {
+      resource_type: "source",
+      id: sourceId,
+    });
 
     await this.executeRun(query, values);
   }
@@ -240,8 +328,9 @@ export class SourceRepository extends BaseRepository {
     kind?: SourceCollectionKind;
   }): Promise<SourceCollectionRecord> {
     const insert = this.buildInsertQuery(
-      "source_collection",
+      "resource_collection",
       {
+        collection_type: "source",
         id: generateId(),
         created_by_user_id: input.createdByUserId,
         project_id: input.projectId ?? null,
@@ -278,13 +367,17 @@ export class SourceRepository extends BaseRepository {
   }
 
   async getCollection(collectionId: string): Promise<SourceCollectionRecord | null> {
-    const { query, values } = this.buildSelectQuery("source_collection", { id: collectionId });
+    const { query, values } = this.buildSelectQuery("resource_collection", {
+      collection_type: "source",
+      id: collectionId,
+    });
 
     return this.runQuery<SourceCollectionRecord>(query, values, true);
   }
 
   async getProjectContextCollection(projectId: string): Promise<SourceCollectionRecord | null> {
-    const { query, values } = this.buildSelectQuery("source_collection", {
+    const { query, values } = this.buildSelectQuery("resource_collection", {
+      collection_type: "source",
       project_id: projectId,
       kind: "context",
     });
@@ -299,7 +392,7 @@ export class SourceRepository extends BaseRepository {
     const id = `project-context:${params.projectId}`;
 
     await this.executeRun(
-      `INSERT OR IGNORE INTO source_collection
+      `INSERT OR IGNORE INTO resource_collection
 			 (id, created_by_user_id, project_id, title, description, kind)
 			 VALUES (?, ?, ?, 'Project context', 'Sources attached to new project conversations.', 'context')`,
       [id, params.createdByUserId, params.projectId],
@@ -318,9 +411,9 @@ export class SourceRepository extends BaseRepository {
 
   async listCollectionSources(collectionId: string): Promise<SourceRecord[]> {
     return this.runQuery<SourceRecord>(
-      `SELECT s.* FROM source s
-			 JOIN source_collection_member scm ON scm.source_id = s.id
-			 WHERE scm.collection_id = ?
+      `SELECT s.* FROM ${sourceResourceSql} s
+			 JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.source_id = s.id
+			 WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")}
 			 ORDER BY s.updated_at DESC, s.created_at DESC`,
       [collectionId],
     );
@@ -334,7 +427,7 @@ export class SourceRepository extends BaseRepository {
     const results = await this.env.DB.batch(
       sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT OR IGNORE INTO source_collection_member (collection_id, source_id) VALUES (?, ?)",
+          "INSERT OR IGNORE INTO resource_link (kind, collection_id, source_id) VALUES ('source_collection', ?, ?)",
         ).bind(collectionId, sourceId),
       ),
     );
@@ -348,19 +441,20 @@ export class SourceRepository extends BaseRepository {
     }
 
     await this.env.DB.batch([
-      this.env.DB.prepare("DELETE FROM source_collection_member WHERE collection_id = ?").bind(
-        collectionId,
-      ),
+      this.env.DB.prepare(
+        "DELETE FROM resource_link WHERE kind = 'source_collection' AND collection_id = ?",
+      ).bind(collectionId),
       ...sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT INTO source_collection_member (collection_id, source_id) VALUES (?, ?)",
+          "INSERT INTO resource_link (kind, collection_id, source_id) VALUES ('source_collection', ?, ?)",
         ).bind(collectionId, sourceId),
       ),
     ]);
   }
 
   async removeSourceFromCollections(sourceId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source_collection_member", {
+    const { query, values } = this.buildDeleteQuery("resource_link", {
+      kind: "source_collection",
       source_id: sourceId,
     });
 
@@ -368,34 +462,60 @@ export class SourceRepository extends BaseRepository {
   }
 
   async deleteCollection(collectionId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source_collection", { id: collectionId });
+    const { query, values } = this.buildDeleteQuery("resource_collection", {
+      collection_type: "source",
+      id: collectionId,
+    });
 
     await this.executeRun(query, values);
   }
 
   private async selectOne(conditions: Record<string, unknown>): Promise<SourceRecord | null> {
-    const { query, values } = this.buildSelectQuery("source", conditions);
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      { columns: sourceResourceColumns.split(", ") },
+    );
 
-    return this.runQuery<SourceRecord>(query, values, true);
+    return this.runQuery<SourceRecord>(
+      `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")}`,
+      values,
+      true,
+    );
   }
 
   private async selectMany(conditions: Record<string, unknown>): Promise<SourceRecord[]> {
-    const { query, values } = this.buildSelectQuery("source", conditions, {
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      {
+        columns: sourceResourceColumns.split(", "),
+        orderBy: "updated_at DESC, created_at DESC",
+      },
+    );
 
-    return this.runQuery<SourceRecord>(query, values);
+    return this.runQuery<SourceRecord>(
+      `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
+      values,
+    );
   }
 
   private async selectSummaries(
     conditions: Record<string, unknown>,
   ): Promise<SourceSummaryRecord[]> {
-    const { query, values } = this.buildSelectQuery("source", conditions, {
-      columns: [...SOURCE_SUMMARY_COLUMNS],
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      {
+        columns: [...SOURCE_SUMMARY_COLUMNS],
+        orderBy: "updated_at DESC, created_at DESC",
+      },
+    );
 
-    return this.runQuery<SourceSummaryRecord>(query, values);
+    return this.runQuery<SourceSummaryRecord>(
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
+      values,
+    );
   }
 
   private async listCollections(
@@ -403,10 +523,11 @@ export class SourceRepository extends BaseRepository {
     values: unknown[],
   ): Promise<SourceCollectionRecord[]> {
     return this.runQuery<SourceCollectionRecord>(
-      `SELECT sc.*, COUNT(scm.source_id) AS source_count
-			 FROM source_collection sc
-			 LEFT JOIN source_collection_member scm ON scm.collection_id = sc.id
-			 WHERE ${where}
+      `SELECT sc.*, COUNT(s.id) AS source_count
+			 FROM resource_collection sc
+			 LEFT JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.collection_id = sc.id
+         LEFT JOIN ${sourceResourceSql} s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
+			 WHERE sc.collection_type = 'source' AND ${where}
 			 GROUP BY sc.id
 			 ORDER BY sc.updated_at DESC, sc.created_at DESC`,
       values,

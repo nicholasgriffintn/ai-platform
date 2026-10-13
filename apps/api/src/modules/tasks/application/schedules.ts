@@ -2,12 +2,15 @@ import { SCHEDULES } from "~/config/schedules";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { reapComposioConnectorSessions } from "~/modules/apps/application/connectors/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
+import { sweepInterruptedChatRuns } from "~/modules/chat-runs/application/interrupted-run-sweep";
 import { releaseExpiredChatRunReservations } from "~/modules/chat-runs/application/reservation-maintenance";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
 import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
 } from "~/modules/model-governance/application/maintenance";
+import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
+import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -21,6 +24,24 @@ import {
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
 import { defineSchedule, workflows } from "./workflows";
+
+workflows.always(
+  defineSchedule({
+    name: "source-knowledge-sync",
+    run: async ({ env }) => {
+      await scheduleKnowledgeSyncs(env);
+    },
+  }),
+);
+
+workflows.always(
+  defineSchedule({
+    name: "source-knowledge-index",
+    run: async ({ env }) => {
+      await scheduleKnowledgeIndexes(env);
+    },
+  }),
+);
 
 workflows.always(
   defineSchedule({
@@ -46,6 +67,15 @@ workflows.always(
     name: "expired-chat-run-reservations",
     run: async ({ env }) => {
       await releaseExpiredChatRunReservations(env);
+    },
+  }),
+);
+
+workflows.always(
+  defineSchedule({
+    name: "interrupted-chat-runs",
+    run: async ({ env }) => {
+      await sweepInterruptedChatRuns(env);
     },
   }),
 );

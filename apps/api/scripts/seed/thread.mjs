@@ -201,7 +201,8 @@ export function buildThread(options, messages) {
 
   if (pinned || unread || snoozedUntil) {
     statements.push(
-      insert("conversation_user_state", {
+      insert("user_resource_state", {
+        resource_type: "conversation",
         conversation_id: id,
         user_id: userId,
         is_pinned: pinned,

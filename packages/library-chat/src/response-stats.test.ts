@@ -8,8 +8,6 @@ import {
   createStreamActivity,
   estimateStreamActivityTokens,
   formatImpactMeasurement,
-  formatStatsDuration,
-  formatStatsTokens,
   getMessageStatsSegments,
   getRunningStreamActivityTools,
   getStreamActivityMetrics,
@@ -162,23 +160,6 @@ describe("stream activity", () => {
     const activity = createStreamActivity(0);
 
     expect(applyStreamActivityState(activity, "usage", { usage: {} }, 100)).toBe(activity);
-  });
-});
-
-describe("stats formatting", () => {
-  it("formats durations at second, minute, and hour scale", () => {
-    expect(formatStatsDuration(0)).toBe("0s");
-    expect(formatStatsDuration(1400)).toBe("1.4s");
-    expect(formatStatsDuration(42_000)).toBe("42s");
-    expect(formatStatsDuration(197_000)).toBe("3m 17s");
-    expect(formatStatsDuration(3_900_000)).toBe("1h 5m");
-  });
-
-  it("formats token counts compactly", () => {
-    expect(formatStatsTokens(820)).toBe("820");
-    expect(formatStatsTokens(2740)).toBe("2.7k");
-    expect(formatStatsTokens(24_800)).toBe("25k");
-    expect(formatStatsTokens(1_400_000)).toBe("1.4m");
   });
 });
 

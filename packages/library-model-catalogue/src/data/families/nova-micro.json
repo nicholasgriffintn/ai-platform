@@ -22,14 +22,29 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 4.7,
+      "intelligenceIndex": 5.9,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "Efficient model for low-latency assistance, extraction, and routine automation",
   "models": {
+    "amazon-nova-micro-1-0": {
+      "defaults": {
+        "name": "Amazon: Nova Micro 1.0",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 5120,
+        "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "nova-micro": {
       "defaults": {
         "name": "Nova Micro",

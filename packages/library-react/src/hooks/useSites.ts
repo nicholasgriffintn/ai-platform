@@ -6,6 +6,8 @@ import {
   validateSiteProject,
 } from "@ngriffin_uk/polychat-library-sites";
 import type {
+  SiteDataResponse,
+  SiteBrowserEvidence,
   SiteBuildRequest,
   SiteBuildResponse,
   SiteGenerateRequest,
@@ -55,6 +57,61 @@ export const useSite = (id?: string, projectId?: string) =>
     },
     enabled: Boolean(id),
   });
+
+export const useSiteData = (site: SiteRecord | null, enabled = true) =>
+  useQuery<SiteDataResponse>({
+    queryKey: [
+      ...SITES_QUERY_KEYS.detail(site?.projectId ?? undefined, site?.id),
+      "data",
+      site?.revision,
+    ],
+    queryFn: () => {
+      if (!site) {
+        throw new Error("Save the site first");
+      }
+
+      return sitesService.data(site.id, {
+        projectId: site.projectId ?? undefined,
+        expectedRevision: site.revision,
+      });
+    },
+    enabled: enabled && Boolean(site && Object.keys(site.project.dataBindings ?? {}).length),
+  });
+
+export const useVerifySite = (site: SiteRecord | null) => {
+  const client = useQueryClient();
+
+  return useMutation<
+    SiteBrowserEvidence,
+    Error,
+    { pageId?: string; repair?: boolean; signal?: AbortSignal }
+  >({
+    mutationFn: async (request) => {
+      if (!site) {
+        throw new Error("Save the site first");
+      }
+
+      const result = await sitesService.verify(
+        site.id,
+        {
+          projectId: site.projectId ?? undefined,
+          expectedRevision: site.revision,
+          pageId: request.pageId,
+          repair: request.repair ?? false,
+        },
+        request.signal,
+      );
+
+      if (result.repairedFromRevision !== undefined) {
+        await client.invalidateQueries({
+          queryKey: SITES_QUERY_KEYS.detail(site.projectId ?? undefined, site.id),
+        });
+      }
+
+      return result;
+    },
+  });
+};
 
 export const useDeleteSite = (projectId?: string) => {
   const queryClient = useQueryClient();

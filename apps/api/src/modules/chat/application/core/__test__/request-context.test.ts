@@ -1,26 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  buildToolPermissionsMap,
-  buildToolRequestContext,
-} from "~/modules/chat/application/core/request-context";
+import { buildToolRequestContext } from "~/modules/chat/application/core/request-context";
 import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
 
 describe("chat request context helpers", () => {
-  it("builds tool permission maps from direct and provider-shaped tools", () => {
-    expect(
-      buildToolPermissionsMap([
-        { name: "sandbox", permissions: ["sandbox:write"] },
-        { function: { name: "search" }, permissions: ["network:read"] },
-        { name: "ignored", permissions: [] },
-      ]),
-    ).toEqual({
-      sandbox: ["sandbox:write"],
-      search: ["network:read"],
-    });
-  });
-
   it("preserves chat and tool context for tool execution", () => {
     const context = buildToolRequestContext({
       chatOptions: {
@@ -35,7 +19,7 @@ describe("chat request context helpers", () => {
         messages: [{ role: "user", content: "hello" }],
         approved_tools: ["sandbox"],
         denied_tools: ["create_task", "store_memory"],
-        meta_assistant: { ui_context: { mode: "work", projectId: "project-1" } },
+        poly: { ui_context: { mode: "work", projectId: "project-1" } },
         enabled_tools: ["sandbox", "discover_capabilities"],
         tools: [{ name: "sandbox", permissions: ["sandbox:write"] }],
         options: { sandbox: { enabled: true } },
@@ -63,7 +47,7 @@ describe("chat request context helpers", () => {
         mode: "build",
         approved_tools: ["sandbox"],
         denied_tools: ["create_task", "store_memory"],
-        meta_assistant: { ui_context: { mode: "work", projectId: "project-1" } },
+        poly: { ui_context: { mode: "work", projectId: "project-1" } },
         enabled_tools: ["sandbox", "discover_capabilities"],
         tool_permissions_map: {
           sandbox: ["sandbox:write"],

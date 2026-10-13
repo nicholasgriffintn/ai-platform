@@ -2,19 +2,13 @@
   "defaults": {
     "openWeights": true,
     "maxTokens": 131072,
+    "contextComplexity": 5,
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The mimo family includes models that produce text.",
   "models": {
@@ -42,20 +36,26 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 25.2,
+          "codingIndex": 56.8,
+          "agenticIndex": 15.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "mimo-v2-5": {
       "defaults": {
         "name": "MiMo-V2.5",
-        "description": "Open MiMo model for multimodal coding agents and long-context automation",
+        "description": "MiMo model for long-context reasoning, perception, and agentic tasks",
         "strengths": [
           "vision",
           "audio",
@@ -65,10 +65,10 @@
         ],
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 40.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 25.2,
+          "codingIndex": 56.8,
+          "agenticIndex": 15.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -85,14 +85,17 @@
             "text"
           ]
         },
-        "contextComplexity": 5,
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "April 22, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 42.2,
+          "intelligenceIndex": 26,
           "codingIndex": 60.2,
-          "agenticIndex": 29.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 21.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -110,7 +113,14 @@
           ]
         },
         "releaseDate": "June 8, 2026",
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "mimo-v2-6-flash": {
@@ -118,8 +128,21 @@
         "name": "MiMo-V2.6-Flash",
         "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "contextWindow": 1048576,
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "mimo-v2-6-flash-free": {
@@ -141,7 +164,14 @@
           ]
         },
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "mimo-v2-6-pro": {
@@ -149,12 +179,26 @@
         "name": "MiMo-V2.6-Pro",
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "contextWindow": 1048576,
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "mimo-v2-6-pro-ultraspeed": {
       "defaults": {
+        "name": "MiMo-V2.6-Pro-UltraSpeed",
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "contextWindow": 1048576,
         "releaseDate": "September 21, 2026"
@@ -175,14 +219,20 @@
         "strengths": [
           "tool_use"
         ],
-        "reliability": 1,
         "releaseDate": "December 16, 2025",
         "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 33.2,
-          "codingIndex": null,
+          "intelligenceIndex": 16,
+          "codingIndex": 49.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -223,14 +273,21 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 5,
+        "reliability": 1,
         "releaseDate": "March 18, 2026",
         "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.3,
+          "intelligenceIndex": 28.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

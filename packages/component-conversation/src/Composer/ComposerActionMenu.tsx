@@ -9,7 +9,7 @@ import {
   useMediaQuery,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ComposerDirectiveQuery } from "@ngriffin_uk/polychat-library-chat/composer-commands";
-import type { SourceSummary } from "@ngriffin_uk/polychat-schemas";
+import type { AssistantActionItem, SourceSummary } from "@ngriffin_uk/polychat-schemas";
 import { Database, FileText, Loader2, Plus, Volume1, Volume2, VolumeX, Wrench } from "lucide-react";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
@@ -18,7 +18,7 @@ import {
   describeAssistantActionItem,
   groupAssistantActionItems,
 } from "./assistantActionPresentation.js";
-import { useComposerCommandActions } from "./commandActions.js";
+import type { ComposerCommandActions } from "./commandActions.js";
 import { getComposerActionMenuLayout } from "./composerActionMenuLayout.js";
 import { ComposerActionMenuMobile } from "./ComposerActionMenuMobile.js";
 import {
@@ -27,6 +27,14 @@ import {
 } from "./ComposerActionMenuRow.js";
 
 interface ComposerActionMenuProps {
+  commandActions?: Pick<
+    ComposerCommandActions,
+    | "actionItems"
+    | "canUseTeammates"
+    | "isLoadingTeammates"
+    | "selectActionItem"
+    | "selectedTeammate"
+  >;
   autoPlayResponses?: {
     enabled: boolean;
     isGenerating: boolean;
@@ -35,22 +43,23 @@ interface ComposerActionMenuProps {
   };
   attachingSourceId?: string | null;
   canAttachSources?: boolean;
-  canUploadFiles: boolean;
+  canUploadFiles?: boolean;
   directive?: ComposerDirectiveQuery | null;
   isDisabled?: boolean;
   isLoadingSources?: boolean;
-  isUploading: boolean;
-  onUploadClick: () => void;
+  isUploading?: boolean;
+  onUploadClick?: () => void;
   onAttachSource?: (sourceId: string) => boolean | Promise<boolean>;
   sourceScopeLabel?: string;
   sources?: SourceSummary[];
   tools?: ReactNode;
-  uploadIcon: ReactNode;
-  uploadLabel: string;
+  uploadIcon?: ReactNode;
+  uploadLabel?: string;
 }
 
 const submenuClassName = "w-80 max-w-[calc(100vw-1rem)] rounded-xl p-2 text-sm";
 const EMPTY_SOURCES: SourceSummary[] = [];
+const EMPTY_ACTION_ITEMS: AssistantActionItem[] = [];
 
 function wrapAddMenuTrigger(trigger: ReactNode, isOpen?: boolean) {
   return (
@@ -61,24 +70,30 @@ function wrapAddMenuTrigger(trigger: ReactNode, isOpen?: boolean) {
 }
 
 export function ComposerActionMenu({
+  commandActions,
   autoPlayResponses,
   attachingSourceId,
   canAttachSources = false,
-  canUploadFiles,
+  canUploadFiles = false,
   directive,
   isDisabled = false,
   isLoadingSources = false,
-  isUploading,
+  isUploading = false,
   onUploadClick,
   onAttachSource,
   sourceScopeLabel = "Sources",
   sources = EMPTY_SOURCES,
   tools,
   uploadIcon,
-  uploadLabel,
+  uploadLabel = "Upload a file",
 }: ComposerActionMenuProps) {
-  const { actionItems, canUseTeammates, isLoadingTeammates, selectActionItem, selectedTeammate } =
-    useComposerCommandActions();
+  const {
+    actionItems = EMPTY_ACTION_ITEMS,
+    canUseTeammates = false,
+    isLoadingTeammates = false,
+    selectActionItem,
+    selectedTeammate,
+  } = commandActions ?? {};
   const [isOpen, setIsOpen] = useState(false);
   const [menuWidth, setMenuWidth] = useState<number>();
   const [alignOffset, setAlignOffset] = useState(0);
@@ -145,6 +160,7 @@ export function ComposerActionMenu({
           type="button"
           variant={menuIsOpen ? "iconActive" : "icon"}
           className="h-8 w-8 shrink-0 p-1.5"
+          disabled={isDisabled}
           aria-label="Add files or capabilities"
           aria-keyshortcuts="/ @"
         >
@@ -190,7 +206,7 @@ export function ComposerActionMenu({
         />
       ) : (
         <>
-          {canUploadFiles ? (
+          {canUploadFiles && onUploadClick ? (
             <OptionsMenuAction
               className={menuRowClassName}
               disabled={isDisabled || isUploading}
@@ -226,7 +242,7 @@ export function ComposerActionMenu({
                   <OptionsMenuAction
                     key={source.id}
                     className={menuRowClassName}
-                    disabled={Boolean(attachingSourceId)}
+                    disabled={isDisabled || Boolean(attachingSourceId)}
                     onSelect={() => handleSourceSelect(source.id)}
                   >
                     <MenuRow
@@ -270,7 +286,7 @@ export function ComposerActionMenu({
                       <OptionsMenuAction
                         key={item.id}
                         className={menuRowClassName}
-                        onSelect={() => selectActionItem(item)}
+                        onSelect={() => selectActionItem?.(item)}
                       >
                         <MenuRow
                           icon={<AssistantActionItemIcon item={item} />}
@@ -302,7 +318,7 @@ export function ComposerActionMenu({
                 <OptionsMenuAction
                   key={item.id}
                   className={menuRowClassName}
-                  onSelect={() => selectActionItem(item)}
+                  onSelect={() => selectActionItem?.(item)}
                 >
                   <MenuRow
                     icon={<AssistantActionItemIcon item={item} />}

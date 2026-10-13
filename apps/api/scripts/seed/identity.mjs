@@ -1,3 +1,4 @@
+import { preferenceConfiguration } from "./configuration.mjs";
 import {
   at,
   createUserKeyPair,
@@ -92,9 +93,10 @@ export async function identityStatements({ serverKey }) {
       },
       { replace: true },
     ),
-    insert("oauth_account", {
-      provider_id: "github",
-      provider_user_id: OWNER.githubId,
+    insert("user_credential", {
+      kind: "oauth",
+      provider: "github",
+      external_id: OWNER.githubId,
       user_id: OWNER.id,
     }),
     insert("session", {
@@ -102,66 +104,62 @@ export async function identityStatements({ serverKey }) {
       user_id: OWNER.id,
       expires_at: "2099-01-01T00:00:00.000Z",
     }),
-    insert("user_settings", {
-      id: seedId("settings", "owner"),
-      user_id: OWNER.id,
-      nickname: "Nick",
-      job_role: "Founder and engineer",
-      traits: "Direct, dry British humour, prefers short answers with the trade-offs stated.",
-      preferences: "Use British English. Prefer bullet points. Never use exclamation marks.",
-      memories_save_enabled: true,
-      memories_chat_history_enabled: true,
-      memory_provider: "built-in",
-      search_provider: "tavily",
-      default_model_tier: "high",
-      default_model_id: SEED_MODEL,
-      default_compute_site: "hosted",
-      pet_source: "preset",
-      pet_id: "pip",
-      pet_travel_enabled: true,
-      pet_animation_enabled: true,
-      onboarding_seen: ["model-sources:web", "welcome", "work-intro"],
-      tracking_enabled: false,
-      advertise_machines: true,
-      last_model_selection: {
-        modelId: SEED_MODEL,
-        name: "GPT-OSS 120B",
-        provider: "workers-ai",
-        computeSite: "hosted",
-        locationLabel: "Polychat cloud",
-      },
-      ...encryptionColumns(keys),
-      created_at: at({ days: 400 }),
-      updated_at: at({ days: 1 }),
-    }),
     insert(
-      "user_api_keys",
+      "scoped_configuration",
+      preferenceConfiguration({
+        id: seedId("settings", "owner"),
+        user_id: OWNER.id,
+        nickname: "Nick",
+        job_role: "Founder and engineer",
+        traits: "Direct, dry British humour, prefers short answers with the trade-offs stated.",
+        preferences: "Use British English. Prefer bullet points. Never use exclamation marks.",
+        memories_save_enabled: true,
+        memories_chat_history_enabled: true,
+        memory_provider: "built-in",
+        search_provider: "tavily",
+        default_model_tier: "high",
+        default_model_id: SEED_MODEL,
+        default_compute_site: "hosted",
+        pet_source: "preset",
+        pet_id: "pip",
+        pet_travel_enabled: true,
+        pet_animation_enabled: true,
+        onboarding_seen: ["model-sources:web", "welcome", "work-intro"],
+        tracking_enabled: false,
+        advertise_machines: true,
+        last_model_selection: {
+          modelId: SEED_MODEL,
+          name: "GPT-OSS 120B",
+          provider: "workers-ai",
+          computeSite: "hosted",
+          locationLabel: "Polychat cloud",
+        },
+        ...encryptionColumns(keys),
+        created_at: at({ days: 400 }),
+        updated_at: at({ days: 1 }),
+      }),
+    ),
+    insert(
+      "user_credential",
       Object.fromEntries([
-        ["id", seedId("apikey", "debug")],
+        ["kind", "api_key"],
+        ["public_id", seedId("apikey", "debug")],
         ["user_id", OWNER.id],
-        ["api_key", REVEAL_UNAVAILABLE],
-        ["hashed_key", sha256Hex(API_KEY)],
+        ["encrypted_value", REVEAL_UNAVAILABLE],
+        ["token_hash", sha256Hex(API_KEY)],
         ["name", "Seed debugging key"],
         ["created_at", at({ days: 30 })],
         ["updated_at", at({ days: 30 })],
       ]),
     ),
-    insert("task_notification_preference", {
-      user_id: OWNER.id,
-      enabled: true,
-      decisions: true,
-      failures: true,
-      completions: true,
-      assignments: true,
-      updated_at: at({ days: 12 }),
-    }),
   );
 
   for (const provider of ["openai", "anthropic", "google-ai-studio", "mistral"]) {
     statements.push(
-      insert("provider_settings", {
+      insert("scoped_configuration", {
+        kind: "provider",
         id: seedId("provider", provider),
-        provider_id: provider,
+        target_id: provider,
         user_id: OWNER.id,
         enabled: provider === "openai",
         created_at: at({ days: 200 }),
@@ -185,15 +183,18 @@ export async function identityStatements({ serverKey }) {
         message_count: 12,
         last_active_at: at({ hours: 6 }),
       }),
-      insert("user_settings", {
-        id: seedId("settings", String(colleague.id)),
-        user_id: colleague.id,
-        nickname: colleague.nickname,
-        job_role: colleague.jobRole,
-        onboarding_seen: ["model-sources:web"],
-        created_at: at({ days: 120 }),
-        updated_at: at({ days: 2 }),
-      }),
+      insert(
+        "scoped_configuration",
+        preferenceConfiguration({
+          id: seedId("settings", String(colleague.id)),
+          user_id: colleague.id,
+          nickname: colleague.nickname,
+          job_role: colleague.jobRole,
+          onboarding_seen: ["model-sources:web"],
+          created_at: at({ days: 120 }),
+          updated_at: at({ days: 2 }),
+        }),
+      ),
     );
   }
 
@@ -316,13 +317,13 @@ function machineStatements(currentPeriod) {
       created_at: at({ days: 40 }),
       updated_at: at({ minutes: 2 }),
     }),
-    insert("capability_configuration", {
+    insert("scoped_configuration", {
+      kind: "capability",
       id: seedId("capability-config", "mcp"),
-      scope_type: "user",
-      scope_id: String(OWNER.id),
-      capability_kind: "tool",
-      capability_id: "mcp",
-      configuration: JSON.stringify({
+      user_id: OWNER.id,
+      target_kind: "tool",
+      target_id: "mcp",
+      payload: JSON.stringify({
         servers: [{ label: "Local docs", url: "http://localhost:8790/mcp" }],
       }),
       created_at: at({ days: 20 }),
@@ -422,10 +423,12 @@ export function teammateStatements() {
       created_at: at({ days: 30 }),
       updated_at: at({ days: 1 }),
     }),
-    insert("shared_teammates", {
-      id: seedId("shared-teammate", "editor"),
-      teammate_id: editor,
-      user_id: OWNER.id,
+    insert("template", {
+      id: seedId("teammate-publication", "editor"),
+      publication_id: seedId("shared-teammate", "editor"),
+      kind: "teammate_publication",
+      source_teammate_id: editor,
+      created_by_user_id: OWNER.id,
       name: "Editor",
       description: "Tightens prose, keeps your voice, flags weak claims.",
       category: "writing",
@@ -435,7 +438,7 @@ export function teammateStatements() {
       usage_count: 37,
       rating_count: 9,
       rating_average: "4.6",
-      template_data: {
+      configuration: {
         name: "Editor",
         description: "Tightens prose, keeps your voice, flags weak claims.",
         system_prompt:

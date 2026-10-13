@@ -7,6 +7,12 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  DeviceAuthorisation,
+  DeviceAuthorisationDecision,
+  PolyAgenda,
+  PolyHandoffDisagreement,
+  PolyHome,
+  TeammateAutonomyLevel,
   TeammateResponse,
   CreateTeammateInput,
   HireTeammateInput,
@@ -28,6 +34,8 @@ import type {
   MemoryDocument,
   UpdateMemoryDocumentInput,
   RecordTeammateFeedbackInput,
+  EnqueueChatMessageRequest,
+  ArtifactBindingReadRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -38,13 +46,16 @@ import {
   type GetChatOptions,
   type StreamChatCompletionsParams,
 } from "./services/chat-service.js";
+import { DeviceAuthorisationService } from "./services/device-authorisation-service.js";
 import { MachineService } from "./services/machine-service.js";
+import { PolyService } from "./services/poly-service.js";
 import { ResearchService } from "./services/research-service.js";
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
 import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
 import type { ProviderSetting } from "./services/user-service.js";
 import { UserService } from "./services/user-service.js";
+import type { ConversationShare } from "./shared-conversation.js";
 import { useToolsStore } from "./toolsStore.js";
 import { getHeaders } from "./utils/headers.js";
 
@@ -56,6 +67,8 @@ class ApiService {
   private teammateService: TeammateService;
   private userService: UserService;
   private machineService: MachineService;
+  private polyService: PolyService;
+  private deviceAuthorisationService: DeviceAuthorisationService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
   private researchService: ResearchService;
@@ -66,6 +79,8 @@ class ApiService {
     this.teammateService = new TeammateService(getHeaders);
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
+    this.polyService = new PolyService(getHeaders);
+    this.deviceAuthorisationService = new DeviceAuthorisationService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
     this.researchService = new ResearchService(getHeaders);
@@ -125,6 +140,18 @@ class ApiService {
   cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
     this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
 
+  readArtifactBinding = (conversationId: string, input: ArtifactBindingReadRequest) =>
+    this.chatService.readArtifactBinding(conversationId, input);
+
+  listQueuedChatMessages = (conversationId: string) =>
+    this.chatService.listQueuedChatMessages(conversationId);
+
+  queueChatMessage = (conversationId: string, input: EnqueueChatMessageRequest) =>
+    this.chatService.queueChatMessage(conversationId, input);
+
+  removeQueuedChatMessage = (conversationId: string, queuedId: string) =>
+    this.chatService.removeQueuedChatMessage(conversationId, queuedId);
+
   getConversationGoal = (completion_id: string) => {
     return this.chatService.getConversationGoal(completion_id);
   };
@@ -160,7 +187,7 @@ class ApiService {
     return this.chatService.deleteAllConversations();
   };
 
-  shareConversation = (completion_id: string): Promise<{ share_id: string }> => {
+  shareConversation = (completion_id: string): Promise<ConversationShare> => {
     return this.chatService.shareConversation(completion_id);
   };
 
@@ -225,6 +252,28 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
+  getDeviceAuthorisation = (userCode: string): Promise<DeviceAuthorisation> =>
+    this.deviceAuthorisationService.getDeviceAuthorisation(userCode);
+
+  decideDeviceAuthorisation = (
+    userCode: string,
+    decision: DeviceAuthorisationDecision["decision"],
+  ): Promise<{ status: "approved" | "denied" }> =>
+    this.deviceAuthorisationService.decideDeviceAuthorisation(userCode, decision);
+
+  openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
+
+  readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
+
+  disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
+    this.polyService.disagreeWithPolyHandoff(handoffId);
+
+  grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
+    this.polyService.grantPolyStandingApproval(interactionId);
+
+  revokePolyStandingApproval = (toolName: string, destination: string): Promise<PolyHome> =>
+    this.polyService.revokePolyStandingApproval(toolName, destination);
+
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();
   };
@@ -245,6 +294,12 @@ class ApiService {
     teammateId: string,
     scope: TeammateContextScope,
   ): Promise<TeammateContext> => this.teammateService.ensureTeammateContext(teammateId, scope);
+
+  updateTeammateContextAutonomy = (
+    contextId: string,
+    autonomyLevel: TeammateAutonomyLevel,
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextAutonomy(contextId, autonomyLevel);
 
   updateTeammateContextStatus = (
     contextId: string,
@@ -393,8 +448,8 @@ class ApiService {
     return this.machineService.forget(machineId);
   };
 
-  fetchTools = (): Promise<Tool[]> => {
-    return this.userService.fetchTools();
+  fetchTools = (projectId?: string, workspaceId?: string): Promise<Tool[]> => {
+    return this.userService.fetchTools(projectId, workspaceId);
   };
 
   storeProviderApiKey = (

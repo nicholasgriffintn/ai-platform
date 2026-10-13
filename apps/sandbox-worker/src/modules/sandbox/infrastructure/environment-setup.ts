@@ -13,14 +13,15 @@ import {
   type SandboxServiceDefinition,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../../../types";
 import {
   assertSafeCommand,
   formatCommandResult,
   getCommandRiskLevel,
-  quoteForShell,
   runSandboxCommand,
+  type SandboxBackupInstance,
   type SandboxExecInstance,
 } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
@@ -29,7 +30,6 @@ import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
 const MAX_REPOSITORY_CONFIGURATION_BYTES = 32_000;
 const MAX_SETUP_EVENT_OUTPUT_CHARS = 4_000;
-const ENVIRONMENT_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 const RUNTIME_VERSION_COMMANDS: Record<SandboxRuntimeRequirement["name"], string> = {
   node: "node --version",
@@ -91,7 +91,7 @@ async function buildEnvironmentCacheKey(params: {
   resolved: ResolvedEnvironmentSetup;
 }): Promise<{ cacheKey: string; repositoryRevision: string }> {
   const revisionResult = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} rev-parse HEAD`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} rev-parse HEAD`,
   );
 
   if (!revisionResult.success || !revisionResult.stdout.trim()) {
@@ -100,7 +100,7 @@ async function buildEnvironmentCacheKey(params: {
 
   const repositoryRevision = revisionResult.stdout.trim();
   const lockfilesResult = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} ls-tree -r HEAD -- package-lock.json pnpm-lock.yaml yarn.lock bun.lock bun.lockb poetry.lock uv.lock Cargo.lock Gemfile.lock go.sum`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} ls-tree -r HEAD -- package-lock.json pnpm-lock.yaml yarn.lock bun.lock bun.lockb poetry.lock uv.lock Cargo.lock Gemfile.lock go.sum`,
   );
   const cacheKey = await hashValue({
     scope: params.projectId ? `project:${params.projectId}` : `user:${params.userId}`,
@@ -124,10 +124,10 @@ async function cleanAfterFailedRestore(params: {
   repoTargetDir: string;
 }): Promise<void> {
   const reset = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} reset --hard HEAD`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} reset --hard HEAD`,
   );
   const clean = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} clean -fdx`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} clean -fdx`,
   );
 
   if (!reset.success || !clean.success) {
@@ -140,7 +140,7 @@ async function resolveRepositoryEnvironmentSetup(params: {
   repoTargetDir: string;
 }): Promise<ResolvedEnvironmentSetup> {
   const fileResult = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} show HEAD:${SANDBOX_REPOSITORY_ENVIRONMENT_PATH}`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} show HEAD:${SANDBOX_REPOSITORY_ENVIRONMENT_PATH}`,
   );
 
   if (!fileResult.success) {
@@ -168,7 +168,7 @@ async function resolveRepositoryEnvironmentSetup(params: {
   }
 
   const revisionResult = await params.sandbox.exec(
-    `git -C ${quoteForShell(params.repoTargetDir)} rev-parse HEAD:${SANDBOX_REPOSITORY_ENVIRONMENT_PATH}`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} rev-parse HEAD:${SANDBOX_REPOSITORY_ENVIRONMENT_PATH}`,
   );
 
   if (!revisionResult.success || !revisionResult.stdout.trim()) {
@@ -207,7 +207,7 @@ async function assertRequirement(params: {
   version?: string;
 }): Promise<void> {
   const result = await params.sandbox.exec(
-    `cd ${quoteForShell(params.repoTargetDir)} && ${params.command}`,
+    `cd ${quoteShellArgument(params.repoTargetDir)} && ${params.command}`,
   );
   const observed = [result.stdout, result.stderr].join(" ").trim();
 
@@ -258,7 +258,7 @@ async function assertEnvironmentRequirements(params: {
 }
 
 async function restoreEnvironmentCache(params: {
-  sandbox: SandboxExecInstance;
+  sandbox: SandboxBackupInstance;
   repoTargetDir: string;
   cache?: SandboxEnvironmentCacheRecord;
   cacheKey: string;
@@ -288,27 +288,8 @@ async function restoreEnvironmentCache(params: {
     return { reused: false, invalidationReason };
   }
 
-  if (!params.sandbox.restoreBackup) {
-    await params.emit({
-      type: "environment_cache_restore_failed",
-      cacheKey: params.cacheKey,
-      cacheStatus: "failed",
-      cacheInvalidationReason: "backup_runtime_unavailable",
-    });
-
-    return { reused: false, invalidationReason: "backup_runtime_unavailable" };
-  }
-
   try {
-    const restored = await params.sandbox.restoreBackup({
-      id: cache.backupId,
-      dir: params.repoTargetDir,
-      localBucket: true,
-    });
-
-    if (!restored.success) {
-      throw new Error("Environment snapshot restore did not complete");
-    }
+    await params.sandbox.restoreDirectory(cache.backup, params.repoTargetDir);
 
     const ageSeconds = Math.max(0, Date.now() - Date.parse(cache.createdAt)) / 1000;
 
@@ -337,7 +318,7 @@ async function restoreEnvironmentCache(params: {
 }
 
 async function createEnvironmentCache(params: {
-  sandbox: SandboxExecInstance;
+  sandbox: SandboxBackupInstance;
   repoTargetDir: string;
   cacheKey: string;
   generation: number;
@@ -346,17 +327,11 @@ async function createEnvironmentCache(params: {
   redactionSecrets: string[];
   emit: (event: TaskEvent) => Promise<void>;
 }): Promise<SandboxEnvironmentCacheRecord | undefined> {
-  if (!params.sandbox.createBackup) {
-    return undefined;
-  }
-
   try {
-    const backup = await params.sandbox.createBackup({
+    const backup = await params.sandbox.backupDirectory({
       dir: params.repoTargetDir,
       name: `polychat-${params.cacheKey.slice(0, 24)}`,
-      ttl: ENVIRONMENT_CACHE_TTL_SECONDS,
-      gitignore: false,
-      excludes: [
+      exclude: [
         ".git",
         ".env",
         ".env.*",
@@ -372,13 +347,11 @@ async function createEnvironmentCache(params: {
         "*.credentials",
         "*.log",
       ],
-      localBucket: true,
     });
     const createdAt = new Date().toISOString();
     const record: SandboxEnvironmentCacheRecord = {
       cacheKey: params.cacheKey,
-      backupId: backup.id,
-      restoreDirectory: params.repoTargetDir,
+      backup,
       generation: params.generation,
       repositoryRevision: params.repositoryRevision,
       configurationRevision: params.configurationRevision,
@@ -433,7 +406,7 @@ function evidenceFor(params: {
 }
 
 export async function prepareSandboxEnvironment(params: {
-  sandbox: SandboxExecInstance;
+  sandbox: SandboxBackupInstance;
   repoTargetDir: string;
   userId: number;
   projectId?: string;
@@ -450,6 +423,7 @@ export async function prepareSandboxEnvironment(params: {
   abortSignal?: AbortSignal;
   checkpoint: (abortMessage: string) => Promise<void>;
   emit: (event: TaskEvent) => Promise<void>;
+  allowNetworkHosts?: (hosts: readonly string[]) => Promise<void>;
 }): Promise<SandboxEnvironmentPreparationResult> {
   if (!params.setup) {
     return {};
@@ -478,6 +452,10 @@ export async function prepareSandboxEnvironment(params: {
     });
 
     throw error;
+  }
+
+  if (resolved.definition.networkHosts.length > 0) {
+    await params.allowNetworkHosts?.(resolved.definition.networkHosts);
   }
 
   const generation = params.environmentCacheGeneration ?? 0;
@@ -602,7 +580,7 @@ export async function prepareSandboxEnvironment(params: {
       });
       const result = await runSandboxCommand(
         params.sandbox,
-        `cd ${quoteForShell(params.repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, resolved.definition.environment)}`,
+        `cd ${quoteShellArgument(params.repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, resolved.definition.environment)}`,
         {
           abortSignal: commandSignal,
           redactionSecrets,
@@ -682,11 +660,9 @@ export async function prepareSandboxEnvironment(params: {
               ageSeconds: 0,
             }
           : {
-              status: params.sandbox.createBackup ? "failed" : "miss",
+              status: "failed",
               cacheKey: cacheIdentity.cacheKey,
-              invalidationReason: params.sandbox.createBackup
-                ? "snapshot_creation_failed"
-                : "backup_runtime_unavailable",
+              invalidationReason: "snapshot_creation_failed",
             };
     const evidence = evidenceFor({
       resolved,

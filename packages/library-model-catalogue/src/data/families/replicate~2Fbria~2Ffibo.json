@@ -16,7 +16,7 @@
       "image"
     ],
     "contextComplexity": 4,
-    "reliability": 3,
+    "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": false,
@@ -29,10 +29,10 @@
         {
           "key": "text_to_imageElo",
           "label": "Text-to-image arena",
-          "value": 1070,
+          "value": 881,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 9
+          "confidenceInterval95": 7
         }
       ]
     }

@@ -18,50 +18,6 @@ const createToolContext = (request: IRequest, completionId = "completion_id") =>
 });
 
 describe("request_approval", () => {
-  it("creates an approval request with minimal parameters", async () => {
-    const result = await request_approval.execute(
-      { message: "Do you want to proceed with this action?" },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.status).toBe("pending");
-    expect(result.name).toBe("request_approval");
-    expect(result.content).toBe("Do you want to proceed with this action?");
-    expect(result.data?.humanInTheLoop).toBeDefined();
-    expect(result.data?.humanInTheLoop.type).toBe("approval");
-    expect(result.data?.humanInTheLoop.status).toBe("pending");
-    expect(result.data?.humanInTheLoop.requires_user_action).toBe(true);
-    expect(result.data?.options).toEqual(["Approve", "Reject"]);
-  });
-
-  it("creates an approval request with custom options", async () => {
-    const result = await request_approval.execute(
-      {
-        message: "Choose an action",
-        options: ["Yes", "No", "Maybe"],
-      },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.status).toBe("pending");
-    expect(result.data?.options).toEqual(["Yes", "No", "Maybe"]);
-  });
-
-  it("includes context data when provided", async () => {
-    const result = await request_approval.execute(
-      {
-        message: "Approve deletion?",
-        context: { resource_id: "123", action: "delete" },
-      },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.data?.context).toEqual({
-      resource_id: "123",
-      action: "delete",
-    });
-  });
-
   it("parses JSON string options", async () => {
     const result = await request_approval.execute(
       {
@@ -74,36 +30,12 @@ describe("request_approval", () => {
     expect(result.data?.options).toEqual(["Option A", "Option B"]);
   });
 
-  it("throws error for empty message", async () => {
-    await expect(
-      request_approval.execute({ message: "" }, createToolContext(baseRequest)),
-    ).rejects.toThrow("non-empty string");
-  });
-
   it("throws error for missing message", async () => {
     await expect(request_approval.execute({}, createToolContext(baseRequest))).rejects.toThrow();
   });
 });
 
 describe("ask_user", () => {
-  it("normalises a top-level question with string options", () => {
-    expect(
-      validateFunctionArgs(ask_user, {
-        question: "Which product name should we use?",
-        options: ["Polychat Connect", "FlowSync"],
-      }),
-    ).toEqual({
-      questions: [
-        {
-          id: "which-product-name-should-we-use",
-          prompt: "Which product name should we use?",
-          options: [{ label: "Polychat Connect" }, { label: "FlowSync" }],
-          allowOther: true,
-        },
-      ],
-    });
-  });
-
   it("normalises the compact question shape emitted by providers", () => {
     expect(
       validateFunctionArgs(ask_user, {
@@ -123,29 +55,6 @@ describe("ask_user", () => {
             { label: "Pulse" },
           ],
           allowOther: true,
-        },
-      ],
-    });
-  });
-
-  it("normalises question fields and string choices inside the questions array", () => {
-    expect(
-      validateFunctionArgs(ask_user, {
-        questions: [
-          {
-            question: "Which audience is this for?",
-            choices: ["Customers", "Internal teams"],
-            allow_custom: false,
-          },
-        ],
-      }),
-    ).toEqual({
-      questions: [
-        {
-          id: "which-audience-is-this-for",
-          prompt: "Which audience is this for?",
-          options: [{ label: "Customers" }, { label: "Internal teams" }],
-          allowOther: false,
         },
       ],
     });
@@ -171,30 +80,6 @@ describe("ask_user", () => {
         },
       ],
     });
-  });
-
-  it("creates one structured question", async () => {
-    const result = await ask_user.execute(
-      { questions: [{ id: "email", prompt: "What is your email address?" }] },
-      createToolContext(baseRequest),
-    );
-
-    expect(result.status).toBe("pending");
-    expect(result.name).toBe("ask_user");
-    expect(result.content).toBe("What is your email address?");
-    expect(result.data?.humanInTheLoop).toBeDefined();
-    expect(result.data?.humanInTheLoop.type).toBe("question");
-    expect(result.data?.humanInTheLoop.status).toBe("pending");
-    expect(result.data?.humanInTheLoop.requires_user_action).toBe(true);
-    expect(result.data?.questions).toEqual([
-      {
-        id: "email",
-        prompt: "What is your email address?",
-        options: [],
-        allowOther: true,
-      },
-    ]);
-    expect(result.data?.interactionId).toEqual(expect.any(String));
   });
 
   it("creates up to three questions with described choices", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-realtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Realtime protocol, audio, WebRTC, and WebSocket modules for Polychat",
   "license": "Apache-2.0",
   "files": [
@@ -41,6 +41,12 @@
       "types": "./dist/errors.d.ts",
       "import": "./dist/errors.js",
       "require": "./dist/errors.cjs"
+    },
+    "./media-encoding": {
+      "polychat-source": "./src/media-encoding.ts",
+      "types": "./dist/media-encoding.d.ts",
+      "import": "./dist/media-encoding.js",
+      "require": "./dist/media-encoding.cjs"
     },
     "./live-providers": {
       "polychat-source": "./src/live-providers.ts",

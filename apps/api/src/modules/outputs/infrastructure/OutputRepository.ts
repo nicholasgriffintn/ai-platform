@@ -4,18 +4,26 @@ import type {
   OutputSensitivity,
   OutputStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { KVCache } from "~/infrastructure/cache";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import {
+  outputResourceSql,
+  outputResourceColumns,
+  resourceScope,
+} from "~/infrastructure/database/resource-storage";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import {
   addOutputProvenanceSources,
   createOutputProvenance,
   parseOutputProvenance,
 } from "~/modules/outputs/application/provenance";
+import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import type { IEnv } from "~/types";
+
+import { publishOutputChanged } from "../application/sync-events";
 
 export interface OutputRecord {
   id: string;
@@ -132,11 +140,12 @@ export class OutputRepository extends BaseRepository {
       input.provenance ?? createOutputProvenance({ origin: "unknown", completeness: "partial" });
     const revisionCreatedAt = new Date().toISOString();
     const insert = this.buildInsertQuery(
-      "output",
+      "resource",
       {
+        resource_type: "output",
         id,
         created_by_user_id: input.createdByUserId,
-        project_id: input.projectId ?? null,
+        ...resourceScope(input.createdByUserId, input.projectId),
         conversation_id: input.conversationId ?? null,
         parent_output_id: input.parentOutputId ?? null,
         capability_id: input.capabilityId,
@@ -156,7 +165,7 @@ export class OutputRepository extends BaseRepository {
         revision_operation: "created",
         restored_from_revision: null,
       },
-      { jsonFields: ["content", "provenance_json"], returning: "*" },
+      { jsonFields: ["content", "provenance_json"], returning: outputResourceColumns },
     );
 
     if (!insert) {
@@ -209,6 +218,8 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Failed to create output", ErrorType.DATABASE_ERROR);
     }
 
+    await publishOutputChanged({ env: this.env }, output);
+
     return output;
   }
 
@@ -238,7 +249,7 @@ export class OutputRepository extends BaseRepository {
     }
 
     const outputs = await this.runQuery<OutputRecord>(
-      `SELECT * FROM output
+      `SELECT * FROM ${outputResourceSql} output
        WHERE id IN (${ids.map(() => "?").join(", ")})
        ORDER BY created_at ASC, id ASC`,
       ids,
@@ -296,10 +307,10 @@ export class OutputRepository extends BaseRepository {
   async listOutputDescendants(parentOutputId: string): Promise<OutputRecord[]> {
     return this.runQuery<OutputRecord>(
       `WITH RECURSIVE descendants AS (
-         SELECT * FROM output WHERE parent_output_id = ?
+         SELECT * FROM ${outputResourceSql} output WHERE parent_output_id = ?
          UNION ALL
          SELECT child.*
-         FROM output child
+         FROM ${outputResourceSql} child
          INNER JOIN descendants parent ON child.parent_output_id = parent.id
        )
        SELECT * FROM descendants`,
@@ -311,11 +322,11 @@ export class OutputRepository extends BaseRepository {
   async listWorkspaceOutputRoots(workspaceId: string): Promise<OutputRecord[]> {
     return this.runQuery<OutputRecord>(
       `SELECT child.*
-       FROM output child
+       FROM ${outputResourceSql} child
        INNER JOIN project ON project.id = child.project_id
        WHERE project.workspace_id = ?
          AND NOT EXISTS (
-           SELECT 1 FROM output parent
+           SELECT 1 FROM ${outputResourceSql} parent
            WHERE parent.id = child.parent_output_id
              AND parent.project_id = child.project_id
          )
@@ -354,7 +365,7 @@ export class OutputRepository extends BaseRepository {
     const placeholders = uniqueRunIds.map(() => "?").join(", ");
 
     return this.runQuery<OutputRecord>(
-      `SELECT * FROM output
+      `SELECT * FROM ${outputResourceSql} output
        WHERE project_id = ?
          AND json_extract(provenance_json, '$.run.id') IN (${placeholders})
        ORDER BY created_at ASC`,
@@ -364,7 +375,7 @@ export class OutputRepository extends BaseRepository {
 
   async listOutputsForRun(runId: string): Promise<OutputRecord[]> {
     const outputs = await this.runQuery<OutputRecord>(
-      `SELECT * FROM output
+      `SELECT * FROM ${outputResourceSql} output
        WHERE json_extract(provenance_json, '$.run.id') = ?
        ORDER BY created_at ASC, id ASC`,
       [runId],
@@ -403,7 +414,7 @@ export class OutputRepository extends BaseRepository {
     values.push(limit, offset);
 
     const outputs = await this.runQuery<OutputRecord>(
-      `SELECT * FROM output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT * FROM ${outputResourceSql} output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       values,
       false,
     );
@@ -461,7 +472,7 @@ export class OutputRepository extends BaseRepository {
 
     const nextRevision = existing.revision + 1;
     const update = this.buildUpdateQuery(
-      "output",
+      "resource",
       {
         title: input.title,
         status: input.status,
@@ -484,8 +495,18 @@ export class OutputRepository extends BaseRepository {
         "revision_operation",
         "restored_from_revision",
       ],
-      "id = ? AND revision = ?",
-      [outputId, input.expectedRevision],
+      `resource_type = 'output' AND id = ? AND revision = ? AND
+       ((project_id IS NULL AND created_by_user_id = ?) OR EXISTS
+         (SELECT 1 FROM project JOIN resource_grant workspace_member ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id
+          WHERE project.id = resource.project_id AND workspace_member.user_id = ?
+            AND (resource.created_by_user_id = ? OR workspace_member.role IN ('owner', 'admin'))))`,
+      [
+        outputId,
+        input.expectedRevision,
+        input.updatedByUserId,
+        input.updatedByUserId,
+        input.updatedByUserId,
+      ],
       { jsonFields: ["content"] },
     );
 
@@ -494,10 +515,10 @@ export class OutputRepository extends BaseRepository {
     }
 
     const revisionInsert = this.env.DB.prepare(
-      `INSERT OR IGNORE INTO output_revision
-			 (output_id, revision, title, status, sensitivity, content, provenance_json,
+      `INSERT OR IGNORE INTO resource_revision
+			 (resource_type, output_id, revision, title, status, sensitivity, content, provenance_json,
 			  created_by_user_id, created_at, operation, restored_from_revision)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			 VALUES ('output', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       outputId,
       existing.revision,
@@ -519,25 +540,20 @@ export class OutputRepository extends BaseRepository {
     const statements = [revisionInsert, updateStatement];
 
     if (audit) {
-      const auditInsert = this.buildInsertQuery(
-        "workspace_audit_record",
-        {
-          id: generateId(),
-          workspace_id: audit.workspaceId,
-          actor_user_id: audit.actorUserId,
-          action: audit.action,
-          target_type: "output",
-          target_id: audit.outputId,
-          metadata: audit.metadata,
-        },
-        { jsonFields: ["metadata"] },
+      statements.push(
+        this.env.DB.prepare(
+          `INSERT INTO workspace_audit_record
+         (id, workspace_id, actor_user_id, action, target_type, target_id, metadata)
+         SELECT ?, ?, ?, ?, 'output', ?, ? WHERE changes() = 1`,
+        ).bind(
+          generateId(),
+          audit.workspaceId,
+          audit.actorUserId,
+          audit.action,
+          audit.outputId,
+          JSON.stringify(audit.metadata),
+        ),
       );
-
-      if (!auditInsert) {
-        throw new AssistantError("Failed to build output audit query", ErrorType.INTERNAL_ERROR);
-      }
-
-      statements.push(this.env.DB.prepare(auditInsert.query).bind(...auditInsert.values));
     }
 
     const results = await this.env.DB.batch(statements);
@@ -557,14 +573,24 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Output update conflicted", ErrorType.CONFLICT_ERROR, 409);
     }
 
+    await publishOutputChanged({ env: this.env }, updated);
+
     return updated;
   }
 
   async deleteOutput(outputId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("output", { id: outputId });
+    const output = await this.getOutputIncludingDeleting(outputId);
+    const { query, values } = this.buildDeleteQuery("resource", {
+      resource_type: "output",
+      id: outputId,
+    });
 
     await this.executeRun(query, values);
     await this.cache?.delete(KVCache.createKey("output", outputId));
+
+    if (output) {
+      await publishOutputChanged({ env: this.env }, output);
+    }
   }
 
   async deleteOutputs(outputIds: string[], audit?: OutputAuditRecord): Promise<void> {
@@ -572,8 +598,9 @@ export class OutputRepository extends BaseRepository {
       return;
     }
 
+    const outputs = await this.getOutputsByIds(outputIds);
     const placeholders = outputIds.map(() => "?").join(", ");
-    const deleteQuery = `DELETE FROM output WHERE id IN (${placeholders})`;
+    const deleteQuery = `DELETE FROM resource WHERE resource_type = 'output' AND id IN (${placeholders})`;
 
     if (audit) {
       if (!this.env.DB) {
@@ -613,6 +640,7 @@ export class OutputRepository extends BaseRepository {
     await Promise.all(
       outputIds.map((outputId) => this.cache?.delete(KVCache.createKey("output", outputId))),
     );
+    await Promise.all(outputs.map((output) => publishOutputChanged({ env: this.env }, output)));
   }
 
   async deletePersonalOutputGroup(
@@ -621,7 +649,8 @@ export class OutputRepository extends BaseRepository {
     groupId: string,
     kind?: string,
   ): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("output", {
+    const { query, values } = this.buildDeleteQuery("resource", {
+      resource_type: "output",
       created_by_user_id: userId,
       project_id: null,
       capability_id: capabilityId,
@@ -630,6 +659,7 @@ export class OutputRepository extends BaseRepository {
     });
 
     await this.executeRun(query, values);
+    await publishResourceEvent({ env: this.env }, { kind: "personal", userId }, "output.changed");
   }
 
   async deleteProjectOutputGroup(
@@ -638,7 +668,8 @@ export class OutputRepository extends BaseRepository {
     groupId: string,
     kind?: string,
   ): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("output", {
+    const { query, values } = this.buildDeleteQuery("resource", {
+      resource_type: "output",
       project_id: projectId,
       capability_id: capabilityId,
       group_id: groupId,
@@ -646,6 +677,7 @@ export class OutputRepository extends BaseRepository {
     });
 
     await this.executeRun(query, values);
+    await publishResourceEvent({ env: this.env }, { kind: "project", projectId }, "output.changed");
   }
 
   async attachSources(outputId: string, sourceIds: string[]): Promise<void> {
@@ -666,13 +698,12 @@ export class OutputRepository extends BaseRepository {
     const statements = [
       ...sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT OR IGNORE INTO output_source (output_id, source_id) VALUES (?, ?)",
+          "INSERT OR IGNORE INTO resource_link (kind, output_id, source_id) VALUES ('output_source', ?, ?)",
         ).bind(outputId, sourceId),
       ),
-      this.env.DB.prepare("UPDATE output SET provenance_json = ? WHERE id = ?").bind(
-        JSON.stringify(provenance),
-        outputId,
-      ),
+      this.env.DB.prepare(
+        "UPDATE resource SET provenance_json = ? WHERE resource_type = 'output' AND id = ?",
+      ).bind(JSON.stringify(provenance), outputId),
     ];
     const results = await this.env.DB.batch(statements);
 
@@ -691,8 +722,9 @@ export class OutputRepository extends BaseRepository {
     expiresAt?: string | null;
   }): Promise<OutputShareRecord> {
     const insert = this.buildInsertQuery(
-      "output_share",
+      "resource_grant",
       {
+        kind: "output",
         id: input.id,
         output_id: input.outputId,
         token_hash: input.tokenHash,
@@ -717,15 +749,18 @@ export class OutputRepository extends BaseRepository {
   }
 
   async getShareByTokenHash(tokenHash: string): Promise<OutputShareRecord | null> {
-    const { query, values } = this.buildSelectQuery("output_share", { token_hash: tokenHash });
+    const { query, values } = this.buildSelectQuery("resource_grant", {
+      kind: "output",
+      token_hash: tokenHash,
+    });
 
     return this.runQuery<OutputShareRecord>(query, values, true);
   }
 
   async listShares(outputId: string): Promise<OutputShareRecord[]> {
     const { query, values } = this.buildSelectQuery(
-      "output_share",
-      { output_id: outputId },
+      "resource_grant",
+      { kind: "output", output_id: outputId },
       { orderBy: "created_at DESC" },
     );
 
@@ -734,15 +769,15 @@ export class OutputRepository extends BaseRepository {
 
   async revokeShare(outputId: string, shareId: string): Promise<void> {
     await this.executeRun(
-      "UPDATE output_share SET revoked_at = ? WHERE id = ? AND output_id = ? AND revoked_at IS NULL",
+      "UPDATE resource_grant SET revoked_at = ? WHERE kind = 'output' AND id = ? AND output_id = ? AND revoked_at IS NULL",
       [new Date().toISOString(), shareId, outputId],
     );
   }
 
   async listRevisions(outputId: string): Promise<OutputRevisionRecord[]> {
     const { query, values } = this.buildSelectQuery(
-      "output_revision",
-      { output_id: outputId },
+      "resource_revision",
+      { resource_type: "output", output_id: outputId },
       { orderBy: "revision DESC" },
     );
 
@@ -750,7 +785,8 @@ export class OutputRepository extends BaseRepository {
   }
 
   async getRevision(outputId: string, revision: number): Promise<OutputRevisionRecord | null> {
-    const { query, values } = this.buildSelectQuery("output_revision", {
+    const { query, values } = this.buildSelectQuery("resource_revision", {
+      resource_type: "output",
       output_id: outputId,
       revision,
     });
@@ -759,15 +795,24 @@ export class OutputRepository extends BaseRepository {
   }
 
   private async selectOne(conditions: Record<string, unknown>): Promise<OutputRecord | null> {
-    const { query, values } = this.buildSelectQuery("output", conditions);
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "output" },
+      { columns: outputResourceColumns.split(", ") },
+    );
 
     return this.runQuery<OutputRecord>(query, values, true);
   }
 
   private async selectMany(conditions: Record<string, unknown>): Promise<OutputRecord[]> {
-    const { query, values } = this.buildSelectQuery("output", conditions, {
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "output" },
+      {
+        columns: outputResourceColumns.split(", "),
+        orderBy: "updated_at DESC, created_at DESC",
+      },
+    );
 
     return this.runQuery<OutputRecord>(query, values);
   }

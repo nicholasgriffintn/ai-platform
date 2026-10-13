@@ -19,6 +19,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
@@ -38,6 +44,8 @@
       "model": "ling/inkling-256k",
       "matchingModel": "thinkingmachines/Inkling:peft:262144",
       "overrides": {
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00374,
         "costPer1kOutputTokens": 0.00936

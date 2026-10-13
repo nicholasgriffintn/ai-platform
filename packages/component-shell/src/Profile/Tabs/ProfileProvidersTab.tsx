@@ -1,4 +1,6 @@
 import {
+  readProviderTypeFilter,
+  type ProviderTypeFilter,
   ProviderCatalogue,
   type ProviderCatalogueItem,
   ProviderFilterBar,
@@ -33,20 +35,6 @@ interface ProviderDeleteState {
   providerName: string;
 }
 
-type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging";
-
-function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
-  switch (value) {
-    case "connected":
-    case "chat":
-    case "messaging":
-      return value;
-    case null:
-    default:
-      return "all";
-  }
-}
-
 export function ProfileProvidersTab() {
   const { trackEvent } = useTrackEvent();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -76,6 +64,7 @@ export function ProfileProvidersTab() {
       connected: configuredProviderCount,
       chat: providerSettings.filter((provider) => provider.type === "chat").length,
       messaging: providerSettings.filter((provider) => provider.type === "messaging").length,
+      embedding: providerSettings.filter((provider) => provider.type === "embedding").length,
     }),
     [configuredProviderCount, providerSettings],
   );
@@ -130,7 +119,7 @@ export function ProfileProvidersTab() {
   };
 
   const handleProviderTypeChange = (value: string) => {
-    const nextType = value as ProviderTypeFilter;
+    const nextType = readProviderTypeFilter(value);
     const nextSearchParams = new URLSearchParams(searchParams);
 
     if (nextType === "all") {
@@ -152,9 +141,19 @@ export function ProfileProvidersTab() {
         id: `provider:${provider.provider_id}`,
         name: providerName,
         description: provider.webhookUrl ?? provider.description,
-        category: provider.type === "messaging" ? "Messaging" : "AI models",
+        category:
+          provider.type === "embedding"
+            ? "Embeddings"
+            : provider.type === "messaging"
+              ? "Messaging"
+              : "AI models",
         connected: isConfigured,
-        type: provider.type === "messaging" ? "messaging" : "chat",
+        type:
+          provider.type === "embedding"
+            ? "embedding"
+            : provider.type === "messaging"
+              ? "messaging"
+              : "chat",
         icon: (
           <ModelIcon
             modelName={providerName}

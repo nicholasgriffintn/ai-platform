@@ -33,6 +33,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
+import taskIntegrations from "~/modules/project-tasks/api/integrations";
 import {
   acceptProjectTask,
   createProjectTask,
@@ -510,4 +511,5 @@ addRoute(app, "put", "/:projectId/flow", {
     setProjectFlow(serviceContext, params.projectId, body.flow),
 });
 
+app.route("/", taskIntegrations);
 export default app;

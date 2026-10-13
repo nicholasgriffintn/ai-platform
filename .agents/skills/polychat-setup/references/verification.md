@@ -4,13 +4,13 @@ Leave a verification item when a change needs a human or operator to confirm beh
 
 ## Record an item
 
-Use one Markdown file per outcome under `.agents/verification/pending/`, named `<yyyy-mm-dd>-<slug>.md`. Group deployment prerequisites in a `00-deploy-prerequisites` item when several changes depend on them.
+Use one Markdown file per outcome under `.agents/verification/pending/`, named `<yyyy-mm-dd>-<slug>.md`.
 
 ```md
 # User-visible outcome
 
 - **Change:** what changed.
-- **Surfaces:** only the affected web, iOS, API, sandbox or training surfaces.
+- **Surfaces:** only the affected web, iOS, desktop, API, sandbox worker or agent worker.
 - **Prerequisites:** migrations, secrets, bindings or external actions; otherwise none.
 - **Risk if wrong:** what breaks and for whom.
 - **Commits:** known commit or PR references, when available.

@@ -40,6 +40,14 @@
       "defaults": {
         "name": "Kimi K3",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -47,6 +55,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.6,
+          "codingIndex": 76.2,
+          "agenticIndex": 50,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -80,6 +94,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -89,6 +112,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.6,
+          "codingIndex": 76.2,
+          "agenticIndex": 50,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -103,12 +132,26 @@
         "name": "Kimi K3 (Global)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.6,
+          "codingIndex": 76.2,
+          "agenticIndex": 50,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -143,12 +186,26 @@
         "name": "Kimi K3 (US)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.6,
+          "codingIndex": 76.2,
+          "agenticIndex": 50,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

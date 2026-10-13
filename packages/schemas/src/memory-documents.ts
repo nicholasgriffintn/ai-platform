@@ -71,6 +71,58 @@ export const conversationBriefResponseSchema = z.object({
 });
 
 export type MemoryDocument = z.infer<typeof memoryDocumentSchema>;
+
+export const readMemoryDocumentSchema = z.object({
+  documentId: z.string().min(1),
+  revision: z.number().int().positive(),
+  offset: z.number().int().nonnegative().default(0),
+  maxCharacters: z.number().int().min(1).max(4000).default(4000),
+});
+
+export type ReadMemoryDocumentInput = z.infer<typeof readMemoryDocumentSchema>;
+
+export const memoryDocumentPageSchema = z.object({
+  documentId: z.string(),
+  revision: z.number().int().positive(),
+  content: z.string(),
+  offset: z.number().int().nonnegative(),
+  nextOffset: z.number().int().nonnegative().nullable(),
+  totalCharacters: z.number().int().nonnegative(),
+});
+
+export type MemoryDocumentPage = z.infer<typeof memoryDocumentPageSchema>;
+
+export const MEMORY_REFLECTION_TASK_TYPE = "memory_reflection";
+export const memoryReflectionTaskDataSchema = z.object({
+  contextId: z.string().min(1),
+  conversationId: z.string().min(1),
+  throughMessageId: z.string().min(1),
+  afterMessageId: z.string().nullable(),
+});
+export type MemoryReflectionTaskData = z.infer<typeof memoryReflectionTaskDataSchema>;
+
+export const memoryReflectionProposalSchema = z.object({
+  edits: z
+    .array(
+      z.object({
+        before: z.string().max(8000),
+        after: z.string().max(8000),
+        evidence: z
+          .array(
+            z.object({
+              messageId: z.string().min(1),
+              quote: z.string().min(1).max(2000),
+            }),
+          )
+          .min(1)
+          .max(8),
+      }),
+    )
+    .max(20),
+  changeNote: z.string().trim().min(1).max(500),
+});
+export type MemoryReflectionProposal = z.infer<typeof memoryReflectionProposalSchema>;
+
 export type MemoryDocumentSummary = z.infer<typeof memoryDocumentSummarySchema>;
 export type MemoryDocumentRevision = z.infer<typeof memoryDocumentRevisionSchema>;
 export type MemoryDocumentScope = z.infer<typeof memoryDocumentScopeSchema>;

@@ -1,4 +1,3 @@
-import { getSandbox } from "@cloudflare/sandbox";
 import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   DEFAULT_SANDBOX_MODEL as DEFAULT_MODEL,
@@ -11,7 +10,11 @@ import {
   type SandboxRunProofEvidence,
   type SandboxDeliveryPolicy,
 } from "@ngriffin_uk/polychat-schemas";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import {
+  quoteShellArgument,
+  truncateForModel,
+  generateId,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import { MAX_COMMANDS, MODEL_RETRY_OPTIONS } from "../../../../config/agent";
 import { MAX_LOG_CHARS } from "../../../../config/app";
@@ -25,10 +28,8 @@ import type {
 } from "../../../../types";
 import {
   execOrThrow,
-  execOrThrowRedacted,
   resolveGitHubRepo,
   buildSummary,
-  quoteForShell,
   buildCommitMessage,
   uniqueOutputLines,
   resolveAbsoluteRepoTargetDir,
@@ -51,6 +52,11 @@ import {
 import { runStoryTracker } from "../../infrastructure/feature-implementation/story-tracker";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../infrastructure/github-delivery";
 import { waitForInspectionWindow } from "../../infrastructure/inspection-window";
+import {
+  applySandboxEgress,
+  buildSandboxEgressPolicy,
+  takeBlockedEgressRisks,
+} from "../../infrastructure/network-egress";
 import { PolychatClient } from "../../infrastructure/polychat-client";
 import { RunControlClient } from "../../infrastructure/run-control-client";
 import { ProjectServiceSupervisor } from "../../infrastructure/service-supervisor";
@@ -117,10 +123,10 @@ export async function executeFeatureImplementation(
     throw new Error("POLYCHAT_API service binding is required");
   }
 
-  const runId = params.runId || crypto.randomUUID().slice(0, 8);
+  const runId = params.runId || generateId().slice(0, 8);
   const deliveryPolicy = resolveSandboxDeliveryPolicy(params.deliveryPolicy, params.shouldCommit);
   const shouldCommit = sandboxDeliveryPolicyCreatesCommit(deliveryPolicy);
-  const sandbox = getSandbox(env.Sandbox, runId);
+  const sandbox = env.WORKSPACE.get(env.WORKSPACE.idFromName(runId));
   const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
   const executionLogs: string[] = [];
   const redactionSecrets = [
@@ -208,6 +214,18 @@ export async function executeFeatureImplementation(
 
     const model = params.model || DEFAULT_MODEL;
     const repo = resolveGitHubRepo(params.repo, params.credentialBroker);
+    const egressPolicy = (declaredHosts?: readonly string[]) =>
+      buildSandboxEgressPolicy({
+        trustLevel: params.trustLevel ?? "balanced",
+        declaredHosts,
+        directGitHubCheckout: !repo.brokered,
+      });
+
+    await applySandboxEgress({
+      sandbox,
+      policy: egressPolicy(),
+      credentialBroker: repo.brokered ? params.credentialBroker : undefined,
+    });
 
     await checkpoint("Sandbox run cancelled before repository clone");
     await emit({
@@ -216,19 +234,11 @@ export async function executeFeatureImplementation(
       installationId: params.installationId,
     });
 
-    if (repo.checkoutAuthHeader) {
-      await execOrThrowRedacted(
-        sandbox,
-        `git -c http.extraHeader=${quoteForShell(repo.checkoutAuthHeader)} clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)}`,
-        executionLogs,
-        `git clone --depth 1 ${quoteForShell(repo.checkoutUrl)} ${quoteForShell(repo.targetDir)} [auth header redacted]`,
-      );
-    } else {
-      await sandbox.gitCheckout(repo.checkoutUrl, {
-        targetDir: repo.targetDir,
-        depth: 1,
-      });
-    }
+    await execOrThrow(
+      sandbox,
+      `git clone --filter=blob:none --depth 1 ${quoteShellArgument(repo.checkoutUrl)} ${quoteShellArgument(repo.targetDir)}`,
+      executionLogs,
+    );
 
     await emit({
       type: "repo_clone_completed",
@@ -250,7 +260,7 @@ export async function executeFeatureImplementation(
 
     repoTargetDir = resolveAbsoluteRepoTargetDir(sandboxRoot, repo.targetDir);
     const baseRevisionResult = await sandbox.exec(
-      `git -C ${quoteForShell(repoTargetDir)} rev-parse HEAD`,
+      `git -C ${quoteShellArgument(repoTargetDir)} rev-parse HEAD`,
     );
 
     if (baseRevisionResult.success) {
@@ -278,6 +288,7 @@ export async function executeFeatureImplementation(
       abortSignal,
       checkpoint,
       emit,
+      allowNetworkHosts: (hosts) => applySandboxEgress({ sandbox, policy: egressPolicy(hosts) }),
     });
 
     environmentEvidence = environmentPreparation.evidence;
@@ -321,7 +332,6 @@ export async function executeFeatureImplementation(
         runId,
         policy: deliveryPolicy,
         credentialBroker: params.credentialBroker,
-        checkoutAuthHeader: repo.checkoutAuthHeader,
         executionLogs,
       });
 
@@ -486,7 +496,9 @@ export async function executeFeatureImplementation(
     await checkpoint("Sandbox run cancelled during story tracking");
     serviceSupervisor?.throwIfFailed();
 
-    const diffResult = await sandbox.exec(`git -C ${quoteForShell(repoTargetDir)} diff --patch`);
+    const diffResult = await sandbox.exec(
+      `git -C ${quoteShellArgument(repoTargetDir)} diff --patch`,
+    );
 
     await checkpoint("Sandbox run cancelled during diff generation");
     if (!diffResult.success) {
@@ -495,7 +507,7 @@ export async function executeFeatureImplementation(
 
     const diff = diffResult.stdout;
     const changedFilesResult = await sandbox.exec(
-      `git -C ${quoteForShell(repoTargetDir)} ls-files --modified --others --exclude-standard`,
+      `git -C ${quoteShellArgument(repoTargetDir)} ls-files --modified --others --exclude-standard`,
     );
 
     if (changedFilesResult.success) {
@@ -512,29 +524,33 @@ export async function executeFeatureImplementation(
       await checkpoint("Sandbox run cancelled before commit");
       await execOrThrow(
         sandbox,
-        `git -C ${quoteForShell(repoTargetDir)} config user.name ${quoteForShell("Polychat Bot")}`,
+        `git -C ${quoteShellArgument(repoTargetDir)} config user.name ${quoteShellArgument("Polychat Bot")}`,
         executionLogs,
       );
       await execOrThrow(
         sandbox,
-        `git -C ${quoteForShell(repoTargetDir)} config user.email ${quoteForShell("bot@polychat.app")}`,
+        `git -C ${quoteShellArgument(repoTargetDir)} config user.email ${quoteShellArgument("bot@polychat.app")}`,
         executionLogs,
       );
-      await execOrThrow(sandbox, `git -C ${quoteForShell(repoTargetDir)} add -A`, executionLogs);
+      await execOrThrow(
+        sandbox,
+        `git -C ${quoteShellArgument(repoTargetDir)} add -A`,
+        executionLogs,
+      );
 
       const stagedStatus = await sandbox.exec(
-        `git -C ${quoteForShell(repoTargetDir)} diff --cached --quiet`,
+        `git -C ${quoteShellArgument(repoTargetDir)} diff --cached --quiet`,
       );
 
       await checkpoint("Sandbox run cancelled before commit");
       if (stagedStatus.exitCode !== 0) {
         await execOrThrow(
           sandbox,
-          `git -C ${quoteForShell(repoTargetDir)} commit -m ${quoteForShell(buildCommitMessage(task))}`,
+          `git -C ${quoteShellArgument(repoTargetDir)} commit -m ${quoteShellArgument(buildCommitMessage(task))}`,
           executionLogs,
         );
         const commitResult = await sandbox.exec(
-          `git -C ${quoteForShell(repoTargetDir)} rev-parse HEAD`,
+          `git -C ${quoteShellArgument(repoTargetDir)} rev-parse HEAD`,
         );
 
         if (commitResult.success) {
@@ -567,7 +583,6 @@ export async function executeFeatureImplementation(
           commitSha,
           validationSummary: qualityGateResult.summary,
           credentialBroker: params.credentialBroker,
-          checkoutAuthHeader: repo.checkoutAuthHeader,
           executionLogs,
           trustLevel: params.trustLevel ?? "balanced",
           approvalClient,
@@ -602,6 +617,7 @@ export async function executeFeatureImplementation(
 
     await serviceSupervisor?.stop();
 
+    const egressRisks = await takeBlockedEgressRisks(sandbox);
     const result: TaskResult = {
       success: true,
       logs: truncateForModel(executionLogs.join("\n"), MAX_LOG_CHARS),
@@ -621,7 +637,10 @@ export async function executeFeatureImplementation(
         branch: branchName,
         commit: commitSha,
         pullRequestUrl,
-        residualRisks: qualityGateResult.passed ? [] : [qualityGateResult.summary],
+        residualRisks: [
+          ...(qualityGateResult.passed ? [] : [qualityGateResult.summary]),
+          ...egressRisks,
+        ],
         incompleteWork: deliveryIncompleteReason ? [deliveryIncompleteReason] : [],
       }),
     };
@@ -636,6 +655,8 @@ export async function executeFeatureImplementation(
     console.error("Error during sandbox task execution:", classified);
 
     await serviceSupervisor?.stop();
+
+    const egressRisks = await takeBlockedEgressRisks(sandbox);
 
     await emit({
       type: classified.type === "cancelled" ? "task_cancelled" : "task_failed",
@@ -664,7 +685,7 @@ export async function executeFeatureImplementation(
         branch: branchName,
         commit: commitSha,
         pullRequestUrl,
-        residualRisks: [classified.message],
+        residualRisks: [classified.message, ...egressRisks],
         incompleteWork: ["The run ended before the objective was completed."],
       }),
     };

@@ -28,6 +28,7 @@
           ]
         },
         "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -35,6 +36,22 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 984,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
         }
       }
     },
@@ -77,10 +94,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.1,
+          "intelligenceIndex": 9.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -121,7 +138,7 @@
           "audio"
         ],
         "contextComplexity": 2,
-        "reliability": 2,
+        "reliability": 3,
         "releaseDate": "September 30, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -135,7 +152,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1036,
+              "value": 1060,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -252,14 +269,36 @@
         "name": "Gemini 3.5 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "May 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.2,
+          "intelligenceIndex": 32.6,
           "codingIndex": 70.1,
-          "agenticIndex": 37.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 26,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -290,7 +329,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "May 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -303,10 +342,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.2,
+          "intelligenceIndex": 32.6,
           "codingIndex": 70.1,
-          "agenticIndex": 37.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 26,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -327,6 +366,8 @@
             "text"
           ]
         },
+        "contextComplexity": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
@@ -337,6 +378,12 @@
             "high"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34,
+          "codingIndex": 69.2,
+          "agenticIndex": 29,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -345,6 +392,7 @@
         "name": "Gemini 3.7 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -357,6 +405,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "August 13, 2026",
         "reasoningConfig": {
@@ -366,6 +424,12 @@
             "high"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.1,
+          "codingIndex": 76.1,
+          "agenticIndex": 35.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -387,6 +451,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "August 13, 2026",
         "reasoningConfig": {
@@ -398,6 +472,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.1,
+          "codingIndex": 76.1,
+          "agenticIndex": 35.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -406,6 +486,7 @@
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -418,6 +499,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -426,6 +517,12 @@
             "high"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.9,
+          "codingIndex": 76.3,
+          "agenticIndex": 40.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -447,6 +544,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -457,6 +564,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.9,
+          "codingIndex": 76.3,
+          "agenticIndex": 40.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -468,10 +581,10 @@
         "reliability": 1,
         "releaseDate": "December 17, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 27.4,
+          "intelligenceIndex": 17.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -503,20 +616,11 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.4,
+          "intelligenceIndex": 17.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -530,10 +634,11 @@
         "releaseDate": "August 13, 2026"
       }
     },
-    "nano-banana": {
+    "gemini-nano-banana-2-1": {
       "defaults": {
-        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
-        "contextWindow": 32768,
+        "name": "Gemini Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -545,6 +650,53 @@
             "image"
           ]
         },
+        "releaseDate": "October 6, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "google-gemini-flash-latest": {
+      "defaults": {
+        "name": "Google: Gemini Flash Latest",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nano-banana": {
+      "defaults": {
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
         "strengths": [
           "vision",
           "document",
@@ -552,7 +704,7 @@
           "creative"
         ],
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "August 26, 2025",
         "supportsToolCalls": false,
@@ -565,10 +717,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1159,
+              "value": 984,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -576,11 +728,12 @@
     },
     "nano-banana-2": {
       "defaults": {
+        "name": "Nano Banana 2",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 131072,
         "maxTokens": 32768,
         "contextComplexity": 3,
-        "reliability": 5,
+        "reliability": 3,
         "releaseDate": "May 28, 2026",
         "supportsToolCalls": false,
         "reasoningConfig": {
@@ -599,48 +752,31 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1254,
+              "value": 1125,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 7
             }
           ]
         }
       }
     },
-    "nano-banana-2-preview": {
+    "nano-banana-2-1": {
       "defaults": {
-        "name": "Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+        "name": "Nano Banana 2.1",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 65536,
         "maxTokens": 58982,
-        "modalities": {
-          "input": [
-            "image",
-            "text"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
+          "tool_use",
           "image",
           "creative"
         ],
         "contextComplexity": 3,
-        "reliability": 5,
-        "releaseDate": "February 26, 2026",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
+        "reliability": 4,
+        "releaseDate": "October 6, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -650,13 +786,29 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1254,
+              "value": 1160,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 10
             }
           ]
         }
+      }
+    },
+    "nano-banana-2-preview": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false
       }
     },
     "nano-banana-gemini-2-5-flash-image": {
@@ -679,7 +831,7 @@
           "creative"
         ],
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "August 26, 2025",
         "supportsToolCalls": false,
@@ -693,10 +845,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1159,
+              "value": 984,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }

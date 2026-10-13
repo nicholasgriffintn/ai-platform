@@ -17,6 +17,8 @@ import replicate from "./replicate";
 import retrieval from "./retrieval";
 import sandbox from "./sandbox";
 import strudel from "./strudel";
+import twentyQuestions from "./twenty-questions";
+import verbatim from "./verbatim";
 
 const app = new Hono();
 
@@ -49,6 +51,10 @@ app.route("/replicate", replicate);
 app.route("/canvas", canvas);
 
 app.route("/strudel", strudel);
+
+app.route("/verbatim", verbatim);
+
+app.route("/twenty-questions", twentyQuestions);
 
 app.route("/sandbox", sandbox);
 

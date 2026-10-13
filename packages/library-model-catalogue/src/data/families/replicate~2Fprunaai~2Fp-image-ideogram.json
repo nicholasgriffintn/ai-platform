@@ -12,9 +12,26 @@
       "creative",
       "image"
     ],
+    "reliability": 2,
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 998,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 10
+        }
+      ]
+    }
   },
   "description": "P-Image-Ideogram is Pruna AI’s text-to-image model starting from 0,003$ per generation.",
   "models": {

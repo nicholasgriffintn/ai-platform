@@ -8,6 +8,7 @@ export const research: FunctionToolDescriptor = {
     "Executes deep web research using the configured provider. Ideal for market analysis, due diligence, and multi-source synthesis.",
   type: "byok",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

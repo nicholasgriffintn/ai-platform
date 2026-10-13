@@ -70,4 +70,5 @@ export const capture_screenshot: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };

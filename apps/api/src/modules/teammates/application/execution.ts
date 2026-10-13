@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ChatRun,
   TeammateConnectionGrant,
@@ -13,6 +14,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import { parseRecipeInstallationRecord } from "~/modules/apps/application/recipes";
+import { requireChannelSenderMapping } from "~/modules/channels/application/access";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -54,7 +56,7 @@ export async function prepareAdmittedTeammateContinuation(params: {
   if (
     !configuration.success ||
     configuration.data.teammateId !== params.teammateId ||
-    params.run.initiatorUserId !== user.id ||
+    !ownsResource(user.id, params.run.initiatorUserId) ||
     params.run.conversationId !== params.conversationId
   ) {
     throw new AssistantError(
@@ -204,7 +206,7 @@ export async function resolveTeammateInvocation(
         !delegation ||
         !isLiveDelegationState(delegation.state) ||
         !child ||
-        child.user_id !== user.id
+        !ownsResource(user.id, child.user_id)
       ) {
         throw new AssistantError("Delegation not found", ErrorType.NOT_FOUND, 404);
       }
@@ -232,9 +234,13 @@ export async function resolveTeammateInvocation(
     }
 
     case "channel": {
-      const binding = await context.repositories.channelBindings.getById(invocation.bindingId);
+      const { binding } = await requireChannelSenderMapping(context, {
+        bindingId: invocation.bindingId,
+        mappingId: invocation.senderMappingId,
+        revision: invocation.senderRevision,
+      });
 
-      if (!binding || !binding.enabled || !binding.teammate_id || binding.created_by !== user.id) {
+      if (!binding || !binding.enabled || !binding.teammate_id) {
         throw new AssistantError("Channel binding not found", ErrorType.NOT_FOUND, 404);
       }
 
@@ -272,7 +278,7 @@ export async function resolveTeammateInvocation(
 
       if (
         !installation ||
-        installation.created_by_user_id !== user.id ||
+        !ownsResource(user.id, installation.created_by_user_id) ||
         parsedInstallation?.status !== "active" ||
         !contextId
       ) {

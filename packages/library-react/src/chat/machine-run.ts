@@ -1,6 +1,6 @@
 import { machineRunClient } from "@ngriffin_uk/polychat-library-client";
 import { modelRuntimeVendorSchema } from "@ngriffin_uk/polychat-schemas";
-import { delay } from "@ngriffin_uk/polychat-utility-core";
+import { delay, generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { toRunMessages } from "../lib/run-messages.js";
 import type { DeviceModelRunOptions } from "./device-run.js";
@@ -16,7 +16,7 @@ export async function streamMachineModelRun({
     throw new Error("Choose a connected machine before sending.");
   }
 
-  const id = crypto.randomUUID();
+  const id = generateId();
   const machineId = model.machineId;
   let terminal = false;
 

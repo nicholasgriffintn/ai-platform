@@ -13,6 +13,14 @@
         "text"
       ]
     },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use",
+      "coding"
+    ],
+    "contextComplexity": 5,
+    "reliability": 3,
     "knowledgeCutoffDate": "April 30, 2026",
     "releaseDate": "September 4, 2026",
     "supportsToolCalls": true,
@@ -28,6 +36,12 @@
         "max"
       ],
       "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 52.7,
+      "codingIndex": 76.9,
+      "agenticIndex": 51,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The gpt astra family includes models that produce text.",
@@ -60,6 +74,23 @@
       "defaults": {
         "name": "OpenAI GPT Astra Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026"
+      }
+    },
+    "openai-gpt-astra-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Astra Latest ($$$$)",
+        "description": "This model always redirects to the latest model in the OpenAI GPT Astra family.",
         "modalities": {
           "input": [
             "pdf",

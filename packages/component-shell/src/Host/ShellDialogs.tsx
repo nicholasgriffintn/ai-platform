@@ -16,9 +16,9 @@ import { lazy, Suspense, useCallback, useMemo } from "react";
 
 import { useShellHost } from "./ShellHostContext.js";
 
-const MetaAssistantOverlay = lazy(() =>
-  import("../MetaAssistant/MetaAssistantOverlay.js").then((module) => ({
-    default: module.MetaAssistantOverlay,
+const PolyOverlay = lazy(() =>
+  import("../Poly/PolyOverlay.js").then((module) => ({
+    default: module.PolyOverlay,
   })),
 );
 
@@ -42,8 +42,7 @@ const BrowserModelConsentDialog = lazy(() =>
 
 export function ShellDialogs() {
   const host = useShellHost();
-  const { showMetaAssistant, setShowMetaAssistant, projectPicker, closeProjectPicker } =
-    useUIStore();
+  const { showPoly, setShowPoly, projectPicker, closeProjectPicker } = useUIStore();
   const { isAuthenticated } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
   const {
@@ -104,9 +103,9 @@ export function ShellDialogs() {
 
   return (
     <>
-      {showMetaAssistant && (
+      {showPoly && (
         <Suspense fallback={null}>
-          <MetaAssistantOverlay open onClose={() => setShowMetaAssistant(false)} />
+          <PolyOverlay open onClose={() => setShowPoly(false)} />
         </Suspense>
       )}
       {projectPicker && (

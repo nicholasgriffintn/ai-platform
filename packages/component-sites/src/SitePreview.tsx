@@ -14,6 +14,7 @@ export type SitePreviewViewport = keyof typeof SITE_PREVIEW_VIEWPORTS;
 
 export interface SitePreviewProps {
   project: SiteProject;
+  data?: Record<string, unknown>;
   pageId?: string;
   viewport?: SitePreviewViewport;
   onNavigate?: (pageId: string) => void;
@@ -40,6 +41,7 @@ export function findSitePageIdByPath(project: SiteProject, path: string): string
 
 export function SitePreview({
   project,
+  data,
   pageId,
   viewport = "desktop",
   onNavigate,
@@ -50,8 +52,8 @@ export function SitePreview({
 }: SitePreviewProps) {
   const resolvedPageId = resolveSitePageId(project, pageId);
   const payload = useMemo(
-    () => ({ project, pageId: resolvedPageId, inspecting, selectedKey }),
-    [inspecting, project, resolvedPageId, selectedKey],
+    () => ({ project, pageId: resolvedPageId, inspecting, selectedKey, data }),
+    [inspecting, project, resolvedPageId, selectedKey, data],
   );
   const handleNavigate = (path: string) => {
     const target = findSitePageIdByPath(project, path);

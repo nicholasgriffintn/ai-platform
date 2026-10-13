@@ -1,12 +1,17 @@
 import type { UsageEmissionOutcome } from "@ngriffin_uk/polychat-ai-billing";
 import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { InferenceImpact, RunProvenance } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import {
+  AGENT_HARNESS_PROVIDER,
+  type InferenceImpact,
+  type RunProvenance,
+} from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { nonEmptyToolCallsOrNull } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { Guardrails } from "~/infrastructure/providers/capabilities/guardrails";
+import { expandTurnArtifactEdits } from "~/modules/chat/application/agent/artifact-edit-expansion";
 import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
@@ -80,8 +85,14 @@ export async function finaliseAssistantTurn(
   const { turn, sink, env, model, completionId, context } = params;
 
   const guardrailResult = await validateOutput(params);
+  const editedTurn = guardrailResult.passed
+    ? await expandTurnArtifactEdits({
+        turn,
+        loadHistory: () => params.conversationManager.get(completionId),
+      })
+    : { turn, changed: false };
   const visibleTurn = guardrailResult.passed
-    ? turn
+    ? editedTurn.turn
     : {
         ...turn,
         content: "Response blocked by safety checks.",
@@ -158,25 +169,28 @@ export async function finaliseAssistantTurn(
 
   await params.conversationManager.add(completionId, message);
 
-  const usageOutcome = await recordModelTurnUsage(
-    createUsageRuntime({ env, repositories: context?.repositories }),
-    {
-      actor: params.conversationManager.creditActor(),
-      usage: auditedUsage,
-      rawUsage: turn.rawUsage,
-      parts: turn.parts,
-      structuredData: turn.structuredData,
-      tier: turn.serviceTier,
-      model,
-      provider: params.provider,
-      completionId,
-      messageId: message.id,
-      conversationId: completionId,
-      runId: params.runId ?? null,
-      runAttempt: params.runAttempt ?? null,
-      provenance: params.provenance,
-    },
-  );
+  const usageOutcome: UsageEmissionOutcome =
+    params.provider === AGENT_HARNESS_PROVIDER
+      ? "skipped"
+      : await recordModelTurnUsage(
+          createUsageRuntime({ env, repositories: context?.repositories }),
+          {
+            actor: params.conversationManager.creditActor(),
+            usage: auditedUsage,
+            rawUsage: turn.rawUsage,
+            parts: turn.parts,
+            structuredData: turn.structuredData,
+            tier: turn.serviceTier,
+            model,
+            provider: params.provider,
+            completionId,
+            messageId: message.id,
+            conversationId: completionId,
+            runId: params.runId ?? null,
+            runAttempt: params.runAttempt ?? null,
+            provenance: params.provenance,
+          },
+        );
 
   await params.conversationManager.releaseTurnReservation(usageReservationOutcome(usageOutcome));
 
@@ -190,7 +204,7 @@ export async function finaliseAssistantTurn(
     platform: message.platform,
     provenance: params.provenance,
     nonce: generateId(),
-    ...(guardrailResult.passed ? {} : { content: visibleTurn.content }),
+    ...(!guardrailResult.passed || editedTurn.changed ? { content: visibleTurn.content } : {}),
     post_processing: {
       guardrails: assistantMessage.guardrails,
     },

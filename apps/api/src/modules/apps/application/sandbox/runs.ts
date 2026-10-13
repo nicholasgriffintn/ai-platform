@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   SandboxRunControl,
   SandboxRunInstruction,
@@ -82,7 +83,7 @@ export async function getSandboxRunRecordForUser(params: {
 
   if (record.project_id) {
     await requireProjectAccess(context, record.project_id);
-  } else if (record.created_by_user_id !== userId) {
+  } else if (!ownsResource(userId, record.created_by_user_id)) {
     throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
   }
 

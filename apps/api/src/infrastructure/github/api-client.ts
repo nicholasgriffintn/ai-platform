@@ -1,3 +1,5 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 const GITHUB_API_VERSION = "2022-11-28";
 const GITHUB_USER_AGENT = "Polychat-Sandbox/1.0 (+https://polychat.app)";
 
@@ -22,9 +24,13 @@ export async function githubApiRequest(params: {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
+    const errorText = await response.text().catch(() => "");
 
-    throw new Error(`GitHub API error (${response.status}): ${errorText.slice(0, 500)}`);
+    throw new AssistantError(
+      `GitHub API error (${response.status}): ${errorText.slice(0, 500)}`,
+      ErrorType.EXTERNAL_API_ERROR,
+      response.status,
+    );
   }
 
   return response;

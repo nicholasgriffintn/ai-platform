@@ -149,6 +149,19 @@ export function useCapabilityLibraryController(
     for (const item of items) {
       const kind = getProjectCapabilityKind(item);
 
+      if (kind === "connector") {
+        const granted = scope.capabilities.some(
+          (capability) =>
+            capability.kind === kind &&
+            capability.capabilityId === item.capability.id &&
+            !capability.excluded,
+        );
+
+        if (scope.requiresExplicitEnablement ? granted : item.status === "connected") {
+          configured.add(item.id);
+        }
+      }
+
       if (kind === "tool") {
         const tool = toolById.get(item.capability.id);
         const projectConfiguration = scope.capabilities.find(
@@ -169,7 +182,13 @@ export function useCapabilityLibraryController(
     }
 
     return configured;
-  }, [items, scope.capabilities, toolById, toolConfigurationById]);
+  }, [
+    items,
+    scope.capabilities,
+    scope.requiresExplicitEnablement,
+    toolById,
+    toolConfigurationById,
+  ]);
   const kinds = useMemo(
     () => selectedFilters.filter((filter): filter is CatalogueItemKind => filter !== "configured"),
     [selectedFilters],

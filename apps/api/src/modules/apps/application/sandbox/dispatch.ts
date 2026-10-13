@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource, hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   resolveSandboxExecutionProvider,
@@ -166,7 +167,7 @@ async function ensureRunGoal(params: {
   user: IUser;
   objective: string;
 }): Promise<void> {
-  if (params.user.plan_id !== "pro" || !params.objective?.trim()) {
+  if (!hasProEntitlement(params.user) || !params.objective?.trim()) {
     return;
   }
 
@@ -581,11 +582,11 @@ export async function processSandboxRunDispatch(params: {
         installationId: message.payload.installationId,
         candidate: environmentCacheCandidate,
         candidateWasReused:
-          message.payload.environmentCache?.backupId === environmentCacheCandidate.backupId,
+          message.payload.environmentCache?.backup.id === environmentCacheCandidate.backup.id,
         replaceExistingCache:
           message.payload.environmentCache?.status === "ready" &&
           message.payload.environmentCache.cacheKey === environmentCacheCandidate.cacheKey &&
-          message.payload.environmentCache.backupId !== environmentCacheCandidate.backupId,
+          message.payload.environmentCache.backup.id !== environmentCacheCandidate.backup.id,
       });
     } catch (error) {
       logger.error("Failed to persist sandbox environment cache", {
@@ -693,7 +694,7 @@ export async function getSandboxRunRecordForDispatch(params: {
     params.runId,
   );
 
-  if (!record || record.created_by_user_id !== params.userId) {
+  if (!record || !ownsResource(params.userId, record.created_by_user_id)) {
     return null;
   }
 

@@ -1,7 +1,15 @@
-import type { ModelConfig } from "./models.js";
+import {
+  AGENT_HARNESS_DEFINITIONS,
+  AGENT_HARNESS_PROVIDER,
+  type AgentHarnessDefinition,
+  type AgentHarnessId,
+} from "./agent-harness.js";
+import { agentModelId } from "./agent-model-id.js";
+import type { ModelConfig, ModelConfigItem } from "./models.js";
 import {
   getProviderCapabilities,
   type AgentWorkspaceRequirement,
+  type ProviderCapabilities,
   type ProviderDriver,
 } from "./providers.js";
 
@@ -65,23 +73,73 @@ const AGENT_CATALOGUE: AgentCatalogueEntry[] = [
   },
 ];
 
-export const agentModelConfig: ModelConfig = Object.fromEntries(
-  AGENT_CATALOGUE.map(({ driver, name, description, workspace, runsOn, permissionModes }) => [
-    `agent/${driver}`,
-    {
-      kind: "agent",
-      matchingModel: driver,
-      name,
-      description,
-      provider: driver,
-      modalities: { input: ["text"], output: ["text"] },
-      runsOn,
-      isFree: driver !== "polychat-sandbox",
-      agent: {
-        capabilities: getProviderCapabilities(driver),
-        workspace,
-        permissionModes,
-      },
+export function agentHarnessModelId(harness: AgentHarnessId): string {
+  return agentModelId(`harness-${harness}`);
+}
+
+function harnessCapabilities(definition: AgentHarnessDefinition): ProviderCapabilities {
+  const actsOnFiles =
+    definition.capabilities.workspaceTools || definition.capabilities.ownsEnvironment;
+
+  return {
+    streamsText: true,
+    streamsReasoning: true,
+    picksOwnModel: definition.runtime === "remote",
+    listsModels: false,
+    writesFiles: actsOnFiles,
+    runsCommands: actsOnFiles,
+    reportsApprovals: definition.capabilities.approvals,
+    autoReview: false,
+    resumesSessions: true,
+    checkpoints: false,
+    rollsBack: false,
+    runsUnattended: true,
+  };
+}
+
+function harnessModelConfig(definition: AgentHarnessDefinition): ModelConfigItem {
+  return {
+    kind: "agent",
+    matchingModel: definition.id,
+    name: definition.name,
+    description: definition.description,
+    provider: AGENT_HARNESS_PROVIDER,
+    modalities: { input: ["text"], output: ["text"] },
+    runsOn: "server",
+    isFree: false,
+    agent: {
+      capabilities: harnessCapabilities(definition),
+      workspace: { kind: "none" },
+      permissionModes: definition.permissionModes,
     },
-  ]),
-);
+  };
+}
+
+export const agentModelConfig: ModelConfig = {
+  ...Object.fromEntries(
+    AGENT_CATALOGUE.map(({ driver, name, description, workspace, runsOn, permissionModes }) => [
+      agentModelId(driver),
+      {
+        kind: "agent",
+        matchingModel: driver,
+        name,
+        description,
+        provider: driver,
+        modalities: { input: ["text"], output: ["text"] },
+        runsOn,
+        isFree: driver !== "polychat-sandbox",
+        agent: {
+          capabilities: getProviderCapabilities(driver),
+          workspace,
+          permissionModes,
+        },
+      } satisfies ModelConfigItem,
+    ]),
+  ),
+  ...Object.fromEntries(
+    Object.values(AGENT_HARNESS_DEFINITIONS).map((definition) => [
+      agentHarnessModelId(definition.id),
+      harnessModelConfig(definition),
+    ]),
+  ),
+};

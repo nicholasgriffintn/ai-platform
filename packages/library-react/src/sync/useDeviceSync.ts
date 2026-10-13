@@ -1,6 +1,5 @@
 import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import {
-  CHATS_QUERY_KEY,
   DeviceSyncSocket,
   setActiveSyncSocket,
   useChatStore,
@@ -10,7 +9,7 @@ import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
-import { applySyncEvent } from "./bindings.js";
+import { applySyncEvent, invalidateSyncQueries } from "./bindings.js";
 import { createInvalidationQueue } from "./invalidation-queue.js";
 
 export function useDeviceSync(): void {
@@ -34,10 +33,16 @@ export function useDeviceSync(): void {
         store.noteEvent(event.topic);
       },
       onReset: () => {
-        queue.push([CHATS_QUERY_KEY, "remote"]);
+        invalidateSyncQueries(queue.push);
       },
       onPresence: (topic, devices) => store.setPresence(topic, devices),
-      onStatus: (status) => store.setStatus(status),
+      onStatus: (status) => {
+        store.setStatus(status);
+
+        if (status === "open") {
+          invalidateSyncQueries(queue.push);
+        }
+      },
     });
 
     socketRef.current = socket;
@@ -75,5 +80,5 @@ export function useDeviceSync(): void {
       socket.unsubscribe([topic]);
       useSyncStore.getState().clearPresence([topic]);
     };
-  }, [conversationId]);
+  }, [conversationId, isAuthenticated, userId]);
 }

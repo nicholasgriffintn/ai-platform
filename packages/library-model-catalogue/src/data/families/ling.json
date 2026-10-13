@@ -1,12 +1,184 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextComplexity": 4,
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The ling family includes models that produce text, video.",
   "models": {
+    "inclusionai-ling-3-0-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash",
+        "description": "*Ling-3.0-flash* is a *124B-parameter Mixture-of-Experts (MoE) model*, with approximately *5.1B parameters activated per token*. The model is designed with *token efficiency and production-scale agentic inference* as key priorities, enabling developers...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "July 23, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.1,
+          "codingIndex": 50.6,
+          "agenticIndex": 19.3,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-fin": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Fin",
+        "description": "Ling 3.0 Flash Fin is a finance-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for real-world investment...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.6,
+          "codingIndex": 55.6,
+          "agenticIndex": 27.9,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-sante": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Sante",
+        "description": "Ling 3.0 Flash Sante is a health and medicine-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-vl": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash VL",
+        "description": "Ling 3.0 Flash VL builds on Ling 3.0 Flash (124B total / 5.5B active MoE from InclusionAI), further strengthening its language capabilities while adding native visual perception and advanced visual...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "September 10, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.6,
+          "codingIndex": 57,
+          "agenticIndex": 28.7,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "inclusionai-ling-3-1-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.1 Flash (new)",
+        "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "October 2, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "inkling": {
       "defaults": {
         "name": "Inkling",
@@ -22,8 +194,21 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "July 15, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 52.1,
+          "agenticIndex": 22.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "inkling-256k": {
@@ -42,6 +227,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "July 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -53,6 +244,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 52.1,
+          "agenticIndex": 22.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -73,6 +270,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -86,6 +291,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25,
+          "codingIndex": 52.1,
+          "agenticIndex": 22.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -95,8 +306,15 @@
         "openWeights": true,
         "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
         "contextWindow": 524288,
+        "reliability": 2,
         "releaseDate": "July 30, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.7,
+          "codingIndex": 52.9,
+          "agenticIndex": 23.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "inkling-small-free": {
@@ -116,6 +334,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
         "releaseDate": "July 30, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -129,6 +355,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.7,
+          "codingIndex": 52.9,
+          "agenticIndex": 23.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -291,14 +523,13 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 23, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 26.1,
+          "intelligenceIndex": 17,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -317,14 +548,13 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 21, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.3,
-          "codingIndex": null,
+          "intelligenceIndex": 9.7,
+          "codingIndex": 25.3,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -341,6 +571,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "July 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -348,6 +582,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.1,
+          "codingIndex": 50.6,
+          "agenticIndex": 19.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -363,6 +603,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "August 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -370,6 +614,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.6,
+          "codingIndex": 55.6,
+          "agenticIndex": 27.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -386,6 +636,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -394,6 +648,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.6,
+          "codingIndex": 55.6,
+          "agenticIndex": 27.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -412,6 +672,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
         "releaseDate": "July 23, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -420,6 +684,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.1,
+          "codingIndex": 50.6,
+          "agenticIndex": 19.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -427,8 +697,6 @@
       "defaults": {
         "name": "Ling 3.0 Flash Sante",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 256000,
-        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -437,16 +705,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 4, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "September 4, 2026"
       }
     },
     "ling-3-0-flash-sante-free": {
@@ -467,6 +726,7 @@
       "defaults": {
         "name": "Ling 3.0 Flash VL",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "reliability": 2,
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -475,12 +735,19 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.6,
+          "codingIndex": 57,
+          "agenticIndex": 28.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "ling-3-0-flash-vl-free": {
       "defaults": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "reliability": 2,
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -489,6 +756,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.6,
+          "codingIndex": 57,
+          "agenticIndex": 28.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -506,6 +779,10 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
         "releaseDate": "August 5, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -517,6 +794,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.1,
+          "codingIndex": 26.5,
+          "agenticIndex": 4.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -531,11 +814,95 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
         "releaseDate": "August 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.1,
+          "codingIndex": 26.5,
+          "agenticIndex": 4.4,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "ling-3-1-flash": {
+      "defaults": {
+        "name": "Ling 3.1 Flash",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "ling-3-1-flash-free": {
+      "defaults": {
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 29, 2026"
+      }
+    },
+    "thinking-machines-inkling-small-free": {
+      "defaults": {
+        "name": "Thinking Machines: Inkling Small (free)",
+        "openWeights": true,
+        "description": "Inkling Small is an open-weight multimodal mixture-of-experts model from Thinking Machines Lab, with 12B active parameters out of 276B total. It is positioned as the smaller, more efficient member of...",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 30, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }

@@ -23,6 +23,7 @@ import {
   readNonEmptyString,
   sha256Hex,
   slugify,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Stream } from "@ngriffin_uk/polychat-utility-server/crypto";
 
@@ -137,7 +138,7 @@ export async function createUpload(
   validateFiles(request);
 
   const store = new ArtefactStore(context.env);
-  const uploadKey = crypto.randomUUID();
+  const uploadKey = generateId();
   const files: StoredUploadFile[] = [];
 
   for (const [index, file] of request.files.entries()) {

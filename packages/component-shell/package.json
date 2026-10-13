@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-shell",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Connected navigation shell shared by the Polychat web and desktop apps",
   "license": "Apache-2.0",
   "files": [
@@ -50,7 +50,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
-    "lucide-react": "1.45.0"
+    "lucide-react": "1.52.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
@@ -62,7 +62,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
-    "vite": "8.3.0",
+    "vite": "8.3.3",
     "vitest": "catalog:"
   },
   "peerDependencies": {

@@ -1,13 +1,18 @@
+import { slackChannelAddressSchema } from "@ngriffin_uk/polychat-schemas";
 import { timingSafeEqual, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type {
-  ChannelAdapter,
-  ChannelIncoming,
-  ChannelReply,
-  ChannelVerification,
+import {
+  CHANNEL_TOP_LEVEL_THREAD,
+  type ChannelIncoming,
+  type ChannelReply,
+  type ChannelVerification,
+  type WebhookChannelAdapter,
 } from "~/modules/channels/application/ports/channel-adapter";
+import { getChannelSecrets } from "~/modules/channels/application/secrets";
+import type { IEnv } from "~/types";
 
+import { parseSlackMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
 
 const SLACK_SIGNATURE_VERSION = "v0";
@@ -20,7 +25,7 @@ const encoder = new TextEncoder();
  * Slack signs every request with a timestamp and an HMAC over the raw body. Both are checked
  * before anything reaches a conversation, and a replayed request is refused on its timestamp.
  */
-export class SlackChannelAdapter implements ChannelAdapter {
+export class SlackChannelAdapter implements WebhookChannelAdapter {
   readonly id = "slack" as const;
   readonly label = "Slack";
   readonly scopes = ["project", "personal"] as const;
@@ -63,47 +68,41 @@ export class SlackChannelAdapter implements ChannelAdapter {
   }
 
   parse(rawBody: string): ChannelIncoming {
-    const payload = safeParseJson<Record<string, unknown>>(rawBody) ?? {};
-
-    if (payload.type === "url_verification" && typeof payload.challenge === "string") {
-      return { kind: "control", response: { challenge: payload.challenge } };
-    }
-
-    const event = payload.event;
-
-    if (
-      !event ||
-      typeof event !== "object" ||
-      (event as { type?: unknown }).type !== "message" ||
-      (event as { bot_id?: unknown }).bot_id !== undefined ||
-      (event as { subtype?: unknown }).subtype !== undefined
-    ) {
-      return { kind: "control", response: { ok: true, ignored: "not_a_user_message" } };
-    }
-
-    const typed = event as { channel?: string; user?: string; text?: string; ts?: string };
-
-    if (!typed.channel || !typed.ts || !typed.text?.trim()) {
-      return { kind: "control", response: { ok: true, ignored: "incomplete_message" } };
-    }
-
-    return {
-      kind: "message",
-      messageId: typed.ts,
-      externalId: typed.channel,
-      from: typed.user ?? typed.channel,
-      body: typed.text,
-    };
+    return parseSlackMessage(rawBody);
   }
 
-  async sendReply(reply: ChannelReply, secret: string): Promise<void> {
+  isReplyConfigured(env: IEnv): boolean {
+    return Boolean(getChannelSecrets(this.id, env).reply);
+  }
+
+  async sendReply(reply: ChannelReply, env: IEnv): Promise<void> {
+    const secret = getChannelSecrets(this.id, env).reply;
+
+    if (!secret) {
+      throw new AssistantError(
+        "Slack has no reply credential configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    const parsed = slackChannelAddressSchema.safeParse(reply.externalId);
+    const channelId = parsed.success ? parsed.data.split(":")[1] : null;
+
+    if (!channelId) {
+      throw new AssistantError("Invalid Slack destination", ErrorType.PARAMS_ERROR, 400);
+    }
+
     const response = await fetch(SLACK_POST_MESSAGE_URL, {
       method: "POST",
       headers: {
         authorization: `Bearer ${secret}`,
         "content-type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ channel: reply.externalId, text: reply.body }),
+      body: JSON.stringify({
+        channel: channelId,
+        text: reply.body,
+        ...(reply.threadId === CHANNEL_TOP_LEVEL_THREAD ? {} : { thread_ts: reply.threadId }),
+      }),
     });
 
     await requireSuccessfulChannelSend(response, "Slack");

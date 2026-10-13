@@ -138,3 +138,35 @@ export async function fetchArtificialAnalysisData({ apiUrl, apiKey }) {
 
   return models;
 }
+
+export function buildArtificialAnalysisTriggerUrl(apiUrl) {
+  return new URL("/admin/model-analysis/sync-completed", apiUrl).toString();
+}
+
+export async function triggerArtificialAnalysisIngest({ apiUrl, apiKey, write, stats }) {
+  if (!apiKey) {
+    throw new Error("POLYCHAT_API_KEY is required to queue the Artificial Analysis ingest");
+  }
+
+  const response = await fetch(buildArtificialAnalysisTriggerUrl(apiUrl), {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      source: "models.dev",
+      completedAt: new Date().toISOString(),
+      write,
+      stats,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to queue the Artificial Analysis ingest: ${response.status}`);
+  }
+
+  const payload = await response.json();
+
+  return typeof payload?.task_id === "string" ? payload.task_id : null;
+}

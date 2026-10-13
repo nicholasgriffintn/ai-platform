@@ -2,37 +2,47 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
-    "maxTokens": 384000,
     "modalities": {
       "input": [
-        "text"
+        "text",
+        "image"
       ],
       "output": [
         "text"
       ]
     },
+    "contextComplexity": 5,
+    "reliability": 2,
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
   "models": {
+    "deepseek-deepseek-flash-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek Flash family.",
+        "maxTokens": 943718,
+        "releaseDate": "September 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "deepseek-flash-latest": {
       "defaults": {
         "name": "DeepSeek Flash Latest",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -47,24 +57,17 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "September 10, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -73,17 +76,12 @@
         "name": "DeepSeek V4.1 Flash (EU)",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "maxTokens": 393216,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "September 10, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -93,24 +91,46 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
+      }
+    },
+    "deepseek-v4-1-flash-fast": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Fast",
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 32768,
+        "releaseDate": "September 10, 2026"
       }
     },
     "deepseek-v4-flash": {
       "defaults": {
         "name": "DeepSeek V4 Flash",
         "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "contextComplexity": 5,
-        "reliability": 1,
         "releaseDate": "April 24, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 28.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -118,7 +138,27 @@
       "defaults": {
         "name": "DeepSeek V4 Flash 0731",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "releaseDate": "July 31, 2026"
+        "maxTokens": 384000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "deepseek-v4-flash-0731-eu": {
@@ -126,7 +166,20 @@
         "name": "DeepSeek V4 Flash 0731 (EU)",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -136,6 +189,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -144,7 +203,20 @@
         "name": "DeepSeek V4 Flash 0731 (free)",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 393216,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -152,6 +224,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.3,
+          "codingIndex": 69.1,
+          "agenticIndex": 41,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -160,7 +238,16 @@
         "name": "DeepSeek V4 Flash 0731 TEE",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -174,17 +261,8 @@
       "defaults": {
         "name": "DeepSeek V4 Flash Vision Exp",
         "description": "Experimental multimodal DeepSeek V4 Flash model for image understanding, coding, and agentic work",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "maxTokens": 384000,
         "releaseDate": "August 21, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

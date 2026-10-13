@@ -9,6 +9,7 @@ import {
   encodeServerSentEventDone,
 } from "@ngriffin_uk/polychat-utility-core";
 
+import { handleComputerTraffic } from "./modules/computer/routes";
 import { executeSandboxTask } from "./modules/sandbox/application";
 import { verifySandboxJwt } from "./modules/sandbox/infrastructure/auth";
 import { handleSandboxPreviewRequest } from "./modules/sandbox/infrastructure/preview-gateway";
@@ -73,6 +74,12 @@ export default {
 
     if (previewResponse) {
       return previewResponse;
+    }
+
+    const computerResponse = await handleComputerTraffic(request, env);
+
+    if (computerResponse) {
+      return computerResponse;
     }
 
     const url = new URL(request.url);
@@ -226,7 +233,6 @@ export default {
             report: buildSandboxRunUsageReport({
               runId: params.runId,
               userId: tokenUserId,
-              instanceType: env.SANDBOX_INSTANCE_TYPE,
               startedAtMs,
               endedAtMs: Date.now(),
             }),
@@ -370,4 +376,7 @@ export default {
   },
 };
 
-export { Sandbox } from "@cloudflare/sandbox";
+export { DirectoryBackupGateway } from "@cloudflare/sandbox";
+export { Computer } from "./modules/computer/computer";
+export { Workspace } from "./modules/sandbox/infrastructure/workspace";
+export { WorkspaceOutbound } from "./modules/sandbox/infrastructure/workspace-outbound";

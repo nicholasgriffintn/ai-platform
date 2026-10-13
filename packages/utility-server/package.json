@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-utility-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Dependency-light server utilities shared by Polychat Workers and AI primitives: errors, logging, JSON, HTTP, streaming, redaction, and encoding helpers",
   "license": "Apache-2.0",
   "files": [
@@ -47,10 +47,35 @@
       "types": "./dist/crypto.d.ts",
       "import": "./dist/crypto.js"
     },
+    "./dkim": {
+      "polychat-source": "./src/dkim.ts",
+      "types": "./dist/dkim.d.ts",
+      "import": "./dist/dkim.js"
+    },
+    "./dns": {
+      "polychat-source": "./src/dns.ts",
+      "types": "./dist/dns.d.ts",
+      "import": "./dist/dns.js"
+    },
+    "./email-text": {
+      "polychat-source": "./src/email-text.ts",
+      "types": "./dist/email-text.d.ts",
+      "import": "./dist/email-text.js"
+    },
     "./embeddings": {
       "polychat-source": "./src/embeddings.ts",
       "types": "./dist/embeddings.d.ts",
       "import": "./dist/embeddings.js"
+    },
+    "./search-ranking": {
+      "polychat-source": "./src/search-ranking.ts",
+      "types": "./dist/search-ranking.d.ts",
+      "import": "./dist/search-ranking.js"
+    },
+    "./html-text": {
+      "polychat-source": "./src/html-text.ts",
+      "types": "./dist/html-text.d.ts",
+      "import": "./dist/html-text.js"
     },
     "./enabled-tools": {
       "polychat-source": "./src/enabled-tools.ts",
@@ -76,6 +101,11 @@
       "polychat-source": "./src/id.ts",
       "types": "./dist/id.d.ts",
       "import": "./dist/id.js"
+    },
+    "./internal-service-auth": {
+      "polychat-source": "./src/internal-service-auth.ts",
+      "types": "./dist/internal-service-auth.d.ts",
+      "import": "./dist/internal-service-auth.js"
     },
     "./image-dimensions": {
       "polychat-source": "./src/image-dimensions.ts",
@@ -147,6 +177,11 @@
       "types": "./dist/sanitise.d.ts",
       "import": "./dist/sanitise.js"
     },
+    "./server-timing": {
+      "polychat-source": "./src/server-timing.ts",
+      "types": "./dist/server-timing.d.ts",
+      "import": "./dist/server-timing.js"
+    },
     "./sql": {
       "polychat-source": "./src/sql.ts",
       "types": "./dist/sql.d.ts",
@@ -186,6 +221,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@ngriffin_uk/auth-jwt": "^2.0.0",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "zod": "catalog:"

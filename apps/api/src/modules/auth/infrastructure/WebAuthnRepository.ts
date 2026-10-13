@@ -3,15 +3,17 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { and, asc, eq } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { passkey, type Passkey } from "~/infrastructure/database/schema";
+import { userCredential } from "~/infrastructure/database/schema";
+import { toPasskey, type Passkey } from "~/infrastructure/database/user-credentials";
 
 const logger = getLogger({ prefix: "repositories/WebAuthnRepository" });
 
 export class WebAuthnRepository extends BaseRepository implements WebAuthnStore {
   public async saveCredential(credential: WebAuthnCredential): Promise<void> {
-    await this.database.insert(passkey).values({
+    await this.database.insert(userCredential).values({
+      kind: "passkey",
       user_id: Number(credential.userId),
-      credential_id: credential.id,
+      external_id: credential.id,
       public_key: credential.publicKeyJwk,
       counter: credential.signCount,
       device_type: credential.backupEligible ? "multiDevice" : "singleDevice",
@@ -25,21 +27,21 @@ export class WebAuthnRepository extends BaseRepository implements WebAuthnStore 
   public async findCredential(credentialId: string): Promise<WebAuthnCredential | null> {
     const [record] = await this.database
       .select()
-      .from(passkey)
-      .where(eq(passkey.credential_id, credentialId))
+      .from(userCredential)
+      .where(and(eq(userCredential.kind, "passkey"), eq(userCredential.external_id, credentialId)))
       .limit(1);
 
-    return record ? mapCredential(record) : null;
+    return record ? mapCredential(toPasskey(record)) : null;
   }
 
   public async listCredentials(userId: string): Promise<readonly WebAuthnCredential[]> {
     const records = await this.database
       .select()
-      .from(passkey)
-      .where(eq(passkey.user_id, Number(userId)))
-      .orderBy(asc(passkey.created_at));
+      .from(userCredential)
+      .where(and(eq(userCredential.kind, "passkey"), eq(userCredential.user_id, Number(userId))))
+      .orderBy(asc(userCredential.created_at));
 
-    return records.map(mapCredential);
+    return records.map((record) => mapCredential(toPasskey(record)));
   }
 
   public async updateSignCount(input: {
@@ -49,7 +51,7 @@ export class WebAuthnRepository extends BaseRepository implements WebAuthnStore 
     readonly backedUp: boolean;
   }): Promise<boolean> {
     const updated = await this.database
-      .update(passkey)
+      .update(userCredential)
       .set({
         counter: input.signCount,
         backed_up: input.backedUp,
@@ -57,25 +59,37 @@ export class WebAuthnRepository extends BaseRepository implements WebAuthnStore 
       })
       .where(
         and(
-          eq(passkey.credential_id, input.credentialId),
-          eq(passkey.counter, input.previousSignCount),
+          eq(userCredential.kind, "passkey"),
+          eq(userCredential.external_id, input.credentialId),
+          eq(userCredential.counter, input.previousSignCount),
         ),
       )
-      .returning({ id: passkey.id });
+      .returning({ id: userCredential.id });
 
     return updated.length === 1;
   }
 
   public async getPasskeysByUserId(userId: number): Promise<Passkey[]> {
-    return this.database.select().from(passkey).where(eq(passkey.user_id, userId));
+    const records = await this.database
+      .select()
+      .from(userCredential)
+      .where(and(eq(userCredential.kind, "passkey"), eq(userCredential.user_id, userId)));
+
+    return records.map(toPasskey);
   }
 
   public async deletePasskey(passkeyId: number, userId: number): Promise<boolean> {
     try {
       const deleted = await this.database
-        .delete(passkey)
-        .where(and(eq(passkey.id, passkeyId), eq(passkey.user_id, userId)))
-        .returning({ id: passkey.id });
+        .delete(userCredential)
+        .where(
+          and(
+            eq(userCredential.kind, "passkey"),
+            eq(userCredential.id, passkeyId),
+            eq(userCredential.user_id, userId),
+          ),
+        )
+        .returning({ id: userCredential.id });
 
       return deleted.length === 1;
     } catch (error) {

@@ -5,8 +5,10 @@ import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
+import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
 import { teammateSummarySchema } from "./teammates.js";
+import { parseToolFormValue } from "./utils/tool-form-values.js";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -99,7 +101,6 @@ export const contentExtractSchema = z.object({
   extract_depth: z.enum(["basic", "advanced"]).optional(),
   include_images: z.boolean().optional(),
   should_vectorize: z.boolean().optional(),
-  namespace: z.string().optional(),
   provider: z.enum(["auto", "tavily", "cloudflare", "greenpt"]).optional(),
   cloudflareFormat: z
     .enum(["markdown", "content", "json", "links", "scrape", "snapshot"])
@@ -185,16 +186,9 @@ export const speechGenerationSchema = z.object({
 });
 
 export const deepWebSearchSchema = z.object({
-  searchProvider: z.string().optional(),
-  query: z.string(),
-  options: z
-    .object({
-      search_depth: z.enum(["basic", "advanced"]).optional(),
-      include_answer: z.boolean().optional(),
-      include_raw_content: z.boolean().optional(),
-      include_images: z.boolean().optional(),
-    })
-    .optional(),
+  searchProvider: searchProviderSchema.optional(),
+  query: z.string().trim().min(1).max(4096),
+  options: searchOptionsSchema.optional(),
 });
 
 export const deepResearchSchema = z.object({
@@ -398,12 +392,16 @@ export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
   "articles",
+  "charades",
   "image-studio",
   "notes",
+  "photo-sorter",
   "recordings",
   "replicate",
   "sites",
   "strudel",
+  "twenty-questions",
+  "verbatim",
 ]);
 
 export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
@@ -496,6 +494,7 @@ export const toolFormFieldSchema = z.object({
   placeholder: z.string().optional(),
   required: z.boolean(),
   defaultValue: z.unknown().optional(),
+  valueFormat: z.enum(["json", "json-or-text"]).optional(),
   validation: z
     .object({
       pattern: z.string().optional(),
@@ -620,6 +619,18 @@ function getDynamicAppFieldError(field: ToolFormField, value: unknown): string |
     return undefined;
   }
 
+  if (field.valueFormat) {
+    try {
+      parseToolFormValue(field, value);
+    } catch (error) {
+      return error instanceof Error ? error.message : `${field.label} has an invalid format`;
+    }
+
+    if (typeof value !== "string") {
+      return undefined;
+    }
+  }
+
   const { validation } = field;
 
   switch (field.type) {
@@ -718,9 +729,14 @@ export function getToolFormErrors(
   app: Pick<RenderableTool, "formSchema">,
   formData: ToolFormData,
 ): ToolFormErrors {
-  const fieldIds = new Set(
-    app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id)),
-  );
+  const fieldIds = new Set<string>();
+
+  for (const step of app.formSchema.steps) {
+    for (const field of step.fields) {
+      fieldIds.add(field.id);
+    }
+  }
+
   const errors: ToolFormErrors = {};
 
   for (const step of app.formSchema.steps) {
@@ -1093,6 +1109,7 @@ export const recipeIntegrationSchema = z.object({
   requiresConnection: z.boolean().default(true),
   connectionGroup: z.string().optional(),
   operationIds: z.array(z.string()).optional(),
+  configurationKeys: z.array(z.string()).optional(),
   connectionStatus: recipeConnectionStatusSchema.optional(),
   setupUrl: z.string().optional(),
 });
@@ -1120,13 +1137,17 @@ export const recipeConfigurationFieldSchema = z.object({
   required: z.boolean().optional(),
   placeholder: z.string().optional(),
   defaultValue: recipeConfigurationValueSchema.optional(),
+  minimum: z.number().optional(),
+  maximum: z.number().optional(),
+  integer: z.boolean().optional(),
+  pattern: z.string().optional(),
 });
 
 export const recipeChatRequestOptionsSchema = z.object({
   id: z.string(),
   installationId: z.string().optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .optional(),
   allowedConnectorProviders: z.array(recipeConnectorProviderSchema).optional(),
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
@@ -1147,6 +1168,16 @@ export const assistantRecipeSchema = z.object({
   setupPrompt: z.string(),
   enabledTools: z.array(z.string()).default([]),
   configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
+  connectorPolicy: z
+    .object({
+      access: z.enum(["read", "write"]).optional(),
+      requireConfiguredIntegration: z.boolean().optional(),
+      parameters: z.enum(["explicit", "configuration"]).optional(),
+    })
+    .optional(),
+  invocationContext: z
+    .object({ instructions: z.string(), windowHoursKey: z.string().optional() })
+    .optional(),
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
 
@@ -1157,7 +1188,7 @@ export const assistantRecipesResponseSchema = z.object({
 });
 
 export const assistantRecipeInstallRequestSchema = z.object({
-  channel: z.enum(["web", "ios", "sms", "slack", "telegram"]).default("web"),
+  channel: z.enum(["web", "ios", "sms", "slack", "telegram", "email"]).default("web"),
   projectId: z.string().min(1).optional(),
   triggers: z.lazy(() => z.array(recipeInstallationTriggerSchema)).optional(),
   configuration: z.lazy(() => recipeConfigurationSchema).optional(),
@@ -1225,6 +1256,15 @@ export const recipeConnectorManifestSchema = z.object({
   updatedAt: z.string().optional(),
   scopes: z.array(z.string()),
   toolCount: z.number().int().nonnegative(),
+  operations: z
+    .array(
+      z.object({
+        id: z.string(),
+        access: z.enum(["read", "write"]),
+        destructive: z.boolean(),
+      }),
+    )
+    .optional(),
   readToolCount: z.number().int().nonnegative(),
   writeToolCount: z.number().int().nonnegative(),
   operationAccess: assistantCapabilityOperationAccessSchema.optional(),
@@ -1383,11 +1423,33 @@ export const recipeComposioTriggersResponseSchema = z.object({
   triggers: z.array(recipeComposioTriggerSchema),
 });
 
+export const recipeWebhookTriggerCreateRequestSchema = z.object({
+  condition: z.string().trim().min(1).max(2000).optional(),
+});
+
+export const recipeWebhookTriggerSchema = z.object({
+  id: z.string(),
+  installationId: z.string(),
+  projectId: z.string().nullable(),
+  condition: z.string().nullable(),
+  status: z.enum(["active", "paused", "error"]),
+  createdAt: z.string(),
+  updatedAt: z.string().nullable(),
+});
+
+export const recipeWebhookTriggerSecretSchema = recipeWebhookTriggerSchema.extend({
+  url: z.url(),
+});
+
+export const recipeWebhookTriggersResponseSchema = z.object({
+  triggers: z.array(recipeWebhookTriggerSchema),
+});
+
 export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
   projectId: z.string().min(1).optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .default("web"),
 });
 
@@ -1397,7 +1459,7 @@ export const recipeInvocationResponseSchema = z.object({
   installationId: z.string().optional(),
   projectId: z.string().nullable().optional(),
   channel: z
-    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
     .default("web"),
   status: z.enum(["ready", "queued", "blocked", "paused", "not_installed"]),
   conversationStarter: z.string(),
@@ -1429,6 +1491,12 @@ export type RecipeComposioTrigger = z.infer<typeof recipeComposioTriggerSchema>;
 export type ComposioTriggerType = z.infer<typeof composioTriggerTypeSchema>;
 export type ComposioTriggerTypesResponse = z.infer<typeof composioTriggerTypesResponseSchema>;
 export type RecipeComposioTriggersResponse = z.infer<typeof recipeComposioTriggersResponseSchema>;
+export type RecipeWebhookTriggerCreateRequest = z.infer<
+  typeof recipeWebhookTriggerCreateRequestSchema
+>;
+export type RecipeWebhookTrigger = z.infer<typeof recipeWebhookTriggerSchema>;
+export type RecipeWebhookTriggerSecret = z.infer<typeof recipeWebhookTriggerSecretSchema>;
+export type RecipeWebhookTriggersResponse = z.infer<typeof recipeWebhookTriggersResponseSchema>;
 export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
 export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;
 export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;

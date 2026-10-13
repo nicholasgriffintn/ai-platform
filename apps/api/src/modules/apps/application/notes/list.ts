@@ -5,7 +5,7 @@ import {
   type NoteFormatResponse,
   type NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import {
@@ -17,7 +17,6 @@ import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputReposi
 const NOTE_OUTPUT_KIND = "note";
 
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { describeDocument, formatDocumentBody } from "~/modules/documents/application";

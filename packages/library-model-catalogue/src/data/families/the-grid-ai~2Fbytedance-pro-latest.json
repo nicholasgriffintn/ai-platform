@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The the grid ai/bytedance pro latest family includes models that produce text.",
+  "models": {
+    "bytedance-pro-latest": {
+      "defaults": {
+        "name": "ByteDance Pro Latest",
+        "description": "Lab latest market for ByteDance Pro supply. You contract for the latest qualifying route, not a specific model."
+      }
+    }
+  }
+}

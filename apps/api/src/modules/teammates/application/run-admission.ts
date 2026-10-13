@@ -1,6 +1,8 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
+import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
+  isPolyTeammateId,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
   readToolIds,
@@ -15,10 +17,14 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { readToolInteractionId } from "~/modules/chat-runs/application/interactions";
+import {
+  readToolInteractionId,
+  readToolInteractionResolution,
+} from "~/modules/chat-runs/application/interactions";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
+import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { CoreChatOptions, IEnv, IUser } from "~/types";
 
@@ -27,6 +33,7 @@ import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
 import { resolveTeammateMcpServers } from "./mcp-servers";
+import { admitTeammateContextAuthority, requirePolyHomeRun } from "./poly-home";
 import { prepareTeammateRunResume } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -116,6 +123,11 @@ export async function enqueueTeammateRun({
   const teammate =
     preparedInvocation?.teammate ??
     (await requireTeammateAccess(serviceContext, teammateId, "read", user?.id));
+
+  if (isPolyTeammateId(teammateId)) {
+    requirePolyHomeRun(preparedInvocation?.resolution, body.completion_id);
+  }
+
   const liveMcpServers = resolveTeammateMcpServers(teammate.servers);
   const mcpServers = resumeConfiguration
     ? resumeConfiguration.mcpServers.filter((admitted) =>
@@ -142,7 +154,7 @@ export async function enqueueTeammateRun({
           {
             ...current,
             allowedOperations: current.allowedOperations.filter((operation) =>
-              admitted.allowedOperations.includes(operation),
+              operationIsGranted(admitted.allowedOperations, operation),
             ),
           },
         ];
@@ -189,13 +201,17 @@ export async function enqueueTeammateRun({
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ]),
   ];
-  const requestedEnabledTools = executionPolicy?.enabledTools ?? body.enabled_tools;
+  const isPolyTeammate = isPolyTeammateId(teammate.id);
+  const requestedEnabledTools = isPolyTeammate
+    ? executionPolicy?.enabledTools
+    : (executionPolicy?.enabledTools ?? body.enabled_tools);
   const liveEnabledTools = requestedEnabledTools
     ? intersectEnabledTools(currentEnabledTools, requestedEnabledTools)
     : currentEnabledTools;
-  const effectiveEnabledTools = resumeConfiguration
-    ? intersectEnabledTools(resumeConfiguration.enabledTools, liveEnabledTools)
-    : liveEnabledTools;
+  const effectiveEnabledTools =
+    resumeConfiguration && !isPolyTeammate
+      ? intersectEnabledTools(resumeConfiguration.enabledTools, liveEnabledTools)
+      : liveEnabledTools;
   const effectiveBody = {
     ...body,
     ...(effectiveEnabledTools ? { enabled_tools: effectiveEnabledTools } : {}),
@@ -270,7 +286,11 @@ export async function enqueueTeammateRun({
       ...(trigger ? { trigger } : {}),
       ...(durableExecution ? { durable_execution: durableExecution } : {}),
       ...(preparedInvocation?.resolution.context
-        ? { teammate_context_id: preparedInvocation.resolution.context.id }
+        ? admitTeammateContextAuthority({
+            context: preparedInvocation.resolution.context,
+            trigger,
+            now: Date.now(),
+          })
         : {}),
       ...(teammateComputer ? { computer_id: teammateComputer.id } : {}),
       ...(resolvedInvocation?.source === "delegation"
@@ -338,10 +358,22 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     input.body.completion_id,
     interactionId,
   );
+
+  if (isPolyTeammateId(input.teammateId)) {
+    await recordPolyApprovalOutcome({
+      context: serviceContext,
+      conversationId: input.body.completion_id,
+      interactionId,
+      options: input.body.options,
+    });
+  }
+
   const resume = await prepareTeammateRunResume({
     context: serviceContext,
     run,
     teammateId: input.teammateId,
+    interactionId,
+    resolution: readToolInteractionResolution(input.body.options),
   });
 
   return enqueueTeammateRun({

@@ -35,6 +35,7 @@
       "matchingModel": "mercury-2",
       "overrides": {
         "speed": 4,
+        "isFeatured": true,
         "knowledgeCutoffDate": "January 1, 2025",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -49,13 +50,19 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "mercury-2.5": {
       "model": "mercury/mercury-2-5",
       "matchingModel": "mercury-2.5",
       "overrides": {
         "description": "Mercury 2.5 is the fastest reasoning LLM, and the latest diffusion LLM (dLLM) from Inception",
+        "speed": 4,
+        "isFeatured": true,
         "knowledgeCutoffDate": "November 1, 2025",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00004,

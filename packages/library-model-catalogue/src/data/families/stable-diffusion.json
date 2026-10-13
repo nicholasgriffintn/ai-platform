@@ -57,7 +57,7 @@
           "document",
           "image"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -68,10 +68,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1024,
+              "value": 840,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }

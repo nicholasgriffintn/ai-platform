@@ -147,18 +147,21 @@ export async function getUserProviderSettings(
   const id = userId ?? context.requireUser().id;
 
   const settings = await repo.getUserProviderSettings(id);
+  const configurableProviderIds = new Set(listConfigurableUserProviderIds());
 
-  return settings.map((setting) => {
-    const metadata = getUserConfigurableProviderMetadata(setting.provider_id as string);
+  return settings
+    .filter((setting) => configurableProviderIds.has(setting.provider_id as string))
+    .map((setting) => {
+      const metadata = getUserConfigurableProviderMetadata(setting.provider_id as string);
 
-    return {
-      ...setting,
-      type: metadata.type,
-      name: metadata.name,
-      description: metadata.description,
-      configurationFields: metadata.configurationFields,
-    };
-  });
+      return {
+        ...setting,
+        type: metadata.type,
+        name: metadata.name,
+        description: metadata.description,
+        configurationFields: metadata.configurationFields,
+      };
+    });
 }
 
 export async function getUserProviderSyncStatus(context: ServiceContext, userId?: number) {

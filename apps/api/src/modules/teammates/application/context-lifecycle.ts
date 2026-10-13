@@ -1,10 +1,11 @@
 import {
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  type TeammateAutonomyLevel,
   type TeammateContext,
   type TeammateContextStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { TaskService } from "~/modules/tasks/application/TaskService";
@@ -73,6 +74,24 @@ export async function mutateTeammateContextsWithCleanup(
   if (mutationError) {
     throw mutationError;
   }
+}
+
+export async function updateTeammateContextAutonomy(
+  context: ServiceContext,
+  contextId: string,
+  autonomyLevel: TeammateAutonomyLevel,
+): Promise<TeammateContext> {
+  await requireOwnedTeammateContext(context, contextId);
+  const updated = await context.repositories.teammateContexts.updateAutonomyLevel(
+    contextId,
+    autonomyLevel,
+  );
+
+  if (!updated) {
+    throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return updated;
 }
 
 export async function updateTeammateContextStatus(

@@ -1,8 +1,7 @@
 import { HOSTED_MCP_APPROVAL_TOOL_NAME, type ModelModalities } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import {
   hasPrivateAssetStorage,
@@ -112,6 +111,10 @@ export class ResponseFormatter {
       standardcompute: openAI,
       "the-grid-ai": openAI,
       "kimi-for-coding": anthropic,
+      kilo: openAI,
+      nebius: openAI,
+      baseten: openAI,
+      nvidia: openAI,
       thinkingmachines: anthropic,
       replicate: replicate,
       fal: replicate,

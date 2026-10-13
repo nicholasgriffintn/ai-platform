@@ -1,6 +1,6 @@
 # ADR 0040: Delegate to a teammate in its own conversation
 
-Status: Accepted.
+Status: Implemented.
 
 ## Problem
 

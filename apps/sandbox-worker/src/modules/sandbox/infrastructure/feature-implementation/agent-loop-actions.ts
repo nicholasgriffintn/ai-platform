@@ -2,7 +2,7 @@ import type { AgentMessage } from "@ngriffin_uk/polychat-ai-agents";
 import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   MAX_COMMANDS,
@@ -15,11 +15,9 @@ import {
   assertSafeCommand,
   formatCommandResult,
   getCommandRiskLevel,
-  quoteForShell,
   runSandboxCommand,
 } from "../commands";
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
-import { runSandboxScript } from "../script-execution";
 import { resolveCommandApproval } from "./command-approval";
 import { readRepositoryFileSnippet } from "./context";
 import { formatCommandObservation, formatReadObservation } from "./prompts";
@@ -317,7 +315,7 @@ export async function handleRunCommandAction(
 
   const result = await runSandboxCommand(
     context.sandbox,
-    `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(decision.command, context.environmentVariables, context.environmentVariableNames)}`,
+    `cd ${quoteShellArgument(context.repoTargetDir)} && ${withSandboxEnvironment(decision.command, context.environmentVariables, context.environmentVariableNames)}`,
     {
       abortSignal: context.abortSignal,
       redactionSecrets: context.redactionSecrets,
@@ -496,7 +494,7 @@ export async function handleRunParallelAction(
     commands.map((command, index) =>
       runSandboxCommand(
         context.sandbox,
-        `cd ${quoteForShell(context.repoTargetDir)} && ${withSandboxEnvironment(command, context.environmentVariables, context.environmentVariableNames)}`,
+        `cd ${quoteShellArgument(context.repoTargetDir)} && ${withSandboxEnvironment(command, context.environmentVariables, context.environmentVariableNames)}`,
         {
           abortSignal: context.abortSignal,
           redactionSecrets: context.redactionSecrets,
@@ -650,15 +648,14 @@ export async function handleRunScriptAction(
     commandTotal: MAX_COMMANDS,
   });
 
-  let execution: Awaited<ReturnType<typeof context.sandbox.runCode>>;
+  let execution: Awaited<ReturnType<typeof context.sandbox.runScript>>;
 
   try {
-    execution = await runSandboxScript(
-      context.sandbox,
-      decision.code,
-      scriptLanguage,
-      context.repoTargetDir,
-    );
+    execution = await context.sandbox.runScript({
+      language: scriptLanguage,
+      code: decision.code,
+      cwd: context.repoTargetDir,
+    });
   } catch (error) {
     context.state.consecutiveCommandFailures += 1;
     const errorMessage = error instanceof Error ? error.message : "Script execution failed";
@@ -688,17 +685,18 @@ export async function handleRunScriptAction(
     return;
   }
 
-  const scriptStdout = execution.logs?.stdout?.join("\n") ?? "";
-  const scriptStderr = execution.logs?.stderr?.join("\n") ?? "";
-  const scriptOutput = [scriptStdout, scriptStderr].filter(Boolean).join("\n");
+  const scriptOutput = [execution.stdout.trim(), execution.stderr.trim()]
+    .filter(Boolean)
+    .join("\n");
 
   context.executionLogs.push(
     `[script:${scriptLanguage}]\n${truncateForModel(decision.code, 1000)}\n---\n${truncateForModel(scriptOutput, MAX_OBSERVATION_CHARS)}`,
   );
 
-  if (execution.error) {
+  if (!execution.success) {
     context.state.consecutiveCommandFailures += 1;
-    const errorMessage = execution.error.message || "Script execution failed";
+    const errorMessage =
+      execution.stderr.trim().split("\n").at(-1) || `Script exited with code ${execution.exitCode}`;
 
     await context.emit({
       type: "script_failed",
@@ -708,11 +706,7 @@ export async function handleRunScriptAction(
       error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
     });
 
-    const traceback = execution.error.traceback
-      ? Array.isArray(execution.error.traceback)
-        ? execution.error.traceback.join("\n")
-        : String(execution.error.traceback)
-      : undefined;
+    const traceback = execution.stderr.trim() || undefined;
 
     pushUserMessage(
       context.messages,

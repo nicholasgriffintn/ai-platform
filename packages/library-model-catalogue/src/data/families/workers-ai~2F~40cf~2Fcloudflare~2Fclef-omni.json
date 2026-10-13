@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65536,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video"
+      ],
+      "output": [
+        "decision"
+      ]
+    },
+    "strengths": [
+      "decision",
+      "analysis",
+      "vision",
+      "transcription"
+    ],
+    "releaseDate": "October 9, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Cloudflare Clef Omni returns calibrated probabilities for typed questions about text, images, audio and video.",
+  "models": {
+    "clef-omni": {
+      "defaults": {
+        "name": "Clef Omni",
+        "description": "Cloudflare’s 30B mixture-of-experts decision model (3B active) for choice, score and yes/no questions about text, images, audio and video with its soundtrack."
+      }
+    }
+  }
+}

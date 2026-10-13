@@ -7,6 +7,7 @@ export const apply_edit_completion: FunctionToolDescriptor = {
   description: "Apply a code snippet update using Mercury Coder's apply-edit capability.",
   type: "premium",
   permissions: ["network"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

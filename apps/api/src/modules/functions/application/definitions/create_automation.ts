@@ -11,6 +11,7 @@ export const create_automation: FunctionToolDescriptor = {
     "Set up standing work that runs on a schedule, from a description of when it should run and what it should do. Agree the schedule and the instruction with the user first, and say the schedule back to them in words before calling this. Use discover_capabilities to find which recipe runs the work.",
   type: "premium",
   permissions: ["write"],
+  effects: { effectClass: "write" },
   inputSchema: createAutomationInputSchema,
   intentEvidence: (input) => ({
     operation: "create_automation",

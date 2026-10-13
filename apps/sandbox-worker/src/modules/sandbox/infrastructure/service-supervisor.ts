@@ -1,4 +1,3 @@
-import { ProcessReadyTimeoutError, type Process } from "@cloudflare/sandbox";
 import {
   createSandboxOutputRedactor,
   redactSandboxError,
@@ -12,17 +11,11 @@ import {
   type SandboxServiceStatus,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
-import { delay } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument, delay, generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { READ_LISTENING_SOCKETS_COMMAND } from "../../../config/app";
 import type { TaskEvent } from "../../../types";
-import {
-  assertSafeCommand,
-  getCommandRiskLevel,
-  quoteForShell,
-  type SandboxProcessInstance,
-} from "./commands";
-import { hasSandboxErrorCode } from "./errors";
+import { assertSafeCommand, getCommandRiskLevel, type SandboxProcessInstance } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet } from "./network-ports";
 import type { RunControlClient } from "./run-control-client";
@@ -35,6 +28,8 @@ const MAX_SERVICE_LOG_EVENTS = 20;
 const MAX_SERVICE_LOG_EVENT_CHARS = 2_000;
 const MAX_OBSERVATION_FAILURES = 3;
 
+class ServiceReadyTimeoutError extends Error {}
+
 interface ManagedService {
   redactors: Record<"stdout" | "stderr", ReturnType<typeof createSandboxOutputRedactor>>;
   definition: SandboxServiceDefinition;
@@ -46,9 +41,8 @@ interface ManagedService {
   logCharacters: number;
   logEvents: number;
   logTruncationReported: boolean;
-  stdoutLength: number;
-  stderrLength: number;
-  process?: Process;
+  logOffset: number;
+  processId?: string;
   startedAt?: string;
   healthyAt?: string;
   stoppedAt?: string;
@@ -98,7 +92,7 @@ function topologicalServices(services: SandboxServiceDefinition[]): SandboxServi
 
 function serviceIsActive(service: ManagedService): boolean {
   return (
-    Boolean(service.process) ||
+    Boolean(service.processId) ||
     service.status === "starting" ||
     service.status === "running" ||
     service.status === "healthy" ||
@@ -182,8 +176,7 @@ export class ProjectServiceSupervisor {
         logCharacters: 0,
         logEvents: 0,
         logTruncationReported: false,
-        stdoutLength: 0,
-        stderrLength: 0,
+        logOffset: 0,
       };
 
       this.managed.set(definition.name, managed);
@@ -271,7 +264,7 @@ export class ProjectServiceSupervisor {
       definition.workingDirectory === "."
         ? this.options.repoTargetDir
         : `${this.options.repoTargetDir}/${definition.workingDirectory}`;
-    const result = await this.options.sandbox.exec(`realpath ${quoteForShell(requested)}`);
+    const result = await this.options.sandbox.exec(`realpath ${quoteShellArgument(requested)}`);
     const resolved = result.stdout.trim().split("\n").at(-1);
 
     if (!result.success || !resolved) {
@@ -402,19 +395,14 @@ export class ProjectServiceSupervisor {
   }
 
   private async collectProcessLogs(service: ManagedService): Promise<void> {
-    const logs = await service.process?.getLogs();
-
-    if (!logs) {
+    if (!service.processId) {
       return;
     }
 
-    const stdoutOffset = Math.min(service.stdoutLength, logs.stdout.length);
-    const stderrOffset = Math.min(service.stderrLength, logs.stderr.length);
+    const logs = await this.options.sandbox.readProcessLogs(service.processId, service.logOffset);
 
-    this.queueLogEvent(service, "stdout", logs.stdout.slice(stdoutOffset));
-    this.queueLogEvent(service, "stderr", logs.stderr.slice(stderrOffset));
-    service.stdoutLength = logs.stdout.length;
-    service.stderrLength = logs.stderr.length;
+    this.queueLogEvent(service, "stdout", logs.output);
+    service.logOffset = logs.offset;
   }
 
   private async startManagedService(service: ManagedService): Promise<void> {
@@ -465,42 +453,31 @@ export class ProjectServiceSupervisor {
       timeoutSeconds: definition.startupTimeoutSeconds,
     });
 
-    let process: Process | undefined;
+    const processId = `polychat-${definition.name}-${generateId().slice(0, 8)}`;
+    let started = false;
 
     try {
-      process = await this.options.sandbox.startProcess(
-        withSandboxEnvironment(
+      await this.options.sandbox.startProcess({
+        id: processId,
+        command: withSandboxEnvironment(
           definition.command,
           this.options.environmentVariables,
           definition.environment,
         ),
-        {
-          cwd: service.absoluteWorkingDirectory,
-          autoCleanup: false,
-          processId: `polychat-${definition.name}-${crypto.randomUUID().slice(0, 8)}`,
-        },
-      );
-      service.process = process;
-      service.stdoutLength = 0;
-      service.stderrLength = 0;
-      const processStatus = await process.getStatus();
+        cwd: service.absoluteWorkingDirectory,
+      });
+      started = true;
+      service.processId = processId;
+      service.logOffset = 0;
+      const processState = await this.options.sandbox.readProcess(processId);
 
-      if (
-        processStatus === "completed" ||
-        processStatus === "failed" ||
-        processStatus === "killed" ||
-        processStatus === "error"
-      ) {
-        throw new Error(`Service exited before becoming ready with status ${processStatus}`);
+      if (processState.status !== "running") {
+        throw new Error(`Service exited before becoming ready with status ${processState.status}`);
       }
 
       if (definition.expectedPort !== undefined && definition.healthCheck) {
-        await this.waitForServiceHealth(
-          process,
-          definition,
-          definition.startupTimeoutSeconds * 1000,
-          true,
-        );
+        await this.options.sandbox.exposePort(definition.expectedPort);
+        await this.waitForServiceHealth(definition, definition.startupTimeoutSeconds * 1000, true);
         service.status = "healthy";
         service.healthyAt = new Date().toISOString();
 
@@ -524,8 +501,11 @@ export class ProjectServiceSupervisor {
         });
       }
     } catch (error) {
-      await process?.kill().catch(() => undefined);
-      service.process = undefined;
+      if (started) {
+        await this.options.sandbox.stopProcess(processId).catch(() => undefined);
+      }
+
+      service.processId = undefined;
 
       if (error instanceof SandboxCancellationError) {
         service.status = "stopped";
@@ -542,9 +522,7 @@ export class ProjectServiceSupervisor {
         throw error;
       }
 
-      const timedOut =
-        error instanceof ProcessReadyTimeoutError ||
-        hasSandboxErrorCode(error, "PROCESS_READY_TIMEOUT");
+      const timedOut = error instanceof ServiceReadyTimeoutError;
       const message = redactSandboxError(error, this.redactionSecrets);
 
       service.status = timedOut ? "timed_out" : "failed";
@@ -627,10 +605,10 @@ export class ProjectServiceSupervisor {
 
   private async stopManagedService(service: ManagedService, reason: string): Promise<void> {
     service.desiredStopped = true;
-    const process = service.process;
+    const processId = service.processId;
 
     if (
-      !process &&
+      !processId &&
       (service.status === "stopped" ||
         service.status === "failed" ||
         service.status === "timed_out")
@@ -639,7 +617,11 @@ export class ProjectServiceSupervisor {
     }
 
     await this.collectProcessLogs(service).catch(() => undefined);
-    await process?.kill().catch(() => undefined);
+
+    if (processId) {
+      await this.options.sandbox.stopProcess(processId).catch(() => undefined);
+    }
+
     await this.collectProcessLogs(service).catch(() => undefined);
 
     if (service.definition.expectedPort !== undefined) {
@@ -648,7 +630,7 @@ export class ProjectServiceSupervisor {
         .catch(() => undefined);
     }
 
-    service.process = undefined;
+    service.processId = undefined;
     service.status = "stopped";
     service.error = undefined;
     service.stoppedAt = new Date().toISOString();
@@ -664,17 +646,17 @@ export class ProjectServiceSupervisor {
   }
 
   private async observeService(service: ManagedService): Promise<void> {
-    const process = service.process;
+    const processId = service.processId;
 
-    if (!process || service.desiredStopped || this.stopping) {
+    if (!processId || service.desiredStopped || this.stopping) {
       return;
     }
 
-    let observedProcess: Process | null;
+    let observedProcess: Awaited<ReturnType<SandboxProcessInstance["readProcess"]>>;
 
     try {
       await this.collectProcessLogs(service);
-      observedProcess = await this.options.sandbox.getProcess(process.id);
+      observedProcess = await this.options.sandbox.readProcess(processId);
     } catch (error) {
       service.observationFailures += 1;
       service.status = "unhealthy";
@@ -690,7 +672,7 @@ export class ProjectServiceSupervisor {
       });
 
       if (service.observationFailures >= MAX_OBSERVATION_FAILURES) {
-        await process.kill().catch(() => undefined);
+        await this.options.sandbox.stopProcess(processId).catch(() => undefined);
         await this.handleUnexpectedStop(
           service,
           `Service health could not be observed after ${MAX_OBSERVATION_FAILURES} attempts`,
@@ -702,12 +684,10 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    const status = observedProcess?.status ?? "error";
-
-    if (status === "starting" || status === "running") {
+    if (observedProcess.status === "running") {
       if (service.definition.expectedPort !== undefined && service.definition.healthCheck) {
         try {
-          await this.waitForServiceHealth(process, service.definition, 1_000, false);
+          await this.waitForServiceHealth(service.definition, 1_000, false);
 
           if (service.status === "unhealthy") {
             service.status = "healthy";
@@ -752,7 +732,7 @@ export class ProjectServiceSupervisor {
           });
 
           if (service.observationFailures >= MAX_OBSERVATION_FAILURES) {
-            await process.kill().catch(() => undefined);
+            await this.options.sandbox.stopProcess(processId).catch(() => undefined);
             await this.handleUnexpectedStop(
               service,
               `Service health check failed ${MAX_OBSERVATION_FAILURES} times`,
@@ -768,7 +748,7 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    const exitCode = observedProcess?.exitCode;
+    const exitCode = observedProcess.exitCode ?? undefined;
     const message = `Service exited unexpectedly${exitCode === undefined ? "" : ` with code ${exitCode}`}`;
 
     await this.handleUnexpectedStop(
@@ -780,7 +760,6 @@ export class ProjectServiceSupervisor {
   }
 
   private async waitForServiceHealth(
-    process: Process,
     definition: SandboxServiceDefinition,
     timeout: number,
     observeCancellation: boolean,
@@ -789,14 +768,23 @@ export class ProjectServiceSupervisor {
       return;
     }
 
-    const readiness = process.waitForPort(definition.expectedPort, {
-      mode: definition.healthCheck.type,
-      path: definition.healthCheck.type === "http" ? definition.healthCheck.path : undefined,
-      status:
-        definition.healthCheck.type === "http" ? definition.healthCheck.expectedStatus : undefined,
-      timeout,
-      interval: 250,
-    });
+    const port = definition.expectedPort;
+    const healthCheck = definition.healthCheck;
+    const readiness = (async () => {
+      const ready = await this.options.sandbox.waitForPort(port, {
+        mode: healthCheck.type,
+        ...(healthCheck.type === "http"
+          ? { path: healthCheck.path, expectedStatus: healthCheck.expectedStatus }
+          : {}),
+        timeoutMs: timeout,
+      });
+
+      if (!ready) {
+        throw new ServiceReadyTimeoutError(
+          `Service ${definition.name} did not answer on port ${port}`,
+        );
+      }
+    })();
 
     if (!observeCancellation) {
       await readiness;
@@ -842,7 +830,7 @@ export class ProjectServiceSupervisor {
     exitCode: number | undefined,
     failed: boolean,
   ): Promise<void> {
-    service.process = undefined;
+    service.processId = undefined;
     service.status = "unhealthy";
     service.error = message;
 

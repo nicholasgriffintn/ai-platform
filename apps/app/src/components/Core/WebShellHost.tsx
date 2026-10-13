@@ -36,7 +36,7 @@ function WebShellDialogs() {
 
 export function WebShellHost({ children }: { children: ReactNode }) {
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
-  const setShowMetaAssistant = useUIStore((state) => state.setShowMetaAssistant);
+  const setShowPoly = useUIStore((state) => state.setShowPoly);
   const setComputeSite = useChatStore((state) => state.setComputeSite);
   const { logout } = useAuthStatus();
   const navigate = useNavigate();
@@ -72,7 +72,7 @@ export function WebShellHost({ children }: { children: ReactNode }) {
   const host = useMemo<ShellHost>(
     () => ({
       webBaseUrl: typeof window === "undefined" ? WEB_APP_BASE_URL : window.location.origin,
-      openAssistant: () => setShowMetaAssistant(true),
+      openAssistant: () => setShowPoly(true),
       openSignIn: () => setShowLoginModal(true),
       signOut: () => logout(),
       TaskNotificationSettings: WebPushTaskNotificationSettings,
@@ -80,8 +80,9 @@ export function WebShellHost({ children }: { children: ReactNode }) {
       modelSourceSurface: "web",
       modelSourceRows,
       openProviderSettings: () => void navigate("/profile?tab=providers"),
+      downloadsPath: "/downloads",
     }),
-    [logout, modelSourceRows, navigate, setShowLoginModal, setShowMetaAssistant],
+    [logout, modelSourceRows, navigate, setShowLoginModal, setShowPoly],
   );
 
   return <ShellHostProvider host={host}>{children}</ShellHostProvider>;

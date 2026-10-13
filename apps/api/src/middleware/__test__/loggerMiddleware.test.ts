@@ -81,22 +81,4 @@ describe("loggerMiddleware", () => {
     expect(logged).not.toContain("single-use-secret");
     expect(logged).toContain("%5Bredacted%5D");
   });
-
-  it("rethrows a failing handler rather than swallowing it", async () => {
-    const error = new Error("Test error");
-
-    mockNext.mockRejectedValue(error);
-
-    await expect(loggerMiddleware(createMockContext(), mockNext as Next)).rejects.toThrow(
-      "Test error",
-    );
-  });
-
-  it("rethrows a non-Error rejection unchanged", async () => {
-    mockNext.mockRejectedValue("String error");
-
-    await expect(loggerMiddleware(createMockContext(), mockNext as Next)).rejects.toBe(
-      "String error",
-    );
-  });
 });

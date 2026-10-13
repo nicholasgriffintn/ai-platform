@@ -2,6 +2,38 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+export function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+export function readPathValues(value: unknown, path: readonly (string | number)[]): unknown[] {
+  let values: unknown[] = [value];
+
+  for (const segment of path) {
+    const next: unknown[] = [];
+
+    for (const entry of values) {
+      if (segment === "*" && Array.isArray(entry)) {
+        for (const item of entry) {
+          next.push(item);
+        }
+      } else if (
+        Array.isArray(entry) &&
+        typeof segment === "number" &&
+        Object.hasOwn(entry, segment)
+      ) {
+        next.push(entry[segment]);
+      } else if (isRecord(entry) && Object.hasOwn(entry, segment)) {
+        next.push(entry[segment]);
+      }
+    }
+
+    values = next;
+  }
+
+  return values;
+}
+
 export function omitMatchingProperties<T extends object>(
   values: Partial<T>,
   baseline: T,
@@ -136,4 +168,22 @@ export function readFiniteNumber(value: unknown): number | undefined {
 
 export function readStringArray(value: unknown): string[] {
   return toStringArray(value);
+}
+
+export function readTrimmedStringArray(value: unknown): string[] {
+  return toStringArray(value)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function extendPreservingAccessors<T extends object, U extends object>(
+  base: T,
+  extension: U,
+): T & U {
+  const extended: T & U = Object.create(Object.getPrototypeOf(base));
+
+  return Object.defineProperties(extended, {
+    ...Object.getOwnPropertyDescriptors(base),
+    ...Object.getOwnPropertyDescriptors(extension),
+  });
 }

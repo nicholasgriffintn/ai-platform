@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 200000,
-    "maxTokens": 64000,
     "modalities": {
       "input": [
         "text",
@@ -13,15 +12,35 @@
         "text"
       ]
     },
-    "knowledgeCutoffDate": "February 28, 2025",
-    "releaseDate": "October 15, 2025",
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
   "models": {
+    "anthropic-claude-haiku-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Haiku Latest",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "April 27, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-3-5-haiku": {
       "defaults": {
         "name": "Claude 3.5 Haiku",
@@ -37,10 +56,10 @@
         "knowledgeCutoffDate": "July 31, 2024",
         "releaseDate": "November 4, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.4,
-          "codingIndex": null,
+          "intelligenceIndex": 8.9,
+          "codingIndex": 15.9,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -68,10 +87,10 @@
         "knowledgeCutoffDate": "August 31, 2023",
         "releaseDate": "March 13, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 3.9,
+          "intelligenceIndex": 5.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -97,10 +116,10 @@
         "knowledgeCutoffDate": "July 31, 2024",
         "releaseDate": "October 22, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.4,
-          "codingIndex": null,
+          "intelligenceIndex": 8.9,
+          "codingIndex": 15.9,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -108,6 +127,9 @@
       "defaults": {
         "name": "Claude Haiku 4.5",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -121,6 +143,10 @@
       "defaults": {
         "name": "Claude Haiku 4.5 (AU)",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -135,6 +161,10 @@
       "defaults": {
         "name": "Claude Haiku 4.5 (EU)",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -149,6 +179,10 @@
       "defaults": {
         "name": "Claude Haiku 4.5 (Global)",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -159,10 +193,31 @@
         }
       }
     },
+    "claude-haiku-4-5-india": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (India)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-haiku-4-5-jp": {
       "defaults": {
         "name": "Claude Haiku 4.5 (JP)",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -177,19 +232,20 @@
       "defaults": {
         "name": "Claude Haiku 4.5",
         "description": "Fast Claude lane for lightweight agents, office tasks, and responsive chat",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true
       }
     },
     "claude-haiku-4-5-latest-eu": {
       "defaults": {
         "name": "Claude Haiku 4.5 (latest) (EU)",
         "description": "Fast Claude lane for lightweight agents, office tasks, and responsive chat",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -206,6 +262,10 @@
       "defaults": {
         "name": "Claude Haiku 4.5 (US)",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "maxTokens": 64000,
+        "knowledgeCutoffDate": "February 28, 2025",
+        "releaseDate": "October 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -216,17 +276,235 @@
         }
       }
     },
+    "claude-haiku-5-5": {
+      "defaults": {
+        "name": "Claude Haiku 5.5",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-haiku-5-5-au": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (AU)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-haiku-5-5-eu": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (EU)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-haiku-5-5-global": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (Global)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-haiku-5-5-jp": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (JP)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-haiku-5-5-us": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (US)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 43.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "claude-haiku-latest": {
       "defaults": {
         "name": "Anthropic Claude Haiku Latest",
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
         "releaseDate": "April 27, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     }

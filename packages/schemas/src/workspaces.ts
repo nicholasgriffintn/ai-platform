@@ -16,7 +16,17 @@ import {
 } from "./sandbox-provider.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
-export const projectCapabilityKindSchema = z.enum(["app", "recipe", "skill", "tool", "teammate"]);
+export const connectorGrantSchema = z.object({
+  operations: z.array(z.string().trim().min(1).max(200)).min(1).max(500),
+});
+export const projectCapabilityKindSchema = z.enum([
+  "app",
+  "recipe",
+  "skill",
+  "tool",
+  "teammate",
+  "connector",
+]);
 export const projectCodingPromptStrategySchema = z.enum([
   "auto",
   "feature-delivery",
@@ -70,6 +80,7 @@ export const projectCapabilitySchema = z.object({
   kind: projectCapabilityKindSchema,
   capabilityId: z.string(),
   configuration: z.record(z.string(), z.unknown()).default({}),
+  excluded: z.boolean().optional(),
   createdBy: z.number().int().positive(),
   createdAt: z.string(),
 });

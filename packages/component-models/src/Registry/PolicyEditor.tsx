@@ -1,15 +1,16 @@
-import { Badge, Button, Textarea } from "@ngriffin_uk/polychat-component-ui";
-import {
-  policyRulesSchema,
-  type ModelGovernanceEnforcement,
-  type ModelPolicy,
-  type PolicyDryRunResult,
-  type PolicyRule,
+import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
+import type {
+  ModelGovernanceEnforcement,
+  ModelPolicy,
+  PolicyDryRunResult,
+  PolicyRule,
 } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
+import { PolicyRuleEditor } from "./PolicyRuleEditor";
 import { VerdictBadge } from "./RegistryBadges";
 import { RegistryPanel } from "./RegistryPanel";
+import { usePolicyDraft } from "./usePolicyDraft";
 
 export interface PolicyEditorProps {
   policy: ModelPolicy;
@@ -23,23 +24,6 @@ export interface PolicyEditorProps {
   onSave: (rules: PolicyRule[], enforcement: ModelGovernanceEnforcement) => void;
 }
 
-function parseRules(text: string): { rules: PolicyRule[] | null; error: string | null } {
-  try {
-    const parsed = policyRulesSchema.safeParse(JSON.parse(text));
-
-    return parsed.success
-      ? { rules: parsed.data, error: null }
-      : {
-          rules: null,
-          error: parsed.error.issues
-            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-            .join("; "),
-        };
-  } catch {
-    return { rules: null, error: "Rules must be valid JSON" };
-  }
-}
-
 export function PolicyEditor({
   policy,
   scopeLabel,
@@ -51,9 +35,8 @@ export function PolicyEditor({
   onDryRun,
   onSave,
 }: PolicyEditorProps) {
-  const [text, setText] = useState(() => JSON.stringify(policy.rules, null, 2));
   const [enforcement, setEnforcement] = useState<ModelGovernanceEnforcement>(policy.enforcement);
-  const { rules, error } = parseRules(text);
+  const { draft, rules, error, update, remove, add } = usePolicyDraft(policy.rules);
 
   return (
     <RegistryPanel>
@@ -80,13 +63,21 @@ export function PolicyEditor({
 
       {canEdit && (
         <>
-          <Textarea
-            aria-label={`${scopeLabel} rules`}
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            className="min-h-[220px] font-mono text-xs"
-            spellCheck={false}
-          />
+          <p className="text-sm text-muted-foreground">
+            Edit Cedar rules for {scopeLabel.toLowerCase()}. Preview checks the policy before
+            saving.
+          </p>
+          {draft.map((entry) => (
+            <PolicyRuleEditor
+              key={entry.key}
+              rule={entry.rule}
+              onChange={(next) => update(entry.key, next)}
+              onRemove={() => remove(entry.key)}
+            />
+          ))}
+          <Button size="sm" variant="secondary" disabled={draft.length >= 50} onClick={add}>
+            Add rule
+          </Button>
           {error && <p className="text-sm text-failure">{error}</p>}
           {showEnforcement && (
             <label className="flex items-center gap-2 text-sm">

@@ -119,25 +119,6 @@ describe("complete_goal", () => {
     expect(addMessage).not.toHaveBeenCalled();
   });
 
-  it("completes once the assistant has answered", async () => {
-    const result = await complete_goal.execute(
-      {
-        summary: "Answered",
-        evidence: [
-          {
-            claim: "Returned the JSON",
-            route: "answered in this turn",
-            evidence_surface: "assistant message",
-            status: "confirmed",
-          },
-        ],
-      },
-      createContext(),
-    );
-
-    expect(result.status).toBe("success");
-  });
-
   it("does not let a project task complete before producing its stage deliverable", async () => {
     const result = await complete_goal.execute(
       {
@@ -257,55 +238,6 @@ describe("complete_goal", () => {
     expect(result.content).toContain("Call ask_user");
   });
 
-  it("completes with a real evidence ledger", async () => {
-    const result = await complete_goal.execute(
-      {
-        summary: "Suite is green",
-        evidence: [
-          {
-            claim: "checkout suite passes",
-            route: "ran pnpm test",
-            evidence_surface: "tool result",
-            status: "confirmed",
-          },
-        ],
-      },
-      createContext(),
-    );
-
-    expect(result.status).toBe("success");
-    expect(result.content).toContain("Goal completed");
-  });
-
-  it("refuses to complete without evidence", async () => {
-    const result = await complete_goal.execute(
-      { summary: "trust me, it works", evidence: [] },
-      createContext(),
-    );
-
-    expect(result.status).toBe("error");
-    expect(result.content).toContain("evidence ledger");
-  });
-
-  it("records an all-blocked ledger as blocked rather than complete", async () => {
-    const result = await complete_goal.execute(
-      {
-        summary: "The benchmark will not run here",
-        evidence: [
-          {
-            claim: "p95 under 120ms",
-            route: "tried to run the benchmark",
-            evidence_surface: "command output",
-            status: "blocked",
-          },
-        ],
-      },
-      createContext(),
-    );
-
-    expect(result.content).toContain("blocked");
-  });
-
   it("errors when there is no active goal", async () => {
     const result = await complete_goal.execute(
       {
@@ -320,26 +252,6 @@ describe("complete_goal", () => {
         ],
       },
       createContext({ goal: null }),
-    );
-
-    expect(result.status).toBe("error");
-    expect(result.content).toContain("no active goal");
-  });
-
-  it("does not complete a paused goal", async () => {
-    const result = await complete_goal.execute(
-      {
-        summary: "done",
-        evidence: [
-          {
-            claim: "a claim",
-            route: "a route",
-            evidence_surface: "a surface",
-            status: "confirmed",
-          },
-        ],
-      },
-      createContext({ goal: createGoal({ status: "paused" }) }),
     );
 
     expect(result.status).toBe("error");

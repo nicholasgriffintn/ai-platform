@@ -47,7 +47,7 @@
       "matchingModel": "sonar-reasoning",
       "overrides": {
         "speed": 3,
-        "isFeatured": false,
+        "isFeatured": true,
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "costPer1kSearches": 0.005
@@ -103,7 +103,7 @@
         ],
         "contextComplexity": 2,
         "speed": 3,
-        "isFeatured": true,
+        "isFeatured": false,
         "knowledgeCutoffDate": "September 1, 2025",
         "releaseDate": "January 1, 2024",
         "lastUpdated": "September 1, 2025",

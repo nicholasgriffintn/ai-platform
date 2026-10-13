@@ -70,8 +70,11 @@ function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): b
   const hasEnabledFunctionTool = coerceStringArray(params.enabled_tools).some(
     (tool) => !OPENAI_HOSTED_TOOL_NAMES.has(tool),
   );
+  const hasExplicitFunctionTool =
+    (params.available_functions?.length ?? 0) > 0 ||
+    (params.tools ?? []).some((tool) => tool?.type === "function");
 
-  return hasEnabledFunctionTool || isAgentExecutionMode(params.mode);
+  return hasEnabledFunctionTool || hasExplicitFunctionTool || isAgentExecutionMode(params.mode);
 }
 
 function requestsPreferredReasoningApi(
@@ -432,7 +435,6 @@ export function buildOpenAIResponsesBody(
       ? { top_logprobs: params.top_logprobs }
       : {}),
     max_tool_calls: params.max_tool_calls,
-    stream_options: params.stream_options,
     safety_identifier: params.safety_identifier || params.context?.user?.id?.toString(),
   };
 }

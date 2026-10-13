@@ -34,6 +34,9 @@ export interface UserSettings {
   s3vectors_bucket_name?: string;
   s3vectors_index_name?: string;
   s3vectors_region?: string;
+  dynamodb_vectors_table_name?: string;
+  dynamodb_vectors_index_name?: string;
+  dynamodb_vectors_region?: string;
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
   temporary_chats_default?: boolean;
@@ -87,6 +90,12 @@ export function prepareUserSettingsPayload(
     delete payload.s3vectors_region;
   }
 
+  if (payload.embedding_provider !== "dynamodb-vectors") {
+    delete payload.dynamodb_vectors_table_name;
+    delete payload.dynamodb_vectors_index_name;
+    delete payload.dynamodb_vectors_region;
+  }
+
   return payload;
 }
 
@@ -110,13 +119,19 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
     bedrock_guardrail_version: userSettings?.bedrock_guardrail_version || "1",
     embedding_provider:
-      userSettings?.embedding_provider === "s3vectors" ? "s3vectors" : "vectorize",
+      userSettings?.embedding_provider === "s3vectors" ||
+      userSettings?.embedding_provider === "dynamodb-vectors"
+        ? userSettings.embedding_provider
+        : "vectorize",
     bedrock_knowledge_base_id: userSettings?.bedrock_knowledge_base_id || "",
     bedrock_knowledge_base_custom_data_source_id:
       userSettings?.bedrock_knowledge_base_custom_data_source_id || "",
     s3vectors_bucket_name: userSettings?.s3vectors_bucket_name || "",
     s3vectors_index_name: userSettings?.s3vectors_index_name || "",
     s3vectors_region: userSettings?.s3vectors_region || "us-east-1",
+    dynamodb_vectors_table_name: userSettings?.dynamodb_vectors_table_name || "",
+    dynamodb_vectors_index_name: userSettings?.dynamodb_vectors_index_name || "",
+    dynamodb_vectors_region: userSettings?.dynamodb_vectors_region || "us-east-1",
     memories_save_enabled: userSettings?.memories_save_enabled || false,
     memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
     temporary_chats_default: userSettings?.temporary_chats_default || false,

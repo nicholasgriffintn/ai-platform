@@ -97,7 +97,7 @@
           "general_knowledge",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
@@ -283,6 +283,7 @@
           "document",
           "tool_use"
         ],
+        "isFeatured": true,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -326,10 +327,10 @@
           "live_search": 0.025
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.9,
+          "intelligenceIndex": 11.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -419,10 +420,10 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 22.5,
+          "intelligenceIndex": 14.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -449,18 +450,18 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
-        "speed": 4,
+        "reliability": 1,
+        "speed": 2,
         "releaseDate": "March 9, 2026",
         "lastUpdated": "March 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 37,
+          "intelligenceIndex": 25.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -512,19 +513,10 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "grok-imagine-image": {
@@ -557,6 +549,7 @@
       "model": "grok/grok-imagine-image-quality",
       "matchingModel": "grok-imagine-image-quality",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "April 3, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -575,6 +568,7 @@
           "creative"
         ],
         "contextComplexity": 3,
+        "isFeatured": true,
         "releaseDate": "January 28, 2026",
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
@@ -604,6 +598,7 @@
       "model": "grok/grok-4-5",
       "matchingModel": "grok-4.5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -624,6 +619,12 @@
             "video"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document"
+        ],
+        "contextComplexity": 3,
         "lastUpdated": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -643,7 +644,8 @@
             "text"
           ]
         },
-        "isFeatured": true,
+        "speed": 2,
+        "isFeatured": false,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -665,6 +667,13 @@
             "pdf"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "contextComplexity": 3,
         "lastUpdated": "August 7, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -674,9 +683,38 @@
       "model": "grok/grok-4-7",
       "matchingModel": "grok-4.7",
       "overrides": {
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
+      }
+    },
+    "grok-imagine-video-1.5-lite": {
+      "model": "grok/grok-imagine-video-1-5-lite",
+      "matchingModel": "grok-imagine-video-1.5-lite",
+      "overrides": {
+        "contextWindow": 1024,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "video"
+        ],
+        "contextComplexity": 3,
+        "isFeatured": true,
+        "lastUpdated": "October 1, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     }
   }

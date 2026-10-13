@@ -1,22 +1,13 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import type {
-  RecipeComposioTrigger,
-  RecipeEventReceiptRow,
-} from "~/infrastructure/database/schema";
+import type { RecipeComposioTrigger } from "~/infrastructure/database/schema";
 
 export interface RecipeComposioTriggerRecord extends Omit<RecipeComposioTrigger, "configuration"> {
   configuration: Record<string, unknown>;
 }
-
-export type RecipeEventReceiptState = "evaluating" | "skipped" | "queued";
-
-export type RecipeEventClaim =
-  | { status: "execute"; executionToken: string }
-  | { status: RecipeEventReceiptState; taskId: string | null };
 
 function parseTrigger(record: RecipeComposioTrigger): RecipeComposioTriggerRecord {
   return {
@@ -42,8 +33,9 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     condition?: string;
   }): Promise<RecipeComposioTriggerRecord> {
     const insert = this.buildInsertQuery(
-      "recipe_composio_trigger",
+      "event_subscription",
       {
+        broker: "composio",
         id: generateId(),
         installation_id: input.installationId,
         created_by_user_id: input.createdByUserId,
@@ -79,103 +71,11 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     return parseTrigger(result);
   }
 
-  async claimEvent(input: {
-    id: string;
-    triggerId: string;
-    eventId: string;
-    now: string;
-    leaseExpiresAt: string;
-  }): Promise<RecipeEventClaim> {
-    const executionToken = generateId();
-    const inserted = await this.executeRun(
-      `INSERT OR IGNORE INTO recipe_event_receipt (
-         id, trigger_id, event_id, state, execution_token,
-         execution_lease_expires_at, created_at, updated_at
-       ) VALUES (?, ?, ?, 'evaluating', ?, ?, ?, ?)`,
-      [
-        input.id,
-        input.triggerId,
-        input.eventId,
-        executionToken,
-        input.leaseExpiresAt,
-        input.now,
-        input.now,
-      ],
-    );
-
-    if (inserted.meta?.changes) {
-      return { status: "execute", executionToken };
-    }
-
-    const reclaimed = await this.runQuery<RecipeEventReceiptRow>(
-      `UPDATE recipe_event_receipt
-       SET execution_token = ?, execution_lease_expires_at = ?, updated_at = ?
-       WHERE id = ? AND trigger_id = ? AND event_id = ?
-         AND state = 'evaluating'
-         AND (execution_lease_expires_at IS NULL OR execution_lease_expires_at <= ?)
-       RETURNING *`,
-      [
-        executionToken,
-        input.leaseExpiresAt,
-        input.now,
-        input.id,
-        input.triggerId,
-        input.eventId,
-        input.now,
-      ],
-      true,
-    );
-
-    if (reclaimed) {
-      return { status: "execute", executionToken };
-    }
-
-    const existing = await this.runQuery<RecipeEventReceiptRow>(
-      `SELECT * FROM recipe_event_receipt
-       WHERE id = ? AND trigger_id = ? AND event_id = ?`,
-      [input.id, input.triggerId, input.eventId],
-      true,
-    );
-
-    if (!existing) {
-      throw new AssistantError("Recipe event receipt conflict", ErrorType.CONFLICT_ERROR, 409);
-    }
-
-    return { status: existing.state, taskId: existing.task_id };
-  }
-
-  async settleEvent(input: {
-    id: string;
-    triggerId: string;
-    executionToken: string;
-    state: Exclude<RecipeEventReceiptState, "evaluating">;
-    decisionReceipt?: unknown;
-    taskId?: string;
-    now: string;
-  }): Promise<boolean> {
-    const result = await this.executeRun(
-      `UPDATE recipe_event_receipt
-       SET state = ?, decision_receipt = ?, task_id = ?, execution_token = NULL,
-           execution_lease_expires_at = NULL, updated_at = ?
-       WHERE id = ? AND trigger_id = ? AND state = 'evaluating' AND execution_token = ?`,
-      [
-        input.state,
-        input.decisionReceipt ? JSON.stringify(input.decisionReceipt) : null,
-        input.taskId ?? null,
-        input.now,
-        input.id,
-        input.triggerId,
-        input.executionToken,
-      ],
-    );
-
-    return Boolean(result.meta?.changes);
-  }
-
   async getTriggerByExternalId(
     externalTriggerId: string,
   ): Promise<RecipeComposioTriggerRecord | null> {
-    const { query, values } = this.buildSelectQuery("recipe_composio_trigger", {
+    const { query, values } = this.buildSelectQuery("event_subscription", {
+      broker: "composio",
       external_trigger_id: externalTriggerId,
     });
     const result = await this.runQuery<RecipeComposioTrigger>(query, values, true);
@@ -187,7 +87,8 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     triggerId: string,
     userId: number,
   ): Promise<RecipeComposioTriggerRecord | null> {
-    const { query, values } = this.buildSelectQuery("recipe_composio_trigger", {
+    const { query, values } = this.buildSelectQuery("event_subscription", {
+      broker: "composio",
       id: triggerId,
       created_by_user_id: userId,
     });
@@ -201,8 +102,8 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     userId: number,
   ): Promise<RecipeComposioTriggerRecord[]> {
     const { query, values } = this.buildSelectQuery(
-      "recipe_composio_trigger",
-      { installation_id: installationId, created_by_user_id: userId },
+      "event_subscription",
+      { broker: "composio", installation_id: installationId, created_by_user_id: userId },
       { orderBy: "created_at ASC" },
     );
     const results = await this.runQuery<RecipeComposioTrigger>(query, values);
@@ -213,7 +114,8 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
   async listTriggersByConnectedAccountId(
     connectedAccountId: string,
   ): Promise<RecipeComposioTriggerRecord[]> {
-    const { query, values } = this.buildSelectQuery("recipe_composio_trigger", {
+    const { query, values } = this.buildSelectQuery("event_subscription", {
+      broker: "composio",
       connected_account_id: connectedAccountId,
     });
     const results = await this.runQuery<RecipeComposioTrigger>(query, values);
@@ -223,9 +125,9 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
 
   async markConnectedAccountError(connectedAccountId: string, lastError: string): Promise<number> {
     const result = await this.executeRun(
-      `UPDATE recipe_composio_trigger
+      `UPDATE event_subscription
 			 SET status = 'error', last_error = ?
-			 WHERE connected_account_id = ?`,
+			 WHERE broker = 'composio' AND connected_account_id = ?`,
       [lastError, connectedAccountId],
     );
 
@@ -239,10 +141,10 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     lastError?: string | null,
   ): Promise<RecipeComposioTriggerRecord | null> {
     const update = this.buildUpdateQuery(
-      "recipe_composio_trigger",
+      "event_subscription",
       { status, last_error: lastError ?? null },
       ["status", "last_error"],
-      "id = ? AND created_by_user_id = ?",
+      "broker = 'composio' AND id = ? AND created_by_user_id = ?",
       [triggerId, userId],
       { returning: "*" },
     );
@@ -258,7 +160,7 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
 
   async deleteTrigger(triggerId: string, userId: number): Promise<boolean> {
     const result = await this.executeRun(
-      "DELETE FROM recipe_composio_trigger WHERE id = ? AND created_by_user_id = ?",
+      "DELETE FROM event_subscription WHERE broker = 'composio' AND id = ? AND created_by_user_id = ?",
       [triggerId, userId],
     );
 

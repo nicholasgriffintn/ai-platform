@@ -5,6 +5,7 @@ import {
   withOcrBatchProviderCleanup,
   withoutOcrBatchProviderCleanup,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { SITE_OUTPUT_KIND, siteRuntimeStatusSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -16,6 +17,7 @@ import {
   withOutputDeletionPending,
 } from "~/modules/outputs/application/deletion";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { requestSiteRuntime } from "~/modules/sites/infrastructure/runtime-client";
 
 import { requireOutputRecordAccess } from "./access";
 
@@ -236,6 +238,17 @@ export async function deleteOutputResources(
 
     for (const storageKey of storageKeys) {
       await storage.deleteObject(storageKey);
+    }
+  }
+
+  for (const record of records) {
+    if (record.kind === SITE_OUTPUT_KIND && context.env.SITES_RUNTIME) {
+      await requestSiteRuntime(
+        context.env,
+        record.id,
+        { operation: "deleteData" },
+        siteRuntimeStatusSchema,
+      );
     }
   }
 

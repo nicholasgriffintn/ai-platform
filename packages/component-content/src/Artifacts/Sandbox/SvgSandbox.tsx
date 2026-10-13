@@ -1,10 +1,5 @@
 import type { ArtifactProps } from "../artifact";
-import {
-  LoadingIndicator,
-  SandboxIframe,
-  SVG_SANDBOX_TEMPLATE,
-  useSandboxDocument,
-} from "./shared";
+import { buildSandboxDocument, SandboxIframe, SVG_SANDBOX_TEMPLATE } from "./shared";
 
 export function SvgSandbox({
   code,
@@ -15,18 +10,9 @@ export function SvgSandbox({
   setPreviewError: (error: string | null) => void;
   iframeKey: number;
 }) {
-  const { documentContent, isLoading } = useSandboxDocument({
-    code,
-    template: SVG_SANDBOX_TEMPLATE,
-  });
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
   return (
     <SandboxIframe
-      documentContent={documentContent}
+      documentContent={buildSandboxDocument(SVG_SANDBOX_TEMPLATE, code.content)}
       iframeKey={iframeKey}
       setPreviewError={setPreviewError}
     />

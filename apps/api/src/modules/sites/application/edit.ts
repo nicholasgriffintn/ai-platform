@@ -4,12 +4,12 @@ import {
   validateSiteProject,
 } from "@ngriffin_uk/polychat-library-sites";
 import type { SiteEditRequest, SiteRecord } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IUser } from "~/types";
@@ -31,6 +31,11 @@ export async function editSite({
 }: EditSiteOptions): Promise<SiteRecord> {
   const scope = { context, userId: user.id, projectId: request.projectId };
   const existing = await getSite(scope, siteId);
+
+  if (request.expectedRevision !== undefined && existing.revision !== request.expectedRevision) {
+    throw new AssistantError("The site changed before the edit", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   const document = structuredClone(existing.project) as unknown as Record<string, unknown>;
 
   for (const patch of request.patches) {
@@ -56,6 +61,7 @@ export async function editSite({
   }
 
   return updateSite(scope, siteId, {
+    expectedRevision: existing.revision,
     brief: existing.brief,
     plan: existing.plan,
     project,

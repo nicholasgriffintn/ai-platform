@@ -13,6 +13,7 @@
       ]
     },
     "contextComplexity": 4,
+    "reliability": 1,
     "knowledgeCutoffDate": "September 30, 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -32,26 +33,44 @@
     },
     "gpt-5-1-codex": {
       "defaults": {
+        "name": "GPT-5.1 Codex",
         "description": "GPT-5.1 Codex is a specialized version of GPT-5.1, fine-tuned for code generation and understanding tasks.",
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "releaseDate": "November 13, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "gpt-5-1-codex-max": {
       "defaults": {
+        "name": "GPT-5.1 Codex Max",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
-        "releaseDate": "November 13, 2025"
+        "releaseDate": "November 13, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "gpt-5-1-codex-mini": {
@@ -62,13 +81,12 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "releaseDate": "November 13, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 30.6,
+          "intelligenceIndex": 20.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -91,21 +109,19 @@
     },
     "gpt-5-2-codex": {
       "defaults": {
-        "name": "GPT-5.2-Codex",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 40.1,
+          "intelligenceIndex": 28.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -128,6 +144,7 @@
     },
     "gpt-5-3-codex": {
       "defaults": {
+        "name": "GPT-5.3 Codex",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "modalities": {
           "input": [
@@ -144,14 +161,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 5, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 44.3,
+          "intelligenceIndex": 32.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -174,7 +190,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsTemperature": true,
@@ -190,10 +205,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.3,
+          "intelligenceIndex": 32.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -208,13 +223,12 @@
     "gpt-5-codex": {
       "defaults": {
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
-        "reliability": 2,
         "releaseDate": "September 15, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 36.1,
+          "intelligenceIndex": 24.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

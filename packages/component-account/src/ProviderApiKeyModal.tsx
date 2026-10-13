@@ -84,10 +84,12 @@ export function ProviderApiKeyModal({
     }));
   };
 
-  const isBedrockProvider =
-    providerName.toLowerCase() === "polly" || providerName.toLowerCase() === "bedrock";
+  const isAwsProvider =
+    providerName.toLowerCase() === "polly" ||
+    providerName.toLowerCase() === "bedrock" ||
+    providerId === "dynamodb-vectors";
   const usesConfigurationFields = configurationFields.length > 0;
-  const requiresSecretKey = isBedrockProvider;
+  const requiresSecretKey = isAwsProvider;
 
   const hasMissingRequiredConfiguration = configurationFields.some(
     (field) =>
@@ -107,7 +109,7 @@ export function ProviderApiKeyModal({
       : apiKey;
     const providerSecretKey = usesConfigurationFields
       ? configurationValues.authToken || configurationValues.secretAccessKey || undefined
-      : isBedrockProvider
+      : isAwsProvider
         ? secretKey
         : undefined;
     const configuration = usesConfigurationFields ? configurationValues : undefined;
@@ -143,7 +145,7 @@ export function ProviderApiKeyModal({
           <p className="text-sm text-muted-foreground">
             {usesConfigurationFields
               ? `Enter the required connection details for ${providerName}.`
-              : isBedrockProvider
+              : isAwsProvider
                 ? `Enter your AWS Access Key ID and Secret Access Key for ${providerName}.`
                 : `Enter your API key for ${providerName}.`}
             This will be securely stored and used for making requests.
@@ -178,10 +180,8 @@ export function ProviderApiKeyModal({
               autoComplete="off"
               value={apiKey}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
-              placeholder={
-                isBedrockProvider ? "Enter your AWS Access Key ID" : "Enter your API key"
-              }
-              label={isBedrockProvider ? "AWS Access Key ID" : "API Key"}
+              placeholder={isAwsProvider ? "Enter your AWS Access Key ID" : "Enter your API key"}
+              label={isAwsProvider ? "AWS Access Key ID" : "API Key"}
               description="Your credentials will be encrypted before being stored"
               required
               disabled={isSubmitting}
@@ -239,7 +239,7 @@ export function ProviderApiKeyModal({
               disabled={
                 usesConfigurationFields
                   ? hasMissingRequiredConfiguration || isSubmitting
-                  : !apiKey || (isBedrockProvider && !secretKey) || isSubmitting
+                  : !apiKey || (isAwsProvider && !secretKey) || isSubmitting
               }
               isLoading={isSubmitting}
             >

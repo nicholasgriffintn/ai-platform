@@ -182,4 +182,43 @@ describe("replaceConversationRunSnapshot", () => {
       ),
     ).toMatchObject({ latest_run: { status: "succeeded" }, messages: [prior, current] });
   });
+
+  it("updates one transient bubble per poll and drops it once the final message lands", () => {
+    const user: Message = { id: "user-1", role: "user", content: "Follow up" };
+    const partial: Message = {
+      id: "partial:run-1",
+      role: "assistant",
+      content: "Hello",
+      status: "in_progress",
+      run_id: "run-1",
+    };
+    const midRun = replaceConversationRunSnapshot(
+      { id: "conversation-1", title: "Conversation", messages: [user] },
+      snapshot("running", 3, [user, partial]),
+    );
+    const grown: Message = { ...partial, content: "Hello stream" };
+    const progressed = replaceConversationRunSnapshot(
+      midRun,
+      snapshot("running", 4, [user, grown]),
+    );
+
+    expect(progressed.messages.filter((message) => message.id === "partial:run-1")).toHaveLength(1);
+    expect(progressed).toMatchObject({
+      messages: [user, expect.objectContaining({ content: "Hello stream" })],
+    });
+
+    const final: Message = {
+      id: "assistant-1",
+      role: "assistant",
+      content: "Hello stream",
+      status: "completed",
+      run_id: "run-1",
+    };
+    const settled = replaceConversationRunSnapshot(
+      progressed,
+      snapshot("succeeded", 5, [user, final]),
+    );
+
+    expect(settled).toMatchObject({ messages: [user, final] });
+  });
 });

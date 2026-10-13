@@ -20,10 +20,10 @@
     "supportsResponseFormat": false,
     "supportsAttachments": false,
     "artificialAnalysis": {
-      "intelligenceIndex": 30.6,
+      "intelligenceIndex": 16.6,
       "codingIndex": 42.8,
-      "agenticIndex": 18.9,
-      "intelligenceIndexVersion": 4.1
+      "agenticIndex": 10.7,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The ring family includes models that produce text.",

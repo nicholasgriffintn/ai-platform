@@ -1,16 +1,16 @@
 import { redactSandboxOutput, throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import { MAX_OBSERVATION_CHARS } from "../../../../config/agent";
 import {
   assertSafeCommand,
   extractCommands,
   formatCommandResult,
-  quoteForShell,
   runSandboxCommand,
 } from "../commands";
+import type { SandboxExecInstance } from "../commands";
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
-import type { QualityGateCheckResult, QualityGateResult, SandboxExecInstance } from "./types";
+import type { QualityGateCheckResult, QualityGateResult } from "./types";
 
 const VALIDATION_COMMAND_PATTERN =
   /\b(test|tests|lint|typecheck|type-check|check|verify|validate|build|clippy|fmt)\b/i;
@@ -152,7 +152,7 @@ export async function runQualityGate(params: {
 
     const result = await runSandboxCommand(
       sandbox,
-      `cd ${quoteForShell(repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, params.environmentVariableNames ?? [])}`,
+      `cd ${quoteShellArgument(repoTargetDir)} && ${withSandboxEnvironment(command, params.environmentVariables, params.environmentVariableNames ?? [])}`,
       {
         abortSignal,
         redactionSecrets: redactionSecrets,

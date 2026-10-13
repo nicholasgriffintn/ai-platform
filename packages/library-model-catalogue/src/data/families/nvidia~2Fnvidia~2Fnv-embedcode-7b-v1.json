@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 17, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/nv embedcode 7b v1 family includes models that produce text.",
+  "models": {
+    "nv-embedcode-7b-v1": {
+      "defaults": {
+        "name": "nv-embedcode-7b-v1",
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents"
+      }
+    }
+  }
+}

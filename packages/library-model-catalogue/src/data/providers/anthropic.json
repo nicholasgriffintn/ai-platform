@@ -4,7 +4,7 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsCodeExecution": true,
-    "supportsTemperature": true,
+    "supportsTemperature": false,
     "supportsTopP": false
   },
   "models": {
@@ -29,6 +29,11 @@
         "multimodal": true,
         "releaseDate": "February 4, 2026",
         "lastUpdated": "March 13, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -38,6 +43,7 @@
         "supportsDocuments": true,
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
+        "supportsTemperature": true,
         "supportsTokenCounting": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -56,6 +62,7 @@
       "matchingModel": "claude-sonnet-4-5",
       "overrides": {
         "name": "Claude Sonnet 4.5",
+        "contextWindow": 200000,
         "card": "https://www.prompthub.us/models/claude-sonnet-4-5",
         "strengths": [
           "chat",
@@ -70,14 +77,20 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "September 29, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPerCodeExecutionHour": 0.05,
         "supportsDocuments": true,
+        "supportsTemperature": true,
         "supportsTokenCounting": true,
         "restrictsCombinedTopPAndTemperature": true,
         "reasoningConfig": {
@@ -88,10 +101,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
+          "intelligenceIndex": 19.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -120,15 +133,21 @@
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "May 22, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsDocuments": true,
+        "supportsTemperature": true,
         "supportsTokenCounting": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 25.5,
+          "intelligenceIndex": 16.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -145,13 +164,19 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "October 22, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
+        "supportsTemperature": true,
         "supportsTokenCounting": true
       },
       "unset": [
-        "supportsResponseFormat",
         "supportsTopP",
+        "supportsResponseFormat",
         "supportsCodeExecution"
       ]
     },
@@ -171,13 +196,26 @@
         "reliability": 4,
         "speed": 5,
         "multimodal": true,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "October 15, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "supportsDocuments": true,
+        "supportsTemperature": true,
         "supportsTokenCounting": true,
-        "restrictsCombinedTopPAndTemperature": true
+        "restrictsCombinedTopPAndTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTopP",
@@ -191,12 +229,19 @@
         "deprecated": true,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "May 22, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.015,
-        "costPer1kOutputTokens": 0.075
+        "costPer1kOutputTokens": 0.075,
+        "supportsTemperature": true
       },
       "unset": [
         "contextComplexity",
         "supportsTopP",
+        "reliability",
         "supportsResponseFormat",
         "supportsCodeExecution"
       ]
@@ -211,12 +256,18 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -246,6 +297,11 @@
         "isFeatured": false,
         "releaseDate": "April 14, 2026",
         "lastUpdated": "April 16, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -254,7 +310,6 @@
         },
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -282,6 +337,11 @@
         ],
         "speed": 2,
         "lastUpdated": "March 13, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPerCodeExecutionHour": 0.05,
@@ -290,6 +350,7 @@
         },
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
+        "supportsTemperature": true,
         "restrictsCombinedTopPAndTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -327,6 +388,11 @@
         "speed": 2,
         "multimodal": true,
         "lastUpdated": "May 28, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -336,7 +402,6 @@
         "supportsDocuments": true,
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
-        "supportsTemperature": false,
         "supportsTokenCounting": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -371,10 +436,14 @@
         "isFeatured": true,
         "releaseDate": "June 7, 2026",
         "lastUpdated": "June 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsDocuments": true,
-        "supportsTemperature": false,
         "supportsTokenCounting": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -397,9 +466,23 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
       "overrides": {
-        "isFeatured": true,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 2,
+        "isFeatured": false,
         "releaseDate": "June 29, 2026",
         "lastUpdated": "June 30, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "costPerCodeExecutionHour": 0.05,
@@ -408,7 +491,6 @@
         },
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -426,8 +508,22 @@
       "model": "claude-opus/claude-opus-5",
       "matchingModel": "claude-opus-5",
       "overrides": {
-        "isFeatured": true,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research",
+          "coding"
+        ],
+        "speed": 2,
+        "isFeatured": false,
         "lastUpdated": "July 24, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -436,7 +532,6 @@
         },
         "supportsSearchGrounding": true,
         "supportsWebFetch": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -448,19 +543,21 @@
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "claude-fable-5-1": {
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "claude-fable-5-1",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.01,
-        "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.05
       },
       "unset": [
         "supportsCodeExecution"
@@ -470,10 +567,66 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5-5",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.02
+      }
+    },
+    "claude-sonnet-5-5": {
+      "model": "claude-sonnet/claude-sonnet-5-5",
+      "matchingModel": "claude-sonnet-5-5",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
+        "isFeatured": true,
+        "lastUpdated": "September 28, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "claude-haiku-5-5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "claude-haiku-5-5",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
+        "isFeatured": true,
+        "lastUpdated": "October 7, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005
       }
     }
   }

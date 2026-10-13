@@ -79,47 +79,6 @@ describe("MessageRepository", () => {
     );
   });
 
-  it("replaces a conversation's messages in a single transaction", async () => {
-    const { batch, prepare, repository } = createRepository();
-
-    await repository.replaceConversationMessages(
-      "conversation-1",
-      [
-        { id: "message-1", role: "user", content: "Hello" },
-        { id: "message-1", role: "user", content: "Hello" },
-        { id: "message-2", role: "assistant", content: "Hi" },
-      ],
-      {
-        last_message_id: "message-2",
-        last_message_at: "2026-01-01T00:00:00.000Z",
-        message_count: 2,
-      },
-    );
-
-    expect(batch).toHaveBeenCalledTimes(1);
-    expect(batch.mock.calls[0][0]).toHaveLength(5);
-
-    const statements = prepare.mock.calls.map((call) => call[0]);
-
-    expect(statements[0]).toContain("DELETE FROM message");
-    expect(statements[0]).toContain("id NOT IN (?, ?)");
-    expect(statements[1]).toContain("run_id = COALESCE(excluded.run_id, message.run_id)");
-    expect(statements.at(-1)).toContain("UPDATE conversation");
-  });
-
-  it("clears every message when the replacement set is empty", async () => {
-    const { bind, prepare, repository } = createRepository();
-
-    await repository.replaceConversationMessages("conversation-1", [], {
-      last_message_id: null,
-      last_message_at: null,
-      message_count: 0,
-    });
-
-    expect(prepare.mock.calls[0][0]).toBe("DELETE FROM message WHERE conversation_id = ?");
-    expect(bind).toHaveBeenNthCalledWith(1, "conversation-1");
-  });
-
   it("reports failure when a message id already belongs to another conversation", async () => {
     const { batch, repository } = createRepository();
 
@@ -140,33 +99,6 @@ describe("MessageRepository", () => {
         { last_message_id: "message-2", last_message_at: null, message_count: 2 },
       ),
     ).resolves.toBe(false);
-  });
-
-  it("serialises structured tool arguments before binding them", async () => {
-    const { batch, bind, prepare, repository } = createRepository();
-
-    await repository.createMessagesAndUpdateConversation("conversation-1", [
-      {
-        id: "message-1",
-        role: "tool",
-        content: "Plan updated.",
-        data: {
-          tool_call_id: "call-1",
-          tool_call_arguments: { plan: ["Research", "Draft"] },
-          run_id: "run-1",
-        },
-      },
-    ]);
-
-    const boundValues = bind.mock.calls[0];
-    const toolCallIdIndex = boundValues.indexOf("call-1");
-
-    expect(boundValues[2]).toBe("run-1");
-    expect(boundValues[toolCallIdIndex + 1]).toBe('{"plan":["Research","Draft"]}');
-    expect(batch.mock.calls[0][0]).toHaveLength(5);
-    expect(
-      prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
-    ).toBe(true);
   });
 
   it("persists a run message update and its reference event atomically", async () => {

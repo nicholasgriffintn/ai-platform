@@ -2,6 +2,8 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
   isTerminalProjectTaskStatus,
+  createProjectTaskSchema,
+  updateProjectTaskSchema,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
   type CreateProjectTaskInput,
@@ -14,12 +16,12 @@ import {
   type ResolveProjectTaskToolApprovalInput,
   type UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId, withGeneratedIds } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
@@ -37,9 +39,11 @@ import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } fro
 import { reconcileTaskNotifications } from "./attention";
 import { approveLatestProjectTaskCompletion } from "./completions";
 import { getProjectTaskInteraction } from "./interactions";
+import { recordProjectTaskRetrospective } from "./plan-checks";
 import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./plan-evidence";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
-import { queueProjectTaskRun } from "./runner";
+import { queueProjectTaskRun, releaseReadyDependentTasks } from "./runner";
+import { assertTaskSourcesAvailable } from "./source-context";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -136,6 +140,21 @@ function assertStageExists(flow: ProjectFlow | null, stageId: string | null | un
 
   if (!flow?.stages.some((stage) => stage.id === stageId)) {
     throw new AssistantError("Unknown flow stage", ErrorType.PARAMS_ERROR, 400);
+  }
+}
+
+async function recordRetrospectiveQuietly(
+  context: ServiceContext,
+  task: ProjectTask,
+  finishedAs: "done" | "cancelled",
+): Promise<void> {
+  try {
+    await recordProjectTaskRetrospective(context, task, finishedAs);
+  } catch (error) {
+    logger.warn("Could not record the task retrospective", {
+      taskId: task.id,
+      error: getErrorMessage(error),
+    });
   }
 }
 
@@ -324,23 +343,52 @@ export async function respondToProjectTaskToolApproval(
 export async function createProjectTask(
   context: ServiceContext,
   projectId: string,
-  input: CreateProjectTaskInput,
-  options: { source?: ProjectTaskSource } = {},
+  unvalidatedInput: CreateProjectTaskInput,
+  options: {
+    source?: ProjectTaskSource;
+    id?: string;
+    flowSnapshot?: ProjectFlow;
+    executionProfile?: "diff_review";
+  } = {},
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
-  const flow = parseProjectFlow(project.flow);
+  const flow = options.flowSnapshot ?? parseProjectFlow(project.flow);
+
+  const input = createProjectTaskSchema.parse(unvalidatedInput);
+
+  if (options.id) {
+    const existing = await context.repositories.projectTasks.getTaskById(options.id);
+
+    if (existing) {
+      if (existing.projectId !== projectId || existing.createdByUserId !== user.id) {
+        throw new AssistantError(
+          "Task identity belongs to another scope",
+          ErrorType.FORBIDDEN,
+          403,
+        );
+      }
+
+      return { task: existing };
+    }
+  }
+
+  await assertTaskSourcesAvailable(context, projectId, input.context?.sourceIds);
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
-  const task = await context.repositories.projectTasks.createTask({
+  const { task, created } = await context.repositories.projectTasks.createTask({
+    id: options.id,
+    executionProfile: options.executionProfile,
     projectId,
     workspaceId: project.workspace_id,
     objective: input.objective,
     acceptanceCriteria: withCriterionIds(input.acceptanceCriteria) ?? [],
+    assumptions: withGeneratedIds(input.assumptions ?? []),
+    killConditions: withGeneratedIds(input.killConditions ?? []),
     expectedOutput: input.expectedOutput ?? null,
     context: input.context ?? null,
     constraints: input.constraints ?? null,
@@ -356,6 +404,10 @@ export async function createProjectTask(
     tokenBudget: input.tokenBudget ?? null,
     position: maxPosition + POSITION_STEP,
   });
+
+  if (!created) {
+    return { task };
+  }
 
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
@@ -375,10 +427,12 @@ export async function updateProjectTask(
   context: ServiceContext,
   projectId: string,
   taskId: string,
-  input: UpdateProjectTaskInput,
+  unvalidatedInput: UpdateProjectTaskInput,
   options: { actor?: ProjectTaskActor } = {},
 ) {
   const user = context.requireUser();
+
+  const input = updateProjectTaskSchema.parse(unvalidatedInput);
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
   const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
@@ -396,6 +450,14 @@ export async function updateProjectTask(
     "stageId",
   ] as const;
   const changesPlan = planFields.some((field) => input[field] !== undefined);
+
+  if (changesPlan && task.executionProfile === "diff_review") {
+    throw new AssistantError(
+      "PR review plans retain their captured revision. Create a new review to change the target.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (changesPlan && task.status !== "backlog") {
     throw new AssistantError(
@@ -417,6 +479,17 @@ export async function updateProjectTask(
     );
   }
 
+  if (
+    (input.assumptions !== undefined || input.killConditions !== undefined) &&
+    isTerminalProjectTaskStatus(task.status)
+  ) {
+    throw new AssistantError(
+      "A finished task keeps the assumptions it was judged against.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
   if (input.status !== undefined) {
     assertProjectTaskTransition({ actor, from: task.status, to: input.status });
   }
@@ -425,11 +498,15 @@ export async function updateProjectTask(
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, taskId, input.dependsOnTaskIds);
 
+  await assertTaskSourcesAvailable(context, projectId, input.context?.sourceIds);
+
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
   const updated = await context.repositories.projectTasks.updateTask(taskId, {
     ...input,
     acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
+    assumptions: input.assumptions ? withGeneratedIds(input.assumptions) : undefined,
+    killConditions: input.killConditions ? withGeneratedIds(input.killConditions) : undefined,
     ...(input.status !== undefined && input.status !== "blocked"
       ? { blockedReason: null, blockedDetail: null }
       : {}),
@@ -455,7 +532,15 @@ export async function updateProjectTask(
     await settleCancelledTaskResources(context, task);
   }
 
+  if (isFinishing && (nextStatus === "done" || nextStatus === "cancelled")) {
+    await recordRetrospectiveQuietly(context, updated, nextStatus);
+  }
+
   await reconcileTaskNotifications(context, updated);
+
+  if (input.status === "done" && task.status !== "done") {
+    await releaseReadyDependentTasks(context, projectId);
+  }
 
   return { task: updated };
 }
@@ -466,6 +551,7 @@ export async function startProjectTask(
   taskId: string,
   options: {
     approvalResolved?: boolean;
+    automaticReviewPolicyRevision?: string;
     approvedTools?: string[];
     interaction?: { toolName: string; response: Record<string, unknown> };
   } = {},
@@ -517,7 +603,11 @@ export async function startProjectTask(
       status: "blocked",
       blockedReason: "dependencies_unmet",
       blockedDetail:
-        `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(0, 500),
+        `Starts when these finish: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(
+          0,
+          500,
+        ),
+      runnerIdentityUserId: user.id,
     });
 
     if (blocked) {
@@ -525,7 +615,7 @@ export async function startProjectTask(
     }
 
     throw new AssistantError(
-      `This task depends on work that is not done yet: ${unmet
+      `This task will start when its dependencies are done: ${unmet
         .map((dependency) => dependency.objective)
         .join("; ")}`,
       ErrorType.CONFLICT_ERROR,
@@ -546,6 +636,7 @@ export async function startProjectTask(
   const queued = await queueProjectTaskRun({
     context,
     task,
+    automaticReviewPolicyRevision: options.automaticReviewPolicyRevision,
     runnerIdentityUserId: user.id,
     stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
     approvedTools: options.approvedTools,
@@ -619,6 +710,11 @@ export async function acceptProjectTask(
   });
 
   await reconcileTaskNotifications(context, updated);
+
+  if (!nextStage) {
+    await recordRetrospectiveQuietly(context, updated, "done");
+    await releaseReadyDependentTasks(context, projectId);
+  }
 
   return { task: updated };
 }

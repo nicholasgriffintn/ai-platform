@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   finaliseSiteGeneration: vi.fn(),
   updateSite: vi.fn(),
   getSite: vi.fn(),
+  requireSourcesAccess: vi.fn(),
 }));
 
 vi.mock("~/infrastructure/ai", () => ({
@@ -24,6 +25,11 @@ vi.mock("~/modules/sites/application/records", () => ({
   finaliseSiteGeneration: mocks.finaliseSiteGeneration,
   updateSite: mocks.updateSite,
   getSite: mocks.getSite,
+}));
+
+vi.mock("~/modules/sources/application/sources", () => ({
+  requireSourcesAccess: mocks.requireSourcesAccess,
+  formatSource: vi.fn(),
 }));
 
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
@@ -113,6 +119,7 @@ const soundQualityDecision = {
 describe("streamSiteGeneration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.requireSourcesAccess.mockResolvedValue([]);
     mocks.tryDecide.mockResolvedValue(null);
     mocks.loadSiteGenerationModels.mockResolvedValue({});
     mocks.resolveSiteGenerationModel.mockResolvedValue({
@@ -149,6 +156,91 @@ describe("streamSiteGeneration", () => {
       createdAt: "2026-09-19T00:00:00.000Z",
       updatedAt: "2026-09-19T00:01:00.000Z",
     }));
+  });
+
+  it("builds from an attached Source without copying its private rows into the model prompt", async () => {
+    mocks.requireSourcesAccess.mockImplementation(
+      async (_context, _userId, _sourceIds, validate) => {
+        const source = {
+          id: "source-1",
+          project_id: null,
+          status: "available",
+          content: JSON.stringify([{ name: "Private customer", count: 2 }]),
+        };
+
+        validate?.(source);
+
+        return [source];
+      },
+    );
+    mocks.stream.mockResolvedValue(
+      sseStreamOf([
+        ...modelOutput,
+        '\n{"op":"add","path":"/dataBindings","value":{"records":{"kind":"source","sourceId":"source-1","pageId":"home","statePath":"/records"}}}\n',
+      ]),
+    );
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A customer dashboard", sourceIds: ["source-1"] },
+      }),
+    );
+    const prompt = mocks.stream.mock.calls[0][0].prompt;
+    const saved = events.find((event) => event.type === "saved");
+
+    expect(prompt).toContain('"sourceId":"source-1"');
+    expect(prompt).toContain('"fields":{"name":"string","count":"number"}');
+    expect(prompt).not.toContain("Private customer");
+    expect(saved).toMatchObject({
+      site: {
+        project: {
+          dataBindings: {
+            records: {
+              kind: "source",
+              sourceId: "source-1",
+              pageId: "home",
+              statePath: "/records",
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("rejects an attached Source from another scope before sending a generation prompt", async () => {
+    mocks.requireSourcesAccess.mockImplementation(
+      async (_context, _userId, _sourceIds, validate) => {
+        const source = {
+          id: "private-source",
+          project_id: "other-project",
+          status: "available",
+          content: "[]",
+        };
+
+        validate?.(source);
+
+        return [source];
+      },
+    );
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A customer dashboard", sourceIds: ["private-source"] },
+      }),
+    );
+
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: "error",
+        error: "The source is unavailable in this site's scope",
+      }),
+    );
+    expect(mocks.stream).not.toHaveBeenCalled();
+    expect(mocks.createSite).not.toHaveBeenCalled();
   });
 
   it("classifies with Jev, streams patches as they arrive, repairs the document and saves it", async () => {

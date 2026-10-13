@@ -84,4 +84,5 @@ export const extract_text_from_document: FunctionToolDescriptor = {
   }),
   type: "byok",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };

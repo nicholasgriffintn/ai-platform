@@ -11,23 +11,25 @@ const GITHUB_OPERATIONS = [
 
 function memoryDocument(statements, { id, scopeType, scopeId, kind, name, content, createdAt }) {
   statements.push(
-    insert("memory_document", {
+    insert("resource", {
+      resource_type: "memory",
       id,
       scope_type: scopeType,
       scope_id: scopeId,
       kind,
-      name,
+      title: name,
       content,
       revision: 1,
-      created_by: OWNER.id,
+      created_by_user_id: OWNER.id,
       created_at: createdAt,
       updated_at: at({ hours: 1 }),
     }),
-    insert("memory_document_revision", {
+    insert("resource_revision", {
+      resource_type: "memory",
       id: `${id}-r1`,
       document_id: id,
       revision: 1,
-      content,
+      text_content: content,
       change_note: "Seeded",
       operation_id: `seed:${id}`,
       created_by: OWNER.id,
@@ -158,20 +160,18 @@ export function continuityStatements({ teammates, chat, work }) {
         status: "active",
         created_at: at({ days: 10 }),
         updated_at: at({ hours: 1 }),
-      }),
-      insert("teammate_computer", {
-        id: seedId("teammate-computer", key.toLowerCase()),
-        context_id: teammates.contexts[key],
-        provider: "hosted",
-        provider_handle: null,
-        checkpoint_reference: null,
-        status: "stopped",
-        lease_kind: null,
-        lease_owner_id: null,
-        lease_expires_at: null,
-        lease_fence: 0,
-        created_at: at({ days: 10 }),
-        updated_at: at({ hours: 1 }),
+
+        computer_id: seedId("teammate-computer", key.toLowerCase()),
+        computer_provider: "hosted",
+        computer_provider_handle: null,
+        computer_checkpoint_reference: null,
+        computer_status: "stopped",
+        computer_lease_kind: null,
+        computer_lease_owner_id: null,
+        computer_lease_expires_at: null,
+        computer_lease_fence: 0,
+        computer_created_at: at({ days: 10 }),
+        computer_updated_at: at({ hours: 1 }),
       }),
     );
   }
@@ -184,7 +184,8 @@ export function continuityStatements({ teammates, chat, work }) {
   };
 
   statements.push(
-    insert("teammate_connection_grant", {
+    insert("resource_grant", {
+      kind: "connection",
       id: releaseGrant.id,
       context_id: teammates.contexts.releaseBot,
       connection_id: releaseGrant.connectionId,

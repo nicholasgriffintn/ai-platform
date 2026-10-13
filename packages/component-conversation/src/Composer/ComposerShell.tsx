@@ -50,13 +50,13 @@ export function ComposerShell({
                 onMouseDown={(event) => {
                   const target = event.target as HTMLElement | null;
 
-                  if (target?.closest("button, a, input, [contenteditable]")) {
+                  if (target?.closest("button, a, input, textarea, select, [contenteditable]")) {
                     return;
                   }
 
                   event.preventDefault();
                   const row = event.currentTarget as HTMLElement;
-                  const editable = row.querySelector<HTMLElement>("[contenteditable]");
+                  const editable = row.querySelector<HTMLElement>("[contenteditable], textarea");
 
                   editable?.focus();
                 }}

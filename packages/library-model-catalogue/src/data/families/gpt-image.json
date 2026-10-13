@@ -29,7 +29,7 @@
     "gpt-image-1": {
       "defaults": {
         "description": "OpenAI image model for production generation, edits, and brand-safe visual workflows",
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "April 24, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -40,10 +40,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1133,
+              "value": 1012,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -63,7 +63,7 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 5,
+        "reliability": 3,
         "releaseDate": "November 25, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -74,10 +74,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1264,
+              "value": 1108,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -86,7 +86,7 @@
     "gpt-image-1-mini": {
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "reliability": 3,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -96,10 +96,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1089,
+              "value": 920,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -118,7 +118,7 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 5,
+        "reliability": 4,
         "releaseDate": "April 21, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -129,10 +129,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1338,
+              "value": 1172,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -151,14 +151,49 @@
             "image"
           ]
         },
-        "releaseDate": "September 8, 2026"
+        "contextComplexity": 4,
+        "reliability": 4,
+        "releaseDate": "September 8, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1191,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
       }
     },
     "gpt-image-2-5-sunburst": {
       "defaults": {
         "name": "GPT Image 2.5 Sunburst",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "releaseDate": "September 8, 2026"
+        "reliability": 4,
+        "releaseDate": "September 8, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1198,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
       }
     }
   }

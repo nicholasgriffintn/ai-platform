@@ -1,5 +1,5 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 import z from "zod/v4";
 
@@ -9,6 +9,8 @@ import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { handleWebSearch } from "~/modules/search/application/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 
+import { planExpansionQueries } from "./query-expansion";
+import { mergeSearchSources, rankSearchSources } from "./source-ranking";
 import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
@@ -16,7 +18,7 @@ import {
 
 export interface DeepWebSearchParams {
   query: string;
-  options: SearchOptions;
+  options?: SearchOptions;
   completion_id?: string;
   searchProvider?: SearchProviderName;
 }
@@ -27,12 +29,12 @@ export async function performDeepWebSearch(
   body?: DeepWebSearchParams,
   conversationManager?: ConversationManager,
 ) {
-  const { query: rawQuery, options, completion_id, searchProvider } = body || {};
+  const { query: rawQuery, options = {}, completion_id, searchProvider } = body || {};
 
   const query = sanitiseInput(rawQuery);
 
-  if (!query || !options) {
-    throw new AssistantError("Missing query or options", ErrorType.PARAMS_ERROR);
+  if (!query) {
+    throw new AssistantError("Missing query", ErrorType.PARAMS_ERROR);
   }
 
   const {
@@ -45,12 +47,7 @@ export async function performDeepWebSearch(
     handleWebSearch({
       provider: searchProvider,
       query: query,
-      options: {
-        search_depth: options.search_depth,
-        include_answer: options.include_answer,
-        include_raw_content: options.include_raw_content,
-        include_images: options.include_images,
-      },
+      options,
       env: env,
       user: user,
     }),
@@ -75,41 +72,42 @@ export async function performDeepWebSearch(
       .catch(() => []),
   ]);
 
-  const searchData = webSearchResults.data || {};
+  const searchData = webSearchResults.data;
   const rawSearchResult = searchData.result;
-  const searchResults = Array.isArray(searchData.results)
-    ? searchData.results
-    : Array.isArray(rawSearchResult?.results)
-      ? rawSearchResult.results
+  const searchAnswer = "answer" in rawSearchResult ? rawSearchResult.answer : undefined;
+  const providerUsed = searchData.provider;
+  const providerWarning = searchData.warning;
+  const expansionQueries =
+    options.search_depth === "advanced"
+      ? await planExpansionQueries({
+          env,
+          user,
+          completionId: completion_id,
+          query,
+          candidates: similarQuestions,
+        })
       : [];
-  const searchAnswer = rawSearchResult?.answer as string | undefined;
-  const providerUsed = searchData.provider as SearchProviderName | undefined;
-  const providerWarning = searchData.warning as string | undefined;
-
-  const sources = searchResults.map((result: any) => {
-    return {
-      title: result.title,
-      url: result.url,
-      content:
-        result.content ||
-        result.snippet ||
-        result.excerpt ||
-        result.description ||
-        result.summary ||
-        result.title,
-      excerpts: result.excerpts || [],
-      score: result.score,
-      image: result.imageUrl || result.image || undefined,
-      favicon: result.favicon || undefined,
-      publishedDate: result.publishedDate || result.date || result.last_updated || undefined,
-    };
+  const expandedResults = await Promise.all(
+    expansionQueries.map((expansionQuery) =>
+      handleWebSearch({ provider: searchProvider, query: expansionQuery, options, env, user })
+        .then((result) => result.data.sources)
+        .catch(() => []),
+    ),
+  );
+  const ranking = await rankSearchSources({
+    env,
+    user,
+    completionId: completion_id,
+    query,
+    sources: mergeSearchSources([searchData.sources, ...expandedResults]),
   });
+  const sources = ranking.sources;
 
   const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-answer`;
 
   const answerContexts = sources
-    .map((source: any, index: number) => {
+    .map((source, index) => {
       return `${searchAnswer ? `[[answer]] ${searchAnswer}` : ""}[[citation:${index}]] ${source.content}`;
     })
     .join("\n\n");
@@ -133,19 +131,22 @@ export async function performDeepWebSearch(
     });
   }
 
-  const answer = await ai.generateText({
-    env,
-    user,
-    completion_id,
-    model: modelToUse,
-    provider: providerToUse,
-    system: systemPrompt,
-    prompt: query,
-    max_tokens: 2048,
-    store: false,
-    reasoning_effort: reasoningEffort,
-    disable_functions: true,
-  });
+  const answer =
+    sources.length === 0
+      ? "No matching sources were found."
+      : await ai.generateText({
+          env,
+          user,
+          completion_id,
+          model: modelToUse,
+          provider: providerToUse,
+          system: systemPrompt,
+          prompt: query,
+          max_tokens: 2048,
+          store: false,
+          reasoning_effort: reasoningEffort,
+          disable_functions: true,
+        });
 
   if (conversationManager) {
     await conversationManager.add(new_completion_id, {

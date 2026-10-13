@@ -8,10 +8,12 @@ import { USAGE_ROLLUP_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getModelConfig } from "~/modules/models/application/resolve";
-import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { SyncPublisher } from "~/modules/sync/application/publish";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
+
+import { publishUsageChanged } from "./events";
+import { publishWorkspaceUsageChanged } from "./workspace-events";
 
 export function createUsageStore(repositories: RepositoryManager): UsageStore {
   return {
@@ -56,10 +58,14 @@ export function createUsageStore(repositories: RepositoryManager): UsageStore {
   };
 }
 
-export function createUsagePublisher(publisher: SyncPublisher): UsageEventPublisher {
+export function createUsagePublisher(
+  publisher: SyncPublisher,
+  store: UsageStore,
+): UsageEventPublisher {
   return {
-    usageChanged: (userId, period) =>
-      publishUserEvent(publisher, userId, "usage.changed", { period }),
+    usageChanged: (userId, period) => publishUsageChanged(publisher, store, userId, period),
+    workspaceUsageChanged: (workspaceId, period) =>
+      publishWorkspaceUsageChanged(publisher, workspaceId, period),
   };
 }
 
@@ -74,9 +80,11 @@ export function createUsageRuntime(options: CreateUsageRuntimeOptions): UsageRun
   const repositories = options.repositories ?? new RepositoryManager(env);
   const publisher = options.publisher === null ? undefined : (options.publisher ?? { env });
 
+  const store = createUsageStore(repositories);
+
   return {
-    store: createUsageStore(repositories),
-    publisher: publisher ? createUsagePublisher(publisher) : undefined,
+    store,
+    publisher: publisher ? createUsagePublisher(publisher, store) : undefined,
     enqueueRollup: env.TASK_QUEUE
       ? async (payload: UsageRollupPayload, userId) => {
           await new TaskService(env, repositories.tasks).enqueueTask({

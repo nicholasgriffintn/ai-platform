@@ -1,6 +1,6 @@
 import { DELEGATION_MESSAGE_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { deliverDelegationMessage } from "~/modules/delegations/application/message";
 import { TaskService } from "~/modules/tasks/application/TaskService";

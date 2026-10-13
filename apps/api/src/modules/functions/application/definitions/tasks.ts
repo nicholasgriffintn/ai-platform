@@ -10,6 +10,7 @@ export const get_task_status: FunctionToolDescriptor = {
     "Report the status of the user's background tasks, such as queued recipe runs. Pass taskId for one specific task, or omit it to list the most recent tasks.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

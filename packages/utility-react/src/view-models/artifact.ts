@@ -5,5 +5,6 @@ export interface ArtifactProps {
   title?: string;
   display?: "panel" | "inline";
   content: string;
+  source?: { conversationId: string; messageId: string };
   onOpen?: (artifact: ArtifactProps, combine?: boolean, artifacts?: ArtifactProps[]) => void;
 }

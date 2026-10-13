@@ -30,7 +30,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 16384,
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "releaseDate": "March 1, 2026",
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -117,7 +117,8 @@
         "contextWindow": 96000,
         "maxTokens": 96000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.00231,
         "costPer1kOutputTokens": 0.006,
@@ -170,11 +171,15 @@
       "model": "mistral-small/mistral-small-4-119b",
       "matchingModel": "mistral-small-4-119b",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "March 15, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen-image": {
       "model": "qwen/qwen-image",
@@ -185,10 +190,19 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 8192,
         "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "strengths": [
           "image"
         ],
         "contextComplexity": 1,
+        "isFeatured": true,
         "releaseDate": "March 1, 2026",
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -201,7 +215,6 @@
       "matchingModel": "qwen3-embedding-8b",
       "overrides": {
         "name": "Qwen3-Embedding-8B",
-        "openWeights": true,
         "maxTokens": 8192,
         "modalities": {
           "input": [
@@ -247,6 +260,21 @@
         "name": "Qwen3.5-9B",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
         "releaseDate": "February 1, 2026",
         "lastUpdated": "February 1, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -273,6 +301,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00242,

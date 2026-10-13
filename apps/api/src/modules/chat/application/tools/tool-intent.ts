@@ -3,6 +3,7 @@ import {
   noul,
   type DecisionPolicyReceipt,
 } from "@ngriffin_uk/polychat-ai-functions";
+import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   decisionNoulConfidence,
@@ -10,11 +11,11 @@ import {
   type DecisionNoulAnswer,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { ai } from "~/infrastructure/ai";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/tools/tool-intent" });
 
@@ -121,6 +122,28 @@ export function requiresToolIntentVerification(params: {
     !params.alreadyApproved &&
     params.permissions.some((permission) => SIDE_EFFECT_PERMISSIONS.has(permission))
   );
+}
+
+export function resolveToolIntentRequest(
+  messages: readonly Message[],
+  currentMessage: string,
+): string {
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
+    const isApprovalReply = isRecord(message.data) && isRecord(message.data.toolInteraction);
+
+    if (message.role !== "user" || isApprovalReply) {
+      continue;
+    }
+
+    const text = extractTextFromMessageContent(message.content).trim();
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return currentMessage;
 }
 
 function requestText(input: string | { prompt: string } | undefined): string {

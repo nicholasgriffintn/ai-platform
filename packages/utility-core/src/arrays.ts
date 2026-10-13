@@ -6,7 +6,7 @@ export function reverseCopy<T>(values: readonly T[]): T[] {
   return [...values].reverse();
 }
 
-function hashSeed(seed: string): number {
+export function hashSeed(seed: string): number {
   let hash = 2166136261;
 
   for (let index = 0; index < seed.length; index += 1) {
@@ -50,4 +50,14 @@ export function chunkArray<T>(values: readonly T[], size: number): T[][] {
   }
 
   return chunks;
+}
+
+export function pickRandom<T>(values: readonly T[]): T | undefined {
+  if (values.length === 0) {
+    return undefined;
+  }
+
+  const [random = 0] = crypto.getRandomValues(new Uint32Array(1));
+
+  return values[random % values.length];
 }

@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ActivityRecord as Activity, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -66,7 +67,7 @@ export async function getActivity(
 
   if (record.project_id) {
     await requireProjectAccess(context, record.project_id);
-  } else if (record.created_by_user_id !== userId) {
+  } else if (!ownsResource(userId, record.created_by_user_id)) {
     throw new AssistantError("Activity not found", ErrorType.NOT_FOUND, 404);
   }
 

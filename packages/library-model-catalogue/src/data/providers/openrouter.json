@@ -11,7 +11,7 @@
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
         "name": "gpt-oss-120b",
-        "maxTokens": 65536,
+        "maxTokens": 117964,
         "strengths": [
           "reasoning",
           "analysis",
@@ -22,8 +22,8 @@
         "speed": 5,
         "knowledgeCutoffDate": "June 30, 2024",
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006,
+        "costPer1kInputTokens": 0.000037,
+        "costPer1kOutputTokens": 0.00017,
         "supportsAttachments": false
       }
     },
@@ -51,7 +51,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016
@@ -61,16 +61,6 @@
       "model": "o-mini/o4-mini",
       "matchingModel": "openai/o4-mini",
       "overrides": {
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "reasoning",
           "math",
@@ -81,7 +71,6 @@
           "tool_use"
         ],
         "speed": 3,
-        "knowledgeCutoffDate": "May 2024",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -111,7 +100,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
@@ -132,7 +121,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
@@ -162,7 +151,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "August 7, 2025",
@@ -244,7 +233,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
@@ -383,7 +372,7 @@
           "general_knowledge",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -430,7 +419,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "December 31, 2024",
         "releaseDate": "July 11, 2025",
         "lastUpdated": "July 11, 2025",
@@ -439,10 +428,10 @@
         "supportsResponseFormat": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 19.4,
+          "intelligenceIndex": 12.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -527,29 +516,12 @@
           "image",
           "creative"
         ],
-        "reliability": 4,
         "speed": 4,
         "multimodal": true,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
-        "costPer1kReasoningTokens": 0.0025,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1159,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 8
-            }
-          ]
-        }
+        "costPer1kReasoningTokens": 0.0025
       }
     },
     "meta-llama/llama-3.3-70b-free": {
@@ -638,10 +610,10 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.5,
+          "intelligenceIndex": 15.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -654,7 +626,14 @@
       "overrides": {
         "lastUpdated": "October 15, 2025",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
+        "costPer1kOutputTokens": 0.005,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "anthropic/claude-opus-4.1": {
@@ -686,7 +665,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP"
+        "supportsTopP",
+        "reliability"
       ]
     },
     "anthropic/claude-opus-4.5": {
@@ -703,7 +683,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -822,9 +802,6 @@
       "model": "flux/flux-2-klein-4b",
       "matchingModel": "black-forest-labs/flux.2-klein-4b",
       "overrides": {
-        "name": "FLUX.2 Klein 4B",
-        "contextWindow": 40960,
-        "maxTokens": 40960,
         "modalities": {
           "input": [
             "image",
@@ -839,9 +816,6 @@
           "vision",
           "image"
         ],
-        "contextComplexity": 3,
-        "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "January 14, 2026",
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -997,11 +971,12 @@
       "overrides": {
         "name": "DeepSeek V3 0324",
         "contextWindow": 163840,
-        "maxTokens": 147456,
+        "maxTokens": 115200,
+        "speed": 3,
         "knowledgeCutoffDate": "July 31, 2024",
         "lastUpdated": "March 24, 2025",
-        "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.001,
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.00114,
         "supportsAttachments": false
       }
     },
@@ -1013,6 +988,7 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 32768,
         "contextComplexity": 3,
+        "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00025,
@@ -1045,10 +1021,7 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      },
-      "unset": [
-        "strengths"
-      ]
+      }
     },
     "deepseek/deepseek-r1-distill-qwen-14b": {
       "model": "deepseek/deepseek-r1-distill-qwen-14b",
@@ -1084,6 +1057,9 @@
       "matchingModel": "deepseek/deepseek-v3.1-terminus",
       "overrides": {
         "contextWindow": 163840,
+        "maxTokens": 147456,
+        "contextComplexity": 4,
+        "speed": 2,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
@@ -1102,6 +1078,7 @@
       "model": "deepseek/deepseek-v3-1-terminus-exacto",
       "matchingModel": "deepseek/deepseek-v3.1-terminus:exacto",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.001,
@@ -1115,12 +1092,11 @@
       "model": "deepseek/deepseek-v3-2",
       "matchingModel": "deepseek/deepseek-v3.2",
       "overrides": {
-        "name": "DeepSeek V3.2",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "maxTokens": 65536,
+        "maxTokens": 147456,
         "lastUpdated": "December 1, 2025",
-        "costPer1kInputTokens": 0.000269,
-        "costPer1kOutputTokens": 0.0004,
+        "costPer1kInputTokens": 0.000259,
+        "costPer1kOutputTokens": 0.0008,
         "supportsAttachments": false
       }
     },
@@ -1212,17 +1188,17 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
-        "costPer1kReasoningTokens": 0.0004
+        "costPer1kReasoningTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "google/gemini-2.5-flash-lite-preview-09-2025": {
@@ -1289,7 +1265,16 @@
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "costPer1kReasoningTokens": 0.003
+        "costPer1kReasoningTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "google/gemini-3-pro-preview": {
@@ -1336,10 +1321,10 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00015,
         "artificialAnalysis": {
-          "intelligenceIndex": 3.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 3.8,
+          "codingIndex": 5.8,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -1378,10 +1363,10 @@
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00045,
         "artificialAnalysis": {
-          "intelligenceIndex": 4.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 4.9,
+          "codingIndex": 10.1,
+          "agenticIndex": 0.1,
+          "intelligenceIndexVersion": 4.3
         }
       },
       "unset": [
@@ -1419,10 +1404,10 @@
         "costPer1kOutputTokens": 0.0001,
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 1.1,
-          "codingIndex": null,
+          "intelligenceIndex": 4.8,
+          "codingIndex": 2.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1568,7 +1553,7 @@
       "matchingModel": "meta-llama/llama-4-scout:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1611,7 +1596,7 @@
       "matchingModel": "minimax/minimax-m1",
       "overrides": {
         "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.0004,
+        "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.0022,
         "supportsResponseFormat": false,
         "supportsAttachments": false
@@ -1623,7 +1608,7 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 176947,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1635,8 +1620,7 @@
       "matchingModel": "minimax/minimax-m2.1",
       "overrides": {
         "name": "MiniMax M2.1",
-        "contextWindow": 204800,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1645,10 +1629,11 @@
       }
     },
     "mistralai/codestral-2508": {
-      "model": "codestral/codestral-2508",
+      "model": "codestral/codestral-25-08",
       "matchingModel": "mistralai/codestral-2508",
       "overrides": {
-        "lastUpdated": "August 1, 2025",
+        "knowledgeCutoffDate": "March 31, 2025",
+        "lastUpdated": "July 30, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009
       }
@@ -1700,7 +1685,6 @@
       "model": "mistral-medium/mistral-medium-3",
       "matchingModel": "mistralai/mistral-medium-3",
       "overrides": {
-        "contextWindow": 131072,
         "maxTokens": 104857,
         "modalities": {
           "input": [
@@ -1742,10 +1726,10 @@
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 9.2,
+          "codingIndex": 20.5,
+          "agenticIndex": 1.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1769,8 +1753,7 @@
       "overrides": {
         "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.000351,
-        "costPer1kOutputTokens": 0.000555,
-        "supportsResponseFormat": false
+        "costPer1kOutputTokens": 0.000555
       }
     },
     "mistralai/mistral-small-3.2-24b-instruct": {
@@ -1827,7 +1810,7 @@
       "matchingModel": "moonshotai/kimi-k2:free",
       "overrides": {
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1842,15 +1825,6 @@
       "matchingModel": "moonshotai/kimi-k2.5",
       "overrides": {
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -1859,8 +1833,8 @@
         "speed": 3,
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
-        "costPer1kInputTokens": 0.00045,
-        "costPer1kOutputTokens": 0.00225
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "nousresearch/deephermes-3-llama-3-8b-preview": {
@@ -1944,7 +1918,7 @@
       "model": "nemotron/nemotron-nano-9b-v2",
       "matchingModel": "nvidia/nemotron-nano-9b-v2",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 18, 2025",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00016,
@@ -1989,7 +1963,8 @@
         "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5-codex": {
@@ -2041,7 +2016,6 @@
       "model": "gpt-pro/gpt-5-pro",
       "matchingModel": "openai/gpt-5-pro",
       "overrides": {
-        "maxTokens": 128000,
         "modalities": {
           "input": [
             "image",
@@ -2075,7 +2049,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -2103,7 +2077,8 @@
         "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5.1-codex": {
@@ -2112,19 +2087,11 @@
       "overrides": {
         "name": "GPT-5.1-Codex",
         "description": "Codex GPT for repository edits, code review, and practical software agents",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "openai/gpt-5.1-codex-max": {
@@ -2135,19 +2102,11 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "openai/gpt-5.1-codex-mini": {
@@ -2165,7 +2124,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -2194,7 +2153,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -2224,6 +2183,7 @@
       },
       "unset": [
         "contextComplexity",
+        "reliability",
         "reasoningConfig"
       ]
     },
@@ -2231,6 +2191,7 @@
       "model": "gpt-codex/gpt-5-2-codex",
       "matchingModel": "openai/gpt-5.2-codex",
       "overrides": {
+        "name": "GPT-5.2-Codex",
         "description": "Code-specialist GPT for repository edits, reviews, and long-running software agents",
         "speed": 3,
         "lastUpdated": "December 11, 2025",
@@ -2315,13 +2276,17 @@
       "model": "gpt-oss/gpt-oss-safeguard-20b",
       "matchingModel": "openai/gpt-oss-safeguard-20b",
       "overrides": {
-        "contextWindow": 131072,
+        "name": "gpt-oss-safeguard-20b",
         "maxTokens": 65536,
         "lastUpdated": "October 29, 2025",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "openrouter/sherlock-dash-alpha": {
       "model": "openrouter/openrouter/sherlock-dash-alpha/sherlock-dash-alpha",
@@ -2351,7 +2316,6 @@
       "model": "qwen/qwen2-5-coder-32b-instruct",
       "matchingModel": "qwen/qwen-2.5-coder-32b-instruct",
       "overrides": {
-        "name": "Qwen2.5 Coder 32B Instruct",
         "maxTokens": 29491,
         "contextComplexity": 2,
         "knowledgeCutoffDate": "June 30, 2024",
@@ -2439,7 +2403,8 @@
       "overrides": {
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -2456,7 +2421,7 @@
       "matchingModel": "qwen/qwen3-235b-a22b-07-25:free",
       "overrides": {
         "isFree": true,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2470,12 +2435,12 @@
       "model": "qwen/qwen3-235b-a22b-thinking-2507",
       "matchingModel": "qwen/qwen3-235b-a22b-thinking-2507",
       "overrides": {
-        "contextWindow": 131072,
-        "maxTokens": 117964,
+        "contextWindow": 128000,
+        "maxTokens": 16384,
         "knowledgeCutoffDate": "June 30, 2025",
         "lastUpdated": "July 25, 2025",
-        "costPer1kInputTokens": 0.00023,
-        "costPer1kOutputTokens": 0.0023,
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.0035,
         "supportsResponseFormat": false,
         "supportsAttachments": false
       }
@@ -2644,7 +2609,6 @@
         "name": "Qwen3 Next 80B A3B Instruct",
         "maxTokens": 235929,
         "speed": 4,
-        "releaseDate": "September 2025",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0011,
@@ -2667,6 +2631,7 @@
       "model": "qwen/qwen3-next-80b-a3b-thinking",
       "matchingModel": "qwen/qwen3-next-80b-a3b-thinking",
       "overrides": {
+        "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "maxTokens": 235929,
         "contextComplexity": 4,
@@ -2674,7 +2639,13 @@
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.2,
+          "codingIndex": 17.4,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "qwen/qwq-32b:free": {
@@ -2696,11 +2667,20 @@
       "model": "reka/reka-flash-3",
       "matchingModel": "rekaai/reka-flash-3",
       "overrides": {
+        "openWeights": true,
+        "speed": 3,
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "sarvamai/sarvam-m:free": {
@@ -2721,6 +2701,7 @@
       "model": "openrouter/sourceful/riverflow-v2-fast-preview/riverflow-v2-fast-preview",
       "matchingModel": "sourceful/riverflow-v2-fast-preview",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2763,7 +2744,7 @@
       "model": "openrouter/stepfun/step-3.5-flash/step-3-5-flash",
       "matchingModel": "stepfun/step-3.5-flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 13, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
@@ -2776,7 +2757,7 @@
       "matchingModel": "stepfun/step-3.5-flash:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 29, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2797,8 +2778,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "tngtech/deepseek-r1t2-chimera:free": {
@@ -2862,6 +2843,7 @@
       "model": "grok/grok-4",
       "matchingModel": "x-ai/grok-4",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2943,7 +2925,6 @@
       "model": "glm/glm-4-5",
       "matchingModel": "z-ai/glm-4.5",
       "overrides": {
-        "maxTokens": 98304,
         "speed": 3,
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -2956,6 +2937,7 @@
       "model": "glm-air/glm-4-5-air",
       "matchingModel": "z-ai/glm-4.5-air",
       "overrides": {
+        "name": "GLM 4.5 Air",
         "speed": 3,
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.00013,
@@ -2985,8 +2967,7 @@
       "matchingModel": "z-ai/glm-4.5v",
       "overrides": {
         "name": "GLM 4.5V",
-        "contextWindow": 65536,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
@@ -2999,12 +2980,10 @@
       "overrides": {
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
-        "maxTokens": 16384,
-        "contextComplexity": 3,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 30, 2025",
-        "costPer1kInputTokens": 0.00043,
-        "costPer1kOutputTokens": 0.00175,
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.002,
         "supportsAttachments": false
       }
     },
@@ -3012,15 +2991,15 @@
       "model": "glm/glm-4-6-exacto",
       "matchingModel": "z-ai/glm-4.6:exacto",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0019,
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "z-ai/glm-4.7": {
@@ -3029,7 +3008,7 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022,
@@ -3041,8 +3020,9 @@
       "matchingModel": "z-ai/glm-4.7-flash",
       "overrides": {
         "name": "GLM 4.7 Flash",
+        "contextWindow": 200000,
         "maxTokens": 117964,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -3068,24 +3048,24 @@
       "matchingModel": "~anthropic/claude-haiku-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false
+      }
     },
     "~anthropic/claude-opus-latest": {
       "model": "claude-opus/claude-opus-latest",
       "matchingModel": "~anthropic/claude-opus-latest",
       "overrides": {
+        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "~anthropic/claude-sonnet-latest": {
@@ -3146,8 +3126,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0010301,
-        "costPer1kOutputTokens": 0.009043
+        "costPer1kInputTokens": 0.00073,
+        "costPer1kOutputTokens": 0.01
       }
     },
     "~openai/gpt-latest": {
@@ -3327,10 +3307,10 @@
         "supportsAttachments": false
       },
       "unset": [
+        "strengths",
         "contextComplexity",
         "reliability",
-        "artificialAnalysis",
-        "strengths"
+        "artificialAnalysis"
       ]
     },
     "amazon/nova-premier-v1": {
@@ -3506,7 +3486,6 @@
       "model": "trinity/trinity-large-thinking",
       "matchingModel": "arcee-ai/trinity-large-thinking",
       "overrides": {
-        "contextWindow": 262144,
         "speed": 4,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -3674,9 +3653,19 @@
       "model": "seed/seed-2-0-lite",
       "matchingModel": "bytedance-seed/seed-2.0-lite",
       "overrides": {
+        "name": "Seed-2.0-Lite",
         "lastUpdated": "February 14, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.002
+        "costPer1kOutputTokens": 0.002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "bytedance-seed/seed-2.0-mini": {
@@ -3787,15 +3776,16 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "speed": 2,
         "lastUpdated": "February 28, 2026",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 10.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 8.5,
+          "codingIndex": 23,
+          "agenticIndex": 0.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3804,8 +3794,8 @@
       "matchingModel": "deepseek/deepseek-r1",
       "overrides": {
         "name": "R1",
-        "contextWindow": 64000,
         "maxTokens": 16000,
+        "speed": 2,
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0025,
@@ -3829,7 +3819,7 @@
       "matchingModel": "deepseek/deepseek-v3.2-exp",
       "overrides": {
         "openWeights": true,
-        "maxTokens": 65536,
+        "maxTokens": 147456,
         "knowledgeCutoffDate": "July 31, 2025",
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.00027,
@@ -3841,10 +3831,11 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek/deepseek-v4-flash",
       "overrides": {
+        "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00004704,
-        "costPer1kOutputTokens": 0.00009408,
+        "costPer1kInputTokens": 0.0000228,
+        "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3877,8 +3868,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000418818,
-        "costPer1kOutputTokens": 0.000837636,
+        "costPer1kInputTokens": 0.00041238,
+        "costPer1kOutputTokens": 0.00082476,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3967,10 +3958,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23,
+          "intelligenceIndex": 15,
           "codingIndex": 46.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3978,28 +3969,97 @@
       "model": "gemini-pro/nano-banana-pro-preview",
       "matchingModel": "google/gemini-3-pro-image-preview",
       "overrides": {
+        "name": "Nano Banana Pro (Gemini 3 Pro Image Preview)",
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "reliability": 3,
         "lastUpdated": "November 20, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "costPer1kReasoningTokens": 0.012,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1102,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
       }
     },
     "google/gemini-3.1-flash-image-preview": {
       "model": "gemini-flash/nano-banana-2-preview",
       "matchingModel": "google/gemini-3.1-flash-image-preview",
       "overrides": {
+        "name": "Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "reliability": 3,
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1125,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 7
+            }
+          ]
+        }
       }
     },
     "google/gemini-3.1-flash-lite": {
       "model": "gemini-flash-lite/gemini-3-1-flash-lite",
       "matchingModel": "google/gemini-3.1-flash-lite",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -4012,13 +4072,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -4039,11 +4092,32 @@
       "model": "gemini-flash-lite/gemini-3-1-flash-lite-preview",
       "matchingModel": "google/gemini-3.1-flash-lite-preview",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 4,
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
-        "costPer1kReasoningTokens": 0.0015
+        "costPer1kReasoningTokens": 0.0015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "google/gemini-3.1-pro-preview": {
@@ -4126,16 +4200,16 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0000675,
-        "costPer1kOutputTokens": 0.000225,
+        "costPer1kInputTokens": 0.0000765,
+        "costPer1kOutputTokens": 0.000255,
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 16.7,
+          "codingIndex": 39.3,
+          "agenticIndex": 2.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -4144,7 +4218,7 @@
       "matchingModel": "google/gemma-4-26b-a4b-it:free",
       "overrides": {
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4181,10 +4255,10 @@
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00034,
         "artificialAnalysis": {
-          "intelligenceIndex": 24.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 14.7,
+          "codingIndex": 43.4,
+          "agenticIndex": 4.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -4477,8 +4551,8 @@
         "contextWindow": 131072,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00032,
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": false
       }
     },
@@ -4501,7 +4575,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 2,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.0001875,
@@ -4512,10 +4586,10 @@
       "model": "llama/llama-4-scout",
       "matchingModel": "meta-llama/llama-4-scout",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0003
+        "costPer1kInputTokens": 0.00018,
+        "costPer1kOutputTokens": 0.00059
       }
     },
     "meta-llama/llama-guard-3-8b": {
@@ -4539,6 +4613,17 @@
       "model": "llama/llama-guard-4-12b",
       "matchingModel": "meta-llama/llama-guard-4-12b",
       "overrides": {
+        "contextWindow": 163840,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "releaseDate": "April 30, 2025",
         "lastUpdated": "April 30, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00018,
@@ -4567,7 +4652,7 @@
       "model": "phi/phi-4-mini-instruct",
       "matchingModel": "microsoft/phi-4-mini-instruct",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 17, 2025",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00035,
@@ -4594,6 +4679,7 @@
       "model": "minimax/minimax-m2-her",
       "matchingModel": "minimax/minimax-m2-her",
       "overrides": {
+        "name": "MiniMax M2-her",
         "lastUpdated": "January 23, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -4611,7 +4697,7 @@
       "overrides": {
         "name": "MiniMax M2.5",
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00108,
@@ -4623,7 +4709,7 @@
       "matchingModel": "minimax/minimax-m2.5:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4640,10 +4726,13 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "speed": 2,
+        "contextWindow": 204800,
+        "maxTokens": 176947,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.00021,
+        "costPer1kOutputTokens": 0.00084,
+        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },
@@ -4721,11 +4810,10 @@
       "model": "mistral-nemo/mistral-nemo",
       "matchingModel": "mistralai/mistral-nemo",
       "overrides": {
-        "contextWindow": 131072,
         "maxTokens": 16384,
         "releaseDate": "July 1, 2024",
         "lastUpdated": "July 1, 2024",
-        "costPer1kInputTokens": 0.000019,
+        "costPer1kInputTokens": 0.000029,
         "costPer1kOutputTokens": 0.00003,
         "supportsAttachments": false
       }
@@ -4743,7 +4831,7 @@
       "model": "mistral-small/mistral-small-3",
       "matchingModel": "mistralai/mistral-small-24b-instruct-2501",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 30, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00008,
@@ -4793,17 +4881,6 @@
       "matchingModel": "mistralai/voxtral-small-24b-2507",
       "overrides": {
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "maxTokens": 26214,
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "July 15, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003
@@ -4815,24 +4892,16 @@
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004
+        "costPer1kInputTokens": 0.00065,
+        "costPer1kOutputTokens": 0.00341
       }
     },
     "morph/morph-v3-fast": {
@@ -4905,6 +4974,7 @@
       "model": "nousresearch/hermes-3-70b-instruct",
       "matchingModel": "nousresearch/hermes-3-llama-3.1-70b",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 18, 2024",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0007,
@@ -4927,11 +4997,10 @@
       "model": "nemotron/nemotron-3-nano-30b-a3b",
       "matchingModel": "nvidia/nemotron-3-nano-30b-a3b",
       "overrides": {
-        "maxTokens": 235929,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 15, 2025",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.0002,
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
       }
     },
@@ -4952,11 +5021,6 @@
       "overrides": {
         "name": "Nemotron 3 Super",
         "maxTokens": 235929,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "speed": 4,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "March 11, 2026",
@@ -4969,12 +5033,6 @@
             "medium"
           ],
           "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 25.4,
-          "codingIndex": 37.7,
-          "agenticIndex": 8.7,
-          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -4997,7 +5055,6 @@
           "tool_use"
         ],
         "contextComplexity": 2,
-        "knowledgeCutoffDate": "September 1, 2021",
         "lastUpdated": "November 6, 2023",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -5033,9 +5090,6 @@
       "model": "gpt/gpt-4",
       "matchingModel": "openai/gpt-4",
       "overrides": {
-        "contextWindow": 8191,
-        "maxTokens": 4096,
-        "releaseDate": "November 6, 2023",
         "lastUpdated": "April 9, 2024",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.06,
@@ -5060,6 +5114,15 @@
       "model": "gpt/gpt-4-turbo",
       "matchingModel": "openai/gpt-4-turbo",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "lastUpdated": "April 9, 2024",
         "costPer1kInputTokens": 0.01,
@@ -5081,16 +5144,6 @@
       "matchingModel": "openai/gpt-4.1-nano",
       "overrides": {
         "name": "GPT-4.1 Nano",
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0001,
@@ -5179,7 +5232,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3-Codex",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -5211,7 +5264,7 @@
           "vision",
           "document"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
@@ -5234,6 +5287,7 @@
       "model": "gpt-mini/gpt-5-4-mini",
       "matchingModel": "openai/gpt-5.4-mini",
       "overrides": {
+        "name": "GPT-5.4 Mini",
         "modalities": {
           "input": [
             "pdf",
@@ -5287,7 +5341,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -5346,7 +5400,7 @@
           "vision",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
@@ -5406,6 +5460,7 @@
         "costPer1kOutputTokens": 0.0024
       },
       "unset": [
+        "knowledgeCutoffDate",
         "contextComplexity",
         "reliability"
       ]
@@ -5430,7 +5485,14 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.06,
         "supportsParallelToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/o1-pro": {
@@ -5441,7 +5503,14 @@
         "costPer1kInputTokens": 0.15,
         "costPer1kOutputTokens": 0.6,
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/o3": {
@@ -5497,12 +5566,20 @@
       "model": "o-mini/o3-mini",
       "matchingModel": "openai/o3-mini",
       "overrides": {
+        "name": "o3 Mini",
         "speed": 4,
         "lastUpdated": "January 29, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
         "supportsParallelToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/o3-mini-high": {
@@ -5520,6 +5597,7 @@
       "model": "o-pro/o3-pro",
       "matchingModel": "openai/o3-pro",
       "overrides": {
+        "name": "o3 Pro",
         "modalities": {
           "input": [
             "text",
@@ -5750,10 +5828,9 @@
       "model": "qwen/qwen2-5-72b-instruct",
       "matchingModel": "qwen/qwen-2.5-72b-instruct",
       "overrides": {
-        "contextWindow": 32768,
         "maxTokens": 16384,
+        "speed": 2,
         "knowledgeCutoffDate": "June 30, 2024",
-        "releaseDate": "September 19, 2024",
         "lastUpdated": "September 19, 2024",
         "costPer1kInputTokens": 0.00036,
         "costPer1kOutputTokens": 0.0004,
@@ -5800,7 +5877,6 @@
       "matchingModel": "qwen/qwen3-14b",
       "overrides": {
         "openWeights": true,
-        "contextWindow": 131072,
         "maxTokens": 16384,
         "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
@@ -5811,27 +5887,11 @@
         "supportsAttachments": false
       }
     },
-    "qwen/qwen3-235b-a22b": {
-      "model": "qwen/qwen3-235b-a22b",
-      "matchingModel": "qwen/qwen3-235b-a22b",
-      "overrides": {
-        "name": "Qwen3 235B A22B",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "speed": 3,
-        "lastUpdated": "April 2025",
-        "costPer1kInputTokens": 0.000455,
-        "costPer1kOutputTokens": 0.00182,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false
-      }
-    },
     "qwen/qwen3-30b-a3b": {
       "model": "qwen/qwen3-30b-a3b",
       "matchingModel": "qwen/qwen3-30b-a3b",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 131072,
         "speed": 4,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "April 28, 2025",
@@ -5872,7 +5932,7 @@
       "overrides": {
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 235929,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 3, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0008,
@@ -5907,8 +5967,7 @@
       "matchingModel": "qwen/qwen3-vl-235b-a22b-instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "maxTokens": 32768,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -5934,8 +5993,10 @@
       "model": "qwen/qwen3-vl-30b-a3b-instruct",
       "matchingModel": "qwen/qwen3-vl-30b-a3b-instruct",
       "overrides": {
-        "speed": 4,
-        "lastUpdated": "October 6, 2025",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 16384,
+        "speed": 2,
+        "lastUpdated": "October 4, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
@@ -5945,8 +6006,8 @@
       "matchingModel": "qwen/qwen3-vl-30b-a3b-thinking",
       "overrides": {
         "lastUpdated": "October 6, 2025",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0024
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.001
       }
     },
     "qwen/qwen3-vl-32b-instruct": {
@@ -5965,8 +6026,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 14, 2025",
-        "costPer1kInputTokens": 0.000117,
-        "costPer1kOutputTokens": 0.000455
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.00075
       }
     },
     "qwen/qwen3-vl-8b-thinking": {
@@ -6010,6 +6071,7 @@
       "matchingModel": "qwen/qwen3.5-27b",
       "overrides": {
         "name": "Qwen3.5-27B",
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -6028,8 +6090,8 @@
         ],
         "speed": 3,
         "lastUpdated": "February 23, 2026",
-        "costPer1kInputTokens": 0.000195,
-        "costPer1kOutputTokens": 0.00156
+        "costPer1kInputTokens": 0.00026,
+        "costPer1kOutputTokens": 0.0026
       }
     },
     "qwen/qwen3.5-35b-a3b": {
@@ -6037,7 +6099,7 @@
       "matchingModel": "qwen/qwen3.5-35b-a3b",
       "overrides": {
         "name": "Qwen3.5-35B-A3B",
-        "maxTokens": 16384,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -6056,8 +6118,8 @@
         ],
         "speed": 4,
         "lastUpdated": "February 23, 2026",
-        "costPer1kInputTokens": 0.0003125,
-        "costPer1kOutputTokens": 0.00125
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.00075
       }
     },
     "qwen/qwen3.5-397b-a17b": {
@@ -6083,7 +6145,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.00055,
@@ -6119,6 +6181,7 @@
           "document",
           "tool_use"
         ],
+        "speed": 3,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00015
@@ -6128,6 +6191,8 @@
       "model": "qwen/qwen3-5-flash",
       "matchingModel": "qwen/qwen3.5-flash-02-23",
       "overrides": {
+        "name": "Qwen3.5-Flash",
+        "releaseDate": "February 25, 2026",
         "lastUpdated": "February 25, 2026",
         "costPer1kInputTokens": 0.000065,
         "costPer1kOutputTokens": 0.00026
@@ -6184,7 +6249,6 @@
       "overrides": {
         "name": "Qwen3.6 35B A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
-        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -6203,8 +6267,8 @@
         ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00095
       }
     },
     "qwen/qwen3.6-flash": {
@@ -6231,12 +6295,6 @@
       "model": "qwen/qwen3-6-plus",
       "matchingModel": "qwen/qwen3.6-plus",
       "overrides": {
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.000325,
@@ -6247,6 +6305,7 @@
       "model": "reka/reka-edge",
       "matchingModel": "rekaai/reka-edge",
       "overrides": {
+        "openWeights": true,
         "lastUpdated": "March 20, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001
@@ -6316,6 +6375,7 @@
         "lastUpdated": "August 28, 2024",
         "costPer1kInputTokens": 0.00085,
         "costPer1kOutputTokens": 0.00085,
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -6424,6 +6484,7 @@
       "model": "solar-pro/solar-pro-3",
       "matchingModel": "upstage/solar-pro-3",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -6451,7 +6512,7 @@
       "model": "grok/grok-4-20",
       "matchingModel": "x-ai/grok-4.20",
       "overrides": {
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "March 31, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025
@@ -6503,19 +6564,10 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "xiaomi/mimo-v2-omni": {
@@ -6545,6 +6597,7 @@
       "model": "mimo/mimo-v2-5",
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
+        "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "contextWindow": 1050000,
         "modalities": {
           "input": [
@@ -6557,11 +6610,17 @@
             "text"
           ]
         },
-        "contextComplexity": 5,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028
+        "costPer1kOutputTokens": 0.00028,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xiaomi/mimo-v2.5-pro": {
@@ -6577,7 +6636,14 @@
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "z-ai/glm-4-32b": {
@@ -6642,10 +6708,11 @@
         "name": "GLM 5.1",
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 204800,
+        "maxTokens": 128000,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
-        "costPer1kInputTokens": 0.0009646,
-        "costPer1kOutputTokens": 0.0030316,
+        "costPer1kInputTokens": 0.000966,
+        "costPer1kOutputTokens": 0.003036,
         "supportsAttachments": false
       }
     },
@@ -6653,8 +6720,6 @@
       "model": "glm/glm-5v-turbo",
       "matchingModel": "z-ai/glm-5v-turbo",
       "overrides": {
-        "contextWindow": 202752,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "image",
@@ -6681,7 +6746,6 @@
       "model": "gemini-flash/gemini-3-5-flash",
       "matchingModel": "google/gemini-3.5-flash",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -6708,21 +6772,12 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
-        "costPer1kReasoningTokens": 0.009,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "costPer1kReasoningTokens": 0.009
       }
     },
     "qwen/qwen3.7-max": {
@@ -6737,7 +6792,14 @@
         "lastUpdated": "May 21, 2026",
         "costPer1kInputTokens": 0.001475,
         "costPer1kOutputTokens": 0.004425,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "x-ai/grok-build-0.1": {
@@ -6809,7 +6871,7 @@
       "matchingModel": "moonshotai/kimi-k2.6:free",
       "overrides": {
         "isFree": true,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6821,7 +6883,7 @@
       "model": "openrouter/stepfun/step-3.7-flash/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -6834,7 +6896,7 @@
         "name": "MiniMax M3",
         "contextWindow": 1048576,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -6869,10 +6931,17 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0.00032,
-        "costPer1kOutputTokens": 0.00128
+        "costPer1kOutputTokens": 0.00128,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nvidia/nemotron-3-ultra-550b-a55b": {
@@ -6938,7 +7007,10 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "anthropic/claude-fable-5": {
       "model": "claude-fable/claude-fable-5",
@@ -6950,20 +7022,12 @@
           "tool_use",
           "coding"
         ],
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "moonshotai/kimi-k2.7-code": {
@@ -6990,8 +7054,8 @@
         ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.0006562,
-        "costPer1kOutputTokens": 0.0033
+        "costPer1kInputTokens": 0.0006712,
+        "costPer1kOutputTokens": 0.00335
       }
     },
     "z-ai/glm-5.2": {
@@ -6999,10 +7063,11 @@
       "matchingModel": "z-ai/glm-5.2",
       "overrides": {
         "contextWindow": 1048576,
-        "speed": 4,
+        "maxTokens": 943718,
+        "speed": 3,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0006496,
-        "costPer1kOutputTokens": 0.0020416,
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.007,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7053,7 +7118,14 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
-        "costPer1kReasoningTokens": 0.012
+        "costPer1kReasoningTokens": 0.012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "google/gemini-3.1-flash-image": {
@@ -7138,6 +7210,7 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "anthropic/claude-sonnet-5",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -7170,15 +7243,17 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "image"
+        ],
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
         "supportsToolCalls": false,
         "supportsResponseFormat": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "poolside/laguna-xs-2.1": {
       "model": "laguna/laguna-xs-2-1",
@@ -7218,8 +7293,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.000132,
-        "costPer1kOutputTokens": 0.000528,
+        "costPer1kInputTokens": 0.0000825,
+        "costPer1kOutputTokens": 0.00033,
         "supportsAttachments": false
       }
     },
@@ -7262,8 +7337,8 @@
       "matchingModel": "~x-ai/grok-latest",
       "overrides": {
         "lastUpdated": "July 8, 2026",
-        "costPer1kInputTokens": 0.0016,
-        "costPer1kOutputTokens": 0.0048
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
       }
     },
     "x-ai/grok-4.5": {
@@ -7271,6 +7346,7 @@
       "matchingModel": "x-ai/grok-4.5",
       "overrides": {
         "maxTokens": 450000,
+        "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -7293,6 +7369,7 @@
       "matchingModel": "openai/gpt-5.6-luna",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
@@ -7307,13 +7384,17 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.6-sol": {
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "openai/gpt-5.6-sol",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -7328,13 +7409,17 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.6-terra": {
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "openai/gpt-5.6-terra",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
@@ -7349,7 +7434,13 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "artificialAnalysis",
+        "strengths",
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "kwaipilot/kat-coder-air-v2.5": {
       "model": "kat-coder/kat-coder-air-v2-5",
@@ -7380,6 +7471,27 @@
       "matchingModel": "meta/muse-spark-1.1",
       "overrides": {
         "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -7391,10 +7503,11 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
-        "isFeatured": true,
+        "speed": 2,
+        "isFeatured": false,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.00073,
+        "costPer1kOutputTokens": 0.01
       }
     },
     "thinkingmachines/inkling": {
@@ -7404,6 +7517,7 @@
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 524288,
         "maxTokens": 471859,
+        "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.00405,
@@ -7429,6 +7543,7 @@
         "openWeights": true,
         "contextWindow": 1048756,
         "maxTokens": 262144,
+        "speed": 3,
         "releaseDate": "July 20, 2026",
         "lastUpdated": "July 20, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -7441,20 +7556,27 @@
       "model": "gemini-flash-lite/gemini-3-5-flash-lite",
       "matchingModel": "google/gemini-3.5-flash-lite",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "costPer1kReasoningTokens": 0.0025
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "google/gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "google/gemini-3.6-flash",
       "overrides": {
         "maxTokens": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -7489,6 +7611,7 @@
       "matchingModel": "inclusionai/ling-3.0-flash:free",
       "overrides": {
         "isFree": true,
+        "speed": 4,
         "lastUpdated": "July 23, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7501,6 +7624,7 @@
       "matchingModel": "anthropic/claude-opus-5",
       "overrides": {
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -7515,15 +7639,13 @@
           ],
           "defaultEffort": "low"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "anthropic/claude-opus-5-fast": {
       "model": "claude-opus/claude-opus-5-fast",
       "matchingModel": "anthropic/claude-opus-5-fast",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -7538,10 +7660,7 @@
           ],
           "defaultEffort": "low"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "qwen/qwen3.7-flash": {
       "model": "qwen/qwen3-7-flash",
@@ -7569,6 +7688,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -7591,8 +7717,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.000021,
-        "costPer1kOutputTokens": 0.00032,
+        "costPer1kInputTokens": 0.0000128,
+        "costPer1kOutputTokens": 0.000768,
         "supportsAttachments": false
       }
     },
@@ -7604,6 +7730,7 @@
         "openWeights": true,
         "contextWindow": 262144,
         "maxTokens": 32768,
+        "speed": 4,
         "lastUpdated": "July 23, 2026",
         "costPer1kInputTokens": 0.000021,
         "costPer1kOutputTokens": 0.000063,
@@ -7616,6 +7743,27 @@
       "matchingModel": "meta/muse-spark-1.2",
       "overrides": {
         "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 4,
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -7630,6 +7778,7 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "isFree": true,
+        "speed": 1,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7663,20 +7812,14 @@
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": false
       }
     },
     "upstage/solar-pro4": {
       "model": "solar/solar-pro-4",
       "matchingModel": "upstage/solar-pro4",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 10, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00036,
@@ -7711,22 +7854,36 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsAttachments": false
-      },
-      "unset": [
-        "contextComplexity",
-        "reliability"
-      ]
+      }
     },
     "nvidia/nemotron-3.5-lightning": {
       "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
+        "maxTokens": 235929,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "speed": 5,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.00008,
+        "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.9,
+          "codingIndex": 26.8,
+          "agenticIndex": 3.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "nvidia/nemotron-3.5-lightning:free": {
@@ -7734,6 +7891,7 @@
       "matchingModel": "nvidia/nemotron-3.5-lightning:free",
       "overrides": {
         "isFree": true,
+        "speed": 5,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7774,6 +7932,8 @@
       "matchingModel": "qwen/qwen3.8-2.4t-a95b",
       "overrides": {
         "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -7796,7 +7956,8 @@
             "text"
           ]
         },
-        "isFeatured": true,
+        "speed": 2,
+        "isFeatured": false,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -7816,8 +7977,8 @@
       "model": "gemini-flash/gemini-3-7-flash",
       "matchingModel": "google/gemini-3.7-flash",
       "overrides": {
-        "maxTokens": 65536,
-        "isFeatured": true,
+        "speed": 4,
+        "isFeatured": false,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -7830,7 +7991,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -7841,9 +8002,18 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "speed": 2,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.00042,
-        "costPer1kOutputTokens": 0.003,
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.0023,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -7859,7 +8029,7 @@
       "matchingModel": "z-ai/glm-5.2:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7873,11 +8043,11 @@
       "matchingModel": "z-ai/glm-5.3",
       "overrides": {
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1310720,
-        "maxTokens": 943717,
+        "maxTokens": 943718,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
+        "costPer1kInputTokens": 0.000079,
+        "costPer1kOutputTokens": 0.0048,
         "supportsAttachments": false
       }
     },
@@ -7885,13 +8055,12 @@
       "model": "glm/glm-latest",
       "matchingModel": "~z-ai/glm-latest",
       "overrides": {
-        "openWeights": false,
-        "contextWindow": 1310720,
-        "maxTokens": 131072,
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "lastUpdated": "August 19, 2026",
-        "costPer1kInputTokens": 0.0004746,
-        "costPer1kOutputTokens": 0.0014916,
+        "costPer1kInputTokens": 0.000055,
+        "costPer1kOutputTokens": 0.005,
         "supportsAttachments": false
       }
     },
@@ -7933,13 +8102,15 @@
       "matchingModel": "deepseek/deepseek-v4-flash-vision-exp",
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "maxTokens": 943718,
+        "maxTokens": 262144,
         "lastUpdated": "September 1, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066
+        "costPer1kInputTokens": 0.0002156,
+        "costPer1kOutputTokens": 0.0006468
       },
       "unset": [
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "contextComplexity",
+        "reliability"
       ]
     },
     "meta/muse-spark-1.2-contributor": {
@@ -7958,6 +8129,7 @@
       "matchingModel": "thinkingmachines/inkling-small:free",
       "overrides": {
         "isFree": true,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7969,6 +8141,7 @@
       "matchingModel": "thinkingmachines/inkling:free",
       "overrides": {
         "isFree": true,
+        "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7993,7 +8166,7 @@
         "name": "MiniMax M2.7 (free)",
         "maxTokens": 176947,
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8024,7 +8197,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8062,6 +8235,7 @@
       "overrides": {
         "name": "Ling 3.0 Flash Fin (free)",
         "isFree": true,
+        "speed": 4,
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8098,10 +8272,10 @@
       "model": "Hy/hy4-preview",
       "matchingModel": "tencent/hy4-preview",
       "overrides": {
-        "contextWindow": 1048576,
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "lastUpdated": "August 28, 2026",
-        "costPer1kInputTokens": 0.000834,
-        "costPer1kOutputTokens": 0.002501,
+        "costPer1kInputTokens": 0.0007506,
+        "costPer1kOutputTokens": 0.0022509,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -8118,7 +8292,8 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -8129,15 +8304,24 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kInputTokens": 0.0000232,
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "ibm-granite/granite-4.2-8b": {
       "model": "granite/granite-4-2-8b",
       "matchingModel": "ibm-granite/granite-4.2-8b",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "August 31, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00025,
@@ -8149,8 +8333,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kInputTokens": 0.0000232,
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8158,6 +8342,7 @@
       "matchingModel": "anthropic/claude-fable-5.1",
       "overrides": {
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "speed": 2,
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -8168,7 +8353,7 @@
       "model": "gemini-flash/gemini-3-8-flash",
       "matchingModel": "google/gemini-3.8-flash",
       "overrides": {
-        "maxTokens": 65536,
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -8186,17 +8371,23 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "inclusionai/ling-3.0-flash-fin": {
       "model": "ling/ling-3-0-flash-fin",
       "matchingModel": "inclusionai/ling-3.0-flash-fin",
       "overrides": {
         "contextWindow": 262144,
-        "maxTokens": 235929,
+        "maxTokens": 32768,
+        "speed": 4,
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00018,
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0.0001232,
+        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },
@@ -8205,20 +8396,10 @@
       "matchingModel": "meta/muse-spark-1.3",
       "overrides": {
         "maxTokens": 943718,
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.00425,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "costPer1kOutputTokens": 0.00425
       }
     },
     "meta/muse-spark-1.3-contributor": {
@@ -8251,7 +8432,14 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002,
         "supportsToolCalls": false,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "inclusionai/ling-3.0-flash-sante:free": {
@@ -8274,13 +8462,17 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-6-astra": {
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "openai/gpt-6-astra",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "speed": 2,
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -8310,6 +8502,7 @@
       "model": "mercury/mercury-2-5",
       "matchingModel": "inception/mercury-2.5",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
@@ -8344,7 +8537,13 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "~openai/gpt-luna-latest": {
       "model": "gpt-luna/gpt-luna-latest",
@@ -8354,7 +8553,10 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "~openai/gpt-sol-latest": {
       "model": "gpt-sol/gpt-sol-latest",
@@ -8364,7 +8566,10 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "~openai/gpt-terra-latest": {
       "model": "gpt-terra/gpt-terra-latest",
@@ -8374,17 +8579,32 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "artificialAnalysis",
+        "strengths",
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "deepseek/deepseek-v4.1-flash": {
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek/deepseek-v4.1-flash",
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "maxTokens": 131072,
+        "maxTokens": 393216,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00042
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "inclusionai/ling-3.0-flash-vl": {
@@ -8404,6 +8624,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000021,
@@ -8429,6 +8655,12 @@
           ]
         },
         "isFree": true,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
@@ -8523,20 +8755,36 @@
       "matchingModel": "~deepseek/deepseek-flash-latest",
       "overrides": {
         "openWeights": false,
+        "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000035,
-        "costPer1kOutputTokens": 0.00029
-      }
+        "costPer1kInputTokens": 0.0000336,
+        "costPer1kOutputTokens": 0.001188
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "~deepseek/deepseek-pro-latest": {
       "model": "deepseek/deepseek-pro-latest",
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 393216,
+        "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.0035,
-        "supportsAttachments": false
+        "costPer1kInputTokens": 0.00024948,
+        "costPer1kOutputTokens": 0.00074844,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "stealth/union-alpha": {
@@ -8554,6 +8802,7 @@
       "matchingModel": "deepseek/deepseek-v4-flash-0731:free",
       "overrides": {
         "isFree": true,
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8574,6 +8823,7 @@
       "matchingModel": "qwen/qwen3.8-27b:free",
       "overrides": {
         "isFree": true,
+        "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -8604,6 +8854,7 @@
       "matchingModel": "anthropic/claude-opus-5.5",
       "overrides": {
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -8644,6 +8895,7 @@
             "text"
           ]
         },
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
@@ -8675,6 +8927,7 @@
             "text"
           ]
         },
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -8697,9 +8950,10 @@
       "overrides": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "maxTokens": 450000,
+        "speed": 2,
         "lastUpdated": "September 21, 2026",
-        "costPer1kInputTokens": 0.0016,
-        "costPer1kOutputTokens": 0.0048
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
       }
     },
     "xiaomi/mimo-v2.6-flash": {
@@ -8707,6 +8961,7 @@
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "description": "MiMo flash model for fast multimodal assistance and agent workflows",
+        "contextWindow": 1050000,
         "modalities": {
           "input": [
             "text",
@@ -8718,9 +8973,17 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028
+        "costPer1kOutputTokens": 0.00028,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xiaomi/mimo-v2.6-pro": {
@@ -8740,16 +9003,23 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
-        "costPer1kOutputTokens": 0.00087
+        "costPer1kOutputTokens": 0.00087,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xiaomi/mimo-v2.6-pro-ultraspeed": {
       "model": "mimo/mimo-v2-6-pro-ultraspeed",
       "matchingModel": "xiaomi/mimo-v2.6-pro-ultraspeed",
       "overrides": {
-        "name": "MiMo-V2.6-Pro-UltraSpeed",
         "modalities": {
           "input": [
             "text",
@@ -8763,8 +9033,18 @@
         },
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.00435,
-        "costPer1kOutputTokens": 0.0087
-      }
+        "costPer1kOutputTokens": 0.0087,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "cohere/command-a-plus": {
       "model": "command-a/command-a",
@@ -8789,7 +9069,7 @@
           "document"
         ],
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "September 22, 2026",
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -8802,10 +9082,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 13.1,
+          "codingIndex": 27.8,
+          "agenticIndex": 1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -8815,7 +9095,14 @@
       "overrides": {
         "lastUpdated": "September 17, 2026",
         "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.00047
+        "costPer1kOutputTokens": 0.00047,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "aion-labs/aion-3.5": {
@@ -8853,29 +9140,9 @@
       "model": "qwen3.8-max/qwen-3-8-max-prime",
       "matchingModel": "qwen/qwen3.8-max-prime",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "September 23, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "costPer1kOutputTokens": 0.012
       }
     },
     "stealth/space-bunny-alpha": {
@@ -8892,6 +9159,7 @@
       "model": "solar/solar-mini-4",
       "matchingModel": "upstage/solar-mini4",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 23, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002,
@@ -8916,6 +9184,199 @@
         "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "anthropic/claude-sonnet-5.5": {
+      "model": "claude-sonnet/claude-sonnet-5-5",
+      "matchingModel": "anthropic/claude-sonnet-5.5",
+      "overrides": {
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "speed": 3,
+        "isFeatured": true,
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "apodex/apodex-1.1-mini:free": {
+      "model": "openrouter/apodex/apodex-1.1-mini:free/apodex-1-1-mini-free",
+      "matchingModel": "apodex/apodex-1.1-mini:free",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "October 1, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "openai/gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "openai/gpt-6.1-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.1-sol-pro": {
+      "model": "gpt/gpt-6-1-sol-pro",
+      "matchingModel": "openai/gpt-6.1-sol-pro",
+      "overrides": {
+        "isFeatured": true,
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "unbiased/pareto-26.10-preview": {
+      "model": "openrouter/unbiased/pareto-26.10-preview/pareto-26-10-preview",
+      "matchingModel": "unbiased/pareto-26.10-preview",
+      "overrides": {
+        "lastUpdated": "October 1, 2026",
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0032,
+        "supportsResponseFormat": false
+      }
+    },
+    "inclusionai/ling-3.1-flash": {
+      "model": "ling/ling-3-1-flash",
+      "matchingModel": "inclusionai/ling-3.1-flash",
+      "overrides": {
+        "maxTokens": 235929,
+        "speed": 4,
+        "releaseDate": "October 2, 2026",
+        "lastUpdated": "October 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google/gemini-nano-banana-2.1": {
+      "model": "gemini-flash/nano-banana-2-1",
+      "matchingModel": "google/gemini-nano-banana-2.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
+    },
+    "mistralai/mistral-large-4-0": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistralai/mistral-large-4-0",
+      "overrides": {
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.00068,
+        "costPer1kOutputTokens": 0.00209
+      }
+    },
+    "anthropic/claude-haiku-5.5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "anthropic/claude-haiku-5.5",
+      "overrides": {
+        "speed": 4,
+        "isFeatured": true,
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false
+      }
+    },
+    "inclusionai/ling-3.0-flash-sante": {
+      "model": "ling/ling-3-0-flash-sante",
+      "matchingModel": "inclusionai/ling-3.0-flash-sante",
+      "overrides": {
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0.0001232,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "stepfun/step-5-preview": {
+      "model": "openrouter/stepfun/step-5-preview/step-5-preview",
+      "matchingModel": "stepfun/step-5-preview",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 20, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.0027
+      }
+    },
+    "qwen/qwen3-235b-a22b-2507": {
+      "model": "qwen/qwen3-235b-a22b-instruct-2507",
+      "matchingModel": "qwen/qwen3-235b-a22b-2507",
+      "overrides": {
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "maxTokens": 16384,
+        "speed": 3,
+        "knowledgeCutoffDate": "June 30, 2025",
+        "lastUpdated": "July 21, 2025",
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00055,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.7,
+          "codingIndex": 22.1,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "meta/muse-wonder": {
+      "model": "muse/muse-wonder",
+      "matchingModel": "meta/muse-wonder",
+      "overrides": {
+        "maxTokens": 943718,
+        "speed": 2,
+        "lastUpdated": "October 12, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02
       }
     }
   }

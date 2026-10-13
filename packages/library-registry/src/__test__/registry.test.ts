@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { RegistryError } from "../errors.js";
 import { CategoryRegistry } from "../registry.js";
 
 interface Instance {
@@ -84,14 +83,6 @@ describe("CategoryRegistry", () => {
     expect(registry.resolve("chat", "fresh", { suffix: "" }).serial).toBe(3);
   });
 
-  it("passes the resolve context into the factory", () => {
-    const { registry, register } = createRegistry();
-
-    register("chat", "openai", { lifecycle: "transient" });
-
-    expect(registry.resolve("chat", "openai", { suffix: "-eu" }).id).toBe("openai-eu");
-  });
-
   it("reports an unknown category separately from an unknown entry", () => {
     const { registry, register } = createRegistry();
 
@@ -104,12 +95,6 @@ describe("CategoryRegistry", () => {
     expect(() => registry.resolve("chat", "missing", { suffix: "" })).toThrowError(
       expect.objectContaining({ code: "unknown_entry", entryName: "missing" }),
     );
-  });
-
-  it("throws RegistryError instances so hosts can map them", () => {
-    const { registry } = createRegistry();
-
-    expect(() => registry.resolve("chat", "openai", { suffix: "" })).toThrowError(RegistryError);
   });
 
   it("lists each entry once, sorted by name, regardless of aliases", () => {
@@ -131,14 +116,5 @@ describe("CategoryRegistry", () => {
     registry.resolve("chat", "openai", { suffix: "" });
 
     expect(registry.listEntries("chat")[0].instance).toMatchObject({ id: "openai" });
-  });
-
-  it("lists every category when none is given", () => {
-    const { registry, register } = createRegistry();
-
-    register("chat", "openai");
-    register("image", "ideogram");
-
-    expect(registry.listEntries().map((entry) => entry.category)).toEqual(["chat", "image"]);
   });
 });

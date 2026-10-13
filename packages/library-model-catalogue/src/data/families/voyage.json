@@ -1,8 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 8192,
-    "maxTokens": 1536,
     "modalities": {
       "input": [
         "text"
@@ -21,6 +19,8 @@
       "defaults": {
         "name": "voyage-3.5",
         "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "May 20, 2025"
       }
     },
@@ -28,6 +28,8 @@
       "defaults": {
         "name": "voyage-3.5-lite",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "May 20, 2025"
       }
     },
@@ -35,6 +37,8 @@
       "defaults": {
         "name": "voyage-3-large",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "January 7, 2025"
       }
     },
@@ -69,6 +73,8 @@
       "defaults": {
         "name": "voyage-code-2",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "January 1, 2024"
       }
     },
@@ -76,6 +82,8 @@
       "defaults": {
         "name": "voyage-code-3",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "December 4, 2024"
       }
     },
@@ -83,6 +91,8 @@
       "defaults": {
         "name": "voyage-finance-2",
         "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "June 3, 2024"
       }
     },
@@ -90,6 +100,8 @@
       "defaults": {
         "name": "voyage-law-2",
         "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "contextWindow": 8192,
+        "maxTokens": 1536,
         "releaseDate": "April 15, 2024"
       }
     },
@@ -131,6 +143,24 @@
           "reranking"
         ],
         "releaseDate": "August 11, 2025"
+      }
+    },
+    "voyage-rerank-3": {
+      "defaults": {
+        "name": "Voyage Rerank 3",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "releaseDate": "September 30, 2026"
+      }
+    },
+    "voyage-rerank-3-lite": {
+      "defaults": {
+        "name": "Voyage Rerank 3 Lite",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "contextWindow": 32000,
+        "maxTokens": 32000,
+        "releaseDate": "September 30, 2026"
       }
     }
   }

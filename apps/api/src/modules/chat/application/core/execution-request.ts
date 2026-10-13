@@ -44,9 +44,10 @@ class ChatExecutionRequest {
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
       run_id: runId,
+      trigger: chatOptions.trigger,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(
-        chatOptions.meta_assistant
+        chatOptions.poly
           ? messages.filter((message) => message.role !== "system" && message.role !== "developer")
           : messages,
       ),
@@ -70,6 +71,7 @@ class ChatExecutionRequest {
       logit_bias: chatOptions.logit_bias,
       metadata: chatOptions.metadata,
       reasoning_effort: chatOptions.reasoning_effort,
+      model_tier: chatOptions.model_tier,
       verbosity: chatOptions.verbosity,
       cache_ttl_seconds: chatOptions.cache_ttl_seconds,
       use_responses: chatOptions.use_responses ?? (chatOptions.background ? true : undefined),

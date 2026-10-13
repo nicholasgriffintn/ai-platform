@@ -17,7 +17,6 @@
           "multilingual",
           "tool_use"
         ],
-        "contextComplexity": 3,
         "speed": 5,
         "releaseDate": "August 5, 2025",
         "lastUpdated": "August 5, 2025",
@@ -26,7 +25,8 @@
       },
       "unset": [
         "openWeights",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "reasoningConfig"
       ]
     },
     "openai/gpt-oss-20b": {
@@ -57,7 +57,7 @@
       "model": "deepseek/deepseek-r1-05-28",
       "matchingModel": "accounts/fireworks/models/deepseek-r1-0528",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "May 28, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.008
@@ -81,11 +81,7 @@
         "lastUpdated": "April 29, 2025",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088
-      },
-      "unset": [
-        "openWeights",
-        "reasoningConfig"
-      ]
+      }
     },
     "deepseek/deepseek-v3-0324": {
       "model": "deepseek/deepseek-v3-03-24",
@@ -124,6 +120,7 @@
         "name": "DeepSeek V3.1",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 163840,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00056,
@@ -139,7 +136,6 @@
       "model": "deepseek/deepseek-v3-2",
       "matchingModel": "accounts/fireworks/models/deepseek-v3p2",
       "overrides": {
-        "name": "DeepSeek V3.2",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 160000,
         "maxTokens": 160000,
@@ -166,8 +162,8 @@
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -182,8 +178,8 @@
         "costPer1kOutputTokens": 0.00088
       },
       "unset": [
-        "supportsResponseFormat",
-        "openWeights"
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/glm-4p6": {
@@ -192,15 +188,15 @@
       "overrides": {
         "contextWindow": 198000,
         "maxTokens": 198000,
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "October 1, 2025",
         "lastUpdated": "October 1, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -211,14 +207,14 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 198000,
         "maxTokens": 198000,
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -291,7 +287,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 192000,
         "maxTokens": 192000,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -299,18 +295,18 @@
       },
       "unset": [
         "openWeights",
-        "reasoningConfig"
+        "reasoningConfig",
+        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/minimax-m2p1": {
       "model": "minimax/minimax-m2-1",
       "matchingModel": "accounts/fireworks/models/minimax-m2p1",
       "overrides": {
-        "name": "MiniMax-M2.1",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -327,7 +323,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 256000,
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "July 22, 2025",
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00045,
@@ -345,6 +341,7 @@
         "name": "GLM 5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -352,8 +349,8 @@
         "costPer1kOutputTokens": 0.0032
       },
       "unset": [
-        "supportsResponseFormat",
         "openWeights",
+        "supportsResponseFormat",
         "reasoningConfig"
       ]
     },
@@ -363,6 +360,7 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",
@@ -377,11 +375,10 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "accounts/fireworks/models/minimax-m2p5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -478,7 +475,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "June 12, 2026",
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -542,6 +539,7 @@
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 1048575,
+        "maxTokens": 131072,
         "releaseDate": "June 26, 2026",
         "lastUpdated": "June 26, 2026",
         "costPer1kInputTokens": 0.0021,
@@ -562,6 +560,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
+        "speed": 2,
         "releaseDate": "July 27, 2026",
         "lastUpdated": "July 27, 2026",
         "costPer1kInputTokens": 0.003,
@@ -606,6 +605,8 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "contextComplexity": 5,
+        "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.00405,
@@ -628,19 +629,35 @@
         "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0024
-      }
+        "costPer1kOutputTokens": 0.0024,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b": {
       "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.0002
+        "costPer1kOutputTokens": 0.0002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "accounts/fireworks/models/qwen3p8-max": {
@@ -656,6 +673,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -679,6 +702,7 @@
         "name": "GLM 5.3",
         "contextWindow": 1048573,
         "maxTokens": 262144,
+        "speed": 3,
         "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -709,6 +733,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -727,6 +759,7 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "accounts/fireworks/models/qwen3p8-2p4t-a95b",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -756,10 +789,21 @@
       "matchingModel": "accounts/fireworks/models/deepseek-v4p1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
-        "supportsAttachments": true
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "accounts/fireworks/models/mistral-large-3-fp8": {
@@ -768,7 +812,10 @@
       "overrides": {
         "lastUpdated": "December 2, 2025",
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/routers/deepseek-flash-latest": {
       "model": "deepseek-flash/deepseek-flash-latest",
@@ -776,17 +823,23 @@
       "overrides": {
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "accounts/fireworks/routers/deepseek-pro-latest": {
       "model": "deepseek-thinking/deepseek-pro-latest",
       "matchingModel": "accounts/fireworks/routers/deepseek-pro-latest",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396
@@ -815,6 +868,7 @@
       "model": "glm/glm-latest",
       "matchingModel": "accounts/fireworks/routers/glm-latest",
       "overrides": {
+        "openWeights": true,
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1048573,
         "maxTokens": 262144,
@@ -850,6 +904,8 @@
       "model": "minimax/minimax-latest",
       "matchingModel": "accounts/fireworks/routers/minimax-latest",
       "overrides": {
+        "contextWindow": 512000,
+        "releaseDate": "June 12, 2026",
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -869,6 +925,7 @@
       "model": "fireworks/accounts/fireworks/models/ember-1/ember-1",
       "matchingModel": "accounts/fireworks/models/ember-1",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,

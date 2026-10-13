@@ -5,6 +5,7 @@ import type {
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback } from "react";
 
 import { createTemporaryConversationTitle } from "../chat/title-source.js";
@@ -117,7 +118,7 @@ export function useMessageOperations(requestOptions?: ChatRequestOptions) {
       const assistantMessage = normalizeMessage({
         role: "assistant",
         content,
-        id: messageData?.id || crypto.randomUUID(),
+        id: messageData?.id || generateId(),
         created: messageData?.created || now,
         timestamp: messageData?.timestamp || now,
         model: messageData?.model || currentModel,

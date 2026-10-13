@@ -27,6 +27,7 @@ import {
   isRecord,
   readTextLines,
   sha256Hex,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -206,7 +207,7 @@ export async function createDataset(
   const version = await repositories.modelAssets.createVersion({
     assetId: asset.id,
     workspaceId,
-    revision: `pending:${crypto.randomUUID()}`,
+    revision: `pending:${generateId()}`,
     status: "inspecting",
     createdBy: userId,
     attributes: {

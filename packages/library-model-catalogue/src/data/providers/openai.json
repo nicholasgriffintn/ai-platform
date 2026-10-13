@@ -10,16 +10,6 @@
       "model": "o/o3",
       "matchingModel": "o3",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "coding",
           "math",
@@ -35,6 +25,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "April 16, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "supportsParallelToolCalls": false,
@@ -61,6 +56,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "August 6, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": true
@@ -74,6 +74,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "May 13, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false,
@@ -100,10 +105,15 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "July 18, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsTemperature": true
@@ -117,6 +127,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "July 18, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false,
@@ -135,6 +150,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "November 6, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.03,
         "supportsTemperature": true,
@@ -174,6 +194,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "April 14, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "costPer1kCachedInputTokens": 0.0005,
@@ -196,6 +221,16 @@
       "matchingModel": "gpt-4.1-mini",
       "overrides": {
         "name": "GPT-4.1 mini",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "card": "https://www.prompthub.us/models/gpt-4-1-mini",
         "strengths": [
           "coding",
@@ -206,10 +241,15 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "April 14, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
         "hostedToolCosts": {
@@ -241,11 +281,16 @@
           "tool_use",
           "search"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "August 7, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "costPer1kCachedInputTokens": 0.000125,
@@ -294,11 +339,16 @@
           "tool_use",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "August 7, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "hostedToolCosts": {
@@ -345,11 +395,16 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "August 7, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
         "hostedToolCosts": {
@@ -396,11 +451,16 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "costPer1kCachedInputTokens": 0.000175,
@@ -422,7 +482,6 @@
       "model": "gpt-codex/gpt-5-1-codex",
       "matchingModel": "gpt-5.1-codex",
       "overrides": {
-        "name": "GPT-5.1 Codex",
         "card": "https://www.prompthub.us/models/gpt-5.1",
         "strengths": [
           "coding",
@@ -432,11 +491,16 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTopP": false,
@@ -474,11 +538,16 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "supportsTopP": false,
@@ -516,6 +585,11 @@
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "April 21, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
@@ -617,6 +691,11 @@
         "isFeatured": false,
         "releaseDate": "September 26, 2025",
         "lastUpdated": "September 26, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.001,
         "supportsToolCalls": false,
@@ -707,6 +786,11 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "November 25, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.001,
         "supportsToolCalls": false,
@@ -789,6 +873,11 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "May 16, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.006,
         "requiresResponsesApi": true
@@ -803,6 +892,11 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "August 7, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false,
@@ -826,7 +920,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5-codex": {
@@ -841,6 +936,11 @@
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": false,
@@ -868,8 +968,23 @@
       "model": "gpt-pro/gpt-5-pro",
       "matchingModel": "gpt-5-pro",
       "overrides": {
+        "maxTokens": 272000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "deprecated": true,
         "lastUpdated": "October 6, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
         "hostedToolCosts": {
@@ -909,9 +1024,14 @@
           "search",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "costPer1kCachedInputTokens": 0.000125,
@@ -947,6 +1067,11 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "hostedToolCosts": {
@@ -979,16 +1104,21 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5.1-codex-max": {
       "model": "gpt-codex/gpt-5-1-codex-max",
       "matchingModel": "gpt-5.1-codex-max",
       "overrides": {
-        "name": "GPT-5.1 Codex Max",
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "requiresResponsesApi": true,
@@ -1011,7 +1141,8 @@
         }
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "reliability"
       ]
     },
     "gpt-5.2-codex": {
@@ -1032,6 +1163,11 @@
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "requiresResponsesApi": true,
@@ -1058,8 +1194,22 @@
       "model": "gpt-pro/gpt-5-2-pro",
       "matchingModel": "gpt-5.2-pro",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.021,
         "costPer1kOutputTokens": 0.168,
         "hostedToolCosts": {
@@ -1092,7 +1242,6 @@
       "model": "gpt-codex/gpt-5-3-codex",
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
-        "name": "GPT-5.3 Codex",
         "strengths": [
           "vision",
           "document",
@@ -1100,8 +1249,13 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "costPer1kCachedInputTokens": 0.000175,
@@ -1156,6 +1310,11 @@
         "deprecated": true,
         "releaseDate": "February 5, 2026",
         "lastUpdated": "February 5, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "hostedToolCosts": {
@@ -1207,6 +1366,11 @@
         },
         "deprecated": true,
         "lastUpdated": "June 26, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.04,
         "requiresResponsesApi": true
@@ -1232,9 +1396,22 @@
         "speed": 2,
         "deprecated": true,
         "lastUpdated": "June 10, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.02,
         "costPer1kOutputTokens": 0.08,
-        "requiresResponsesApi": true
+        "requiresResponsesApi": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "o4-mini-deep-research": {
@@ -1253,6 +1430,11 @@
         },
         "deprecated": true,
         "lastUpdated": "June 26, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "requiresResponsesApi": true
@@ -1270,6 +1452,11 @@
         "contextWindow": 8191,
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "January 25, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1286,6 +1473,11 @@
         "contextWindow": 8191,
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "January 25, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1302,6 +1494,11 @@
         "deprecated": true,
         "knowledgeCutoffDate": "December 2022",
         "lastUpdated": "December 15, 2022",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1316,6 +1513,11 @@
       "matchingModel": "chatgpt-image-latest",
       "overrides": {
         "lastUpdated": "December 16, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false
       },
       "unset": [
@@ -1338,9 +1540,14 @@
           "document",
           "search"
         ],
-        "speed": 4,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
         "costPer1kCachedInputTokens": 0.00025,
@@ -1408,6 +1615,11 @@
         "speed": 4,
         "multimodal": true,
         "lastUpdated": "March 17, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
         "costPer1kCachedInputTokens": 0.000075,
@@ -1464,9 +1676,14 @@
           "search",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 17, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
         "costPer1kCachedInputTokens": 0.00002,
@@ -1525,6 +1742,11 @@
         "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
         "hostedToolCosts": {
@@ -1577,9 +1799,14 @@
           "document",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "costPer1kCachedInputTokens": 0.0005,
@@ -1646,6 +1873,11 @@
         "speed": 2,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
         "costPer1kCachedInputTokens": 0.003,
@@ -1711,13 +1943,18 @@
           "audio",
           "chat",
           "reasoning",
-          "vision"
+          "vision",
+          "document",
+          "tool_use"
         ],
-        "contextComplexity": 5,
-        "reliability": 5,
         "speed": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "September 30, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.024,
         "supportsResponseFormat": false,
@@ -1744,6 +1981,11 @@
       "overrides": {
         "speed": 5,
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "supportsStreaming": true,
@@ -1787,6 +2029,11 @@
         "deprecationMessage": "GPT Realtime Mini is being retired. Use GPT Realtime 2.1 Mini instead.",
         "replacementModel": "gpt-realtime-2.1-mini",
         "knowledgeCutoffDate": "October 1, 2023",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
         "supportsResponseFormat": false,
@@ -1803,6 +2050,11 @@
       "matchingModel": "gpt-audio-1.5",
       "overrides": {
         "speed": 3,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsResponseFormat": false,
@@ -1818,6 +2070,11 @@
       "matchingModel": "gpt-audio-mini",
       "overrides": {
         "speed": 5,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
         "supportsResponseFormat": false,
@@ -1833,6 +2090,11 @@
       "matchingModel": "gpt-realtime-whisper",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsStreaming": true,
         "supportsAttachments": false
@@ -1847,6 +2109,11 @@
       "matchingModel": "gpt-live-transcribe",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsStreaming": true,
         "supportsAttachments": false
@@ -1861,6 +2128,11 @@
       "matchingModel": "gpt-transcribe",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsStreaming": true,
         "supportsAttachments": false
@@ -1875,6 +2147,11 @@
       "matchingModel": "gpt-4o-mini-transcribe",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
@@ -1892,6 +2169,11 @@
           "transcription"
         ],
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
@@ -1910,6 +2192,11 @@
           "transcription"
         ],
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
@@ -1922,6 +2209,11 @@
       "matchingModel": "gpt-5.6",
       "overrides": {
         "lastUpdated": "July 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "costPer1kCachedInputTokens": 0.0004,
@@ -1958,14 +2250,30 @@
         "prefersResponsesApiForReasoning": true,
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5.6-luna": {
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "gpt-5.6-luna",
       "overrides": {
-        "isFeatured": true,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 3,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
         "costPer1kCachedInputTokens": 0.00002,
@@ -2019,8 +2327,21 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
-        "isFeatured": true,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 2,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "costPer1kCachedInputTokens": 0.0004,
@@ -2074,8 +2395,21 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "gpt-5.6-terra",
       "overrides": {
-        "isFeatured": true,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
+        "speed": 3,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "costPer1kCachedInputTokens": 0.0002,
@@ -2139,14 +2473,18 @@
           "research",
           "multilingual",
           "vision",
-          "document"
+          "document",
+          "search"
         ],
-        "contextComplexity": 5,
-        "reliability": 5,
         "speed": 2,
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "September 4, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "costPer1kCachedInputTokens": 0.001,
@@ -2225,6 +2563,11 @@
           ]
         },
         "lastUpdated": "July 6, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.024,
         "supportsResponseFormat": false,
@@ -2236,6 +2579,11 @@
       "matchingModel": "gpt-realtime-2.1-mini",
       "overrides": {
         "speed": 5,
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
         "supportsResponseFormat": false,
@@ -2246,7 +2594,25 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "decision"
+          ]
+        },
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005
       }
@@ -2255,7 +2621,60 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "gpt-6-sol",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gpt-daybreak-blue-latest": {
+      "model": "gpt-sol/daybreak-blue",
+      "matchingModel": "gpt-daybreak-blue-latest",
+      "overrides": {
+        "lastUpdated": "August 7, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gpt-daybreak-red-latest": {
+      "model": "gpt/daybreak-red",
+      "matchingModel": "gpt-daybreak-red-latest",
+      "overrides": {
+        "lastUpdated": "August 7, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
+        "costPer1kInputTokens": 0.0125,
+        "costPer1kOutputTokens": 0.075
+      }
+    },
+    "gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "gpt-6.1-sol",
+      "overrides": {
+        "speed": 2,
+        "isFeatured": true,
+        "lastUpdated": "September 29, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://developers.openai.com/api/docs/guides/your-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
       }

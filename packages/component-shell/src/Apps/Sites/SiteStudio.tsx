@@ -20,6 +20,8 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useSiteData,
+  useVerifySite,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -58,6 +60,7 @@ import { toast } from "sonner";
 
 import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
+import { SiteBrowserChecks } from "./SiteBrowserChecks.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
@@ -65,6 +68,7 @@ import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
+import { useSiteComposerSources } from "./useSiteComposerSources.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
 const EXPORT_TARGET_LABELS: Record<SiteExportTarget, string> = {
@@ -128,6 +132,14 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     [exportTarget, project, view],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
+  const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
+  const verification = useVerifySite(state.site);
+  const composerSources = useSiteComposerSources({
+    site: state.site,
+    projectId,
+    disabled: isBusy || Boolean(revisionPreview),
+    onSaved: load,
+  });
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -202,6 +214,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     void generate({
       prompt,
       siteId: state.site?.id,
+      expectedRevision: state.site?.revision,
+      sourceIds: composerSources.sourceIds,
       ...(state.site && selectedElement && resolvedPageId
         ? { target: { pageId: resolvedPageId, elementKey: selectedKey as string } }
         : {}),
@@ -303,7 +317,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
               watch it land section by section.
             </p>
           </div>
-          <SiteStarterPrompt onSubmit={handleSubmit} />
+          <SiteStarterPrompt
+            onSubmit={handleSubmit}
+            attachments={composerSources.attachments}
+            controls={composerSources.controls}
+            error={composerSources.error}
+          />
           <RecentSites basePath={basePath} projectId={projectId} className="max-w-5xl pt-8" />
         </div>
       </div>
@@ -334,6 +353,11 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
+          {siteData.error && (
+            <output role="alert" className="text-failure">
+              {siteData.error.message}
+            </output>
+          )}
           {(state.site?.turns ?? []).map((turn) => (
             <SiteConversationTurn
               key={turn.id}
@@ -421,6 +445,10 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   ? "Change something…"
                   : "Describe the site…"
             }
+            attachments={composerSources.attachments}
+            controls={composerSources.controls}
+            error={composerSources.error}
+            isDisabled={composerSources.isPending || Boolean(revisionPreview)}
             submitLabel={state.site ? "Refine" : "Build"}
             isBusy={isBusy}
             onSubmit={handleSubmit}
@@ -561,6 +589,13 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   Fill images
                 </Button>
               )}
+              {!isBusy && !revisionPreview && (
+                <SiteBrowserChecks
+                  site={state.site}
+                  pageId={resolvedPageId ?? undefined}
+                  verification={verification}
+                />
+              )}
               {projectId && (
                 <>
                   <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
@@ -609,6 +644,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   selectedKey={selectedKey}
                   onSelect={handleSelectElement}
                   className="flex-1"
+                  data={revisionPreview ? undefined : siteData.data?.bindings}
                 />
                 {historyOpen && state.site && (
                   <SiteHistory

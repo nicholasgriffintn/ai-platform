@@ -1,14 +1,15 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   TeammateComputer,
   TeammateComputerAction,
   TeammateComputerInput,
   TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getComputerProvider } from "~/infrastructure/providers/capabilities/computer";
+import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";
 import { STALE_COMPUTER_LEASE_ERROR_CODE } from "~/infrastructure/providers/capabilities/computer/types";
 import type { TeammateComputerRecord } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
 
@@ -34,7 +35,7 @@ async function requireRunningComputerRun(params: {
     !run ||
     run.attempt !== params.runAttempt ||
     run.status !== "running" ||
-    run.initiatorUserId !== user.id ||
+    !ownsResource(user.id, run.initiatorUserId) ||
     run.teammateContextId !== params.contextId
   ) {
     throw new AssistantError(
@@ -85,7 +86,10 @@ async function provisionComputer(
   }
 
   try {
-    const resource = await getComputerProvider(context.env).provision({
+    const resource = await getComputerUseProvider({
+      provider: "hosted",
+      env: context.env,
+    }).control.provision({
       resourceId: claimed.id,
       checkpointReference: claimed.checkpointReference,
     });
@@ -133,7 +137,7 @@ async function revokeSupersededScreen(
     return;
   }
 
-  await getComputerProvider(context.env).revokeControl({
+  await getComputerUseProvider({ provider: "hosted", env: context.env }).control.revokeControl({
     resourceId: computer.id,
     handle: requireProviderHandle(computer),
     fence: fence - 1,
@@ -150,7 +154,10 @@ async function revokeAndReleaseComputerLease(params: {
   const handle = requireProviderHandle(params.computer);
   const fence = params.computer.lease.fence;
 
-  await getComputerProvider(params.context.env).revokeControl({
+  await getComputerUseProvider({
+    provider: "hosted",
+    env: params.context.env,
+  }).control.revokeControl({
     resourceId: params.computer.id,
     handle,
     fence,
@@ -243,7 +250,7 @@ export async function performTeammateComputerAction(
     unavailableMessage: "The computer is currently in use",
   });
 
-  const provider = getComputerProvider(context.env);
+  const provider = getComputerUseProvider({ provider: "hosted", env: context.env }).control;
   const handle = requireProviderHandle(leased);
   const fence = leased.lease.fence;
   let observation: Record<string, unknown> | undefined;
@@ -360,7 +367,10 @@ export async function takeOverTeammateComputer(
 
   try {
     const recordingId = recordTeaching ? generatePrefixedId("teaching_") : undefined;
-    const screen = await getComputerProvider(context.env).connectScreen({
+    const screen = await getComputerUseProvider({
+      provider: "hosted",
+      env: context.env,
+    }).control.connectScreen({
       resourceId: leased.id,
       handle: requireProviderHandle(leased),
       fence: leased.lease.fence,
@@ -381,7 +391,10 @@ export async function takeOverTeammateComputer(
 
 export async function getTeammateComputerViewScreen(context: ServiceContext, contextId: string) {
   const computer = await provisionComputer(context, await requireComputer(context, contextId));
-  const screen = await getComputerProvider(context.env).connectViewScreen({
+  const screen = await getComputerUseProvider({
+    provider: "hosted",
+    env: context.env,
+  }).control.connectViewScreen({
     resourceId: computer.id,
     handle: requireProviderHandle(computer),
   });
@@ -415,7 +428,10 @@ export async function getTeammateComputerTeachingRecording(
     );
   }
 
-  return getComputerProvider(context.env).getTeachingRecording({
+  return getComputerUseProvider({
+    provider: "hosted",
+    env: context.env,
+  }).control.getTeachingRecording({
     resourceId: computer.id,
     handle: requireProviderHandle(computer),
     fence,
@@ -440,7 +456,7 @@ export async function releaseTeammateComputer(
     throw new AssistantError("Computer control lease has changed", ErrorType.CONFLICT_ERROR, 409);
   }
 
-  const provider = getComputerProvider(context.env);
+  const provider = getComputerUseProvider({ provider: "hosted", env: context.env }).control;
 
   await provider.observe({
     resourceId: computer.id,
@@ -481,7 +497,7 @@ export async function operateTeammateComputerAsAgent(params: {
     unavailableMessage: "The computer is under user control",
   });
 
-  const provider = getComputerProvider(params.context.env);
+  const provider = getComputerUseProvider({ provider: "hosted", env: params.context.env }).control;
 
   await requireRunningComputerRun(params);
   const operate = async (fence: number) => {
@@ -527,7 +543,12 @@ export async function releaseTeammateComputerAgentLease(params: {
   context: ServiceContext;
   contextId: string;
   runId: string;
+  runAttempt?: number;
 }): Promise<void> {
+  if (params.runAttempt !== undefined) {
+    await requireRunningComputerRun({ ...params, runAttempt: params.runAttempt });
+  }
+
   const computer = await requireComputer(params.context, params.contextId);
 
   if (computer.lease?.kind !== "agent" || computer.lease.ownerId !== `run:${params.runId}`) {
@@ -579,7 +600,7 @@ export async function destroyTeammateContextComputerResources(
     }
 
     await revokeSupersededScreen(context, leased);
-    await getComputerProvider(context.env).destroy({
+    await getComputerUseProvider({ provider: "hosted", env: context.env }).control.destroy({
       resourceId: leased.id,
       handle: requireProviderHandle(leased),
       fence: leased.lease.fence,

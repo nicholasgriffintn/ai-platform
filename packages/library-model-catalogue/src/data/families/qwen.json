@@ -118,10 +118,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.4,
+          "intelligenceIndex": 19.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -149,7 +149,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "February 1, 2026",
         "supportsResponseFormat": true,
@@ -162,10 +162,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 32,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 18.4,
+          "codingIndex": 48.2,
+          "agenticIndex": 8.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -260,7 +260,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -272,10 +272,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 21.4,
+          "codingIndex": 53.7,
+          "agenticIndex": 18.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -388,10 +388,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 46,
+          "intelligenceIndex": 29.5,
           "codingIndex": 66,
-          "agenticIndex": 30.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 22.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -449,6 +449,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -459,6 +467,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.8,
+          "codingIndex": 73.1,
+          "agenticIndex": 53.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -478,6 +492,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "July 19, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -487,6 +509,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 45.4,
+          "codingIndex": 76.2,
+          "agenticIndex": 56,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -507,6 +535,7 @@
           ]
         },
         "releaseDate": "September 17, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -635,15 +664,7 @@
       "defaults": {
         "name": "Qwen Image",
         "description": "Qwen Image is a large-scale image generation model capable of generating high-quality images from text descriptions.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "reliability": 3,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -653,10 +674,55 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1060,
+              "value": 889,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
+            }
+          ]
+        }
+      }
+    },
+    "qwen-image-edit": {
+      "defaults": {
+        "name": "Qwen Image Edit",
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "image"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 19, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "image_editingElo",
+              "label": "Image-editing arena",
+              "value": 919,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -682,7 +748,7 @@
           "image"
         ],
         "contextComplexity": 4,
-        "reliability": 4,
+        "reliability": 2,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -693,10 +759,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 1165,
+              "value": 1020,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -835,6 +901,7 @@
     },
     "qwen-plus": {
       "defaults": {
+        "name": "Qwen Plus",
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 1000000,
@@ -848,7 +915,8 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 25, 2024"
+        "releaseDate": "January 25, 2024",
+        "supportsResponseFormat": true
       }
     },
     "qwen-plus-0728-thinking": {
@@ -897,6 +965,398 @@
         "releaseDate": "January 2024"
       }
     },
+    "qwen-qwen2-5-7b-instruct": {
+      "defaults": {
+        "name": "Qwen: Qwen2.5 7B Instruct",
+        "openWeights": false,
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 32768,
+        "maxTokens": 29491,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 16, 2024",
+        "supportsResponseFormat": true
+      }
+    },
+    "qwen-qwen2-5-vl-72b-instruct": {
+      "defaults": {
+        "name": "Qwen: Qwen2.5 VL 72B Instruct",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 128000,
+        "maxTokens": 115200,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 1, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "qwen-qwen3-14b": {
+      "defaults": {
+        "name": "Qwen: Qwen3 14B",
+        "openWeights": false,
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 40960,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "April 28, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-235b-a22b-instruct-2507": {
+      "defaults": {
+        "name": "Qwen: Qwen3 235B A22B Instruct 2507",
+        "openWeights": false,
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "July 21, 2025",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.7,
+          "codingIndex": 22.1,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-235b-a22b-thinking-2507": {
+      "defaults": {
+        "name": "Qwen: Qwen3 235B A22B Thinking 2507 (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 25, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "qwen-qwen3-30b-a3b-instruct-2507": {
+      "defaults": {
+        "name": "Qwen: Qwen3 30B A3B Instruct 2507",
+        "openWeights": false,
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 29, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "qwen-qwen3-30b-a3b-thinking-2507-retires-oct-9": {
+      "defaults": {
+        "name": "Qwen: Qwen3 30B A3B Thinking 2507 (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
+        "contextWindow": 81920,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 28, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "qwen-qwen3-8b-retires-oct-9": {
+      "defaults": {
+        "name": "Qwen: Qwen3 8B (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 131072,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "April 28, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-coder-480b-a35b": {
+      "defaults": {
+        "name": "Qwen: Qwen3 Coder 480B A35B",
+        "openWeights": false,
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 23, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "qwen-qwen3-max-thinking-retires-oct-9": {
+      "defaults": {
+        "name": "Qwen: Qwen3 Max Thinking (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "February 9, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-vl-30b-a3b-thinking": {
+      "defaults": {
+        "name": "Qwen: Qwen3 VL 30B A3B Thinking (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 6, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "qwen-qwen3-vl-32b-instruct-retires-oct-9": {
+      "defaults": {
+        "name": "Qwen: Qwen3 VL 32B Instruct (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 23, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 8.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-vl-8b-instruct": {
+      "defaults": {
+        "name": "Qwen: Qwen3 VL 8B Instruct (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 14, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "qwen-qwen3-vl-8b-thinking-retires-oct-9": {
+      "defaults": {
+        "name": "Qwen: Qwen3 VL 8B Thinking (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 14, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "qwen-turbo": {
       "defaults": {
         "name": "Qwen Turbo",
@@ -927,10 +1387,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 6.3,
+          "intelligenceIndex": 6.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1037,10 +1497,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.5,
+          "intelligenceIndex": 6.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1049,6 +1509,7 @@
         "name": "Qwen2.5 72B Instruct",
         "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 32768,
         "modalities": {
           "input": [
             "text"
@@ -1062,11 +1523,13 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "releaseDate": "September 19, 2024",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 9.6,
+          "intelligenceIndex": 7.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1087,6 +1550,7 @@
     },
     "qwen2-5-coder-32b-instruct": {
       "defaults": {
+        "name": "Qwen2.5 Coder 32B Instruct",
         "openWeights": true,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 32768,
@@ -1101,11 +1565,12 @@
         "contextComplexity": 3,
         "reliability": 1,
         "supportsToolCalls": false,
+        "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7.1,
+          "intelligenceIndex": 6.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1277,6 +1742,7 @@
       "defaults": {
         "name": "Qwen3 14B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 40960,
         "modalities": {
           "input": [
             "text"
@@ -1298,10 +1764,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": 6.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1327,17 +1793,16 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": 6.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "qwen3-235b-a22b": {
       "defaults": {
         "name": "Qwen3 235B-A22B",
-        "openWeights": true,
         "description": "Large open Qwen MoE for multilingual reasoning, coding, and tool use",
         "maxTokens": 16384,
         "modalities": {
@@ -1354,19 +1819,11 @@
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 10.9,
+          "intelligenceIndex": 8.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1392,10 +1849,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.9,
+          "intelligenceIndex": 8.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1416,15 +1873,15 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 3,
         "reliability": 1,
-        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 21, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 18.2,
+          "intelligenceIndex": 12,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1450,10 +1907,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 18.2,
+          "intelligenceIndex": 12,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1559,10 +2016,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": 6.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1614,10 +2071,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": 6.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1694,10 +2151,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 8.6,
+          "intelligenceIndex": 7.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1723,10 +2180,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 8.6,
+          "intelligenceIndex": 7.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1779,10 +2236,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 30, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": 6.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1821,7 +2278,7 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "February 23, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -1833,10 +2290,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 15.6,
+          "codingIndex": 45.7,
+          "agenticIndex": 7.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1846,18 +2303,6 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "audio",
@@ -1878,10 +2323,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
+          "intelligenceIndex": 22.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1904,10 +2349,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.4,
+          "intelligenceIndex": 19.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1944,15 +2389,15 @@
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "February 15, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 32,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 18.4,
+          "codingIndex": 48.2,
+          "agenticIndex": 8.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1990,20 +2435,6 @@
         "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
@@ -2017,16 +2448,15 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.3,
-          "codingIndex": 23.5,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 11.2,
+          "codingIndex": 28.7,
+          "agenticIndex": 1.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "qwen3-5-flash": {
       "defaults": {
-        "name": "Qwen3.5-Flash",
         "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
@@ -2041,7 +2471,6 @@
             "text"
           ]
         },
-        "releaseDate": "February 25, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -2117,22 +2546,8 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -2144,10 +2559,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.3,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 21.4,
+          "codingIndex": 53.7,
+          "agenticIndex": 18.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2181,9 +2596,11 @@
     },
     "qwen3-6-35b-a3b": {
       "defaults": {
+        "name": "Qwen3.6 35B-A3B",
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 17, 2026",
@@ -2197,10 +2614,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 18.2,
+          "codingIndex": 41.9,
+          "agenticIndex": 13.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2251,9 +2668,10 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 20, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2262,10 +2680,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40,
+          "intelligenceIndex": 28.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2286,10 +2704,18 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2298,10 +2724,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
+          "intelligenceIndex": 27,
           "codingIndex": 54.5,
-          "agenticIndex": 27.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2357,18 +2783,11 @@
         "reliability": 2,
         "releaseDate": "May 21, 2026",
         "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 46,
+          "intelligenceIndex": 29.5,
           "codingIndex": 66,
-          "agenticIndex": 30.6,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 22.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2379,34 +2798,17 @@
         "description": "Multimodal Qwen workhorse for long-context agents, visual inputs, and coding",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 5,
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "June 2, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 39,
+          "intelligenceIndex": 25.2,
           "codingIndex": 55.9,
-          "agenticIndex": 20.8,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 17.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2425,6 +2827,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -2434,6 +2842,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.9,
+          "codingIndex": 71.9,
+          "agenticIndex": 50.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2452,6 +2866,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -2463,6 +2883,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.9,
+          "codingIndex": 71.9,
+          "agenticIndex": 50.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2471,6 +2897,7 @@
         "name": "Qwen3.8 27B",
         "openWeights": true,
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
+        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text",
@@ -2480,9 +2907,23 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.7,
+          "codingIndex": 68.1,
+          "agenticIndex": 45.8,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "qwen3-8-27b-free": {
@@ -2502,6 +2943,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -2512,6 +2962,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.7,
+          "codingIndex": 68.1,
+          "agenticIndex": 45.8,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2571,9 +3027,17 @@
         "openWeights": true,
         "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.8,
+          "codingIndex": 73.1,
+          "agenticIndex": 53.6,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "qwen3-8-flash-next-eu": {
@@ -2593,6 +3057,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -2605,6 +3078,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.8,
+          "codingIndex": 73.1,
+          "agenticIndex": 53.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2614,9 +3093,17 @@
         "openWeights": false,
         "description": "2.4-trillion-parameter MoE flagship for coding, professional work, multimodal understanding, and long-horizon agentic workflows",
         "maxTokens": 131072,
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "August 3, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 45.4,
+          "codingIndex": 76.2,
+          "agenticIndex": 56,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "qwen3-8-max-0902": {
@@ -2671,14 +3158,7 @@
         },
         "releaseDate": "September 17, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "qwen3-8b": {
@@ -2709,10 +3189,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 5.1,
+          "intelligenceIndex": 6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2738,10 +3218,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 5.1,
+          "intelligenceIndex": 6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2788,10 +3268,10 @@
         "releaseDate": "April 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 13.6,
+          "intelligenceIndex": 9.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2863,10 +3343,10 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 18,
+          "intelligenceIndex": 11.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2891,10 +3371,10 @@
         "reliability": 1,
         "releaseDate": "August 1, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 18,
+          "intelligenceIndex": 11.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -2978,7 +3458,8 @@
           ]
         },
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "July 28, 2025"
+        "releaseDate": "July 28, 2025",
+        "supportsResponseFormat": false
       }
     },
     "qwen3-coder-next": {
@@ -3011,10 +3492,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 21.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 9.2,
+          "codingIndex": 36.2,
+          "agenticIndex": 0.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3094,6 +3575,7 @@
     },
     "qwen3-embedding-8b": {
       "defaults": {
+        "openWeights": true,
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "contextWindow": 32768,
         "supportsToolCalls": false
@@ -3147,10 +3629,10 @@
         "releaseDate": "September 23, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 24,
+          "intelligenceIndex": 15.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3177,10 +3659,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 5, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.2,
+          "intelligenceIndex": 12.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3214,10 +3696,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 21.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3240,11 +3722,13 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "September 2025",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 13.7,
+          "intelligenceIndex": 9.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3272,16 +3756,15 @@
         "releaseDate": "September 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 13.7,
+          "intelligenceIndex": 9.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "qwen3-next-80b-a3b-thinking": {
       "defaults": {
-        "name": "Qwen3 Next 80B A3B Thinking",
         "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
@@ -3305,12 +3788,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 19.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
         }
       }
     },
@@ -3412,10 +3889,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.6,
+          "intelligenceIndex": 13.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3425,6 +3902,7 @@
         "openWeights": true,
         "description": "Qwen vision-language instruct model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -3446,10 +3924,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.3,
+          "intelligenceIndex": 9.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3507,10 +3985,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.3,
+          "intelligenceIndex": 9.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3518,9 +3996,8 @@
       "defaults": {
         "name": "Qwen3 VL 30B A3B Instruct",
         "openWeights": true,
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "description": "Open vision-language MoE model for image and video understanding, documents, and visual agents",
         "contextWindow": 262144,
-        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text",
@@ -3538,14 +4015,14 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "October 6, 2025",
+        "releaseDate": "October 4, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 7.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3555,7 +4032,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 32768,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -3605,10 +4082,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 11.1,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3618,7 +4095,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 32768,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "image",
@@ -3639,10 +4116,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.4,
+          "intelligenceIndex": 7.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3679,8 +4156,8 @@
         "name": "Qwen3 VL Instruct",
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 131072,
-        "maxTokens": 129024,
+        "contextWindow": 262144,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -3807,10 +4284,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.4,
+          "intelligenceIndex": 9.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -3836,10 +4313,10 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "March 5, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 13.4,
+          "intelligenceIndex": 9.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

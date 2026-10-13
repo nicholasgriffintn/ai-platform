@@ -21,7 +21,7 @@
       "tool_use"
     ],
     "contextComplexity": 4,
-    "reliability": 2,
+    "reliability": 1,
     "knowledgeCutoffDate": "December 2024",
     "releaseDate": "March 18, 2026",
     "supportsToolCalls": true,
@@ -36,10 +36,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 35,
+      "intelligenceIndex": 23.9,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The openrouter/xiaomi/mimo v2 omni family includes models that produce text.",

@@ -4,6 +4,8 @@ import { ComposioConnectorSessionRepository } from "~/modules/apps/infrastructur
 import { ConnectorOperationApprovalRepository } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { ProviderConnectionRepository } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeEventReceiptRepository } from "~/modules/apps/infrastructure/RecipeEventReceiptRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/apps/infrastructure/RecipeWebhookTriggerRepository";
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
@@ -12,13 +14,17 @@ import { SessionRepository } from "~/modules/auth/infrastructure/SessionReposito
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
+import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
+import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
@@ -42,12 +48,16 @@ import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/Mod
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputReviewRepository } from "~/modules/outputs/infrastructure/OutputReviewRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
@@ -68,6 +78,7 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import type { IEnv } from "~/types";
 
 export {
+  KnowledgeSyncRepository,
   TeammateRepository,
   TeammateContextRepository,
   TeammateComputerRepository,
@@ -127,6 +138,8 @@ export {
   ProjectEnvironmentVariableRepository,
   ProviderConnectionRepository,
   RecipeComposioTriggerRepository,
+  RecipeEventReceiptRepository,
+  RecipeWebhookTriggerRepository,
   SharedTeammateRepository,
   SourceRepository,
   WorkspaceRepository,
@@ -174,6 +187,13 @@ export class RepositoryManager {
     return this.resolve("projectTasks", (env) => new ProjectTaskRepository(env));
   }
 
+  public get projectTaskIntegrations(): ProjectTaskIntegrationRepository {
+    return this.resolve(
+      "projectTaskIntegrations",
+      (env) => new ProjectTaskIntegrationRepository(env),
+    );
+  }
+
   public get projectEnvironmentVariables(): ProjectEnvironmentVariableRepository {
     return this.resolve(
       "projectEnvironmentVariables",
@@ -209,12 +229,20 @@ export class RepositoryManager {
     return this.resolve("teammateFeedback", (env) => new TeammateFeedbackRepository(env));
   }
 
+  public get channelSenders(): ChannelSenderRepository {
+    return this.resolve("channelSenders", (env) => new ChannelSenderRepository(env));
+  }
+
   public get channelBindings(): ChannelBindingRepository {
     return this.resolve("channelBindings", (env) => new ChannelBindingRepository(env));
   }
 
   public get memoryDocuments(): MemoryDocumentRepository {
     return this.resolve("memoryDocuments", (env) => new MemoryDocumentRepository(env));
+  }
+
+  public get corrections(): CorrectionRepository {
+    return this.resolve("corrections", (env) => new CorrectionRepository(env));
   }
 
   public get savedMessages(): SavedMessageRepository {
@@ -333,12 +361,28 @@ export class RepositoryManager {
     return this.resolve("artificialAnalysis", (env) => new ArtificialAnalysisRepository(env));
   }
 
+  public get documentComments(): DocumentCommentRepository {
+    return this.resolve("documentComments", (env) => new DocumentCommentRepository(env));
+  }
+
   public get outputs(): OutputRepository {
     return this.resolve("outputs", (env) => new OutputRepository(env));
   }
 
+  public get outputReviews(): OutputReviewRepository {
+    return this.resolve("outputReviews", (env) => new OutputReviewRepository(env));
+  }
+
   public get providerConnections(): ProviderConnectionRepository {
     return this.resolve("providerConnections", (env) => new ProviderConnectionRepository(env));
+  }
+
+  public get recipeEventReceipts(): RecipeEventReceiptRepository {
+    return this.resolve("recipeEventReceipts", (env) => new RecipeEventReceiptRepository(env));
+  }
+
+  public get recipeWebhookTriggers(): RecipeWebhookTriggerRepository {
+    return this.resolve("recipeWebhookTriggers", (env) => new RecipeWebhookTriggerRepository(env));
   }
 
   public get recipeComposioTriggers(): RecipeComposioTriggerRepository {
@@ -360,6 +404,10 @@ export class RepositoryManager {
     return this.resolve("teammateContexts", (env) => new TeammateContextRepository(env));
   }
 
+  public get browserSessions(): BrowserSessionRepository {
+    return this.resolve("browserSessions", (env) => new BrowserSessionRepository(env));
+  }
+
   public get teammateComputers(): TeammateComputerRepository {
     return this.resolve("teammateComputers", (env) => new TeammateComputerRepository(env));
   }
@@ -370,6 +418,14 @@ export class RepositoryManager {
 
   public get sources(): SourceRepository {
     return this.resolve("sources", (env) => new SourceRepository(env));
+  }
+
+  public get sourceSearch(): SourceSearchRepository {
+    return this.resolve("sourceSearch", (env) => new SourceSearchRepository(env));
+  }
+
+  public get knowledgeSyncs(): KnowledgeSyncRepository {
+    return this.resolve("knowledgeSyncs", (env) => new KnowledgeSyncRepository(env));
   }
 
   public get tasks(): TaskRepository {

@@ -1,0 +1,53 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 64000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "releaseDate": "September 16, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 43.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
+    }
+  },
+  "description": "The openrouter/stepfun/step 5 preview family includes models that produce text.",
+  "models": {
+    "step-5-preview": {
+      "defaults": {
+        "name": "Step 5 Preview",
+        "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use"
+      }
+    }
+  }
+}

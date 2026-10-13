@@ -1,6 +1,6 @@
 import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
@@ -95,6 +95,62 @@ export class ActivityRepository extends BaseRepository {
     this.announce(activity);
 
     return activity;
+  }
+
+  async recordActivityOnce(input: {
+    id: string;
+    createdByUserId: number;
+    conversationId: string;
+    capabilityId: string;
+    groupId: string;
+    kind: string;
+    status: ActivityStatus;
+    summary: string;
+    data: Record<string, unknown>;
+    createdAt: string;
+  }): Promise<ActivityRecord> {
+    await this.executeRun(
+      `INSERT OR IGNORE INTO activity_record (
+         id, created_by_user_id, project_id, conversation_id, capability_id, group_id,
+         kind, status, summary, data, created_at, updated_at
+       ) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        input.id,
+        input.createdByUserId,
+        input.conversationId,
+        input.capabilityId,
+        input.groupId,
+        input.kind,
+        input.status,
+        input.summary,
+        JSON.stringify(input.data),
+        input.createdAt,
+        input.createdAt,
+      ],
+    );
+
+    const record = await this.getActivityById(input.id);
+
+    if (!record) {
+      throw new AssistantError("Failed to record activity", ErrorType.DATABASE_ERROR);
+    }
+
+    return record;
+  }
+
+  async listConversationActivitiesSince(params: {
+    conversationId: string;
+    capabilityId: string;
+    since: string;
+    limit: number;
+  }): Promise<ActivityRecord[]> {
+    return this.runQuery<ActivityRecord>(
+      `SELECT * FROM activity_record
+       WHERE conversation_id = ? AND capability_id = ? AND created_at >= ?
+       ORDER BY created_at DESC
+       LIMIT ?`,
+      [params.conversationId, params.capabilityId, params.since, params.limit],
+    );
   }
 
   async getActivityById(activityId: string): Promise<ActivityRecord | null> {

@@ -10,6 +10,7 @@ import {
 } from "./model-registry.js";
 
 export const MODEL_PROVIDER_IDS = [
+  "openai",
   "huggingface",
   "aws",
   "together",

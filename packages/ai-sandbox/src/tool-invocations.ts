@@ -1,4 +1,5 @@
 import { isSandboxError, readJsonRecord } from "@ngriffin_uk/polychat-library-sandbox";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ToolCallRecord, ToolInvoker } from "./types.js";
 
@@ -16,7 +17,7 @@ export interface ToolInvocationHandle {
 }
 
 export function registerToolInvocation(invoke: ToolInvoker): ToolInvocationHandle {
-  const id = crypto.randomUUID();
+  const id = generateId();
   const invocation: ToolInvocation = { invoke, calls: [] };
 
   invocations.set(id, invocation);

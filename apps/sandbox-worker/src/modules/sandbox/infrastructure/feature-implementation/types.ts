@@ -1,4 +1,7 @@
-import type { getSandbox } from "@cloudflare/sandbox";
+import type {
+  ContainerCommandResult,
+  ContainerScriptLanguage,
+} from "@ngriffin_uk/polychat-library-sandbox";
 import type {
   SandboxModelSettings,
   SandboxTaskType,
@@ -6,14 +9,29 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { TaskEvent } from "../../../../types";
+import type { SandboxBackupInstance, SandboxProcessInstance } from "../commands";
 import type { PolychatClient } from "../polychat-client";
 import type { RunControlClient } from "../run-control-client";
 import type { PromptStrategySelection } from "./prompt-strategy";
 
-export type SandboxInstance = ReturnType<typeof getSandbox>;
-export type SandboxExecInstance = Pick<SandboxInstance, "exec"> &
-  Partial<Pick<SandboxInstance, "execStream">>;
-export type SandboxFileInstance = Pick<SandboxInstance, "readFile" | "writeFile" | "exists">;
+export interface SandboxFileInstance {
+  readFile(path: string): Promise<string>;
+  writeFile(path: string, content: string): Promise<void>;
+  exists(path: string): Promise<boolean>;
+}
+
+export interface SandboxScriptInstance {
+  runScript(params: {
+    language: ContainerScriptLanguage;
+    code: string;
+    cwd?: string;
+  }): Promise<ContainerCommandResult>;
+}
+
+export type SandboxInstance = SandboxProcessInstance &
+  SandboxBackupInstance &
+  SandboxFileInstance &
+  SandboxScriptInstance;
 
 export interface FileContextSnippet {
   path: string;

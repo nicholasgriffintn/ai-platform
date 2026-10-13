@@ -13,6 +13,7 @@ export const request_approval: FunctionToolDescriptor = {
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -44,6 +45,7 @@ export const ask_user: FunctionToolDescriptor = {
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -81,6 +83,11 @@ export const ask_user: FunctionToolDescriptor = {
             allowOther: {
               type: "boolean",
               description: "Allow a written answer in addition to the choices. Defaults to true.",
+            },
+            requestsFile: {
+              type: "boolean",
+              description:
+                "Ask the user to attach a file, such as a CSV or screenshot, as the answer. The file arrives with their reply. Defaults to false.",
             },
           },
           required: ["id", "prompt"],

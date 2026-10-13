@@ -75,7 +75,11 @@ function findArtifactInContent(
   if (typeof content === "string") {
     const { artifacts } = formattedMessageContent("assistant", content);
 
-    return artifacts.find((artifact) => artifact.identifier === identifier) ?? null;
+    return (
+      artifacts
+        .filter((artifact) => artifact.identifier === identifier && artifact.mode !== "edit")
+        .at(-1) ?? null
+    );
   }
 
   if (!Array.isArray(content)) {

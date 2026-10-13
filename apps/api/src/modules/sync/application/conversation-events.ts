@@ -90,6 +90,10 @@ export async function publishProjectEvent(
   type: DeviceSyncEventType,
   data: Record<string, unknown> = {},
 ): Promise<void> {
+  if (!publisher.env?.USER_SYNC_COORDINATOR) {
+    return;
+  }
+
   const audience = await projectAudience(publisher.env, projectId);
 
   publishSync(

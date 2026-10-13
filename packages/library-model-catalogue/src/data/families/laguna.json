@@ -86,6 +86,36 @@
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
         "releaseDate": "July 2, 2026"
       }
+    },
+    "poolside-laguna-xs-2-1-free": {
+      "defaults": {
+        "name": "Poolside: Laguna XS 2.1 (free)",
+        "openWeights": false,
+        "description": "Laguna XS 2.1 is the latest coding agent model in the 33B-A3B category from [Poolside](https://poolside.ai/) and a step forward from their Laguna XS.2 model (released in April 2026). It combines...",
+        "releaseDate": "July 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "poolside-laguna-xs-2-1-retires-oct-31": {
+      "defaults": {
+        "name": "Poolside: Laguna XS 2.1 (retires Oct 31)",
+        "openWeights": false,
+        "description": "Laguna XS 2.1 is the latest coding agent model in the 33B-A3B category from [Poolside](https://poolside.ai/) and a step forward from their Laguna XS.2 model (released in April 2026). It combines...",
+        "releaseDate": "July 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

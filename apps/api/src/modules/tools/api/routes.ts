@@ -1,4 +1,5 @@
 import {
+  browserScopeQuerySchema,
   errorResponseSchema,
   savedToolConfigurationSchema,
   savedToolConfigurationsResponseSchema,
@@ -8,27 +9,106 @@ import {
   runnableToolSchema,
   toolsResponseSchema,
   saveToolConfigurationSchema,
+  mcpConnectionInputSchema,
+  mcpConnectionSchema,
+  mcpConnectionListSchema,
+  mcpOAuthCallbackQuerySchema,
+  mcpOAuthStartInputSchema,
+  mcpOAuthStartResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import z from "zod/v4";
 
+import { getServiceContext } from "~/infrastructure/context/serviceContext";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runFunctionWithOutput } from "~/modules/functions/application/run-with-output";
+import {
+  createMcpConnection,
+  deleteMcpConnection,
+  listMcpConnections,
+} from "~/modules/tools/application/mcp-connections";
+import {
+  completeMcpOAuthConnection,
+  mcpOAuthReturnUrl,
+  startMcpOAuthConnection,
+} from "~/modules/tools/application/mcp-oauth-connections";
 import {
   listModelToolConfigurations,
   saveModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfigurations";
 import { getRunnableTool } from "~/modules/tools/application/runnable";
-import { getAvailableTools } from "~/modules/tools/application/toolsOperations";
+import { getScopedAvailableTools } from "~/modules/tools/application/toolsOperations";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
 import type { IRequest } from "~/types";
 
 const app = new Hono();
 
+addRoute(app, "get", "/mcp/connections", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  responses: { 200: { description: "Saved MCP connections", schema: mcpConnectionListSchema } },
+  handler: ({ serviceContext }) => listMcpConnections(serviceContext),
+});
+
+addRoute(app, "post", "/mcp/connections", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  bodySchema: mcpConnectionInputSchema,
+  responses: { 200: { description: "Saved MCP connection", schema: mcpConnectionSchema } },
+  handler: ({ serviceContext, body }) => createMcpConnection(serviceContext, body),
+});
+
+addRoute(app, "delete", "/mcp/connections/:connectionId", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  paramSchema: z.object({ connectionId: z.string().min(1) }),
+  responses: {
+    200: { description: "Removed MCP connection", schema: z.object({ success: z.boolean() }) },
+  },
+  handler: ({ serviceContext, params }) => deleteMcpConnection(serviceContext, params.connectionId),
+});
+
 const routeLogger = createRouteLogger("tools");
+
+addRoute(app, "post", "/mcp/oauth/start", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  summary: "Start signing in to an MCP server",
+  bodySchema: mcpOAuthStartInputSchema,
+  responses: {
+    200: { description: "Where to send the browser", schema: mcpOAuthStartResponseSchema },
+  },
+  handler: ({ serviceContext, body }) => startMcpOAuthConnection(serviceContext, body),
+});
+
+addRoute(app, "get", "/mcp/oauth/callback", {
+  tags: ["tools"],
+  cache: "no-store",
+  summary: "Finish signing in to an MCP server",
+  querySchema: mcpOAuthCallbackQuerySchema,
+  responses: { 302: { description: "Back to Polychat" } },
+  handler: ({ raw }) =>
+    (async (c: Context) => {
+      const query = mcpOAuthCallbackQuerySchema.parse(c.req.query());
+      const serviceContext = getServiceContext(c);
+      let connected = false;
+
+      try {
+        connected = (await completeMcpOAuthConnection(serviceContext, query)).connected;
+      } catch (error) {
+        routeLogger.warn("MCP sign-in could not be completed", { error });
+      }
+
+      return c.redirect(mcpOAuthReturnUrl(serviceContext, connected ? "connected" : "failed"));
+    })(raw),
+});
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing tools route: ${c.req.path}`);
@@ -40,6 +120,7 @@ addRoute(app, "get", "/", {
   tags: ["tools"],
   summary: "List Tools",
   description: "Lists the currently available tools.",
+  querySchema: browserScopeQuerySchema,
   responses: {
     200: {
       description: "List of available tools with their details",
@@ -47,12 +128,9 @@ addRoute(app, "get", "/", {
     },
     500: { description: "Server error", schema: errorResponseSchema },
   },
-  handler: async ({ user }) => {
-    const isPro = user?.plan_id === "pro";
-
-    return getAvailableTools(isPro, Boolean(user?.id));
-  },
-  cache: { maxAge: 300, staleWhileRevalidate: 600 },
+  handler: ({ serviceContext, query }) =>
+    getScopedAvailableTools(serviceContext, query.projectId, query.workspaceId),
+  cache: "no-store",
 });
 
 const toolParamsSchema = z.object({ id: z.string().min(1) });

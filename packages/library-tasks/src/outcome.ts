@@ -21,6 +21,7 @@ export interface RetryBackoff {
 export interface SettleTaskOptions {
   attempts: number;
   maxAttempts: number;
+  retryable?: boolean;
   backoff?: RetryBackoff;
   now?: () => number;
 }
@@ -53,7 +54,7 @@ export function settleTaskFailure(
   const attempts = options.attempts + 1;
   const message = error instanceof Error ? error.message : String(error);
 
-  if (attempts >= Math.max(1, options.maxAttempts)) {
+  if (options.retryable === false || attempts >= Math.max(1, options.maxAttempts)) {
     return { status: "failed", attempts, error: message };
   }
 

@@ -3,7 +3,7 @@ export type AppKeyboardShortcutId =
   | "new-chat"
   | "toggle-sidebar"
   | "toggle-keyboard-shortcuts"
-  | "toggle-meta-assistant"
+  | "toggle-poly"
   | "open-model-selector"
   | "cycle-compute-site"
   | "toggle-retention"
@@ -57,8 +57,8 @@ const actionableShortcuts: Record<AppKeyboardShortcutId, AppKeyboardShortcut> = 
     keys: ["⌘/Ctrl", "⇧", "/"],
     match: { key: "/", modifier: "primary", shift: true },
   },
-  "toggle-meta-assistant": {
-    id: "toggle-meta-assistant",
+  "toggle-poly": {
+    id: "toggle-poly",
     description: "Ask Poly",
     keys: ["⌘/Ctrl", "J"],
     match: { key: "j", modifier: "primary" },
@@ -130,7 +130,7 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS: AppKeyboardShortcutSection[] = [
       actionableShortcuts.search,
       actionableShortcuts["new-chat"],
       actionableShortcuts["toggle-sidebar"],
-      actionableShortcuts["toggle-meta-assistant"],
+      actionableShortcuts["toggle-poly"],
       actionableShortcuts["open-model-selector"],
       actionableShortcuts["cycle-compute-site"],
       actionableShortcuts["toggle-retention"],

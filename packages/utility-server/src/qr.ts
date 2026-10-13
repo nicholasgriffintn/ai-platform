@@ -1,4 +1,4 @@
-const QR_IMAGE_SERVICE_URL = "http://pashi.app/api/qr";
+const QR_IMAGE_SERVICE_URL = "https://pashi.app/api/qr";
 const QR_SIZE_PATTERN = /^([1-9]\d{1,3})x([1-9]\d{1,3})$/;
 
 export const DEFAULT_QR_SIZE = "520x520";
@@ -59,7 +59,7 @@ export function isPashiQrPngUrl(value: string): boolean {
     return false;
   }
 
-  if (url.origin !== "http://pashi.app" || url.pathname !== "/api/qr") {
+  if (url.origin !== "https://pashi.app" || url.pathname !== "/api/qr") {
     return false;
   }
 

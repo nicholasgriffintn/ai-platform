@@ -1,19 +1,18 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AssistantRecipe,
   type AssistantRecipeConnection,
-  type RecipeConfigurationField,
   type RecipeConfiguration,
   type RecipeConnectionStatus,
   type RecipeInstallation,
   type RecipeInstallationTrigger,
   type RecipeInstallationUpdateRequest,
   type RecipeConnectorManifest,
-  recipeConfigurationSchema,
   isSupportedCronExpression,
   type RecipeCatalogueSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { TaskService } from "~/modules/tasks/application/TaskService";
@@ -24,16 +23,22 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { listRecipeConnectors } from "../connectors";
 import { createRecipeCapabilityDescriptor } from "./capabilities";
 import {
-  assistantRecipes,
+  getAssistantRecipes,
   getRecipeIdAliases,
-  recipeCategories,
+  getRecipeCategories,
   recipeFilters,
   resolveRecipeId,
+  getRecipeById,
 } from "./catalog";
 import {
   deleteRecipeComposioTriggers,
   syncRecipeComposioTriggerStatus,
 } from "./composio-trigger-lifecycle";
+import {
+  normaliseRecipeConfigurationForRecipe,
+  validateRecipeConfiguration,
+  isRequiredRecipeConfigurationValueMissing,
+} from "./configuration";
 import {
   parseStoredRecipeInstallationData,
   type StoredRecipeInstallationData,
@@ -44,7 +49,6 @@ import {
   buildRecipeInvocationRuntime,
   buildRecipeSetupRuntime,
   getBlockingConnections,
-  isRequiredRecipeConfigurationValueMissing,
 } from "./runtime";
 import { buildRecipeScheduleState } from "./scheduleState";
 import { createRecipeExecutionTaskData } from "./task-data";
@@ -54,19 +58,31 @@ export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
 
 export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
-  return assistantRecipes.map((recipe) => ({
-    id: recipe.id,
-    title: recipe.title,
-    summary: recipe.summary,
-    kind: recipe.kind,
-    category: recipe.category,
-    featured: recipe.featured,
-    integrations: recipe.integrations.map((integration) => ({
-      id: integration.id,
-      providerId: integration.providerId,
-      name: integration.name,
-    })),
-  }));
+  const summaries: RecipeCatalogueSummary[] = [];
+
+  for (const recipe of getAssistantRecipes()) {
+    const integrations: RecipeCatalogueSummary["integrations"] = [];
+
+    for (const integration of recipe.integrations) {
+      integrations.push({
+        id: integration.id,
+        providerId: integration.providerId,
+        name: integration.name,
+      });
+    }
+
+    summaries.push({
+      id: recipe.id,
+      title: recipe.title,
+      summary: recipe.summary,
+      kind: recipe.kind,
+      category: recipe.category,
+      featured: recipe.featured,
+      integrations,
+    });
+  }
+
+  return summaries;
 }
 
 interface RecipeListOptions {
@@ -77,8 +93,9 @@ interface RecipeListOptions {
 }
 
 interface RecipeInstallOptions extends RecipeListOptions {
-  channel: "web" | "ios" | "sms" | "slack" | "telegram";
+  channel: "web" | "ios" | "sms" | "slack" | "telegram" | "email";
   projectId?: string;
+  teammateContextId?: string;
   triggers?: RecipeInstallationTrigger[];
   configuration?: RecipeConfiguration;
 }
@@ -89,12 +106,6 @@ interface RecipeConnectionContext {
 }
 
 type RecipeInstallationRecord = TemplateRecord;
-
-export function getRecipeById(id: string) {
-  const resolvedId = resolveRecipeId(id);
-
-  return assistantRecipes.find((recipe) => recipe.id === resolvedId);
-}
 
 export async function requireEnabledProjectRecipe(
   context: ServiceContext,
@@ -107,7 +118,9 @@ export async function requireEnabledProjectRecipe(
   if (
     !capabilities.some(
       (capability) =>
-        capability.kind === "recipe" && resolveRecipeId(capability.capability_id) === recipeId,
+        capability.kind === "recipe" &&
+        !capability.excluded &&
+        resolveRecipeId(capability.capability_id) === recipeId,
     )
   ) {
     throw new AssistantError(
@@ -273,6 +286,10 @@ function validateScheduledRecipeConfiguration(params: {
     return;
   }
 
+  if (params.recipe.connectorPolicy?.requireConfiguredIntegration) {
+    validateRecipeConfiguration(params.recipe, params.configuration, true);
+  }
+
   const missingFields = params.recipe.configurationFields.filter(
     (field) =>
       field.required &&
@@ -290,73 +307,6 @@ function validateScheduledRecipeConfiguration(params: {
     ErrorType.PARAMS_ERROR,
     400,
   );
-}
-
-function normaliseRecipeConfiguration(value: unknown): RecipeConfiguration {
-  const parsed = recipeConfigurationSchema.safeParse(value);
-
-  return parsed.success ? parsed.data : {};
-}
-
-function normaliseConfigurationValue(
-  field: RecipeConfigurationField,
-  value: RecipeConfiguration[string] | undefined,
-): RecipeConfiguration[string] | undefined {
-  if (value === undefined || value === null || value === "") {
-    return field.defaultValue;
-  }
-
-  if (field.type === "number") {
-    return typeof value === "number" && Number.isFinite(value) ? value : field.defaultValue;
-  }
-
-  if (field.type === "boolean") {
-    return typeof value === "boolean" ? value : field.defaultValue;
-  }
-
-  if (field.type === "string_list") {
-    const items = Array.isArray(value)
-      ? value
-      : typeof value === "string"
-        ? value.split(/[\n,;]+/)
-        : [];
-
-    return items.length > 0
-      ? items
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .slice(0, 50)
-      : field.defaultValue;
-  }
-
-  if (typeof value === "string") {
-    return value.trim() || field.defaultValue;
-  }
-
-  return field.defaultValue;
-}
-
-function normaliseRecipeConfigurationForRecipe(
-  recipe: AssistantRecipe | undefined,
-  value: unknown,
-): RecipeConfiguration {
-  const parsed = normaliseRecipeConfiguration(value);
-
-  if (!recipe || recipe.configurationFields.length === 0) {
-    return parsed;
-  }
-
-  const configuration: RecipeConfiguration = {};
-
-  for (const field of recipe.configurationFields) {
-    const normalisedValue = normaliseConfigurationValue(field, parsed[field.key]);
-
-    if (normalisedValue !== undefined && normalisedValue !== null && normalisedValue !== "") {
-      configuration[field.key] = normalisedValue;
-    }
-  }
-
-  return configuration;
 }
 
 export function parseRecipeInstallationRecord(
@@ -392,7 +342,11 @@ async function getRecipeInstallationRecord(params: {
 }): Promise<{ record: RecipeInstallationRecord; data: StoredRecipeInstallationData } | null> {
   const record = await params.context.repositories.templates.getTemplateById(params.installationId);
 
-  if (!record || record.created_by_user_id !== params.userId || record.kind !== "recipe") {
+  if (
+    !record ||
+    !ownsResource(params.userId, record.created_by_user_id) ||
+    record.kind !== "recipe"
+  ) {
     return null;
   }
 
@@ -437,11 +391,36 @@ async function findRecipeInstallationRecord(params: {
   return null;
 }
 
+async function requireRoutineTarget(
+  context: ServiceContext,
+  teammateContextId: string,
+  projectId: string | null,
+): Promise<void> {
+  const teammateContext = await requireTeammateContext(context, teammateContextId);
+
+  if (teammateContext.scope.type === "project" && teammateContext.scope.id !== projectId) {
+    throw new AssistantError(
+      "The routine target must use the same project scope as its installation",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  if (teammateContext.scope.type === "personal" && projectId) {
+    throw new AssistantError(
+      "A project routine cannot target a personal teammate context",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+}
+
 async function upsertRecipeInstallation(params: {
   context: ServiceContext;
   userId: number;
   recipe: AssistantRecipe;
   projectId?: string;
+  teammateContextId?: string;
   triggers?: RecipeInstallationTrigger[];
   configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
@@ -473,11 +452,18 @@ async function upsertRecipeInstallation(params: {
     params.configuration ?? existingData?.configuration,
   );
 
+  validateRecipeConfiguration(params.recipe, configuration);
+
   validateScheduledRecipeConfiguration({
     recipe: params.recipe,
     triggers,
     configuration,
   });
+
+  if (params.teammateContextId) {
+    await requireRoutineTarget(params.context, params.teammateContextId, params.projectId ?? null);
+  }
+
   const data: StoredRecipeInstallationData = {
     recipeId: params.recipe.id,
     status: "active",
@@ -488,7 +474,7 @@ async function upsertRecipeInstallation(params: {
       existingState: existingData?.scheduleState,
       activatedAt: now,
     }),
-    teammateContextId: existingData?.teammateContextId,
+    teammateContextId: params.teammateContextId ?? existingData?.teammateContextId,
   };
 
   if (existing) {
@@ -613,6 +599,11 @@ export async function updateRecipeInstallation(params: {
     recipe,
     params.update.configuration ?? existing.data.configuration,
   );
+
+  if (recipe) {
+    validateRecipeConfiguration(recipe, configuration);
+  }
+
   const data: StoredRecipeInstallationData = {
     recipeId: existing.data.recipeId,
     status: params.update.status ?? existing.data.status,
@@ -630,26 +621,11 @@ export async function updateRecipeInstallation(params: {
   };
 
   if (data.teammateContextId) {
-    const teammateContext = await requireTeammateContext(params.context, data.teammateContextId);
-
-    if (
-      teammateContext.scope.type === "project" &&
-      teammateContext.scope.id !== existing.record.project_id
-    ) {
-      throw new AssistantError(
-        "The routine target must use the same project scope as its installation",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-
-    if (teammateContext.scope.type === "personal" && existing.record.project_id) {
-      throw new AssistantError(
-        "A project routine cannot target a personal teammate context",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
+    await requireRoutineTarget(
+      params.context,
+      data.teammateContextId,
+      existing.record.project_id ?? null,
+    );
   }
 
   if (recipe) {
@@ -718,8 +694,8 @@ export async function listAssistantRecipes(options: RecipeListOptions = {}) {
   const connectionContext = await getRecipeConnectionContext(options);
 
   return {
-    recipes: assistantRecipes.map((recipe) => enrichRecipe(recipe, connectionContext)),
-    categories: recipeCategories,
+    recipes: getAssistantRecipes().map((recipe) => enrichRecipe(recipe, connectionContext)),
+    categories: getRecipeCategories(),
     filters: recipeFilters,
   };
 }
@@ -763,6 +739,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
     userId: options.userId,
     recipe,
     projectId: options.projectId,
+    teammateContextId: options.teammateContextId,
     triggers: options.triggers,
     configuration: options.configuration,
   });
@@ -789,7 +766,16 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
 export async function invokeAssistantRecipe(
   id: string,
   options: RecipeListOptions & {
-    channel: "web" | "ios" | "sms" | "slack" | "telegram" | "scheduled" | "event" | "tool";
+    channel:
+      | "web"
+      | "ios"
+      | "sms"
+      | "slack"
+      | "telegram"
+      | "email"
+      | "scheduled"
+      | "event"
+      | "tool";
     input?: string;
     configuration?: RecipeConfiguration;
     queue?: boolean;

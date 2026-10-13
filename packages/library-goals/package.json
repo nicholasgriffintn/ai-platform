@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-goals",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Goal lifecycle primitives for Polychat: actor-scoped status transitions, the continuation policy that decides whether goal work keeps going, progress journaling, and status labels",
   "license": "Apache-2.0",
   "files": [

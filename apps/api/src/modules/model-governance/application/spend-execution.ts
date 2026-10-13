@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   type ResolveSpendRequest,
   resolveSpendRequestSchema,
@@ -35,7 +36,13 @@ export async function resolveSpendRequest(
     throw conflict(`The request is already ${request.state}`);
   }
 
-  if (separationOfDuties && state === "approved" && request.requested_by === userId) {
+  const isAuthorised = authorise("model.approve", {
+    separationOfDuties,
+    actorId: String(userId),
+    requestedBy: String(request.requested_by),
+  }).allowed;
+
+  if (state === "approved" && !isAuthorised) {
     throw new AssistantError(
       "Separation of duties: someone other than the requester must approve spend",
       ErrorType.FORBIDDEN,

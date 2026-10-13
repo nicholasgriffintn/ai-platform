@@ -12,6 +12,7 @@ import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 
+import { estimateMessagesTokens, estimateTextTokens } from "./message-tokens.js";
 import { formatToolCalls } from "./tool-definitions.js";
 import type { ChatCompletionParameters } from "./types/index.js";
 
@@ -67,6 +68,58 @@ export function resolveRequiredMaxTokens(
   }
 
   return maxTokens;
+}
+
+function estimateRequestInputTokens(params: ChatCompletionParameters): number {
+  let total = 0;
+
+  if (params.messages?.length) {
+    total += estimateMessagesTokens(params.messages);
+  }
+
+  if (typeof params.system_prompt === "string" && params.system_prompt.length > 0) {
+    total += estimateTextTokens(params.system_prompt);
+  }
+
+  for (const definitions of [params.tools, params.available_functions]) {
+    if (definitions?.length) {
+      try {
+        total += Math.ceil(JSON.stringify(definitions).length / 4);
+      } catch {
+        break;
+      }
+    }
+  }
+
+  return total;
+}
+
+function clampMaxTokensToContextWindow(
+  effectiveMaxTokens: number | undefined,
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem | undefined,
+): number | undefined {
+  if (effectiveMaxTokens === undefined) {
+    return undefined;
+  }
+
+  const contextWindow = modelConfig?.contextWindow;
+
+  if (typeof contextWindow !== "number" || !Number.isFinite(contextWindow) || contextWindow <= 0) {
+    return effectiveMaxTokens;
+  }
+
+  const remaining = Math.floor(contextWindow - estimateRequestInputTokens(params));
+
+  if (!Number.isFinite(remaining)) {
+    return effectiveMaxTokens;
+  }
+
+  if (remaining < 1) {
+    return 1;
+  }
+
+  return Math.min(effectiveMaxTokens, remaining);
 }
 
 export function mergeParametersWithDefaults(
@@ -310,7 +363,11 @@ export function createCommonParameters(
 
   const effectiveMaxTokens =
     providerName === "anthropic" || providerName === "workers-ai"
-      ? resolveRequiredMaxTokens(params, modelConfig)
+      ? clampMaxTokensToContextWindow(
+          resolveRequiredMaxTokens(params, modelConfig),
+          params,
+          modelConfig,
+        )
       : resolveEffectiveMaxTokens(params, modelConfig);
 
   if (effectiveMaxTokens !== undefined) {

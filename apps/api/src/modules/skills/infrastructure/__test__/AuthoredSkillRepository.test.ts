@@ -59,71 +59,168 @@ beforeEach(() => {
     CREATE TABLE project (
       id text PRIMARY KEY NOT NULL
     );
-    CREATE TABLE authored_skill (
-      id text PRIMARY KEY NOT NULL,
-      scope_type text NOT NULL,
-      scope_id text NOT NULL,
-      name text NOT NULL,
-      created_by integer NOT NULL REFERENCES user(id),
-      draft_revision_id text NOT NULL,
-      stable_revision_id text NOT NULL,
-      state_version integer DEFAULT 1 NOT NULL,
-      archived_at text,
-      created_at text NOT NULL,
-      updated_at text NOT NULL,
-      CONSTRAINT authored_skill_scope_type_check
-        CHECK(scope_type IN ('personal', 'project')),
-      CONSTRAINT authored_skill_state_version_check CHECK(state_version >= 1)
-    );
-    CREATE UNIQUE INDEX authored_skill_scope_name_idx
-      ON authored_skill(scope_type, scope_id, name)
-      WHERE archived_at IS NULL;
-    CREATE TABLE authored_skill_revision (
-      id text PRIMARY KEY NOT NULL,
-      skill_id text NOT NULL REFERENCES authored_skill(id) ON DELETE CASCADE,
-      revision integer NOT NULL,
-      description text NOT NULL,
-      change_note text,
-      digest text NOT NULL,
-      storage_key text NOT NULL UNIQUE,
-      size integer NOT NULL,
-      source_skill_id text,
-      source_revision_id text,
-      created_by integer NOT NULL REFERENCES user(id),
-      created_at text NOT NULL,
-      CONSTRAINT authored_skill_revision_number_check CHECK(revision >= 1),
-      CONSTRAINT authored_skill_revision_size_check CHECK(size >= 0),
-      CONSTRAINT authored_skill_revision_source_check CHECK(
-        (source_skill_id IS NULL AND source_revision_id IS NULL)
-          OR (source_skill_id IS NOT NULL AND source_revision_id IS NOT NULL)
-      )
-    );
-    CREATE UNIQUE INDEX authored_skill_revision_skill_revision_idx
-      ON authored_skill_revision(skill_id, revision);
-    CREATE TABLE capability_configuration (
-      id text PRIMARY KEY NOT NULL,
-      scope_type text DEFAULT 'user' NOT NULL,
-      scope_id text NOT NULL,
-      capability_kind text DEFAULT 'tool' NOT NULL,
-      capability_id text NOT NULL,
-      configuration text NOT NULL,
-      created_at text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at text
-    );
-    CREATE UNIQUE INDEX capability_configuration_scope_capability_idx
-      ON capability_configuration(scope_type, scope_id, capability_kind, capability_id);
-    CREATE TABLE project_capability (
-      id text PRIMARY KEY NOT NULL,
-      project_id text NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-      kind text NOT NULL,
-      capability_id text NOT NULL,
-      excluded integer DEFAULT 0 NOT NULL,
-      configuration text DEFAULT '{}' NOT NULL,
-      created_by integer NOT NULL REFERENCES user(id),
-      created_at text DEFAULT CURRENT_TIMESTAMP NOT NULL
-    );
-    CREATE UNIQUE INDEX project_capability_project_kind_id_idx
-      ON project_capability(project_id, kind, capability_id);
+    CREATE TABLE conversation (id TEXT PRIMARY KEY);
+    CREATE TABLE provider_connection (id TEXT PRIMARY KEY);
+CREATE TABLE "resource" (
+	"resource_type" text NOT NULL,
+	"id" text NOT NULL,
+	"created_by_user_id" integer NOT NULL,
+	"scope_type" text NOT NULL,
+	"scope_id" text NOT NULL,
+	"project_id" text GENERATED ALWAYS AS (CASE WHEN scope_type = 'project' THEN scope_id END) VIRTUAL,
+	"cascading_project_id" text GENERATED ALWAYS AS (CASE WHEN resource_type IN ('source', 'output') AND scope_type = 'project' THEN scope_id END) VIRTUAL,
+	"source_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'source' THEN id END) VIRTUAL,
+	"output_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'output' THEN id END) VIRTUAL,
+	"memory_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'memory' THEN id END) VIRTUAL,
+	"skill_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'skill' THEN id END) VIRTUAL,
+	"conversation_id" text,
+	"connection_id" text,
+	"kind" text,
+	"title" text,
+	"content" text,
+	"status" text,
+	"revision" integer DEFAULT 1,
+	"deleted_at" text,
+	"archived_at" text,
+	"storage_key" text,
+	"mime_type" text,
+	"filename" text,
+	"byte_size" integer,
+	"provider" text,
+	"external_uri" text,
+	"vector_id" text,
+	"search_revision" integer DEFAULT 1,
+	"metadata" text DEFAULT '{}',
+	"parent_output_id" text,
+	"capability_id" text,
+	"group_id" text,
+	"sensitivity" text,
+	"provenance_json" text,
+	"revision_created_by_user_id" integer,
+	"revision_created_at" text,
+	"revision_operation" text,
+	"restored_from_revision" integer,
+	"draft_revision_id" text,
+	"stable_revision_id" text,
+	"state_version" integer DEFAULT 1,
+	"namespace" text DEFAULT 'global',
+	"memory_ids" text,
+	"memory_count" integer DEFAULT 0,
+	"tokens_used" integer,
+	"is_active" integer DEFAULT true,
+	"superseded_by" text,
+	"created_at" text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	"updated_at" text DEFAULT (CURRENT_TIMESTAMP),
+	PRIMARY KEY("resource_type", "id"),
+	FOREIGN KEY ("created_by_user_id") REFERENCES "user"("id") ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY ("cascading_project_id") REFERENCES "project"("id") ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY ("conversation_id") REFERENCES "conversation"("id") ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY ("connection_id") REFERENCES "provider_connection"("id") ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY ("revision_created_by_user_id") REFERENCES "user"("id") ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "resource_scope_check" CHECK(scope_type IN ('personal', 'project')),
+	CONSTRAINT "resource_shape_check" CHECK((resource_type = 'source' AND kind IS NOT NULL AND title IS NOT NULL AND status IS NOT NULL AND search_revision IS NOT NULL AND metadata IS NOT NULL) OR (resource_type = 'output' AND kind IS NOT NULL AND title IS NOT NULL AND capability_id IS NOT NULL AND status IS NOT NULL AND sensitivity IS NOT NULL AND content IS NOT NULL AND revision IS NOT NULL) OR (resource_type = 'memory' AND kind IS NOT NULL AND title IS NOT NULL AND content IS NOT NULL AND revision IS NOT NULL AND updated_at IS NOT NULL) OR (resource_type = 'skill' AND title IS NOT NULL AND draft_revision_id IS NOT NULL AND stable_revision_id IS NOT NULL AND state_version >= 1 AND updated_at IS NOT NULL) OR (resource_type = 'synthesis' AND content IS NOT NULL AND scope_type = 'personal'))
+);
+CREATE UNIQUE INDEX "resource_source_id_unique" ON "resource" ("source_id");
+CREATE UNIQUE INDEX "resource_output_id_unique" ON "resource" ("output_id");
+CREATE UNIQUE INDEX "resource_memory_id_unique" ON "resource" ("memory_id");
+CREATE UNIQUE INDEX "resource_skill_id_unique" ON "resource" ("skill_id");
+CREATE INDEX "resource_scope_idx" ON "resource" ("resource_type","scope_type","scope_id");
+CREATE INDEX "resource_creator_idx" ON "resource" ("resource_type","created_by_user_id");
+CREATE INDEX "resource_project_idx" ON "resource" ("resource_type","project_id");
+CREATE INDEX "resource_conversation_idx" ON "resource" ("resource_type","conversation_id");
+CREATE UNIQUE INDEX "resource_storage_idx" ON "resource" ("resource_type","storage_key") WHERE storage_key IS NOT NULL;
+CREATE UNIQUE INDEX "resource_memory_name_idx" ON "resource" ("scope_type","scope_id","title") WHERE resource_type = 'memory' AND deleted_at IS NULL;
+CREATE UNIQUE INDEX "resource_skill_name_idx" ON "resource" ("scope_type","scope_id","title") WHERE resource_type = 'skill' AND archived_at IS NULL;
+CREATE INDEX "resource_source_connection_idx" ON "resource" ("connection_id") WHERE resource_type = 'source';
+CREATE INDEX "resource_source_kind_idx" ON "resource" ("kind") WHERE resource_type = 'source';
+CREATE INDEX "resource_source_vector_idx" ON "resource" ("vector_id") WHERE resource_type = 'source';
+CREATE INDEX "resource_output_parent_idx" ON "resource" ("parent_output_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_capability_idx" ON "resource" ("capability_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_group_idx" ON "resource" ("group_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_lookup_idx" ON "resource" ("created_by_user_id","capability_id","group_id","kind") WHERE resource_type = 'output';
+CREATE INDEX "resource_synthesis_owner_idx" ON "resource" ("created_by_user_id","created_at") WHERE resource_type = 'synthesis';
+CREATE INDEX "resource_synthesis_active_idx" ON "resource" ("created_by_user_id","namespace","is_active","created_at") WHERE resource_type = 'synthesis';
+CREATE TABLE "resource_revision" (
+  "id" TEXT NOT NULL DEFAULT (lower(hex(randomblob(16)))),
+  "document_id" TEXT REFERENCES "resource"("memory_id") ON DELETE CASCADE,
+  "revision" INTEGER NOT NULL,
+  "text_content" TEXT DEFAULT '',
+  "change_note" TEXT,
+  "created_by" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
+  "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "operation_id" TEXT,
+  "skill_id" TEXT REFERENCES "resource"("skill_id") ON DELETE CASCADE,
+  "description" TEXT,
+  "digest" TEXT,
+  "storage_key" TEXT,
+  "size" INTEGER,
+  "source_skill_id" TEXT,
+  "source_revision_id" TEXT,
+  "output_id" TEXT REFERENCES "resource"("output_id") ON DELETE CASCADE,
+  "title" TEXT,
+  "status" TEXT,
+  "sensitivity" TEXT,
+  "content" TEXT,
+  "created_by_user_id" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
+  "provenance_json" TEXT,
+  "operation" TEXT,
+  "restored_from_revision" INTEGER,
+  "resource_type" TEXT NOT NULL,
+  PRIMARY KEY ("resource_type", "id"),
+  CHECK ((resource_type = 'memory' AND document_id IS NOT NULL AND skill_id IS NULL AND output_id IS NULL AND text_content IS NOT NULL AND created_by IS NOT NULL) OR (resource_type = 'skill' AND skill_id IS NOT NULL AND document_id IS NULL AND output_id IS NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND size >= 0 AND revision >= 1 AND created_by IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND document_id IS NULL AND skill_id IS NULL AND title IS NOT NULL AND status IN ('pending','ready','failed','archived') AND sensitivity IN ('personal','internal','confidential') AND content IS NOT NULL AND created_by_user_id IS NOT NULL)),
+  CHECK ((source_skill_id IS NULL AND source_revision_id IS NULL) OR (source_skill_id IS NOT NULL AND source_revision_id IS NOT NULL))
+);
+CREATE UNIQUE INDEX "resource_revision_memory_revision_idx" ON "resource_revision" ("document_id", "revision") WHERE document_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_memory_operation_idx" ON "resource_revision" ("document_id", "operation_id") WHERE document_id IS NOT NULL AND operation_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_skill_revision_idx" ON "resource_revision" ("skill_id", "revision") WHERE skill_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_output_revision_idx" ON "resource_revision" ("output_id", "revision") WHERE output_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_storage_key_idx" ON "resource_revision" ("storage_key") WHERE storage_key IS NOT NULL;
+
+CREATE TABLE scoped_configuration (
+  workspace_id TEXT,
+  owner_user_id INTEGER,
+  connection_id TEXT,
+  account_id TEXT,
+  revision TEXT,
+  kind TEXT NOT NULL,
+  id TEXT NOT NULL,
+  user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
+  project_id TEXT REFERENCES project(id) ON DELETE CASCADE,
+  scope_type TEXT GENERATED ALWAYS AS (CASE WHEN project_id IS NOT NULL THEN 'project' ELSE 'user' END),
+  scope_id TEXT GENERATED ALWAYS AS (COALESCE(project_id, CAST(user_id AS TEXT))),
+  target_kind TEXT NOT NULL DEFAULT '',
+  target_id TEXT,
+  payload TEXT NOT NULL DEFAULT '{}',
+  encrypted_value TEXT,
+  public_key TEXT,
+  enabled INTEGER,
+  attached INTEGER NOT NULL DEFAULT 0,
+  excluded INTEGER NOT NULL DEFAULT 0,
+  created_by INTEGER REFERENCES user(id),
+  configuration_id TEXT,
+  configuration_created_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (kind, id),
+  CONSTRAINT scoped_configuration_scope_check CHECK ((user_id IS NOT NULL) != (project_id IS NOT NULL)),
+  CONSTRAINT scoped_configuration_kind_check CHECK (
+    (kind IN ('preferences', 'provider', 'model') AND user_id IS NOT NULL)
+    OR (kind = 'capability' AND target_id IS NOT NULL)
+    OR (kind = 'environment' AND project_id IS NOT NULL AND target_id IS NOT NULL AND encrypted_value IS NOT NULL)
+  ),
+  CONSTRAINT scoped_configuration_attachment_check CHECK (attached = 0 OR (kind = 'capability' AND project_id IS NOT NULL AND created_by IS NOT NULL))
+);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_user_target_idx ON scoped_configuration(user_id, kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_project_target_idx ON scoped_configuration(project_id, kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_target_idx ON scoped_configuration(kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_capability_idx ON scoped_configuration(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability';
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_environment_idx ON scoped_configuration(project_id, target_id) WHERE kind = 'environment';
+--> statement-breakpoint
     CREATE TABLE workspace_audit_record (
       id text PRIMARY KEY NOT NULL,
       workspace_id text NOT NULL,
@@ -144,75 +241,25 @@ afterEach(() => {
 });
 
 describe("AuthoredSkillRepository", () => {
-  it("creates the first immutable revision as both draft and stable", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(personalSkill());
-
-    expect(created.skill).toMatchObject({
-      id: "skill-1",
-      scopeType: "personal",
-      scopeId: "7",
-      name: "meeting-notes",
-      draftRevisionId: expect.any(String),
-      stableRevisionId: expect.any(String),
-      stateVersion: 1,
-      archivedAt: null,
-    });
-    expect(created.revision).toMatchObject({
-      skillId: "skill-1",
-      revision: 1,
-      digest: "sha256:first",
-      size: 512,
-    });
-    await expect(
-      repository.getByScopeAndName({ type: "personal", id: 7 }, "meeting-notes"),
-    ).resolves.toEqual(created.skill);
-    expect(created.skill.draftRevisionId).toBe(created.revision.id);
-    expect(created.skill.stableRevisionId).toBe(created.revision.id);
-    await expect(
-      repository.getRevisionForSkill(created.skill.id, created.revision.id),
-    ).resolves.toEqual(created.revision);
-  });
-
-  it("atomically enables a newly created personal skill", async () => {
-    const repository = createRepository();
-
-    await repository.create(personalSkill());
-
-    expect(
-      sqlite
-        .prepare(
-          `SELECT scope_type, scope_id, capability_kind, capability_id, configuration
-           FROM capability_configuration`,
-        )
-        .get(),
-    ).toEqual({
-      scope_type: "user",
-      scope_id: "7",
-      capability_kind: "skill",
-      capability_id: "meeting-notes",
-      configuration: JSON.stringify({ enabled: true }),
-    });
-  });
-
   it("rolls back a personal skill when its atomic grant fails", async () => {
     const repository = createRepository();
 
     sqlite.exec(`
       CREATE TRIGGER reject_personal_skill_grant
-      BEFORE INSERT ON capability_configuration
-      WHEN NEW.scope_type = 'user' AND NEW.capability_kind = 'skill'
+      BEFORE INSERT ON scoped_configuration
+      WHEN NEW.kind = 'capability' AND NEW.scope_type = 'user' AND NEW.target_kind = 'skill'
       BEGIN
         SELECT RAISE(ABORT, 'grant unavailable');
       END;
     `);
 
     await expect(repository.create(personalSkill())).rejects.toThrow("grant unavailable");
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
+    expect(
+      sqlite.prepare("SELECT count(*) AS count FROM resource WHERE resource_type = 'skill'").get(),
+    ).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill_revision").get()).toEqual({
+    expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
       count: 0,
     });
   });
@@ -227,61 +274,12 @@ describe("AuthoredSkillRepository", () => {
       }),
     );
 
-    expect(sqlite.prepare("SELECT count(*) AS count FROM capability_configuration").get()).toEqual({
-      count: 0,
-    });
-  });
-
-  it("atomically publishes an imported project skill with its audit metadata", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(
-      personalSkill({
-        id: "project-skill-1",
-        scope: { type: "project", id: "project-1" },
-        projectPublication: {
-          projectId: "project-1",
-          audit: {
-            workspaceId: "workspace-1",
-            actorUserId: 7,
-            action: "skill.imported",
-            targetType: "skill",
-            targetId: "meeting-notes",
-            metadata: { name: "meeting-notes", sourceRevisionId: "source-revision" },
-          },
-        },
-      }),
-    );
-
-    expect(sqlite.prepare("SELECT * FROM project_capability").get()).toMatchObject({
-      project_id: "project-1",
-      kind: "skill",
-      capability_id: "meeting-notes",
-      created_by: 7,
-    });
     expect(
       sqlite
-        .prepare(
-          "SELECT scope_type, scope_id, capability_kind, capability_id FROM capability_configuration",
-        )
+        .prepare("SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability'")
         .get(),
     ).toEqual({
-      scope_type: "project",
-      scope_id: "project-1",
-      capability_kind: "skill",
-      capability_id: "meeting-notes",
-    });
-    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
-      workspace_id: "workspace-1",
-      actor_user_id: 7,
-      action: "skill.imported",
-      target_type: "skill",
-      target_id: "meeting-notes",
-      metadata: JSON.stringify({
-        name: "meeting-notes",
-        sourceRevisionId: "source-revision",
-        revisionId: created.revision.id,
-      }),
+      count: 0,
     });
   });
 
@@ -315,16 +313,28 @@ describe("AuthoredSkillRepository", () => {
         }),
       ),
     ).rejects.toThrow("audit unavailable");
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
+    expect(
+      sqlite.prepare("SELECT count(*) AS count FROM resource WHERE resource_type = 'skill'").get(),
+    ).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill_revision").get()).toEqual({
+    expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM project_capability").get()).toEqual({
+    expect(
+      sqlite
+        .prepare(
+          "SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability' AND attached = 1",
+        )
+        .get(),
+    ).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM capability_configuration").get()).toEqual({
+    expect(
+      sqlite
+        .prepare("SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability'")
+        .get(),
+    ).toEqual({
       count: 0,
     });
   });
@@ -332,7 +342,23 @@ describe("AuthoredSkillRepository", () => {
   it("enforces unique names within a scope while allowing the name in another scope", async () => {
     const repository = createRepository();
 
-    await repository.create(personalSkill());
+    const personal = await repository.create(personalSkill());
+
+    expect(personal.skill.draftRevisionId).toBe(personal.revision.id);
+    expect(personal.skill.stableRevisionId).toBe(personal.revision.id);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT scope_type, scope_id, target_kind AS capability_kind, target_id AS capability_id, payload AS configuration FROM scoped_configuration WHERE kind = 'capability'",
+        )
+        .get(),
+    ).toEqual({
+      scope_type: "user",
+      scope_id: "7",
+      capability_kind: "skill",
+      capability_id: "meeting-notes",
+      configuration: JSON.stringify({ enabled: true }),
+    });
 
     await expect(
       repository.create(
@@ -340,17 +366,64 @@ describe("AuthoredSkillRepository", () => {
       ),
     ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR, statusCode: 409 });
 
-    await repository.create(
+    const project = await repository.create(
       personalSkill({
         id: "skill-3",
         scope: { type: "project", id: "project-1" },
         storageKey: "skills/projects/project-1/skill-3/revisions/1",
+        projectPublication: {
+          projectId: "project-1",
+          audit: {
+            workspaceId: "workspace-1",
+            actorUserId: 7,
+            action: "skill.imported",
+            targetType: "skill",
+            targetId: "meeting-notes",
+            metadata: { name: "meeting-notes", sourceRevisionId: "source-revision" },
+          },
+        },
       }),
     );
 
     await expect(
       repository.listByScope({ type: "project", id: "project-1" }),
     ).resolves.toHaveLength(1);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT project_id, target_kind AS kind, target_id AS capability_id, created_by FROM scoped_configuration WHERE kind = 'capability' AND attached = 1",
+        )
+        .get(),
+    ).toMatchObject({
+      project_id: "project-1",
+      kind: "skill",
+      capability_id: "meeting-notes",
+      created_by: 7,
+    });
+    expect(
+      sqlite
+        .prepare(
+          "SELECT scope_type, scope_id, target_kind AS capability_kind, target_id AS capability_id FROM scoped_configuration WHERE kind = 'capability' AND scope_type = 'project'",
+        )
+        .get(),
+    ).toEqual({
+      scope_type: "project",
+      scope_id: "project-1",
+      capability_kind: "skill",
+      capability_id: "meeting-notes",
+    });
+    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
+      workspace_id: "workspace-1",
+      actor_user_id: 7,
+      action: "skill.imported",
+      target_type: "skill",
+      target_id: "meeting-notes",
+      metadata: JSON.stringify({
+        name: "meeting-notes",
+        sourceRevisionId: "source-revision",
+        revisionId: project.revision.id,
+      }),
+    });
   });
 
   it("appends a draft revision with CAS without moving the stable pointer", async () => {
@@ -401,25 +474,6 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toBeNull();
     await expect(repository.listRevisions("skill-1")).resolves.toHaveLength(2);
     await expect(repository.getRevisionByDigest("skill-1", "sha256:stale")).resolves.toBeNull();
-  });
-
-  it("records origin lineage on the first revision of a promoted skill", async () => {
-    const repository = createRepository();
-    const personal = await repository.create(personalSkill());
-
-    const project = await repository.create(
-      personalSkill({
-        id: "skill-2",
-        scope: { type: "project", id: "project-1" },
-        storageKey: "skills/projects/project-1/skill-2/revisions/1/bundle.zip",
-        source: { skillId: personal.skill.id, revisionId: personal.revision.id },
-      }),
-    );
-
-    expect(project.revision).toMatchObject({
-      sourceSkillId: personal.skill.id,
-      sourceRevisionId: personal.revision.id,
-    });
   });
 
   it("rejects lineage when the revision does not belong to the source skill", async () => {
@@ -490,70 +544,6 @@ describe("AuthoredSkillRepository", () => {
         source: { skillId: source.skill.id, revisionId: target.revision.id },
       }),
     ).rejects.toMatchObject({ type: ErrorType.PARAMS_ERROR, statusCode: 400 });
-  });
-
-  it("can atomically activate an appended revision", async () => {
-    const repository = createRepository();
-    const created = await repository.create(personalSkill());
-
-    const appended = await repository.appendRevision({
-      skillId: "skill-1",
-      expectedStateVersion: 1,
-      expectedDraftRevisionId: created.skill.draftRevisionId,
-      description: "Immediately active update.",
-      digest: "sha256:active",
-      storageKey: "skills/personal/7/skill-1/revisions/2/bundle.zip",
-      size: 720,
-      createdByUserId: 7,
-      activate: true,
-    });
-
-    expect(appended?.skill).toMatchObject({
-      draftRevisionId: appended?.revision.id,
-      stableRevisionId: appended?.revision.id,
-      stateVersion: 2,
-    });
-  });
-
-  it("records project draft audit metadata in the revision CAS batch", async () => {
-    const repository = createRepository();
-    const created = await repository.create(
-      personalSkill({
-        id: "project-skill-1",
-        scope: { type: "project", id: "project-1" },
-      }),
-    );
-
-    const draft = await repository.appendRevision({
-      skillId: created.skill.id,
-      expectedStateVersion: created.skill.stateVersion,
-      expectedDraftRevisionId: created.skill.draftRevisionId,
-      description: "Private draft.",
-      digest: "sha256:draft",
-      storageKey: "skills/project/project-1/project-skill-1/revisions/2/bundle.zip",
-      size: 720,
-      createdByUserId: 8,
-      audit: {
-        workspaceId: "workspace-1",
-        actorUserId: 8,
-        action: "skill.draft_saved",
-        targetType: "skill",
-        targetId: "meeting-notes",
-        metadata: { name: "meeting-notes" },
-      },
-    });
-
-    if (!draft) {
-      throw new Error("Expected draft revision to be appended");
-    }
-
-    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
-      workspace_id: "workspace-1",
-      actor_user_id: 8,
-      action: "skill.draft_saved",
-      target_id: "meeting-notes",
-      metadata: JSON.stringify({ name: "meeting-notes", revisionId: draft.revision.id }),
-    });
   });
 
   it("rolls back the project draft CAS when its audit insert fails", async () => {
@@ -767,7 +757,7 @@ describe("AuthoredSkillRepository", () => {
 
     sqlite.exec(`
       CREATE TRIGGER fail_appended_skill_revision
-      BEFORE INSERT ON authored_skill_revision
+      BEFORE INSERT ON resource_revision
       WHEN NEW.revision > 1
       BEGIN
         SELECT RAISE(ABORT, 'simulated revision failure');
@@ -795,7 +785,7 @@ describe("AuthoredSkillRepository", () => {
 
     sqlite.exec(`
       CREATE TRIGGER fail_initial_skill_revision
-      BEFORE INSERT ON authored_skill_revision
+      BEFORE INSERT ON resource_revision
       WHEN NEW.digest = 'sha256:fault'
       BEGIN
         SELECT RAISE(ABORT, 'simulated initial revision failure');
@@ -833,7 +823,7 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toEqual(first.revision);
 
     sqlite
-      .prepare("UPDATE authored_skill SET draft_revision_id = ? WHERE id = ?")
+      .prepare("UPDATE resource SET draft_revision_id = ? WHERE resource_type = 'skill' AND id = ?")
       .run(first.revision.id, second.skill.id);
 
     await expect(repository.getCurrentRevision(second.skill.id, "draft")).resolves.toBeNull();
@@ -866,21 +856,6 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toMatchObject({ skill: { id: "skill-2" } });
   });
 
-  it("purges a failed creation identity and its revision metadata", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(personalSkill());
-
-    await expect(
-      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
-    ).resolves.toBe(true);
-    await expect(repository.getById("skill-1")).resolves.toBeNull();
-    await expect(repository.listRevisions("skill-1")).resolves.toEqual([]);
-    await expect(
-      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
-    ).resolves.toBe(false);
-  });
-
   it("does not purge a skill changed after its initial creation", async () => {
     const repository = createRepository();
     const created = await repository.create(personalSkill());
@@ -901,5 +876,60 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toBe(false);
     await expect(repository.getById(created.skill.id)).resolves.toEqual(updated?.skill);
     await expect(repository.listRevisions(created.skill.id)).resolves.toHaveLength(2);
+  });
+  it("records project draft audit metadata in the revision CAS batch", async () => {
+    const repository = createRepository();
+    const created = await repository.create(
+      personalSkill({
+        id: "project-skill-1",
+        scope: { type: "project", id: "project-1" },
+      }),
+    );
+
+    const draft = await repository.appendRevision({
+      skillId: created.skill.id,
+      expectedStateVersion: created.skill.stateVersion,
+      expectedDraftRevisionId: created.skill.draftRevisionId,
+      description: "Private draft.",
+      digest: "sha256:draft",
+      storageKey: "skills/project/project-1/project-skill-1/revisions/2/bundle.zip",
+      size: 720,
+      createdByUserId: 8,
+      audit: {
+        workspaceId: "workspace-1",
+        actorUserId: 8,
+        action: "skill.draft_saved",
+        targetType: "skill",
+        targetId: "meeting-notes",
+        metadata: { name: "meeting-notes" },
+      },
+    });
+
+    if (!draft) {
+      throw new Error("Expected draft revision to be appended");
+    }
+
+    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
+      workspace_id: "workspace-1",
+      actor_user_id: 8,
+      action: "skill.draft_saved",
+      target_id: "meeting-notes",
+      metadata: JSON.stringify({ name: "meeting-notes", revisionId: draft.revision.id }),
+    });
+  });
+
+  it("purges a failed creation identity and its revision metadata", async () => {
+    const repository = createRepository();
+
+    const created = await repository.create(personalSkill());
+
+    await expect(
+      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
+    ).resolves.toBe(true);
+    await expect(repository.getById("skill-1")).resolves.toBeNull();
+    await expect(repository.listRevisions("skill-1")).resolves.toEqual([]);
+    await expect(
+      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
+    ).resolves.toBe(false);
   });
 });

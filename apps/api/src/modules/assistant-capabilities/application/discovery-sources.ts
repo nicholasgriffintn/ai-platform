@@ -1,3 +1,4 @@
+import { hasProEntitlement, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   AssistantRecipe,
   RecipeConnectorManifest,
@@ -17,12 +18,15 @@ import { INTERNAL_FUNCTION_TOOLS } from "~/modules/functions/application/interna
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import { formatFunctionName } from "~/modules/tools/application/functions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
 import type { IRequest } from "~/types";
 
 interface ProjectCapabilityReference {
   kind: string;
   capability_id: string;
+  configuration?: string | Record<string, unknown> | null;
+  excluded?: number;
 }
 
 const permissionChecker = new PermissionChecker();
@@ -36,17 +40,20 @@ export function scopeCapabilityDiscoverySourcesToProject(params: {
 }): Pick<CapabilityDiscoverySources, "connectors" | "recipes" | "tools"> {
   const recipeIds = new Set(
     params.references
-      .filter((capability) => capability.kind === "recipe")
+      .filter((capability) => capability.kind === "recipe" && !capability.excluded)
       .map((capability) => capability.capability_id),
   );
   const recipes = params.recipes.filter((recipe) => recipeIds.has(recipe.id));
-  const connectorIds = new Set(
-    recipes.flatMap((recipe) =>
+  const connectorIds = new Set<string>([
+    ...recipes.flatMap((recipe) =>
       recipe.integrations
         .filter((integration) => integration.requiresConnection)
         .map((integration) => integration.providerId),
     ),
-  );
+    ...resolveProjectRecipeConnectorScope(
+      params.references.filter((capability) => capability.kind === "connector"),
+    ).providers,
+  ]);
 
   return {
     recipes,
@@ -63,7 +70,7 @@ export async function loadCapabilityDiscoverySources(
   const mode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
   const catalogue = listFunctionToolDefinitions().map((tool) => ({
     tool,
-    activation: permissionChecker.checkToolAccess({
+    activation: permissionChecker.checkToolActivation({
       toolName: tool.name,
       mode,
       user,
@@ -124,8 +131,8 @@ export async function loadCapabilityDiscoverySources(
 
     recipes = recipeList.recipes;
     connectors = connectorList.connectors;
-    installations = installationList.installations.filter(
-      (installation) => installation.userId === user.id,
+    installations = installationList.installations.filter((installation) =>
+      ownsResource(user.id, installation.userId),
     );
 
     if (projectId) {
@@ -149,7 +156,7 @@ export async function loadCapabilityDiscoverySources(
     connectors,
     enabledToolIds: resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
     installations,
-    isPro: user?.plan_id === "pro",
+    isPro: hasProEntitlement(user),
     isSignedIn: Boolean(user?.id),
     ...(request.memoryScope?.type === "project"
       ? { projectId: request.memoryScope.projectId }

@@ -37,6 +37,8 @@
         "name": "KAT-Coder-Pro V1",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
         "maxTokens": 32000,
+        "contextComplexity": 4,
+        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 9, 2025",
         "supportsToolCalls": false,
@@ -46,13 +48,30 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 18.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "kat-coder-pro-v2": {
       "defaults": {
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
-        "releaseDate": "March 27, 2026"
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "March 27, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 21.7,
+          "codingIndex": 59.5,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "kat-coder-pro-v2-5": {

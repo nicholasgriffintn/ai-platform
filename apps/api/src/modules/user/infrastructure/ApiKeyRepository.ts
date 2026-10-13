@@ -1,10 +1,11 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import type { User } from "~/types";
 
 const logger = getLogger({ prefix: "repositories/ApiKeyRepository" });
 
@@ -17,8 +18,8 @@ export interface ApiKeyMetadata {
 export class ApiKeyRepository extends BaseRepository {
   private async getUserPublicKey(userId: number): Promise<CryptoKey> {
     const { query, values } = this.buildSelectQuery(
-      "user_settings",
-      { user_id: userId },
+      "scoped_configuration",
+      { kind: "preferences", user_id: userId },
       { columns: ["public_key"] },
     );
     const result = await this.runQuery<{ public_key: string }>(query, values, true);
@@ -108,15 +109,16 @@ export class ApiKeyRepository extends BaseRepository {
 
     try {
       const insert = this.buildInsertQuery(
-        "user_api_keys",
+        "user_credential",
         {
-          id: apiKeyId,
+          kind: "api_key",
+          public_id: apiKeyId,
           user_id: userId,
           name: keyName,
-          api_key: encryptedKey,
-          hashed_key: hashedKey,
+          encrypted_value: encryptedKey,
+          token_hash: hashedKey,
         },
-        { returning: "id, name, created_at" },
+        { returning: "public_id AS id, name, created_at" },
       );
 
       if (!insert) {
@@ -137,7 +139,7 @@ export class ApiKeyRepository extends BaseRepository {
 
       return { plaintextKey, metadata };
     } catch (error: any) {
-      if (error.message?.includes("UNIQUE constraint failed: user_api_keys.hashed_key")) {
+      if (error.message?.includes("UNIQUE constraint failed: user_credential.token_hash")) {
         logger.error("API Key hash collision (rare):", { error });
         throw new AssistantError(
           "Failed to create API key due to a hash collision. Please try again.",
@@ -157,10 +159,10 @@ export class ApiKeyRepository extends BaseRepository {
 
     try {
       const { query, values } = this.buildSelectQuery(
-        "user_api_keys",
-        { user_id: userId },
+        "user_credential",
+        { kind: "api_key", user_id: userId },
         {
-          columns: ["id", "name", "created_at"],
+          columns: ["public_id AS id", "name", "created_at"],
           orderBy: "created_at DESC",
         },
       );
@@ -184,8 +186,9 @@ export class ApiKeyRepository extends BaseRepository {
     }
 
     try {
-      const { query, values } = this.buildDeleteQuery("user_api_keys", {
-        id: apiKeyId,
+      const { query, values } = this.buildDeleteQuery("user_credential", {
+        kind: "api_key",
+        public_id: apiKeyId,
         user_id: userId,
       });
 
@@ -200,20 +203,21 @@ export class ApiKeyRepository extends BaseRepository {
     }
   }
 
-  public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
+  public async findUserByApiKey(apiKey: string): Promise<User | null> {
     if (!apiKey) {
       return null;
     }
 
     try {
       const hashedKey = await this.hashApiKey(apiKey);
-      const result = await this.runQuery<{ user_id: number }>(
-        "SELECT user_id FROM user_api_keys WHERE hashed_key = ?",
+
+      return await this.runQuery<User>(
+        `SELECT user.* FROM user_credential
+         JOIN user ON user.id = user_credential.user_id
+         WHERE user_credential.kind = 'api_key' AND user_credential.token_hash = ?`,
         [hashedKey],
         true,
       );
-
-      return result?.user_id ?? null;
     } catch (error) {
       logger.error("Error finding user by API key hash:", { error });
 

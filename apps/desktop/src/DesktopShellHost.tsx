@@ -43,7 +43,7 @@ export function DesktopShellHost({
   onSignIn: () => void;
   onSignOut: () => void;
 }) {
-  const setShowMetaAssistant = useUIStore((state) => state.setShowMetaAssistant);
+  const setShowPoly = useUIStore((state) => state.setShowPoly);
   const navigate = useNavigate();
   const { connect } = useRuntimeEndpoints();
   const [runtimeReadiness, setRuntimeReadiness] = useState<
@@ -100,7 +100,7 @@ export function DesktopShellHost({
   const host = useMemo<ShellHost>(
     () => ({
       webBaseUrl: WEB_APP_BASE_URL,
-      openAssistant: () => setShowMetaAssistant(true),
+      openAssistant: () => setShowPoly(true),
       openSignIn: onSignIn,
       signOut: onSignOut,
       TaskNotificationSettings: DeviceTaskNotificationSettings,
@@ -109,7 +109,7 @@ export function DesktopShellHost({
       modelSourceRows,
       openProviderSettings: () => void navigate("/profile?tab=providers"),
     }),
-    [modelSourceRows, navigate, onSignIn, onSignOut, setShowMetaAssistant],
+    [modelSourceRows, navigate, onSignIn, onSignOut, setShowPoly],
   );
 
   return <ShellHostProvider host={host}>{children}</ShellHostProvider>;

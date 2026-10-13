@@ -22,4 +22,5 @@ export const get_weather: FunctionToolDescriptor = {
   }),
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };

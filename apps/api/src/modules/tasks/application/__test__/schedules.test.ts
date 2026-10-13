@@ -9,7 +9,10 @@ const mocks = vi.hoisted(() => ({
   reapComposioConnectorSessions: vi.fn(),
   deleteExpiredConnectorOperationApprovals: vi.fn(),
   releaseExpiredChatRunReservations: vi.fn(),
+  sweepInterruptedChatRuns: vi.fn(),
   schedulePendingTaskNotificationDeliveries: vi.fn(),
+  scheduleKnowledgeSyncs: vi.fn(),
+  scheduleKnowledgeIndexes: vi.fn(),
 }));
 
 vi.mock("../scheduledTasks", () => ({
@@ -31,6 +34,10 @@ vi.mock("~/modules/apps/application/connectors/connector-approval-cleanup", () =
   deleteExpiredConnectorOperationApprovals: mocks.deleteExpiredConnectorOperationApprovals,
 }));
 
+vi.mock("~/modules/chat-runs/application/interrupted-run-sweep", () => ({
+  sweepInterruptedChatRuns: mocks.sweepInterruptedChatRuns,
+}));
+
 vi.mock("~/modules/chat-runs/application/reservation-maintenance", () => ({
   releaseExpiredChatRunReservations: mocks.releaseExpiredChatRunReservations,
 }));
@@ -44,6 +51,14 @@ vi.mock("~/modules/model-governance/application/maintenance", () => ({
 vi.mock("~/modules/task-notifications/application/delivery", () => ({
   schedulePendingTaskNotificationDeliveries: mocks.schedulePendingTaskNotificationDeliveries,
   TaskNotificationDeliveryHandler: vi.fn(),
+}));
+
+vi.mock("~/modules/sources/application/knowledge-sync-run", () => ({
+  scheduleKnowledgeSyncs: mocks.scheduleKnowledgeSyncs,
+}));
+
+vi.mock("~/modules/sources/application/knowledge-index", () => ({
+  scheduleKnowledgeIndexes: mocks.scheduleKnowledgeIndexes,
 }));
 
 import { SCHEDULES } from "~/config/schedules";
@@ -62,9 +77,13 @@ describe("registered recipe schedules", () => {
     mocks.scheduleStripeUsageSync.mockResolvedValue(undefined);
     mocks.releaseExpiredChatRunReservations.mockResolvedValue(0);
     mocks.schedulePendingTaskNotificationDeliveries.mockResolvedValue(0);
+    mocks.scheduleKnowledgeSyncs.mockResolvedValue(0);
+    mocks.scheduleKnowledgeIndexes.mockResolvedValue(0);
   });
 
   it("isolates maintenance failures from recipe scheduling", async () => {
+    mocks.scheduleKnowledgeSyncs.mockRejectedValueOnce(new Error("knowledge sync unavailable"));
+    mocks.scheduleKnowledgeIndexes.mockRejectedValueOnce(new Error("knowledge index unavailable"));
     mocks.reapComposioConnectorSessions.mockRejectedValueOnce(new Error("reaper unavailable"));
     mocks.deleteExpiredConnectorOperationApprovals.mockRejectedValueOnce(
       new Error("approval cleanup unavailable"),
@@ -78,6 +97,8 @@ describe("registered recipe schedules", () => {
 
     expect(mocks.scheduleRecipeExecutions).toHaveBeenCalledOnce();
     expect(report.failed.map(({ name }) => name)).toEqual([
+      "source-knowledge-sync",
+      "source-knowledge-index",
       "composio-session-reaper",
       "connector-approval-cleanup",
       "settled-task-purge",

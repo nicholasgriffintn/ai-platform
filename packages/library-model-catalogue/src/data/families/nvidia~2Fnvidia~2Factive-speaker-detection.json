@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 16, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/active speaker detection family includes models that produce text.",
+  "models": {
+    "active-speaker-detection": {
+      "defaults": {
+        "name": "Active Speaker Detection",
+        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows"
+      }
+    }
+  }
+}

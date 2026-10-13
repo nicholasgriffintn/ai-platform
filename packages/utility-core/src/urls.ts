@@ -1,3 +1,17 @@
+export function normaliseSameOriginRoute(route: string, origin: string): string | null {
+  try {
+    const parsed = new URL(route.trim() || "/", origin);
+
+    if (parsed.origin !== origin) {
+      return null;
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 export function readUrlPath(value: string): string {
   const queryIndex = value.indexOf("?");
   const fragmentIndex = value.indexOf("#");
@@ -42,6 +56,43 @@ export function hasUrlExtension(value: string, extensions: ReadonlySet<string>):
 
 export function isHttpUrl(value: string): boolean {
   return /^https?:\/\//iu.test(value);
+}
+
+export function resolveHttpUrl(value: unknown, base?: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const url = new URL(value, typeof base === "string" ? base : undefined);
+
+    return isHttpUrl(url.href) && !url.username && !url.password ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): boolean {
+  if (!pageUrl) {
+    return false;
+  }
+
+  try {
+    const page = new URL(pageUrl);
+    const api = new URL(apiUrl);
+
+    if (page.protocol !== api.protocol) {
+      return false;
+    }
+
+    return (
+      page.hostname === api.hostname ||
+      api.hostname.endsWith(`.${page.hostname}`) ||
+      page.hostname.endsWith(`.${api.hostname}`)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function encodePathSegments(path: string): string {

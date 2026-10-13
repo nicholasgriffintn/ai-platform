@@ -4,7 +4,7 @@ export const promptTasks = [
   "chat-system",
   "chat-section",
   "chat-goal",
-  "meta-assistant",
+  "poly",
   "sandbox-controller",
   "sandbox-agent",
   "sandbox-strategy",

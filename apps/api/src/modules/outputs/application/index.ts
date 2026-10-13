@@ -11,9 +11,9 @@ import type {
   SharedOutput,
   UpdateOutputInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { recordProjectAudit } from "~/modules/audit/application";
@@ -178,7 +178,7 @@ export async function createOutput(
   context: ServiceContext,
   userId: number,
   input: CreateOutputInput,
-  options: { id?: string } = {},
+  options: { id?: string; provenance?: OutputProvenance } = {},
 ): Promise<Output> {
   let workspaceId: string | undefined;
 
@@ -222,7 +222,8 @@ export async function createOutput(
       mimeType: input.file?.mimeType,
       filename: input.file?.filename,
       byteSize: input.file?.byteSize,
-      provenance: createOutputProvenance({ origin: "user", completeness: "partial" }),
+      provenance:
+        options.provenance ?? createOutputProvenance({ origin: "user", completeness: "partial" }),
     },
     workspaceId
       ? {

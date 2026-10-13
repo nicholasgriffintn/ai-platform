@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "June 7, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The nvidia/nvidia/nv embed v1 family includes models that produce text.",
+  "models": {
+    "nv-embed-v1": {
+      "defaults": {
+        "name": "nv-embed-v1",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    }
+  }
+}

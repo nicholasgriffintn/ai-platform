@@ -13,6 +13,14 @@
         "text"
       ]
     },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use",
+      "coding"
+    ],
+    "contextComplexity": 5,
+    "reliability": 3,
     "knowledgeCutoffDate": "February 16, 2026",
     "releaseDate": "July 9, 2026",
     "supportsToolCalls": true,
@@ -29,6 +37,12 @@
         "max"
       ],
       "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 42.1,
+      "codingIndex": 76.7,
+      "agenticIndex": 43.2,
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
@@ -104,6 +118,23 @@
       "defaults": {
         "name": "OpenAI GPT Terra Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026"
+      }
+    },
+    "openai-gpt-terra-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Terra Latest",
+        "description": "This model always redirects to the latest model in the OpenAI GPT Terra family.",
         "modalities": {
           "input": [
             "pdf",

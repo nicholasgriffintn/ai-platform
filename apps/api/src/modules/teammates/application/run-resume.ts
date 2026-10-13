@@ -3,7 +3,9 @@ import {
   type ChatRun,
   type TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateChatRunUsage } from "~/modules/chat-runs/application/usage";
@@ -19,13 +21,14 @@ export async function prepareTeammateRunResume(params: {
   context: ServiceContext;
   run: ChatRun | null;
   teammateId?: string;
+  interactionId?: string;
+  resolution?: "approved" | "rejected";
 }): Promise<TeammateRunResumeState> {
-  const parsedConfiguration = teammateRunConfigurationSchema.safeParse(
-    params.run?.resolvedConfiguration,
-  );
+  const run = params.run;
+  const parsedConfiguration = teammateRunConfigurationSchema.safeParse(run?.resolvedConfiguration);
 
   if (
-    !params.run ||
+    !run ||
     !parsedConfiguration.success ||
     (params.teammateId && parsedConfiguration.data.teammateId !== params.teammateId)
   ) {
@@ -37,7 +40,8 @@ export async function prepareTeammateRunResume(params: {
   }
 
   const configuration = parsedConfiguration.data;
-  const usedSteps = configuration.usedSteps + (params.run.context?.step ?? 0);
+  const approvedToolName = await readApprovedPendingToolName({ ...params, run });
+  const usedSteps = configuration.usedSteps + (run.context?.step ?? 0);
   const remainingSteps = configuration.maxSteps - usedSteps;
 
   if (remainingSteps <= 0) {
@@ -55,7 +59,7 @@ export async function prepareTeammateRunResume(params: {
   let remainingCreditMicros = configuration.maxCreditMicros;
 
   if (remainingCreditMicros !== undefined) {
-    const [hydratedRun] = await hydrateChatRunUsage(params.context.repositories, [params.run]);
+    const [hydratedRun] = await hydrateChatRunUsage(params.context.repositories, [run]);
     const usedCreditMicros = hydratedRun?.usage?.consumption.creditMicros ?? 0;
 
     remainingCreditMicros = Math.max(0, remainingCreditMicros - usedCreditMicros);
@@ -72,6 +76,9 @@ export async function prepareTeammateRunResume(params: {
   return {
     configuration: {
       ...configuration,
+      enabledTools: approvedToolName
+        ? [...new Set([...configuration.enabledTools, approvedToolName])]
+        : configuration.enabledTools,
       usedSteps,
     },
     maxSteps: remainingSteps,
@@ -79,4 +86,43 @@ export async function prepareTeammateRunResume(params: {
       ? { durableExecution: { kind: "delegation", maxCreditMicros: remainingCreditMicros } }
       : {}),
   };
+}
+
+async function readApprovedPendingToolName(params: {
+  context: ServiceContext;
+  run: ChatRun;
+  interactionId?: string;
+  resolution?: "approved" | "rejected";
+}): Promise<string | undefined> {
+  if (
+    params.resolution !== "approved" ||
+    params.run.status !== "awaiting_approval" ||
+    !params.run.lastMessageId ||
+    !params.interactionId
+  ) {
+    return undefined;
+  }
+
+  const stored = await params.context.repositories.messages.getMessageById(
+    params.run.lastMessageId,
+  );
+  const message = stored?.message;
+  const data = typeof message?.data === "string" ? safeParseJson(message.data) : message?.data;
+  const approval = isRecord(data) && isRecord(data.approval) ? data.approval : undefined;
+  const toolName = typeof message?.name === "string" ? message.name : undefined;
+
+  if (
+    stored?.conversation_id === params.run.conversationId &&
+    message?.role === "tool" &&
+    message.status === "pending" &&
+    message.tool_call_id === params.interactionId &&
+    isRecord(data) &&
+    data.renderer === "approval_request" &&
+    toolName &&
+    approval?.toolName === toolName
+  ) {
+    return toolName;
+  }
+
+  return undefined;
 }

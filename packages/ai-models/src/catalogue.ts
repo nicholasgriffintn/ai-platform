@@ -1,7 +1,4 @@
-import {
-  modelConfig as catalogueModelConfig,
-  providerModelIds,
-} from "@ngriffin_uk/polychat-library-model-catalogue/resolved";
+import { loadResolvedCatalogue } from "@ngriffin_uk/polychat-library-model-catalogue/resolved";
 import {
   agentModelConfig,
   isLineupEligibleModel,
@@ -19,11 +16,7 @@ export interface ModelQueryOptions {
   chatSurfaceOnly?: boolean;
 }
 
-export const modelConfig: ModelConfig = {
-  ...catalogueModelConfig,
-  ...agentModelConfig,
-};
-
+let cachedModelConfig: ModelConfig | null = null;
 const cachedModelsByOptions = new Map<string, ModelConfig>();
 const cachedProviderModels = new Map<string, ModelConfig>();
 let cachedFreeModels: ModelConfig | null = null;
@@ -38,6 +31,7 @@ export function getProviderModels(provider: string): ModelConfig {
     return cached;
   }
 
+  const { modelConfig: catalogueModelConfig, providerModelIds } = loadResolvedCatalogue();
   const resolvedIds = providerModelIds[provider];
 
   if (!resolvedIds) {
@@ -61,12 +55,18 @@ export function getProviderModels(provider: string): ModelConfig {
   return models;
 }
 
+function allModels(): ModelConfig {
+  cachedModelConfig ??= { ...loadResolvedCatalogue().modelConfig, ...agentModelConfig };
+
+  return cachedModelConfig;
+}
+
 function filterModels(predicate: (model: ModelConfigItem) => boolean): ModelConfig {
-  return Object.fromEntries(Object.entries(modelConfig).filter(([, model]) => predicate(model)));
+  return Object.fromEntries(Object.entries(allModels()).filter(([, model]) => predicate(model)));
 }
 
 export function getModelConfigById(modelId: string): ModelConfigItem | undefined {
-  return modelConfig[modelId];
+  return allModels()[modelId];
 }
 
 export function findModelConfigByMatchingModel(
@@ -75,7 +75,7 @@ export function findModelConfigByMatchingModel(
 ): ModelConfigItem | null {
   let fallbackMatch: ModelConfigItem | null = null;
 
-  for (const model of Object.values(modelConfig)) {
+  for (const model of Object.values(allModels())) {
     if (model.matchingModel !== matchingModel) {
       continue;
     }
@@ -122,7 +122,7 @@ export function getAvailableStrengths(): string[] {
 
   const strengths = new Set<string>();
 
-  for (const model of Object.values(modelConfig)) {
+  for (const model of Object.values(allModels())) {
     for (const strength of model.strengths ?? []) {
       strengths.add(strength);
     }

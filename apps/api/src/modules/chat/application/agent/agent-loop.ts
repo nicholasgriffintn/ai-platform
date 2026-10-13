@@ -23,8 +23,8 @@ import type {
   ChatRetrySnapshot,
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import {
   readRecordObjectField,
   readStringField,
@@ -37,6 +37,13 @@ import {
   type TurnOutput,
 } from "~/modules/chat/application/agent/assistant-turn";
 import { startConversationTitle } from "~/modules/chat/application/agent/conversation-title";
+import {
+  EMPTY_REPLY_FAILURE,
+  EMPTY_REPLY_FALLBACK,
+  EMPTY_REPLY_REPAIR_NOTICE,
+  isEmptyTurn,
+  nextEmptyReplyAttempt,
+} from "~/modules/chat/application/agent/empty-reply";
 import { captureRunMemories } from "~/modules/chat/application/agent/memory-capture";
 import { createAgentProviderIO } from "~/modules/chat/application/agent/provider-io";
 import type { ChatTurnTransport } from "~/modules/chat/application/agent/turn-transport";
@@ -177,6 +184,8 @@ export interface AgentLoopExecutionParams {
   context?: ServiceContext;
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
+  initialToolCalls?: ToolCall[];
+  initialToolResults?: Message[];
   guardrailPrompt?: string;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
@@ -240,14 +249,24 @@ export async function runAgentLoop(
   );
 
   const state: ChatAgentLoopState = {
-    commandCount: 0,
+    commandCount: params.initialToolCalls?.length ?? 0,
     enabledToolNames: new Set(params.requestParams.enabled_tools ?? []),
     unknownToolRecoveryUsed: false,
     toolCallLedger: createToolCallLedger(),
   };
-  const toolResponses: Message[] = [];
-  const allToolCalls: ToolCall[] = [];
-  const steps: AgentStepSummary[] = [];
+  const toolResponses = [...(params.initialToolResults ?? [])];
+  const allToolCalls = [...(params.initialToolCalls ?? [])];
+  const steps: AgentStepSummary[] =
+    allToolCalls.length > 0
+      ? [
+          {
+            stepNumber: 1,
+            stepType: "tool-call",
+            toolCallCount: allToolCalls.length,
+            toolResultCount: toolResponses.length,
+          },
+        ]
+      : [];
 
   let totalUsage: NormalisedTokenUsage | undefined;
   let finalMessage: Message | undefined;
@@ -313,6 +332,11 @@ export async function runAgentLoop(
       assistantMessage: { role: "assistant" as const, content: text },
     };
   };
+
+  for (const toolResult of params.initialToolResults ?? []) {
+    await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
+    await params.onToolResult?.(toolResult);
+  }
 
   await executeAgentLoop<ChatAgentSharedContext, ChatAgentLoopState>({
     initialMessages: runtimeMessages,
@@ -486,27 +510,15 @@ export async function runAgentLoop(
       await writeTurnActivity(sink, { kind: "model_step_started", step });
 
       let turn: TurnOutput & { error?: unknown };
-
-      try {
-        turn = await params.transport.runTurn({
-          request: goalFinalisationNotice
-            ? {
-                ...params.requestParams,
-                messages: providerMessages,
-                enabled_tools: [...state.enabledToolNames],
-              }
-            : finalAnswerNotice
-              ? {
-                  ...params.requestParams,
-                  messages: providerMessages,
-                  disable_functions: true,
-                  enabled_tools: [...state.enabledToolNames],
-                }
-              : {
-                  ...params.requestParams,
-                  messages: providerMessages,
-                  enabled_tools: [...state.enabledToolNames],
-                },
+      const request = {
+        ...params.requestParams,
+        messages: providerMessages,
+        enabled_tools: [...state.enabledToolNames],
+        ...(finalAnswerNotice && !goalFinalisationNotice ? { disable_functions: true } : {}),
+      };
+      const requestModelTurn = (turnRequest: typeof request) =>
+        params.transport.runTurn({
+          request: turnRequest,
           sink,
           context: {
             ...transportContext,
@@ -517,6 +529,56 @@ export async function runAgentLoop(
             }),
           },
         });
+
+      try {
+        turn = await requestModelTurn(request);
+
+        let emptyReplyAttempts = 0;
+        let next = nextEmptyReplyAttempt(emptyReplyAttempts);
+
+        while (next && isEmptyTurn(turn) && !(await shouldStop())) {
+          logger.warn("Model returned an empty reply", {
+            failure: EMPTY_REPLY_FAILURE,
+            completionId: params.completionId,
+            model: params.model,
+            provider: params.provider,
+            step,
+            recovery: next,
+          });
+
+          const emptyTurn = turn;
+          const retried = await requestModelTurn(
+            next === "retry"
+              ? request
+              : {
+                  ...request,
+                  disable_functions: true,
+                  messages: providerIO.providerMessages([
+                    ...contextBudget.messages,
+                    {
+                      role: "user" as const,
+                      content: EMPTY_REPLY_REPAIR_NOTICE,
+                      data: { contextControl: true },
+                    },
+                  ]),
+                },
+          );
+
+          turn = {
+            ...retried,
+            usage: sumTokenUsage(emptyTurn.usage, retried.usage) ?? retried.usage,
+          };
+          emptyReplyAttempts += 1;
+          next = nextEmptyReplyAttempt(emptyReplyAttempts);
+        }
+
+        if (isEmptyTurn(turn)) {
+          if (params.transport.streams) {
+            await sink.writeEvent("content_block_delta", { content: EMPTY_REPLY_FALLBACK });
+          }
+
+          turn = { ...turn, content: EMPTY_REPLY_FALLBACK, status: "incomplete" };
+        }
       } catch (error) {
         if (isRetryCancelledError(error) || params.shouldStop?.()) {
           await writeTurnActivity(sink, {
@@ -808,6 +870,7 @@ export async function runAgentLoop(
       captureRunMemories({
         env: params.env,
         completionId: params.completionId,
+        runId: params.runId,
         conversationManager: params.conversationManager,
         context: params.context,
         userSettings: params.userSettings,

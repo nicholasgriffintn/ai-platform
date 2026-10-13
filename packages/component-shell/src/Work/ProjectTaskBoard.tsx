@@ -11,6 +11,7 @@ import {
   getProjectSurface,
   getProjectConversationPath,
   NEW_TEAMMATE_ID,
+  projectTaskSkills,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -21,8 +22,8 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
-import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskBoard({
@@ -35,8 +36,8 @@ export function ProjectTaskBoard({
   const [isCreateOpen, setIsCreateOpen] = useQueryDialog("new");
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
-  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const capabilityCatalog = useCapabilityCatalog(projectId);
+  const teammates = capabilityCatalog.data?.teammates ?? [];
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
   const {
     tasks,
@@ -111,6 +112,12 @@ export function ProjectTaskBoard({
           stage needs review or approval.
         </p>
 
+        <ProjectTaskIntegrationsControl
+          key={projectId}
+          projectId={projectId}
+          taskBasePath={`${basePath}/tasks`}
+          canManage={canManageFlow}
+        />
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading project tasks…</p>
         ) : error ? (

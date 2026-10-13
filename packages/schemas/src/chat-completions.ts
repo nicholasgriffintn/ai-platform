@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { isAgentModelId } from "./agent-model-id.js";
 import { chatRequestModeSchema, toolPermissionSchema } from "./agent-modes.js";
 import {
   recipeChatRequestOptionsSchema,
@@ -18,8 +19,8 @@ import { conversationTypeSchema } from "./conversation-type.js";
 import { delegationContextSchema } from "./delegations.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
-import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { polyRequestSchema } from "./poly.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { runProvenanceSchema } from "./run-provenance.js";
@@ -357,7 +358,7 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   model_tier: modelTierSchema
     .optional()
     .describe(
-      "Model tier used when no explicit model is requested. Omit it to use the project default tier in project conversations, otherwise Medium.",
+      "Model tier used when no explicit model is requested, or for the model an agent runs on. Omit it to use the project default tier in project conversations, otherwise Medium.",
     ),
   permission_mode: permissionModeSchema
     .optional()
@@ -614,10 +615,10 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .optional()
     .describe("Trusted context for a run created by a delegation."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
-  meta_assistant: metaAssistantRequestSchema
+  poly: polyRequestSchema
     .optional()
     .describe(
-      "Marks the request as the signed-in user's meta assistant conversation, which only receives product-operating tools, and carries the client's current UI context.",
+      "Marks the request as the signed-in user's Poly conversation, which only receives product-operating tools, and carries the client's current UI context.",
     ),
   options: chatRequestOptionsSchema
     .optional()
@@ -645,11 +646,14 @@ export const createChatCompletionsJsonSchema = chatCompletionsRequestFieldsSchem
       });
     }
 
-    if (request.model_tier && (request.model || request.models?.length)) {
+    if (
+      request.model_tier &&
+      (request.models?.length || (request.model && !isAgentModelId(request.model)))
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["model_tier"],
-        message: "model_tier is only valid when no explicit model is provided",
+        message: "model_tier is only valid with no explicit model, or with an agent model",
       });
     }
 

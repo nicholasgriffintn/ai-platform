@@ -9,14 +9,15 @@ import {
   withoutOcrBatchProviderCleanup,
   type OcrDocument,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   OCR_BATCH_POLLING_TASK_TYPE,
   type OcrBatchRequestItem,
   type OcrBatchStartRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { getUtf8ByteLength } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import { MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "~/config/limits";
@@ -84,7 +85,7 @@ async function buildBatchRequest(
     );
   }
 
-  if (!projectId && file.record.created_by_user_id !== userId) {
+  if (!projectId && !ownsResource(userId, file.record.created_by_user_id)) {
     throw new AssistantError(
       "OCR input must be owned by the current user",
       ErrorType.FORBIDDEN,

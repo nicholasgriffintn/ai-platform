@@ -8,6 +8,7 @@ import {
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { gradeEditorialQuality } from "~/modules/documents/application/editorial-quality";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IUser } from "~/types";
 
@@ -43,7 +44,13 @@ export async function describeDocument({
       name: "document_metadata",
     });
 
-    return { ...existing, ...object, ...statistics };
+    const editorial = await gradeEditorialQuality({
+      env: context.env,
+      user,
+      text: body,
+    });
+
+    return { ...existing, ...object, ...statistics, ...(editorial ? { editorial } : {}) };
   } catch (error) {
     logger.error("Could not describe a document", { error });
 

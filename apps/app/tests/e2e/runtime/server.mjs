@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { createHash, generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { splitMigrationStatements } from "../../../../../packages/utility-server/dist/sql.js";
+import { buildWorkerBundle } from "../support/worker-bundle.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
 import {
@@ -196,7 +197,7 @@ export default {
 };
 `;
 
-const mockComputerWorker = `
+const mockSandboxWorker = `
 const OBSERVATION = {
   title: "Example Domain",
   screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
@@ -217,7 +218,11 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
-    if (url.origin !== "https://computer.internal" || request.method !== "POST") {
+    if (url.origin !== "https://computer.internal") {
+      return new Response("Sandbox is outside release checks", { status: 503 });
+    }
+
+    if (request.method !== "POST") {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -360,22 +365,30 @@ const TOOL_CALL_TRIGGERS = [
   },
   {
     marker: "Propose the corrected release skill",
-    name: "propose_skill_revision",
+    name: "propose_correction",
     arguments: () =>
       JSON.stringify({
-        name: "release-playbook",
-        instructions: "Return the corrected release procedure.",
-        changeNote: "Use the corrected procedure",
+        pattern: "Use the corrected release procedure",
+        quote: "Propose the corrected release skill",
+        placement: {
+          type: "skill",
+          name: "release-playbook",
+          instructions: "Return the corrected release procedure.",
+        },
       }),
   },
   {
     marker: "Propose a nonexistent release skill",
-    name: "propose_skill_revision",
+    name: "propose_correction",
     arguments: () =>
       JSON.stringify({
-        name: "nonexistent-release-playbook",
-        instructions: "Return the corrected release procedure.",
-        changeNote: "Refuse an unknown skill",
+        pattern: "Refuse an unknown skill",
+        quote: "Propose a nonexistent release skill",
+        placement: {
+          type: "skill",
+          name: "nonexistent-release-playbook",
+          instructions: "Return the corrected release procedure.",
+        },
       }),
   },
   {
@@ -1278,50 +1291,6 @@ async function mockExternalRequest(request) {
   return body.stream ? streamingResponse(content) : Response.json(openAiResponse(content));
 }
 
-function buildWorkerBundle(workspace, configPath, outputDirectory) {
-  execFileSync(
-    "pnpm",
-    [
-      "--filter",
-      workspace,
-      "exec",
-      "wrangler",
-      "deploy",
-      "--dry-run",
-      "--config",
-      configPath,
-      "--outdir",
-      outputDirectory,
-    ],
-    {
-      cwd: repositoryRoot,
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        WRANGLER_LOG_PATH: path.join(temporaryDirectory, "wrangler.log"),
-      },
-    },
-  );
-
-  const outputNames = readdirSync(outputDirectory);
-  const bundleName = outputNames.find((name) => name.endsWith(".js"));
-
-  if (!bundleName) {
-    throw new Error(`Wrangler did not produce a bundle for ${workspace}`);
-  }
-
-  return {
-    script: readFileSync(path.join(outputDirectory, bundleName), "utf8"),
-    textModules: outputNames
-      .filter((name) => name.endsWith(".md") && name !== "README.md")
-      .map((name) => ({
-        type: "Text",
-        path: name,
-        contents: readFileSync(path.join(outputDirectory, name), "utf8"),
-      })),
-  };
-}
-
 function createRuntimeOptions(apiBundle, port, seedMaterial) {
   const readinessSessionHash = createHash("sha256")
     .update("polychat-e2e-pro-0")
@@ -1396,7 +1365,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
         modules: [
           { type: "ESModule", path: "e2e-entry.js", contents: apiEntryModule },
           { type: "ESModule", path: "api.js", contents: apiBundle.script },
-          ...apiBundle.textModules,
+          ...apiBundle.modules,
           {
             type: "ESModule",
             path: "effect",
@@ -1498,21 +1467,8 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           SANDBOX_WORKER: { name: "sandbox" },
-          COMPUTER_WORKER: { name: "computer" },
         },
         outboundService: mockExternalRequest,
-      },
-      {
-        name: "sandbox",
-        modules: [
-          {
-            type: "ESModule",
-            path: "sandbox.js",
-            contents:
-              'export default { fetch() { return new Response("Sandbox is outside release checks", { status: 503 }); } };',
-          },
-        ],
-        compatibilityDate,
       },
       {
         name: "external-services",
@@ -1522,9 +1478,9 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
         compatibilityFlags: ["service_binding_extra_handlers"],
       },
       {
-        name: "computer",
+        name: "sandbox",
         modules: true,
-        script: mockComputerWorker,
+        script: mockSandboxWorker,
         compatibilityDate,
       },
       {
@@ -1684,7 +1640,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 								"INSERT OR IGNORE INTO session (id, user_id, expires_at) VALUES (?, ?, ?)"
 							).bind(sessionId, userId, expiresAt),
 							env.DB.prepare(
-								"INSERT OR IGNORE INTO user_settings (id, user_id, nickname, public_key, private_key, onboarding_seen) VALUES (?, ?, ?, ?, ?, ?)"
+								"INSERT OR IGNORE INTO scoped_configuration (kind, id, user_id, payload, public_key, encrypted_value) SELECT 'preferences', ?, ?, json_object('nickname', nickname, 'onboarding_seen', json(onboarding)), public_key, encrypted_value FROM (SELECT ? AS nickname, ? AS public_key, ? AS encrypted_value, ? AS onboarding)"
 							).bind(
 								"e2e-settings-" + identity,
 								userId,
@@ -1694,7 +1650,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 								JSON.stringify(onboardingSeen ?? ["model-sources:web"]),
 							),
 							env.DB.prepare(
-								"INSERT OR IGNORE INTO provider_settings (id, provider_id, user_id, enabled) VALUES (?, 'openai', ?, 0)"
+								"INSERT OR IGNORE INTO scoped_configuration (kind, id, target_id, user_id, enabled) VALUES ('provider', ?, 'openai', ?, 0)"
 							).bind("e2e-provider-" + identity, userId),
 						];
 
@@ -1704,13 +1660,13 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 									"INSERT OR IGNORE INTO workspace (id, name, description, created_by) VALUES (?, 'Release Workspace', 'Release validation workspace', ?)"
 								).bind(workspaceId, userId),
 								env.DB.prepare(
-									"INSERT OR IGNORE INTO workspace_member (workspace_id, user_id, role) VALUES (?, ?, 'owner')"
+									"INSERT OR IGNORE INTO resource_grant (kind, workspace_id, user_id, role) VALUES ('membership', ?, ?, 'owner')"
 								).bind(workspaceId, userId),
 								env.DB.prepare(
 									"INSERT OR IGNORE INTO project (id, workspace_id, name, description, instructions, created_by) VALUES (?, ?, 'Release Project', 'Release validation project', 'Use concise answers.', ?)"
 								).bind(projectId, workspaceId, userId),
 								env.DB.prepare(
-									"INSERT OR IGNORE INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES (?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)"
+									"INSERT OR IGNORE INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', ?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)"
 								).bind(
 									"e2e-output-" + identity,
 									userId,
@@ -1780,7 +1736,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 							return Response.json({ error: "Invalid queued Workbench fixture" }, { status: 400 });
 						}
 						const membership = await env.DB.prepare(
-							"SELECT p.id FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id WHERE p.id = ? AND wm.user_id = ?"
+							"SELECT p.id FROM project p JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id WHERE p.id = ? AND wm.user_id = ?"
 						).bind(projectId, session.user_id).first();
 						if (!membership) {
 							return Response.json({ error: "Project membership required" }, { status: 403 });
@@ -1941,11 +1897,9 @@ async function applyMigrations(database) {
     .sort();
 
   for (const migration of migrations) {
-    const statements = readFileSync(path.join(migrationsDirectory, migration), "utf8")
-      .replaceAll("--> statement-breakpoint", "")
-      .split(";")
-      .map((statement) => statement.trim())
-      .filter(Boolean);
+    const statements = splitMigrationStatements(
+      readFileSync(path.join(migrationsDirectory, migration), "utf8"),
+    );
 
     for (const statement of statements) {
       await database.prepare(statement).run();
@@ -2032,7 +1986,7 @@ async function seedPersonas(database, seedMaterial) {
         .run();
       await database
         .prepare(
-          "INSERT INTO user_settings (id, user_id, nickname, public_key, private_key, onboarding_seen) VALUES (?, ?, ?, ?, ?, ?)",
+          "INSERT INTO scoped_configuration (kind, id, user_id, payload, public_key, encrypted_value) SELECT 'preferences', ?, ?, json_object('nickname', nickname, 'onboarding_seen', json(onboarding)), public_key, encrypted_value FROM (SELECT ? AS nickname, ? AS public_key, ? AS encrypted_value, ? AS onboarding)",
         )
         .bind(
           `e2e-settings-${persona}-${index}`,
@@ -2045,7 +1999,7 @@ async function seedPersonas(database, seedMaterial) {
         .run();
       await database
         .prepare(
-          "INSERT INTO provider_settings (id, provider_id, user_id, enabled) VALUES (?, 'openai', ?, 0)",
+          "INSERT INTO scoped_configuration (kind, id, target_id, user_id, enabled) VALUES ('provider', ?, 'openai', ?, 0)",
         )
         .bind(`e2e-provider-${persona}-${index}`, userId)
         .run();
@@ -2062,7 +2016,7 @@ async function seedPersonas(database, seedMaterial) {
           .run();
         await database
           .prepare(
-            "INSERT INTO workspace_member (workspace_id, user_id, role) VALUES (?, ?, 'owner')",
+            "INSERT INTO resource_grant (kind, workspace_id, user_id, role) VALUES ('membership', ?, ?, 'owner')",
           )
           .bind(workspaceId, userId)
           .run();
@@ -2074,7 +2028,7 @@ async function seedPersonas(database, seedMaterial) {
           .run();
         await database
           .prepare(
-            "INSERT INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES (?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)",
+            "INSERT INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', ?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)",
           )
           .bind(
             `e2e-output-${index}`,
@@ -2111,13 +2065,13 @@ async function seedPersonas(database, seedMaterial) {
             .run();
           await database
             .prepare(
-              "INSERT INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES ('e2e-public-output', ?, ?, 'release-validation', 'report', 'Public release output', 'ready', 'internal', ?)",
+              "INSERT INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', 'e2e-public-output', ?, ?, 'release-validation', 'report', 'Public release output', 'ready', 'internal', ?)",
             )
             .bind(userId, projectId, JSON.stringify("Public release output content"))
             .run();
           await database
             .prepare(
-              "INSERT INTO output_share (id, output_id, token_hash, created_by_user_id) VALUES ('e2e-output-share-0', 'e2e-public-output', ?, ?)",
+              "INSERT INTO resource_grant (kind, id, output_id, token_hash, created_by_user_id) VALUES ('output', 'e2e-output-share-0', 'e2e-public-output', ?, ?)",
             )
             .bind(createHash("sha256").update(token).digest("hex"), userId)
             .run();
@@ -2135,6 +2089,8 @@ async function start() {
     "@assistant/api",
     path.join(runtimeDirectory, "wrangler.jsonc"),
     buildDirectory,
+    repositoryRoot,
+    path.join(temporaryDirectory, "wrangler.log"),
   );
   const seedMaterial = await createPersonaSeedMaterial();
 

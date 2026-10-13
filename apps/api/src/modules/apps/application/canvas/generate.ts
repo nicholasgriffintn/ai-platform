@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   AssistantError,
   ErrorType,
@@ -142,7 +143,7 @@ export async function generateCanvasBatch(
 
   const generations = await Promise.all(
     uniqueModelIds.map(async (modelId) => {
-      const modelConfig = await getModelConfigByModel(modelId, runtimeEnv);
+      const modelConfig = await getModelConfigByModel(modelId);
 
       if (!modelConfig) {
         return createFailedCanvasResult({
@@ -154,7 +155,7 @@ export async function generateCanvasBatch(
 
       try {
         if (
-          user.plan_id !== "pro" &&
+          !hasProEntitlement(user) &&
           !(await hasUserProviderApiKey({
             env: runtimeEnv,
             user,

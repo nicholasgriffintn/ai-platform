@@ -1,21 +1,22 @@
 import { userCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
   DELEGATION_RUN_TASK_TYPE,
   isLiveDelegationState,
-  isMetaToolName,
+  isPolyNavigationToolName,
   permissionModeSchema,
   readToolIds,
   resolveDelegationCreditCeiling,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { conversationHandleIdForDelegation } from "~/modules/conversations/application/conversation-handles";
 import { checkDelegationSpawn } from "~/modules/delegations/application/guards";
@@ -24,6 +25,7 @@ import {
   canRunDelegationOnMachine,
   resolveDelegationExecutionRoute,
 } from "~/modules/delegations/application/routing";
+import { delegationRunTaskId } from "~/modules/delegations/application/run-identity";
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { requireDelegationGroupWaitPolicy } from "~/modules/delegations/application/wait-policy";
@@ -187,7 +189,7 @@ export const delegate: ApiToolDefinition = {
 
       if (
         !selectedChild ||
-        selectedChild.user_id !== user.id ||
+        !ownsResource(user.id, selectedChild.user_id) ||
         !predecessor ||
         isLiveDelegationState(predecessor.state) ||
         predecessor.teammateId !== teammate.id ||
@@ -206,7 +208,7 @@ export const delegate: ApiToolDefinition = {
     }
 
     const parentTools = (request.request?.enabled_tools ?? []).filter(
-      (tool) => !isMetaToolName(tool),
+      (tool) => !isPolyNavigationToolName(tool),
     );
     const enabledTools = intersectEnabledTools(parentTools, readToolIds(teammate.enabled_tools));
     const delegationId = `delegation_${generateId()}`;
@@ -371,7 +373,7 @@ export const delegate: ApiToolDefinition = {
 
       await scheduleDelegationExpiry(tasks, delegation, user.id);
       await tasks.enqueueTask({
-        id: `delegation_task_${delegationId}`,
+        id: delegationRunTaskId(delegationId),
         task_type: DELEGATION_RUN_TASK_TYPE,
         user_id: user.id,
         project_id: projectId ?? undefined,

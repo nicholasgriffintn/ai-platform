@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 
 import type { CoreChatOptions } from "~/types";
@@ -8,7 +9,7 @@ const logger = getLogger({ prefix: "services/chat/preparation/goal" });
 export async function loadActiveGoal(options: CoreChatOptions): Promise<Goal | null> {
   const user = options.context?.user;
 
-  if (!user?.id || user.plan_id !== "pro" || !options.completion_id) {
+  if (!user?.id || !hasProEntitlement(user) || !options.completion_id) {
     return null;
   }
 

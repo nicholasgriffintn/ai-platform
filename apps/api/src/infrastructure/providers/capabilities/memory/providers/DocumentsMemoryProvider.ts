@@ -1,11 +1,12 @@
-import { excerptMemoryDocument } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { memorySearchPassage } from "~/modules/memory-documents/application/pages";
+import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
-import { requireProjectTeammate } from "~/modules/teammates/application/access";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 
 import type {
@@ -64,15 +65,18 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
-      const document = await context.repositories.memoryDocuments.getDocumentById(
+      const { document } = await requireRunMemoryDocument(
+        context,
+        memoryScope,
         selected.documentId,
+        "read-write",
       );
 
-      if (!document || !(await this.documentMatchesBoundScope(document, memoryScope, userId))) {
+      if (document.kind === "teammate_context") {
         throw new AssistantError(
-          "The writable memory document is no longer available",
-          ErrorType.FORBIDDEN,
-          403,
+          "Teammate memory requires source-backed maintenance",
+          ErrorType.PARAMS_ERROR,
+          400,
         );
       }
 
@@ -85,7 +89,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
       return result;
     }
 
-    const { scope } = this.requireScope();
+    const { scope } = await this.requireScope();
     const repository = context.repositories.memoryDocuments;
     const existing = await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT);
 
@@ -172,63 +176,46 @@ export class DocumentsMemoryProvider implements MemoryProvider {
 
     if (memoryScope?.type === "bound") {
       const documents = await Promise.all(
-        memoryScope.documents.map((binding) =>
-          context.repositories.memoryDocuments.getDocumentById(binding.documentId),
-        ),
+        memoryScope.documents.map(async (binding) => {
+          try {
+            const { document } = await requireRunMemoryDocument(
+              context,
+              memoryScope,
+              binding.documentId,
+            );
+
+            return document;
+          } catch (error) {
+            if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
+              return null;
+            }
+
+            throw error;
+          }
+        }),
       );
-      const authorisedDocuments: MemoryDocumentRow[] = [];
 
-      for (const document of documents) {
-        if (
-          document &&
-          (await this.documentMatchesBoundScope(
-            document,
-            memoryScope,
-            this.requireContext().userId,
-          ))
-        ) {
-          authorisedDocuments.push(document);
-        }
-      }
-
-      return authorisedDocuments
+      return documents
+        .filter((document) => document !== null)
         .filter((document) =>
           `${document.name}\n${document.content}`.toLowerCase().includes(trimmed),
         )
         .slice(0, limit)
-        .map((document) => ({
-          id: document.id,
-          text: `${document.name}\n${document.content}`,
-          score: 1,
-          metadata: {
-            name: document.name,
-            revision: document.revision,
-            excerpt: excerptMemoryDocument(document.content),
-          },
-        }));
+        .map((document) => memorySearchPassage(document, trimmed));
     }
 
-    const { scope } = this.requireScope();
+    const { scope } = await this.requireScope();
     const documents = await context.repositories.memoryDocuments.searchDocuments(
       scope,
       trimmed,
       limit,
     );
 
-    return documents.map((document) => ({
-      id: document.id,
-      text: `${document.name}\n${document.content}`,
-      score: 1,
-      metadata: {
-        name: document.name,
-        revision: document.revision,
-        excerpt: excerptMemoryDocument(document.content),
-      },
-    }));
+    return documents.map((document) => memorySearchPassage(document, trimmed));
   }
 
   async deleteMemory(memoryId: string): Promise<boolean> {
-    const { context } = this.requireScope();
+    const { context, scope } = await this.requireScope();
     const memoryScope = this.config.memoryScope;
 
     if (memoryScope?.type === "bound") {
@@ -240,22 +227,17 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
-      const binding = memoryScope.documents.find(
-        (candidate) => candidate.documentId === memoryId && candidate.access === "read-write",
-      );
-      const document = binding
-        ? await context.repositories.memoryDocuments.getDocumentById(memoryId)
-        : null;
+      await requireRunMemoryDocument(context, memoryScope, memoryId, "read-write");
+    } else {
+      const document = await context.repositories.memoryDocuments.getDocumentById(memoryId);
 
       if (
         !document ||
-        !(await this.documentMatchesBoundScope(document, memoryScope, this.requireContext().userId))
+        document.kind !== "memory" ||
+        document.scope_type !== scope.scopeType ||
+        document.scope_id !== scope.scopeId
       ) {
-        throw new AssistantError(
-          "The memory document is not writable in this run",
-          ErrorType.FORBIDDEN,
-          403,
-        );
+        throw new AssistantError("The memory document is unavailable", ErrorType.FORBIDDEN, 403);
       }
     }
 
@@ -270,11 +252,11 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     return `- ${input.text.trim()}${source}`;
   }
 
-  private requireScope(): {
+  private async requireScope(): Promise<{
     context: ServiceContext;
     scope: MemoryDocumentScopeKey;
     userId: number;
-  } {
+  }> {
     const { context, userId } = this.requireContext();
 
     const memoryScope = this.config.memoryScope;
@@ -283,6 +265,10 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         ? { scopeType: "project", scopeId: memoryScope.projectId }
         : { scopeType: "personal", scopeId: String(userId) };
 
+    if (scope.scopeType === "project") {
+      await requireProjectAccess(context, scope.scopeId);
+    }
+
     return { context, scope, userId };
   }
 
@@ -290,7 +276,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     const context = this.config.serviceContext;
     const userId = this.config.user?.id;
 
-    if (!context || !userId) {
+    if (!context || !userId || context.requireUser().id !== userId) {
       throw new AssistantError(
         "Document memories need a signed-in user",
         ErrorType.AUTHENTICATION_ERROR,
@@ -299,44 +285,5 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     }
 
     return { context, userId };
-  }
-
-  private async documentMatchesBoundScope(
-    document: MemoryDocumentRow,
-    scope: Extract<MemoryScope, { type: "bound" }>,
-    userId: number,
-  ): Promise<boolean> {
-    const context = this.requireContext().context;
-
-    if (!scope.teammateContext) {
-      return document.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
-    }
-
-    const teammateContext = await context.repositories.teammateContexts.getById(
-      scope.teammateContext.id,
-    );
-
-    if (
-      !teammateContext ||
-      teammateContext.actorUserId !== userId ||
-      teammateContext.status !== "active" ||
-      teammateContext.scope.type !== scope.scopeType ||
-      teammateContext.scope.id !== scope.scopeId
-    ) {
-      return false;
-    }
-
-    if (teammateContext.scope.type === "project") {
-      await requireProjectTeammate(context, teammateContext.scope.id, teammateContext.teammateId);
-    }
-
-    const isBoundScopeDocument =
-      document.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
-    const isPrivateContextDocument =
-      teammateContext.memoryDocumentId === document.id &&
-      document.scope_type === "personal" &&
-      document.scope_id === String(userId);
-
-    return isBoundScopeDocument || isPrivateContextDocument;
   }
 }

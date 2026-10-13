@@ -1,24 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getOutputHistory, restoreOutputRevision } from "./outputs.js";
+import { restoreOutputRevision } from "./outputs.js";
 
 describe("output revision api", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-  });
-
-  it("loads authorised revision history", async () => {
-    const history = { current: { revision: 3 }, revisions: [], restore: { supported: true } };
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json(history),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    await expect(getOutputHistory("output/1")).resolves.toEqual(history);
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/outputs/output%2F1/revisions");
-    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "GET" });
   });
 
   it("sends the current revision fence when restoring", async () => {

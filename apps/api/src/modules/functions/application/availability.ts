@@ -8,7 +8,7 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import type { IUser } from "~/types";
 
 const DISCOVERY_FUNCTION_TOOLS = [CAPABILITY_DISCOVERY_TOOL_NAME, SKILL_LOAD_TOOL_NAME] as const;
-const SIGNED_IN_FUNCTION_TOOLS = ["web_search"] as const;
+const SIGNED_IN_FUNCTION_TOOLS = ["web_search", "search_conversations"] as const;
 
 export function resolveManagedFunctionToolNames(access: { isSignedIn: boolean }): string[] {
   return access.isSignedIn

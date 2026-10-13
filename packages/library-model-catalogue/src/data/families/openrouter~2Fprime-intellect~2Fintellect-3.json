@@ -29,10 +29,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 15.6,
+      "intelligenceIndex": 10.6,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The openrouter/prime intellect/intellect 3 family includes models that produce text.",

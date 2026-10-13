@@ -1,6 +1,6 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ProviderRuntime } from "../../../runtime.js";
 import { GREENPT_API_KEY_ENV, resolveGreenPtApiKey } from "../../../utils/greenpt.js";

@@ -1,5 +1,6 @@
 import { chatRunReservationExpiresAt } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   getPermissionModeUnavailableReason,
   resolveEffectivePermissionMode,
@@ -18,17 +19,14 @@ import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cac
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { Database } from "~/infrastructure/database";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   getConnectedRecipeConnectorProviders,
   listRecipeConnectors,
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
-import {
-  getMetaAssistantToolNames,
-  type MetaAssistantScope,
-  resolveMetaAssistantScope,
-} from "~/modules/chat/application/policy/meta-assistant";
+import { isBuiltInToolApprovalResolution } from "~/modules/chat-runs/application/interactions";
+import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
   bindRunMemoryDocument,
@@ -43,12 +41,15 @@ import {
   resolveSkillScope,
 } from "~/modules/chat/application/preparation/skills";
 import {
-  appendBoundMemoryContext,
-  appendConversationBriefContext,
   buildSystemPrompt,
+  projectRunMemory,
 } from "~/modules/chat/application/preparation/system-prompt";
+import { resolveToolIntentRequest } from "~/modules/chat/application/tools/tool-intent";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
-import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
+import {
+  GOAL_COMPLETE_TOOL_NAME,
+  mergeEnabledGoalToolNames,
+} from "~/modules/chat/domain/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
@@ -63,7 +64,17 @@ import {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/modules/skills/application";
+import {
+  listPerMessageSkillCandidates,
+  renderPerMessageSkills,
+  selectPerMessageSkills,
+} from "~/modules/skills/application/per-message";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
+import {
+  mergeNativeMcpToolNames,
+  readMcpGatewayServers,
+  shouldUseNativeMcpGateway,
+} from "~/modules/tools/application/mcp-gateway-servers";
 import {
   getModelToolDefinition,
   mergePersonalModelToolOptions,
@@ -75,7 +86,15 @@ import {
   resolveProjectChatContext,
   type ProjectChatContext,
 } from "~/modules/workspaces/application/chatContext";
-import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
+import type {
+  ChatMode,
+  CoreChatOptions,
+  IUser,
+  IUserSettings,
+  MemoryScope,
+  Message,
+  Platform,
+} from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/preparation/RequestPreparer" });
 
@@ -101,7 +120,8 @@ export interface PreparedRequest {
   messages: Message[];
   systemPrompt: string;
   messageWithContext: string;
-  userSettings: any;
+  toolIntentRequest: string;
+  userSettings: IUserSettings | null;
   currentMode: ChatMode;
   conversationType?: ConversationType;
   permissionMode?: PermissionMode;
@@ -124,11 +144,11 @@ interface SavedToolConfiguration {
 
 interface RequestScope {
   options: CoreChatOptions;
-  user: CoreChatOptions["context"] extends { user: infer U } ? U : any;
+  user: IUser | null | undefined;
   database: Database;
   repositories: RepositoryManager;
   projectContext: ProjectChatContext | null;
-  metaAssistant: MetaAssistantScope | null;
+  hasFixedProjectTaskTools: boolean;
   memoryScope: MemoryScope;
   isProUser: boolean;
   platform: Platform;
@@ -136,31 +156,23 @@ interface RequestScope {
 }
 
 export class RequestPreparer {
-  private repositories: RepositoryManager;
-
-  constructor(private env: any) {
-    this.repositories = new RepositoryManager(env);
-  }
+  constructor(private env: CoreChatOptions["env"]) {}
 
   private async resolveScope(options: CoreChatOptions): Promise<RequestScope> {
     const { platform = "api", mode = "normal" } = options;
     const user = options.context?.user;
     const database = options.context?.database ?? new Database(this.env);
     const repositories = options.context?.repositories ?? database.repositories;
-    const metaAssistant = options.context
-      ? await resolveMetaAssistantScope(options, repositories)
-      : null;
+    const poly = options.context ? await isAdmittedPolyRun(options, repositories) : false;
     const projectContext =
-      options.context && !metaAssistant
-        ? await resolveProjectChatContext(options.context, options)
-        : null;
-    const scopedOptions: CoreChatOptions = metaAssistant
+      options.context && !poly ? await resolveProjectChatContext(options.context, options) : null;
+    const scopedOptions: CoreChatOptions = poly
       ? {
           ...options,
-          conversation_type: "meta",
+          conversation_type: "poly",
+          poly: options.poly ?? {},
           store: true,
           system_prompt: undefined,
-          persona: undefined,
           metadata: undefined,
         }
       : {
@@ -174,13 +186,15 @@ export class RequestPreparer {
       database,
       repositories,
       projectContext,
-      metaAssistant,
+      hasFixedProjectTaskTools:
+        scopedOptions.durable_execution?.kind === "project_task" &&
+        scopedOptions.tool_selection_mode === "explicit",
       memoryScope: await resolveRunMemoryScope({
         options: scopedOptions,
         repositories,
         projectContext,
       }),
-      isProUser: user?.plan_id === "pro",
+      isProUser: hasProEntitlement(user),
       platform,
       mode,
     };
@@ -215,17 +229,47 @@ export class RequestPreparer {
   }
 
   private resolveRequestTools(scope: RequestScope) {
-    if (scope.metaAssistant) {
-      return getMetaAssistantToolNames();
-    }
-
     return resolveRequestFunctionToolNames({
-      projectTools: scope.projectContext?.enabledTools,
+      projectTools:
+        scope.projectContext && scope.hasFixedProjectTaskTools
+          ? [...scope.projectContext.enabledTools, GOAL_COMPLETE_TOOL_NAME]
+          : scope.projectContext?.enabledTools,
       requestedToolNames: scope.options.enabled_tools,
       grantedToolNames: resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools,
       toolSelectionMode: scope.options.tool_selection_mode,
       user: scope.user,
     });
+  }
+
+  private async resolveBriefMemoryScope(scope: RequestScope) {
+    const { options, repositories, memoryScope } = scope;
+
+    if (!options.context || options.store === false) {
+      return memoryScope;
+    }
+
+    const storedConversation = await repositories.conversations.getConversation(
+      options.completion_id,
+    );
+
+    if (!storedConversation) {
+      return memoryScope;
+    }
+
+    const { document: briefDocument } = await getConversationBrief(
+      options.context,
+      options.completion_id,
+    );
+
+    return briefDocument
+      ? bindRunMemoryDocument(memoryScope, {
+          documentId: briefDocument.id,
+          access: "read-write",
+          scopeType: briefDocument.scopeType,
+          scopeId: briefDocument.scopeId,
+          conversationId: options.completion_id,
+        })
+      : memoryScope;
   }
 
   private resolveConnectedConnectorProviders(scope: RequestScope) {
@@ -324,7 +368,7 @@ export class RequestPreparer {
     }
 
     const scope = await this.resolveScope(options);
-    const { user, database, repositories, projectContext, memoryScope, platform, mode } = scope;
+    const { user, database, repositories, projectContext, platform, mode } = scope;
 
     const modelConfigsPromise = buildModelConfigs(scope.options, validationContext);
     const userSettingsPromise = this.resolveUserSettings(scope);
@@ -336,8 +380,8 @@ export class RequestPreparer {
       user?.id,
     );
     const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
-
-    const finalMessage = this.resolveMessageText(validationContext);
+    const activeGoalPromise = loadActiveGoal(scope.options);
+    const effectiveMemoryScopePromise = this.resolveBriefMemoryScope(scope);
 
     const [modelConfigs, userSettings, savedToolConfigurations, connectedConnectorProviders] =
       await Promise.all([
@@ -347,9 +391,7 @@ export class RequestPreparer {
         connectedConnectorProvidersPromise,
       ]);
 
-    const memoryPolicy = scope.metaAssistant
-      ? resolveMemoryPolicy({ user, userSettings, store: false })
-      : resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
+    const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
@@ -359,6 +401,7 @@ export class RequestPreparer {
       permissionMode = resolveEffectivePermissionMode(
         scope.options.permission_mode,
         await this.resolveStoredPermissionMode(scope),
+        primaryModelConfig.agent.permissionModes,
       );
 
       const unavailableReason = getPermissionModeUnavailableReason(
@@ -407,8 +450,24 @@ export class RequestPreparer {
           : {}),
     });
 
+    const completionId = scope.options.completion_id;
+    const isApprovalResolution = isBuiltInToolApprovalResolution(scope.options.options);
     const shouldStoreMessages =
-      (scope.options.store ?? false) && scope.options.conversation_history_write_mode !== "append";
+      (scope.options.store ?? false) &&
+      scope.options.conversation_history_write_mode !== "append" &&
+      !isApprovalResolution;
+    let toolIntentRequest = messageWithContext;
+
+    if (completionId && isApprovalResolution) {
+      toolIntentRequest = resolveToolIntentRequest(
+        await conversationManager.get(completionId),
+        messageWithContext,
+      );
+    }
+
+    const finalMessage = isApprovalResolution
+      ? toolIntentRequest
+      : this.resolveMessageText(validationContext);
 
     const storeMessagesTask = shouldStoreMessages
       ? storeUserTurn({
@@ -431,7 +490,7 @@ export class RequestPreparer {
     ]);
     const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
-      isRecipeExecutionRequest(scope.options) || Boolean(scope.metaAssistant);
+      isRecipeExecutionRequest(scope.options) || scope.hasFixedProjectTaskTools;
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(
@@ -443,38 +502,21 @@ export class RequestPreparer {
           scopedSkillCatalog?.listDefinitions(),
         );
 
-    const activeGoal = await loadActiveGoal(scope.options);
-    let effectiveMemoryScope = memoryScope;
-    let briefDocument: Awaited<ReturnType<typeof getConversationBrief>>["document"] = null;
-
-    if (scope.options.context && scope.options.store !== false) {
-      const storedConversation = await repositories.conversations.getConversation(
-        scope.options.completion_id,
-      );
-
-      if (storedConversation) {
-        const brief = await getConversationBrief(
-          scope.options.context,
-          scope.options.completion_id,
-        );
-
-        briefDocument = brief.document;
-
-        if (briefDocument) {
-          effectiveMemoryScope = bindRunMemoryDocument(memoryScope, {
-            documentId: briefDocument.id,
-            access: "read-write",
-            scopeType: briefDocument.scopeType,
-            scopeId: briefDocument.scopeId,
-            conversationId: scope.options.completion_id,
-          });
-        }
-      }
-    }
+    const perMessageSkillsPromise = hasFixedToolScope
+      ? Promise.resolve([])
+      : selectPerMessageSkills({
+          env: scope.options.env,
+          user: user ?? undefined,
+          conversationId: scope.options.completion_id,
+          message: finalMessage,
+          candidates: listPerMessageSkillCandidates(skills, scopedSkillCatalog),
+        });
+    const activeGoal = await activeGoalPromise;
+    const effectiveMemoryScope = await effectiveMemoryScopePromise;
 
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,
-      repositories: this.repositories,
+      repositories,
       sanitisedMessages,
       finalMessage,
       primaryModel,
@@ -490,43 +532,66 @@ export class RequestPreparer {
       await storeMessagesTask;
     }
 
-    let systemPrompt = await systemPromptTask;
-    let contextDocuments: ChatContextDocument[] = briefDocument
-      ? [
-          {
-            id: briefDocument.id,
-            kind: "conversation_brief",
-            revision: briefDocument.revision,
-            access: "read-write",
-          },
-        ]
-      : [];
-    const runMemoryDocuments = await loadRunMemoryDocuments(effectiveMemoryScope, repositories);
-
-    systemPrompt = appendConversationBriefContext(systemPrompt, briefDocument);
-
-    const briefDocumentId = contextDocuments[0]?.id;
-    const additionalMemoryDocuments = runMemoryDocuments.filter(
-      ({ document }) => document.id !== briefDocumentId,
+    const baseSystemPrompt = await systemPromptTask;
+    const runMemoryDocuments = await loadRunMemoryDocuments(
+      effectiveMemoryScope,
+      scope.options.context,
     );
+    const memoryProjection = projectRunMemory(
+      runMemoryDocuments,
+      primaryModelConfig.contextWindow,
+      baseSystemPrompt,
+    );
+    const contextDocuments = memoryProjection.documents;
+    const systemPrompt = [baseSystemPrompt, memoryProjection.section].filter(Boolean).join("\n\n");
+    const skillTools = hasFixedToolScope
+      ? enabledTools
+      : mergeSkillLoadToolName({ enabledTools: enabledTools ?? [], skills });
+    let preparedTools = mergeEnabledMemoryToolNames({
+      enabledTools: skillTools,
+      policy: memoryPolicy,
+      hasBoundDocuments: runMemoryDocuments.length > 0,
+      fixedToolScope: hasFixedToolScope,
+    });
 
-    systemPrompt = appendBoundMemoryContext(systemPrompt, additionalMemoryDocuments);
-    contextDocuments = [
-      ...contextDocuments,
-      ...additionalMemoryDocuments.map(({ access, document }) => ({
-        id: document.id,
-        kind: "memory" as const,
-        revision: document.revision,
-        access,
-      })),
-    ];
+    if (!hasFixedToolScope) {
+      const goalTools = mergeEnabledGoalToolNames({
+        enabledTools: preparedTools,
+        isProUser: scope.isProUser,
+      });
+
+      preparedTools = mergeSkillSuggestedToolNames({
+        enabledTools: goalTools,
+        skills,
+        deferSuggestedTools: enabledTools !== undefined,
+      });
+    }
+
+    const toolOptions = this.resolveToolOptions(scope, savedToolConfigurations, enabledTools);
+
+    preparedTools = mergeNativeMcpToolNames({
+      enabledTools: preparedTools,
+      useNativeGateway: await shouldUseNativeMcpGateway({
+        context: scope.options.context,
+        enabledTools: preparedTools,
+        servers: readMcpGatewayServers(toolOptions?.mcp_servers),
+        supportsHostedMcp: primaryModelConfig.supportsMcp === true,
+      }),
+    });
+
+    if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
+      toolIntentRequest = resolveToolIntentRequest(
+        await conversationManager.get(completionId),
+        messageWithContext,
+      );
+    }
 
     const messages = await buildProviderContext({
       conversationManager,
       completionId: scope.options.completion_id,
       shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
-      messageWithContext,
+      messageWithContext: renderPerMessageSkills(await perMessageSkillsPromise, messageWithContext),
     });
 
     return {
@@ -539,31 +604,15 @@ export class RequestPreparer {
       messages,
       systemPrompt,
       messageWithContext,
+      toolIntentRequest,
       userSettings,
       currentMode: mode,
       conversationType: scope.options.conversation_type,
       permissionMode,
       isProUser: scope.isProUser,
-      enabledTools: hasFixedToolScope
-        ? [...(enabledTools ?? [])]
-        : mergeSkillSuggestedToolNames({
-            enabledTools: mergeEnabledGoalToolNames({
-              enabledTools: mergeEnabledMemoryToolNames({
-                enabledTools: mergeSkillLoadToolName({ enabledTools, skills }),
-                user,
-                userSettings,
-                store: scope.options.store,
-              }),
-              isProUser: scope.isProUser,
-            }),
-            skills,
-            deferSuggestedTools:
-              enabledTools !== undefined ||
-              ((primaryModelConfig.supportsToolSearch ?? false) &&
-                (enabledTools?.includes("tool_search") ?? false)),
-          }),
+      enabledTools: preparedTools,
       activeGoal,
-      toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
+      toolOptions,
       requestOptions: scope.options.options,
       memoryScope: effectiveMemoryScope,
       connectedConnectorProviders,

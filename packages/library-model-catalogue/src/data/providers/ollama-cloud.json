@@ -109,6 +109,7 @@
       "overrides": {
         "name": "glm-5.1",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
@@ -125,8 +126,10 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 976000,
+        "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -155,6 +158,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -167,15 +178,7 @@
       "overrides": {
         "name": "kimi-k2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "maxTokens": 262144,
         "strengths": [
           "vision",
           "document",
@@ -200,21 +203,13 @@
       "overrides": {
         "name": "kimi-k2.6",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "April 20, 2026",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -259,6 +254,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
+        "speed": 2,
         "lastUpdated": "July 27, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -272,7 +268,7 @@
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -289,14 +285,13 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "minimax-m3": {
@@ -312,7 +307,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 31, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -340,6 +335,7 @@
       "unset": [
         "contextComplexity",
         "reliability",
+        "supportsResponseFormat",
         "supportsTemperature"
       ]
     },
@@ -350,16 +346,24 @@
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nemotron-3-super": {
       "model": "nemotron/nemotron-3-super",
       "matchingModel": "nemotron-3-super",
       "overrides": {
+        "name": "nemotron-3-super",
+        "maxTokens": 65536,
         "lastUpdated": "March 12, 2026",
         "costPer1kInputTokens": 0.000015,
         "costPer1kOutputTokens": 0.0006
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nemotron-3-ultra": {
       "model": "nemotron/nemotron-3-ultra",
@@ -370,8 +374,18 @@
         "maxTokens": 128000,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.003
-      }
+        "costPer1kOutputTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.5:397b": {
       "model": "qwen/qwen3-5-397b",
@@ -390,7 +404,9 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -400,9 +416,34 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
+        "maxTokens": 384000,
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "mistral-large-4": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistral-large-4",
+      "overrides": {
+        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "isFeatured": true,
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.00136,
+        "costPer1kOutputTokens": 0.00418,
         "supportsAttachments": true
       }
     }

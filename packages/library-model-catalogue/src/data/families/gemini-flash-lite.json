@@ -2,6 +2,13 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1048576,
+    "strengths": [
+      "vision",
+      "document",
+      "audio",
+      "video",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
@@ -30,13 +37,6 @@
         },
         "reliability": 3,
         "releaseDate": "June 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -46,7 +46,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1088,
+              "value": 1085,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -100,7 +100,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1088,
+              "value": 1085,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -126,13 +126,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "reliability": 1,
         "knowledgeCutoffDate": "January 31, 2025",
         "releaseDate": "September 25, 2025",
@@ -144,10 +137,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.1,
+          "intelligenceIndex": 9.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -155,13 +148,26 @@
       "defaults": {
         "name": "Gemini 3.1 Flash Lite",
         "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
+          "intelligenceIndex": 15.6,
           "codingIndex": 34.7,
-          "agenticIndex": 6.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -182,13 +188,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "reasoningConfig": {
@@ -202,10 +201,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
+          "intelligenceIndex": 15.6,
           "codingIndex": 34.7,
-          "agenticIndex": 6.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -242,41 +241,13 @@
         "name": "Gemini 3.1 Flash Lite Preview",
         "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
         "reliability": 1,
         "releaseDate": "March 3, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
+          "intelligenceIndex": 15.6,
           "codingIndex": 34.7,
-          "agenticIndex": 6.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -297,6 +268,7 @@
             "text"
           ]
         },
+        "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
@@ -307,6 +279,12 @@
             "high"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.2,
+          "codingIndex": 49.3,
+          "agenticIndex": 14.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -327,6 +305,7 @@
             "text"
           ]
         },
+        "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
@@ -338,6 +317,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 22.2,
+          "codingIndex": 49.3,
+          "agenticIndex": 14.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -361,8 +346,11 @@
     },
     "nano-banana-2-lite": {
       "defaults": {
+        "name": "Nano Banana 2 Lite",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 65536,
+        "contextComplexity": 3,
+        "reliability": 3,
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -371,6 +359,22 @@
             "high"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1096,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
         }
       }
     }

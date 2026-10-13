@@ -3,6 +3,7 @@ import {
   ahead,
   at,
   insert,
+  sqlValue,
   seedId,
   SEED_MODEL,
   SEED_MODEL_SMALL,
@@ -1376,12 +1377,13 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
         created_at: at({ hours: 1, minutes: 59 }),
         updated_at: at({ minutes: 30 }),
       }),
-      insert("conversation_handle", {
+      insert("resource_grant", {
+        kind: "conversation",
         id: `handle_${seedId("delegation", kind)}`,
         conversation_id: parent.conversationId,
         delegation_id: seedId("delegation", kind),
         granted_by: "spawn",
-        granted_at: at({ hours: 1, minutes: 59 }),
+        created_at: at({ hours: 1, minutes: 59 }),
         expires_at: ahead({ hours: 22 }),
         revoked_at: state === "done" ? at({ minutes: 30 }) : null,
       }),
@@ -1406,9 +1408,12 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       created_at: at({ hours: 1, minutes: 59 }),
       updated_at: at({ hours: 1, minutes: 57 }),
     }),
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: seedId("output", "backpressure-sources"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       conversation_id: researcherChild.conversationId,
       capability_id: "documents",
       kind: "document",
@@ -1426,7 +1431,8 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       revision_created_at: at({ minutes: 32 }),
       revision_operation: "created",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: seedId("output", "backpressure-sources"),
       revision: 1,
       title: "WebSocket back-pressure sources",
@@ -1449,8 +1455,8 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       title: scenario(
         "Meta assistant",
         "Ask Poly",
-        "Press the Ask Poly button (⌘J) and ask 'find my dinner plan'. Poly navigates to the conversation.",
-        "The meta thread shows navigation results and clicking one opens the destination.",
+        "Press Ask Poly (⌘J). Try: ‘Find the chat titled Plan a week of dinners, read the full conversation, and tell me the follow-up change to the shopping list.’ Then try opening Autumn launch, checking what is waiting on you in Work, or starting a project conversation with a prefilled first message.",
+        "Poly searches seeded conversations and projects, reads a prior chat, lists project attention, and opens a new project conversation with your draft ready to send.",
       ),
       type: "meta",
       createdAt: at({ days: 2, hours: 2 }),
@@ -1460,12 +1466,12 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     [
       {
         role: "user",
-        content: "Find the conversation where I planned dinners.",
+        content: "Find the conversation titled Plan a week of dinners.",
       },
       ...toolCall({
         name: "find_places",
         callId: "call_find_1",
-        input: { query: "dinner plan" },
+        input: { query: "Plan a week of dinners" },
         result: {
           places: [
             {
@@ -1557,20 +1563,16 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
   const cookingGroup = seedId("group", "cooking");
 
   statements.push(
-    insert("conversation_group", {
+    insert("resource_collection", {
+      collection_type: "conversation",
       id: cookingGroup,
       owner_user_id: OWNER.id,
-      name: "Cooking",
+      title: "Cooking",
       normalised_name: "cooking",
       created_by_user_id: OWNER.id,
       created_at: at({ days: 7 }),
     }),
-    insert("conversation_group_membership", {
-      conversation_id: plain.conversationId,
-      group_id: cookingGroup,
-      assigned_by_user_id: OWNER.id,
-      created_at: at({ days: 6 }),
-    }),
+    `UPDATE conversation SET group_id = ${sqlValue(cookingGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(at({ days: 6 }))} WHERE id = ${sqlValue(plain.conversationId)};`,
   );
 
   for (const [slug, title, createdAt, flags] of [
@@ -1611,12 +1613,7 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     );
 
     statements.push(
-      insert("conversation_group_membership", {
-        conversation_id: built.conversationId,
-        group_id: cookingGroup,
-        assigned_by_user_id: OWNER.id,
-        created_at: createdAt,
-      }),
+      `UPDATE conversation SET group_id = ${sqlValue(cookingGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(createdAt)} WHERE id = ${sqlValue(built.conversationId)};`,
     );
   }
 
@@ -1722,10 +1719,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
   );
 
   statements.push(
-    insert("message_user_state", {
+    insert("user_resource_state", {
+      resource_type: "message",
       id: seedId("saved", "machine-reply"),
       user_id: OWNER.id,
-      conversation_id: saved.conversationId,
+      saved_conversation_id: saved.conversationId,
       message_id: saved.messageIds[5],
       note: "Good example of the machine relay working end to end.",
       saved_at: at({ days: 1, hours: 19 }),
@@ -1925,22 +1923,25 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
     const documentId = seedId("memory", name);
 
     statements.push(
-      insert("memory_document", {
+      insert("resource", {
+        resource_type: "memory",
+        kind: "memory",
         id: documentId,
         scope_type: "personal",
         scope_id: String(OWNER.id),
-        name,
+        title: name,
         content,
         revision: 1,
-        created_by: OWNER.id,
+        created_by_user_id: OWNER.id,
         created_at: at({ days: 10 }),
         updated_at: at({ days: 1 }),
       }),
-      insert("memory_document_revision", {
+      insert("resource_revision", {
+        resource_type: "memory",
         id: `${documentId}-r1`,
         document_id: documentId,
         revision: 1,
-        content,
+        text_content: content,
         change_note: "Seeded",
         created_by: OWNER.id,
         created_at: at({ days: 10 }),
@@ -1952,9 +1953,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
   const canvasId = seedId("output", "canvas-hero");
 
   statements.push(
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: noteId,
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       capability_id: "notes",
       kind: "note",
       title: "Release notes draft",
@@ -1971,7 +1975,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       revision_created_at: at({ days: 1 }),
       revision_operation: "updated",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: noteId,
       revision: 1,
       title: "Release notes draft",
@@ -1982,7 +1987,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 4 }),
       operation: "created",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: noteId,
       revision: 2,
       title: "Release notes draft",
@@ -1996,7 +2002,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1 }),
       operation: "updated",
     }),
-    insert("output_share", {
+    insert("resource_grant", {
+      kind: "output",
       id: seedId("share", "release-notes"),
       output_id: noteId,
       token_hash: sha256Hex("polychat-seed-share-release-notes"),
@@ -2004,9 +2011,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_by_user_id: OWNER.id,
       created_at: at({ days: 1 }),
     }),
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: canvasId,
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       conversation_id: seedId("chat", "media-done"),
       capability_id: "canvas",
       group_id: "black-forest-labs/flux-2-pro",
@@ -2035,7 +2045,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1, hours: 9 }),
       updated_at: at({ days: 1, hours: 8, minutes: 58 }),
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: canvasId,
       revision: 1,
       title: "Parrot on a laptop",
@@ -2051,9 +2062,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
   const collectionId = seedId("collection", "reading");
 
   statements.push(
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "d1-limits"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "url",
       title: "Cloudflare D1 limits",
       status: "available",
@@ -2063,9 +2077,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1, hours: 5 }),
       updated_at: at({ days: 1, hours: 5 }),
     }),
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "style-guide"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "text",
       title: "House style guide",
       status: "available",
@@ -2075,9 +2092,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 30 }),
       updated_at: at({ days: 30 }),
     }),
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "failed-upload"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "file",
       title: "quarterly-numbers.xlsx",
       status: "failed",
@@ -2088,7 +2108,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 2 }),
       updated_at: at({ days: 2 }),
     }),
-    insert("source_collection", {
+    insert("resource_collection", {
+      collection_type: "source",
       id: collectionId,
       created_by_user_id: OWNER.id,
       title: "Reading list",
@@ -2097,12 +2118,14 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 3 }),
       updated_at: at({ days: 1 }),
     }),
-    insert("source_collection_member", {
+    insert("resource_link", {
+      kind: "source_collection",
       collection_id: collectionId,
       source_id: seedId("source", "d1-limits"),
       created_at: at({ days: 1 }),
     }),
-    insert("source_collection_member", {
+    insert("resource_link", {
+      kind: "source_collection",
       collection_id: collectionId,
       source_id: seedId("source", "style-guide"),
       created_at: at({ days: 3 }),
@@ -2116,7 +2139,16 @@ export function seedGuideMarkdown() {
   const lines = [
     "# Seed debugging guide",
     "",
-    "Every seeded conversation is tagged with its scenario. Work through them in order.",
+    "Start with the Ask Poly prompts below. They use seeded conversations and project data, so they work without connecting external accounts.",
+    "",
+    "## Ask Poly: try these now",
+    "",
+    "- **Find and read a past chat:** ‘Find the chat titled Plan a week of dinners, read the full conversation, and tell me the follow-up change to the shopping list.’",
+    "- **Navigate to a project:** ‘Open the Autumn launch project.’",
+    "- **Surface work that needs you:** ‘What is waiting on me across Work? Summarise the blocked, approval, and review items.’",
+    "- **Start project work:** ‘In Autumn launch, start a conversation called Release readiness and prefill this first message: Review the September release notes draft. Separate verified entries from anything still pending.’",
+    "",
+    "The last prompt opens a project conversation with the first message ready in the composer; it does not send it. Every seeded conversation is also tagged with its scenario below.",
     "",
   ];
 

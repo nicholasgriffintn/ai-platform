@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { isTaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { projectTaskRunDispatchPayloadSchema } from "@ngriffin_uk/polychat-schemas";
 
@@ -27,7 +28,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
       return { status: "error", message: "Invalid project task run payload" };
     }
 
-    if (message.user_id !== payload.data.runnerIdentityUserId) {
+    if (!ownsResource(payload.data.runnerIdentityUserId, message.user_id)) {
       return {
         status: "error",
         message: "Project task run identity does not match the queued task owner",

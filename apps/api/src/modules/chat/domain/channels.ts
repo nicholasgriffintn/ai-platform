@@ -36,10 +36,20 @@ const TELEGRAM_CHANNEL_PROFILE: InboundChannelProfile = {
   historyLimit: 12,
 };
 
+const EMAIL_CHANNEL_PROFILE: InboundChannelProfile = {
+  id: "email",
+  label: "Email",
+  conversationPrefix: "email",
+  tools: ["trigger_recipe", "get_task_status", "list_tasks", "get_weather"],
+  maxSteps: 6,
+  historyLimit: 12,
+};
+
 export const INBOUND_CHANNEL_PROFILES: Record<InboundChannelId, InboundChannelProfile> = {
   sms: SMS_CHANNEL_PROFILE,
   slack: SLACK_CHANNEL_PROFILE,
   telegram: TELEGRAM_CHANNEL_PROFILE,
+  email: EMAIL_CHANNEL_PROFILE,
 };
 
 export function getInboundChannelProfile(id: InboundChannelId): InboundChannelProfile {

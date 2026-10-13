@@ -1,3 +1,4 @@
+import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   CreateSourceCollectionInput,
   CreateSourceInput,
@@ -7,7 +8,7 @@ import type {
   UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
@@ -93,7 +94,7 @@ export async function requireSourceAccess(
   }
 
   if (!source.project_id) {
-    if (source.created_by_user_id !== userId) {
+    if (!ownsResource(userId, source.created_by_user_id)) {
       throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -102,7 +103,15 @@ export async function requireSourceAccess(
 
   const { role } = await requireProjectAccess(context, source.project_id);
 
-  if (mutate && role === "member" && source.created_by_user_id !== userId) {
+  const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
+    actorId: String(userId),
+    ownerId: String(source.created_by_user_id),
+    scope: "project",
+    member: true,
+    role,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the source creator or a project admin can change it",
       ErrorType.FORBIDDEN,
@@ -113,12 +122,16 @@ export async function requireSourceAccess(
   return source;
 }
 
-async function requireSourcesAccess(
+export async function requireSourcesAccess(
   context: ServiceContext,
   userId: number,
-  sourceIds: string[],
+  sourceIds: readonly string[],
   validate?: (source: SourceRecord) => void,
 ): Promise<SourceRecord[]> {
+  if (sourceIds.length === 0) {
+    return [];
+  }
+
   const records = await context.repositories.sources.getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
   const verifiedProjects = new Set<string>();
@@ -132,7 +145,7 @@ async function requireSourcesAccess(
     }
 
     if (!source.project_id) {
-      if (source.created_by_user_id !== userId) {
+      if (!ownsResource(userId, source.created_by_user_id)) {
         throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
       }
     } else if (!verifiedProjects.has(source.project_id)) {
@@ -160,7 +173,7 @@ async function requireCollectionAccess(
   }
 
   if (!collection.project_id) {
-    if (collection.created_by_user_id !== userId) {
+    if (!ownsResource(userId, collection.created_by_user_id)) {
       throw new AssistantError("Source collection not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -169,7 +182,15 @@ async function requireCollectionAccess(
 
   const { role } = await requireProjectAccess(context, collection.project_id);
 
-  if (mutate && role === "member" && collection.created_by_user_id !== userId) {
+  const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
+    actorId: String(userId),
+    ownerId: String(collection.created_by_user_id),
+    scope: "project",
+    member: true,
+    role,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the collection creator or a project admin can change it",
       ErrorType.FORBIDDEN,
@@ -184,6 +205,7 @@ export async function createSource(
   context: ServiceContext,
   userId: number,
   input: CreateSourceInput,
+  options: { id?: string } = {},
 ): Promise<Source> {
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
@@ -197,7 +219,7 @@ export async function createSource(
     if (
       !conversation ||
       conversation.project_id !== (input.projectId ?? null) ||
-      (!input.projectId && conversation.user_id !== userId)
+      (!input.projectId && !ownsResource(userId, conversation.user_id))
     ) {
       throw new AssistantError("Conversation not found in source scope", ErrorType.NOT_FOUND, 404);
     }
@@ -208,12 +230,13 @@ export async function createSource(
       input.connectionId,
     );
 
-    if (!connection || connection.user_id !== userId) {
+    if (!connection || !ownsResource(userId, connection.user_id)) {
       throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
     }
   }
 
-  const created = await context.repositories.sources.createSource({
+  const { source, created } = await context.repositories.sources.createSourceWithOutcome({
+    id: options.id,
     createdByUserId: userId,
     projectId: input.projectId,
     conversationId: input.conversationId,
@@ -232,17 +255,17 @@ export async function createSource(
     byteSize: input.file?.byteSize,
   });
 
-  if (created.project_id) {
-    await recordProjectAudit(context, created.project_id, {
+  if (created && source.project_id) {
+    await recordProjectAudit(context, source.project_id, {
       actorUserId: userId,
       action: "source.created",
       targetType: "source",
-      targetId: created.id,
-      metadata: { kind: created.kind },
+      targetId: source.id,
+      metadata: { kind: source.kind },
     });
   }
 
-  return formatSource(created);
+  return formatSource(source);
 }
 
 export async function getSource(context: ServiceContext, userId: number, sourceId: string) {
@@ -272,6 +295,25 @@ export async function updateSource(
   input: UpdateSourceInput,
 ): Promise<Source> {
   const existing = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (parseJsonRecord(existing.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "Task snapshots are immutable. Import a new revision instead.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (
+    existing.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(existing.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Manage this document through its knowledge sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (
     existing.kind === "memory" &&
@@ -309,6 +351,25 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   const source = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (parseJsonRecord(source.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "This source is retained as task evidence",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (
+    source.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(source.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Pause its knowledge sync to exclude managed documents",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (source.kind === "memory") {
     const metadata = safeParseJson<Record<string, unknown>>(source.metadata);

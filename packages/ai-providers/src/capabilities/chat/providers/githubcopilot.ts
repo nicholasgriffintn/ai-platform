@@ -1,5 +1,5 @@
+import { randomHex, randomUUIDLike } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { randomHex, randomUUIDLike } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ChatCompletionParameters } from "../../../types/index.js";
 import { BaseProvider } from "./base.js";

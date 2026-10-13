@@ -19,6 +19,7 @@ import packageJson from "../package.json";
 import { registerApiRoutes } from "./app";
 import { API_LOCAL_HOST, API_PROD_HOST } from "./config/app";
 import { serviceContextMiddleware } from "./infrastructure/context/serviceContext";
+import { withRequestDatabase } from "./infrastructure/database/request-session";
 import { isAllowedOrigin } from "./infrastructure/http/origins";
 import { ResponseFactory } from "./infrastructure/http/ResponseFactory";
 import { addRoute } from "./infrastructure/http/routeBuilder";
@@ -29,7 +30,9 @@ import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
+import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { SandboxRunCoordinator } from "./modules/apps/infrastructure/sandbox/run-coordinator/object";
+import { receiveChannelEmail } from "./modules/channels/application/email-intake";
 import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
 import { handleGetMetrics } from "./modules/metrics/application/getMetrics";
@@ -38,6 +41,7 @@ import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/o
 import { QueueExecutor } from "./modules/tasks/application/QueueExecutor";
 import { workflows } from "./modules/tasks/application/registry";
 import type { TaskMessage } from "./modules/tasks/application/types";
+import type { InfraUsageQueueMessage } from "./modules/usage/application/infra-usage-queue";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
@@ -85,6 +89,8 @@ app.use("*", (c, next) => {
 app.use(securityHeaders());
 
 app.use("*", loggerMiddleware);
+
+app.use("*", serverTimingMiddleware);
 
 app.use("*", infraMeteringMiddleware);
 
@@ -307,7 +313,10 @@ const handler = {
       hasLoggedStart = true;
     }
 
-    return app.fetch(request, env, ctx);
+    return app.fetch(request, withRequestDatabase(env), ctx);
+  },
+  async email(message: ForwardableEmailMessage, env: IEnv): Promise<void> {
+    await receiveChannelEmail(withRequestDatabase(env), message);
   },
   async scheduled(event: ScheduledController, env: IEnv): Promise<void> {
     await workflows.runCron(env, event);
@@ -315,7 +324,7 @@ const handler = {
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
     await QueueExecutor.respondToCronQueue(env, {
       ...batch,
-      messages: batch.messages as Message<TaskMessage>[],
+      messages: batch.messages as Message<TaskMessage | InfraUsageQueueMessage>[],
     });
   },
 } satisfies ExportedHandler<IEnv>;
@@ -330,3 +339,5 @@ export {
   SandboxRunCoordinator,
   UserSyncCoordinator,
 };
+
+export { SiteRuntime } from "./modules/sites/infrastructure/runtime";

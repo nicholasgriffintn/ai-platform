@@ -11,6 +11,7 @@ import { readResponseTextWithinLimit } from "@ngriffin_uk/polychat-utility-serve
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
+import { OpenAIAgentsClient } from "~/infrastructure/providers/agents/OpenAIAgentsClient";
 import { resolveProviderApiKey } from "~/infrastructure/providers/credentials";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
@@ -21,7 +22,6 @@ import {
 } from "../hostedSandboxExecution";
 import type { SandboxProvider, SandboxProviderExecuteOptions } from "../index";
 import { OpenAIAgentEventTranslator } from "./openaiAgentEvents";
-import { OpenAIAgentsClient } from "./openaiAgentsClient";
 import { buildOpenAIAgentsSessionBody } from "./openaiAgentsSession";
 
 const logger = getLogger({ prefix: "providers/sandbox/openai-agents" });

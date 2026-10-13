@@ -2,12 +2,39 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-const naturalTextCollator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: "base",
-});
+export interface TextMatchRange {
+  start: number;
+  end: number;
+}
+
+export function findTextMatchRanges(value: string, terms: readonly string[]): TextMatchRange[] {
+  const alternatives = [
+    ...new Set(terms.map((term) => term.trim()).filter((term) => term.length > 1)),
+  ]
+    .sort((left, right) => right.length - left.length)
+    .map(escapeRegExp);
+
+  if (alternatives.length === 0) {
+    return [];
+  }
+
+  const matcher = new RegExp(alternatives.join("|"), "giu");
+  const ranges: TextMatchRange[] = [];
+
+  for (const match of value.matchAll(matcher)) {
+    if (match.index !== undefined) {
+      ranges.push({ start: match.index, end: match.index + match[0].length });
+    }
+  }
+
+  return ranges;
+}
+
+let naturalTextCollator: Intl.Collator | undefined;
 
 export function compareNaturalText(left: string, right: string): number {
+  naturalTextCollator ??= new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
   return naturalTextCollator.compare(left, right);
 }
 
@@ -27,8 +54,14 @@ export function splitNonEmptyLines(value: string): string[] {
 
 export const parseCommaSeparatedTags = parseCommaSeparatedList;
 
+export function splitWords(text: string): string[] {
+  const trimmed = text.trim();
+
+  return trimmed ? trimmed.split(/\s+/) : [];
+}
+
 export function getWordCount(text: string): number {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
+  return splitWords(text).length;
 }
 
 export function getCharCount(text: string): number {
@@ -59,6 +92,14 @@ export function titleCaseSlug(value: string): string {
     .filter(Boolean)
     .map(capitaliseFirst)
     .join(" ");
+}
+
+export function normaliseComparableText(value: string): string {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
 }
 
 export function normalizeStatus(status?: string): string {
@@ -168,4 +209,30 @@ export function decodeXmlEntities(value: string): string {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&");
+}
+
+export function excerptAround(text: string, terms: readonly string[], maxLength: number): string {
+  const compact = text.replace(/\s+/g, " ").trim();
+
+  if (compact.length <= maxLength) {
+    return compact;
+  }
+
+  const lowered = compact.toLowerCase();
+  const matchIndex = terms
+    .map((term) => lowered.indexOf(term.toLowerCase()))
+    .filter((index) => index >= 0)
+    .reduce((earliest, index) => Math.min(earliest, index), Number.POSITIVE_INFINITY);
+  const anchor = Number.isFinite(matchIndex) ? matchIndex : 0;
+  const start = Math.max(
+    0,
+    Math.min(anchor - Math.floor(maxLength / 3), compact.length - maxLength),
+  );
+  const end = start + maxLength;
+
+  return `${start > 0 ? "…" : ""}${compact.slice(start, end).trim()}${end < compact.length ? "…" : ""}`;
+}
+
+export function quoteShellArgument(value: string): string {
+  return `'${value.replace(/'/g, `'"'"'`)}'`;
 }

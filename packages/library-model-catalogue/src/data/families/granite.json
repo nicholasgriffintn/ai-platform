@@ -9,6 +9,8 @@
         "text"
       ]
     },
+    "contextComplexity": 4,
+    "reliability": 1,
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -31,16 +33,14 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 131000,
         "maxTokens": 117900,
-        "contextComplexity": 4,
-        "reliability": 1,
         "releaseDate": "October 20, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 2.4,
+          "intelligenceIndex": 5.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -53,15 +53,13 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "releaseDate": "April 30, 2026",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": 6.6,
           "codingIndex": 9.5,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -71,6 +69,9 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 131072,
         "maxTokens": 117964,
+        "strengths": [
+          "tool_use"
+        ],
         "releaseDate": "August 31, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -80,6 +81,52 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.1,
+          "codingIndex": 22.4,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "ibm-granite-4-0-micro": {
+      "defaults": {
+        "name": "IBM: Granite 4.0 Micro",
+        "openWeights": false,
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 131000,
+        "maxTokens": 117900,
+        "releaseDate": "October 20, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "ibm-granite-4-2-8b": {
+      "defaults": {
+        "name": "IBM: Granite 4.2 8B",
+        "openWeights": false,
+        "description": "Granite 4.2 8B is a dense reasoning model from IBM. It is suited for mathematics, code generation, multilingual dialogue, and agentic workflows that need multi-step reasoning. It supports full, low-effort,...",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "strengths": [
+          "tool_use"
+        ],
+        "releaseDate": "August 31, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.1,
+          "codingIndex": 22.4,
+          "agenticIndex": 1.3,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

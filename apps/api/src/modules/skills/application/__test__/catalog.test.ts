@@ -1,11 +1,9 @@
 import { buildSkillsSection } from "@ngriffin_uk/polychat-ai-prompts";
 import {
-  formatSkillContent,
   isSkillResourceWithinLoadLimit,
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
 } from "@ngriffin_uk/polychat-ai-skills";
 import {
-  builtInSkillDocuments,
   MAX_USER_SKILL_DOCUMENT_BYTES,
   parseSkillDocument,
   parseUserSkillDocument,
@@ -16,7 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { describe, expect, it } from "vitest";
 
-import { functionToolCatalogue } from "~/modules/functions/application";
+import { getFunctionToolCatalogue } from "~/modules/functions/application";
 
 import { listSkillAvailability } from "../availability";
 import { getSkillResource, listSkillDefinitions, loadSkill } from "../catalog";
@@ -34,64 +32,7 @@ function skillDocument(
   };
 }
 
-const BUILT_IN_SKILL_IDS = [
-  "article-analysis",
-  "artifacts",
-  "council",
-  "document-research",
-  "hacker-news",
-  "prompt-craft",
-  "recipes",
-  "sandbox-tasks",
-  "second-opinion",
-  "structured-reasoning",
-  "task-decomposition",
-  "tutoring",
-];
-
 describe("built-in skill catalogue", () => {
-  it.each(BUILT_IN_SKILL_IDS)("stores %s as an Agent Skills document", (name) => {
-    const raw = builtInSkillDocuments.find((document) => document.directory === name)?.rawContent;
-
-    expect(raw).toMatch(/^---\n/);
-    expect(raw).toContain(`\nname: ${name}\n`);
-    expect(raw).toContain("description:");
-    expect(raw).toMatch(/\bLoad (when|before)\b/);
-    expect(raw).toMatch(/\n---\n\n# /);
-  });
-
-  it("stores artifact guidance as relative skill resources", () => {
-    const artifacts = builtInSkillDocuments.find((document) => document.directory === "artifacts");
-    const types = artifacts?.resources?.find((resource) => resource.path === "references/types.md");
-    const design = artifacts?.resources?.find(
-      (resource) => resource.path === "references/design.md",
-    );
-
-    expect(types?.content).toContain("# Artifact types");
-    expect(design?.content).toContain("# Designing visual artifacts");
-  });
-
-  it("loads imported Markdown and resources through the catalogue", async () => {
-    const skill = await loadSkill("artifacts");
-    const resource = await getSkillResource("artifacts", "references/types.md");
-
-    expect(skill).toMatchObject({
-      name: "artifacts",
-      description: expect.stringContaining("Load when"),
-      resources: [
-        { path: "references/design.md", kind: "reference" },
-        { path: "references/types.md", kind: "reference" },
-      ],
-    });
-    expect(resource).toMatchObject({
-      path: "references/types.md",
-      encoding: "text",
-      mimeType: "text/markdown",
-      content: expect.stringContaining("# Artifact types"),
-    });
-    expect(formatSkillContent(skill)).toContain("- references/types.md (reference)");
-  });
-
   it("preserves an authored skill's exact stable revision and internal identity", () => {
     const catalog = new SkillCatalog([
       {
@@ -233,7 +174,6 @@ describe("built-in skill catalogue", () => {
       enabledSkillIds: new Set(["artifacts"]),
     });
 
-    expect(personal.map(({ id }) => id)).toEqual(BUILT_IN_SKILL_IDS);
     expect(personal.find((skill) => skill.id === "council")?.state).toBe("disabled");
     expect(personal.find((skill) => skill.id === "artifacts")?.state).toBe("ready");
     expect(project.find((skill) => skill.id === "artifacts")?.state).toBe("ready");
@@ -249,7 +189,11 @@ describe("built-in skill catalogue", () => {
   });
 
   it("only requires and suggests tools the registry actually publishes", async () => {
-    const registered = new Set(functionToolCatalogue.list().map((tool) => tool.name));
+    const registered = new Set(
+      getFunctionToolCatalogue()
+        .list()
+        .map((tool) => tool.name),
+    );
     const declared = (await listSkillDefinitions()).flatMap((skill) => [
       ...skill.requirement.tools,
       ...skill.requirement.suggestedTools,

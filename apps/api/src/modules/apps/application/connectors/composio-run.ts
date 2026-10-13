@@ -22,6 +22,7 @@ import type { ComposioConnectorSessionRecord } from "~/modules/apps/infrastructu
 import {
   getSelectedRecipeConnectorAccountId,
   selectActiveRecipeConnectorAccount,
+  ensureRecipeConnectorAccountReference,
 } from "./accounts";
 import {
   assertComposioFileBridgeAvailable,
@@ -159,7 +160,14 @@ export async function discoverComposioRunTools(params: {
       allowedOperationIds: params.allowedOperationIds,
     });
 
-    return { ...discovery, sessionId: session.id };
+    const connection = await ensureRecipeConnectorAccountReference({
+      context: params.context,
+      userId: params.userId,
+      providerId: params.provider.id,
+      account: params.connectedAccount,
+    });
+
+    return { ...discovery, sessionId: session.id, connectionReferenceId: connection.id };
   } catch (error) {
     await deleteUnpersistedSession(params.context, remoteSessionId);
     throw error;
@@ -270,7 +278,7 @@ export async function executeComposioRunTool(params: {
       client: createComposioMountFileClient(params.context.env),
       sessionId: session.remoteSessionId,
       value: params.arguments,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       projectId: params.scope.projectId,
     });
 
@@ -294,7 +302,7 @@ export async function executeComposioRunTool(params: {
       client: createComposioMountFileClient(params.context.env),
       sessionId: session.remoteSessionId,
       value: result.data,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       projectId: params.scope.projectId,
     });
 
@@ -341,7 +349,7 @@ async function recordConnectorActivity(params: {
     await params.context.repositories.activities.createActivity({
       createdByUserId: params.userId,
       projectId: params.scope.projectId ?? null,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       capabilityId: `connector:${params.provider.id}`,
       groupId: params.context.connectorRunId,
       kind: "connector_operation",
@@ -445,14 +453,19 @@ export async function resolveComposioRunAccount(params: {
   return { connectedAccount, session };
 }
 
-export async function closeComposioConnectorRun(context: ServiceContext): Promise<void> {
+export async function closeComposioConnectorRun(
+  context: ServiceContext,
+  sessionHandles?: readonly string[],
+): Promise<void> {
   const trackedSessions = findTrackedSessions(context);
 
   if (!trackedSessions?.size) {
     return;
   }
 
-  const sessions = [...trackedSessions.values()];
+  const sessions = [...trackedSessions.values()].filter(
+    (session) => !sessionHandles || sessionHandles.includes(session.id),
+  );
 
   for (const session of sessions) {
     try {

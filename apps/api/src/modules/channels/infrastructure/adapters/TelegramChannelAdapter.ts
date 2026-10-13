@@ -1,13 +1,17 @@
 import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type {
-  ChannelAdapter,
-  ChannelIncoming,
-  ChannelReply,
-  ChannelVerification,
+import {
+  CHANNEL_TOP_LEVEL_THREAD,
+  type ChannelIncoming,
+  type ChannelReply,
+  type ChannelVerification,
+  type WebhookChannelAdapter,
 } from "~/modules/channels/application/ports/channel-adapter";
+import { getChannelSecrets } from "~/modules/channels/application/secrets";
+import type { IEnv } from "~/types";
 
+import { parseTelegramMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
@@ -16,7 +20,7 @@ const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
  * Telegram does not sign requests. It echoes a secret token chosen when the webhook is
  * registered, so that token is the only thing proving the request came from Telegram.
  */
-export class TelegramChannelAdapter implements ChannelAdapter {
+export class TelegramChannelAdapter implements WebhookChannelAdapter {
   readonly id = "telegram" as const;
   readonly label = "Telegram";
   readonly scopes = ["personal"] as const;
@@ -38,42 +42,33 @@ export class TelegramChannelAdapter implements ChannelAdapter {
   }
 
   parse(rawBody: string): ChannelIncoming {
-    const payload = safeParseJson<Record<string, unknown>>(rawBody) ?? {};
-    const message = payload.message ?? payload.edited_message;
-
-    if (!message || typeof message !== "object") {
-      return { kind: "control", response: { ok: true, ignored: "not_a_message" } };
-    }
-
-    const typed = message as {
-      message_id?: number;
-      text?: string;
-      chat?: { id?: number };
-      from?: { id?: number; is_bot?: boolean };
-    };
-
-    if (typed.from?.is_bot) {
-      return { kind: "control", response: { ok: true, ignored: "bot_message" } };
-    }
-
-    if (!typed.chat?.id || typed.message_id === undefined || !typed.text?.trim()) {
-      return { kind: "control", response: { ok: true, ignored: "incomplete_message" } };
-    }
-
-    return {
-      kind: "message",
-      messageId: String(typed.message_id),
-      externalId: String(typed.chat.id),
-      from: String(typed.from?.id ?? typed.chat.id),
-      body: typed.text,
-    };
+    return parseTelegramMessage(rawBody);
   }
 
-  async sendReply(reply: ChannelReply, secret: string): Promise<void> {
+  isReplyConfigured(env: IEnv): boolean {
+    return Boolean(getChannelSecrets(this.id, env).reply);
+  }
+
+  async sendReply(reply: ChannelReply, env: IEnv): Promise<void> {
+    const secret = getChannelSecrets(this.id, env).reply;
+
+    if (!secret) {
+      throw new AssistantError(
+        "Telegram has no reply credential configured",
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
     const response = await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: reply.externalId, text: reply.body }),
+      body: JSON.stringify({
+        chat_id: reply.externalId,
+        text: reply.body,
+        ...(reply.threadId !== CHANNEL_TOP_LEVEL_THREAD
+          ? { message_thread_id: Number(reply.threadId) }
+          : {}),
+      }),
     });
 
     await requireSuccessfulChannelSend(response, "Telegram");

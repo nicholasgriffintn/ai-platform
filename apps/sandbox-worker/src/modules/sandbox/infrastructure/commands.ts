@@ -1,63 +1,17 @@
-import { type getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
 import {
   createSandboxOutputRedactor,
   redactSandboxResult,
+  type ContainerCommandResult,
+  type ContainerProcessState,
+  type ContainerPortProbe,
 } from "@ngriffin_uk/polychat-library-sandbox";
-import {
-  hasBlockedShellChainingOperators,
-  hasBlockedShellEvaluationOperators,
-  type SandboxTaskType,
-  type SandboxTrustLevel,
-} from "@ngriffin_uk/polychat-schemas";
+import type { SandboxDirectoryBackup, SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
+
+import type { WorkspaceCommandOptions } from "./workspace";
 
 const GITHUB_HTTPS_REPO_REGEX =
   /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
 const GITHUB_SLUG_REPO_REGEX = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/;
-
-const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
-  /\brm\s+-rf\s+\/(?:\s|$)/i,
-  /\b(sudo|shutdown|reboot|mkfs|dd)\b/i,
-  /\b(curl|wget)\b[^\n]*\|/i,
-  /\bgit\s+(add|branch|checkout|commit|push|switch)\b/i,
-];
-
-const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
-  /\bgit\s+(add|commit|merge|rebase|cherry-pick|reset|checkout|switch|restore|clean|stash|tag|branch|push|pull)\b/i,
-  /\bgit\s+(apply|am)\b/i,
-  /\b(rm|mv|cp|mkdir|rmdir|touch|truncate|chmod|chown)\b/i,
-  /\b(npm|pnpm|yarn|bun)\s+(install|add|remove|update)\b/i,
-  /\b(pip|pip3|poetry)\s+(install|add|remove)\b/i,
-  /\b(?:sed|perl)\s+-i\b/i,
-  /\btee\b/i,
-];
-
-const NETWORK_COMMAND_PATTERNS: RegExp[] = [
-  /\b(curl|wget|httpie)\b/i,
-  /\b(npm|pnpm|yarn|bun)\s+(install|add|update|upgrade)\b/i,
-  /\b(pip|pip3|poetry)\s+(install|add)\b/i,
-  /\b(cargo)\s+(add|install)\b/i,
-  /\b(go)\s+(get|install)\b/i,
-];
-
-const RISKY_COMMAND_PATTERNS: RegExp[] = [
-  /\bgit\s+reset\b/i,
-  /\bgit\s+clean\b/i,
-  /\brm\s+-rf\b/i,
-  /\bmv\b/i,
-  /\bchmod\b/i,
-  /\bchown\b/i,
-  /\bdocker\b/i,
-];
-
-const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [/(^|[^<])>(>|&)?/i, /<</i, /\bexec\b/i];
-
-const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
-  /^git\s+(status|diff|log|show|rev-parse|ls-files|branch(?:\s+--show-current)?)(?:\s|$)/i,
-  /^(ls|pwd|find|cat|head|tail|wc|sort|uniq|cut|grep|rg|awk)\b/i,
-  /^sed\s+-n\b/i,
-  /^(npm|pnpm|yarn|bun)\s+(test|lint|check|verify|build|run\s+(test|lint|typecheck|type-check|check|verify|build))\b/i,
-  /^(pytest|tox|go\s+test|cargo\s+(test|check|clippy|fmt\s+--check)|jest|vitest|npx\s+vitest|tsc(?:\s|$)|eslint(?:\s|$)|ruff(?:\s|$)|mypy(?:\s|$)|uv\s+run\s+pytest)\b/i,
-];
 
 export type SandboxCommandResult = {
   success: boolean;
@@ -66,17 +20,39 @@ export type SandboxCommandResult = {
   stderr: string;
 };
 
-export type SandboxExecInstance = Pick<ReturnType<typeof getSandbox>, "exec"> &
-  Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
+export interface SandboxExecInstance {
+  exec(command: string, options?: WorkspaceCommandOptions): Promise<ContainerCommandResult>;
+}
 
-export type SandboxProcessInstance = SandboxExecInstance &
-  Pick<ReturnType<typeof getSandbox>, "getProcess" | "startProcess" | "unexposePort">;
+export interface SandboxBackupInstance extends SandboxExecInstance {
+  backupDirectory(params: {
+    dir: string;
+    name?: string;
+    exclude?: readonly string[];
+  }): Promise<SandboxDirectoryBackup>;
+  restoreDirectory(record: SandboxDirectoryBackup, dir?: string): Promise<void>;
+}
+
+export interface SandboxProcessInstance extends SandboxExecInstance {
+  startProcess(params: {
+    id: string;
+    command: string;
+    cwd?: string;
+    env?: Record<string, string>;
+  }): Promise<void>;
+  readProcess(id: string): Promise<ContainerProcessState>;
+  readProcessLogs(id: string, offset?: number): Promise<{ output: string; offset: number }>;
+  stopProcess(id: string): Promise<void>;
+  waitForPort(port: number, probe?: ContainerPortProbe & { timeoutMs?: number }): Promise<boolean>;
+  exposePort(port: number): Promise<void>;
+  unexposePort(port: number): Promise<void>;
+}
 
 interface RepoInfo {
   displayName: string;
   targetDir: string;
   checkoutUrl: string;
-  checkoutAuthHeader?: string;
+  brokered: boolean;
 }
 
 export async function runSandboxCommand(
@@ -91,85 +67,37 @@ export async function runSandboxCommand(
 ): Promise<SandboxCommandResult> {
   options?.abortSignal?.throwIfAborted();
 
-  if (!sandbox.execStream) {
-    const result =
-      options?.timeoutMs === undefined
-        ? await sandbox.exec(command)
-        : await sandbox.exec(command, { timeout: options.timeoutMs });
-
-    return redactSandboxResult(result, options?.redactionSecrets);
-  }
-
-  const stdout: string[] = [];
-  const stderr: string[] = [];
   const redactors = {
     stdout: createSandboxOutputRedactor(options?.redactionSecrets),
     stderr: createSandboxOutputRedactor(options?.redactionSecrets),
   };
-  let completedResult: SandboxCommandResult | undefined;
-  const stream =
-    options?.timeoutMs === undefined
-      ? await sandbox.execStream(command)
-      : await sandbox.execStream(command, { timeout: options.timeoutMs });
+  const onOutput = options?.onOutput;
+  const result = await sandbox.exec(command, {
+    ...(options?.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
+    ...(onOutput
+      ? {
+          onOutput: async (output) => {
+            const data = redactors[output.stream].push(output.data);
 
-  for await (const event of parseSSEStream<ExecEvent>(stream, options?.abortSignal)) {
-    if (event.type === "stdout" && event.data) {
-      stdout.push(event.data);
-      const data = redactors.stdout.push(event.data);
+            if (data) {
+              await onOutput({ stream: output.stream, data });
+            }
+          },
+        }
+      : {}),
+  });
 
-      if (data) {
-        await options?.onOutput?.({ stream: "stdout", data });
-      }
-
-      continue;
-    }
-
-    if (event.type === "stderr" && event.data) {
-      stderr.push(event.data);
-      const data = redactors.stderr.push(event.data);
+  if (onOutput) {
+    for (const source of ["stdout", "stderr"] as const) {
+      const data = redactors[source].flush();
 
       if (data) {
-        await options?.onOutput?.({ stream: "stderr", data });
+        await onOutput({ stream: source, data });
       }
-
-      continue;
-    }
-
-    if (event.type === "complete") {
-      completedResult = event.result ?? {
-        success: (event.exitCode ?? 1) === 0,
-        exitCode: event.exitCode ?? 1,
-        stdout: stdout.join(""),
-        stderr: stderr.join(""),
-      };
-      continue;
-    }
-
-    if (event.type === "error") {
-      stderr.push(event.error ?? "Sandbox command stream failed");
-      completedResult = {
-        success: false,
-        exitCode: 1,
-        stdout: stdout.join(""),
-        stderr: stderr.join(""),
-      };
     }
   }
 
-  for (const source of ["stdout", "stderr"] as const) {
-    const data = redactors[source].flush();
-
-    if (data) {
-      await options?.onOutput?.({ stream: source, data });
-    }
-  }
-
-  const result = completedResult ?? {
-    success: false,
-    exitCode: 1,
-    stdout: stdout.join(""),
-    stderr: stderr.join("") || "Sandbox command stream ended without completion",
-  };
+  options?.abortSignal?.throwIfAborted();
 
   return redactSandboxResult(result, options?.redactionSecrets);
 }
@@ -183,24 +111,7 @@ export async function execOrThrow(sandbox: SandboxExecInstance, command: string,
   }
 }
 
-export async function execOrThrowRedacted(
-  sandbox: SandboxExecInstance,
-  command: string,
-  logs: string[],
-  redactedCommand: string,
-) {
-  const result = await runSandboxCommand(sandbox, command);
-
-  logs.push(formatCommandResult(redactedCommand, result));
-  if (!result.success) {
-    throw new Error(result.stderr || `Command failed (${result.exitCode})`);
-  }
-}
-
-export function resolveGitHubRepo(
-  repo: string,
-  credentialBroker: { baseUrl: string; grant: string },
-): RepoInfo {
+export function resolveGitHubRepo(repo: string, credentialBroker: { baseUrl: string }): RepoInfo {
   const trimmedRepo = repo.trim();
 
   if (!trimmedRepo) {
@@ -228,15 +139,12 @@ export function resolveGitHubRepo(
   const checkoutUrl = usesLocalFixture
     ? `https://github.com/${displayName}.git`
     : `${credentialBroker.baseUrl}/git`;
-  const checkoutAuthHeader = usesLocalFixture
-    ? undefined
-    : `AUTHORIZATION: Bearer ${credentialBroker.grant}`;
 
   return {
     displayName,
     targetDir,
     checkoutUrl,
-    checkoutAuthHeader,
+    brokered: !usesLocalFixture,
   };
 }
 
@@ -271,105 +179,7 @@ export function normaliseCommandLine(rawLine: string): string | null {
   return line;
 }
 
-export function assertSafeCommand(
-  command: string,
-  options?: {
-    readOnly?: boolean;
-    trustLevel?: SandboxTrustLevel;
-    allowNetwork?: boolean;
-    allowRisky?: boolean;
-  },
-) {
-  if (command.length > 500) {
-    throw new Error("Command is too long");
-  }
-
-  if (command.includes("\n") || command.includes("\r")) {
-    throw new Error(`Command contains unexpected newlines: ${command}`);
-  }
-
-  if (hasBlockedShellChainingOperators(command)) {
-    throw new Error(`Command contains blocked shell operators: ${command}`);
-  }
-
-  if (hasBlockedShellEvaluationOperators(command)) {
-    throw new Error(`Command contains blocked shell evaluation: ${command}`);
-  }
-
-  if (options?.readOnly) {
-    for (const pattern of READ_ONLY_BLOCKED_OPERATOR_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Command is blocked in read-only mode: ${command}`);
-      }
-    }
-
-    for (const pattern of READ_ONLY_MUTATING_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Command is blocked in read-only mode: ${command}`);
-      }
-    }
-
-    if (!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) => pattern.test(command))) {
-      throw new Error(`Command is not allowed in read-only mode: ${command}`);
-    }
-  }
-
-  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      throw new Error(`Command is blocked by sandbox policy: ${command}`);
-    }
-  }
-
-  const trustLevel = options?.trustLevel ?? "balanced";
-  const allowNetwork = options?.allowNetwork === true;
-  const allowRisky = options?.allowRisky === true;
-
-  if (trustLevel === "strict") {
-    if (!allowNetwork) {
-      for (const pattern of NETWORK_COMMAND_PATTERNS) {
-        if (pattern.test(command)) {
-          throw new Error(
-            `Command requires network or dependency installation and is blocked in strict mode: ${command}`,
-          );
-        }
-      }
-    }
-
-    if (!allowRisky) {
-      for (const pattern of RISKY_COMMAND_PATTERNS) {
-        if (pattern.test(command)) {
-          throw new Error(`Risky command is blocked in strict mode: ${command}`);
-        }
-      }
-    }
-  }
-
-  if (trustLevel === "balanced" && !allowNetwork) {
-    for (const pattern of NETWORK_COMMAND_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Network/dependency command is blocked in balanced mode: ${command}`);
-      }
-    }
-  }
-}
-
-export type CommandRiskLevel = "low" | "network" | "risky";
-
-export function getCommandRiskLevel(command: string): CommandRiskLevel {
-  for (const pattern of NETWORK_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      return "network";
-    }
-  }
-
-  for (const pattern of RISKY_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      return "risky";
-    }
-  }
-
-  return "low";
-}
+export { assertSafeCommand, getCommandRiskLevel, type CommandRiskLevel } from "./command-authority";
 
 export function formatCommandResult(
   command: string,
@@ -438,10 +248,6 @@ export function buildSummary(
   }
 
   return `Implemented "${task}" in ${repo} with ${commandCount} commands.`;
-}
-
-export function quoteForShell(value: string): string {
-  return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
 export function extractCommands(text: string): string[] {

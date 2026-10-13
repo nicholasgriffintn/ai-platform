@@ -2,7 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import type { Passkey } from "~/infrastructure/database/schema";
+import type { Passkey } from "~/infrastructure/database/user-credentials";
 
 const logger = getLogger({ prefix: "services/auth/webauthn" });
 

@@ -1,23 +1,25 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   EvidenceKind,
   EvidenceStatus,
   ModelAssetKind,
   ModelAssetSource,
   ModelVersionAttributes,
-  PolicyCondition,
   PolicyEffect,
   PolicyMatch,
   PolicyRule,
   PolicyVerdict,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  assertUnreachable,
-  canonicalJson,
-  formatParameterCount,
-  sha256Hex,
-} from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
+import {
+  governanceContext,
+  governanceRuleAuthorizer,
+  isMetadataPolicy,
+  toCedarPolicyRule,
+} from "./cedar-policy.js";
 import { DEFAULT_ALLOWED_LICENCES } from "./licence.js";
+import { policyMatchReason } from "./policy-reason.js";
 
 export interface PolicySubjectEvidence {
   kind: EvidenceKind;
@@ -55,7 +57,7 @@ export interface ScopedPolicy {
 
 const EFFECT_SEVERITY: Record<PolicyEffect, number> = { allow: 0, warn: 1, review: 2, block: 3 };
 
-export const DEFAULT_WORKSPACE_POLICY_RULES: PolicyRule[] = [
+const defaultWorkspaceRules: PolicyRule[] = [
   {
     id: "inspection-complete",
     description: "Static inspection must finish before a version can be used",
@@ -167,6 +169,8 @@ export const DEFAULT_WORKSPACE_POLICY_RULES: PolicyRule[] = [
   },
 ];
 
+export const DEFAULT_WORKSPACE_POLICY_RULES = defaultWorkspaceRules.map(toCedarPolicyRule);
+
 export async function hashPolicyRules(rules: readonly PolicyRule[]): Promise<string> {
   return sha256Hex(canonicalJson(rules));
 }
@@ -182,40 +186,39 @@ export function isEffectAtLeast(effect: PolicyEffect, threshold: PolicyEffect): 
   return EFFECT_SEVERITY[effect] >= EFFECT_SEVERITY[threshold];
 }
 
-const METADATA_ONLY_CONDITIONS = new Set<PolicyCondition["type"]>([
-  "always",
-  "asset_kind",
-  "licence",
-  "source",
-  "remote_code",
-  "gated",
-  "parameters_above",
-  "lawful_basis",
-  "customer_data",
-]);
-
 export function evaluatePolicies(
   subject: PolicySubject,
   policies: readonly ScopedPolicy[],
   { metadataOnly = false }: { metadataOnly?: boolean } = {},
 ): PolicyVerdict {
   const matches: PolicyMatch[] = [];
+  const context = governanceContext(subject);
 
   for (const policy of policies) {
     for (const rule of policy.rules) {
-      if (metadataOnly && !METADATA_ONLY_CONDITIONS.has(rule.when.type)) {
+      if (metadataOnly && !isMetadataPolicy(rule)) {
         continue;
       }
 
-      const reason = matchCondition(rule.when, subject);
+      const decision = governanceRuleAuthorizer(rule)({
+        principal: { type: "Polychat::Actor", id: "governance" },
+        action: { type: "Polychat::Action", id: "governance.match" },
+        resource: { type: "Polychat::Resource", id: "version" },
+        context,
+      });
+      const failed = decision.errors.length > 0;
+      const reason = failed
+        ? "Cedar evaluation failed; review the policy and version facts"
+        : policyMatchReason(rule.when, subject);
 
-      if (reason !== null) {
+      if (failed || decision.policyIds.includes(rule.id)) {
         matches.push({
           policyId: policy.id,
           policyHash: policy.hash,
           scope: policy.scope,
           ruleId: rule.id,
-          effect: rule.effect,
+          effect: failed ? "block" : rule.effect,
+          ...(failed ? { evaluationFailed: true } : {}),
           reason: rule.description ? `${reason}. ${rule.description}` : reason,
         });
       }
@@ -227,122 +230,6 @@ export function evaluatePolicies(
     matches,
     policyHashes: policies.map((policy) => policy.hash),
   };
-}
-
-function matchCondition(condition: PolicyCondition, subject: PolicySubject): string | null {
-  const { attributes } = subject;
-
-  switch (condition.type) {
-    case "always":
-      return "Applies to every version in scope";
-    case "asset_kind":
-      return condition.values.includes(subject.kind) ? `Asset is a ${subject.kind}` : null;
-    case "licence": {
-      const licence = attributes.licence ?? "unknown";
-      const listed = condition.values.includes(licence);
-
-      if (condition.op === "in" ? listed : !listed) {
-        return `Licence is ${licence}`;
-      }
-
-      return null;
-    }
-
-    case "source": {
-      const listed = condition.values.includes(subject.source);
-
-      return (condition.op === "in" ? listed : !listed) ? `Source is ${subject.source}` : null;
-    }
-
-    case "format": {
-      const formats = attributes.formats;
-
-      if (formats.length === 0) {
-        return null;
-      }
-
-      if (condition.op === "includes") {
-        const found = formats.filter((format) => condition.values.includes(format));
-
-        return found.length > 0 ? `Weights include ${found.join(", ")}` : null;
-      }
-
-      return formats.every((format) => condition.values.includes(format))
-        ? `Weights are only ${formats.join(", ")}`
-        : null;
-    }
-
-    case "remote_code":
-      return attributes.remoteCode ? "Loading requires trust_remote_code" : null;
-    case "gated":
-      return attributes.gated ? "Repository is gated behind accepted terms" : null;
-    case "parameters_above":
-      return attributes.parameterCount !== null && attributes.parameterCount > condition.value
-        ? `${formatParameterCount(attributes.parameterCount)} parameters exceeds ${formatParameterCount(condition.value)}`
-        : null;
-    case "evidence": {
-      const found = subject.evidence.find(
-        (item) => item.kind === condition.kind && condition.statuses.includes(item.status),
-      );
-
-      return found ? `${condition.kind} evidence is ${found.status}: ${found.summary}` : null;
-    }
-
-    case "evidence_missing":
-      return subject.evidence.some((item) => item.kind === condition.kind)
-        ? null
-        : `No ${condition.kind} evidence recorded yet`;
-    case "route_region": {
-      if (!subject.route) {
-        return null;
-      }
-
-      const listed = condition.values.includes(subject.route.region);
-
-      return (condition.op === "in" ? listed : !listed)
-        ? `Route serves from ${subject.route.region}`
-        : null;
-    }
-
-    case "route_weights_unverified":
-      return subject.route && !subject.route.weightsVerified
-        ? "Provider does not prove which weights it serves"
-        : null;
-    case "route_jurisdiction": {
-      if (!subject.route) {
-        return null;
-      }
-
-      const jurisdiction = subject.route.jurisdiction ?? "unknown";
-      const listed = condition.values.includes(jurisdiction);
-
-      return (condition.op === "in" ? listed : !listed)
-        ? `Route runs in jurisdiction ${jurisdiction}`
-        : null;
-    }
-
-    case "route_retention":
-      return subject.route?.retention && condition.values.includes(subject.route.retention)
-        ? `Route retention is ${subject.route.retention}`
-        : null;
-    case "lawful_basis": {
-      if (!subject.dataset) {
-        return null;
-      }
-
-      const listed = condition.values.includes(subject.dataset.lawfulBasis);
-
-      return (condition.op === "in" ? listed : !listed)
-        ? `Lawful basis is ${subject.dataset.lawfulBasis}`
-        : null;
-    }
-
-    case "customer_data":
-      return subject.dataset?.containsCustomerData ? "Dataset contains customer data" : null;
-
-    default:
-      return assertUnreachable(condition);
-  }
 }
 
 export interface ApprovalCoverage {
@@ -360,21 +247,24 @@ export function uncoveredMatches(
   approvals: readonly ApprovalCoverage[],
   now: Date,
 ): PolicyMatch[] {
-  const live = approvals.filter(
-    (approval) => approval.expiresAt === null || new Date(approval.expiresAt) > now,
-  );
-
   return current.matches.filter((match) => {
     if (!isEffectAtLeast(match.effect, "review")) {
       return false;
     }
 
-    return !live.some(
+    return !approvals.some(
       (approval) =>
-        (match.effect !== "block" || approval.isException) &&
-        approval.verdict.matches.some(
-          (seen) => seen.ruleId === match.ruleId && seen.scope === match.scope,
-        ),
+        authorise("governance.cover", {
+          evaluationFailed: match.evaluationFailed === true,
+          expiresAt: approval.expiresAt === null ? 0 : new Date(approval.expiresAt).getTime(),
+          now: now.getTime(),
+          effect: match.effect,
+          exception: approval.isException,
+          seen: approval.verdict.matches.map(
+            (seen) => `${seen.scope}:${seen.policyHash}:${seen.ruleId}`,
+          ),
+          matchKey: `${match.scope}:${match.policyHash}:${match.ruleId}`,
+        }).allowed,
     );
   });
 }

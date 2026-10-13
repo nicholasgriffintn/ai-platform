@@ -1,1 +1,0 @@
-CREATE INDEX `conversation_user_project_archived_updated_idx` ON `conversation` (`user_id`,`project_id`,`is_archived`,`updated_at`);

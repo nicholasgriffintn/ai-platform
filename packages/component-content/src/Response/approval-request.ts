@@ -10,12 +10,15 @@ export interface ApprovalRequestData {
   key: string;
   message?: string;
   options?: string[];
+  approvalRequired?: boolean;
+  selectedOption?: string;
   context?: unknown;
   expiresAt?: string;
   approval?: {
     interactionId?: string;
     toolName?: string;
   };
+  approvedInARow?: number;
   authoritativeState: ApprovalAuthoritativeState;
 }
 
@@ -73,14 +76,24 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
   const toolName = readNonEmptyString(approval?.toolName);
   const expiresAt =
     readNonEmptyString(data.expiresAt) ?? readNonEmptyString(humanInTheLoop?.expiresAt);
+  const approvedInARow =
+    typeof approval?.approvedInARow === "number" && approval.approvedInARow > 0
+      ? approval.approvedInARow
+      : undefined;
   const options = Array.isArray(data.options)
     ? data.options.filter((option): option is string => typeof option === "string")
     : undefined;
+  const approvalResolution = isRecord(data.approvalResolution)
+    ? data.approvalResolution
+    : undefined;
+  const selectedOption = readNonEmptyString(approvalResolution?.option);
 
   return {
     key: interactionId ?? completionId ?? timestamp ?? message ?? "approval",
     ...(message ? { message } : {}),
     ...(options ? { options } : {}),
+    ...(data.approvalRequired === true ? { approvalRequired: true } : {}),
+    ...(selectedOption ? { selectedOption } : {}),
     ...(data.context !== undefined ? { context: data.context } : {}),
     ...(expiresAt ? { expiresAt } : {}),
     ...(interactionId || toolName
@@ -91,6 +104,7 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
           },
         }
       : {}),
+    ...(approvedInARow ? { approvedInARow } : {}),
     authoritativeState: readAuthoritativeState(data, approval, humanInTheLoop, expiresAt),
   };
 }

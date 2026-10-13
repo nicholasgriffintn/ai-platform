@@ -90,6 +90,10 @@ export class DeviceSyncSocket {
     if (message.type === "subscribed") {
       this.cursors.set(message.topic, message.seq);
 
+      if (message.topic.startsWith("user:") && this.topics.has(message.topic)) {
+        this.setStatus("open");
+      }
+
       return;
     }
 
@@ -145,6 +149,10 @@ export class DeviceSyncSocket {
     try {
       grant = await requestGrant(deviceId);
     } catch {
+      if (this.stopped) {
+        return;
+      }
+
       this.setStatus("closed");
       this.scheduleReconnect();
 
@@ -155,24 +163,56 @@ export class DeviceSyncSocket {
       return;
     }
 
-    const url = new URL(grant.socketUrl);
+    let socket: WebSocket;
 
-    url.searchParams.set("grant", grant.token);
-    url.searchParams.set("device_id", deviceId);
+    try {
+      const url = new URL(grant.socketUrl);
 
-    const socket = new WebSocket(url.toString());
+      url.searchParams.set("grant", grant.token);
+      url.searchParams.set("device_id", deviceId);
+      socket = new WebSocket(url.toString());
+    } catch {
+      this.setStatus("closed");
+      this.scheduleReconnect();
+
+      return;
+    }
 
     this.socket = socket;
+    let lastMessageAt = Date.now();
+
+    const disconnect = () => {
+      if (this.socket !== socket) {
+        return;
+      }
+
+      this.teardown();
+      this.setStatus("closed");
+      this.scheduleReconnect();
+      socket.close();
+    };
 
     socket.addEventListener("open", () => {
+      if (this.socket !== socket) {
+        return;
+      }
+
       this.retryMs = INITIAL_RETRY_MS;
-      this.setStatus("open");
+      lastMessageAt = Date.now();
       this.resubscribe();
-      this.pingTimer = setInterval(() => this.send({ type: "ping" }), PING_INTERVAL_MS);
+      this.pingTimer = setInterval(() => {
+        if (Date.now() - lastMessageAt >= PING_INTERVAL_MS * 2) {
+          disconnect();
+
+          return;
+        }
+
+        this.send({ type: "ping" });
+      }, PING_INTERVAL_MS);
     });
 
     socket.addEventListener("message", (event) => {
-      if (typeof event.data !== "string") {
+      if (this.socket !== socket || typeof event.data !== "string") {
         return;
       }
 
@@ -180,6 +220,7 @@ export class DeviceSyncSocket {
         const parsed = deviceSyncServerMessageSchema.safeParse(JSON.parse(event.data));
 
         if (parsed.success) {
+          lastMessageAt = Date.now();
           this.handle(parsed.data);
         }
       } catch {
@@ -188,6 +229,10 @@ export class DeviceSyncSocket {
     });
 
     socket.addEventListener("close", () => {
+      if (this.socket !== socket) {
+        return;
+      }
+
       this.teardown();
       this.setStatus("closed");
       this.scheduleReconnect();
@@ -195,7 +240,7 @@ export class DeviceSyncSocket {
 
     socket.addEventListener("error", () => {
       try {
-        socket.close();
+        disconnect();
       } catch {
         return;
       }
@@ -222,14 +267,13 @@ export class DeviceSyncSocket {
     const socket = this.socket;
 
     this.teardown();
+    this.setStatus("idle");
 
     try {
       socket?.close();
     } catch {
       return;
     }
-
-    this.setStatus("idle");
   }
 
   public subscribe(topics: string[]): void {

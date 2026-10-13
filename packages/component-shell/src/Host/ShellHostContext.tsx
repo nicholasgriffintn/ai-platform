@@ -13,6 +13,7 @@ export interface ShellHost {
   modelSourceSurface?: ShellModelSourceSurface;
   modelSourceRows?: readonly ModelSource[];
   openProviderSettings?: () => void;
+  downloadsPath?: string;
 }
 
 const ShellHostContext = createContext<ShellHost | null>(null);

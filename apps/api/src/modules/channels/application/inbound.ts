@@ -5,7 +5,10 @@ import {
 import {
   createChatCompletionsJsonSchema,
   INBOUND_CHANNEL_IDS,
+  isPolyTeammateId,
   type InboundChannelId,
+  channelMessageContextSchema,
+  type ChannelMessageContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -25,6 +28,7 @@ import {
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
+import { buildChatRunCommandPayload } from "~/modules/chat-runs/application/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
 import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
@@ -39,10 +43,10 @@ import { enqueueTeammateRun } from "~/modules/teammates/application/run-admissio
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
 
+import { requireChannelSenderMapping } from "./access";
 import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
-import { getChannelSecrets } from "./secrets";
 
 export interface InboundChannelMessage {
   messageId: string;
@@ -64,6 +68,9 @@ export interface InboundProviderTaskData extends InboundChannelTaskBase {
 
 export interface InboundBindingTaskData extends InboundChannelTaskBase {
   bindingId: string;
+  senderMappingId: string;
+  senderRevision: number;
+  messageContext: ChannelMessageContext;
 }
 
 export type InboundChannelTaskData = InboundProviderTaskData | InboundBindingTaskData;
@@ -137,7 +144,27 @@ export function parseInboundChannelTaskData(value: unknown): InboundChannelTaskD
   }
 
   if (typeof value.bindingId === "string" && value.bindingId.length > 0) {
-    return { channel: value.channel, message, bindingId: value.bindingId };
+    const messageContext = channelMessageContextSchema.safeParse(value.messageContext);
+
+    if (
+      !messageContext.success ||
+      typeof value.senderMappingId !== "string" ||
+      !value.senderMappingId ||
+      typeof value.senderRevision !== "number" ||
+      !Number.isSafeInteger(value.senderRevision) ||
+      value.senderRevision < 1
+    ) {
+      return null;
+    }
+
+    return {
+      channel: value.channel,
+      message,
+      bindingId: value.bindingId,
+      senderMappingId: value.senderMappingId,
+      senderRevision: value.senderRevision,
+      messageContext: messageContext.data,
+    };
   }
 
   if (
@@ -202,12 +229,20 @@ export async function getChannelBindingConversationId(params: {
   channel: InboundChannelId;
   bindingId: string;
   externalId: string;
+  userId: number;
+  senderId: string;
+  threadId: string;
 }): Promise<string> {
   const profile = getInboundChannelProfile(params.channel);
 
   return buildChannelConversationId(profile.conversationPrefix, [
-    params.bindingId,
-    normaliseMessagingAddress(params.externalId),
+    JSON.stringify([
+      params.bindingId,
+      params.externalId,
+      params.userId,
+      params.senderId,
+      params.threadId,
+    ]),
   ]);
 }
 
@@ -328,6 +363,7 @@ type ChannelDelivery =
       projectId?: string;
       bindingId?: string;
       teammateContextId?: string;
+      poly?: boolean;
       interactionMode: "direct" | "automated";
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
@@ -395,7 +431,7 @@ async function resolveBindingDelivery(params: {
     !binding ||
     !binding.enabled ||
     binding.channel !== params.data.channel ||
-    binding.created_by !== params.user.id
+    binding.external_id !== params.data.messageContext.externalId
   ) {
     return { status: "channel_unavailable" };
   }
@@ -404,29 +440,44 @@ async function resolveBindingDelivery(params: {
     return { status: "channel_unavailable" };
   }
 
+  const sender = await params.context.repositories.channelSenders.eligibleSender(
+    binding.id,
+    params.data.message.from,
+    params.data.messageContext.isDirect,
+  );
+
+  if (
+    !sender ||
+    sender.user_id !== params.user.id ||
+    sender.id !== params.data.senderMappingId ||
+    sender.revision !== params.data.senderRevision
+  ) {
+    return { status: "unauthorised_sender" };
+  }
+
   if (binding.scope_type === "project") {
     await requireProjectAccess(params.context, binding.scope_id);
   }
 
   const adapter = getChannelAdapter(params.data.channel);
-  const { reply: replySecret } = getChannelSecrets(params.data.channel, params.env);
 
   if (!adapter) {
     return { status: "channel_unavailable" };
   }
 
-  if (!replySecret) {
+  if (!adapter.isReplyConfigured(params.env)) {
     throw new AssistantError(
       `${adapter.label} has no reply credential configured`,
       ErrorType.CONFIGURATION_ERROR,
     );
   }
 
-  const conversationId = await getChannelBindingConversationId({
-    channel: params.data.channel,
-    bindingId: binding.id,
-    externalId: binding.external_id,
-  });
+  const isPoly = isPolyTeammateId(binding.teammate_id);
+
+  if (isPoly && binding.scope_type !== "personal") {
+    return { status: "channel_unavailable" };
+  }
+
   const teammateContext = binding.teammate_id
     ? await ensureActiveTeammateContext(
         params.context,
@@ -436,7 +487,23 @@ async function resolveBindingDelivery(params: {
           : { type: "personal", id: String(params.user.id) },
       )
     : null;
+  const conversationId =
+    isPoly && teammateContext
+      ? teammateContext.homeConversationId
+      : await getChannelBindingConversationId({
+          channel: params.data.channel,
+          bindingId: binding.id,
+          externalId: binding.external_id,
+          userId: params.user.id,
+          senderId: sender.sender_id,
+          threadId: params.data.messageContext.threadId,
+        });
   const validate = async () => {
+    await requireChannelSenderMapping(params.context, {
+      bindingId: binding.id,
+      mappingId: sender.id,
+      revision: sender.revision,
+    });
     const current = await params.context.repositories.channelBindings.getById(binding.id);
 
     if (
@@ -487,6 +554,7 @@ async function resolveBindingDelivery(params: {
     conversationId,
     ...(binding.teammate_id ? { teammateId: binding.teammate_id } : {}),
     ...(teammateContext ? { teammateContextId: teammateContext.id } : {}),
+    poly: isPoly,
     bindingId: binding.id,
     interactionMode: binding.interaction_mode,
     validate,
@@ -494,7 +562,16 @@ async function resolveBindingDelivery(params: {
     send: async (reply) => {
       await validate();
 
-      await adapter.sendReply({ externalId: binding.external_id, body: reply.body }, replySecret);
+      await adapter.sendReply(
+        {
+          externalId: binding.external_id,
+          body: reply.body,
+          threadId: params.data.messageContext.threadId,
+          inReplyTo: params.data.message.messageId,
+          subject: params.data.messageContext.subject,
+        },
+        params.env,
+      );
     },
   };
 }
@@ -589,34 +666,39 @@ export async function handleInboundChannelMessage(params: {
       historyLimit: profile.historyLimit,
     });
     const request = createChatCompletionsJsonSchema.parse({
-      completion_id: conversationId,
+      ...buildChatRunCommandPayload({
+        env: params.env,
+        completion_id: conversationId,
+        store: true,
+        mode: "agent",
+        trigger: "channel",
+        max_steps: profile.maxSteps,
+        ...(delivery.poly ? {} : { enabled_tools: profile.tools }),
+        tool_choice: "auto",
+        ...(delivery.projectId ? { metadata: { project_id: delivery.projectId } } : {}),
+        messages: [
+          ...activeMessages,
+          {
+            role: "user",
+            content: buildInboundMessageContent({
+              body: message.body,
+              media: message.media,
+            }),
+          },
+        ],
+        options: {
+          channel: {
+            id: profile.id,
+            ...(message.from ? { from: message.from } : {}),
+            ...(message.to ? { to: message.to } : {}),
+          },
+        },
+      }),
       command_id: commandId,
       stream: false,
-      store: true,
-      mode: "agent",
-      trigger: "channel",
-      max_steps: profile.maxSteps,
-      enabled_tools: profile.tools,
-      tool_choice: "auto",
-      ...(delivery.projectId ? { metadata: { project_id: delivery.projectId } } : {}),
-      messages: [
-        ...activeMessages,
-        {
-          role: "user",
-          content: buildInboundMessageContent({
-            body: message.body,
-            media: message.media,
-          }),
-        },
-      ],
-      options: {
-        channel: {
-          id: profile.id,
-          ...(message.from ? { from: message.from } : {}),
-          ...(message.to ? { to: message.to } : {}),
-        },
-      },
     });
+
+    await delivery.validate();
 
     completion = delivery.teammateId
       ? await enqueueTeammateRun({
@@ -627,11 +709,17 @@ export async function handleInboundChannelMessage(params: {
           user: params.user,
           anonymousUser: undefined,
           trigger: "channel",
-          invocation: delivery.bindingId
+          invocation: isInboundBindingTaskData(params.data)
             ? {
                 source: "channel",
-                bindingId: delivery.bindingId,
+                bindingId: params.data.bindingId,
                 messageId: message.messageId,
+                senderMappingId: params.data.senderMappingId,
+                senderRevision: params.data.senderRevision,
+                threadId: params.data.messageContext.threadId,
+                ...(params.data.messageContext.subject
+                  ? { subject: params.data.messageContext.subject }
+                  : {}),
               }
             : undefined,
         })

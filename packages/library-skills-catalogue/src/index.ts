@@ -1,5 +1,5 @@
 export {
-  builtInSkillCatalogue,
+  getBuiltInSkillCatalogue,
   builtInSkillDocuments,
   getBuiltInSkillDefinition,
   getBuiltInSkillResource,
@@ -26,6 +26,7 @@ export {
   type SkillDocumentInput,
 } from "./schema.js";
 export {
+  MAX_PER_MESSAGE_SKILL_BODY_BYTES,
   toSkillDefinition,
   toSkillSummary,
   type SkillContent,

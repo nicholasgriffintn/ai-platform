@@ -11,7 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useQuery } from "@tanstack/react-query";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 const ACTIVE_REFRESH_MS = 2_000;
 const IDLE_REFRESH_MS = 30_000;
@@ -32,6 +32,7 @@ export function useProjectWorkbenchRuns({
   conversationId?: string | null;
   conversationIsStreaming: boolean;
 }) {
+  const liveOrPoll = useLiveOrPoll();
   const query = useQuery({
     queryKey: projectWorkbenchRunsQueryKey(projectId, conversationId),
     queryFn: async () => {
@@ -85,9 +86,13 @@ export function useProjectWorkbenchRuns({
     },
     enabled: Boolean(projectId && conversationId),
     refetchInterval: (activeQuery) =>
-      conversationIsStreaming || activeQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
-        ? ACTIVE_REFRESH_MS
-        : liveOrPoll(activeQuery, IDLE_REFRESH_MS, "workbench_run.changed"),
+      liveOrPoll(
+        activeQuery,
+        conversationIsStreaming || activeQuery.state.data?.runs.some(({ run }) => isActiveRun(run))
+          ? ACTIVE_REFRESH_MS
+          : IDLE_REFRESH_MS,
+        "workbench_run.changed",
+      ),
     refetchIntervalInBackground: true,
   });
 

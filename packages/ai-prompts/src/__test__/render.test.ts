@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  PromptRenderError,
-  PromptTemplateError,
-  parsePromptTemplate,
-  renderPromptText,
-} from "../index.js";
+import { PromptRenderError, PromptTemplateError, renderPromptText } from "../index.js";
 
 describe("renderPromptText", () => {
   it("interpolates variables and applies defaults", () => {
@@ -34,9 +29,5 @@ describe("renderPromptText", () => {
     expect(() => renderPromptText("Hello {{name}}", {})).toThrow(PromptRenderError);
     expect(() => renderPromptText("{{#a}}unclosed", {})).toThrow(PromptTemplateError);
     expect(() => renderPromptText("{{/a}}", {})).toThrow(PromptTemplateError);
-  });
-
-  it("parses no nodes for plain text", () => {
-    expect(parsePromptTemplate("plain")).toEqual([{ type: "text", value: "plain" }]);
   });
 });

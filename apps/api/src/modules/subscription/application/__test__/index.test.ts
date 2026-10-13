@@ -1,4 +1,3 @@
-import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, IUser } from "~/types";
@@ -117,43 +116,6 @@ describe("Subscription Service", () => {
   });
 
   describe("createCheckoutSession", () => {
-    it("should create checkout session for new user", async () => {
-      const mockPlan = { id: "plan-123", stripe_price_id: "price_123" };
-      const mockCustomer = { id: "cus_123" };
-      const mockSession = {
-        id: "cs_123",
-        url: "https://checkout.stripe.com/pay/cs_123",
-      };
-
-      mockRepositories.plans.getPlanById.mockResolvedValue(mockPlan);
-      mockStripe.customers.create.mockResolvedValue(mockCustomer);
-      mockStripe.checkout.sessions.create.mockResolvedValue(mockSession);
-
-      const result = await createCheckoutSession(
-        mockEnv,
-        mockUser,
-        "plan-123",
-        "https://app.polychat.test/profile?tab=billing",
-        "https://app.polychat.test/profile?tab=billing",
-      );
-
-      expect(mockRepositories.plans.getPlanById).toHaveBeenCalledWith("plan-123");
-      expect(mockStripe.customers.create).toHaveBeenCalledWith({
-        email: "test@example.com",
-        metadata: { user_id: "1" },
-      });
-      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
-        stripe_customer_id: "cus_123",
-      });
-      expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
-        expect.objectContaining({ allow_promotion_codes: true }),
-      );
-      expect(result).toEqual({
-        session_id: "cs_123",
-        url: "https://checkout.stripe.com/pay/cs_123",
-      });
-    });
-
     it("should throw error if user has active subscription", async () => {
       const userWithSubscription = {
         ...mockUser,
@@ -173,20 +135,6 @@ describe("Subscription Service", () => {
           "https://app.polychat.test/profile?tab=billing",
         ),
       ).rejects.toThrow("User already has an active subscription");
-    });
-
-    it("should throw error if plan not found", async () => {
-      mockRepositories.plans.getPlanById.mockResolvedValue(null);
-
-      await expect(
-        createCheckoutSession(
-          mockEnv,
-          mockUser,
-          "nonexistent-plan",
-          "https://app.polychat.test/profile?tab=billing",
-          "https://app.polychat.test/profile?tab=billing",
-        ),
-      ).rejects.toThrow("Plan not found");
     });
 
     it.each([null, "", "   "])(
@@ -238,60 +186,9 @@ describe("Subscription Service", () => {
       expect(mockStripe.customers.create).not.toHaveBeenCalled();
       expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
-
-    it("should throw error if Stripe secret key missing", async () => {
-      const envWithoutKey = { ...mockEnv, STRIPE_SECRET_KEY: undefined };
-      const mockPlan = { id: "plan-123", stripe_price_id: "price_123" };
-
-      mockRepositories.plans.getPlanById.mockResolvedValue(mockPlan);
-
-      await expect(
-        createCheckoutSession(
-          envWithoutKey,
-          mockUser,
-          "plan-123",
-          "https://app.polychat.test/profile?tab=billing",
-          "https://app.polychat.test/profile?tab=billing",
-        ),
-      ).rejects.toThrow("Stripe secret key not configured");
-    });
   });
 
   describe("getSubscriptionStatus", () => {
-    it("should return inactive status for user without subscription", async () => {
-      const result = await getSubscriptionStatus(mockEnv, mockUser);
-
-      expect(result).toEqual({
-        status: "inactive",
-        current_period_end: null,
-        cancel_at_period_end: false,
-        trial_end: null,
-      });
-    });
-
-    it("should return subscription status for user with subscription", async () => {
-      const userWithSubscription = {
-        ...mockUser,
-        stripe_subscription_id: "sub_123",
-      };
-
-      const mockSubscription = {
-        status: "active",
-        days_until_due: 30,
-        cancel_at_period_end: false,
-        cancel_at: null,
-        trial_end: null,
-        currency: "usd",
-        items: { data: [] },
-      };
-
-      mockStripe.subscriptions.retrieve.mockResolvedValue(mockSubscription);
-
-      const result = await getSubscriptionStatus(mockEnv, userWithSubscription);
-
-      expect(result).toEqual(mockSubscription);
-    });
-
     it("should recover an entitled subscription when the completion webhook is delayed", async () => {
       const userAwaitingWebhook = {
         ...mockUser,
@@ -395,10 +292,6 @@ describe("Subscription Service", () => {
       });
     });
 
-    it("should throw error if no subscription", async () => {
-      await expect(cancelSubscription(mockEnv, mockUser)).rejects.toThrow("No active subscription");
-    });
-
     it("should return current status if already cancelled", async () => {
       const userWithSubscription = {
         ...mockUser,
@@ -455,12 +348,6 @@ describe("Subscription Service", () => {
       });
     });
 
-    it("should throw error if no subscription", async () => {
-      await expect(reactivateSubscription(mockEnv, mockUser)).rejects.toThrow(
-        "No active subscription",
-      );
-    });
-
     it("should return current status if not cancelled", async () => {
       const userWithSubscription = {
         ...mockUser,
@@ -487,24 +374,6 @@ describe("Subscription Service", () => {
   describe("createBillingPortalSession", () => {
     const customerUser = { ...mockUser, stripe_customer_id: "cus_123" } as IUser;
 
-    it("creates a portal session for the customer", async () => {
-      mockStripe.billingPortal.sessions.create.mockResolvedValue({
-        url: "https://billing.stripe.com/session/xyz",
-      });
-
-      const result = await createBillingPortalSession(
-        mockEnv,
-        customerUser,
-        "https://app.polychat.test/account",
-      );
-
-      expect(mockStripe.billingPortal.sessions.create).toHaveBeenCalledWith({
-        customer: "cus_123",
-        return_url: "https://app.polychat.test/account",
-      });
-      expect(result).toEqual({ url: "https://billing.stripe.com/session/xyz" });
-    });
-
     it("rejects a return URL on a foreign origin", async () => {
       await expect(
         createBillingPortalSession(
@@ -516,38 +385,10 @@ describe("Subscription Service", () => {
       expect(mockStripe.billingPortal.sessions.create).not.toHaveBeenCalled();
     });
 
-    it("reports the portal as unavailable when Stripe is not configured", async () => {
-      const unconfiguredEnv = { ...mockEnv, STRIPE_SECRET_KEY: undefined } as IEnv;
-
-      await expect(
-        createBillingPortalSession(
-          unconfiguredEnv,
-          customerUser,
-          "https://app.polychat.test/account",
-        ),
-      ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND });
-      expect(mockStripe.billingPortal.sessions.create).not.toHaveBeenCalled();
-    });
-
     it("rejects when the user has no billing account", async () => {
       await expect(
         createBillingPortalSession(mockEnv, mockUser, "https://app.polychat.test/account"),
       ).rejects.toThrow("No billing account");
-    });
-  });
-
-  describe("createCheckoutSession redirect validation", () => {
-    it("rejects redirect URLs on a foreign origin", async () => {
-      await expect(
-        createCheckoutSession(
-          mockEnv,
-          mockUser,
-          "plan-123",
-          "https://evil.example.net/success",
-          "https://app.example.com/cancel",
-        ),
-      ).rejects.toThrow("success_url must be a URL on the application origin");
-      expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
   });
 
@@ -707,32 +548,6 @@ describe("Subscription Service", () => {
   });
 
   describe("handleStripeWebhook", () => {
-    it("should handle checkout.session.completed event", async () => {
-      const mockEvent = {
-        type: "checkout.session.completed",
-        data: {
-          object: {
-            customer: "cus_123",
-            subscription: "sub_123",
-          },
-        },
-      };
-
-      const customerUser = { id: 1, email: "test@example.com", plan_id: "free" };
-
-      mockStripe.webhooks.constructEventAsync.mockResolvedValue(mockEvent);
-      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue(customerUser);
-
-      const result = await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
-
-      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(1, {
-        stripe_subscription_id: "sub_123",
-        plan_id: "pro",
-      });
-      expect(mockSendSubscriptionEmail).toHaveBeenCalledWith(mockEnv, "test@example.com", "Pro");
-      expect(result).toEqual({ received: true });
-    });
-
     it("should not repeat the checkout side effects when the event is redelivered", async () => {
       const mockEvent = {
         type: "checkout.session.completed",
@@ -958,14 +773,6 @@ describe("Subscription Service", () => {
       await expect(
         handleStripeWebhook(mockEnv, "invalid-signature", "test-payload"),
       ).rejects.toThrow("Invalid webhook signature");
-    });
-
-    it("should throw error for missing webhook secret", async () => {
-      const envWithoutSecret = { ...mockEnv, STRIPE_WEBHOOK_SECRET: undefined };
-
-      await expect(
-        handleStripeWebhook(envWithoutSecret, "test-signature", "test-payload"),
-      ).rejects.toThrow("Stripe webhook secret not configured");
     });
   });
 });

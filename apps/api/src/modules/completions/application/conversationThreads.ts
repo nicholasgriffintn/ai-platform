@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ConversationThreadsResponse } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -13,7 +14,7 @@ export async function getConversationBranches(
   const user = context.requireUser();
   const conversation = await context.repositories.conversations.getConversation(conversationId);
 
-  if (!conversation || (!conversation.project_id && conversation.user_id !== user.id)) {
+  if (!conversation || (!conversation.project_id && !ownsResource(user.id, conversation.user_id))) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 

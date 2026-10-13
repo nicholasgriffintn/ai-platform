@@ -1,0 +1,2 @@
+export const teammateComputerColumns =
+  "id AS context_id, computer_id AS id, computer_provider AS provider, computer_provider_handle AS provider_handle, computer_checkpoint_reference AS checkpoint_reference, computer_status AS status, computer_lease_kind AS lease_kind, computer_lease_owner_id AS lease_owner_id, computer_lease_expires_at AS lease_expires_at, computer_lease_fence AS lease_fence, computer_last_error AS last_error, computer_created_at AS created_at, computer_updated_at AS updated_at";

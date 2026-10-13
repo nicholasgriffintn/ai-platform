@@ -18,6 +18,40 @@
   },
   "description": "Advanced Sonar search model for deeper research and cited synthesis",
   "models": {
+    "perplexity-sonar-pro": {
+      "defaults": {
+        "name": "Perplexity: Sonar Pro",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "strengths": [
+          "vision",
+          "document"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "releaseDate": "March 7, 2025",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "perplexity-sonar-pro-search": {
+      "defaults": {
+        "name": "Perplexity: Sonar Pro Search",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "releaseDate": "October 30, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "sonar-pro": {
       "defaults": {
         "name": "Sonar Pro",
@@ -25,10 +59,10 @@
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 9.3,
+          "intelligenceIndex": 7.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

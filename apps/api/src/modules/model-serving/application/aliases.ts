@@ -1,4 +1,5 @@
 import { pickCanaryRoute } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AliasDetail,
   type AliasesResponse,
@@ -154,7 +155,14 @@ export async function createAlias(
   await requireAliasGateSuite(context.repositories, workspaceId, request.gate);
 
   if (request.routeId) {
-    if (access.separationOfDuties || (request.requiresApproval && !access.actions.has("approve"))) {
+    const isAuthorised = authorise("model.alias.activate", {
+      required: request.requiresApproval,
+      separationOfDuties: access.separationOfDuties,
+      canApprove: access.actions.has("approve"),
+      requestExists: false,
+    }).allowed;
+
+    if (!isAuthorised) {
       throw conflict("Create the alias without a target, then request an approved promotion");
     }
 
@@ -293,10 +301,14 @@ export async function promoteAlias(
     latest.to_route_id === route.id &&
     latest.from_route_id === alias.route_id;
 
-  if (
-    needsApproval &&
-    (!access.actions.has("approve") || (access.separationOfDuties && !hasRequest))
-  ) {
+  const isAuthorisedToActivate = authorise("model.alias.activate", {
+    required: alias.requires_approval,
+    separationOfDuties: access.separationOfDuties,
+    canApprove: access.actions.has("approve"),
+    requestExists: hasRequest,
+  }).allowed;
+
+  if (!isAuthorisedToActivate) {
     const event = await repositories.modelAliases.addEvent({
       aliasId: alias.id,
       kind: "requested",
@@ -315,7 +327,13 @@ export async function promoteAlias(
     };
   }
 
-  if (access.separationOfDuties && hasRequest && latest.actor_user_id === access.userId) {
+  const isAuthorisedToApprove = authorise("model.approve", {
+    separationOfDuties: access.separationOfDuties,
+    actorId: String(access.userId),
+    requestedBy: String(latest.actor_user_id),
+  }).allowed;
+
+  if (hasRequest && !isAuthorisedToApprove) {
     throw conflict(
       "Separation of duties: someone other than the requester must approve this promotion",
     );
@@ -374,7 +392,14 @@ export async function rollbackAlias(
   const repositories = context.repositories;
   const alias = await requireAlias(context, workspaceId, aliasId);
 
-  if (access.separationOfDuties || (alias.requires_approval && !access.actions.has("approve"))) {
+  const isAuthorised = authorise("model.alias.activate", {
+    required: alias.requires_approval,
+    separationOfDuties: access.separationOfDuties,
+    canApprove: access.actions.has("approve"),
+    requestExists: false,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw conflict(
       "This rollback needs approval. Request a promotion to the previous route instead",
     );

@@ -8,10 +8,11 @@ import {
   type AsyncInvocationMetadata,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ConversationType, ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
 import { permissionModeSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Database } from "~/infrastructure/database";
@@ -27,7 +28,9 @@ import {
   getPublicConversation,
   shareConversation,
   unshareConversation,
+  type ConversationShare,
   type ConversationSharingScope,
+  type PublicConversationPage,
 } from "~/modules/conversations/application/sharing";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { createInitialConversationTitle } from "~/modules/conversations/application/title-source";
@@ -389,7 +392,7 @@ export class ConversationManager {
     }
 
     if (!conversation.project_id) {
-      return conversation.user_id === this.user.id;
+      return ownsResource(this.user.id, conversation.user_id);
     }
 
     if (!hasPlanEntitlement(this.user.plan_id, "pro")) {
@@ -832,6 +835,15 @@ export class ConversationManager {
       );
     }
 
+    return this.loadVisibleMessagesBefore(conversation_id, limit, before, options);
+  }
+
+  private loadVisibleMessagesBefore(
+    conversation_id: string,
+    limit: number,
+    before: string | undefined,
+    options: { includeArchived?: boolean; includeSnapshots?: boolean },
+  ): Promise<Message[]> {
     return loadVisibleConversationMessagePage({
       conversationId: conversation_id,
       limit,
@@ -1031,22 +1043,35 @@ export class ConversationManager {
   ): Promise<ConversationDetails> {
     const conversation = await this.getConversationMetadata(conversation_id);
 
-    const storedConversationId =
-      typeof conversation.id === "string" ? conversation.id : conversation_id;
+    return {
+      ...conversation,
+      ...(await this.getAuthorisedConversationMessages(conversation, options)),
+    };
+  }
+
+  async getAuthorisedConversationMessages(
+    conversation: Record<string, unknown>,
+    options: {
+      includeArchived?: boolean;
+      includeSnapshots?: boolean;
+      messageLimit?: number;
+    } = {},
+  ): Promise<{
+    messages: Message[];
+    has_more_messages?: boolean;
+    oldest_message_id?: string | null;
+  }> {
+    const conversationId = String(conversation.id);
     const messageLimit = options.messageLimit;
 
     if (messageLimit && messageLimit > 0) {
-      const page = await this.getVisibleMessagesBefore(
-        storedConversationId,
-        messageLimit + 1,
-        undefined,
-        options,
-      );
+      const page = this.store
+        ? await this.loadVisibleMessagesBefore(conversationId, messageLimit + 1, undefined, options)
+        : [];
       const hasMoreMessages = page.length > messageLimit;
       const messages = hasMoreMessages ? page.slice(-messageLimit) : page;
 
       return {
-        ...conversation,
         messages,
         has_more_messages: hasMoreMessages,
         oldest_message_id: messages[0]?.id ?? null,
@@ -1054,21 +1079,16 @@ export class ConversationManager {
     }
 
     const dbMessages = await this.database.repositories.messages.getConversationMessages(
-      storedConversationId,
+      conversationId,
       0,
       undefined,
-      {
-        includeArchived: options.includeArchived ?? true,
-      },
+      { includeArchived: options.includeArchived ?? true },
     );
 
-    const messages = dbMessages
-      .map(formatStoredMessage)
-      .filter((message) => options.includeSnapshots || !hasSnapshotPart(message));
-
     return {
-      ...conversation,
-      messages,
+      messages: dbMessages
+        .map(formatStoredMessage)
+        .filter((message) => options.includeSnapshots || !hasSnapshotPart(message)),
     };
   }
 
@@ -1179,7 +1199,7 @@ export class ConversationManager {
     };
   }
 
-  async shareConversation(conversation_id: string): Promise<{ share_id: string }> {
+  async shareConversation(conversation_id: string): Promise<ConversationShare> {
     return shareConversation(this.sharingScope(), conversation_id);
   }
 
@@ -1192,7 +1212,7 @@ export class ConversationManager {
     limit = 50,
     after?: string,
     options?: { includeArchived?: boolean },
-  ): Promise<Message[]> {
+  ): Promise<PublicConversationPage> {
     return getPublicConversation(this.database.repositories, share_id, limit, after, options);
   }
 }

@@ -8,11 +8,12 @@ import {
   Link,
   cn,
 } from "@ngriffin_uk/polychat-component-ui";
-import type {
-  WorkAttentionItem,
-  WorkAttentionKind,
-  WorkAttentionResponse,
-  WorkAttentionType,
+import {
+  workAttentionKindSchema,
+  workAttentionTypeSchema,
+  type WorkAttentionItem,
+  type WorkAttentionKind,
+  type WorkAttentionResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import type { WorkAttentionFilters } from "@ngriffin_uk/polychat-utility-react";
@@ -59,14 +60,6 @@ const KIND_LABELS: Record<WorkAttentionKind, string> = {
   running: "Running",
   completed: "Recently completed",
 };
-
-function parseKind(value: string): WorkAttentionKind | undefined {
-  return KIND_OPTIONS.find((option) => option.value === value)?.value;
-}
-
-function parseType(value: string): WorkAttentionType | undefined {
-  return value === "task" || value === "run" ? value : undefined;
-}
 
 function kindIcon(kind: WorkAttentionKind) {
   if (kind === "approval") {
@@ -145,7 +138,7 @@ export function WorkAttentionView({
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                kind: parseKind(value),
+                kind: workAttentionKindSchema.safeParse(value).data,
               })
             }
           />
@@ -203,7 +196,7 @@ export function WorkAttentionView({
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                type: parseType(value),
+                type: workAttentionTypeSchema.safeParse(value).data,
               })
             }
           />
@@ -239,7 +232,7 @@ export function WorkAttentionView({
 
       {isLoading ? (
         <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
-          <LoaderCircle className="polychat-motion-active-execution size-4" /> Loading attention…
+          <LoaderCircle className="size-4 animate-spin" /> Loading attention…
         </div>
       ) : items.length === 0 ? (
         <EmptyState
@@ -268,7 +261,7 @@ export function WorkAttentionView({
                     <Icon
                       className={cn(
                         "mt-0.5 size-4 shrink-0",
-                        item.kind === "running" && "polychat-motion-active-execution",
+                        item.kind === "running" && "animate-spin",
                         kindClass(item.kind),
                       )}
                     />

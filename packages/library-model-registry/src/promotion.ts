@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { AliasGate, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
 
 export interface GateResult {
@@ -24,12 +25,21 @@ export function evaluateGate(
       return [`${metric} was not scored`];
     }
 
+    if (!Number.isFinite(value) || !Number.isFinite(threshold)) {
+      return [`${metric} has an invalid score or threshold`];
+    }
+
     return value < threshold
       ? [`${metric} ${value.toFixed(2)} is below ${threshold.toFixed(2)}`]
       : [];
   });
 
-  return { passed: failures.length === 0, scores: means, failures };
+  return {
+    passed: authorise("model.gate", { runPresent: true, thresholdsMet: failures.length === 0 })
+      .allowed,
+    scores: means,
+    failures,
+  };
 }
 
 export function pickCanaryRoute(

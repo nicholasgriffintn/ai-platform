@@ -1,10 +1,7 @@
+import type { SkillContent, SkillResource } from "@ngriffin_uk/polychat-ai-skills";
 import {
-  builtInSkillDocuments,
-  type SkillContent,
-  type SkillResource,
-} from "@ngriffin_uk/polychat-ai-skills";
-import {
-  SkillCatalog,
+  getBuiltInSkillCatalogue,
+  type SkillCatalog,
   type SkillCatalogDocument,
   type SkillDefinition,
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
@@ -27,15 +24,17 @@ export type {
   SkillResourceDescriptor,
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
 
-const skillCatalog = new SkillCatalog(builtInSkillDocuments);
-
 export async function resolveSkillCatalog(
   context: ServiceContext,
   scope: AuthoredSkillScope,
   enabledNames?: ReadonlySet<string>,
 ): Promise<SkillCatalog> {
   const stored = await listStoredStableSkillDocuments(context, scope);
-  const builtInNames = new Set(skillCatalog.listDefinitions().map((skill) => skill.id));
+  const builtInNames = new Set(
+    getBuiltInSkillCatalogue()
+      .listDefinitions()
+      .map((skill) => skill.id),
+  );
   const selected = stored.filter(
     (skill) => !builtInNames.has(skill.name) && (!enabledNames || enabledNames.has(skill.name)),
   );
@@ -53,28 +52,28 @@ export async function resolveSkillCatalog(
     },
   }));
 
-  return new SkillCatalog([...builtInSkillDocuments, ...documents]);
+  return getBuiltInSkillCatalogue().extend(documents);
 }
 
 export async function listSkillDefinitions(): Promise<SkillDefinition[]> {
-  return skillCatalog.listDefinitions();
+  return getBuiltInSkillCatalogue().listDefinitions();
 }
 
 export async function getSkillDefinition(skillId: string): Promise<SkillDefinition | undefined> {
-  return skillCatalog.getDefinition(skillId);
+  return getBuiltInSkillCatalogue().getDefinition(skillId);
 }
 
 export async function loadSkill(skillId: string): Promise<SkillContent | null> {
-  return skillCatalog.load(skillId);
+  return getBuiltInSkillCatalogue().load(skillId);
 }
 
 export async function getSkillResource(
   skillId: string,
   path: string,
 ): Promise<SkillResource | null> {
-  return skillCatalog.readResource(skillId, path);
+  return getBuiltInSkillCatalogue().readResource(skillId, path);
 }
 
 export async function listSkillSummaries(): Promise<SkillSummary[]> {
-  return skillCatalog.listSummaries();
+  return getBuiltInSkillCatalogue().listSummaries();
 }

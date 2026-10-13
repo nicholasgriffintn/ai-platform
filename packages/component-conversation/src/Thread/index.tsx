@@ -42,6 +42,8 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
   isReadinessFresh,
+  getModelInteractionCapabilities,
+  isTerminalChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   ConversationModeMetadata,
@@ -50,6 +52,7 @@ import type {
   ChatMessageSelection,
   ModelSelectionChangeHandler,
   ModelSelectorScope,
+  QueuedChatMessage,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import type {
@@ -72,6 +75,8 @@ import {
   type ChatInputHandle,
   type ConversationRunSteering,
 } from "./ChatInput/index.js";
+import { QueuedFollowUps } from "./ChatInput/QueuedFollowUps.js";
+import { uploadComposerAttachment } from "./ChatInput/uploadAttachment.js";
 import { ChatRunStatusBanner } from "./ChatRunStatusBanner.js";
 import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
@@ -82,6 +87,12 @@ import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
 import { useGoalCommands } from "./useGoalCommands.js";
 
 const EMPTY_CONTEXT_ATTACHMENTS: AttachmentData[] = [];
+
+export interface ConversationFollowUpQueue {
+  messages: readonly QueuedChatMessage[];
+  onQueue: (content: string) => Promise<void>;
+  onRemove: (queuedId: string) => void;
+}
 
 export interface ThreadModeConfig {
   assistantActionRoutes?: {
@@ -137,6 +148,7 @@ export interface ThreadModeConfig {
   composerBanner?: ReactNode;
   agentApprovals?: ConversationAgentApprovals;
   runSteering?: ConversationRunSteering;
+  followUpQueue?: ConversationFollowUpQueue;
   onToolInteraction?: (
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
@@ -233,6 +245,26 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const isStreamLoading = streamStarted;
   const isModelInitializing = useIsLoading("model-init");
+  const followUpQueue = storageMode.retention === "kept" ? modeConfig?.followUpQueue : undefined;
+  const latestRunStatus = currentConversation?.latest_run?.status;
+  const isReplyLive =
+    isStreamLoading || (latestRunStatus !== undefined && !isTerminalChatRunStatus(latestRunStatus));
+  const runSteering = useMemo<ConversationRunSteering | undefined>(() => {
+    if (modeConfig?.runSteering) {
+      return modeConfig.runSteering;
+    }
+
+    if (!followUpQueue || !isReplyLive) {
+      return undefined;
+    }
+
+    return {
+      placeholder: "Queue a follow-up for when this reply finishes",
+      submitLabel: "Queue message",
+      help: "Press Enter to queue it. It sends as soon as the reply finishes, even if you close this tab.",
+      onSubmit: followUpQueue.onQueue,
+    };
+  }, [followUpQueue, isReplyLive, modeConfig?.runSteering]);
 
   const messages = useMemo(
     () => currentConversation?.messages || [],
@@ -371,8 +403,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       if (!composerInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
         return false;
       }
-
-      const runSteering = modeConfig?.runSteering;
 
       if (runSteering) {
         const instruction = composerInput.trim();
@@ -617,6 +647,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       navigate,
       refetchModels,
       resolveAssistantActionSubmit,
+      runSteering,
       selectedAssistantAction,
       selectedModelConfig,
       sendMessage,
@@ -674,7 +705,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
-      if ((isStreamLoading && !modeConfig?.runSteering) || isModelInitializing) {
+      if ((isStreamLoading && !runSteering) || isModelInitializing) {
         return;
       }
 
@@ -705,7 +736,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       isStreamLoading,
       isModelInitializing,
       handleSubmit,
-      modeConfig?.runSteering,
+      runSteering,
     ],
   );
 
@@ -732,6 +763,34 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [currentConversationId, trackFeatureUsage, setComposerInput],
   );
 
+  const uploadInteractionFiles = useCallback(
+    async (files: unknown): Promise<AttachmentData[]> => {
+      if (!Array.isArray(files)) {
+        return [];
+      }
+
+      const capabilities = getModelInteractionCapabilities(model ? apiModels?.[model] : undefined);
+      const results = await Promise.all(
+        files
+          .filter((file): file is File => file instanceof File)
+          .map((file) =>
+            uploadComposerAttachment(file, {
+              ...capabilities,
+              projectId: modeConfig?.requestOptions?.metadata?.project_id ?? undefined,
+            }),
+          ),
+      );
+      const failure = results.find((result) => "error" in result);
+
+      if (failure && "error" in failure) {
+        throw new Error(failure.error);
+      }
+
+      return results.flatMap((result) => ("attachment" in result ? [result.attachment] : []));
+    },
+    [apiModels, model, modeConfig?.requestOptions?.metadata?.project_id],
+  );
+
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
     async (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
@@ -745,9 +804,19 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       if (action === "submitPrompt") {
-        if (typeof data.input === "string" && data.input.trim()) {
-          const approvedToolName =
-            typeof data.approvedToolName === "string" ? data.approvedToolName : null;
+        const interactionId = typeof data.interactionId === "string" ? data.interactionId : null;
+        const resolution = data.resolution;
+        const directResolution = data.approvalRequired === true || toolName === "request_approval";
+
+        if (
+          directResolution &&
+          interactionId &&
+          (resolution === "approved" || resolution === "rejected")
+        ) {
+          if (!currentConversationId) {
+            throw new Error("The conversation is no longer available");
+          }
+
           const interactionRequestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
             options: {
               toolInteraction: {
@@ -756,14 +825,33 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               },
             },
           });
-          const requestOptions = approvedToolName
-            ? {
-                ...interactionRequestOptions,
-                approved_tools: [approvedToolName],
-              }
-            : interactionRequestOptions;
+          const response = await respondToExistingConversation(currentConversationId, {
+            requestOptions: interactionRequestOptions,
+          });
 
-          const response = await sendMessage(data.input, undefined, requestOptions);
+          if (response.status === "error") {
+            throw new Error(response.response || "The approval could not be submitted");
+          }
+
+          return;
+        }
+
+        if (typeof data.input === "string" && data.input.trim()) {
+          const requestOptions = mergeChatRequestOptions(modeConfig?.requestOptions, {
+            options: {
+              toolInteraction: {
+                toolName,
+                response: data,
+              },
+            },
+          });
+
+          const answerAttachments = await uploadInteractionFiles(data.files);
+          const response = await sendMessage(
+            data.input,
+            answerAttachments.length > 0 ? answerAttachments : undefined,
+            requestOptions,
+          );
 
           if (response.status === "error") {
             throw new Error(response.response || "The approval could not be submitted");
@@ -799,8 +887,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [
       currentConversationId,
       trackFeatureUsage,
+      uploadInteractionFiles,
       setComposerInput,
       sendMessage,
+      respondToExistingConversation,
       modeConfig?.requestOptions,
       modeToolInteraction,
       location.pathname,
@@ -951,6 +1041,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         ) : null}
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         {modeConfig?.composerBanner}
+        {followUpQueue ? (
+          <QueuedFollowUps messages={followUpQueue.messages} onRemove={followUpQueue.onRemove} />
+        ) : null}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
@@ -971,7 +1064,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
           activeRunStatus={currentConversation?.latest_run?.status}
-          runSteering={modeConfig?.runSteering}
+          runSteering={runSteering}
           hasConversationHistory={messages.length > 0}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}

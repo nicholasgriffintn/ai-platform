@@ -8,6 +8,37 @@
   },
   "description": "The gpt family includes models that produce audio, image, text.",
   "models": {
+    "daybreak-red": {
+      "defaults": {
+        "name": "Daybreak Red",
+        "description": "Alias for advanced cybersecurity models for authorized vulnerability research and security testing",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "February 16, 2026",
+        "releaseDate": "August 7, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "gpt-3-5-turbo": {
       "defaults": {
         "name": "GPT-3.5 Turbo",
@@ -23,13 +54,14 @@
           ]
         },
         "reliability": 1,
+        "knowledgeCutoffDate": "September 1, 2021",
         "releaseDate": "March 1, 2023",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 3.6,
+          "intelligenceIndex": 5.5,
           "codingIndex": 10.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -72,6 +104,8 @@
       "defaults": {
         "name": "GPT-4",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "contextWindow": 8191,
+        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text"
@@ -86,12 +120,13 @@
         "contextComplexity": 2,
         "reliability": 1,
         "knowledgeCutoffDate": "November 2023",
+        "releaseDate": "November 6, 2023",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": 6.7,
           "codingIndex": 13.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -106,10 +141,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.4,
+          "intelligenceIndex": 12.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -139,10 +174,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.4,
+          "intelligenceIndex": 12.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -172,10 +207,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.4,
+          "intelligenceIndex": 12.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -204,15 +239,6 @@
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "contextWindow": 128000,
         "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -223,10 +249,10 @@
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "November 6, 2023",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.9,
+          "intelligenceIndex": 7,
           "codingIndex": 21.5,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -253,10 +279,10 @@
         "releaseDate": "November 6, 2023",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7.9,
+          "intelligenceIndex": 7,
           "codingIndex": 21.5,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -305,10 +331,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "May 13, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.6,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -358,10 +384,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "May 13, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.6,
+          "intelligenceIndex": 8.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -445,7 +471,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
@@ -459,10 +485,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
-          "codingIndex": null,
+          "intelligenceIndex": 23,
+          "codingIndex": 37.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -487,9 +513,10 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -500,10 +527,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.4,
-          "codingIndex": null,
+          "intelligenceIndex": 24.7,
+          "codingIndex": 49.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -528,7 +555,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
         "reasoningConfig": {
@@ -542,10 +569,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.4,
-          "codingIndex": null,
+          "intelligenceIndex": 24.7,
+          "codingIndex": 49.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -675,10 +702,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
+          "intelligenceIndex": 30.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -746,10 +773,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
+          "intelligenceIndex": 30.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -798,10 +825,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 1,
+        "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
@@ -815,10 +843,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.7,
-          "codingIndex": null,
+          "intelligenceIndex": 39,
+          "codingIndex": 71.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -841,10 +869,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 1,
+        "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
@@ -858,10 +887,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.7,
-          "codingIndex": null,
+          "intelligenceIndex": 39,
+          "codingIndex": 71.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -884,10 +913,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 1,
+        "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
@@ -902,10 +932,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.7,
-          "codingIndex": null,
+          "intelligenceIndex": 39,
+          "codingIndex": 71.1,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -960,10 +990,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
@@ -978,10 +1009,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.4,
-          "codingIndex": 56.5,
-          "agenticIndex": 25.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 38.4,
+          "codingIndex": 74.9,
+          "agenticIndex": 36.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1004,10 +1035,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
@@ -1022,10 +1054,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.4,
-          "codingIndex": 56.5,
-          "agenticIndex": 25.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 38.4,
+          "codingIndex": 74.9,
+          "agenticIndex": 36.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1048,10 +1080,11 @@
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
@@ -1067,10 +1100,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.4,
-          "codingIndex": 56.5,
-          "agenticIndex": 25.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 38.4,
+          "codingIndex": 74.9,
+          "agenticIndex": 36.4,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1123,7 +1156,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
@@ -1138,10 +1171,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
-          "codingIndex": null,
+          "intelligenceIndex": 23,
+          "codingIndex": 37.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1167,7 +1200,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
@@ -1181,10 +1214,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
-          "codingIndex": null,
+          "intelligenceIndex": 23,
+          "codingIndex": 37.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1230,6 +1263,36 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 29, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -1436,9 +1499,43 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
         "releaseDate": "September 10, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "bbaScore",
+              "label": "Big Bench Audio",
+              "value": 0.9,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "fdbScore",
+              "label": "Full Duplex Bench",
+              "value": 0.95,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "tauVoiceScore",
+              "label": "Tau Voice",
+              "value": 0.74,
+              "min": 0,
+              "max": 1
+            }
+          ]
+        }
       }
     },
     "gpt-live-transcribe": {
@@ -1467,6 +1564,7 @@
     "gpt-oss-120b": {
       "defaults": {
         "name": "GPT OSS 120B",
+        "openWeights": true,
         "description": "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
         "contextWindow": 131072,
         "modalities": {
@@ -1477,13 +1575,25 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
         "reliability": 1,
         "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1509,10 +1619,10 @@
         "releaseDate": "August 5, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.8,
+          "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
-          "agenticIndex": 13.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 3.7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1536,10 +1646,10 @@
         "reliability": 1,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
+          "intelligenceIndex": 9,
           "codingIndex": 20.7,
-          "agenticIndex": 3.1,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 1.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1600,7 +1710,25 @@
     },
     "gpt-realtime-2": {
       "defaults": {
-        "description": "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use."
+        "description": "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use.",
+        "contextComplexity": 4,
+        "reliability": 3,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1079,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 13
+            }
+          ]
+        }
       }
     },
     "gpt-realtime-2-1": {
@@ -1751,6 +1879,33 @@
         "supportsTemperature": false
       }
     },
+    "gpt-sol-latest": {
+      "defaults": {
+        "name": "GPT Sol Latest",
+        "description": "Lab latest market for GPT frontier supply. You contract for the latest qualifying route, not a specific model.",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 6, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "gpt-transcribe": {
       "defaults": {
         "name": "GPT Transcribe",
@@ -1772,6 +1927,43 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
+      }
+    },
+    "openai-gpt-3-5-turbo-16k": {
+      "defaults": {
+        "name": "OpenAI: GPT-3.5 Turbo 16k",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 16385,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 28, 2023"
+      }
+    },
+    "openai-gpt-3-5-turbo-instruct": {
+      "defaults": {
+        "name": "OpenAI: GPT-3.5 Turbo Instruct",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 4095,
+        "maxTokens": 3685,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 28, 2023",
+        "supportsToolCalls": false
       }
     },
     "openai-gpt-4-5": {
@@ -1805,10 +1997,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "November 6, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 13.6,
+          "intelligenceIndex": 9.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1875,6 +2067,294 @@
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "supportsTopP": false
+      }
+    },
+    "openai-gpt-5-2-chat": {
+      "defaults": {
+        "name": "OpenAI: GPT-5.2 Chat",
+        "description": "Chat-tuned GPT model for conversational assistance, writing, and tool workflows",
+        "contextWindow": 128000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 10, 2025",
+        "supportsTemperature": false
+      }
+    },
+    "openai-gpt-5-4-image-2": {
+      "defaults": {
+        "name": "OpenAI: GPT-5.4 Image 2",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "April 21, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-image": {
+      "defaults": {
+        "name": "OpenAI: GPT-5 Image ($$$$)",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "October 14, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-gpt-5-image-mini": {
+      "defaults": {
+        "name": "OpenAI: GPT-5 Image Mini",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "October 16, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Sol Pro",
+        "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 29, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-astra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Astra Pro ($$$$)",
+        "description": "GPT-6 Astra Pro is the same underlying model as [GPT-6 Astra](https://openrouter.ai/openai/gpt-6-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-luna-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Luna Pro",
+        "description": "GPT-6 Luna Pro is the same underlying model as [GPT-6 Luna](https://openrouter.ai/openai/gpt-6-luna), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-6-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Sol Pro",
+        "description": "GPT-6 Sol Pro is the same underlying model as [GPT-6 Sol](https://openrouter.ai/openai/gpt-6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-audio": {
+      "defaults": {
+        "name": "OpenAI: GPT Audio",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "January 19, 2026"
+      }
+    },
+    "openai-gpt-audio-mini": {
+      "defaults": {
+        "name": "OpenAI: GPT Audio Mini",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "January 19, 2026"
+      }
+    },
+    "openai-gpt-chat-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Chat Latest",
+        "description": "Chat-tuned GPT model for conversational assistance, writing, and tool workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "May 5, 2026",
+        "supportsTemperature": false
       }
     },
     "openai-gpt-latest": {

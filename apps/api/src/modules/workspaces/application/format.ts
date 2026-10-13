@@ -120,6 +120,7 @@ export function formatProjectCapability(row: ProjectCapabilityRow): ProjectCapab
     kind: row.kind,
     capabilityId: row.capability_id,
     configuration,
+    excluded: Boolean(row.excluded),
     createdBy: row.created_by,
     createdAt: row.created_at,
   };

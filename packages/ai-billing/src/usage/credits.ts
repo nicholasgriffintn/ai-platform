@@ -1,6 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { usagePeriodFromDate, type CreditState } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { resolveCreditState } from "../credit-state.js";
 import {
@@ -194,7 +194,7 @@ export async function admitTurn(
       return { admitted: false, position };
     }
 
-    runtime.publisher?.usageChanged(durable.userId, position.period);
+    await runtime.publisher?.usageChanged(durable.userId, position.period);
 
     return {
       admitted: true,

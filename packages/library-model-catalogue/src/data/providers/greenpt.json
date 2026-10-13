@@ -41,6 +41,7 @@
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
         "contextWindow": 1000000,
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0001596,
         "costPer1kOutputTokens": 0.000399,
@@ -102,7 +103,9 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1000000,
-        "speed": 4,
+        "maxTokens": 131072,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.001254,
         "costPer1kOutputTokens": 0.005016,
@@ -246,7 +249,11 @@
         "costPer1kInputTokens": 0.000399,
         "costPer1kOutputTokens": 0.001083,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "green-r-raw": {
       "model": "gpt-oss/green-r-raw",
@@ -256,7 +263,11 @@
         "costPer1kInputTokens": 0.000399,
         "costPer1kOutputTokens": 0.001083,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "green-s-pro": {
       "model": "greenpt/green-s-pro/green-s-pro",
@@ -292,21 +303,13 @@
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0007524,
         "costPer1kOutputTokens": 0.004275,
@@ -360,6 +363,8 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
+        "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
         "costPer1kOutputTokens": 0.01881,
@@ -381,7 +386,6 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
-        "name": "Llama-3.3-70B-Instruct",
         "contextWindow": 100000,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
@@ -396,9 +400,8 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0001938,
         "costPer1kOutputTokens": 0.001129,
@@ -436,7 +439,7 @@
       "model": "mistral-small/mistral-small-3-2",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0.000456,
@@ -457,6 +460,7 @@
         "supportsAttachments": true
       },
       "unset": [
+        "strengths",
         "reliability",
         "artificialAnalysis",
         "supportsResponseFormat"
@@ -468,8 +472,8 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "contextComplexity": 3,
-        "speed": 3,
+        "speed": 2,
+        "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
         "costPer1kOutputTokens": 0.003078
@@ -511,7 +515,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.000798,
         "costPer1kOutputTokens": 0.004959,
@@ -531,7 +535,6 @@
       "model": "qwen/qwen3-6-35b-a3b",
       "matchingModel": "qwen3.6-35b-a3b",
       "overrides": {
-        "name": "Qwen3.6 35B-A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 32768,
         "modalities": {
@@ -581,6 +584,9 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,
         "costPer1kOutputTokens": 0.00127776,
@@ -602,6 +608,9 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00127754,
         "costPer1kOutputTokens": 0.00511016,
@@ -630,6 +639,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,

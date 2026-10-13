@@ -4,9 +4,15 @@ import {
   INFRA_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+  SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import {
+  sourceResourceSql,
+  synthesisResourceSql,
+} from "~/infrastructure/database/resource-storage";
 import { scheduleDueRecipeExecutions } from "~/modules/apps/application/recipes/scheduler";
 import { previousUtcDay } from "~/modules/infra/application/reconciliation";
 import { overageSyncHourIso } from "~/modules/subscription/application/stripeOverageSync";
@@ -20,7 +26,10 @@ const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
 const SETTLED_TASK_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const SETTLED_TASK_PURGE_LIMIT = 500;
 const DURABLE_DELIVERY_RECOVERY_DELAY_MS = 5 * 60 * 1000;
+const MAX_DURABLE_TASK_RECOVERIES = 3;
 const DURABLE_TASK_TYPES = [
+  SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
@@ -32,7 +41,7 @@ export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Pr
   const recovered = (
     await Promise.all(
       DURABLE_TASK_TYPES.map((taskType) =>
-        repositories.tasks.requeueFailedTasksByType(taskType, cutoff),
+        repositories.tasks.requeueFailedTasksByType(taskType, cutoff, MAX_DURABLE_TASK_RECOVERIES),
       ),
     )
   ).flat();
@@ -119,20 +128,20 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
     const result = await env.DB.prepare(
       `SELECT u.id AS id, COUNT(s.id) AS new_memory_count
        FROM user u
-       INNER JOIN user_settings us ON u.id = us.user_id
+       INNER JOIN scoped_configuration us ON u.id = us.user_id AND us.kind = 'preferences'
        LEFT JOIN (
          SELECT user_id, MAX(created_at) AS created_at
-         FROM memory_syntheses
+         FROM ${synthesisResourceSql} memory_syntheses
          WHERE namespace = 'global' AND is_active = 1
          GROUP BY user_id
        ) ms ON ms.user_id = u.id
-       LEFT JOIN source s
+       LEFT JOIN ${sourceResourceSql} s
          ON s.created_by_user_id = u.id
         AND s.kind = 'memory'
         AND s.status != 'archived'
         AND COALESCE(json_extract(s.metadata, '$.namespace'), 'global') = 'global'
         AND (ms.created_at IS NULL OR s.created_at > ms.created_at)
-       WHERE us.memories_save_enabled = 1
+       WHERE json_extract(us.payload, '$.memories_save_enabled') = 1
        GROUP BY u.id`,
     ).all();
 

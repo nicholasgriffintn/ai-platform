@@ -9,24 +9,65 @@
         "text"
       ]
     },
+    "strengths": [
+      "tool_use"
+    ],
+    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The mercury family includes models that produce text.",
   "models": {
+    "inception-mercury-2": {
+      "defaults": {
+        "name": "Inception: Mercury 2",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 128000,
+        "maxTokens": 50000,
+        "contextComplexity": 3,
+        "releaseDate": "March 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.8,
+          "codingIndex": 31.1,
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "inception-mercury-2-5": {
+      "defaults": {
+        "name": "Inception: Mercury 2.5",
+        "description": "Mercury 2.5 is the fastest reasoning LLM, and the latest diffusion LLM (dLLM) from Inception. Instead of generating tokens sequentially, Mercury 2.5 produces and refines multiple tokens in parallel, achieving...",
+        "contextWindow": 260000,
+        "maxTokens": 65536,
+        "contextComplexity": 4,
+        "releaseDate": "September 8, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "mercury-2": {
       "defaults": {
         "name": "Mercury 2",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 50000,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
-        "reliability": 1,
         "releaseDate": "February 24, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -37,10 +78,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.3,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 13.8,
+          "codingIndex": 31.1,
+          "agenticIndex": 1.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -50,15 +91,13 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 260000,
         "maxTokens": 65536,
+        "contextComplexity": 4,
         "releaseDate": "September 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -68,16 +107,7 @@
         "description": "Preview model for early access evaluation, prototyping, and compatibility testing",
         "contextWindow": 260000,
         "maxTokens": 65536,
-        "releaseDate": "August 31, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "August 31, 2026"
       }
     },
     "mercury-coder-small-beta": {

@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ChatRunCommandReceiptResponse,
   CancelChatRunRequest,
@@ -12,6 +13,7 @@ import { recordTurnCancellationRequested } from "~/modules/chat/application/stre
 import { cancelDelegationTree } from "~/modules/delegations/application/cancel-tree";
 
 import { cleanupCancelledChatRun } from "./cancellation-cleanup";
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 import { requireChatRunAccess } from "./status";
 
@@ -24,7 +26,7 @@ export async function handleCancelChatRun(
   const user = context.requireUser();
   const run = await requireChatRunAccess(context, runId);
 
-  if (run.initiatorUserId !== user.id) {
+  if (!ownsResource(user.id, run.initiatorUserId)) {
     throw new AssistantError(
       "Only the run initiator can cancel this run",
       ErrorType.FORBIDDEN,
@@ -87,6 +89,7 @@ export async function handleCancelChatRun(
   }
 
   await cancelDelegationTree(context, run.id);
+  await releaseQueuedFollowUpAfterRun(context, receipt.run);
 
   return { run: receipt };
 }

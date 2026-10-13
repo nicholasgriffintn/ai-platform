@@ -23,9 +23,9 @@
       "overrides": {
         "name": "Qwen3.8-27B",
         "status": "beta",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "isFree": true,
+        "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

@@ -9,6 +9,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   SANDBOX_TIMEOUT_DEFAULT_SECONDS,
+  SANDBOX_WORKSPACE_INSTANCE_TYPE,
   SANDBOX_TIMEOUT_MAX_SECONDS,
   type SandboxRunUsageReport,
 } from "@ngriffin_uk/polychat-schemas";
@@ -35,7 +36,7 @@ export async function reserveSandboxRun(params: {
 }): Promise<void> {
   try {
     const timeoutSeconds = params.timeoutSeconds ?? SANDBOX_TIMEOUT_DEFAULT_SECONDS;
-    const instanceType = resolveContainerInstanceType(params.env.SANDBOX_INSTANCE_TYPE);
+    const instanceType = SANDBOX_WORKSPACE_INSTANCE_TYPE;
     const creditMicros = estimateContainerRunCreditMicros(instanceType, timeoutSeconds);
     const expiresAt = new Date(
       Date.now() + (timeoutSeconds + RESERVATION_EXPIRY_BUFFER_SECONDS) * 1000,

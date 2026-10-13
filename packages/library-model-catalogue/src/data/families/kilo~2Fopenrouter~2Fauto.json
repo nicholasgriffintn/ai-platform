@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 2000000,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "audio",
+        "image",
+        "pdf",
+        "text",
+        "video"
+      ],
+      "output": [
+        "image",
+        "text"
+      ]
+    },
+    "releaseDate": "March 15, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/openrouter/auto family includes models that produce image, text.",
+  "models": {
+    "auto-router": {
+      "defaults": {
+        "name": "Auto Router",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { requireOcrAccess } from "@ngriffin_uk/polychat-ai-providers";
 import type { OcrExtractionResult } from "@ngriffin_uk/polychat-ai-providers";
 import { ocrSchema, type OcrRequest } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {

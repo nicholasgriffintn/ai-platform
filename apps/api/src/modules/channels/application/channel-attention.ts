@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { truncateText } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -28,7 +29,7 @@ export async function recordChannelAttention(params: {
       },
     );
   } else if (
-    existing.user_id !== params.user.id ||
+    !ownsResource(params.user.id, existing.user_id) ||
     (existing.project_id ?? undefined) !== params.projectId
   ) {
     throw new AssistantError("Channel conversation scope changed", ErrorType.FORBIDDEN, 403);

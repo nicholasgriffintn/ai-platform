@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-models",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Model and provider presentation for Polychat surfaces: icon registry, catalogue lists, and controlled model selection views",
   "license": "Apache-2.0",
   "files": [
@@ -33,7 +33,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
-    "lucide-react": "1.45.0"
+    "lucide-react": "1.52.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

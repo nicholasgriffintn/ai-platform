@@ -20,6 +20,7 @@
       "matchingModel": "poolside/laguna-s-2.1",
       "overrides": {
         "contextWindow": 1048576,
+        "isFeatured": true,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0

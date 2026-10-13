@@ -8,15 +8,15 @@ import {
   DialogTitle,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
-import {
-  type ModelToolConfiguration,
-  parseModelToolConfiguration,
-  type ModelToolDefinition,
+import type {
+  ModelToolConfiguration,
+  ModelToolDefinition,
+  McpConnection,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { useState } from "react";
+import type { ReactNode } from "react";
 
-import { McpServerFields, type McpServerFieldValue } from "./McpServerFields";
+import { McpServerFields } from "./McpServerFields";
+import { useToolConfigurationForm } from "./useToolConfigurationForm";
 
 interface ToolConfigurationDialogProps {
   configuration?: Record<string, unknown>;
@@ -24,6 +24,8 @@ interface ToolConfigurationDialogProps {
   onClose: () => void;
   onSubmit: (configuration: ModelToolConfiguration) => Promise<void>;
   tool: ModelToolDefinition | null;
+  mcpConnections?: McpConnection[];
+  mcpConnectionManager?: ReactNode;
 }
 
 export function ToolConfigurationDialog({
@@ -32,67 +34,11 @@ export function ToolConfigurationDialog({
   onClose,
   onSubmit,
   tool,
+  mcpConnections,
+  mcpConnectionManager,
 }: ToolConfigurationDialogProps) {
-  const [vectorStoreIds, setVectorStoreIds] = useState("");
-  const [servers, setServers] = useState<McpServerFieldValue[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [prevTool, setPrevTool] = useState(tool);
-  const [prevStoredConfiguration, setPrevStoredConfiguration] = useState(storedConfiguration);
-
-  if (prevTool !== tool || prevStoredConfiguration !== storedConfiguration) {
-    setPrevTool(tool);
-    setPrevStoredConfiguration(storedConfiguration);
-
-    if (tool) {
-      const configuration = parseModelToolConfiguration(tool, storedConfiguration ?? {});
-
-      setVectorStoreIds(
-        configuration && "vectorStoreIds" in configuration
-          ? configuration.vectorStoreIds.join("\n")
-          : "",
-      );
-      setServers(
-        configuration && "servers" in configuration
-          ? configuration.servers.map((server) => ({ ...server, id: generateId() }))
-          : [{ id: generateId(), label: "", url: "" }],
-      );
-      setError(null);
-    }
-  }
-
-  const submit = async () => {
-    if (!tool) {
-      return;
-    }
-
-    const candidate =
-      tool.configurationKind === "file_search"
-        ? {
-            vectorStoreIds: vectorStoreIds
-              .split(/[\n,]/)
-              .map((value) => value.trim())
-              .filter(Boolean),
-          }
-        : {
-            servers: servers.map(({ label, url }) => ({
-              label: label.trim(),
-              url: url.trim(),
-            })),
-          };
-    const configuration = parseModelToolConfiguration(tool, candidate);
-
-    if (!configuration) {
-      setError(`Complete the required ${tool.label} configuration.`);
-
-      return;
-    }
-
-    try {
-      await onSubmit(configuration);
-    } catch {
-      // The owning scope exposes its API error beside the capability catalogue.
-    }
-  };
+  const { vectorStoreIds, setVectorStoreIds, servers, setServers, error, submit } =
+    useToolConfigurationForm(tool, storedConfiguration, onSubmit);
 
   return (
     <Dialog open={Boolean(tool)} onOpenChange={(open) => !open && onClose()}>
@@ -117,7 +63,15 @@ export function ToolConfigurationDialog({
             <p className="text-xs text-muted-foreground">Enter one ID per line.</p>
           </div>
         ) : (
-          <McpServerFields servers={servers} minimumRows={1} onChange={setServers} />
+          <div className="space-y-4">
+            <McpServerFields
+              servers={servers}
+              minimumRows={1}
+              onChange={setServers}
+              connections={mcpConnections}
+            />
+            {mcpConnectionManager}
+          </div>
         )}
 
         {error && (

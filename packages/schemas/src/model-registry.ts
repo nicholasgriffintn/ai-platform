@@ -105,6 +105,11 @@ const stringListSchema = z.array(z.string().min(1)).min(1).max(100);
 const inclusionOperatorSchema = z.enum(["in", "not_in"]);
 
 export const policyConditionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("cedar"),
+    source: z.string().min(1).max(16_000),
+    metadataOnly: z.boolean().default(false),
+  }),
   z.object({ type: z.literal("always") }),
   z.object({ type: z.literal("asset_kind"), values: z.array(modelAssetKindSchema).min(1) }),
   z.object({ type: z.literal("licence"), op: inclusionOperatorSchema, values: stringListSchema }),
@@ -190,6 +195,7 @@ export const policyMatchSchema = z.object({
   ruleId: z.string(),
   effect: policyEffectSchema,
   reason: z.string(),
+  evaluationFailed: z.boolean().optional(),
 });
 export type PolicyMatch = z.infer<typeof policyMatchSchema>;
 

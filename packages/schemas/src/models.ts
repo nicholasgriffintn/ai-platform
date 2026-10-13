@@ -127,6 +127,20 @@ export const modelServiceTierSchema = z.enum(["default", "fast"]);
 
 const modelStatusSchema = z.enum(["alpha", "beta", "deprecated"]);
 
+export const modelZeroRetentionSchema = z.enum(["default", "account_setting", "on_request"]);
+
+export type ModelZeroRetention = z.infer<typeof modelZeroRetentionSchema>;
+
+export const modelDataRetentionSchema = z
+  .object({
+    maxDays: z.number().int().nonnegative().optional(),
+    zeroRetention: modelZeroRetentionSchema.optional(),
+    source: z.url(),
+  })
+  .strict();
+
+export type ModelDataRetention = z.infer<typeof modelDataRetentionSchema>;
+
 export const modelConfigItemSchema = z.object({
   kind: z.enum(["model", "agent"]).optional(),
   id: z.string().optional(),
@@ -182,6 +196,7 @@ export const modelConfigItemSchema = z.object({
   knowledgeCutoffDate: z.string().optional(),
   releaseDate: z.string().optional(),
   lastUpdated: z.string().optional(),
+  dataRetention: modelDataRetentionSchema.optional(),
   costPer1kInputTokens: z.number().optional(),
   costPer1kOutputTokens: z.number().optional(),
   costPer1kReasoningTokens: z.number().optional(),

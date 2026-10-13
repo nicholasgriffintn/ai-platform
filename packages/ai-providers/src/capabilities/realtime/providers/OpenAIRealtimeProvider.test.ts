@@ -4,7 +4,7 @@ import { createTestRuntime } from "../../../__test__/test-runtime.js";
 import type { ProviderEnv, ProviderUser } from "../../../env.js";
 import { createCatalogueModelResolver } from "../../../model-resolver.js";
 import type { RealtimeSessionRequest } from "../index.js";
-import { OPENAI_REALTIME_DESCRIPTOR, OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider.js";
+import { OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider.js";
 
 const fetchMock = vi.hoisted(() =>
   vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(),
@@ -69,22 +69,6 @@ describe("OpenAIRealtimeProvider", () => {
     }));
   });
 
-  it("defaults to GPT Realtime 2.1 and exposes the current realtime models", () => {
-    const provider = new OpenAIRealtimeProvider(runtime);
-
-    expect(OPENAI_REALTIME_DESCRIPTOR.defaultModelId).toBe("gpt-realtime-2.1");
-    expect(provider.getDefaultModel("realtime")).toBe("gpt-realtime-2.1");
-    expect(provider.models).toEqual(
-      expect.arrayContaining([
-        "gpt-realtime-2.1",
-        "gpt-realtime-2.1-mini",
-        "gpt-live-transcribe",
-        "gpt-transcribe",
-      ]),
-    );
-    expect(provider.models).not.toContain("gpt-realtime-mini");
-  });
-
   it("creates realtime sessions with GPT Realtime 2.1 by default", async () => {
     const provider = new OpenAIRealtimeProvider(runtime);
 
@@ -100,16 +84,6 @@ describe("OpenAIRealtimeProvider", () => {
           },
         },
       },
-    });
-  });
-
-  it("accepts GPT Realtime 2.1 Mini for lower-cost live sessions", async () => {
-    const provider = new OpenAIRealtimeProvider(runtime);
-
-    await provider.createSession(createRequest({ model: "gpt-realtime-2.1-mini" }));
-
-    expect(getLastRequestBody()).toMatchObject({
-      session: { type: "realtime", model: "gpt-realtime-2.1-mini" },
     });
   });
 

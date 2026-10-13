@@ -19,10 +19,10 @@
     "contextComplexity": 1,
     "reliability": 1,
     "artificialAnalysis": {
-      "intelligenceIndex": 11.7,
+      "intelligenceIndex": 8.7,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The perplexity ai/sonar reasoning family includes models that produce text.",

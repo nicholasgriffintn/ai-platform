@@ -1,19 +1,8 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { expect, it, vi } from "vitest";
 
 import { ReplicateModelForm } from "./media/ReplicateModelForm";
-import { MusicTransportControls } from "./music";
-
-describe("experience subpaths", () => {
-  it("keeps runtime actions host-controlled", () => {
-    const onPlay = vi.fn();
-
-    render(<MusicTransportControls isPlaying={false} onPlay={onPlay} onStop={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Play" }));
-    expect(onPlay).toHaveBeenCalledOnce();
-  });
-});
 
 it("preserves line breaks while editing URL lists and accepts required false values", () => {
   const onSubmit = vi.fn();

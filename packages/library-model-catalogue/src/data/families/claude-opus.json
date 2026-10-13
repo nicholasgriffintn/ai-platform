@@ -14,6 +14,7 @@
       ]
     },
     "contextComplexity": 5,
+    "reliability": 3,
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
@@ -21,6 +22,24 @@
   },
   "description": "The claude opus family includes models that produce text.",
   "models": {
+    "anthropic-claude-opus-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Opus Latest",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "releaseDate": "April 21, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "au-anthropic-claude-opus-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Opus 4.6",
@@ -78,11 +97,13 @@
     },
     "claude-opus-4-1-latest": {
       "defaults": {
+        "name": "Claude Opus 4.1 (latest)",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "contextWindow": 200000,
         "maxTokens": 32000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 5, 2025",
+        "supportsResponseFormat": false,
         "supportsTemperature": true
       }
     },
@@ -102,10 +123,10 @@
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -136,10 +157,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -170,10 +191,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -195,10 +216,10 @@
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -230,10 +251,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -264,10 +285,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.7,
+          "intelligenceIndex": 23.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -280,16 +301,16 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 26.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -302,16 +323,16 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 26.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -324,7 +345,7 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "April 7, 2026",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
@@ -336,10 +357,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 26.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -352,7 +373,7 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsResponseFormat": true,
@@ -368,10 +389,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 26.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -384,7 +405,7 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsResponseFormat": true,
@@ -400,10 +421,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 26.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -417,14 +438,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -438,7 +458,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -449,13 +468,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -469,14 +489,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -490,14 +509,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -511,7 +529,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -526,10 +543,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -543,7 +560,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -558,10 +574,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -575,7 +591,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -590,10 +605,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 53.5,
+          "intelligenceIndex": 40.7,
           "codingIndex": 73.6,
-          "agenticIndex": 44.4,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -607,14 +622,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -628,7 +642,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -643,10 +656,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -660,14 +673,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -675,14 +687,13 @@
       "defaults": {
         "name": "Claude Opus 4.8 (Fast)",
         "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -696,7 +707,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -711,10 +721,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -728,7 +738,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -743,10 +752,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -760,7 +769,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -775,10 +783,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.7,
+          "intelligenceIndex": 41.8,
           "codingIndex": 74.3,
-          "agenticIndex": 47.2,
-          "intelligenceIndexVersion": 4.1
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -807,15 +815,32 @@
       "defaults": {
         "name": "Claude Opus 5",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-opus-5-5": {
       "defaults": {
         "name": "Claude Opus 5.5",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "supportsResponseFormat": true,
@@ -827,7 +852,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -835,6 +867,11 @@
       "defaults": {
         "name": "Claude Opus 5.5 (AU)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -845,7 +882,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -853,14 +897,30 @@
       "defaults": {
         "name": "Claude Opus 5.5 (EU)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-opus-5-5-fast": {
       "defaults": {
         "name": "Claude Opus 5.5 (Fast)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -871,7 +931,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -879,6 +946,11 @@
       "defaults": {
         "name": "Claude Opus 5.5 (Global)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -889,7 +961,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -897,6 +976,11 @@
       "defaults": {
         "name": "Claude Opus 5.5 (JP)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -907,7 +991,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -915,6 +1006,11 @@
       "defaults": {
         "name": "Claude Opus 5.5 (US)",
         "description": "Claude model for long-running agentic coding and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -925,7 +1021,14 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 57.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -933,6 +1036,12 @@
       "defaults": {
         "name": "Claude Opus 5 (AU)",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -945,6 +1054,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -952,22 +1067,52 @@
       "defaults": {
         "name": "Claude Opus 5 (EU)",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026"
+        "releaseDate": "July 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-opus-5-fast": {
       "defaults": {
         "name": "Claude Opus 5 (Fast)",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026"
+        "releaseDate": "July 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "claude-opus-5-global": {
       "defaults": {
         "name": "Claude Opus 5 (Global)",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -980,6 +1125,43 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "claude-opus-5-india": {
+      "defaults": {
+        "name": "Claude Opus 5 (India)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -987,6 +1169,12 @@
       "defaults": {
         "name": "Claude Opus 5 (JP)",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -999,6 +1187,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1006,6 +1200,12 @@
       "defaults": {
         "name": "Claude Opus 5 (US)",
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -1018,6 +1218,12 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 50.8,
+          "codingIndex": 78,
+          "agenticIndex": 56.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1025,7 +1231,6 @@
       "defaults": {
         "name": "Claude Opus Latest",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "releaseDate": "April 21, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1035,7 +1240,101 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "stealth-claude-opus-4-6-20-off": {
+      "defaults": {
+        "name": "Stealth: Claude Opus 4.6 (20% off)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "stealth-claude-opus-4-7-20-off": {
+      "defaults": {
+        "name": "Stealth: Claude Opus 4.7 (20% off)",
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 40.7,
+          "codingIndex": 73.6,
+          "agenticIndex": 38.6,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "stealth-claude-opus-4-8-20-off": {
+      "defaults": {
+        "name": "Stealth: Claude Opus 4.8 (20% off)",
+        "description": "Your prompts and completions may be retained and used to train or improve the provider's services. This third-party-served variant of Claude Opus 4.8 is offered at 20% lower cost than standard Claude Opus 4.8 pricing and is not served by Anthropic or Kilo Code.",
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.8,
+          "codingIndex": 74.3,
+          "agenticIndex": 41.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

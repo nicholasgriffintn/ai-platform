@@ -18,4 +18,5 @@ export const get_note: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };

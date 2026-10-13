@@ -21,14 +21,38 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 7.7,
+      "intelligenceIndex": 7,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "Flagship model for demanding analysis, coding, and production agent workflows",
   "models": {
+    "amazon-nova-pro-1-0": {
+      "defaults": {
+        "name": "Amazon: Nova Pro 1.0",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 5120,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 7.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "nova-2-pro": {
       "defaults": {
         "name": "Nova 2 Pro",

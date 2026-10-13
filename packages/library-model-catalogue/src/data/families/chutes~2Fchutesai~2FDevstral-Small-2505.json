@@ -20,10 +20,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 11.8,
+      "intelligenceIndex": 8.7,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.1
+      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "The chutes/chutesai/Devstral Small 2505 family includes models that produce text.",

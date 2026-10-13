@@ -1,8 +1,7 @@
 import {
-  resolveUsageBalanceSnapshot,
+  resolveUsageBalanceResponse,
   userCreditActor,
   type CreditActor,
-  usageCreditsFromBalance,
   recordOffPlatformRunUsage,
   toSummaryGroups,
   totalUsageGroups,
@@ -10,7 +9,6 @@ import {
 import {
   creditsFromCreditMicros,
   usagePeriodFromDate,
-  usagePeriodResetsAt,
   type UsageBalanceResponse,
   type RecordOffPlatformUsageRequest,
   type UsageEventsQuery,
@@ -49,43 +47,7 @@ export async function getUsageBalance(
   actor: CreditActor,
   period = usagePeriodFromDate(),
 ): Promise<UsageBalanceResponse> {
-  const balance = await resolveUsageBalanceSnapshot(
-    createUsageStore(context.repositories),
-    actor,
-    period,
-  );
-
-  const included = balance.included_credit_micros;
-  const grace = balance.grace_credit_micros;
-  const spent = balance.spent_credit_micros;
-  const reserved = balance.reserved_credit_micros;
-  const overrun = balance.overrun_credit_micros;
-  const overage = balance.overage_credit_micros;
-  const overageEnabled = Boolean(balance.overage_enabled);
-
-  return {
-    period,
-    resets_at: usagePeriodResetsAt(period),
-    plan_id: balance.plan_id,
-    credits: usageCreditsFromBalance({
-      included_credit_micros: included,
-      grace_credit_micros: grace,
-      spent_credit_micros: spent,
-      reserved_credit_micros: reserved,
-      overrun_credit_micros: overrun,
-      overage_credit_micros: overage,
-      overage_enabled: overageEnabled ? 1 : 0,
-    }),
-    credit_micros: {
-      included,
-      spent,
-      reserved,
-      grace,
-      overrun,
-      overage,
-    },
-    last_event_at: balance.last_event_at,
-  };
+  return resolveUsageBalanceResponse(createUsageStore(context.repositories), actor, period);
 }
 
 export async function getUsageSummary(

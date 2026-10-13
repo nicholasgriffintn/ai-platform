@@ -114,24 +114,32 @@ export class TaskService {
     let dispatched = 0;
 
     for (const task of tasks) {
-      const message: TaskMessage = {
-        taskId: task.id,
-        task_type: task.task_type,
-        user_id: task.user_id ?? undefined,
-        project_id: task.project_id ?? undefined,
-        task_data: isRecord(task.task_data) ? task.task_data : {},
-        priority: task.priority ?? 5,
-        schedule_type: task.schedule_type,
-        scheduled_at: task.scheduled_at ?? undefined,
-        max_attempts: task.max_attempts ?? 3,
-      };
-
-      await this.sendMessage(message);
-      await this.taskRepository.updateTask(task.id, { status: "queued" });
+      await this.dispatchTask(task);
       dispatched++;
     }
 
     return dispatched;
+  }
+
+  public async dispatchTask(task: Task): Promise<void> {
+    if (!this.env.TASK_QUEUE) {
+      throw new Error("TASK_QUEUE binding is not available; task remains pending for recovery");
+    }
+
+    const message: TaskMessage = {
+      taskId: task.id,
+      task_type: task.task_type,
+      user_id: task.user_id ?? undefined,
+      project_id: task.project_id ?? undefined,
+      task_data: isRecord(task.task_data) ? task.task_data : {},
+      priority: task.priority ?? 5,
+      schedule_type: task.schedule_type,
+      scheduled_at: task.scheduled_at ?? undefined,
+      max_attempts: task.max_attempts ?? 3,
+    };
+
+    await this.sendMessage(message);
+    await this.taskRepository.updateTask(task.id, { status: "queued" });
   }
 
   public async scheduleRecurringTask(

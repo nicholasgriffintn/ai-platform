@@ -7,7 +7,7 @@ import {
 import type { ExecuteReplicateRequest } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const REPLICATE_QUERY_KEY = "replicate";
 const REPLICATE_MODELS_STALE_TIME = 30 * 60 * 1000;
@@ -35,6 +35,8 @@ export function useReplicateModels(projectId?: string) {
 }
 
 export function useReplicatePredictions(projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: [REPLICATE_QUERY_KEY, projectId, "predictions"],
     queryFn: () => fetchReplicatePredictions(projectId),
@@ -55,12 +57,14 @@ export function useReplicatePredictions(projectId?: string) {
 
           return hasActivePredictions ? 10000 : false;
         },
-        "replicate.changed",
+        "output.changed",
       ),
   });
 }
 
 export function useReplicatePrediction(predictionId: string | null, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: replicatePredictionQueryKey(projectId, predictionId),
     queryFn: () => fetchReplicatePrediction(predictionId!, projectId),
@@ -80,7 +84,7 @@ export function useReplicatePrediction(predictionId: string | null, projectId?: 
             ? 10000
             : false;
         },
-        "replicate.changed",
+        "output.changed",
       ),
   });
 }

@@ -5,21 +5,14 @@ import type {
   SourceCollection,
   SourceKind,
   SourceSummary,
+  ProjectKnowledgeSearchQuery,
+  ProjectKnowledgeSearchResponse,
+  KnowledgeSync,
+  CreateKnowledgeSync,
+  UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
-
-async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
-  const response = await fetchApiOrThrow(path, {
-    method: init.method ?? "GET",
-    headers: await apiService.getHeaders(),
-    body: init.body,
-  });
-
-  return returnFetchedData<T>(response);
-}
+import { fetchApiData as request } from "./fetch-wrapper.js";
 
 export async function listSources(
   filters: {
@@ -44,6 +37,48 @@ export async function listSources(
 
 export async function getSource(sourceId: string): Promise<Source> {
   return request(`/sources/${encodeURIComponent(sourceId)}`);
+}
+
+export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {
+  return (
+    await request<{ syncs: KnowledgeSync[] }>(
+      `/sources/knowledge-syncs?projectId=${encodeURIComponent(projectId)}`,
+    )
+  ).syncs;
+}
+
+export async function createKnowledgeSync(input: CreateKnowledgeSync): Promise<KnowledgeSync> {
+  return request("/sources/knowledge-syncs", { method: "POST", body: input });
+}
+
+export async function controlKnowledgeSync(
+  id: string,
+  input: UpdateKnowledgeSync,
+): Promise<KnowledgeSync> {
+  return request(`/sources/knowledge-syncs/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: input,
+  });
+}
+
+export async function searchProjectKnowledge(
+  input: ProjectKnowledgeSearchQuery,
+): Promise<ProjectKnowledgeSearchResponse> {
+  const query = new URLSearchParams({ query: input.query });
+
+  if (input.projectId) {
+    query.set("projectId", input.projectId);
+  }
+
+  if (input.type) {
+    query.set("type", input.type);
+  }
+
+  if (input.top_k) {
+    query.set("top_k", String(input.top_k));
+  }
+
+  return request(`/sources/search?${query.toString()}`);
 }
 
 export async function createSource(input: CreateSourceInput): Promise<Source> {

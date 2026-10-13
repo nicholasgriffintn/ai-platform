@@ -17,7 +17,7 @@
           "agents",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 2,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
@@ -29,6 +29,7 @@
       "overrides": {
         "name": "GLM 5",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "coding",
           "reasoning",
@@ -46,7 +47,6 @@
       "matchingModel": "glm-4.5",
       "overrides": {
         "name": "GLM-4.5",
-        "maxTokens": 98304,
         "speed": 3,
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -83,7 +83,6 @@
       "model": "glm/glm-4-5v",
       "matchingModel": "glm-4.5v",
       "overrides": {
-        "name": "GLM-4.5V",
         "contextWindow": 64000,
         "modalities": {
           "input": [
@@ -101,7 +100,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
@@ -118,8 +117,7 @@
         "name": "GLM-4.6",
         "description": "Late GLM-4 workhorse for coding agents, reasoning, and structured tasks",
         "contextWindow": 204800,
-        "maxTokens": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
@@ -164,8 +162,9 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
+        "contextWindow": 200000,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -206,6 +205,7 @@
       "overrides": {
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 200000,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -217,7 +217,9 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1000000,
-        "speed": 4,
+        "maxTokens": 131072,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -235,6 +237,9 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -256,6 +261,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -268,7 +281,6 @@
       "overrides": {
         "name": "GLM-5V-Turbo",
         "contextWindow": 200000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -312,6 +324,7 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "releaseDate": "September 18, 2026",
         "lastUpdated": "September 18, 2026",
         "costPer1kInputTokens": 0.00037,

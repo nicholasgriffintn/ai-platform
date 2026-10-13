@@ -70,6 +70,16 @@ export function canTransitionChatRun(from: ChatRunStatus, to: ChatRunStatus): bo
 export const chatRunCommandIdSchema = z.string().trim().min(1).max(200);
 export const chatRunIdSchema = z.string().trim().min(1).max(200);
 
+export const PARTIAL_RUN_MESSAGE_ID_PREFIX = "partial:";
+
+export function partialRunMessageId(runId: string): string {
+  return `${PARTIAL_RUN_MESSAGE_ID_PREFIX}${runId}`;
+}
+
+export function isPartialRunMessageId(id: string | null | undefined): boolean {
+  return typeof id === "string" && id.startsWith(PARTIAL_RUN_MESSAGE_ID_PREFIX);
+}
+
 export const chatRunCommandKindSchema = z.enum(["turn", "interaction_response", "cancel"]);
 export type ChatRunCommandKind = z.infer<typeof chatRunCommandKindSchema>;
 

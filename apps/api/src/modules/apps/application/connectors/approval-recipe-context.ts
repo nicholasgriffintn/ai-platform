@@ -1,11 +1,12 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { recipeChatRequestOptionsSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
-  getRecipeById,
   parseRecipeInstallationRecord,
   requireEnabledProjectRecipe,
 } from "~/modules/apps/application/recipes";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
 import {
   buildRecipeConnections,
   buildRecipeInvocationRuntime,
@@ -66,7 +67,7 @@ export async function buildConnectorApprovalRecipeContext(params: {
     if (
       !installation ||
       installation.status !== "active" ||
-      installation.userId !== params.userId ||
+      !ownsResource(params.userId, installation.userId) ||
       installation.recipeId !== recipe.id ||
       installation.id !== params.installationId ||
       installation.projectId !== params.projectId ||

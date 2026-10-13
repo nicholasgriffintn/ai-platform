@@ -45,6 +45,9 @@ export interface IUserSettings {
   s3vectors_bucket_name: string | null;
   s3vectors_index_name: string | null;
   s3vectors_region: string | null;
+  dynamodb_vectors_table_name?: string | null;
+  dynamodb_vectors_index_name?: string | null;
+  dynamodb_vectors_region?: string | null;
   nickname: string | null;
   job_role: string | null;
   traits: string | null;

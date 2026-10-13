@@ -23,7 +23,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const projectTasksQueryKey = (projectId: string) => ["project-tasks", projectId] as const;
 export const TASK_ATTENTION_QUERY_KEY = ["task-attention"] as const;
@@ -56,6 +56,7 @@ export function projectTasksRefetchInterval(
 }
 
 export function useProjectTask(projectId: string, taskId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
 
@@ -77,6 +78,7 @@ export function useProjectTask(projectId: string, taskId: string) {
 }
 
 export function useProjectTasks(projectId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const queryClient = useQueryClient();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
@@ -224,6 +226,7 @@ export function useProjectTasks(projectId: string) {
 }
 
 export function useTaskAttention() {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
 

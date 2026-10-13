@@ -154,7 +154,7 @@ export const toEmbeddingRuntimeTarget = (
   if (
     target.model !== WORKERS_EMBEDDING_MODEL ||
     target.vectorSpaceVersion !== EMBEDDING_VECTOR_SPACE_VERSION ||
-    !["vectorize", "s3vectors"].includes(target.provider)
+    !["vectorize", "s3vectors", "dynamodb-vectors"].includes(target.provider)
   ) {
     throw invalidTarget();
   }
@@ -164,7 +164,8 @@ export const toEmbeddingRuntimeTarget = (
     providerTarget: target.target,
     model: target.model,
     dimensions: WORKERS_EMBEDDING_DIMENSIONS,
-    distanceMetric: CURRENT_EMBEDDING_DISTANCE_METRIC,
+    distanceMetric:
+      target.provider === "dynamodb-vectors" ? "cosine" : CURRENT_EMBEDDING_DISTANCE_METRIC,
     taskMode: CURRENT_EMBEDDING_TASK_MODE,
     vectorSpace: target.vectorSpace,
     vectorSpaceVersion: target.vectorSpaceVersion,

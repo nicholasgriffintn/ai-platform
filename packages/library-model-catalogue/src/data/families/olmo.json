@@ -12,11 +12,23 @@
         "text"
       ]
     },
+    "strengths": [
+      "vision",
+      "video"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
     "knowledgeCutoffDate": "June 2025",
     "releaseDate": "January 9, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 5,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
+    }
   },
   "description": "The olmo family includes models that produce text.",
   "models": {

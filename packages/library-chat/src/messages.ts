@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageContent } from "./conversation-types.js";
 import { normaliseMessageParts } from "./message-parts.js";
@@ -211,7 +211,7 @@ export function normalizeMessage(message: NormalizableMessage): Message {
     ...message,
     role: message.role,
     content: content ?? "",
-    id: message.id || crypto.randomUUID(),
+    id: message.id || generateId(),
     created: message.created || message.timestamp || now,
     timestamp: message.timestamp || message.created || now,
     model: message.model || "",
@@ -515,6 +515,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
     language: string;
     title: string | undefined;
     display: "panel" | "inline" | undefined;
+    mode: "edit" | undefined;
     content: string;
     placeholder: string;
     isOpen: boolean;
@@ -614,6 +615,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
           ? displayAttribute
           : undefined;
 
+      const mode = getAttributeValue("mode")?.toLowerCase() === "edit" ? "edit" : undefined;
       const placeholder = `[[ARTIFACT:${identifier}]]`;
 
       artifactReplacements.push({ matched, placeholder });
@@ -624,6 +626,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
         language,
         title,
         display,
+        mode,
         content: artifactContent,
         placeholder,
         isOpen: isOpen,

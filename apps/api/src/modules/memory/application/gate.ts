@@ -10,9 +10,9 @@ export const MEMORY_GATE_SKIP_THRESHOLD = 0.25;
 
 const MEMORY_GATE_QUESTIONS = {
   worth_remembering: noul(
-    "Does `message` state something durable about the person that an assistant should remember in future conversations, such as a fact about them, a preference, a plan, an appointment, or a goal?",
+    "Does `message` supply a durable fact, preference, decision or correction that an assistant should remember in future conversations, including changes to previously supplied facts or workflows?",
     {
-      true: "The person shares a lasting fact, preference, relationship, plan, appointment, goal or decision about themselves",
+      true: "The person shares or corrects a lasting fact, preference, relationship, plan, appointment, goal, decision or workflow",
       false:
         "A question, a task for the assistant, small talk, or information that has no lasting value about the person",
     },

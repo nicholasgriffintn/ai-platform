@@ -1,6 +1,29 @@
 import z from "zod/v4";
 
-export const SANDBOX_ENVIRONMENT_CACHE_PLATFORM_VERSION = "environment-v1";
+export const SANDBOX_ENVIRONMENT_CACHE_PLATFORM_VERSION = "environment-v2";
+export const SANDBOX_ENVIRONMENT_CACHE_PREFIX = "environment-cache/";
+
+export const sandboxDirectoryBackupSchema = z
+  .object({
+    id: z.uuid(),
+    dir: z.string().trim().min(1),
+    size: z.number().int().nonnegative(),
+    sha256: z
+      .string()
+      .trim()
+      .regex(/^[a-f0-9]{64}$/i),
+    format: z.literal("tar+zstd/1"),
+    name: z.string().trim().min(1).optional(),
+  })
+  .strict();
+
+export type SandboxDirectoryBackup = z.infer<typeof sandboxDirectoryBackupSchema>;
+
+export function sandboxEnvironmentCacheObjectKey(
+  backup: Pick<SandboxDirectoryBackup, "id">,
+): string {
+  return `${SANDBOX_ENVIRONMENT_CACHE_PREFIX}${backup.id}.tar.zst`;
+}
 
 export const sandboxEnvironmentCacheStatusSchema = z.enum(["ready", "invalidated", "failed"]);
 
@@ -10,11 +33,7 @@ export const sandboxEnvironmentCacheRecordSchema = z
       .string()
       .trim()
       .regex(/^[a-f0-9]{64}$/i),
-    backupId: z
-      .string()
-      .trim()
-      .regex(/^[A-Za-z0-9_-]{1,128}$/),
-    restoreDirectory: z.string().trim().min(1),
+    backup: sandboxDirectoryBackupSchema,
     generation: z.number().int().nonnegative(),
     repositoryRevision: z.string().trim().min(1),
     configurationRevision: z.string().trim().min(1),
@@ -29,8 +48,7 @@ export const sandboxEnvironmentCacheRecordSchema = z
   .strict();
 
 export const sandboxEnvironmentCacheSummarySchema = sandboxEnvironmentCacheRecordSchema.omit({
-  backupId: true,
-  restoreDirectory: true,
+  backup: true,
 });
 
 export const sandboxEnvironmentCacheActionSchema = z

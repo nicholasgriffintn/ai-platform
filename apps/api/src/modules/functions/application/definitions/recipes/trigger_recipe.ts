@@ -8,6 +8,7 @@ export const trigger_recipe: FunctionToolDescriptor = {
     "Trigger an installed recipe when the user's message asks to run a recipe or automation. Prefer query for natural language requests; use recipeId only when the exact installed recipe id is known.",
   type: "premium",
   permissions: ["read", "write"],
+  effects: { effectClass: "write" },
   intentEvidence: (input) => ({
     operation: "trigger_recipe",
     recipeId: input.recipeId,

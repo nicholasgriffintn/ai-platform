@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -43,7 +44,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
         ? await repositories.userSettings.getUserSettings(user.id)
         : null;
 
-      const speechModel = await getAuxiliarySpeechModel(env, userSettings);
+      const speechModel = await getAuxiliarySpeechModel(env, userSettings, user);
 
       if (!isTranscriptionProvider(speechModel.transcriptionProvider)) {
         throw new AssistantError(
@@ -58,7 +59,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
 
     const resolvedProvider = selectedProvider || "workers";
 
-    if (user?.plan_id !== "pro") {
+    if (!hasProEntitlement(user)) {
       if (!(await hasUserProviderApiKey({ env, user, providerName: resolvedProvider }))) {
         throw new AssistantError(
           `Transcription requires a configured ${resolvedProvider} provider key`,

@@ -10,7 +10,10 @@
       "matchingModel": "NousResearch/Hermes-3-Llama-3.1-70B",
       "overrides": {
         "isFree": false,
-        "isFeatured": false
+        "speed": 2,
+        "isFeatured": true,
+        "costPer1kInputTokens": 0.0007,
+        "costPer1kOutputTokens": 0.0007
       },
       "unset": [
         "openWeights",

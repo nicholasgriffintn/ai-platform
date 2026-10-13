@@ -13,8 +13,8 @@
         "text"
       ]
     },
+    "contextComplexity": 5,
     "knowledgeCutoffDate": "February 16, 2026",
-    "releaseDate": "July 9, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -36,13 +36,35 @@
     "gpt-5-6-luna": {
       "defaults": {
         "name": "GPT-5.6 Luna",
-        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
+        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-5-6-luna-eu": {
       "defaults": {
         "name": "GPT-5.6 Luna (EU)",
         "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -52,51 +74,132 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
     "gpt-5-6-luna-fast": {
       "defaults": {
         "name": "GPT 5.6 Luna (Fast)",
-        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
+        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-5-6-luna-global": {
       "defaults": {
         "name": "GPT-5.6 Luna (Global)",
-        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
+        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-5-6-luna-india": {
       "defaults": {
         "name": "GPT-5.6 Luna (India)",
-        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
+        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-5-6-luna-pro": {
       "defaults": {
         "name": "GPT-5.6 Luna Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work"
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "July 9, 2026"
       }
     },
     "gpt-5-6-luna-us": {
       "defaults": {
         "name": "GPT-5.6 Luna (US)",
-        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
+        "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "reliability": 3,
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 37.3,
+          "codingIndex": 71.4,
+          "agenticIndex": 42.1,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-6-luna": {
       "defaults": {
         "name": "GPT-6 Luna",
         "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "knowledgeCutoffDate": "May 18, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-6-luna-eu": {
       "defaults": {
         "name": "GPT-6 Luna (EU)",
         "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -108,6 +211,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -115,8 +224,20 @@
       "defaults": {
         "name": "GPT-6 Luna (Fast)",
         "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "knowledgeCutoffDate": "May 18, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-6-luna-global": {
@@ -132,8 +253,20 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "knowledgeCutoffDate": "May 18, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-6-luna-us": {
@@ -149,14 +282,43 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
         "knowledgeCutoffDate": "May 18, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-luna-latest": {
       "defaults": {
         "name": "OpenAI GPT Luna Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026"
+      }
+    },
+    "openai-gpt-luna-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Luna Latest",
+        "description": "This model always redirects to the latest model in the OpenAI GPT Luna family.",
         "modalities": {
           "input": [
             "pdf",

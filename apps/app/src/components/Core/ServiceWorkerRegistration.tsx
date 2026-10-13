@@ -1,39 +1,60 @@
 import { useEffect } from "react";
 
+import { announceClientUpdate } from "./client-update";
+
+function activateWaitingWorker(registration: ServiceWorkerRegistration) {
+  const waiting = registration.waiting;
+
+  if (!waiting) {
+    window.location.reload();
+
+    return;
+  }
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload(), {
+    once: true,
+  });
+  waiting.postMessage({ type: "SKIP_WAITING" });
+}
+
 export function ServiceWorkerRegistration() {
   useEffect(() => {
     const host = window.location.host;
     const isLocalhost = host?.startsWith("localhost");
 
-    if (!isLocalhost && "serviceWorker" in navigator) {
-      const register = async () => {
-        try {
-          const registration = await navigator.serviceWorker.register("/sw.js");
+    if (isLocalhost || !("serviceWorker" in navigator)) {
+      return;
+    }
 
-          console.log("SW registered: ", registration);
+    let cancelled = false;
 
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing;
+    const register = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("/sw.js");
 
-            if (newWorker) {
-              newWorker.addEventListener("statechange", () => {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  console.log("New service worker available");
-                }
-              });
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+
+          newWorker?.addEventListener("statechange", () => {
+            if (
+              !cancelled &&
+              newWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              announceClientUpdate(() => activateWaitingWorker(registration));
             }
           });
-        } catch (error) {
-          console.error("Service worker registration failed:", error);
-        }
-      };
+        });
+      } catch (error) {
+        console.error("Service worker registration failed:", error);
+      }
+    };
 
-      void register();
+    void register();
 
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        console.log("New service worker activated");
-      });
-    }
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return null;

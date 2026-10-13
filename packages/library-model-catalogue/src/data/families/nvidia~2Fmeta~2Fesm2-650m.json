@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 29, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nvidia/meta/esm2 650m family includes models that produce text.",
+  "models": {
+    "esm2-650m": {
+      "defaults": {
+        "name": "esm2-650m",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    }
+  }
+}

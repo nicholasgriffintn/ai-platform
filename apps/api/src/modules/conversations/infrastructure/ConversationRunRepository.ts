@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   CHAT_RUN_PROTOCOL_VERSION,
   LIVE_DELEGATION_STATES,
@@ -18,9 +19,8 @@ import {
   runProvenanceSchema,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -201,6 +201,17 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
+  async countInterruptedForConversation(conversationId: string): Promise<number> {
+    const row = await this.runQuery<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM conversation_run
+       WHERE conversation_id = ? AND status = 'interrupted'`,
+      [conversationId],
+      true,
+    );
+
+    return row?.count ?? 0;
+  }
+
   async getLatestForConversation(conversationId: string): Promise<ChatRun | null> {
     const row = await this.runQuery<ConversationRunRow>(
       `SELECT * FROM conversation_run
@@ -261,6 +272,43 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const row = result.results[0] as ConversationRunRow | undefined;
 
     return row ? formatRun(row) : null;
+  }
+
+  async checkpointPartialContent(
+    runId: string,
+    attempt: number,
+    content: string,
+  ): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE conversation_run
+       SET partial_content = ?
+       WHERE id = ? AND attempt = ? AND status = 'running'`,
+      [content, runId, attempt],
+    );
+
+    return (result.meta?.changes ?? 0) > 0;
+  }
+
+  async getPartialContent(runId: string, attempt: number): Promise<string | null> {
+    const row = await this.runQuery<{ partial_content: string | null }>(
+      "SELECT partial_content FROM conversation_run WHERE id = ? AND attempt = ?",
+      [runId, attempt],
+      true,
+    );
+
+    return row?.partial_content ?? null;
+  }
+
+  async listActiveRunsUpdatedBefore(updatedBefore: string, limit: number): Promise<ChatRun[]> {
+    const rows = await this.runQuery<ConversationRunRow>(
+      `SELECT * FROM conversation_run
+       WHERE status IN ('running', 'cancelling') AND updated_at < ?
+       ORDER BY updated_at ASC
+       LIMIT ?`,
+      [updatedBefore, limit],
+    );
+
+    return rows.map(formatRun);
   }
 
   async updateProvenance(
@@ -474,7 +522,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       current.conversationId !== params.conversationId ||
       current.projectId !== (params.projectId ?? null) ||
       current.projectTaskId !== (params.projectTaskId ?? null) ||
-      current.initiatorUserId !== params.userId ||
+      !ownsResource(params.userId, current.initiatorUserId) ||
       !params.interactionId ||
       (current.status !== "awaiting_input" &&
         current.status !== "awaiting_approval" &&
@@ -494,11 +542,14 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        ) SELECT ?, id, ?, ?, ?, ?, ?
        FROM conversation_run
         WHERE id = ? AND attempt = ? AND status = ?
-          AND EXISTS (
-            SELECT 1 FROM message interaction
-            WHERE interaction.run_id = conversation_run.id
-              AND interaction.tool_call_id = ?
-          )
+           AND EXISTS (
+             SELECT 1 FROM message interaction
+             WHERE interaction.run_id = conversation_run.id
+               AND interaction.id = conversation_run.last_message_id
+               AND interaction.tool_call_id = ?
+               AND interaction.role = 'tool'
+               AND interaction.status = 'pending'
+           )
           AND (? IS NULL OR EXISTS (
             SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
           ))
@@ -524,14 +575,18 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        SET status = 'running', attempt = attempt + 1, updated_at = ?,
            started_at = COALESCE(started_at, ?), terminal_reason = NULL,
            context_json = NULL, retry_json = NULL, interaction_kind = NULL,
+           partial_content = NULL,
            resolved_configuration_json = ?,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
-         AND EXISTS (
-           SELECT 1 FROM message interaction
-           WHERE interaction.run_id = conversation_run.id
-             AND interaction.tool_call_id = ?
-         )
+          AND EXISTS (
+            SELECT 1 FROM message interaction
+            WHERE interaction.run_id = conversation_run.id
+              AND interaction.id = conversation_run.last_message_id
+              AND interaction.tool_call_id = ?
+              AND interaction.role = 'tool'
+              AND interaction.status = 'pending'
+          )
          AND (? IS NULL OR EXISTS (
            SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
          ))
@@ -799,6 +854,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
            last_message_id = COALESCE(?, last_message_id),
            interaction_kind = ?,
            retry_json = NULL,
+           partial_content = NULL,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
        RETURNING *`,

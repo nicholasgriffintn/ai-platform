@@ -34,20 +34,10 @@
         "releaseDate": "August 20, 2024",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 7.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 926,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 14
-            }
-          ]
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -74,10 +64,10 @@
         "releaseDate": "December 12, 2024",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 8,
+          "intelligenceIndex": 7.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -196,10 +186,10 @@
         "releaseDate": "February 17, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 18.4,
+          "intelligenceIndex": 12.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -427,10 +417,10 @@
         "releaseDate": "July 9, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 33.3,
+          "intelligenceIndex": 22.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -453,10 +443,10 @@
         "reliability": 1,
         "releaseDate": "November 19, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.9,
+          "intelligenceIndex": 11.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -490,10 +480,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 30.6,
+          "intelligenceIndex": 20.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -549,7 +539,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 1, 2025",
         "releaseDate": "March 31, 2026",
         "supportsResponseFormat": true,
@@ -562,10 +552,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 37,
+          "intelligenceIndex": 25.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -637,10 +627,10 @@
         "reliability": 1,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 21.8,
+          "intelligenceIndex": 14.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -662,6 +652,16 @@
         "name": "Grok 4.3",
         "description": "xAI's default Grok for chat, coding, agentic tools, and lower hallucination risk",
         "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -672,11 +672,20 @@
         "releaseDate": "April 17, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.8,
-          "codingIndex": 35.2,
-          "agenticIndex": 22.8,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndex": 24.9,
+          "codingIndex": 42.2,
+          "agenticIndex": 15.5,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -696,6 +705,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "releaseDate": "July 8, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -706,6 +723,12 @@
             "high"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.8,
+          "codingIndex": 72.4,
+          "agenticIndex": 41.2,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -724,6 +747,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
@@ -736,6 +767,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.3,
+          "codingIndex": 76.8,
+          "agenticIndex": 53,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -754,6 +791,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": false,
@@ -766,6 +811,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.3,
+          "codingIndex": 76.8,
+          "agenticIndex": 53,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -784,6 +835,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": false,
@@ -796,6 +855,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 44.3,
+          "codingIndex": 76.8,
+          "agenticIndex": 53,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -815,6 +880,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "September 21, 2026",
         "supportsResponseFormat": true,
@@ -827,12 +899,18 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
-    "grok-4-7-30-off": {
+    "grok-4-7-global": {
       "defaults": {
-        "name": "Grok 4.7 (30% Off)",
+        "name": "Grok 4.7 (Global)",
         "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
         "contextWindow": 500000,
         "maxTokens": 500000,
@@ -846,6 +924,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "September 21, 2026",
         "supportsResponseFormat": true,
@@ -858,6 +943,56 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "grok-4-7-us": {
+      "defaults": {
+        "name": "Grok 4.7 (US)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -881,10 +1016,10 @@
         "releaseDate": "September 19, 2025",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 16.5,
+          "intelligenceIndex": 11.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -914,10 +1049,10 @@
         "releaseDate": "September 19, 2025",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 16.5,
+          "intelligenceIndex": 11.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -934,10 +1069,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.4,
+          "intelligenceIndex": 17.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -964,10 +1099,10 @@
         "releaseDate": "November 1, 2024",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7.5,
+          "intelligenceIndex": 6.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -994,10 +1129,10 @@
         "releaseDate": "August 28, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 21.6,
+          "intelligenceIndex": 14.1,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1019,7 +1154,7 @@
           "video",
           "creative"
         ],
-        "reliability": 4,
+        "reliability": 5,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1030,12 +1165,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1232,
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1328,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -1046,7 +1181,7 @@
         "name": "Grok Imagine Image",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "maxTokens": 0,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1059,7 +1194,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1178,
+              "value": 1020,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -1082,10 +1217,31 @@
             "image"
           ]
         },
+        "strengths": [
+          "image",
+          "creative"
+        ],
+        "reliability": 4,
         "releaseDate": "August 7, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1155,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
       }
     },
     "grok-imagine-image-2-0-preview": {
@@ -1169,7 +1325,7 @@
           "creative"
         ],
         "contextComplexity": 3,
-        "reliability": 4,
+        "reliability": 2,
         "releaseDate": "April 3, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": true,
@@ -1183,10 +1339,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1202,
+              "value": 1046,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -1206,7 +1362,7 @@
             "video"
           ]
         },
-        "reliability": 4,
+        "reliability": 5,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1214,12 +1370,12 @@
           "intelligenceIndexVersion": null,
           "mediaScores": [
             {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1232,
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1328,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 9
             }
           ]
         }
@@ -1239,10 +1395,57 @@
             "video"
           ]
         },
+        "strengths": [
+          "video"
+        ],
+        "reliability": 2,
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1036,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "grok-imagine-video-1-5-lite": {
+      "defaults": {
+        "name": "Grok Imagine Video 1.5 Lite",
+        "description": "Cost-efficient video model for text-to-video and image-to-video generation",
+        "maxTokens": 0,
+        "reliability": 2,
+        "releaseDate": "October 1, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 984,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
       }
     },
     "grok-imagine-video-1-5-preview": {
@@ -1455,6 +1658,108 @@
         "releaseDate": "July 29, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
+      }
+    },
+    "spacexai-grok-4-20": {
+      "defaults": {
+        "name": "SpaceXAI: Grok 4.20",
+        "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "contextWindow": 2000000,
+        "maxTokens": 1800000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "March 31, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "spacexai-grok-4-20-multi-agent": {
+      "defaults": {
+        "name": "SpaceXAI: Grok 4.20 Multi-Agent",
+        "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "contextWindow": 2000000,
+        "maxTokens": 1800000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 31, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "xai-grok-latest": {
+      "defaults": {
+        "name": "xAI: Grok Latest",
+        "description": "This model always redirects to the latest Grok model from xAI.",
+        "contextWindow": 500000,
+        "maxTokens": 450000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 8, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

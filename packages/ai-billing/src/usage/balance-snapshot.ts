@@ -1,4 +1,7 @@
+import { usagePeriodResetsAt, type UsageBalanceResponse } from "@ngriffin_uk/polychat-schemas";
+
 import { readActorCreditSpend, type CreditActor } from "./credit-actor.js";
+import { usageCreditsFromBalance } from "./credit-summary.js";
 import {
   ANONYMOUS_PLAN_ID,
   resolvePlanCreditAllowance,
@@ -69,5 +72,29 @@ export async function resolveUsageBalanceSnapshot(
     overage_credit_micros: 0,
     overage_enabled: 0,
     last_event_at: null,
+  };
+}
+
+export async function resolveUsageBalanceResponse(
+  store: UsageStore,
+  actor: CreditActor,
+  period: string,
+): Promise<UsageBalanceResponse> {
+  const balance = await resolveUsageBalanceSnapshot(store, actor, period);
+
+  return {
+    period,
+    resets_at: usagePeriodResetsAt(period),
+    plan_id: balance.plan_id,
+    credits: usageCreditsFromBalance(balance),
+    credit_micros: {
+      included: balance.included_credit_micros,
+      spent: balance.spent_credit_micros,
+      reserved: balance.reserved_credit_micros,
+      grace: balance.grace_credit_micros,
+      overrun: balance.overrun_credit_micros,
+      overage: balance.overage_credit_micros,
+    },
+    last_event_at: balance.last_event_at,
   };
 }

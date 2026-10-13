@@ -51,11 +51,11 @@ export class EmbeddingRepository extends BaseRepository {
     const statements = [
       database
         .prepare(
-          `INSERT INTO embedding_document
-             (id, scope_type, user_id, logical_id, type, title, metadata,
+          `INSERT INTO search_document
+             (document_type, id, scope_type, user_id, logical_id, type, title, metadata,
               lifecycle_status, provider, provider_target, embedding_model, vector_space,
               vector_space_version, embedding_dimensions, distance_metric, task_mode)
-           VALUES (?, 'personal', ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)`,
+           VALUES ('embedding', ?, 'personal', ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           document.id,
@@ -75,11 +75,11 @@ export class EmbeddingRepository extends BaseRepository {
         ),
       database
         .prepare(
-          `INSERT INTO embedding_chunk
-             (id, document_id, vector_id, chunk_index, content, metadata,
+          `INSERT INTO search_chunk
+             (document_type, id, document_id, vector_id, chunk_index, content, metadata,
               lifecycle_status, provider, provider_target, embedding_model, vector_space,
               vector_space_version, embedding_dimensions, distance_metric, task_mode)
-           SELECT json_extract(value, '$.id'), ?, json_extract(value, '$.vectorId'),
+           SELECT 'embedding', json_extract(value, '$.id'), ?, json_extract(value, '$.vectorId'),
                   json_extract(value, '$.index'), json_extract(value, '$.content'),
                   json_extract(value, '$.metadata'), 'pending', ?, ?, ?, ?, ?, ?, ?, ?
              FROM json_each(?)`,
@@ -155,9 +155,9 @@ export class EmbeddingRepository extends BaseRepository {
                     d.provider, d.provider_target, d.embedding_model, d.vector_space,
                     d.vector_space_version, d.embedding_dimensions, d.distance_metric,
                     d.task_mode
-         FROM embedding_chunk c
-         JOIN embedding_document d ON d.id = c.document_id
-        WHERE d.user_id = ?
+         FROM search_chunk c
+         JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id
+        WHERE d.document_type = 'embedding' AND d.user_id = ?
           AND d.scope_type = 'personal'
           AND d.lifecycle_status = 'active'
           AND c.lifecycle_status = 'active'
@@ -205,8 +205,8 @@ export class EmbeddingRepository extends BaseRepository {
     }>(
       `SELECT DISTINCT provider, provider_target, embedding_model, embedding_dimensions,
                        distance_metric, task_mode, vector_space, vector_space_version
-         FROM embedding_document
-        WHERE user_id = ?
+         FROM search_document
+        WHERE document_type = 'embedding' AND user_id = ?
           AND scope_type = 'personal'
           AND lifecycle_status = 'active'
         ${limit ? "LIMIT ?" : ""}`,
@@ -233,9 +233,9 @@ export class EmbeddingRepository extends BaseRepository {
       `SELECT d.id, d.logical_id, d.provider, d.provider_target, d.embedding_model,
               d.embedding_dimensions, d.distance_metric, d.task_mode, d.vector_space,
               d.vector_space_version, c.vector_id
-         FROM embedding_document d
-         LEFT JOIN embedding_chunk c ON c.document_id = d.id
-        WHERE d.user_id = ?
+         FROM search_document d
+         LEFT JOIN search_chunk c ON c.document_type = d.document_type AND c.document_id = d.id
+        WHERE d.document_type = 'embedding' AND d.user_id = ?
           AND d.scope_type = 'personal'
           AND d.lifecycle_status = 'pending'
           AND d.logical_id = ?
@@ -252,8 +252,8 @@ export class EmbeddingRepository extends BaseRepository {
   ): Promise<string | null> {
     const row = await this.runQuery<{ lifecycle_status: string }>(
       `SELECT lifecycle_status
-         FROM embedding_document
-        WHERE user_id = ? AND id = ? AND scope_type = 'personal'`,
+         FROM search_document
+        WHERE document_type = 'embedding' AND user_id = ? AND id = ? AND scope_type = 'personal'`,
       [userId, documentId],
       true,
     );
@@ -271,17 +271,17 @@ export class EmbeddingRepository extends BaseRepository {
     const results = await database.batch([
       database
         .prepare(
-          `UPDATE embedding_document
+          `UPDATE search_document
               SET lifecycle_status = 'active', updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = ? AND id = ? AND lifecycle_status = 'pending'`,
+            WHERE document_type = 'embedding' AND user_id = ? AND id = ? AND lifecycle_status = 'pending'`,
         )
         .bind(userId, documentId),
       database
         .prepare(
-          `UPDATE embedding_chunk
+          `UPDATE search_chunk
               SET lifecycle_status = 'active', updated_at = CURRENT_TIMESTAMP
-            WHERE document_id IN (
-              SELECT id FROM embedding_document WHERE user_id = ? AND id = ?
+            WHERE document_type = 'embedding' AND document_id IN (
+              SELECT id FROM search_document WHERE document_type = 'embedding' AND user_id = ? AND id = ?
             ) AND lifecycle_status = 'pending'`,
         )
         .bind(userId, documentId),
@@ -298,8 +298,8 @@ export class EmbeddingRepository extends BaseRepository {
 
   public async removePendingDocument(userId: number, documentId: string): Promise<void> {
     await this.executeRun(
-      `DELETE FROM embedding_document
-        WHERE user_id = ? AND id = ? AND lifecycle_status = 'pending'`,
+      `DELETE FROM search_document
+        WHERE document_type = 'embedding' AND user_id = ? AND id = ? AND lifecycle_status = 'pending'`,
       [userId, documentId],
     );
   }
@@ -320,9 +320,9 @@ export class EmbeddingRepository extends BaseRepository {
             `SELECT d.id, d.logical_id, d.provider, d.provider_target, d.embedding_model,
                     d.embedding_dimensions, d.distance_metric, d.task_mode, d.vector_space,
                     d.vector_space_version, c.vector_id
-               FROM embedding_document d
-               LEFT JOIN embedding_chunk c ON c.document_id = d.id
-              WHERE d.user_id = ?
+               FROM search_document d
+               LEFT JOIN search_chunk c ON c.document_type = d.document_type AND c.document_id = d.id
+              WHERE d.document_type = 'embedding' AND d.user_id = ?
                 AND d.scope_type = 'personal'
                 AND d.lifecycle_status IN ('pending', 'active', 'delete_pending')
                 AND d.logical_id IN (${page.map(() => "?").join(", ")})
@@ -356,18 +356,18 @@ export class EmbeddingRepository extends BaseRepository {
         return [
           database
             .prepare(
-              `UPDATE embedding_document
+              `UPDATE search_document
                   SET lifecycle_status = 'delete_pending', updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = ? AND id IN (${placeholders})
+                WHERE document_type = 'embedding' AND user_id = ? AND id IN (${placeholders})
                   AND lifecycle_status IN ('pending', 'active', 'delete_pending')`,
             )
             .bind(userId, ...page),
           database
             .prepare(
-              `UPDATE embedding_chunk
+              `UPDATE search_chunk
                   SET lifecycle_status = 'delete_pending', updated_at = CURRENT_TIMESTAMP
-                WHERE document_id IN (
-                  SELECT id FROM embedding_document WHERE user_id = ? AND id IN (${placeholders})
+                WHERE document_type = 'embedding' AND document_id IN (
+                  SELECT id FROM search_document WHERE document_type = 'embedding' AND user_id = ? AND id IN (${placeholders})
                 ) AND lifecycle_status IN ('pending', 'active', 'delete_pending')`,
             )
             .bind(userId, ...page),
@@ -396,18 +396,18 @@ export class EmbeddingRepository extends BaseRepository {
         return [
           database
             .prepare(
-              `DELETE FROM embedding_chunk
-                WHERE document_id IN (
-                  SELECT id FROM embedding_document
-                   WHERE user_id = ? AND id IN (${placeholders})
+              `DELETE FROM search_chunk
+                WHERE document_type = 'embedding' AND document_id IN (
+                  SELECT id FROM search_document
+                   WHERE document_type = 'embedding' AND user_id = ? AND id IN (${placeholders})
                      AND lifecycle_status = 'delete_pending'
                 )`,
             )
             .bind(userId, ...page),
           database
             .prepare(
-              `DELETE FROM embedding_document
-                WHERE user_id = ? AND id IN (${placeholders})
+              `DELETE FROM search_document
+                WHERE document_type = 'embedding' AND user_id = ? AND id IN (${placeholders})
                   AND lifecycle_status = 'delete_pending'`,
             )
             .bind(userId, ...page),
@@ -421,6 +421,7 @@ export class EmbeddingRepository extends BaseRepository {
     options: EmbeddingLookupOptions,
   ): Promise<Record<string, unknown> | null> {
     const conditions: Record<string, unknown> = {
+      document_type: "legacy",
       id,
       type: options.type,
       namespace: options.namespace,
@@ -433,7 +434,7 @@ export class EmbeddingRepository extends BaseRepository {
   private async findEmbedding(
     conditions: Record<string, unknown>,
   ): Promise<Record<string, unknown> | null> {
-    const { query, values } = this.buildSelectQuery("embedding", conditions, {
+    const { query, values } = this.buildSelectQuery("search_document", conditions, {
       columns: ["id", "metadata", "type", "title", "content", "namespace", "user_id"],
     });
 
@@ -446,8 +447,9 @@ export class EmbeddingRepository extends BaseRepository {
     scope: EmbeddingScope,
   ): Promise<Record<string, unknown> | null> {
     const { query, values } = this.buildSelectQuery(
-      "embedding",
+      "search_document",
       {
+        document_type: "legacy",
         id,
         type,
         namespace: scope.namespace,
@@ -468,8 +470,9 @@ export class EmbeddingRepository extends BaseRepository {
     scope: EmbeddingScope,
   ): Promise<void> {
     const insert = this.buildInsertQuery(
-      "embedding",
+      "search_document",
       {
+        document_type: "legacy",
         id,
         metadata,
         title,
@@ -504,8 +507,9 @@ export class EmbeddingRepository extends BaseRepository {
 
     const inserts = records.flatMap((record) => {
       const insert = this.buildInsertQuery(
-        "embedding",
+        "search_document",
         {
+          document_type: "legacy",
           id: record.id,
           metadata: record.metadata,
           title: record.title,
@@ -543,8 +547,8 @@ export class EmbeddingRepository extends BaseRepository {
 
       try {
         await this.executeRun(
-          `DELETE FROM embedding
-            WHERE user_id = ? AND namespace = ?
+          `DELETE FROM search_document
+            WHERE document_type = 'legacy' AND user_id = ? AND namespace = ?
               AND id IN (${page.map(() => "?").join(", ")})`,
           [toUserId(scope.userId), scope.namespace, ...page],
         );
@@ -558,7 +562,8 @@ export class EmbeddingRepository extends BaseRepository {
   }
 
   public async deleteEmbedding(id: string, scope: EmbeddingScope): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("embedding", {
+    const { query, values } = this.buildDeleteQuery("search_document", {
+      document_type: "legacy",
       id,
       namespace: scope.namespace,
       user_id: toUserId(scope.userId),

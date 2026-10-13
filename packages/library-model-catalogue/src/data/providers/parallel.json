@@ -6,7 +6,7 @@
       "matchingModel": "speed",
       "overrides": {
         "isFree": false,
-        "isFeatured": false
+        "isFeatured": true
       }
     }
   }

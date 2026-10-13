@@ -18,7 +18,7 @@
       "document"
     ],
     "contextComplexity": 4,
-    "reliability": 3,
+    "reliability": 1,
     "supportsAttachments": true,
     "artificialAnalysis": {
       "intelligenceIndex": null,
@@ -29,10 +29,10 @@
         {
           "key": "text_to_videoElo",
           "label": "Text-to-video arena",
-          "value": 1072,
+          "value": 820,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 9
+          "confidenceInterval95": 12
         }
       ]
     }

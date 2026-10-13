@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "releaseDate": "October 6, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/topaz/starlight precise 2.6 family includes models that produce video.",
+  "models": {
+    "starlight-precise-2-6": {
+      "defaults": {
+        "name": "Starlight Precise 2.6",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+      }
+    }
+  }
+}

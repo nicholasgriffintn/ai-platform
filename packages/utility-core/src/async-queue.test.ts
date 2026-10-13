@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createAsyncEventQueue } from "./async-queue";
+import { createAsyncEventQueue, createConcurrencyLimiter } from "./async-queue";
 
 async function drain<T>(events: AsyncIterable<T>): Promise<T[]> {
   const seen: T[] = [];
@@ -51,5 +51,26 @@ describe("createAsyncEventQueue", () => {
     queue.push(2);
 
     await expect(drain(queue.events)).resolves.toEqual([1]);
+  });
+});
+
+describe("createConcurrencyLimiter", () => {
+  it("never runs more tasks at once than the limit and still finishes them all", async () => {
+    const run = createConcurrencyLimiter(2);
+    let active = 0;
+    let peak = 0;
+    const task = (value: number) => async () => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      active -= 1;
+
+      return value;
+    };
+
+    const results = await Promise.all([1, 2, 3, 4, 5].map((value) => run(task(value))));
+
+    expect(results).toEqual([1, 2, 3, 4, 5]);
+    expect(peak).toBe(2);
   });
 });

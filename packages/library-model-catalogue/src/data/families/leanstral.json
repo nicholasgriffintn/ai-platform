@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "openWeights": true,
-    "contextWindow": 256000,
-    "maxTokens": 128000,
     "modalities": {
       "input": [
         "text"
@@ -11,27 +8,25 @@
         "text"
       ]
     },
-    "strengths": [
-      "coding",
-      "reasoning",
-      "academic",
-      "agents"
-    ],
-    "contextComplexity": 4,
-    "reliability": 3,
-    "releaseDate": "June 30, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsAttachments": false
   },
   "description": "The leanstral family includes models that produce text.",
   "models": {
     "leanstral-1-5": {
       "defaults": {
-        "name": "Leanstral 1.5",
-        "description": "Open-weight code agent for Lean 4 formal proof engineering, automated theorem proving, and autoformalisation.",
-        "card": "https://docs.mistral.ai/models/leanstral-1-5"
+        "description": "Open-weight code agent for Lean 4 formal proof engineering, automated theorem proving, and autoformalisation."
+      }
+    },
+    "leanstral-1-5-eu": {
+      "defaults": {
+        "name": "leanstral-1-5@eu",
+        "openWeights": false,
+        "description": "Leanstral 1.5 is an updated Lean 4 formal proof engineering model from Mistral AI, optimized for automated theorem proving and autoformalization. It has 119B total parameters with 6.5B active and supports a 256K token context window. It supports native function calling and structured output.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "releaseDate": "May 27, 2026"
       }
     }
   }

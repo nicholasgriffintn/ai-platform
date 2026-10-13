@@ -1,6 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { resolveHostProviderApiKey } from "../../../credentials.js";
 import { fetchAIResponse } from "../../../fetch.js";

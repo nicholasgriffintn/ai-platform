@@ -2,24 +2,11 @@ import {
   mcpServerSchema,
   mcpToolConfigurationSchema,
   normaliseMcpServerLabel,
+  getUniqueMcpServerLabel,
   type McpToolConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-
-function uniqueServerLabel(base: string, index: number, used: Set<string>): string {
-  let label = base || `server_${index + 1}`;
-  let suffix = index + 1;
-
-  while (used.has(label)) {
-    label = `${base.slice(0, 70)}_${suffix}`;
-    suffix += 1;
-  }
-
-  used.add(label);
-
-  return label;
-}
 
 export function resolveTeammateMcpServers(value: unknown): McpToolConfiguration["servers"] {
   const stored = typeof value === "string" ? safeParseJson<unknown>(value) : value;
@@ -49,13 +36,20 @@ export function resolveTeammateMcpServers(value: unknown): McpToolConfiguration[
     }
 
     const url = new URL(server.url);
-    const label = uniqueServerLabel(
+    const label = getUniqueMcpServerLabel(
       normaliseMcpServerLabel(server.label ?? url.hostname),
       index,
       usedLabels,
     );
 
-    return { label, url: url.toString() };
+    return {
+      label,
+      url: url.toString(),
+      ...(server.credentialConnectionId
+        ? { credentialConnectionId: server.credentialConnectionId }
+        : {}),
+      ...(server.allowedTools ? { allowedTools: server.allowedTools } : {}),
+    };
   });
 
   if (servers.length === 0) {

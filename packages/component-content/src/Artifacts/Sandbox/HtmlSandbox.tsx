@@ -1,10 +1,5 @@
 import type { ArtifactProps } from "../artifact";
-import {
-  HTML_SANDBOX_TEMPLATE,
-  LoadingIndicator,
-  SandboxIframe,
-  useSandboxDocument,
-} from "./shared";
+import { buildSandboxDocument, HTML_SANDBOX_TEMPLATE, SandboxIframe } from "./shared";
 
 export function HtmlSandbox({
   code,
@@ -17,19 +12,9 @@ export function HtmlSandbox({
   setPreviewError: (error: string | null) => void;
   iframeKey: number;
 }) {
-  const { documentContent, isLoading } = useSandboxDocument({
-    code,
-    css,
-    template: HTML_SANDBOX_TEMPLATE,
-  });
-
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
-
   return (
     <SandboxIframe
-      documentContent={documentContent}
+      documentContent={buildSandboxDocument(HTML_SANDBOX_TEMPLATE, code.content, css?.content)}
       iframeKey={iframeKey}
       setPreviewError={setPreviewError}
     />

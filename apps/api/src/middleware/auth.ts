@@ -1,15 +1,17 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { authorise, hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
+  INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE,
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
+import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
 import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
-import { KVCache } from "~/infrastructure/cache";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
@@ -21,57 +23,16 @@ const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const BOT_CACHE_TTL = 86400; // 24 hours
+const DEVICE_CLIENT_PATHS = new Set(["/auth/device/code", "/auth/device/token"]);
 
-let botCache: KVCache | null = null;
-
-function getBotCache(kv: any): KVCache | null {
-  if (!kv) {
-    return null;
-  }
-
-  if (!botCache) {
-    botCache = new KVCache(kv, BOT_CACHE_TTL);
-  }
-
-  return botCache;
-}
-
-async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
-  const cache = getBotCache(kv);
-
-  if (!cache) {
-    try {
-      return isbot(userAgent);
-    } catch (error) {
-      logger.error("Failed to check if user is a bot:", { error });
-
-      return true;
-    }
-  }
-
-  const cacheKey = KVCache.createKey("bot", userAgent);
-
-  const cached = await cache.get<boolean>(cacheKey);
-
-  if (cached !== null) {
-    return cached;
-  }
-
-  let isBotUser: boolean;
-
+function isBotUserAgent(userAgent: string): boolean {
   try {
-    isBotUser = isbot(userAgent);
+    return isbot(userAgent);
   } catch (error) {
     logger.error("Failed to check if user is a bot:", { error });
-    isBotUser = true;
+
+    return true;
   }
-
-  cache.set(cacheKey, isBotUser).catch((error) => {
-    logger.error("Failed to cache bot detection result", { error, userAgent });
-  });
-
-  return isBotUser;
 }
 
 /**
@@ -87,6 +48,7 @@ export async function authMiddleware(context: Context, next: Next) {
   if (
     path === "/status" ||
     path === "/openapi" ||
+    DEVICE_CLIENT_PATHS.has(path) ||
     path.startsWith("/webhooks/") ||
     path.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`)
   ) {
@@ -96,7 +58,42 @@ export async function authMiddleware(context: Context, next: Next) {
   const serviceToken = parseBearerToken(context.req.header(INTERNAL_SERVICE_AUTHORIZATION_HEADER));
 
   if (serviceToken) {
-    context.set("servicePrincipal", await verifyInternalServiceToken(context.env, serviceToken));
+    const service = await verifyInternalServiceToken(context.env, serviceToken);
+
+    if (service.sub === "agent-worker" || service.scopes.includes("user:delegate")) {
+      const canDelegateUser =
+        service.sub === "agent-worker" &&
+        service.aud === INTERNAL_SERVICE_DELEGATION_TOKEN_AUDIENCE &&
+        authorise("service.call", {
+          authenticated: true,
+          scopes: service.scopes,
+          requiredScope: "user:delegate",
+        }).allowed;
+
+      if (!canDelegateUser || !service.user_id) {
+        throw new AssistantError(
+          "This internal service cannot act for a user.",
+          ErrorType.AUTHORISATION_ERROR,
+          403,
+        );
+      }
+
+      const user = await new RepositoryManager(context.env).users.getUserById(service.user_id);
+
+      if (!user) {
+        throw new AssistantError(
+          "The internal service user no longer exists.",
+          ErrorType.AUTHENTICATION_ERROR,
+          401,
+        );
+      }
+
+      context.set("user", user);
+
+      return next();
+    }
+
+    context.set("servicePrincipal", service);
 
     return next();
   }
@@ -148,14 +145,7 @@ export async function authMiddleware(context: Context, next: Next) {
     authPromises.push(
       (async () => {
         try {
-          const repo = getRepositories();
-          const userId = await repo.apiKeys.findUserIdByApiKey(authToken);
-
-          if (userId) {
-            return repo.users.getUserById(userId);
-          }
-
-          return null;
+          return await getRepositories().apiKeys.findUserByApiKey(authToken);
         } catch (error) {
           logger.error("API Key authentication check failed:", { error });
 
@@ -184,7 +174,7 @@ export async function authMiddleware(context: Context, next: Next) {
   }
 
   if (authPromises.length > 0) {
-    const authResults = await Promise.allSettled(authPromises);
+    const authResults = await timeServerPhase("auth", () => Promise.allSettled(authPromises));
     const fulfilledResult = authResults.find(
       (result) => result.status === "fulfilled" && result.value !== null,
     );
@@ -192,7 +182,7 @@ export async function authMiddleware(context: Context, next: Next) {
     user = fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
   }
 
-  const isProUser = user?.plan_id === "pro";
+  const isProUser = hasProEntitlement(user);
 
   if (userAgent === "unknown") {
     throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
@@ -202,7 +192,7 @@ export async function authMiddleware(context: Context, next: Next) {
   const shouldSkipBotCheck = Boolean(user);
 
   if (!shouldSkipBotCheck) {
-    isBot = await isBotCached(userAgent, context.env.CACHE);
+    isBot = isBotUserAgent(userAgent);
   }
 
   if (isBot && !isProUser) {
@@ -275,7 +265,7 @@ export async function requireAuth(context: Context, next: Next) {
  */
 export async function allowRestrictedPaths(context: Context, next: Next) {
   const user = context.get("user");
-  const isProUser = user?.plan_id === "pro";
+  const isProUser = hasProEntitlement(user);
 
   if (!isProUser) {
     const anonymousUser = context.get("anonymousUser");

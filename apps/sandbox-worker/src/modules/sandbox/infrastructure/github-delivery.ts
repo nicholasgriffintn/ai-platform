@@ -4,14 +4,10 @@ import type {
   SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
 import { isSandboxPullRequestUrl, sandboxReviewBranchName } from "@ngriffin_uk/polychat-schemas";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../../../types";
-import {
-  execOrThrow,
-  execOrThrowRedacted,
-  quoteForShell,
-  type SandboxExecInstance,
-} from "./commands";
+import { execOrThrow, type SandboxExecInstance } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { pushBranchToRemote } from "./push-branch";
 import type { RunControlClient } from "./run-control-client";
@@ -107,7 +103,6 @@ export async function prepareDeliveryBranch(params: {
   repoTargetDir: string;
   runId: string;
   policy: SandboxDeliveryPolicy;
-  checkoutAuthHeader?: string;
   executionLogs: string[];
 }): Promise<string | undefined> {
   if (params.policy.mode === "leave_uncommitted" || params.policy.mode === "custom") {
@@ -119,29 +114,22 @@ export async function prepareDeliveryBranch(params: {
 
     await execOrThrow(
       params.sandbox,
-      `git -C ${quoteForShell(params.repoTargetDir)} checkout -B ${quoteForShell(branchName)}`,
+      `git -C ${quoteShellArgument(params.repoTargetDir)} checkout -B ${quoteShellArgument(branchName)}`,
       params.executionLogs,
     );
 
     return branchName;
   }
 
-  const fetchCommand = `git -C ${quoteForShell(params.repoTargetDir)} fetch origin ${quoteForShell(params.policy.targetBranch)} --depth=1`;
-
-  if (params.checkoutAuthHeader) {
-    await execOrThrowRedacted(
-      params.sandbox,
-      `git -c http.extraHeader=${quoteForShell(params.checkoutAuthHeader)} -C ${quoteForShell(params.repoTargetDir)} fetch origin ${quoteForShell(params.policy.targetBranch)} --depth=1`,
-      params.executionLogs,
-      `${fetchCommand} [auth header redacted]`,
-    );
-  } else {
-    await execOrThrow(params.sandbox, fetchCommand, params.executionLogs);
-  }
+  await execOrThrow(
+    params.sandbox,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} fetch origin ${quoteShellArgument(params.policy.targetBranch)} --depth=1`,
+    params.executionLogs,
+  );
 
   await execOrThrow(
     params.sandbox,
-    `git -C ${quoteForShell(params.repoTargetDir)} checkout -B ${quoteForShell(params.policy.targetBranch)} FETCH_HEAD`,
+    `git -C ${quoteShellArgument(params.repoTargetDir)} checkout -B ${quoteShellArgument(params.policy.targetBranch)} FETCH_HEAD`,
     params.executionLogs,
   );
 
@@ -155,7 +143,6 @@ export async function prepareGitHubDelivery(params: {
   runId: string;
   policy: SandboxDeliveryPolicy;
   credentialBroker: SandboxCredentialBrokerAccess;
-  checkoutAuthHeader?: string;
   executionLogs: string[];
 }): Promise<{
   branchName: string;
@@ -344,7 +331,6 @@ export async function deliverCommitToGitHub(params: {
   commitSha: string;
   validationSummary: string;
   credentialBroker: SandboxCredentialBrokerAccess;
-  checkoutAuthHeader?: string;
   executionLogs: string[];
   trustLevel: SandboxTrustLevel;
   approvalClient?: RunControlClient;
@@ -404,7 +390,6 @@ export async function deliverCommitToGitHub(params: {
       repoTargetDir: params.repoTargetDir,
       branchName: params.branchName,
       remoteBranchName: params.remoteBranchName,
-      checkoutAuthHeader: params.checkoutAuthHeader,
       executionLogs: params.executionLogs,
       checkpoint: params.checkpoint,
       emit: params.emit,

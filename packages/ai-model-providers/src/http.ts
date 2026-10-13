@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { ModelProviderError, modelProviderErrorFromStatus } from "./errors.js";
 
@@ -139,7 +139,7 @@ export function streamingMultipart(
     stream: ReadableStream<Uint8Array>;
   },
 ): StreamingMultipart {
-  const boundary = `polychat-${crypto.randomUUID()}`;
+  const boundary = `polychat-${generateId()}`;
   const encoder = new TextEncoder();
   const preamble = encoder.encode(
     [

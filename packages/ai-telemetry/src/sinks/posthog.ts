@@ -1,4 +1,5 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 import { PostHog } from "posthog-node";
 
@@ -54,7 +55,7 @@ export function createPostHogSink(
                 category: AI_OBSERVABILITY_EVENT_CATEGORY,
                 ...buildAiFeedbackProperties({
                   surveyId: feedbackConfig.surveyId,
-                  submissionId: crypto.randomUUID(),
+                  submissionId: generateId(),
                   traceId: feedback.traceId,
                   feedback: feedback.feedback,
                   logId: feedback.logId,

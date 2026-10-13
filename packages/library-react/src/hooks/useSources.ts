@@ -9,6 +9,7 @@ import {
   listSources,
   listProjectContextSources,
   setProjectContextSources,
+  searchProjectKnowledge,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateSourceCollectionInput,
@@ -48,6 +49,15 @@ export function useSourceCollections(projectId?: string) {
   return useQuery({
     queryKey: SOURCE_QUERY_KEYS.collections(projectId),
     queryFn: () => listSourceCollections(projectId),
+  });
+}
+
+export function useProjectKnowledgeSearch(projectId: string, query: string) {
+  return useQuery({
+    queryKey: ["sources", "search", projectId, query],
+    queryFn: () => searchProjectKnowledge({ projectId, query, top_k: 10 }),
+    enabled: Boolean(projectId && query.trim()),
+    staleTime: 0,
   });
 }
 

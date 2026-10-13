@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 7, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The vercel/stealth/glyph cluster family includes models that produce text.",
+  "models": {
+    "glyph-cluster": {
+      "defaults": {
+        "name": "Glyph Cluster",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    }
+  }
+}

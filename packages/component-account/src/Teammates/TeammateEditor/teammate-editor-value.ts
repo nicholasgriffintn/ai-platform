@@ -66,6 +66,10 @@ export function createTeammateEditorValue(
       id: generateId(),
       label: server.label ?? getMcpServerDefaultLabel(server.url),
       url: server.url,
+      ...(server.credentialConnectionId
+        ? { credentialConnectionId: server.credentialConnectionId }
+        : {}),
+      ...(server.allowedTools ? { allowedTools: server.allowedTools } : {}),
     })),
     workspaceDefault: teammate.workspace_default,
   };
@@ -88,10 +92,12 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
     enabled_tools: normaliseToolIds(value.toolIds),
     skill_ids: value.skillIds,
     mode: value.mode,
-    servers: value.servers.map(({ label, url }) => ({
+    servers: value.servers.map(({ label, url, credentialConnectionId, allowedTools }) => ({
       label: label.trim(),
       url: url.trim(),
       type: "sse",
+      ...(credentialConnectionId ? { credentialConnectionId } : {}),
+      ...(allowedTools ? { allowedTools } : {}),
     })),
     workspace_default: value.workspaceDefault,
   };

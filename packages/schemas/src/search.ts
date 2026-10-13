@@ -2,24 +2,48 @@ import z from "zod/v4";
 
 import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation.js";
 
+export const searchProviderSchema = z.enum([
+  "serper",
+  "tavily",
+  "parallel",
+  "duckduckgo",
+  "perplexity",
+  "exa",
+  "greenpt",
+  "cloudflare",
+  "cloudflare-ai-search",
+]);
+
+export const cloudflareWebSearchProviderSchema = z.enum(["ceramic", "exa", "linkup"]);
+
+export const searchOptionsSchema = z.object({
+  search_depth: z.enum(["basic", "advanced"]).optional(),
+  include_answer: z.boolean().optional(),
+  include_raw_content: z.boolean().optional(),
+  include_images: z.boolean().optional(),
+  max_results: z.number().int().min(1).max(50).optional(),
+  country: z.string().optional(),
+  location: z.string().optional(),
+  language: z.string().optional(),
+  timePeriod: z.string().optional(),
+  autocorrect: z.boolean().optional(),
+  num: z.number().int().min(1).max(50).optional(),
+  page: z.number().int().min(1).optional(),
+  system_prompt: z.string().optional(),
+  parallel_search_queries: z.array(z.string()).optional(),
+  parallel_processor: z.string().optional(),
+  parallel_max_chars_per_result: z.number().int().positive().optional(),
+  cloudflare_provider: cloudflareWebSearchProviderSchema.optional(),
+  retrieval_type: z.enum(["vector", "keyword", "hybrid"]).optional(),
+});
+
+export type SearchProviderName = z.infer<typeof searchProviderSchema>;
+export type SearchOptions = z.infer<typeof searchOptionsSchema>;
+
 export const searchWebSchema = z.object({
-  query: z.string(),
-  provider: z.enum(["serper", "tavily"]),
-  options: z
-    .object({
-      search_depth: z.enum(["basic", "advanced"]).optional(),
-      include_answer: z.boolean().optional(),
-      include_raw_content: z.boolean().optional(),
-      include_images: z.boolean().optional(),
-      country: z.string().optional(),
-      location: z.string().optional(),
-      language: z.string().optional(),
-      timePeriod: z.string().optional(),
-      autocorrect: z.boolean().optional(),
-      num: z.number().optional(),
-      page: z.number().optional(),
-    })
-    .optional(),
+  query: z.string().trim().min(1).max(4096),
+  provider: searchProviderSchema.optional(),
+  options: searchOptionsSchema.optional(),
 });
 
 export const searchResultSchema = z.object({

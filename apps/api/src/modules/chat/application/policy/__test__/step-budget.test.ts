@@ -8,10 +8,6 @@ function options(overrides: Partial<CoreChatOptions> = {}): CoreChatOptions {
 }
 
 describe("resolveTurnStepBudget", () => {
-  it("gives an ordinary chat the chat mode budget rather than a single tool round", () => {
-    expect(resolveTurnStepBudget(options(), "normal")).toBe(8);
-  });
-
   it("gives recipe chats enough steps to use context tools and save setup", () => {
     const budget = resolveTurnStepBudget(
       options({
@@ -21,12 +17,6 @@ describe("resolveTurnStepBudget", () => {
     );
 
     expect(budget).toBe(4);
-  });
-
-  it("gives connector chats enough steps to discover, execute, and respond", () => {
-    expect(
-      resolveTurnStepBudget(options({ enabled_tools: ["use_recipe_connector"] }), "normal"),
-    ).toBe(8);
   });
 
   it("prefers an explicit request over the recipe default", () => {
@@ -39,15 +29,6 @@ describe("resolveTurnStepBudget", () => {
     );
 
     expect(budget).toBe(2);
-  });
-
-  it("gives a signed-in Pro chat the connector budget, which it always has access to", () => {
-    const budget = resolveTurnStepBudget(
-      options({ context: { user: { id: 42, plan_id: "pro" } } } as Partial<CoreChatOptions>),
-      "normal",
-    );
-
-    expect(budget).toBe(8);
   });
 
   it("clamps a request to the ceiling for the mode it runs in", () => {

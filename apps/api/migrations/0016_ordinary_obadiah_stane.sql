@@ -1,1 +1,0 @@
-ALTER TABLE `usage_balance` ADD `stripe_synced_overage_credit_micros` integer DEFAULT 0 NOT NULL;

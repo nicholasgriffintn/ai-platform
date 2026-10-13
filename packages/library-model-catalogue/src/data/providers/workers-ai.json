@@ -13,6 +13,7 @@
         "speed": 3
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -26,6 +27,7 @@
         "speed": 3
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -37,6 +39,7 @@
         "speed": 4
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -58,21 +61,13 @@
         "name": "Moonshot Kimi K2.6",
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
-          "tool_use"
+          "tool_use",
+          "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -203,6 +198,7 @@
       "matchingModel": "@cf/black-forest-labs/flux-2-klein-4b",
       "overrides": {
         "speed": 4,
+        "isFeatured": true,
         "inputFormat": "multipart"
       },
       "unset": [
@@ -373,8 +369,7 @@
         "releaseDate": "November 12, 2024",
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00066,
-        "costPer1kOutputTokens": 0.001,
-        "supportsResponseFormat": false
+        "costPer1kOutputTokens": 0.001
       }
     },
     "@cf/meta/llama-guard-3-8b": {
@@ -442,7 +437,10 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "smart-turn-v2": {
       "model": "workers-ai/@cf/pipecat-ai/smart-turn-v2/pipecat-smart-turn-v2",
@@ -518,10 +516,7 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.000497,
         "costPer1kOutputTokens": 0.004881
-      },
-      "unset": [
-        "strengths"
-      ]
+      }
     },
     "@cf/huggingface/distilbert-sst-2-int8": {
       "model": "workers-ai/@cf/huggingface/distilbert-sst-2-int8/distilbert-sst-2-int8",
@@ -539,7 +534,11 @@
         "lastUpdated": "October 2, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "@cf/meta/llama-3.1-8b-instruct-fp8": {
       "model": "llama/llama-3-1-8b-instruct-fp8",
@@ -586,7 +585,8 @@
       "overrides": {
         "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.000351,
-        "costPer1kOutputTokens": 0.000555
+        "costPer1kOutputTokens": 0.000555,
+        "supportsAttachments": true
       }
     },
     "@cf/nvidia/nemotron-3-120b-a12b": {
@@ -614,7 +614,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -719,7 +719,7 @@
           "tool_use"
         ],
         "speed": 3,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -742,7 +742,8 @@
         "contextWindow": 262144,
         "maxTokens": 256000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -760,8 +761,8 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-flash-0731",
       "overrides": {
-        "contextWindow": 1310720,
         "maxTokens": 1048576,
+        "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00132,
@@ -780,22 +781,30 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
+        "maxTokens": 1048576,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
-        "costPer1kOutputTokens": 0.00396
-      },
-      "unset": [
-        "strengths",
-        "reliability"
-      ]
+        "costPer1kOutputTokens": 0.00396,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
     },
     "@cf/qwen/qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "@cf/qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 262144,
         "maxTokens": 262144,
+        "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0032,
@@ -816,8 +825,9 @@
       "overrides": {
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1310720,
         "maxTokens": 1048576,
+        "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -829,7 +839,7 @@
       "overrides": {
         "name": "Glm 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -840,6 +850,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -857,6 +874,7 @@
           "video",
           "creative"
         ],
+        "isFeatured": true,
         "supportsAttachments": true,
         "supportsTemperature": false
       },
@@ -869,6 +887,37 @@
       "matchingModel": "minimax/music-2.6",
       "overrides": {
         "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef": {
+      "model": "cloudflare/clef/clef",
+      "matchingModel": "@cf/cloudflare/clef",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef-flash": {
+      "model": "cloudflare/clef/clef-flash",
+      "matchingModel": "@cf/cloudflare/clef-flash",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.000038,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef-omni": {
+      "model": "workers-ai/@cf/cloudflare/clef-omni/clef-omni",
+      "matchingModel": "@cf/cloudflare/clef-omni",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "October 9, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0,
         "supportsTemperature": false
       }
     }

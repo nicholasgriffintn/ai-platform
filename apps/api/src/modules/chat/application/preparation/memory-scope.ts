@@ -1,8 +1,11 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { DelegationMemoryBinding } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope } from "~/types";
 
@@ -83,7 +86,7 @@ export async function resolveRunMemoryScope(params: {
     contextId &&
     (!userId ||
       !teammateContext ||
-      teammateContext.actorUserId !== userId ||
+      !ownsResource(userId, teammateContext.actorUserId) ||
       teammateContext.status !== "active" ||
       teammateContext.scope.type !== scopeType ||
       teammateContext.scope.id !== scopeId)
@@ -141,32 +144,17 @@ export interface RunMemoryDocument {
 
 export async function loadRunMemoryDocuments(
   scope: MemoryScope,
-  repositories: RepositoryManager,
+  context: ServiceContext | undefined,
 ): Promise<RunMemoryDocument[]> {
   if (scope.type !== "bound") {
     return [];
   }
 
-  const documents: RunMemoryDocument[] = [];
-
-  for (const binding of scope.documents) {
-    const document = await repositories.memoryDocuments.getDocumentById(binding.documentId);
-    const inConversationScope =
-      document?.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
-    const isContextMemory =
-      document?.id === scope.teammateContext?.memoryDocumentId &&
-      document.scope_type === "personal";
-
-    if (!document || (!inConversationScope && !isContextMemory)) {
-      throw new AssistantError(
-        "A memory document granted to this run is no longer available",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-
-    documents.push({ access: binding.access, document });
+  if (!context) {
+    throw new AssistantError("Memory documents require a signed-in run", ErrorType.FORBIDDEN, 403);
   }
 
-  return documents;
+  return Promise.all(
+    scope.documents.map((binding) => requireRunMemoryDocument(context, scope, binding.documentId)),
+  );
 }

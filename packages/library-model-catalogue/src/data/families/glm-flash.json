@@ -53,7 +53,6 @@
       "defaults": {
         "name": "GLM-4.7-Flash",
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
-        "contextWindow": 200000,
         "modalities": {
           "input": [
             "text"
@@ -78,10 +77,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.5,
+          "intelligenceIndex": 14.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -113,6 +112,8 @@
         "name": "GLM-5.3-Flash",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "maxTokens": 131072,
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -121,6 +122,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.8,
+          "codingIndex": 71.5,
+          "agenticIndex": 50.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -141,6 +148,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -151,6 +167,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.8,
+          "codingIndex": 71.5,
+          "agenticIndex": 50.9,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -174,8 +196,8 @@
         "name": "GLM Flash Latest",
         "openWeights": false,
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 1310720,
-        "maxTokens": 131072,
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -213,6 +235,34 @@
           ]
         },
         "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "z-ai-glm-flash-latest": {
+      "defaults": {
+        "name": "Z.ai: GLM Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the GLM Flash family.",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

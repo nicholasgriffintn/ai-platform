@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { ownershipLostError } from "@ngriffin_uk/polychat-library-tasks";
 import type {
   ChatContextSnapshot,
@@ -8,15 +9,13 @@ import type {
   ChatRunStatus,
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
-import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
@@ -29,7 +28,6 @@ import {
   publishRunChanged,
 } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
-import { TaskService } from "~/modules/tasks/application/TaskService";
 import {
   reconcileTeammateRun,
   teammateRunNeedsReconciliation,
@@ -38,8 +36,10 @@ import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatP
 import type { CoreChatOptions } from "~/types";
 
 import { buildChatRunCommandPayload } from "./command-payload";
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
+import { settleTeammateRun } from "./teammate-settlement";
 
 const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
 
@@ -110,7 +110,7 @@ async function authoriseRunScope(options: CoreChatOptions) {
   const conversation = await context.repositories.conversations.getConversation(conversationId);
   const projectAccess = await resolveChatProjectAccess(context, options);
 
-  if (conversation && !conversation.project_id && conversation.user_id !== user.id) {
+  if (conversation && !conversation.project_id && !ownsResource(user.id, conversation.user_id)) {
     throw new AssistantError(
       "You don't have permission to run this conversation",
       ErrorType.FORBIDDEN,
@@ -184,7 +184,12 @@ export class ChatRunLifecycle {
   constructor(
     private readonly repository: Pick<
       ConversationRunRepository,
-      "getById" | "updateContext" | "updateRetry" | "updateProvenance" | "transition"
+      | "getById"
+      | "updateContext"
+      | "updateRetry"
+      | "updateProvenance"
+      | "transition"
+      | "checkpointPartialContent"
     >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
@@ -200,6 +205,10 @@ export class ChatRunLifecycle {
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+
+    if (this.serviceContext) {
+      await releaseQueuedFollowUpAfterRun(this.serviceContext, run);
+    }
   }
 
   private async reconcile(result?: AgentLoopExecutionResult): Promise<void> {
@@ -217,39 +226,7 @@ export class ChatRunLifecycle {
       });
     }
 
-    if (!teammateRunNeedsReconciliation(this.run)) {
-      return;
-    }
-
-    try {
-      await reconcileTeammateRun(this.serviceContext, this.run, result);
-    } catch (error) {
-      logger.warn("Immediate teammate run reconciliation failed", {
-        runId: this.run.id,
-        attempt: this.run.attempt,
-        error: getErrorMessage(error),
-      });
-    }
-
-    try {
-      await new TaskService(
-        this.serviceContext.env,
-        this.serviceContext.repositories.tasks,
-      ).enqueueTask({
-        id: `teammate_run_reconciliation_${this.run.id}_${this.run.attempt}`,
-        task_type: TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
-        user_id: this.run.initiatorUserId,
-        ...(this.run.projectId ? { project_id: this.run.projectId } : {}),
-        priority: 4,
-        task_data: { runId: this.run.id, attempt: this.run.attempt },
-      });
-    } catch (error) {
-      logger.warn("Teammate run reconciliation remains pending", {
-        runId: this.run.id,
-        attempt: this.run.attempt,
-        error: getErrorMessage(error),
-      });
-    }
+    await settleTeammateRun(this.serviceContext, this.run, result);
   }
 
   async isCancellationRequested(): Promise<boolean> {
@@ -305,6 +282,10 @@ export class ChatRunLifecycle {
     }
 
     return updated;
+  }
+
+  async checkpointPartialContent(content: string): Promise<boolean> {
+    return this.repository.checkpointPartialContent(this.run.id, this.run.attempt, content);
   }
 
   async recordProvenance(provenance: RunProvenance): Promise<ChatRun> {

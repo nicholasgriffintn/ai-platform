@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   execute: vi.fn(),
   handleFailure: vi.fn(),
   getTaskById: vi.fn(),
+  rollUpInfraUsageMessages: vi.fn(),
 }));
 
 vi.mock("../TaskExecutor", () => ({
@@ -18,6 +19,11 @@ vi.mock("~/modules/tasks/infrastructure/TaskRepository", () => ({
   TaskRepository: class {
     getTaskById = mocks.getTaskById;
   },
+}));
+
+vi.mock("~/modules/usage/application/infra-usage-queue", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("~/modules/usage/application/infra-usage-queue")>()),
+  rollUpInfraUsageMessages: mocks.rollUpInfraUsageMessages,
 }));
 
 import { QueueExecutor } from "../QueueExecutor";
@@ -64,5 +70,29 @@ describe("QueueExecutor durable ownership", () => {
     expect(message.ack).toHaveBeenCalledOnce();
     expect(message.retry).not.toHaveBeenCalled();
     expect(mocks.handleFailure).not.toHaveBeenCalled();
+  });
+
+  it("rolls request usage up separately without running it as a task", async () => {
+    const task = queueMessage();
+    const usage = {
+      body: {
+        kind: "infra_usage",
+        userId: 1,
+        scopeKey: "request-1",
+        occurredAt: "2026-10-09T12:00:00.000Z",
+        quantities: [{ unit: "d1_rows_read", quantity: 3 }],
+      },
+      attempts: 1,
+      ack: vi.fn(),
+      retry: vi.fn(),
+    };
+
+    mocks.execute.mockResolvedValue(undefined);
+
+    await QueueExecutor.respondToCronQueue({} as any, { messages: [task, usage] } as any);
+
+    expect(mocks.execute).toHaveBeenCalledOnce();
+    expect(mocks.execute).toHaveBeenCalledWith(task.body, 2);
+    expect(mocks.rollUpInfraUsageMessages).toHaveBeenCalledWith({}, [usage]);
   });
 });

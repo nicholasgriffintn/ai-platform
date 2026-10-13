@@ -75,12 +75,16 @@ class AuthService {
         timeoutMs: 10000,
       });
 
-      if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
         this.user = null;
         this.anonymousUser = null;
         this.userSettings = null;
 
         return false;
+      }
+
+      if (!response.ok) {
+        return this.user !== null;
       }
 
       const data = await returnFetchedData<{
@@ -103,11 +107,8 @@ class AuthService {
       return false;
     } catch (error) {
       console.error("Error checking auth status:", error);
-      this.user = null;
-      this.anonymousUser = null;
-      this.userSettings = null;
 
-      return false;
+      return this.user !== null;
     }
   }
 

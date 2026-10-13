@@ -1,4 +1,3 @@
-import { getSandbox } from "@cloudflare/sandbox";
 import {
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   NO_STORE,
@@ -9,21 +8,16 @@ import {
   type SandboxPreviewAuthorisationResponse,
   type SandboxPreviewGrantClaims,
 } from "@ngriffin_uk/polychat-schemas";
+import { createInternalServiceToken } from "@ngriffin_uk/polychat-utility-server/internal-service-auth";
 
 import type { Env } from "../../../types";
-import { createInternalServiceToken, verifySandboxPreviewGrant } from "./auth";
+import { verifySandboxPreviewGrant } from "./auth";
 
 const INTERNAL_EXPOSURE_ORIGIN = "http://sandbox";
 const INTERNAL_AUTHORISATION_URL = "http://api/apps/sandbox/previews/authorise";
 const PREVIEW_COOKIE = "__Host-polychat_preview";
 const PREVIEW_OPEN_PATH = "/__polychat/preview/open";
 const MAX_WEBSOCKET_MESSAGE_BYTES = 1024 * 1024;
-const SDK_PREVIEW_HEADERS = {
-  proxy: "x-sandbox-preview-proxy",
-  port: "x-sandbox-preview-port",
-  token: "x-sandbox-preview-token",
-  sandboxId: "x-sandbox-preview-sandbox-id",
-} as const;
 
 interface PreviewOrigin {
   id: string;
@@ -207,7 +201,10 @@ async function authorisePreview(params: {
         "Content-Type": "application/json",
         [INTERNAL_SERVICE_AUTHORIZATION_HEADER]: `Bearer ${await createInternalServiceToken(
           params.env.JWT_SECRET.trim(),
-          "sandbox-preview:authorise",
+          {
+            service: "sandbox-worker",
+            scopes: ["sandbox-preview:authorise"],
+          },
         )}`,
       },
       body: JSON.stringify({
@@ -238,7 +235,7 @@ async function authorisePreview(params: {
   return { claims, result: parsed.data };
 }
 
-function safeRequestHeaders(request: Request, authorisation: SandboxPreviewAuthorisationResponse) {
+function safeRequestHeaders(request: Request) {
   const headers = new Headers(request.headers);
 
   for (const name of Array.from(headers.keys())) {
@@ -254,17 +251,11 @@ function safeRequestHeaders(request: Request, authorisation: SandboxPreviewAutho
       lowerName === "referer" ||
       lowerName === "x-real-ip" ||
       lowerName.startsWith("cf-") ||
-      lowerName.startsWith("x-forwarded-") ||
-      Object.values(SDK_PREVIEW_HEADERS).some((header) => header === lowerName)
+      lowerName.startsWith("x-forwarded-")
     ) {
       headers.delete(name);
     }
   }
-
-  headers.set(SDK_PREVIEW_HEADERS.proxy, "1");
-  headers.set(SDK_PREVIEW_HEADERS.port, String(authorisation.port));
-  headers.set(SDK_PREVIEW_HEADERS.token, authorisation.forwardToken);
-  headers.set(SDK_PREVIEW_HEADERS.sandboxId, authorisation.runId);
 
   return headers;
 }
@@ -447,18 +438,14 @@ async function exposePreview(request: Request, env: Env): Promise<Response> {
       return errorResponse(503, "unavailable");
     }
 
-    const sandbox = getSandbox(env.Sandbox, claims.run_id, { normalizeId: true });
+    const workspace = env.WORKSPACE.get(env.WORKSPACE.idFromName(claims.run_id));
     const forwardToken = await deriveForwardToken(
       env.JWT_SECRET.trim(),
       claims.run_id,
       claims.port,
     );
 
-    await sandbox.exposePort(claims.port, {
-      hostname: host.host,
-      name: claims.service_name,
-      token: forwardToken,
-    });
+    await workspace.exposePort(claims.port);
     const response = sandboxPreviewExposureResponseSchema.safeParse({ forwardToken });
 
     return response.success
@@ -551,13 +538,13 @@ async function proxyPreview(
   let upstream: Response;
 
   try {
-    const sandbox = getSandbox(env.Sandbox, authorised.result.runId, { normalizeId: true });
+    const workspace = env.WORKSPACE.get(env.WORKSPACE.idFromName(authorised.result.runId));
     const upstreamRequest = new Request(request, {
-      headers: safeRequestHeaders(request, authorised.result),
+      headers: safeRequestHeaders(request),
       redirect: "manual",
     });
 
-    upstream = await sandbox.fetch(upstreamRequest);
+    upstream = await workspace.forwardToPort(authorised.result.port, upstreamRequest);
   } catch {
     return errorResponse(502, "unavailable");
   }

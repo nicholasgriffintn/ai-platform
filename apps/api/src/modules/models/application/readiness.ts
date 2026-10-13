@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   READINESS_PROTOCOL_VERSION,
   isActiveModel,
@@ -124,7 +125,11 @@ export function resolveModelReadiness(
     );
   }
 
-  if (model.kind === "agent" && !options.agentWorkspaceConfigured) {
+  if (
+    model.kind === "agent" &&
+    model.agent?.workspace?.kind !== "none" &&
+    !options.agentWorkspaceConfigured
+  ) {
     const workspaceAction =
       model.agent?.workspace?.kind === "repository"
         ? { kind: "connect_repository" as const, label: "Connect a repository" }
@@ -172,7 +177,7 @@ export function resolveModelReadiness(
     );
   }
 
-  if (user.plan_id !== "pro" && requiresPaidPlan(model)) {
+  if (!hasProEntitlement(user) && requiresPaidPlan(model)) {
     return readiness(
       "setup_required",
       "plan_required",

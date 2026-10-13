@@ -3,7 +3,7 @@ import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
 import { normalizeStatus } from "@ngriffin_uk/polychat-utility-core";
 import { useQuery } from "@tanstack/react-query";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 const FAILURE_STATUSES = new Set(["failed", "cancelled", "errored", "stopped"]);
 
@@ -28,6 +28,7 @@ export function useResearchStatus({
   pollInterval = 10000,
   initialData,
 }: UseResearchStatusOptions) {
+  const liveOrPoll = useLiveOrPoll();
   const sanitizedInterval = Math.max(5000, pollInterval || 0);
 
   return useQuery<ResearchStatus>({

@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes.js";
-import { mcpHttpsUrlSchema } from "./mcp.js";
+import { mcpHttpsUrlSchema, mcpAllowedToolsSchema } from "./mcp.js";
 import { skillIdSchema } from "./skills.js";
 import { teammateKindSchema } from "./teammate-roles.js";
 import { toolIdsSchema } from "./tool-ids.js";
@@ -9,6 +9,8 @@ import { toolIdsSchema } from "./tool-ids.js";
 const teammateSkillIdsSchema = z.array(skillIdSchema);
 
 export const mcpServerSchema = z.object({
+  credentialConnectionId: z.string().trim().min(1).max(100).optional(),
+  allowedTools: mcpAllowedToolsSchema.optional(),
   label: z.string().trim().min(1).max(80).optional().meta({
     description: "Stable label for the MCP server",
   }),
@@ -27,6 +29,8 @@ export const mcpServerSchema = z.object({
 });
 
 export const teammateMcpServerInputSchema = z.object({
+  credentialConnectionId: z.string().trim().min(1).max(100).optional(),
+  allowedTools: mcpAllowedToolsSchema.optional(),
   label: z.string().trim().min(1).max(80).optional(),
   url: mcpHttpsUrlSchema,
   type: z.literal("sse").optional(),

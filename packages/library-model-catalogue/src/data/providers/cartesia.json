@@ -19,6 +19,7 @@
         "supportsRealtimeSession": false
       },
       "unset": [
+        "supportsToolCalls",
         "supportsAttachments"
       ]
     }

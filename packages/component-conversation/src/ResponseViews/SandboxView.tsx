@@ -1,5 +1,6 @@
 import { SandboxView as ControlledSandboxView } from "@ngriffin_uk/polychat-component-content";
 import { submitSandboxRunInstruction } from "@ngriffin_uk/polychat-library-client";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { toast } from "sonner";
 
 interface SandboxViewProps {
@@ -17,7 +18,7 @@ export function SandboxView({ type, data }: SandboxViewProps) {
           await submitSandboxRunInstruction({
             runId,
             kind: "approval_response",
-            idempotencyKey: crypto.randomUUID(),
+            idempotencyKey: generateId(),
             requestId: approvalId,
             command,
             approvalStatus,

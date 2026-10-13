@@ -1,12 +1,12 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ReasoningEffort, strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import type { z } from "zod";
 
 import { ai } from "~/infrastructure/ai";

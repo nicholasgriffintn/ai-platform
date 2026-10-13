@@ -13,6 +13,7 @@ import {
   createChatCompletionsJsonSchema,
   nextFlowStageId,
   chatRunCommandReceiptResponseSchema,
+  PROJECT_TASK_DEFAULT_CONCURRENCY,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
   teammateRunConfigurationSchema,
@@ -20,12 +21,12 @@ import {
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
@@ -46,10 +47,20 @@ import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
-import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
+import {
+  createProjectTaskCompletion,
+  projectTaskStatusAfterCompletedGoal,
+  stageAdvancesOnCompletion,
+} from "./completions";
+import { reviewStageOutputs } from "./council-gate";
+import { selectReleasableDependents } from "./dependents";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
+import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
 import { getPendingProjectTaskQuestions } from "./questions";
+import { retainTaskReviewCompletion } from "./review-output";
+import { assertReviewDispatchAuthority } from "./review-policy";
+import { buildProjectTaskContext } from "./source-context";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
@@ -94,6 +105,7 @@ export async function queueProjectTaskRun(params: {
   stageId?: string | null;
   approvedTools?: string[];
   interaction?: { toolName: string; response: Record<string, unknown> };
+  automaticReviewPolicyRevision?: string;
 }): Promise<ProjectTask> {
   const { context, task, runnerIdentityUserId, stageId } = params;
 
@@ -123,6 +135,9 @@ export async function queueProjectTaskRun(params: {
     },
     tokenBudget: task.tokenBudget ?? PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
     stageId,
+    expectedStatus: task.status,
+    expectedDispatchTaskId: task.dispatchTaskId,
+    automaticReviewPolicyRevision: params.automaticReviewPolicyRevision,
   });
 
   if (!queued) {
@@ -156,6 +171,68 @@ export async function queueProjectTaskRun(params: {
   return queued;
 }
 
+async function loadDependentBoard(context: ServiceContext, projectId: string) {
+  const [tasks, active, project] = await Promise.all([
+    context.repositories.projectTasks.listProjectTasks(projectId, { includeDone: true }),
+    context.repositories.projectTasks.countActiveTasks(projectId),
+    context.repositories.workspaces.getProject(projectId),
+  ]);
+
+  return { tasks, active, project };
+}
+
+export async function releaseReadyDependentTasks(
+  context: ServiceContext,
+  projectId: string,
+): Promise<void> {
+  let board: Awaited<ReturnType<typeof loadDependentBoard>>;
+
+  try {
+    board = await loadDependentBoard(context, projectId);
+  } catch (error) {
+    logger.error("Dependent project tasks could not be checked", {
+      projectId,
+      error: getErrorMessage(error),
+    });
+
+    return;
+  }
+
+  const { tasks, active, project } = board;
+
+  if (!project) {
+    return;
+  }
+
+  for (const task of selectReleasableDependents(tasks, PROJECT_TASK_DEFAULT_CONCURRENCY - active)) {
+    const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
+
+    try {
+      const queued = await queueProjectTaskRun({
+        context,
+        task,
+        runnerIdentityUserId: task.runnerIdentityUserId,
+        stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
+      });
+
+      await context.repositories.audit.createRecord({
+        workspaceId: task.workspaceId,
+        actorUserId: task.runnerIdentityUserId,
+        action: "project.task.started",
+        targetType: "project_task",
+        targetId: task.id,
+        metadata: { projectId, stageId: queued.stageId, trigger: "dependencies_done" },
+      });
+      await reconcileTaskNotifications(context, queued);
+    } catch (error) {
+      logger.warn("Dependent project task was not released", {
+        taskId: task.id,
+        error: getErrorMessage(error),
+      });
+    }
+  }
+}
+
 function buildGoalObjective(task: ProjectTask): string {
   const lines = [task.objective];
 
@@ -172,26 +249,6 @@ function buildGoalObjective(task: ProjectTask): string {
   }
 
   return lines.join("\n");
-}
-
-function buildContextNotes(task: ProjectTask): string | null {
-  const context = task.context;
-
-  if (!context) {
-    return null;
-  }
-
-  const lines: string[] = [];
-
-  if (context.notes) {
-    lines.push(context.notes);
-  }
-
-  for (const link of context.links) {
-    lines.push(link.label ? `- ${link.label}: ${link.url}` : `- ${link.url}`);
-  }
-
-  return lines.length > 0 ? lines.join("\n") : null;
 }
 
 export async function ensureProjectTaskConversation(params: {
@@ -486,6 +543,7 @@ export async function runProjectTaskDispatch(params: {
   let runtime: Awaited<ReturnType<typeof resolveTaskRuntime>>;
 
   try {
+    await assertReviewDispatchAuthority(context, claimed);
     runtime = await resolveTaskRuntime({
       context,
       task: claimed,
@@ -658,17 +716,20 @@ export async function runProjectTaskDispatch(params: {
         buildTaskPrompt({
           task: claimed,
           stageInstructions: buildStageInstructions(runtime),
-          contextNotes: buildContextNotes(claimed),
+          contextNotes: await buildProjectTaskContext(context, claimed),
         }),
       ),
       ...(runtime.model ? { model: runtime.model } : {}),
       mode: runtime.mode,
       stream: false,
       store: true,
-      enabled_tools: runtime.enabledTools,
+      enabled_tools: [...runtime.enabledTools],
+      ...(claimed.executionProfile === "diff_review"
+        ? { tool_selection_mode: "explicit" as const }
+        : {}),
       approved_tools: params.approvedTools,
       options: params.interaction ? { toolInteraction: params.interaction } : undefined,
-      require_approval_for: runtime.requireApprovalFor,
+      require_approval_for: [...runtime.requireApprovalFor],
       enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
       durable_execution: {
         kind: "project_task" as const,
@@ -727,8 +788,8 @@ export async function runProjectTaskDispatch(params: {
           executionPolicy: {
             model: runtime.model,
             mode: runtime.mode,
-            skillIds: runtime.skillIds,
-            enabledTools: runtime.enabledTools,
+            skillIds: [...runtime.skillIds],
+            enabledTools: [...runtime.enabledTools],
           },
           ...(resumeConfiguration ? { resumeConfiguration } : {}),
           ...(remainingSteps !== undefined ? { maxStepsOverride: remainingSteps } : {}),
@@ -854,8 +915,33 @@ export async function runProjectTaskDispatch(params: {
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
   const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
+  const completedOutputIds =
+    goal?.status === "completed" && completedRun
+      ? (
+          await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
+            completedRun.id,
+          ])
+        ).map((output) => output.id)
+      : [];
+  const metKillCondition = goal
+    ? await findMetKillCondition(context, claimed, responseOutput, conversationId)
+    : null;
+  const council =
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    runtime.stage?.advance === "on_council_ship"
+      ? await reviewStageOutputs(context, {
+          taskId,
+          conversationId,
+          outputIds: completedOutputIds,
+          runId: completedRun?.id,
+          runAttempt: completedRun?.attempt,
+        })
+      : null;
   const nextStageId =
-    goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
+    !metKillCondition &&
+    goal?.status === "completed" &&
+    stageAdvancesOnCompletion(runtime.stage, council)
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
   const completion =
@@ -866,19 +952,15 @@ export async function runProjectTaskDispatch(params: {
           goal,
           run: completedRun,
           dispatchTaskId: params.dispatchTaskId,
-          outputIds: completedRun
-            ? (
-                await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
-                  completedRun.id,
-                ])
-              ).map((output) => output.id)
-            : [],
+          outputIds: completedOutputIds,
           output: responseOutput,
+          council,
         })
       : null;
-  const nextStatus =
-    goal?.status === "completed"
-      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
+  const nextStatus = metKillCondition
+    ? "blocked"
+    : goal?.status === "completed"
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
       : projection.status;
 
   await updateOwnedProjectTask({
@@ -888,8 +970,8 @@ export async function runProjectTaskDispatch(params: {
     executionLease: params.executionLease,
     updates: {
       status: nextStatus,
-      blockedReason: projection.blockedReason,
-      blockedDetail: goal?.stopped_reason ?? null,
+      blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
+      blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
       tokensSpent,
       ...(completion ? { completions: [...claimed.completions, completion] } : {}),
       ...(nextStatus === "done"
@@ -904,6 +986,34 @@ export async function runProjectTaskDispatch(params: {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  if (completion && claimed.executionProfile === "diff_review") {
+    try {
+      await params.executionLease.assertOwned();
+      const retainedCompletion = await retainTaskReviewCompletion(context, claimed, completion);
+
+      if (retainedCompletion) {
+        await updateOwnedProjectTask({
+          context,
+          taskId,
+          dispatchTaskId: params.dispatchTaskId,
+          executionLease: params.executionLease,
+          updates: {
+            completions: [...claimed.completions, retainedCompletion],
+          },
+        });
+      }
+    } catch (error) {
+      if (isTaskError(error, "ownership_lost")) {
+        throw error;
+      }
+
+      logger.warn("Review output will be retained when publication is prepared", {
+        taskId,
+        error: getErrorMessage(error),
+      });
+    }
+  }
 
   const notificationKind =
     projection.blockedReason === "awaiting_input" ||
@@ -930,6 +1040,23 @@ export async function runProjectTaskDispatch(params: {
             ? pendingApproval?.interactionId
             : null,
     });
+  }
+
+  if (nextStatus === "done") {
+    await recordProjectTaskRetrospective(
+      context,
+      {
+        ...claimed,
+        completions: completion ? [...claimed.completions, completion] : claimed.completions,
+      },
+      "done",
+    ).catch((error: unknown) =>
+      logger.warn("Could not record the task retrospective", {
+        taskId,
+        error: getErrorMessage(error),
+      }),
+    );
+    await releaseReadyDependentTasks(context, claimed.projectId);
   }
 
   if (nextStageId) {

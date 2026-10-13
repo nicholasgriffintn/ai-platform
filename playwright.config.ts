@@ -1,14 +1,17 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
-import dotenv from "dotenv";
 
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "./apps/app/tests/e2e/support/environment";
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
+const envFile = path.resolve(configDir, ".env");
 
-dotenv.config({ path: path.resolve(configDir, ".env"), quiet: true });
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile);
+}
 
 export default defineConfig({
   fullyParallel: true,

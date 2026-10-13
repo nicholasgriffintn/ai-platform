@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-model-registry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Governed model registry mechanisms for Polychat: the pure policy evaluator, licence normalisation, static weight inspection that never executes a file, evaluation statistics, lineage and CycloneDX ML-BOM export",
   "license": "Apache-2.0",
   "files": [
@@ -16,6 +16,11 @@
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./scoring": {
+      "polychat-source": "./src/scoring.ts",
+      "types": "./dist/scoring.d.ts",
+      "import": "./dist/scoring.js"
     }
   },
   "publishConfig": {
@@ -26,6 +31,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-library-policy": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^"
   },

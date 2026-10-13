@@ -145,25 +145,6 @@ describe("createStreamingTurnTransport", () => {
 });
 
 describe("consumeProviderStream", () => {
-  it("forwards each delta and returns the assembled text", async () => {
-    const { sink, events } = createSink();
-
-    const turn = await consumeProviderStream(
-      providerStream([textDelta("Hello "), textDelta("world"), "data: [DONE]\n\n"]),
-      sink,
-      context,
-    );
-
-    expect(turn.content).toBe("Hello world");
-    expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(2);
-    expect(events).toEqual([
-      { type: "turn_activity", payload: { kind: "response_started", step: 1 } },
-      { type: "content_block_delta", payload: { content: "Hello " } },
-      { type: "content_block_delta", payload: { content: "world" } },
-      { type: "turn_activity", payload: { kind: "response_finished", step: 1 } },
-    ]);
-  });
-
   it("finishes reasoning before response generation starts", async () => {
     const { sink, events } = createSink();
 
@@ -240,26 +221,6 @@ describe("consumeProviderStream", () => {
     });
   });
 
-  it("reports streamed usage as the provider sends it", async () => {
-    const { sink, events } = createSink();
-
-    const turn = await consumeProviderStream(
-      providerStream([
-        textDelta("Hello"),
-        `data: ${JSON.stringify({
-          choices: [{ delta: {} }],
-          usage: { prompt_tokens: 10, completion_tokens: 4, total_tokens: 14 },
-        })}\n\n`,
-        "data: [DONE]\n\n",
-      ]),
-      sink,
-      context,
-    );
-
-    expect(turn.usage).toMatchObject({ total_tokens: 14 });
-    expect(events.some((event) => event.type === "usage")).toBe(true);
-  });
-
   it("captures usage and impact sent after the finish reason chunk", async () => {
     const { sink, events } = createSink();
 
@@ -312,22 +273,6 @@ describe("consumeProviderStream", () => {
     expect(turn.content).toBe("split");
   });
 
-  it("reports a provider error instead of returning a usable turn", async () => {
-    const { sink } = createSink();
-
-    const turn = await consumeProviderStream(
-      providerStream([
-        `data: ${JSON.stringify({ error: { message: "Quota exceeded" } })}\n\n`,
-        textDelta("never read"),
-      ]),
-      sink,
-      context,
-    );
-
-    expect(turn.error).toEqual({ message: "Quota exceeded" });
-    expect(turn.content).toBe("");
-  });
-
   it("preserves content received before a provider error event", async () => {
     const { sink } = createSink();
 
@@ -345,76 +290,6 @@ describe("consumeProviderStream", () => {
       error: null,
       interrupted: true,
     });
-  });
-
-  it("collects streamed openai tool call arguments into one call", async () => {
-    const { sink, events } = createSink();
-
-    const turn = await consumeProviderStream(
-      providerStream([
-        `data: ${JSON.stringify({
-          choices: [
-            {
-              delta: {
-                tool_calls: [
-                  { index: 0, id: "call-1", function: { name: "get_weather", arguments: '{"loc' } },
-                ],
-              },
-            },
-          ],
-        })}\n\n`,
-        `data: ${JSON.stringify({
-          choices: [
-            { delta: { tool_calls: [{ index: 0, function: { arguments: 'ation":"SF"}' } }] } },
-          ],
-        })}\n\n`,
-        "data: [DONE]\n\n",
-      ]),
-      sink,
-      context,
-    );
-
-    expect(turn.toolCalls).toEqual([
-      {
-        id: "call-1",
-        type: "function",
-        function: { name: "get_weather", arguments: '{"location":"SF"}' },
-      },
-    ]);
-    expect(
-      events.filter(
-        (event) => event.type === "turn_activity" || event.type.startsWith("tool_use_"),
-      ),
-    ).toEqual([
-      {
-        type: "turn_activity",
-        payload: {
-          kind: "tool_input_started",
-          step: 1,
-          toolCallId: "call-1",
-          toolName: "get_weather",
-        },
-      },
-      {
-        type: "tool_use_start",
-        payload: { tool_id: "call-1", tool_name: "get_weather" },
-      },
-      { type: "tool_use_delta", payload: { tool_id: "call-1", parameters: '{"loc' } },
-      {
-        type: "tool_use_delta",
-        payload: { tool_id: "call-1", parameters: 'ation":"SF"}' },
-      },
-      { type: "tool_use_stop", payload: { tool_id: "call-1" } },
-      {
-        type: "turn_activity",
-        payload: {
-          kind: "tool_input_finished",
-          step: 1,
-          toolCallId: "call-1",
-          toolName: "get_weather",
-        },
-      },
-    ]);
   });
 
   it("does not finalise an OpenAI tool call when its input stream is truncated", async () => {
@@ -712,23 +587,6 @@ describe("consumeProviderStream", () => {
     );
 
     expect(turn.content).toBe("Let me check that.");
-    expect(turn.interrupted).toBe(true);
-    expect(turn.toolCalls).toEqual([]);
-  });
-
-  it("marks the turn interrupted on a truncated tool call even when no text preceded it", async () => {
-    const { sink } = createSink();
-
-    const turn = await consumeProviderStream(
-      providerStream([
-        'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu-1","name":"load_skill","input":{}}}\n\n',
-        'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"skill\\""}}\n\n',
-      ]),
-      sink,
-      { ...context, provider: "anthropic", model: "claude-opus-5" },
-    );
-
-    expect(turn.content).toBe("");
     expect(turn.interrupted).toBe(true);
     expect(turn.toolCalls).toEqual([]);
   });

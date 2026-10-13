@@ -1955,6 +1955,7 @@
         }
       },
       "unset": [
+        "reliability",
         "supportsToolCalls",
         "supportsTemperature"
       ]
@@ -2100,6 +2101,7 @@
       "model": "replicate/google/nano-banana-pro/google-nano-banana-pro",
       "matchingModel": "google/nano-banana-pro",
       "overrides": {
+        "isFeatured": true,
         "costPerRun": 0.039,
         "inputSchema": {
           "fields": [
@@ -2513,7 +2515,10 @@
           ],
           "reference": "https://replicate.com/turian/insanely-fast-whisper-with-video"
         }
-      }
+      },
+      "unset": [
+        "supportsToolCalls"
+      ]
     },
     "replicate-tencent-hunyuan-video": {
       "model": "replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405/hunyuan-video",
@@ -2924,7 +2929,6 @@
       },
       "unset": [
         "openWeights",
-        "supportsToolCalls",
         "supportsTemperature"
       ]
     },
@@ -2951,7 +2955,7 @@
           "audio",
           "document"
         ],
-        "isFeatured": true,
+        "isFeatured": false,
         "supportsAttachments": true,
         "inputSchema": {
           "fields": [
@@ -3046,7 +3050,6 @@
       },
       "unset": [
         "openWeights",
-        "supportsToolCalls",
         "supportsTemperature"
       ]
     },
@@ -3054,6 +3057,7 @@
       "model": "replicate/alibaba/happyhorse-1.0/happyhorse-1-0",
       "matchingModel": "alibaba/happyhorse-1.0",
       "overrides": {
+        "isFeatured": true,
         "inputSchema": {
           "fields": [
             {
@@ -3320,6 +3324,7 @@
       "model": "replicate/runwayml/gen-4.5/runway-gen-4-5",
       "matchingModel": "runwayml/gen-4.5",
       "overrides": {
+        "isFeatured": true,
         "inputSchema": {
           "fields": [
             {
@@ -3745,6 +3750,7 @@
           "document",
           "image"
         ],
+        "isFeatured": true,
         "supportsAttachments": true,
         "supportsImageEdits": true,
         "inputSchema": {
@@ -4084,6 +4090,7 @@
       "model": "replicate/bria/fibo/fibo",
       "matchingModel": "bria/fibo",
       "overrides": {
+        "isFeatured": true,
         "inputSchema": {
           "fields": [
             {

@@ -15,6 +15,11 @@ export function ensureEnv(context: ProviderFactoryContext): IEnv {
   return context.env;
 }
 
+export function ensureUser(context: ProviderFactoryContext): IUser;
+export function ensureUser(
+  context: ProviderFactoryContext,
+  options: { optional?: boolean },
+): IUser | undefined;
 export function ensureUser(
   context: ProviderFactoryContext,
   options?: { optional?: boolean },

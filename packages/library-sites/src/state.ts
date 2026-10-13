@@ -20,7 +20,13 @@ export const SITE_DYNAMIC_KEYS = [
 ] as const;
 
 export function parseStatePath(path: string): string[] {
-  return path.split("/").filter(Boolean);
+  const segments = path.split("/").filter(Boolean);
+
+  if (segments.some((segment) => ["__proto__", "constructor", "prototype"].includes(segment))) {
+    throw new Error("Unsafe state path");
+  }
+
+  return segments;
 }
 
 export function getStatePath(state: unknown, path: string): unknown {
@@ -30,7 +36,7 @@ export function getStatePath(state: unknown, path: string): unknown {
     if (Array.isArray(current)) {
       current = current[Number(segment)];
     } else if (isRecord(current)) {
-      current = current[segment];
+      current = Object.hasOwn(current, segment) ? current[segment] : undefined;
     } else {
       return undefined;
     }
