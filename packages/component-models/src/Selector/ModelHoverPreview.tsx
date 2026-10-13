@@ -11,6 +11,7 @@ import { type RefObject, useLayoutEffect, useState } from "react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 import { ArtificialAnalysisScorePanel } from "./ArtificialAnalysisScorePanel";
+import { BenchmarksPanel } from "./BenchmarksPanel";
 import { clampHoverPreviewTop } from "./hoverPreviewPosition";
 
 export interface ModelHoverPreviewState {
@@ -226,6 +227,10 @@ export function ModelHoverPreview({
 
         {model.artificialAnalysis ? (
           <ArtificialAnalysisScorePanel analysis={model.artificialAnalysis} />
+        ) : null}
+
+        {model.benchmarks?.length && model.id ? (
+          <BenchmarksPanel modelId={model.id} standings={model.benchmarks} />
         ) : null}
       </div>
     </div>

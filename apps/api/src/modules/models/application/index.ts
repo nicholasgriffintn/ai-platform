@@ -8,14 +8,31 @@ import {
   getExecutableModelsForAccount,
   tryResolveDefaultChatModel,
 } from "@ngriffin_uk/polychat-ai-models";
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { ModelBenchmarkStanding, ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { listModelBenchmarkStandings } from "~/modules/benchmarks/application/boards";
 import { filterModelsForUserAccess, getModelConfig } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 import { resolveModelReadiness } from "./readiness";
+
+const logger = getLogger({ prefix: "modules/models/application" });
+
+async function loadBenchmarkStandings(
+  env: IEnv,
+  userId?: number,
+): Promise<Map<string, ModelBenchmarkStanding[]>> {
+  try {
+    return await listModelBenchmarkStandings(RepositoryManager.getInstance(env), userId);
+  } catch (error) {
+    logger.warn("Benchmark standings are unavailable for the model list", { error });
+
+    return new Map();
+  }
+}
 
 function includeModelIds(models: ModelConfig): ModelConfig {
   const modelsWithIds: ModelConfig = {};
@@ -60,6 +77,7 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
     Object.keys(getExecutableModelsForAccount(filteredModels, user)),
   );
   const defaultModel = tryResolveDefaultChatModel(filteredModels, user)?.id;
+  const benchmarks = await loadBenchmarkStandings(env, user?.id);
 
   return Object.fromEntries(
     Object.entries(includeModelIds(filteredModels)).map(([id, model]) => {
@@ -67,6 +85,7 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
         ...model,
         isDefault: id === defaultModel,
         isExecutable: executableModelIds.has(id),
+        ...(benchmarks.has(id) ? { benchmarks: benchmarks.get(id) } : {}),
       };
       const readiness = resolveModelReadiness(enrichedModel, user);
 

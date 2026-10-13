@@ -10,6 +10,7 @@ import {
   normaliseTokenUsage,
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { isProviderRateLimitError } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
@@ -19,32 +20,54 @@ import { toProviderMessages } from "~/modules/chat/application/messages/provider
 import { compactToolOutput } from "~/modules/chat/application/messages/tool-output-compaction";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import { executeMachineChatResponse } from "~/modules/machines/application/chat-response";
-import type { ChatCompletionParameters, Message } from "~/types";
+import type { ChatCompletionParameters, CredentialAuthority, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/streaming/responses" });
 
+export interface AuthorisedModelTarget {
+  config: ModelConfigItem;
+  credentialAuthority: CredentialAuthority;
+}
+
 export async function getAIResponse(request: ChatCompletionParameters) {
+  const requestedModel = request.model || request.models?.[0];
+
+  if (!requestedModel) {
+    throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
+  }
+
+  return getAIResponseForTarget(
+    request,
+    await resolveExecutableModelForRequest({
+      env: request.env,
+      user: request.context?.user,
+      model: requestedModel,
+      provider: request.provider,
+    }),
+  );
+}
+
+export async function getAIResponseForTarget(
+  request: ChatCompletionParameters,
+  { config: modelConfig, credentialAuthority }: AuthorisedModelTarget,
+) {
   const {
     app_url,
     system_prompt,
     env,
     context,
     mode,
-    model,
-    models,
-    provider: requestedProvider,
     messages,
     message,
     enabled_tools,
     tools,
+    model: _model,
+    models: _models,
+    provider: _provider,
     ...params
   } = request;
   const user = context?.user;
-  const requestedModel = model || models?.[0];
-
-  if (!requestedModel) {
-    throw new AssistantError("Model is required", ErrorType.PARAMS_ERROR);
-  }
+  const requestedModel = modelConfig.matchingModel;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     throw new AssistantError(
@@ -55,16 +78,9 @@ export async function getAIResponse(request: ChatCompletionParameters) {
 
   logger.debug("Getting AI response", {
     model: requestedModel,
-    provider: requestedProvider,
+    provider: modelConfig.provider,
     mode,
     user: user?.id,
-  });
-
-  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
-    env,
-    user,
-    model: requestedModel,
-    provider: requestedProvider,
   });
 
   if (modelConfig.machineId) {

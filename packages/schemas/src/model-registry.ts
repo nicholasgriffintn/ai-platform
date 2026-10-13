@@ -56,6 +56,7 @@ export const EVIDENCE_SOURCES = [
   "hub_scan",
   "static_inspection",
   "polychat_eval",
+  "polychat_benchmark",
   "community_eval",
   "guardrails",
   "route_registry",

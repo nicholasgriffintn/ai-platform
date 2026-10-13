@@ -61,3 +61,16 @@ export function pickRandom<T>(values: readonly T[]): T | undefined {
 
   return values[random % values.length];
 }
+
+export function shuffleCopy<T>(values: readonly T[]): T[] {
+  const shuffled = [...values];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const [random = 0] = crypto.getRandomValues(new Uint32Array(1));
+    const swap = random % (index + 1);
+
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+
+  return shuffled;
+}

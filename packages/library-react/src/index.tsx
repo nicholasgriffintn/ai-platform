@@ -11,6 +11,7 @@ export * from "./hooks/useArtifactPanel.js";
 export * from "./hooks/useArtifactWorkbench.js";
 export * from "./hooks/useAssistantActionCatalog.js";
 export * from "./hooks/useAuth.js";
+export * from "./hooks/useBenchmarks.js";
 export * from "./hooks/useBilling.js";
 export * from "./hooks/useDesktopDownloads.js";
 export * from "./hooks/useDeviceAuthorisation.js";

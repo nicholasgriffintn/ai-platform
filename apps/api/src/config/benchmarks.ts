@@ -1,0 +1,11 @@
+export const BENCHMARKS_CONFIG = {
+  officialMonthlyBudgetUsd: 50,
+  officialRunsPerQueuePass: 12,
+  personalActiveRuns: 5,
+  personalRunsPerDay: 20,
+  arenaTokenTtlMs: 2 * 60 * 60 * 1000,
+  playTokenTtlMs: 60 * 60 * 1000,
+  estimatedInputTokensPerItem: 700,
+  estimatedImageTokensPerItem: 1_500,
+  estimatedOutputTokensPerItem: 3_000,
+} as const;

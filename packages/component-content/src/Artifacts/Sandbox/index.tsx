@@ -5,6 +5,7 @@ export {
   type ArtifactBindingReader,
   type ArtifactBindingSource,
 } from "./artifactBindingBridge";
+export { HardenedHtmlFrame } from "./HardenedHtmlFrame";
 import { HtmlSandbox } from "./HtmlSandbox";
 import { JavaScriptSandbox } from "./JavaScriptSandbox";
 import { ReactSandbox } from "./ReactSandbox";

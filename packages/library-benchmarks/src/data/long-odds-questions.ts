@@ -1,0 +1,186 @@
+import type { LongOddsQuestion } from "../definitions/long-odds.js";
+
+export const LONG_ODDS_QUESTIONS: readonly LongOddsQuestion[] = [
+  {
+    id: "kilimanjaro-mont-blanc",
+    question: "Is Mount Kilimanjaro taller than Mont Blanc?",
+    answer: true,
+    note: "5,895 m against 4,806 m.",
+  },
+  {
+    id: "australia-moon",
+    question: "Is mainland Australia wider from east to west than the Moon's diameter?",
+    answer: true,
+    note: "About 4,000 km against 3,474 km.",
+  },
+  {
+    id: "reno-los-angeles",
+    question: "Is Reno, Nevada further west than Los Angeles?",
+    answer: true,
+    note: "Reno sits at 119.8°W, Los Angeles at 118.2°W.",
+  },
+  {
+    id: "canada-coastline",
+    question: "Does Canada have a longer coastline than Russia?",
+    answer: true,
+    note: "Canada has the world's longest coastline.",
+  },
+  {
+    id: "cleopatra-moon",
+    question:
+      "Did Cleopatra live closer in time to the Moon landing than to the building of the Great Pyramid of Giza?",
+    answer: true,
+    note: "About 2,000 years against about 2,500.",
+  },
+  {
+    id: "istanbul-london",
+    question: "Does Istanbul have more residents than London?",
+    answer: true,
+    note: "Roughly 15.6 million against 8.9 million.",
+  },
+  {
+    id: "africa-area",
+    question: "Is Africa larger in area than the United States, China and India combined?",
+    answer: true,
+    note: "30.3 million km² against about 22.7 million.",
+  },
+  {
+    id: "oxford-aztecs",
+    question: "Was the University of Oxford teaching before the Aztecs founded Tenochtitlan?",
+    answer: true,
+    note: "Teaching by 1096; Tenochtitlan was founded in 1325.",
+  },
+  {
+    id: "greenland-mexico",
+    question: "Is Greenland larger in area than Mexico?",
+    answer: true,
+    note: "2.17 million km² against 1.97 million.",
+  },
+  {
+    id: "mammoths-pyramid",
+    question:
+      "Were woolly mammoths still alive somewhere when the Great Pyramid of Giza was built?",
+    answer: true,
+    note: "They survived on Wrangel Island until about 2000 BC.",
+  },
+  {
+    id: "pacific-land",
+    question: "Is the Pacific Ocean larger than all of Earth's land put together?",
+    answer: true,
+    note: "About 165 million km² against 149 million.",
+  },
+  {
+    id: "eiffel-summer",
+    question: "Is the Eiffel Tower taller in summer than in winter?",
+    answer: true,
+    note: "Thermal expansion adds roughly 15 cm.",
+  },
+  {
+    id: "paris-montreal",
+    question: "Is Paris further north than Montreal?",
+    answer: true,
+    note: "48.9°N against 45.5°N.",
+  },
+  {
+    id: "edinburgh-bristol",
+    question: "Is Edinburgh further west than Bristol?",
+    answer: true,
+    note: "3.19°W against 2.59°W.",
+  },
+  {
+    id: "alaska-east-west",
+    question: "Is Alaska both the westernmost and the easternmost US state?",
+    answer: true,
+    note: "The Aleutians cross the 180th meridian.",
+  },
+  {
+    id: "sharks-trees",
+    question: "Did sharks exist before trees?",
+    answer: true,
+    note: "Sharks appear about 450 million years ago, trees about 385 million.",
+  },
+  {
+    id: "stars-trees",
+    question: "Are there more stars in the Milky Way than trees on Earth?",
+    answer: false,
+    note: "Roughly 100–400 billion stars against about 3 trillion trees.",
+  },
+  {
+    id: "pluto-usa",
+    question: "Is Pluto wider than the United States is from coast to coast?",
+    answer: false,
+    note: "Pluto is 2,377 km across; the contiguous US is about 4,500 km.",
+  },
+  {
+    id: "great-wall-moon",
+    question: "Can the Great Wall of China be seen from the Moon with the naked eye?",
+    answer: false,
+    note: "It is far too narrow.",
+  },
+  {
+    id: "sahara-largest",
+    question: "Is the Sahara the largest desert on Earth?",
+    answer: false,
+    note: "Antarctica is larger.",
+  },
+  {
+    id: "brazil-chile",
+    question: "Does Brazil share a border with Chile?",
+    answer: false,
+    note: "Chile and Ecuador are the two South American countries that do not border Brazil.",
+  },
+  {
+    id: "strawberry-berry",
+    question: "Is a strawberry a berry in the botanical sense?",
+    answer: false,
+    note: "It is an aggregate accessory fruit; bananas are the berries.",
+  },
+  {
+    id: "everest-furthest",
+    question: "Is the summit of Everest the point on Earth's surface furthest from its centre?",
+    answer: false,
+    note: "Chimborazo wins thanks to the equatorial bulge.",
+  },
+  {
+    id: "nepal-flag",
+    question: "Is Nepal's national flag a rectangle?",
+    answer: false,
+    note: "It is two stacked pennants.",
+  },
+  {
+    id: "moon-closer",
+    question: "Is the Moon slowly moving closer to Earth?",
+    answer: false,
+    note: "It recedes by about 3.8 cm a year.",
+  },
+  {
+    id: "sydney-capital",
+    question: "Is Sydney the capital of Australia?",
+    answer: false,
+    note: "Canberra is.",
+  },
+  {
+    id: "atlantic-mediterranean",
+    question: "Is the Atlantic Ocean saltier on average than the Mediterranean Sea?",
+    answer: false,
+    note: "The Mediterranean is saltier.",
+  },
+  {
+    id: "arctic-penguins",
+    question: "Do penguins live in the wild in the Arctic?",
+    answer: false,
+    note: "Wild penguins live in the Southern Hemisphere.",
+  },
+  {
+    id: "glass-liquid",
+    question: "Is window glass a slowly flowing liquid at room temperature?",
+    answer: false,
+    note: "It is an amorphous solid; old panes are uneven from manufacture.",
+  },
+  {
+    id: "earth-july",
+    question: "Is the Earth closest to the Sun in July?",
+    answer: false,
+    note: "Perihelion falls in early January.",
+  },
+];
