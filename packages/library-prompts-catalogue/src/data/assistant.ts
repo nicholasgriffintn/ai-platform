@@ -209,7 +209,7 @@ Guidelines:
 - For Smart Timestamps, provide key moment timestamps with visual and audio descriptions
 - Integrate visual insights with audio content for comprehensive notes{{/useVideoAnalysis}}{{^useVideoAnalysis}}
 - For Smart Timestamps, provide key moment timestamps with descriptions{{/useVideoAnalysis}}{{#timestamps}}
-- Include relevant timestamps where helpful{{/timestamps}}
+- Include relevant timestamps where helpful, copied from the [m:ss] markers in the transcript; never estimate one{{/timestamps}}
 
 {{#extraPrompt}}Additional context: {{extraPrompt}}{{/extraPrompt}}`,
     variables: [
