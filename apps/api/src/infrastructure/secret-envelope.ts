@@ -2,6 +2,7 @@ import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { decodeBase64 } from "hono/utils/encode";
+import type { ZodType } from "zod/v4";
 
 import type { IEnv } from "~/types";
 
@@ -58,4 +59,19 @@ export async function openSecret(env: SecretEnv, envelope: string): Promise<stri
   } catch {
     throw new AssistantError("Failed to decrypt secret", ErrorType.UNKNOWN_ERROR);
   }
+}
+
+export function sealJson(env: SecretEnv, value: unknown): Promise<string> {
+  return sealSecret(env, JSON.stringify(value));
+}
+
+export async function openSealedJson<T>(
+  env: SecretEnv,
+  envelope: string,
+  schema: ZodType<T>,
+): Promise<T | null> {
+  const opened = await openSecret(env, envelope).catch(() => null);
+  const parsed = schema.safeParse(opened ? safeParseJson(opened) : null);
+
+  return parsed.success ? parsed.data : null;
 }

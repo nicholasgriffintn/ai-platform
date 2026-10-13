@@ -61,6 +61,14 @@ vi.mock("~/modules/sources/application/knowledge-index", () => ({
   scheduleKnowledgeIndexes: mocks.scheduleKnowledgeIndexes,
 }));
 
+vi.mock("~/modules/benchmarks/application/arena", () => ({
+  refreshBenchmarkRatings: vi.fn().mockResolvedValue(0),
+}));
+
+vi.mock("~/modules/benchmarks/application/official", () => ({
+  queueOfficialRuns: vi.fn(),
+}));
+
 import { SCHEDULES } from "~/config/schedules";
 
 import { workflows } from "../registry";

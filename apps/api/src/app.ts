@@ -7,6 +7,7 @@ import { registerSandboxCredentialBrokerRoutes } from "~/modules/apps/api/sandbo
 import { registerSandboxPreviewAuthorisationRoute } from "~/modules/apps/api/sandbox/preview-authorisation";
 import audio from "~/modules/audio/api/routes";
 import auth from "~/modules/auth/api";
+import benchmarks from "~/modules/benchmarks/api/routes";
 import capabilities from "~/modules/capabilities/api/routes";
 import channels from "~/modules/channels/api/routes";
 import code from "~/modules/code/api/routes";
@@ -85,6 +86,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sync", sync);
   app.route("/search", search);
   app.route("/decisions", decisions);
+  app.route("/benchmarks", benchmarks);
   app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);
   app.route("/memory/corrections", corrections);

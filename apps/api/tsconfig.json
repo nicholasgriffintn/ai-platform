@@ -66,6 +66,9 @@
       "path": "../../packages/ai-workflows"
     },
     {
+      "path": "../../packages/library-benchmarks"
+    },
+    {
       "path": "../../packages/library-chat"
     },
     {

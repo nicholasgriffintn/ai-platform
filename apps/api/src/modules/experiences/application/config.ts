@@ -219,6 +219,24 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     tags: ["text", "game", "decisions"],
     type: "normal",
   },
+  {
+    id: "benchmarks",
+    runtime: "benchmarks",
+    capabilityId: "featured-benchmarks",
+    name: "Benchmarks",
+    category: "Models",
+    when: "You want to see how your own models, or the ones on your keys, fare on Polychat's fun benchmarks, or fancy a round yourself.",
+    uses: "Models you can already use, including your own keys, and your guesses when you play.",
+    produces:
+      "Private runs you can share by link, placed against the public board, plus your own scores against the models.",
+    ios: "web-only",
+    description:
+      "Run GeoGuess, Countdown, Fermi Bets and friends against your own models, vote on hamsters, or play the board yourself",
+    icon: "trophy",
+    theme: "amber",
+    tags: ["models", "game", "evaluation"],
+    type: "normal",
+  },
 ];
 
 export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [

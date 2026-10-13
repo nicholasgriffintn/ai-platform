@@ -1,25 +1,12 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { isMeaningfullyLower, summariseScores } from "@ngriffin_uk/polychat-library-model-registry";
 import {
-  evalCaseResultSchema,
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   type EvalCase,
   type EvalCaseResult,
-  type ReasoningEffort,
-  type ScoreSummary,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  getErrorMessage,
-  percentile,
-  sampleDeterministic,
-} from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import {
-  openRouteReview,
-  syncVersionReviews,
-} from "~/modules/model-registry/application/decisions";
-import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
@@ -31,36 +18,24 @@ import type {
   ModelEvalSuiteRecord,
 } from "../infrastructure/ModelEvalRepository";
 import type { ModelGraderRecord } from "../infrastructure/ModelGraderRepository";
-import { scoreWithGrader } from "./graders";
+import { executeBatchedEvalRun } from "./batch-runner";
+import {
+  casesForRun,
+  completeEvalRun,
+  failedCaseResult,
+  gradeCaseOutput,
+  readEvalResults,
+  writeEvalResults,
+  type EvalJudge,
+} from "./run-results";
+
+export { readEvalResults } from "./run-results";
 
 const logger = getLogger({ prefix: "modules/model-evaluation/runner" });
 
 const CASES_PER_TASK = 20;
 const DEPLOYMENT_READINESS_ATTEMPTS = 18;
 const DEPLOYMENT_READINESS_DELAY_MS = 10 * 60 * 1000;
-const MAX_OUTPUT_CHARS = 20_000;
-
-function resultsKey(runId: string): string {
-  return `model-registry/eval-runs/${runId}.json`;
-}
-
-function casesForRun(
-  suite: Pick<ModelEvalSuiteRecord, "cases" | "replay_sample_size">,
-  run: Pick<ModelEvalRunRecord, "id" | "trigger">,
-): EvalCase[] {
-  return run.trigger === "replay"
-    ? sampleDeterministic(suite.cases, suite.replay_sample_size, run.id)
-    : suite.cases;
-}
-
-export async function readEvalResults(
-  bucket: R2Bucket | undefined,
-  runId: string,
-): Promise<EvalCaseResult[]> {
-  const object = await bucket?.get(resultsKey(runId));
-
-  return object ? evalCaseResultSchema.array().parse(await object.json()) : [];
-}
 
 async function runCase(
   env: IEnv,
@@ -69,11 +44,7 @@ async function runCase(
   graders: readonly ModelGraderRecord[],
   route: ModelRouteRecord,
   item: EvalCase,
-  judge: {
-    model: string;
-    provider: string;
-    effort?: ReasoningEffort;
-  },
+  judge: EvalJudge,
 ): Promise<EvalCaseResult> {
   const started = Date.now();
 
@@ -85,123 +56,24 @@ async function runCase(
       item.input,
       suite.system_prompt,
     );
-    const output = completion.slice(0, MAX_OUTPUT_CHARS);
-    const latencyMs = Date.now() - started;
-    const scores: Record<string, number> = {};
 
-    for (const grader of graders) {
-      const score = await scoreWithGrader(
-        { env, repositories, workspaceId: suite.workspace_id, projectId: suite.project_id },
-        grader.config,
-        { input: item.input, output, expected: item.expected },
-        judge,
-      );
-
-      if (score !== null) {
-        scores[grader.metric] = score;
-      }
-    }
-
-    return { caseId: item.id, output, latencyMs, scores };
+    return await gradeCaseOutput(
+      env,
+      repositories,
+      suite,
+      graders,
+      item,
+      completion,
+      Date.now() - started,
+      judge,
+    );
   } catch (error) {
-    return {
-      caseId: item.id,
-      output: "",
-      latencyMs: Date.now() - started,
-      scores: Object.fromEntries(
-        graders
-          .filter((grader) => grader.config.kind !== "judge")
-          .map((grader) => [grader.metric, 0]),
-      ),
-      error: getErrorMessage(error, "Unknown error"),
-    };
-  }
-}
-
-function summarise(graders: readonly ModelGraderRecord[], results: readonly EvalCaseResult[]) {
-  const scores: Record<string, ScoreSummary> = {};
-
-  for (const grader of graders) {
-    scores[grader.metric] = summariseScores(
-      results.flatMap((result) =>
-        result.scores[grader.metric] === undefined ? [] : [result.scores[grader.metric]],
-      ),
+    return failedCaseResult(
+      graders,
+      item,
+      getErrorMessage(error, "Unknown error"),
+      Date.now() - started,
     );
-  }
-
-  const latencies = results.filter((result) => !result.error).map((result) => result.latencyMs);
-
-  return { scores, latencyP95Ms: percentile(latencies, 0.95) };
-}
-
-async function recordRunEvidence(
-  repositories: RepositoryManager,
-  suite: ModelEvalSuiteRecord,
-  graders: readonly ModelGraderRecord[],
-  run: ModelEvalRunRecord,
-  route: ModelRouteRecord,
-  scores: Record<string, ScoreSummary>,
-  errors: number,
-): Promise<void> {
-  const primaryMetric = graders[0]?.metric;
-  const primary = primaryMetric ? scores[primaryMetric] : undefined;
-  const evidence: AddEvidenceInput[] = [
-    {
-      versionId: run.version_id,
-      routeId: route.id,
-      kind: "eval",
-      source: run.trigger === "replay" ? "replay" : "polychat_eval",
-      status: errors > run.cases_total / 10 ? "warn" : "pass",
-      summary: primary
-        ? `${suite.name}: ${primaryMetric} ${(primary.mean * 100).toFixed(1)}% (${(primary.low * 100).toFixed(1)}–${(primary.high * 100).toFixed(1)}, n=${primary.n})`
-        : `${suite.name}: no scores`,
-      details: { suiteId: suite.id, runId: run.id, trigger: run.trigger, scores, errors },
-    },
-  ];
-
-  if (run.trigger === "replay" && primaryMetric && primary) {
-    const baseline = (
-      await repositories.modelEvals.listRuns({
-        suiteIds: [suite.id],
-        routeIds: [route.id],
-        limit: 50,
-      })
-    ).find(
-      (candidate) =>
-        candidate.status === "completed" &&
-        candidate.trigger !== "replay" &&
-        candidate.scores[primaryMetric] !== undefined,
-    );
-
-    if (baseline) {
-      const baselineScore = baseline.scores[primaryMetric];
-      const drifted = isMeaningfullyLower(primary, baselineScore);
-
-      evidence.push({
-        versionId: run.version_id,
-        routeId: route.id,
-        kind: "drift",
-        source: "replay",
-        status: drifted ? "fail" : "pass",
-        summary: drifted
-          ? `${primaryMetric} fell from ${(baselineScore.mean * 100).toFixed(1)}% to ${(primary.mean * 100).toFixed(1)}%`
-          : `${primaryMetric} holds at ${(primary.mean * 100).toFixed(1)}% against a ${(baselineScore.mean * 100).toFixed(1)}% baseline`,
-        details: {
-          suiteId: suite.id,
-          runId: run.id,
-          baselineRunId: baseline.id,
-          metric: primaryMetric,
-        },
-      });
-    }
-  }
-
-  await repositories.modelGovernance.addEvidence(evidence);
-
-  const drift = evidence.find((item) => item.kind === "drift" && item.status === "fail");
-
-  if (drift) {
-    await openRouteReview(repositories, route, drift.summary);
   }
 }
 
@@ -243,7 +115,13 @@ async function waitForDeployment(
 export async function executeEvalRun(
   env: IEnv,
   repositories: RepositoryManager,
-  data: { runId: string; offset: number; readinessAttempt: number },
+  data: {
+    runId: string;
+    offset: number;
+    readinessAttempt: number;
+    batch: boolean;
+    pollAttempt: number;
+  },
 ) {
   const run = await repositories.modelEvals.getRun(data.runId);
   const suite = run ? await repositories.modelEvals.getSuiteById(run.suite_id) : null;
@@ -264,6 +142,16 @@ export async function executeEvalRun(
   }
 
   try {
+    if (data.batch) {
+      return await executeBatchedEvalRun(env, repositories, {
+        run,
+        suite,
+        route,
+        bucket,
+        pollAttempt: data.pollAttempt,
+      });
+    }
+
     const readiness = await waitForDeployment(env, repositories, run, route, data.readinessAttempt);
 
     if (readiness === "waiting") {
@@ -295,9 +183,7 @@ export async function executeEvalRun(
     const results = [...previous, ...fresh];
     const nextOffset = data.offset + batch.length;
 
-    await bucket.put(resultsKey(run.id), JSON.stringify(results), {
-      httpMetadata: { contentType: "application/json" },
-    });
+    await writeEvalResults(bucket, run.id, results);
     await repositories.modelEvals.updateRun(run.id, { cases_completed: results.length });
 
     if (nextOffset < cases.length) {
@@ -311,12 +197,14 @@ export async function executeEvalRun(
       return { status: "success" as const, message: `${nextOffset}/${cases.length} cases` };
     }
 
-    const { scores, latencyP95Ms } = summarise(graders, results);
-    const errors = results.filter((result) => result.error).length;
-
-    await repositories.modelEvals.updateRunScores(run.id, scores, latencyP95Ms);
-    await recordRunEvidence(repositories, suite, graders, run, route, scores, errors);
-    await syncVersionReviews(repositories, route.workspace_id, run.version_id);
+    await completeEvalRun(repositories, {
+      suite,
+      graders,
+      run,
+      route,
+      results,
+      measureLatency: true,
+    });
 
     return { status: "success" as const, message: `Completed ${results.length} cases` };
   } catch (error) {

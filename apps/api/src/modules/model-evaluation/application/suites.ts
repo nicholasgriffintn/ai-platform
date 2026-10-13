@@ -25,8 +25,9 @@ import type {
   ModelEvalRunRecord,
   ModelEvalSuiteRecord,
 } from "../infrastructure/ModelEvalRepository";
+import { canBatchEvalRoute } from "./batch-runner";
 import { toEvalRun, toEvalSuite } from "./mappers";
-import { readEvalResults } from "./runner";
+import { readEvalResults } from "./run-results";
 
 export async function createEvalSuite(
   context: ServiceContext,
@@ -112,6 +113,7 @@ export async function enqueueEvalRun(
     route: ModelRouteRecord;
     trigger: ModelEvalRunRecord["trigger"];
     createdBy: number | null;
+    batch?: boolean;
   },
 ): Promise<ModelEvalRunRecord> {
   const run = await repositories.modelEvals.createRun({
@@ -129,7 +131,7 @@ export async function enqueueEvalRun(
   await new TaskService(env, repositories.tasks).enqueueTask({
     id: `${MODEL_REGISTRY_EVAL_TASK_TYPE}:${run.id}:0`,
     task_type: MODEL_REGISTRY_EVAL_TASK_TYPE,
-    task_data: { runId: run.id, offset: 0, readinessAttempt: 0 },
+    task_data: { runId: run.id, offset: 0, readinessAttempt: 0, batch: input.batch === true },
     priority: 6,
   });
 
@@ -159,6 +161,14 @@ export async function startEvalRuns(
       throw notFound(`Active route ${routeId}`);
     }
 
+    if (input.batch && !canBatchEvalRoute(route)) {
+      throw new AssistantError(
+        `The ${route.provider} route ${route.provider_model_id} cannot run as a batch. Batches need an OpenAI or Anthropic route without a deployment.`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
     runs.push(
       toEvalRun(
         await enqueueEvalRun(context.env, repositories, {
@@ -166,6 +176,7 @@ export async function startEvalRuns(
           route,
           trigger: "manual",
           createdBy: userId,
+          batch: input.batch,
         }),
       ),
     );
@@ -177,7 +188,11 @@ export async function startEvalRuns(
     action: "model_eval.started",
     targetType: "model_eval_suite",
     targetId: suiteId,
-    metadata: { routeIds: input.routeIds, runIds: runs.map((run) => run.id) },
+    metadata: {
+      routeIds: input.routeIds,
+      runIds: runs.map((run) => run.id),
+      batch: input.batch,
+    },
   });
 
   return { runs };

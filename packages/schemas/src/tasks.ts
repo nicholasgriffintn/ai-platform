@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { recipeConfigurationSchema } from "./apps.js";
+import { BENCHMARK_RUN_TASK_TYPE } from "./benchmarks.js";
 import {
   DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
@@ -74,6 +75,7 @@ export const TASK_TYPES = [
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
   MODEL_UPLOAD_FINALISE_TASK_TYPE,
   MODEL_PLATFORM_RECONCILE_TASK_TYPE,
+  BENCHMARK_RUN_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({

@@ -1,6 +1,6 @@
 import { SidebarNavLink, SidebarNavSection } from "@ngriffin_uk/polychat-component-navigation";
 import { DISCOVER_PATH } from "@ngriffin_uk/polychat-library-react";
-import { Compass, Cpu, PawPrint, Puzzle, WalletCards } from "lucide-react";
+import { Compass, Cpu, PawPrint, Puzzle, Trophy, WalletCards } from "lucide-react";
 
 export function DiscoverSidebarSection({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -10,6 +10,9 @@ export function DiscoverSidebarSection({ onNavigate }: { onNavigate?: () => void
       </SidebarNavLink>
       <SidebarNavLink href="/models" end icon={<Cpu size={16} />} onClick={onNavigate}>
         Models
+      </SidebarNavLink>
+      <SidebarNavLink href="/benchmarks" icon={<Trophy size={16} />} onClick={onNavigate}>
+        Benchmarks
       </SidebarNavLink>
       <SidebarNavLink href="/apps" end icon={<Puzzle size={16} />} onClick={onNavigate}>
         Capabilities
