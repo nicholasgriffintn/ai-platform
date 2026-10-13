@@ -718,8 +718,8 @@ export function useModelPlatformMutations(workspaceId: string) {
     ),
     startEvalRuns: usePlatformMutation(
       workspaceId,
-      ({ suiteId, routeIds }: { suiteId: string; routeIds: string[] }) =>
-        startEvalRuns(workspaceId, suiteId, routeIds),
+      ({ suiteId, routeIds, batch }: { suiteId: string; routeIds: string[]; batch?: boolean }) =>
+        startEvalRuns(workspaceId, suiteId, routeIds, { batch }),
     ),
     savePolicy: usePlatformMutation(workspaceId, (input: UpsertPolicyRequest) =>
       saveModelPolicy(workspaceId, input),

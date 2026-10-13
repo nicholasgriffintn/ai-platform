@@ -35,3 +35,15 @@ export function canonicalJson(value: unknown): string {
     .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
     .join(",")}}`;
 }
+
+export function parseJsonLines(text: string): unknown[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line): unknown => JSON.parse(line));
+}
+
+export function formatJsonLines(values: readonly unknown[]): string {
+  return values.map((value) => JSON.stringify(value)).join("\n");
+}

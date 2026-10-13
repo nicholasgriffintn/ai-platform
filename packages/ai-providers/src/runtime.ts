@@ -1,4 +1,5 @@
 import type { AudioProvider } from "./capabilities/audio/index.js";
+import type { BatchProvider } from "./capabilities/batch/types.js";
 import type { AIProvider } from "./capabilities/chat/providers/base.js";
 import type { ImageProvider } from "./capabilities/image/index.js";
 import type { MusicProvider } from "./capabilities/music/index.js";
@@ -19,6 +20,7 @@ import type { SearchProvider } from "./types/search.js";
 
 export type AiProviderMap = {
   audio: AudioProvider;
+  batch: BatchProvider;
   chat: AIProvider;
   decision: DecisionProvider;
   guardrails: GuardrailsProvider;

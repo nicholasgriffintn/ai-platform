@@ -12,7 +12,7 @@ import {
   useModelPlatformMutations,
   useModelRoutes,
 } from "@ngriffin_uk/polychat-library-react";
-import type { EvalSuite } from "@ngriffin_uk/polychat-schemas";
+import { canBatchModelRoute, type EvalSuite } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 import { runWithToast } from "../../../utils/toast-action.js";
@@ -104,8 +104,11 @@ function SuiteRunner({
   const mutations = useModelPlatformMutations(workspaceId);
   const [selectedRouteIds, setSelectedRouteIds] = useState<string[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string | undefined>();
+  const [asBatch, setAsBatch] = useState(false);
   const caseResults = useEvalCaseResults(workspaceId, selectedRunId);
   const activeRoutes = (routes.data ?? []).filter((route) => route.status === "active");
+  const selectedRoutes = activeRoutes.filter((route) => selectedRouteIds.includes(route.id));
+  const canBatch = selectedRoutes.length > 0 && selectedRoutes.every(canBatchModelRoute);
   const metrics = (graders.data ?? [])
     .filter((grader) => suite.graderIds.includes(grader.id))
     .map((grader) => grader.metric);
@@ -157,7 +160,23 @@ function SuiteRunner({
             </div>
           )}
         </div>
-        <div className="border-t border-border pt-4">
+        <div className="space-y-3 border-t border-border pt-4">
+          {canBatch && (
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={asBatch}
+                onChange={() => setAsBatch((current) => !current)}
+              />
+              <span>
+                Run as a provider batch
+                <span className="block text-xs text-muted-foreground">
+                  About half the price. Results arrive within 24 hours and latency is not measured.
+                </span>
+              </span>
+            </label>
+          )}
           <Button
             size="sm"
             variant="primary"
@@ -167,6 +186,7 @@ function SuiteRunner({
                 mutations.startEvalRuns.mutateAsync({
                   suiteId: suite.id,
                   routeIds: selectedRouteIds,
+                  batch: canBatch && asBatch,
                 }),
               )
             }
