@@ -9,7 +9,13 @@ import {
 import { permissionModeSchema, type PermissionMode } from "./providers.js";
 import { reasoningEffortSchema } from "./reasoning.js";
 
-export const AGENT_HARNESS_IDS = ["pi", "opencode", "hermes", "openai-agents"] as const;
+export const AGENT_HARNESS_IDS = [
+  "pi",
+  "opencode",
+  "hermes",
+  "openai-agents",
+  "bedrock-managed-agents",
+] as const;
 export const agentHarnessIdSchema = z.enum(AGENT_HARNESS_IDS);
 export type AgentHarnessId = z.infer<typeof agentHarnessIdSchema>;
 
@@ -97,6 +103,21 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
     runtime: "remote",
     capabilities: {
       approvals: true,
+      steer: false,
+      fork: false,
+      workspaceTools: false,
+      ownsEnvironment: true,
+      maxTurnMinutes: 60,
+    },
+    permissionModes: ["full_access"],
+  },
+  "bedrock-managed-agents": {
+    id: "bedrock-managed-agents",
+    name: "Bedrock Managed Agents",
+    description: "AWS agent sessions on an AgentCore Runtime in your workspace's AWS account.",
+    runtime: "remote",
+    capabilities: {
+      approvals: false,
       steer: false,
       fork: false,
       workspaceTools: false,
@@ -197,7 +218,8 @@ export function isAgentHarnessId(value: unknown): value is AgentHarnessId {
   return agentHarnessIdSchema.safeParse(value).success;
 }
 
-export type HostedAgentHarnessId = Exclude<AgentHarnessId, "openai-agents">;
+export type RemoteAgentHarnessId = "openai-agents" | "bedrock-managed-agents";
+export type HostedAgentHarnessId = Exclude<AgentHarnessId, RemoteAgentHarnessId>;
 
 export function isHostedAgentHarness(harness: AgentHarnessId): harness is HostedAgentHarnessId {
   return AGENT_HARNESS_DEFINITIONS[harness].runtime !== "remote";

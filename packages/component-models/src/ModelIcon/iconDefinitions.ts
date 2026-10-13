@@ -70,6 +70,7 @@ export const MODEL_ICONS: Record<string, string> = {
   mercury: "inception",
   laguna: "poolside",
   hermes: "nous-research",
+  "bedrock-managed": "bedrock",
   inkling: "thinking-machines",
   kling: "kling",
   "ling-": "inclusion-ai",
