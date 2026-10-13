@@ -11,10 +11,14 @@ import {
   recordingSpeakerNames,
   type RecordingCaptionFormat,
 } from "./captions";
+import { RecordingNotes, type RecordingNotesProps } from "./RecordingNotes";
 import { TranscriptViewer } from "./TranscriptViewer";
 import { useCaptionTrack } from "./useCaptionTrack";
 
-export interface RecordingDetailViewProps {
+export interface RecordingDetailViewProps extends Pick<
+  RecordingNotesProps,
+  "onAddActionItem" | "addedActionItems" | "addingActionItem"
+> {
   recording: Recording;
   onDownloadTranscript?: () => void;
   onDownloadCaptions?: (format: RecordingCaptionFormat) => void;
@@ -24,6 +28,9 @@ export function RecordingDetailView({
   recording,
   onDownloadTranscript,
   onDownloadCaptions,
+  onAddActionItem,
+  addedActionItems,
+  addingActionItem,
 }: RecordingDetailViewProps) {
   const duration = formatDuration(recording.duration) || "Unknown duration";
   const timedTranscript =
@@ -84,6 +91,14 @@ export function RecordingDetailView({
               </div>
             </div>
           )}
+
+          <RecordingNotes
+            decisions={recording.decisions}
+            actionItems={recording.actionItems}
+            onAddActionItem={onAddActionItem}
+            addedActionItems={addedActionItems}
+            addingActionItem={addingActionItem}
+          />
 
           {recording.description && recording.description !== recording.summary && (
             <div className="pt-6 pb-2">

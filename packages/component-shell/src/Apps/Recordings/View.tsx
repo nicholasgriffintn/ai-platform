@@ -7,11 +7,21 @@ import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { useCallback } from "react";
 
+import { useRecordingActionItemTasks } from "./useRecordingActionItemTasks.js";
+
 function recordingFilename(recording: Recording, suffix: string): string {
   return `${recording.title.replace(/\s+/g, "-")}-${suffix}`;
 }
 
-export function RecordingView({ recording }: { recording: Recording }) {
+export function RecordingView({
+  recording,
+  projectId,
+}: {
+  recording: Recording;
+  projectId?: string;
+}) {
+  const actionItemTasks = useRecordingActionItemTasks(projectId, recording.title);
+
   const handleDownloadTranscript = useCallback(() => {
     if (!recording?.transcript) {
       return;
@@ -41,10 +51,24 @@ export function RecordingView({ recording }: { recording: Recording }) {
   );
 
   return (
-    <RecordingDetailView
-      recording={recording}
-      onDownloadTranscript={handleDownloadTranscript}
-      onDownloadCaptions={handleDownloadCaptions}
-    />
+    <>
+      {actionItemTasks.error && (
+        <p role="alert" className="text-sm text-failure">
+          {actionItemTasks.error}
+        </p>
+      )}
+      <RecordingDetailView
+        recording={recording}
+        onDownloadTranscript={handleDownloadTranscript}
+        onDownloadCaptions={handleDownloadCaptions}
+        onAddActionItem={
+          actionItemTasks.canAdd
+            ? (item, index) => void actionItemTasks.addActionItem(item, index)
+            : undefined
+        }
+        addedActionItems={actionItemTasks.added}
+        addingActionItem={actionItemTasks.adding}
+      />
+    </>
   );
 }

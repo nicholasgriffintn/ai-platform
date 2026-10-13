@@ -1,4 +1,4 @@
-import type { Recording } from "@ngriffin_uk/polychat-schemas";
+import { recordingNotesSchema, type Recording } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -79,6 +79,10 @@ export const handleRecordingDetail = async (req: IRecordingDetailRequest): Promi
   }
 
   const uploadData = uploads[0]?.data || {};
+  const notes = recordingNotesSchema
+    .pick({ decisions: true, actionItems: true })
+    .partial()
+    .safeParse(summaries[0]?.data ?? {});
 
   const recording: Recording = {
     id: recordingData.id,
@@ -91,6 +95,8 @@ export const handleRecordingDetail = async (req: IRecordingDetailRequest): Promi
     transcript:
       transcriptions.length > 0 ? transcriptions[0].data?.transcriptionData?.output : undefined,
     summary: summaries.length > 0 ? summaries[0].data.summary : undefined,
+    decisions: notes.success ? notes.data.decisions : undefined,
+    actionItems: notes.success ? notes.data.actionItems : undefined,
     status,
   };
 
