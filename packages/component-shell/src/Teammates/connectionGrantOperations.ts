@@ -89,6 +89,27 @@ export function groupOperationsByAccess(
   return groups.filter((group) => group.operations.length > 0);
 }
 
+export function pageOperationGroups(
+  groups: readonly OperationGroup[],
+  limit: number,
+): Array<{ group: OperationGroup; visible: ConnectionOperationView[] }> {
+  const pages: Array<{ group: OperationGroup; visible: ConnectionOperationView[] }> = [];
+  let remaining = limit;
+
+  for (const group of groups) {
+    if (remaining <= 0) {
+      break;
+    }
+
+    const visible = group.operations.slice(0, remaining);
+
+    remaining -= visible.length;
+    pages.push({ group, visible });
+  }
+
+  return pages;
+}
+
 export function summariseSelection(
   operations: readonly TeammateConnectionOperation[],
   selected: ReadonlySet<string>,

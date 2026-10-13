@@ -6,6 +6,7 @@ import {
   formatOperationLabel,
   groupOperationsByAccess,
   haveSameMembers,
+  pageOperationGroups,
   summariseSelection,
 } from "./connectionGrantOperations";
 
@@ -70,6 +71,19 @@ describe("groupOperationsByAccess", () => {
 
     expect(groups.map((group) => group.access)).toEqual(["read", "write"]);
     expect(groupOperationsByAccess(operations.filter((o) => o.access === "read"))).toHaveLength(1);
+  });
+});
+
+describe("pageOperationGroups", () => {
+  it("fills the limit across groups in order and drops groups past it", () => {
+    const groups = groupOperationsByAccess(operations);
+    const pages = pageOperationGroups(groups, 3);
+
+    expect(pages.map((page) => [page.group.access, page.visible.length])).toEqual([
+      ["read", 2],
+      ["write", 1],
+    ]);
+    expect(pageOperationGroups(groups, 2)).toHaveLength(1);
   });
 });
 

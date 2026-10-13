@@ -21,6 +21,7 @@ import {
   filterOperations,
   groupOperationsByAccess,
   haveSameMembers,
+  pageOperationGroups,
   summariseSelection,
   type ConnectionOperationView,
   type OperationAccessFilter,
@@ -38,11 +39,13 @@ const ACCESS_FILTERS: Array<{ value: OperationAccessFilter; label: string }> = [
 ];
 
 function OperationRow({
+  controlId,
   operation,
   checked,
   disabled,
   onCheckedChange,
 }: {
+  controlId: string;
   operation: ConnectionOperationView;
   checked: boolean;
   disabled: boolean;
@@ -50,12 +53,14 @@ function OperationRow({
 }) {
   return (
     <label
+      htmlFor={controlId}
       className={cn(
         "flex cursor-pointer items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-selection",
         checked && "bg-selection/60",
       )}
     >
       <Checkbox
+        id={controlId}
         className="mt-0.5"
         checked={checked}
         disabled={disabled}
@@ -140,8 +145,11 @@ function ConnectionGrantEditor({
     setVisibleLimit(PAGE_SIZE);
   };
 
-  let remainingToRender = visibleLimit;
   const hiddenCount = Math.max(0, filtered.length - visibleLimit);
+  const renderedGroups = useMemo(
+    () => pageOperationGroups(groups, visibleLimit),
+    [groups, visibleLimit],
+  );
 
   return (
     <div className="space-y-3 rounded-lg border p-3">
@@ -258,15 +266,7 @@ function ConnectionGrantEditor({
               : "No operations match this search."}
           </p>
         )}
-        {groups.map((group) => {
-          if (remainingToRender <= 0) {
-            return null;
-          }
-
-          const visible = group.operations.slice(0, remainingToRender);
-
-          remainingToRender -= visible.length;
-
+        {renderedGroups.map(({ group, visible }) => {
           const groupIds = group.operations.map((operation) => operation.id);
           const groupSelected = groupIds.filter((id) => selected.has(id)).length;
 
@@ -296,6 +296,7 @@ function ConnectionGrantEditor({
                 {visible.map((operation) => (
                   <OperationRow
                     key={operation.id}
+                    controlId={`${connection.id}-${operation.id}`}
                     operation={operation}
                     checked={selected.has(operation.id)}
                     disabled={disabled}
