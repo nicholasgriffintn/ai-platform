@@ -577,7 +577,7 @@ describe("Auth Middleware", () => {
       const context = createMockContext({
         req: {
           ...createMockRequest(),
-          path: "/chat/completions/123/generate-title",
+          path: "/conversations/123/title",
           method: "POST",
         },
       });
@@ -604,7 +604,7 @@ describe("Auth Middleware", () => {
         const context = createMockContext({
           req: {
             ...createMockRequest(),
-            path: "/chat/completions/conversation-1/goal",
+            path: "/conversations/conversation-1/goal",
             method,
           },
         });

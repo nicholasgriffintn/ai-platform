@@ -1,17 +1,17 @@
 import { useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  isTerminalChatRunStatus,
-  type ChatRun,
+  isTerminalResponseStatus,
+  type PlatformResponse,
   type ThreadOperation,
 } from "@ngriffin_uk/polychat-schemas";
 import { useEffect } from "react";
 
-import { getChatRunLoadingMessage } from "../chat/run-presentation.js";
+import { getResponseLoadingMessage } from "../chat/response-presentation.js";
 
 export function useRemoteConversationActivity(
   conversationId: string | undefined,
   activeOperation: ThreadOperation | null | undefined,
-  latestRun: ChatRun | null | undefined,
+  latestResponse: PlatformResponse | null | undefined,
 ) {
   const stream = useStreamActivityStore((state) =>
     conversationId ? state.streams[conversationId] : undefined,
@@ -23,10 +23,12 @@ export function useRemoteConversationActivity(
     }
 
     const store = useStreamActivityStore.getState();
-    const runActive = latestRun && !isTerminalChatRunStatus(latestRun.status);
-    const loadingMessage = runActive ? getChatRunLoadingMessage(latestRun.status) : undefined;
+    const responseActive = latestResponse && !isTerminalResponseStatus(latestResponse.status);
+    const loadingMessage = responseActive
+      ? getResponseLoadingMessage(latestResponse.status)
+      : undefined;
 
-    if (activeOperation || runActive) {
+    if (activeOperation || responseActive) {
       if (!stream) {
         store.beginStreamActivity(
           conversationId,
@@ -40,5 +42,5 @@ export function useRemoteConversationActivity(
     } else if (stream?.source === "remote") {
       store.clearStreamStatus(conversationId);
     }
-  }, [conversationId, activeOperation, latestRun, stream]);
+  }, [conversationId, activeOperation, latestResponse, stream]);
 }

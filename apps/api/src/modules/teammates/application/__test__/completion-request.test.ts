@@ -1,5 +1,5 @@
 import { PermissionChecker } from "@ngriffin_uk/polychat-library-tools";
-import { createChatCompletionsJsonSchema } from "@ngriffin_uk/polychat-schemas";
+import { responseCommandSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { prepareTeammateCompletionRequest } from "../completion-request";
@@ -9,7 +9,7 @@ describe("prepareTeammateCompletionRequest", () => {
   it.each([undefined, 0, 0.4])(
     "preserves automatic or explicit caller sampling (%s)",
     (temperature) => {
-      const body = createChatCompletionsJsonSchema.parse({
+      const body = responseCommandSchema.parse({
         model: "mistral-large-latest",
         messages: [{ role: "user", content: "Answer this" }],
         temperature,
@@ -36,7 +36,7 @@ describe("prepareTeammateCompletionRequest", () => {
   );
 
   it("uses the Chat tool policy for saved-teammate Chat runs", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Convene a council" }],
     });
@@ -75,7 +75,7 @@ describe("prepareTeammateCompletionRequest", () => {
   });
 
   it("does not let the caller widen the saved teammate's tools", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Search for something" }],
       enabled_tools: ["code_execution"],
@@ -102,7 +102,7 @@ describe("prepareTeammateCompletionRequest", () => {
   });
 
   it("ignores a stored mode that is no longer a known teammate mode", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Carry on" }],
     });
@@ -128,7 +128,7 @@ describe("prepareTeammateCompletionRequest", () => {
   });
 
   it("runs a hosted-computer teammate in build mode so browser tasks survive the step budget", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Open a page with the hosted computer" }],
     });
@@ -154,7 +154,7 @@ describe("prepareTeammateCompletionRequest", () => {
   });
 
   it("keeps an explicit teammate mode over the hosted-computer default", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Open a page with the hosted computer" }],
     });
@@ -193,7 +193,7 @@ describe("prepareTeammateCompletionRequest", () => {
       system_prompt: "Answer carefully.",
       few_shot_examples: null,
     };
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Check this claim" }],
     });
@@ -212,7 +212,7 @@ describe("prepareTeammateCompletionRequest", () => {
   });
 
   it("refuses a denied tool even when the caller asks for it", () => {
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "File a task" }],
       enabled_tools: ["create_task"],

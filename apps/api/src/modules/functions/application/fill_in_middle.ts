@@ -1,4 +1,4 @@
-import { handleCreateFimCompletions } from "~/modules/completions/application/createFimCompletions";
+import { handleCreateFimCompletions } from "~/modules/code/application/createFimCompletions";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { fill_in_middle_completion as fill_in_middle_completionDescriptor } from "./definitions/fill_in_middle";

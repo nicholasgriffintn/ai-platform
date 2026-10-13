@@ -1,17 +1,17 @@
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { withRetry } from "@ngriffin_uk/polychat-library-client/retry";
-import type { ChatRun, ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
+import type { PlatformResponse } from "@ngriffin_uk/polychat-schemas";
 
-export async function resolveAcceptedRunCommand(params: {
-  fetchCommand: () => Promise<ChatRunCommandReceipt>;
+export async function resolveAcceptedResponse(params: {
+  fetchResponse: () => Promise<PlatformResponse>;
   attempts?: number;
   intervalMs?: number;
-}): Promise<ChatRun | null> {
+}): Promise<PlatformResponse | null> {
   const attempts = params.attempts ?? 10;
   const intervalMs = params.intervalMs ?? 250;
 
   try {
-    return await withRetry(() => params.fetchCommand().then((receipt) => receipt.run), {
+    return await withRetry(() => params.fetchResponse(), {
       maxAttempts: attempts,
       baseDelayMs: intervalMs,
       maxDelayMs: intervalMs,

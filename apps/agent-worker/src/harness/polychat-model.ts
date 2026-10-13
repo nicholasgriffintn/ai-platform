@@ -10,7 +10,7 @@ import {
 } from "@opencode/plugin";
 
 export const POLYCHAT_PROVIDER_ID = "polychat";
-export const POLYCHAT_MODEL_BASE_URL = "https://polychat-api/agents/model";
+export const POLYCHAT_MODEL_BASE_URL = "https://polychat-api";
 const MODEL_PORT_KEY = "delegated";
 const OPENCODE_PROVIDER_PACKAGE = "@opencode/ai/providers/openai-compatible";
 const DEFAULT_CONTEXT_WINDOW = 128_000;

@@ -6,8 +6,8 @@ import type {
   MessagePart as SchemaMessagePart,
   ToolResponseType,
   SandboxTaskType,
-  ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
-  ChatRun,
+  ResponseCommand as SchemaChatCompletionRequestBody,
+  PlatformResponse,
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,
   ConversationGroup,
@@ -247,7 +247,7 @@ export interface Message {
 export interface Conversation {
   id?: string;
   active_operation?: ThreadOperation | null;
-  latest_run?: ChatRun | null;
+  latest_response?: PlatformResponse | null;
   type?: SchemaConversationType;
   title: string;
   messages: Message[];

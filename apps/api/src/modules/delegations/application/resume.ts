@@ -11,7 +11,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { hydrateChatRunUsage } from "~/modules/chat-runs/application/usage";
 import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
@@ -21,6 +20,7 @@ import {
   settleInterruptedCall,
 } from "~/modules/delegations/domain/interrupted-calls";
 import { getFunctionToolDescriptors } from "~/modules/functions/application/definitions";
+import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IUser, Message } from "~/types";
 

@@ -1,9 +1,9 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
 import {
-  runProvenanceSchema,
-  type ChatCompletionResponseBody,
-  type ChatStreamMessage,
+  itemsToMessages,
+  type PlatformResponse,
+  type ResponseStreamMessage,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
@@ -18,9 +18,9 @@ const STREAM_ERROR_STATUS_BY_CODE: Record<string, number> = {
   rate_limit_exceeded: 429,
 };
 
-export function createStreamingApiError(errorPayload: unknown): ApiError {
+export function createStreamingApiError(errorPayload: unknown, fallbackCode?: string): ApiError {
   if (!errorPayload || typeof errorPayload !== "object") {
-    return new ApiError("Streaming response failed", 500, errorPayload);
+    return new ApiError("Streaming response failed", 500, errorPayload, fallbackCode);
   }
 
   const payload = errorPayload as Record<string, unknown>;
@@ -29,7 +29,7 @@ export function createStreamingApiError(errorPayload: unknown): ApiError {
       ? payload.code
       : typeof payload.type === "string"
         ? payload.type
-        : undefined;
+        : fallbackCode;
   const message =
     typeof payload.message === "string" && payload.message.trim().length > 0
       ? payload.message
@@ -44,125 +44,22 @@ export function createStreamingApiError(errorPayload: unknown): ApiError {
   return new ApiError(message, status, errorPayload, code);
 }
 
-type CompletionResponseMessage = ChatCompletionResponseBody["choices"][number]["message"];
-
-function responseString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
-}
-
-function responseTimestamp(value: unknown): number | undefined {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value !== "string" || !value.trim()) {
-    return undefined;
-  }
-
-  const numericTimestamp = Number(value);
-
-  if (Number.isFinite(numericTimestamp)) {
-    return numericTimestamp;
-  }
-
-  const parsedTimestamp = Date.parse(value);
-
-  return Number.isFinite(parsedTimestamp) ? parsedTimestamp : undefined;
-}
-
-function responseMessageContent(content: CompletionResponseMessage["content"]): Message["content"] {
-  if (typeof content === "string") {
-    return content;
-  }
-
-  if (isRecord(content)) {
-    return content;
-  }
-
-  return "";
-}
-
-function responseMessageReasoning(reasoning: unknown): Message["reasoning"] | undefined {
-  if (typeof reasoning === "string" && reasoning.trim()) {
-    return {
-      collapsed: true,
-      content: reasoning.trim(),
-    };
-  }
-
-  if (!isRecord(reasoning) || typeof reasoning.content !== "string") {
-    return undefined;
-  }
-
-  return {
-    collapsed: typeof reasoning.collapsed === "boolean" ? reasoning.collapsed : true,
-    content: reasoning.content,
-  };
-}
-
-function responseProvenance(value: unknown): Message["provenance"] {
-  if (value === null) {
-    return null;
-  }
-
-  const parsed = runProvenanceSchema.safeParse(value);
-
-  return parsed.success ? parsed.data : undefined;
-}
-
-function responseToolCalls(toolCalls: unknown): Message["tool_calls"] {
-  if (!Array.isArray(toolCalls)) {
-    return undefined;
-  }
-
-  const normalisedToolCalls: NonNullable<Message["tool_calls"]> = [];
-
-  for (const [index, toolCall] of toolCalls.entries()) {
-    if (!isRecord(toolCall) || !isRecord(toolCall.function)) {
-      continue;
-    }
-
-    const functionName = responseString(toolCall.function.name);
-
-    if (!functionName) {
-      continue;
-    }
-
-    const functionArguments =
-      typeof toolCall.function.arguments === "string" || isRecord(toolCall.function.arguments)
-        ? toolCall.function.arguments
-        : "";
-
+export function toAppMessage(streamMessage: ResponseStreamMessage): Message {
+  const normalisedToolCalls = streamMessage.tool_calls?.map((toolCall, index) => {
     const normalisedToolCall: NonNullable<Message["tool_calls"]>[number] = {
-      function: {
-        name: functionName,
-        arguments: functionArguments,
-      },
+      id: toolCall.id || `${streamMessage.id}-tool-${index}`,
+      type: "function",
+      function: toolCall.function,
+      index: typeof toolCall.index === "number" ? toolCall.index : index,
     };
 
-    const id = responseString(toolCall.id);
+    return normalisedToolCall;
+  });
 
-    if (id) {
-      normalisedToolCall.id = id;
-    }
-
-    if (toolCall.type === "function") {
-      normalisedToolCall.type = "function";
-    }
-
-    normalisedToolCall.index = typeof toolCall.index === "number" ? toolCall.index : index;
-    normalisedToolCalls.push(normalisedToolCall);
-  }
-
-  return normalisedToolCalls.length > 0 ? normalisedToolCalls : undefined;
-}
-
-export function toAppMessage(streamMessage: ChatStreamMessage): Message {
   return normalizeMessage({
     role: streamMessage.role,
     content: typeof streamMessage.content === "string" ? streamMessage.content : "",
     parts: streamMessage.parts,
-    data: isRecord(streamMessage.data) ? streamMessage.data : undefined,
     reasoning: streamMessage.reasoning,
     id: streamMessage.id,
     created: streamMessage.created,
@@ -170,49 +67,39 @@ export function toAppMessage(streamMessage: ChatStreamMessage): Message {
     model: streamMessage.model,
     provider: streamMessage.provider,
     platform: streamMessage.platform,
-    citations: streamMessage.citations,
+    citations: streamMessage.citations ?? null,
     usage: isRecord(streamMessage.usage) ? streamMessage.usage : undefined,
-    provenance: streamMessage.provenance,
     log_id: streamMessage.log_id,
     name: streamMessage.name,
     tool_call_id: streamMessage.tool_call_id,
     tool_call_arguments: streamMessage.tool_call_arguments,
-    tool_calls: streamMessage.tool_calls,
+    tool_calls: normalisedToolCalls,
     status: streamMessage.status || undefined,
+    data: isRecord(streamMessage.data) ? streamMessage.data : undefined,
+    provenance: streamMessage.provenance ?? undefined,
   });
 }
 
-export function toCompletionResponseAppMessage(
-  responseBody: ChatCompletionResponseBody,
+export function toResponseAppMessages(
+  response: PlatformResponse,
   fallbackModel?: string,
-): Message {
-  const responseMessage = responseBody.choices?.[0]?.message;
-  const responseMessageRecord: Record<string, unknown> = isRecord(responseMessage)
-    ? responseMessage
-    : {};
-  const created =
-    responseTimestamp(responseMessageRecord.created) ?? responseTimestamp(responseBody.created);
+): { assistant: Message; toolResponses: Message[]; compaction?: Message } {
+  const messages = itemsToMessages(response.output ?? []).map((message) =>
+    normalizeMessage(message as Parameters<typeof normalizeMessage>[0]),
+  );
+  const assistant =
+    messages.filter((message) => message.role === "assistant").at(-1) ??
+    normalizeMessage({
+      role: "assistant",
+      content: "",
+      id: response.last_item_id ?? generateId(),
+      model: fallbackModel,
+      created: Date.parse(response.created_at) || undefined,
+    });
 
-  return normalizeMessage({
-    role: responseMessage?.role ?? "assistant",
-    content: responseMessageContent(responseMessage?.content),
-    parts: responseMessage?.parts,
-    data: isRecord(responseMessage?.data) ? responseMessage.data : undefined,
-    reasoning: responseMessageReasoning(responseMessageRecord.reasoning),
-    id: responseString(responseMessage?.id) ?? responseString(responseBody.id) ?? generateId(),
-    created,
-    timestamp: responseTimestamp(responseMessage?.timestamp) ?? created,
-    model: responseString(responseMessageRecord.model) ?? responseBody.model ?? fallbackModel,
-    provider: responseString(responseMessageRecord.provider),
-    platform: responseString(responseMessageRecord.platform),
-    citations: responseMessage?.citations ?? null,
-    usage: isRecord(responseMessageRecord.usage) ? responseMessageRecord.usage : responseBody.usage,
-    provenance: responseProvenance(responseMessageRecord.provenance),
-    log_id: responseString(responseMessage?.log_id) ?? responseString(responseBody.log_id),
-    name: responseMessage?.name,
-    tool_call_id: responseMessage?.tool_call_id,
-    tool_call_arguments: responseMessage?.tool_call_arguments,
-    tool_calls: responseToolCalls(responseMessage?.tool_calls),
-    status: responseMessage?.status || undefined,
-  });
+  return {
+    assistant: { ...assistant, model: assistant.model ?? fallbackModel },
+    toolResponses: messages.filter((message) => message.role === "tool"),
+    compaction: messages.find((message) => message.role === "compaction"),
+  };
 }

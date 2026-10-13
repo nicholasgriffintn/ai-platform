@@ -1,7 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { CredentialAuthority, ReasoningEffortLevel } from "@ngriffin_uk/polychat-ai-models";
 import type {
-  ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
+  ResponseCommand as SchemaChatCompletionRequestBody,
   ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
   ChatRequestOptions as SchemaChatRequestOptions,
   AgentMode,

@@ -9,8 +9,6 @@ import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import type { ChatRunLifecycle } from "~/modules/chat-runs/application/lifecycle";
-import { createChatRetryStatePublisher } from "~/modules/chat-runs/application/retry-state";
 import {
   runAgentLoop,
   type AgentLoopExecutionParams,
@@ -21,6 +19,7 @@ import {
   type TurnContinuityOutcome,
 } from "~/modules/chat/application/streaming/continuity-telemetry";
 import {
+  type ChatStreamPreludeEvent,
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
   type ChatEventSink,
@@ -28,6 +27,8 @@ import {
 import { getAIResponse } from "~/modules/chat/application/streaming/responses";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
+import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import { StreamState, type Message } from "~/types";
 
@@ -41,11 +42,15 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
   runLifecycle?: ChatRunLifecycle | null;
+  preludeEvents?: ChatStreamPreludeEvent[];
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
   const startedAtMs = Date.now();
-  const stream = createChatSseStreamWriter();
+  const stream = createChatSseStreamWriter({
+    conversationId: params.completionId,
+    responseId: params.runLifecycle?.run.id,
+  });
   const closeRunResources = createRunResourceCloser(params);
   const stopHeartbeat = startChatStreamHeartbeat(stream);
   const runLifecycle = params.runLifecycle;
@@ -126,6 +131,10 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 
       await writeTurnActivity(stream, { kind: "turn_started" });
       await stream.writeEvent("state", { state: StreamState.INIT });
+
+      for (const prelude of params.preludeEvents ?? []) {
+        await stream.writeEvent(prelude.type, prelude.payload);
+      }
 
       const usageLimits = await params.conversationManager.getUsageLimits();
 

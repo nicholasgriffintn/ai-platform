@@ -11,7 +11,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
+import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 
 import {
   readPendingInteractionMessage,

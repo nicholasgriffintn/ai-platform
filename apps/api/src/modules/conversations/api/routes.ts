@@ -4,32 +4,28 @@ import { allowRestrictedPaths } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 
 import { registerArtifactBindingRoutes } from "./artifact-bindings";
-import { registerConversationOrganisationRoutes } from "./chat-organisation";
-import { registerCompletionCreationRoutes } from "./completion-creation";
-import { registerConversationHistoryRoutes } from "./conversation-history";
 import { registerConversationGoalAndDelegationRoutes } from "./goals-and-delegations";
-import { registerQueuedMessageRoutes } from "./queued-messages";
-import { registerConversationRunRoutes } from "./run-lifecycle";
-import { registerConversationSafetyAndSharingRoutes } from "./safety-and-sharing";
-import { registerStoredConversationRoutes } from "./stored-conversations";
+import { registerConversationItemRoutes } from "./items";
+import { registerConversationOrganisationRoutes } from "./organisation";
+import { registerConversationQueueRoutes } from "./queue";
+import { registerConversationRecordRoutes } from "./records";
+import { registerConversationSharingRoutes } from "./sharing";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("chat");
+const routeLogger = createRouteLogger("conversations");
 
 app.use("/*", async (context: Context, next: Next) => {
-  routeLogger.info(`Processing chat route: ${context.req.path}`);
+  routeLogger.info(`Processing conversations route: ${context.req.path}`);
 
   await allowRestrictedPaths(context, next);
 });
 
-registerCompletionCreationRoutes(app);
-registerStoredConversationRoutes(app);
-registerConversationRunRoutes(app);
-registerQueuedMessageRoutes(app);
-registerArtifactBindingRoutes(app);
-registerConversationHistoryRoutes(app);
-registerConversationGoalAndDelegationRoutes(app);
-registerConversationSafetyAndSharingRoutes(app);
+registerConversationSharingRoutes(app);
+registerConversationItemRoutes(app);
 registerConversationOrganisationRoutes(app);
+registerConversationQueueRoutes(app);
+registerArtifactBindingRoutes(app);
+registerConversationGoalAndDelegationRoutes(app);
+registerConversationRecordRoutes(app);
 
 export default app;

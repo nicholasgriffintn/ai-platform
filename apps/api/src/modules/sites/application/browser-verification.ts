@@ -14,8 +14,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execution-authority";
 import { createOutputProvenance } from "~/modules/outputs/application/provenance";
+import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 
 import { runSiteGeneration } from "./generate";
 import { requireSiteIntegrationAccess } from "./integration-access";

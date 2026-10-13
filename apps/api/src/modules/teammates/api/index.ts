@@ -5,7 +5,6 @@ import {
   hireTeammateSchema,
   recordTeammateFeedbackSchema,
   updateTeammateSchema,
-  createChatCompletionsJsonSchema,
   publishTeammateToWorkspaceSchema,
   apiResponseSchema,
   ensureTeammateContextSchema,
@@ -27,10 +26,7 @@ import {
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   getUserTeammates,
@@ -42,7 +38,6 @@ import {
   restoreInheritedTeammateToProject,
   updateTeammate,
   deleteTeammate,
-  enqueueTeammateRun,
   publishTeammateToWorkspace,
   ensureTeammateContext,
   listTeammateConnectionGrants,
@@ -53,7 +48,6 @@ import {
   releaseTeammateComputer,
   takeOverTeammateComputer,
   getTeammateComputerViewScreen,
-  resumeTeammateRun,
   getTeammateContextMemory,
   updateTeammateContextMemory,
   updateTeammateContextAutonomy,
@@ -396,39 +390,6 @@ addRoute(app, "post", "/:teammateId/publish/workspace", {
   },
   handler: async ({ serviceContext, params, body }) => {
     return publishTeammateToWorkspace(serviceContext, params.teammateId, body.workspace_id);
-  },
-});
-
-addRoute(app, "post", "/:teammateId/completions", {
-  tags: ["teammates"],
-  summary: "Create teammate completion",
-  description: "Run a chat completion against a specific teammate",
-  paramSchema: teammateIdParamSchema,
-  bodySchema: createChatCompletionsJsonSchema,
-  middleware: [validateCaptcha],
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
-  handler: async ({ serviceContext, raw, params, body, user, anonymousUser }) => {
-    if (!user && !anonymousUser) {
-      return ResponseFactory.error(raw, "Unauthorized", 401);
-    }
-
-    const execute = body.options?.toolInteraction ? resumeTeammateRun : enqueueTeammateRun;
-    const response = await execute({
-      env: raw.env,
-      context: serviceContext,
-      body,
-      teammateId: params.teammateId,
-      user,
-      anonymousUser,
-      executionCtx: requireCloudflareExecutionContext(raw.executionCtx),
-      signal: raw.req.raw.signal,
-    });
-
-    if (response instanceof Response) {
-      return response;
-    }
-
-    return ResponseFactory.success(raw, response);
   },
 });
 

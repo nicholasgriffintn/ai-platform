@@ -65,7 +65,7 @@ export class HermesAgent extends HarnessHost {
   }
 
   async forwardModelRequest(request: HermesModelRequest): Promise<Response> {
-    return this.modelFetch(`https://polychat-api/agents/model${request.path}`, {
+    return this.modelFetch(`https://polychat-api${request.path}`, {
       method: request.method,
       headers: request.headers,
       body: request.body,

@@ -1,12 +1,12 @@
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   delegationWakeTaskDataSchema,
   teammateRunConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { deliverChannelFollowUp } from "~/modules/channels/application/follow-up";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import type { TaskMessage } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
@@ -47,7 +47,7 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     return { status: "skipped" as const, detail: "Delegation group is still running" };
   }
 
-  const body = createChatCompletionsJsonSchema.parse({
+  const body = responseCommandSchema.parse({
     completion_id: payload.parentConversationId,
     command_id: `delegation_wake_${payload.parentRunId}`,
     trigger: "delegation",

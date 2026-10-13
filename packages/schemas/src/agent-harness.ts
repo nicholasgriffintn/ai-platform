@@ -1,13 +1,13 @@
 import z from "zod/v4";
 
+import { permissionModeSchema, type PermissionMode } from "./providers.js";
+import { reasoningEffortSchema } from "./reasoning.js";
 import {
   chatCompletionMessageSchema,
   chatCompletionToolSchema,
   chatResponseFormatSchema,
   chatToolChoiceSchema,
-} from "./chat-completions.js";
-import { permissionModeSchema, type PermissionMode } from "./providers.js";
-import { reasoningEffortSchema } from "./reasoning.js";
+} from "./response-command.js";
 
 export const AGENT_HARNESS_IDS = ["pi", "opencode", "hermes", "openai-agents"] as const;
 export const agentHarnessIdSchema = z.enum(AGENT_HARNESS_IDS);

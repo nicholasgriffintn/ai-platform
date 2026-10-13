@@ -12,8 +12,8 @@ import {
   type RecipeChatSetupResponse,
   type RecipeInstallation,
 } from "./apps.js";
-import { partialChatCompletionsJsonSchema } from "./chat.js";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
+import { partialResponseCommandSchema } from "./response-command.js";
 import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills.js";
 import type { TeammateSummary } from "./teammates.js";
 import { mergeToolIds, normaliseToolIds } from "./tool-ids.js";
@@ -160,12 +160,12 @@ const assistantActionResultBaseSchema = z.object({
 
 export const assistantActionSubmitResultSchema = assistantActionResultBaseSchema.extend({
   kind: z.literal("submit"),
-  requestOptions: partialChatCompletionsJsonSchema.optional(),
+  requestOptions: partialResponseCommandSchema.optional(),
 });
 
 export const assistantActionConversationResultSchema = assistantActionResultBaseSchema.extend({
   kind: z.literal("conversation"),
-  requestOptions: partialChatCompletionsJsonSchema.optional(),
+  requestOptions: partialResponseCommandSchema.optional(),
   url: internalNavigationPathSchema,
 });
 

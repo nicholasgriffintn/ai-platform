@@ -11,21 +11,18 @@ describe("turn activity projection", () => {
     let projection = createTurnActivityProjection();
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "model_step_started",
       step: 1,
     });
     expect(projection).toMatchObject({ phase: "preparing", step: 1 });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "reasoning_started",
       step: 1,
     });
     expect(projection).toMatchObject({ phase: "reasoning", label: "Reasoning..." });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "response_started",
       step: 1,
     });
@@ -35,7 +32,6 @@ describe("turn activity projection", () => {
     });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "response_finished",
       step: 1,
     });
@@ -50,7 +46,6 @@ describe("turn activity projection", () => {
       ["call-clock", "clock"],
     ] as const) {
       projection = applyTurnActivityEvent(projection, {
-        type: "turn_activity",
         kind: "tool_execution_started",
         step: 1,
         toolCallId,
@@ -68,7 +63,6 @@ describe("turn activity projection", () => {
     });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "tool_finished",
       step: 1,
       toolCallId: "call-weather",
@@ -85,7 +79,6 @@ describe("turn activity projection", () => {
     });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "tool_finished",
       step: 1,
       toolCallId: "call-clock",
@@ -97,7 +90,6 @@ describe("turn activity projection", () => {
 
   it("preserves action context through waiting, reconnection and cancellation", () => {
     let projection = applyTurnActivityEvent(createTurnActivityProjection(), {
-      type: "turn_activity",
       kind: "waiting_for_user",
       step: 2,
       toolCallId: "call-approval",
@@ -119,7 +111,6 @@ describe("turn activity projection", () => {
     });
 
     projection = applyTurnActivityEvent(projection, {
-      type: "turn_activity",
       kind: "turn_finished",
       outcome: "cancelled",
     });
@@ -128,7 +119,6 @@ describe("turn activity projection", () => {
 
   it("distinguishes a selection wait from a question or approval", () => {
     const projection = applyTurnActivityEvent(createTurnActivityProjection(), {
-      type: "turn_activity",
       kind: "waiting_for_user",
       step: 1,
       toolCallId: "call-selection",
@@ -145,7 +135,6 @@ describe("turn activity projection", () => {
 
   it("projects provider failure as a terminal state", () => {
     const projection = applyTurnActivityEvent(createTurnActivityProjection(), {
-      type: "turn_activity",
       kind: "turn_finished",
       outcome: "failed",
       errorType: "PROVIDER_ERROR",

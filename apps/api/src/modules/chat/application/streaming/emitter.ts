@@ -1,7 +1,12 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
+import {
+  createResponseEventProjector,
+  formatResponseStreamSseDone,
+  formatResponseStreamSseEvent,
+  type ResponseStreamEvent,
+} from "@ngriffin_uk/polychat-schemas";
 
-import type { SSEEventPayload } from "~/types";
+import type { ChatStreamPreludeEvent, SSEEventPayload } from "~/types";
 
 const encoder = new TextEncoder();
 
@@ -11,18 +16,7 @@ const logger = getLogger({
   prefix: "CHAT:EMITTER",
 });
 
-export function createEventData(type: string, payload: SSEEventPayload = {}): string {
-  try {
-    return formatChatStreamSseEvent(type, payload);
-  } catch (error) {
-    logger.error("Error creating event data", { error, type, payload });
-    throw error;
-  }
-}
-
-export function encodeEventData(data: string): Uint8Array {
-  return encoder.encode(data);
-}
+export type { ChatStreamPreludeEvent };
 
 export interface ChatEventSink {
   writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
@@ -31,6 +25,11 @@ export interface ChatEventSink {
 export const DISCARDING_EVENT_SINK: ChatEventSink = {
   writeEvent: async () => {},
 };
+
+export interface ChatSseStreamWriterOptions {
+  conversationId?: string;
+  responseId?: string;
+}
 
 export interface ChatSseStreamWriter extends ChatEventSink {
   readable: ReadableStream<Uint8Array>;
@@ -50,12 +49,22 @@ export interface ChatStreamContinuitySnapshot {
   detachmentReason?: ChatStreamDetachmentReason;
 }
 
-export function createChatSseStreamWriter(): ChatSseStreamWriter {
+export function encodeResponseStreamEvent(event: ResponseStreamEvent): Uint8Array {
+  return encoder.encode(formatResponseStreamSseEvent(event));
+}
+
+export function createChatSseStreamWriter(
+  options: ChatSseStreamWriterOptions = {},
+): ChatSseStreamWriter {
   let detached = false;
   let settled = false;
   let detachedAtMs: number | undefined;
   let detachmentReason: ChatStreamDetachmentReason | undefined;
   let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
+  const projector = createResponseEventProjector({
+    conversationId: options.conversationId,
+    responseId: options.responseId,
+  });
 
   const markDetached = (reason: ChatStreamDetachmentReason) => {
     if (detached) {
@@ -109,10 +118,22 @@ export function createChatSseStreamWriter(): ChatSseStreamWriter {
     readable,
     isDetached: () => detached,
     getContinuitySnapshot: () => ({ detached, detachedAtMs, detachmentReason }),
-    writeEvent: (type: string, payload: SSEEventPayload = {}) =>
-      write(encodeEventData(createEventData(type, payload))),
+    writeEvent: async (type: string, payload: SSEEventPayload = {}) => {
+      let events: ResponseStreamEvent[];
+
+      try {
+        events = projector.project(type, payload);
+      } catch (error) {
+        logger.error("Error projecting stream event", { error, type });
+        throw error;
+      }
+
+      for (const event of events) {
+        await write(encodeResponseStreamEvent(event));
+      }
+    },
     writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
-    writeDone: () => write(encodeEventData(formatChatStreamSseDone())),
+    writeDone: () => write(encoder.encode(formatResponseStreamSseDone())),
     close: () => settle(() => controller?.close()),
     abort: (error: unknown) => settle(() => controller?.error(error)),
   };

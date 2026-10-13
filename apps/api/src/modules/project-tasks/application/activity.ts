@@ -165,7 +165,7 @@ function projectRunEvent(
   task: ProjectTaskActivityTask,
   event: ChatRunEvent,
 ): ProjectTaskActivityItem {
-  const known = event.type === "run.accepted" || event.type === "run.status_changed";
+  const known = event.type === "response.created" || event.type === "response.status_changed";
   const status = known ? runStatus(event.data.status) : "unknown";
 
   return activityItem(task, {
@@ -488,7 +488,7 @@ export function projectProjectTaskActivity(
     const runEvents = activityRun.events.map((event) => projectRunEvent(task, event));
     const hasAuthoritativeStatus = activityRun.events.some(
       (event) =>
-        (event.type === "run.accepted" || event.type === "run.status_changed") &&
+        (event.type === "response.created" || event.type === "response.status_changed") &&
         event.data.status === activityRun.run.status,
     );
 

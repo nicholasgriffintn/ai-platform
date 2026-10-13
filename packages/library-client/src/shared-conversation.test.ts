@@ -30,13 +30,13 @@ describe("fetchSharedConversationHistory", () => {
       .mockResolvedValueOnce(
         jsonResponse({
           share_id: "shared-1",
-          messages: createMessages(100),
+          items: createMessages(100),
         }),
       )
       .mockResolvedValueOnce(
         jsonResponse({
           share_id: "shared-1",
-          messages: createMessages(2, 100),
+          items: createMessages(2, 100),
         }),
       );
 
@@ -46,9 +46,9 @@ describe("fetchSharedConversationHistory", () => {
 
     expect(result.messages).toHaveLength(102);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[0]?.[0]).toContain("/chat/shared/shared-1?limit=100");
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("/conversations/shared/shared-1?limit=100");
     expect(fetchMock.mock.calls[1]?.[0]).toContain(
-      "/chat/shared/shared-1?limit=100&after=message-99",
+      "/conversations/shared/shared-1?limit=100&after=message-99",
     );
   });
 
@@ -58,13 +58,13 @@ describe("fetchSharedConversationHistory", () => {
       .mockResolvedValueOnce(
         jsonResponse({
           share_id: "shared-1",
-          messages: createMessages(100),
+          items: createMessages(100),
         }),
       )
       .mockResolvedValueOnce(
         jsonResponse({
           share_id: "shared-1",
-          messages: createMessages(100),
+          items: createMessages(100),
         }),
       );
 

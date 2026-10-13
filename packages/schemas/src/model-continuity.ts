@@ -1,13 +1,12 @@
 import z from "zod/v4";
 
-import type { ChatRunStatus } from "./chat-runs.js";
-import { isTerminalChatRunStatus } from "./chat-runs.js";
 import {
   getModelDisplayName,
   getModelInputModalities,
   isImageGenerationOutputModel,
 } from "./model-selection.js";
 import type { ModelConfigItem } from "./models.js";
+import { isTerminalResponseStatus, type ResponseStatus } from "./platform/responses.js";
 
 export const modelAttachmentTypeSchema = z.enum([
   "image",
@@ -37,7 +36,7 @@ export type ModelAttachmentType = z.infer<typeof modelAttachmentTypeSchema>;
 export type ModelContinuityDecision = z.infer<typeof modelContinuityDecisionSchema>;
 
 export interface ModelContinuityInput {
-  activeRunStatus?: ChatRunStatus | null;
+  activeRunStatus?: ResponseStatus | null;
   attachmentTypes?: readonly ModelAttachmentType[];
   hasConversationHistory: boolean;
   nextModel: ModelConfigItem;
@@ -69,7 +68,7 @@ export function evaluateModelContinuity({
 }: ModelContinuityInput): ModelContinuityDecision {
   const modelName = getModelDisplayName(nextModel);
 
-  if (activeRunStatus && !isTerminalChatRunStatus(activeRunStatus)) {
+  if (activeRunStatus && !isTerminalResponseStatus(activeRunStatus)) {
     const pendingInteraction =
       activeRunStatus === "awaiting_approval" ||
       activeRunStatus === "awaiting_input" ||

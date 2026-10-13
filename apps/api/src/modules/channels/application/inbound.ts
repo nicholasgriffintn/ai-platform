@@ -3,7 +3,7 @@ import {
   extractChatCompletionNotification,
 } from "@ngriffin_uk/polychat-ai-providers";
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   INBOUND_CHANNEL_IDS,
   isPolyTeammateId,
   type InboundChannelId,
@@ -28,12 +28,12 @@ import {
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
-import { buildChatRunCommandPayload } from "~/modules/chat-runs/application/command-payload";
-import { recoverChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
 import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
-import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
+import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
+import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   ensureActiveTeammateContext,
@@ -665,7 +665,7 @@ export async function handleInboundChannelMessage(params: {
       conversationId,
       historyLimit: profile.historyLimit,
     });
-    const request = createChatCompletionsJsonSchema.parse({
+    const request = responseCommandSchema.parse({
       ...buildChatRunCommandPayload({
         env: params.env,
         completion_id: conversationId,

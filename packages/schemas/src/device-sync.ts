@@ -10,13 +10,14 @@ export const deviceSyncTopicKindSchema = z.enum([
   "conversation",
   "project",
   "workspace",
-  "run",
+  "response",
   "machine",
 ]);
 
 export type DeviceSyncTopicKind = z.infer<typeof deviceSyncTopicKindSchema>;
 
-const TOPIC_PATTERN = /^(user|conversation|project|workspace|run|machine):[A-Za-z0-9_.:-]{1,200}$/;
+const TOPIC_PATTERN =
+  /^(user|conversation|project|workspace|response|machine):[A-Za-z0-9_.:-]{1,200}$/;
 
 export const deviceSyncTopicSchema = z.string().regex(TOPIC_PATTERN, "Invalid sync topic");
 
@@ -50,8 +51,8 @@ export const deviceSyncEventTypeSchema = z.enum([
   "conversation.changed",
   "conversation.deleted",
   "conversation.unread_changed",
-  "run.changed",
-  "run.event",
+  "response.changed",
+  "response.event",
   "message.changed",
   "delegation.changed",
   "task.changed",

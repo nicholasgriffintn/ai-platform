@@ -7,7 +7,7 @@ import {
   SKILL_LOAD_TOOL_NAME,
   type ChatHostedToolSettings,
   type McpToolConfiguration,
-  type ParsedChatCompletionRequestBody,
+  type ParsedResponseCommand,
 } from "@ngriffin_uk/polychat-schemas";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
@@ -23,7 +23,7 @@ type CompletionTeammate = Pick<
 
 export interface TeammateCompletionRequestInput {
   teammate: CompletionTeammate;
-  body: ParsedChatCompletionRequestBody;
+  body: ParsedResponseCommand;
   modelProvider: string;
   formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
   persona: AssistantPersona;

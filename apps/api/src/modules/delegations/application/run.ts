@@ -1,5 +1,5 @@
 import {
-  createChatCompletionsJsonSchema,
+  responseCommandSchema,
   delegationRunTaskDataSchema,
   projectCodingEnvironmentSchema,
   resolveSandboxDeliveryPolicy,
@@ -11,13 +11,13 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { recoverAcceptedChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import { revalidateDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
 import { buildDelegationResumeInstruction } from "~/modules/delegations/application/resume";
 import { delegationRunCommandId } from "~/modules/delegations/application/run-identity";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskMessage, TaskResult } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
@@ -241,7 +241,7 @@ export async function runDelegationTask(
     }
 
     const commandId = delegationRunCommandId(delegation.id, payload.resume?.attempt);
-    const body = createChatCompletionsJsonSchema.parse({
+    const body = responseCommandSchema.parse({
       completion_id: delegation.childConversationId,
       command_id: commandId,
       messages: [

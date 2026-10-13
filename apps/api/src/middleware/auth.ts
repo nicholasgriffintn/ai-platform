@@ -281,18 +281,19 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     const path = context.req.path;
     const method = context.req.method;
 
-    const isGenerateTitlePath =
-      /^\/chat\/completions\/[^/]+\/generate-title$/.test(path) && method === "POST";
-    const isUpdatePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "PUT";
-    const isDeletePath = /^\/chat\/completions\/[^/]+$/.test(path) && method === "DELETE";
-    const isCheckPath = /^\/chat\/completions\/[^/]+\/check$/.test(path) && method === "POST";
-    const isFeedbackPath = /^\/chat\/completions\/[^/]+\/feedback$/.test(path) && method === "POST";
-    const isSharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "POST";
-    const isUnsharePath = /^\/chat\/completions\/[^/]+\/share$/.test(path) && method === "DELETE";
-    const isGetSharedPath = /^\/chat\/shared\/[^/]+$/.test(path) && method === "GET";
-    const isGoalPath = /^\/chat\/completions\/[^/]+\/goal$/.test(path);
+    const isGenerateTitlePath = /^\/conversations\/[^/]+\/title$/.test(path) && method === "POST";
+    const isUpdatePath = /^\/conversations\/[^/]+$/.test(path) && method === "PATCH";
+    const isDeletePath = /^\/conversations\/[^/]+$/.test(path) && method === "DELETE";
+    const isCheckPath = /^\/conversations\/[^/]+\/check$/.test(path) && method === "POST";
+    const isFeedbackPath = /^\/conversations\/[^/]+\/feedback$/.test(path) && method === "POST";
+    const isSharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "POST";
+    const isUnsharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "DELETE";
+    const isGetSharedPath = /^\/conversations\/shared\/[^/]+$/.test(path) && method === "GET";
+    const isGoalPath = /^\/conversations\/[^/]+\/goal$/.test(path);
+    const isCodePath = path.startsWith("/code/") && method === "POST";
 
     const isAllowedPath =
+      isCodePath ||
       isGoalPath ||
       isGenerateTitlePath ||
       isUpdatePath ||
@@ -303,16 +304,11 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
       isUnsharePath ||
       isGetSharedPath;
 
-    if (path === "/chat/completions" && method === "POST") {
+    if ((path === "/responses" || path === "/chat/completions") && method === "POST") {
       try {
         const body = await context.req.json();
 
-        if (
-          body?.tools?.length > 0 ||
-          body?.tool_choice ||
-          body?.enabled_tools?.length > 0 ||
-          body?.approved_tools?.length > 0
-        ) {
+        if (body?.tools?.length > 0 || body?.tool_choice) {
           throw new AssistantError(
             "Tool usage requires authentication. Please provide a valid access token.",
             ErrorType.AUTHENTICATION_ERROR,

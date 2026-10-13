@@ -4,7 +4,7 @@ import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
-const BASE_PATH = "/chat/saved-messages";
+const BASE_PATH = "/conversations/saved-messages";
 
 export async function listSavedMessages(limit?: number): Promise<{ messages: SavedMessage[] }> {
   const query = limit ? `?limit=${limit}` : "";
