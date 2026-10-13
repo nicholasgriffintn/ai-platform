@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { modelBenchmarkStandingSchema } from "./benchmarks.js";
 import {
   agentWorkspaceRequirementSchema,
   permissionModeSchema,
@@ -274,6 +275,7 @@ export const modelConfigItemSchema = z.object({
   reasoningConfig: modelReasoningConfigSchema.optional(),
   verbosityConfig: modelVerbosityConfigSchema.optional(),
   artificialAnalysis: modelArtificialAnalysisSchema.optional(),
+  benchmarks: z.array(modelBenchmarkStandingSchema).optional(),
 });
 
 export const modelSchema = modelConfigItemSchema;

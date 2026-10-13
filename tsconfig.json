@@ -176,6 +176,12 @@
       "path": "packages/library-agent-loop/tsconfig.typecheck.json"
     },
     {
+      "path": "packages/library-benchmarks/tsconfig.json"
+    },
+    {
+      "path": "packages/library-benchmarks/tsconfig.typecheck.json"
+    },
+    {
       "path": "packages/library-chat/tsconfig.json"
     },
     {

@@ -115,6 +115,14 @@ export function hardenSandboxDocument(documentContent: string | null): string | 
   return `${documentContent.slice(0, headEnd)}${policy}${documentContent.slice(headEnd)}`;
 }
 
+export function hardenStandaloneHtml(html: string): string | undefined {
+  return hardenSandboxDocument(
+    findHeadTagEnd(html) === -1
+      ? `<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body style="margin:0">${html}</body></html>`
+      : html,
+  );
+}
+
 export function LoadingIndicator() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-surface p-4 text-sm text-muted-foreground">

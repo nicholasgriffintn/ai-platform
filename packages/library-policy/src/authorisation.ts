@@ -107,6 +107,7 @@ const actionShapes = {
     requestExists: boolean,
   },
   "model.suite.delete": { actorId: string, ownerId: string, managesPolicy: boolean },
+  "benchmark.run.start": { signedIn: boolean, plan: string, byok: boolean },
   "spend.execute": {
     valid: boolean,
     hardStop: boolean,

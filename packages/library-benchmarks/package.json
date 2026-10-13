@@ -1,0 +1,41 @@
+{
+  "name": "@ngriffin_uk/polychat-library-benchmarks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Polychat benchmark definitions: frozen datasets, prompts, answer parsers, scorers, ratings and the safety gates for model-written artefacts",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build:geoguess": "node scripts/build-geoguess-dataset.mjs",
+    "build:world": "node scripts/build-world-outline.mjs",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -b tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-library-model-registry": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-server": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
