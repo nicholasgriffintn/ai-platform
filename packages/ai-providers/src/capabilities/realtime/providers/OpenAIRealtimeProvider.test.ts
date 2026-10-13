@@ -23,6 +23,23 @@ vi.mock("@ngriffin_uk/polychat-utility-server/crypto", () => ({
   sha256Hex: vi.fn(async () => "test-safety-id"),
 }));
 
+vi.mock("./proxyUrl.js", () => ({
+  buildGrantedRealtimeProxyUrl: vi.fn(
+    async ({
+      path,
+      params,
+      scheme,
+    }: {
+      path: string;
+      params?: Record<string, string | undefined>;
+      scheme?: string;
+    }) => ({
+      expiresAt: 1_788_192_060,
+      url: `${scheme === "https" ? "https" : "wss"}://api.polychat.test${path}?grant=grant-fixture&voice=${params?.voice ?? ""}`,
+    }),
+  ),
+}));
+
 const testUser: ProviderUser = {
   id: 42,
   email: "test@example.com",
@@ -137,6 +154,26 @@ describe("OpenAIRealtimeProvider", () => {
     expect(session).toMatchObject({
       url: "https://api.openai.com/v1/realtime/translations/calls",
       transport: "webrtc",
+    });
+  });
+
+  it("describes GPT-Live sessions as a server-brokered WebRTC call instead of minting a client secret", async () => {
+    const provider = new OpenAIRealtimeProvider(runtime);
+
+    const session = await provider.createSession(
+      createRequest({ type: "realtime", model: "gpt-live-1", voice: "cedar" }),
+    );
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(session).toMatchObject({
+      type: "realtime",
+      provider: "openai",
+      transport: "webrtc",
+      protocol: "openai-live",
+      model: "gpt-live-1",
+      url: "https://api.polychat.test/realtime/openai/live/calls?grant=grant-fixture&voice=cedar",
+      proxy_grant_expires_at: 1_788_192_060,
+      output_modalities: ["audio"],
     });
   });
 });

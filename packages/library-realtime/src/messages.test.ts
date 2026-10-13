@@ -241,6 +241,31 @@ describe("realtime message helpers", () => {
     });
   });
 
+  it("treats Gemini interim input transcription as a replaceable snapshot", () => {
+    expect(
+      extractRealtimeTranscript({
+        serverContent: { interimInputTranscription: { text: "Book the" } },
+      }),
+    ).toEqual({ text: "Book the", isDelta: false, isFinal: false, source: "input" });
+  });
+
+  it("finalises Gemini input transcription only when a transcription session asks for it", () => {
+    const payload = { serverContent: { inputTranscription: { text: "Book the train." } } };
+
+    expect(extractRealtimeTranscript(payload)).toEqual({
+      text: "Book the train.",
+      isDelta: true,
+      isFinal: false,
+      source: "input",
+    });
+    expect(extractRealtimeTranscript(payload, { finalInputTranscription: true })).toEqual({
+      text: "Book the train.",
+      isDelta: false,
+      isFinal: true,
+      source: "input",
+    });
+  });
+
   it("maps Gemini interrupted server content to a realtime event", () => {
     expect(
       extractRealtimeEvent({

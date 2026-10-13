@@ -129,6 +129,46 @@ describe("OpenAI realtime WebRTC client", () => {
     expect(peerConnectionConstructor).not.toHaveBeenCalled();
   });
 
+  it("brokers GPT-Live calls through the API with credentials and closes the session gracefully", async () => {
+    vi.stubGlobal("RTCPeerConnection", FakeRTCPeerConnection);
+    vi.stubGlobal("RTCRtpSender", { getCapabilities: () => ({ codecs: [] }) });
+    const fetchMock = vi.fn(async () => new Response("answer-sdp", { status: 201 }));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const connection = await connectOpenAIRealtimeWebRTC({
+      session: {
+        provider: "openai",
+        transport: "webrtc",
+        protocol: "openai-live",
+        url: "https://api.polychat.test/realtime/openai/live/calls?grant=grant-fixture",
+        client_secret: { value: "" },
+      },
+      stream: { getTracks: () => [] } as unknown as MediaStream,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.polychat.test/realtime/openai/live/calls?grant=grant-fixture",
+      expect.objectContaining({
+        method: "POST",
+        body: "offer-sdp",
+        credentials: "include",
+        headers: { "Content-Type": "application/sdp" },
+      }),
+    );
+
+    const dataChannel = connection.dataChannel as unknown as FakeRTCDataChannel & {
+      readyState: string;
+      send: ReturnType<typeof vi.fn>;
+    };
+
+    dataChannel.readyState = "open";
+    dataChannel.send = vi.fn();
+    connection.close();
+    expect(dataChannel.send).toHaveBeenCalledWith(JSON.stringify({ type: "session.close" }));
+    expect(dataChannel.closed).toBe(true);
+  });
+
   it("rejects untrusted call endpoints before exposing the ephemeral secret", async () => {
     const peerConnectionConstructor = vi.fn();
     const fetchMock = vi.fn();

@@ -7,6 +7,10 @@ export interface RealtimeTranscriptResult {
   text: string;
 }
 
+export interface ExtractRealtimeTranscriptOptions {
+  finalInputTranscription?: boolean;
+}
+
 export interface RealtimeEventResult {
   itemId?: string;
   label?: string;
@@ -36,6 +40,9 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
   "response.output_audio.done": "Assistant audio complete",
   "response.interrupted": "Assistant interrupted",
   "response.done": "Assistant response complete",
+  "session.started": "Live session ready",
+  "session.delegation.created": "Assistant thinking",
+  "session.closed": "Live session closed",
   connected: "Realtime transcription connected",
   "turn.start": "Listening",
   "turn.update": "Transcribing speech",
@@ -288,12 +295,31 @@ export function extractRealtimeEventType(payload: unknown): string | undefined {
   return getString(payload.type);
 }
 
-export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptResult | undefined {
+export function extractRealtimeTranscript(
+  payload: unknown,
+  options: ExtractRealtimeTranscriptOptions = {},
+): RealtimeTranscriptResult | undefined {
   if (!isRecord(payload)) {
     return undefined;
   }
 
   const serverContent = getNestedRecord(payload, "serverContent");
+  const interimInputTranscript = getString(
+    (
+      getNestedRecord(serverContent, "interimInputTranscription") ??
+      getNestedRecord(serverContent, "interim_input_transcription")
+    )?.text,
+  );
+
+  if (serverContent && interimInputTranscript) {
+    return {
+      text: interimInputTranscript,
+      isDelta: false,
+      isFinal: false,
+      source: "input",
+    };
+  }
+
   const modelTurn =
     getNestedRecord(serverContent, "modelTurn") ?? getNestedRecord(serverContent, "model_turn");
   const serverTranscript =
@@ -302,7 +328,12 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
   if (serverContent && serverTranscript) {
     const itemId = getRealtimeItemId(payload);
     const responseId = getRealtimeResponseId(payload);
+    const source = modelTurn ? "output" : getTranscriptSource(serverContent);
+    const isFinalInputSnapshot = Boolean(
+      options.finalInputTranscription && source === "input" && !modelTurn,
+    );
     const isFinal =
+      isFinalInputSnapshot ||
       getBoolean(serverContent.turnComplete) ||
       getBoolean(serverContent.turn_complete) ||
       getBoolean(serverContent.generationComplete) ||
@@ -310,11 +341,11 @@ export function extractRealtimeTranscript(payload: unknown): RealtimeTranscriptR
 
     return {
       text: serverTranscript,
-      isDelta: true,
+      isDelta: !isFinalInputSnapshot,
       isFinal,
       ...(itemId ? { itemId } : {}),
       ...(responseId ? { responseId } : {}),
-      source: modelTurn ? "output" : getTranscriptSource(serverContent),
+      source,
     };
   }
 
