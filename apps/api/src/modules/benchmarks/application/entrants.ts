@@ -7,6 +7,7 @@ import {
   modelHasInputModalities,
   modelHasOutputModality,
   type BenchmarkEntrant,
+  type BenchmarkScope,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -66,7 +67,18 @@ export function findPlatformModel(env: IEnv, modelId: string): ModelConfigItem |
 }
 
 export function isOfficialProvider(provider: string): boolean {
-  return (BENCHMARKS_CONFIG.officialProviders as readonly string[]).includes(provider);
+  return BENCHMARKS_CONFIG.officialProviders.includes(provider);
+}
+
+export function officialRunRefusal(run: {
+  scope: BenchmarkScope;
+  entrant: BenchmarkEntrant;
+}): string | null {
+  return run.scope === "official" &&
+    run.entrant.kind === "model" &&
+    !isOfficialProvider(run.entrant.provider)
+    ? `Official runs only go to approved labs, not ${run.entrant.provider}`
+    : null;
 }
 
 export function findOfficialModel(env: IEnv, modelId: string): ModelConfigItem | null {

@@ -1,4 +1,4 @@
-export const OFFICIAL_BENCHMARK_PROVIDERS = [
+export const OFFICIAL_BENCHMARK_PROVIDERS: readonly string[] = [
   "anthropic",
   "openai",
   "google-ai-studio",
@@ -9,7 +9,7 @@ export const OFFICIAL_BENCHMARK_PROVIDERS = [
   "grok",
   "minimax",
   "alibaba",
-] as const;
+];
 
 export const BENCHMARKS_CONFIG = {
   officialProviders: OFFICIAL_BENCHMARK_PROVIDERS,

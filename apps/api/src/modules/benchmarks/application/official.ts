@@ -1,10 +1,15 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
-import { getBenchmark, listBenchmarks } from "@ngriffin_uk/polychat-library-benchmarks";
+import {
+  getBenchmark,
+  listBenchmarks,
+  type Benchmark,
+} from "@ngriffin_uk/polychat-library-benchmarks";
 import {
   MODEL_TIER_LINEUP,
   benchmarkEntrantKey,
   findModelByReference,
   isActiveModel,
+  type BenchmarkEntrant,
   type BenchmarkRun,
   type QueueOfficialBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
@@ -56,6 +61,25 @@ export function officialCandidateModelIds(env: IEnv): string[] {
   );
 }
 
+export function officialEntrantsFor(
+  env: IEnv,
+  benchmark: Benchmark,
+  modelIds: readonly string[],
+  existing: ReadonlySet<string>,
+): BenchmarkEntrant[] {
+  return modelIds.flatMap((modelId) => {
+    const config = findOfficialModel(env, modelId);
+
+    if (!config || modelIneligibility(benchmark, config)) {
+      return [];
+    }
+
+    const entrant = modelEntrant(modelId, config);
+
+    return existing.has(benchmarkEntrantKey(entrant)) ? [] : [entrant];
+  });
+}
+
 export async function queueOfficialRuns(
   env: IEnv,
   repositories: RepositoryManager,
@@ -81,21 +105,9 @@ export async function queueOfficialRuns(
       { retryFailed: Boolean(request.modelIds?.length) },
     );
 
-    for (const modelId of modelIds) {
+    for (const entrant of officialEntrantsFor(env, benchmark, modelIds, existing)) {
       if (queued.length >= BENCHMARKS_CONFIG.officialRunsPerQueuePass) {
         return { queued, skippedForBudget: false, spentThisMonthUsd };
-      }
-
-      const config = findOfficialModel(env, modelId);
-
-      if (!config || modelIneligibility(benchmark, config)) {
-        continue;
-      }
-
-      const entrant = modelEntrant(modelId, config);
-
-      if (existing.has(benchmarkEntrantKey(entrant))) {
-        continue;
       }
 
       const record = await repositories.benchmarkRuns.create({
