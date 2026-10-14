@@ -2403,6 +2403,33 @@ export const artificialAnalysisModels = sqliteTable(
 
 export type ArtificialAnalysisModel = typeof artificialAnalysisModels.$inferSelect;
 
+export const webhookEndpoint = sqliteTable(
+  "webhook_endpoint",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    url: text().notNull(),
+    description: text().notNull().default(""),
+    events: text({ mode: "json" }).$type<string[]>().notNull(),
+    encrypted_secret: text().notNull(),
+    enabled: integer({ mode: "boolean" }).notNull().default(true),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull()
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    userIdx: index("webhook_endpoint_user_idx").on(table.user_id, table.created_at),
+  }),
+);
+
+export type WebhookEndpointRecord = typeof webhookEndpoint.$inferSelect;
+
 export const benchmarkRun = sqliteTable(
   "benchmark_run",
   {

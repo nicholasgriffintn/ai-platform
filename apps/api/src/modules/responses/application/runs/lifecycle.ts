@@ -32,6 +32,7 @@ import {
   reconcileTeammateRun,
   teammateRunNeedsReconciliation,
 } from "~/modules/teammates/application/run-reconciliation";
+import { dispatchResponseWebhooks } from "~/modules/webhook-endpoints/application/dispatch";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
 
@@ -205,9 +206,24 @@ export class ChatRunLifecycle {
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+    await this.dispatchWebhooks(run);
 
     if (this.serviceContext) {
       await releaseQueuedFollowUpAfterRun(this.serviceContext, run);
+    }
+  }
+
+  private async dispatchWebhooks(run: ChatRun): Promise<void> {
+    const env = this.serviceContext?.env ?? this.env;
+
+    if (!env) {
+      return;
+    }
+
+    try {
+      await dispatchResponseWebhooks(env, run);
+    } catch (error) {
+      logger.warn("Webhook dispatch failed", { runId: run.id, error: getErrorMessage(error) });
     }
   }
 

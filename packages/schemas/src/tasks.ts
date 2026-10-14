@@ -36,6 +36,7 @@ export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 export const QUEUED_CHAT_MESSAGE_TASK_TYPE = "queued_chat_message";
 export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
 export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
+export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -76,6 +77,7 @@ export const TASK_TYPES = [
   MODEL_UPLOAD_FINALISE_TASK_TYPE,
   MODEL_PLATFORM_RECONCILE_TASK_TYPE,
   BENCHMARK_RUN_TASK_TYPE,
+  WEBHOOK_DELIVERY_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({
@@ -236,3 +238,9 @@ export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
 export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
 export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;
 export type RecipeExecutionTaskData = z.infer<typeof recipeExecutionTaskDataSchema>;
+
+export const webhookDeliveryTaskDataSchema = z.object({
+  endpointId: z.string().min(1),
+  userId: z.number().int().positive(),
+  event: z.record(z.string(), z.unknown()),
+});

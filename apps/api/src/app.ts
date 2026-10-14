@@ -56,6 +56,7 @@ import usage from "~/modules/usage/api/routes";
 import account from "~/modules/user/api/account";
 import apiKeys from "~/modules/user/api/api-keys";
 import providers from "~/modules/user/api/providers";
+import webhookEndpoints from "~/modules/webhook-endpoints/api/routes";
 import webhook from "~/modules/webhooks/api";
 import projects from "~/modules/workspaces/api/projects";
 import workspaces from "~/modules/workspaces/api/routes";
@@ -115,6 +116,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/poly", poly);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
+  app.route("/webhook_endpoints", webhookEndpoints);
   app.route("/model-platform", modelRegistry);
   app.route("/model-platform", modelDatasets);
   app.route("/model-platform", modelTraining);

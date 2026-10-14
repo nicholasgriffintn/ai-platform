@@ -186,6 +186,7 @@ export * from "./uploads.js";
 export * from "./usage.js";
 export * from "./pricing/index.js";
 export * from "./user/index.js";
+export * from "./webhook-endpoints.js";
 export * from "./webhooks.js";
 export * from "./model-registry.js";
 export * from "./benchmarks.js";

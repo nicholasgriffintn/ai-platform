@@ -75,6 +75,7 @@ import { AnonymousUserRepository } from "~/modules/user/infrastructure/Anonymous
 import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
+import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
@@ -369,6 +370,10 @@ export class RepositoryManager {
 
   public get benchmarkVotes(): BenchmarkVoteRepository {
     return this.resolve("benchmarkVotes", (env) => new BenchmarkVoteRepository(env));
+  }
+
+  public get webhookEndpoints(): WebhookEndpointRepository {
+    return this.resolve("webhookEndpoints", (env) => new WebhookEndpointRepository(env));
   }
 
   public get documentComments(): DocumentCommentRepository {
