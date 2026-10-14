@@ -1,15 +1,20 @@
-import type {
-  CreateOutputInput,
-  Output,
-  OutputHistoryResponse,
-  OutputProvenance,
-  OutputRevision,
-  OutputShare,
-  OutputSummary,
-  ProvenanceSource,
-  RestoreOutputRevisionInput,
-  SharedOutput,
-  UpdateOutputInput,
+import {
+  listPageOf,
+  mapListPage,
+  toListPage,
+  type CreateOutputInput,
+  type ListPage,
+  type Output,
+  type OutputHistoryResponse,
+  type OutputListQuery,
+  type OutputProvenance,
+  type OutputRevision,
+  type OutputShare,
+  type OutputSummary,
+  type ProvenanceSource,
+  type RestoreOutputRevisionInput,
+  type SharedOutput,
+  type UpdateOutputInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -276,35 +281,26 @@ export async function getOutputIncludingDeleting(
 export async function listOutputs(
   context: ServiceContext,
   userId: number,
-  filters: {
-    projectId?: string;
-    capabilityId?: string;
-    kind?: string;
-    limit?: number;
-    offset?: number;
-  },
-): Promise<{ outputs: OutputSummary[] }> {
-  const pagination = {
-    kind: filters.kind,
-    limit: filters.limit ?? 100,
-    offset: filters.offset ?? 0,
-  };
-  const records = filters.projectId
-    ? (await requireProjectAccess(context, filters.projectId),
+  query: OutputListQuery,
+): Promise<ListPage<OutputSummary>> {
+  const options = { kind: query.kind, limit: query.limit + 1, after: query.after };
+  const records = query.project_id
+    ? (await requireProjectAccess(context, query.project_id),
       await context.repositories.outputs.listProjectOutputs(
-        filters.projectId,
-        filters.capabilityId,
-        pagination,
+        query.project_id,
+        query.capability_id,
+        options,
       ))
-    : await context.repositories.outputs.listPersonalOutputs(
-        userId,
-        filters.capabilityId,
-        pagination,
-      );
+    : await context.repositories.outputs.listPersonalOutputs(userId, query.capability_id, options);
 
-  return {
-    outputs: records.filter((record) => !isOutputDeletionPending(record)).map(formatOutputSummary),
-  };
+  return mapListPage(
+    toListPage(
+      records.filter((record) => !isOutputDeletionPending(record)),
+      query.limit,
+      (record) => record.id,
+    ),
+    formatOutputSummary,
+  );
 }
 
 export async function updateOutput(
@@ -360,24 +356,26 @@ export async function listOutputRevisions(
   const revisions = await context.repositories.outputs.listRevisions(outputId);
   const current = formatCurrentRevision(output);
 
+  const formattedRevisions = await Promise.all(
+    revisions.map(async (revision) => {
+      const formatted = formatRevision(revision);
+
+      formatted.provenance = await resolveProvenanceSourceAccess(
+        context,
+        userId,
+        formatted.provenance,
+      );
+
+      return formatted;
+    }),
+  );
+
   return {
+    ...listPageOf(formattedRevisions, (revision) => String(revision.revision)),
     current: {
       ...current,
       provenance: await resolveProvenanceSourceAccess(context, userId, current.provenance),
     },
-    revisions: await Promise.all(
-      revisions.map(async (revision) => {
-        const formatted = formatRevision(revision);
-
-        formatted.provenance = await resolveProvenanceSourceAccess(
-          context,
-          userId,
-          formatted.provenance,
-        );
-
-        return formatted;
-      }),
-    ),
     restore: getOutputRestoreCapability(output),
   };
 }
@@ -488,7 +486,7 @@ export async function listOutputShares(
   context: ServiceContext,
   userId: number,
   outputId: string,
-): Promise<{ shares: OutputShare[] }> {
+): Promise<ListPage<OutputShare>> {
   await requireOutputAccess(context, userId, outputId, true);
   const now = Date.now();
   const shares = (await context.repositories.outputs.listShares(outputId)).filter(
@@ -496,7 +494,7 @@ export async function listOutputShares(
       !share.revoked_at && (!share.expires_at || new Date(share.expires_at).getTime() > now),
   );
 
-  return { shares: shares.map(formatShare) };
+  return listPageOf(shares.map(formatShare), (share) => share.id);
 }
 
 export async function revokeOutputShare(

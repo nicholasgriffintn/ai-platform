@@ -2,33 +2,32 @@ import {
   councilReviewListResponseSchema,
   councilReviewSchema,
   createOutputSchema,
-  describeDocumentResponseSchema,
+  createOutputShareSchema,
   describeDocumentInputSchema,
+  describeDocumentResponseSchema,
+  DOCUMENT_OUTPUT_KIND,
+  documentExportFilename,
   formatDocumentInputSchema,
   formatDocumentResponseSchema,
-  documentExportFilename,
-  DOCUMENT_OUTPUT_KIND,
-  readDocumentBody,
-  createOutputShareSchema,
-  errorResponseSchema,
+  outputHistoryResponseSchema,
   outputListQuerySchema,
   outputListResponseSchema,
-  outputHistoryResponseSchema,
   outputSchema,
   outputShareDeliverySchema,
   outputShareListResponseSchema,
-  sharedOutputSchema,
+  readDocumentBody,
   restoreOutputRevisionSchema,
+  sharedOutputSchema,
   updateOutputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { defineResource } from "~/infrastructure/http/resource";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
-import documentCollaboration from "~/modules/documents/api/collaboration";
+import { defineDocumentCollaboration } from "~/modules/documents/api/collaboration";
 import { formatDocument, redescribeDocument } from "~/modules/documents/application";
 import {
   createOutput,
@@ -37,257 +36,240 @@ import {
   getOutput,
   getSharedOutput,
   getSharedOutputRecord,
-  listOutputShares,
   listOutputRevisions,
   listOutputs,
-  revokeOutputShare,
+  listOutputShares,
   restoreOutputRevision,
+  revokeOutputShare,
   updateOutput,
 } from "~/modules/outputs/application";
 import { listOutputReviews, reviewOutput } from "~/modules/outputs/application/review";
 
 const app = new Hono();
-
-app.route("/", documentCollaboration);
-const outputParams = z.object({ outputId: z.string().min(1) });
-const outputRevisionParams = outputParams.extend({
-  revision: z.coerce.number().int().positive(),
+const outputParamsSchema = z.object({ output_id: z.string().min(1) });
+const revisionParamsSchema = outputParamsSchema.extend({
+  revision_id: z.coerce.number().int().positive(),
 });
-const shareParams = outputParams.extend({ shareId: z.string().min(1) });
-const sharedOutputParams = z.object({ token: z.string().min(32) });
+const shareParamsSchema = outputParamsSchema.extend({ share_id: z.string().min(1) });
+const sharedParamsSchema = z.object({ token: z.string().min(32) });
 const createOutputRequestSchema = createOutputSchema.omit({ file: true });
 
-addRoute(app, "get", "/shared/:token/content", {
-  tags: ["outputs"],
-  paramSchema: sharedOutputParams,
-  responses: { 200: { description: "Shared output file" } },
-  handler: async ({ params, serviceContext }) => {
-    const record = await getSharedOutputRecord(serviceContext, params.token);
+defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
+  outputs
+    .list({
+      auth: true,
+      summary: "List outputs",
+      description: "Personal outputs, or a project's when project_id is set.",
+      querySchema: outputListQuerySchema,
+      responses: { 200: { description: "Outputs", schema: outputListResponseSchema } },
+      handler: ({ query, serviceContext, user }) => listOutputs(serviceContext, user.id, query),
+    })
+    .create({
+      auth: true,
+      summary: "Create an output",
+      bodySchema: createOutputRequestSchema,
+      responses: { 200: { description: "The output", schema: outputSchema } },
+      handler: ({ body, serviceContext, user }) => createOutput(serviceContext, user.id, body),
+    })
+    .read({
+      auth: true,
+      summary: "Read an output",
+      paramSchema: outputParamsSchema,
+      responses: { 200: { description: "The output", schema: outputSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        getOutput(serviceContext, user.id, params.output_id),
+    })
+    .update({
+      auth: true,
+      summary: "Save an output revision",
+      paramSchema: outputParamsSchema,
+      bodySchema: updateOutputSchema,
+      responses: { 200: { description: "The output", schema: outputSchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        updateOutput(serviceContext, user.id, params.output_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete an output",
+      paramSchema: outputParamsSchema,
+      handler: async ({ params, serviceContext, user }) => {
+        await deleteOutput(serviceContext, user.id, params.output_id);
 
-    if (!record.storage_key || !record.mime_type) {
-      throw new AssistantError("Shared output file not found", ErrorType.NOT_FOUND, 404);
-    }
+        return { deleted: true };
+      },
+    })
+    .action("format", {
+      auth: true,
+      tags: ["outputs", "documents"],
+      summary: "Rewrite a document without changing what it says",
+      paramSchema: outputParamsSchema,
+      bodySchema: formatDocumentInputSchema,
+      responses: {
+        200: { description: "Rewritten document", schema: formatDocumentResponseSchema },
+      },
+      handler: ({ body, params, serviceContext, user }) =>
+        formatDocument(serviceContext, user, params.output_id, body.prompt),
+    })
+    .action("describe", {
+      auth: true,
+      tags: ["outputs", "documents"],
+      summary: "Describe a document and keep the description on it",
+      paramSchema: outputParamsSchema,
+      bodySchema: describeDocumentInputSchema,
+      responses: {
+        200: { description: "Description", schema: describeDocumentResponseSchema },
+      },
+      handler: ({ body, params, serviceContext, user }) =>
+        redescribeDocument(serviceContext, user, params.output_id, body.expectedRevision),
+    })
+    .shared({
+      auth: false,
+      summary: "Read a shared output",
+      paramSchema: sharedParamsSchema,
+      responses: { 200: { description: "Shared output", schema: sharedOutputSchema } },
+      handler: ({ params, serviceContext }) => getSharedOutput(serviceContext, params.token),
+    })
+    .shared(
+      {
+        auth: false,
+        summary: "Download a shared output's file",
+        paramSchema: sharedParamsSchema,
+        responses: { 200: { description: "Shared output file" } },
+        handler: async ({ params, serviceContext }) => {
+          const record = await getSharedOutputRecord(serviceContext, params.token);
 
-    const object = await new StorageService(serviceContext.env.PRIVATE_ASSETS_BUCKET).getObjectBody(
-      record.storage_key,
+          if (!record.storage_key || !record.mime_type) {
+            throw new AssistantError("Shared output file not found", ErrorType.NOT_FOUND, 404);
+          }
+
+          const object = await new StorageService(
+            serviceContext.env.PRIVATE_ASSETS_BUCKET,
+          ).getObjectBody(record.storage_key);
+
+          if (!object) {
+            throw new AssistantError("Shared output file not found", ErrorType.NOT_FOUND, 404);
+          }
+
+          return getPrivateFileResponse(record, object);
+        },
+      },
+      "content",
     );
 
-    if (!object) {
-      throw new AssistantError("Shared output file not found", ErrorType.NOT_FOUND, 404);
-    }
+  outputs.singleton("content").read({
+    auth: "user-or-anonymous",
+    summary: "Download an output's file",
+    paramSchema: outputParamsSchema,
+    responses: { 200: { description: "Output file" } },
+    handler: async ({ params, serviceContext, user }) => {
+      const file = await readPrivateFile({
+        context: serviceContext,
+        kind: "output",
+        resourceId: params.output_id,
+        userId: user?.id,
+      });
 
-    return getPrivateFileResponse(record, object);
-  },
-});
+      return getPrivateFileResponse(file.record, file.object);
+    },
+  });
 
-addRoute(app, "get", "/:outputId/content", {
-  tags: ["outputs"],
-  paramSchema: outputParams,
-  responses: { 200: { description: "Output file" } },
-  handler: async ({ params, serviceContext, user }) => {
-    const file = await readPrivateFile({
-      context: serviceContext,
-      kind: "output",
-      resourceId: params.outputId,
-      userId: user?.id,
+  outputs.singleton("export").read({
+    auth: true,
+    tags: ["outputs", "documents"],
+    summary: "Download a document output as Markdown",
+    paramSchema: outputParamsSchema,
+    responses: { 200: { description: "Markdown document" } },
+    handler: async ({ params, serviceContext, user }) => {
+      const output = await getOutput(serviceContext, user.id, params.output_id);
+      const body = readDocumentBody(output.content);
+
+      if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {
+        throw new AssistantError("That result is not a document", ErrorType.PARAMS_ERROR, 400);
+      }
+
+      return new Response(body, {
+        headers: {
+          "content-type": "text/markdown; charset=utf-8",
+          "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
+        },
+      });
+    },
+  });
+
+  outputs
+    .revisioned()
+    .list({
+      auth: true,
+      summary: "List an output's revisions",
+      paramSchema: outputParamsSchema,
+      responses: { 200: { description: "Revisions", schema: outputHistoryResponseSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        listOutputRevisions(serviceContext, user.id, params.output_id),
+    })
+    .restore({
+      auth: true,
+      summary: "Restore an earlier revision",
+      paramSchema: revisionParamsSchema,
+      bodySchema: restoreOutputRevisionSchema,
+      responses: { 200: { description: "The output", schema: outputSchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        restoreOutputRevision(serviceContext, user.id, params.output_id, params.revision_id, body),
     });
 
-    return await getPrivateFileResponse(file.record, file.object);
-  },
-});
+  outputs
+    .sub("reviews", "review_id")
+    .list({
+      auth: true,
+      summary: "List council reviews of an output",
+      paramSchema: outputParamsSchema,
+      responses: { 200: { description: "Reviews", schema: councilReviewListResponseSchema } },
+      handler: ({ params, serviceContext }) => listOutputReviews(serviceContext, params.output_id),
+    })
+    .create({
+      auth: true,
+      summary: "Ask the council to review an output",
+      description:
+        "Four seats critique the current revision, read each other's critiques and vote; an adjudicator returns ship, revise or hold with a revision brief.",
+      paramSchema: outputParamsSchema,
+      responses: { 200: { description: "The review", schema: councilReviewSchema } },
+      handler: ({ params, serviceContext }) =>
+        reviewOutput(serviceContext, params.output_id, {
+          completionId: `output-review:${params.output_id}`,
+          usageScopeId: `output-review:${params.output_id}:${Date.now()}`,
+        }),
+    });
 
-addRoute(app, "post", "/:outputId/format", {
-  tags: ["outputs"],
-  summary: "Rewrite a document without changing what it says",
-  auth: true,
-  paramSchema: outputParams,
-  bodySchema: formatDocumentInputSchema,
-  responses: { 200: { description: "Rewritten document", schema: formatDocumentResponseSchema } },
-  handler: ({ body, params, serviceContext, user }) =>
-    formatDocument(serviceContext, user, params.outputId, body.prompt),
-});
+  outputs
+    .sub("shares", "share_id")
+    .list({
+      auth: true,
+      summary: "List an output's active share links",
+      paramSchema: outputParamsSchema,
+      responses: { 200: { description: "Shares", schema: outputShareListResponseSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        listOutputShares(serviceContext, user.id, params.output_id),
+    })
+    .create({
+      auth: true,
+      summary: "Create a share link",
+      paramSchema: outputParamsSchema,
+      bodySchema: createOutputShareSchema,
+      responses: { 200: { description: "The share", schema: outputShareDeliverySchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        createOutputShare(serviceContext, user.id, params.output_id, body.expiresAt),
+    })
+    .delete({
+      auth: true,
+      summary: "Revoke a share link",
+      paramSchema: shareParamsSchema,
+      handler: async ({ params, serviceContext, user }) => {
+        await revokeOutputShare(serviceContext, user.id, params.output_id, params.share_id);
 
-addRoute(app, "post", "/:outputId/describe", {
-  tags: ["outputs"],
-  summary: "Describe a document and keep the description on it",
-  auth: true,
-  paramSchema: outputParams,
-  bodySchema: describeDocumentInputSchema,
-  responses: {
-    200: { description: "Document description", schema: describeDocumentResponseSchema },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    redescribeDocument(serviceContext, user, params.outputId, body.expectedRevision),
-});
-
-addRoute(app, "get", "/:outputId/export", {
-  tags: ["outputs"],
-  summary: "Download a document output as Markdown",
-  auth: true,
-  paramSchema: outputParams,
-  responses: { 200: { description: "Markdown document" } },
-  handler: async ({ params, serviceContext, user }) => {
-    const output = await getOutput(serviceContext, user.id, params.outputId);
-    const body = readDocumentBody(output.content);
-
-    if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {
-      throw new AssistantError("That result is not a document", ErrorType.PARAMS_ERROR, 400);
-    }
-
-    return new Response(body, {
-      headers: {
-        "content-type": "text/markdown; charset=utf-8",
-        "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
+        return { deleted: true };
       },
     });
-  },
-});
 
-addRoute(app, "get", "/", {
-  tags: ["outputs"],
-  auth: true,
-  querySchema: outputListQuerySchema,
-  responses: { 200: { description: "Outputs", schema: outputListResponseSchema } },
-  handler: ({ query, serviceContext, user }) => listOutputs(serviceContext, user.id, query),
-});
-
-addRoute(app, "post", "/", {
-  tags: ["outputs"],
-  auth: true,
-  bodySchema: createOutputRequestSchema,
-  responses: { 200: { description: "Created output", schema: outputSchema } },
-  handler: ({ body, serviceContext, user }) => createOutput(serviceContext, user.id, body),
-});
-
-addRoute(app, "get", "/:outputId", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  responses: { 200: { description: "Output", schema: outputSchema } },
-  handler: ({ params, serviceContext, user }) =>
-    getOutput(serviceContext, user.id, params.outputId),
-});
-
-addRoute(app, "put", "/:outputId", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  bodySchema: updateOutputSchema,
-  responses: { 200: { description: "Updated output", schema: outputSchema } },
-  handler: ({ body, params, serviceContext, user }) =>
-    updateOutput(serviceContext, user.id, params.outputId, body),
-});
-
-addRoute(app, "delete", "/:outputId", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  responses: {
-    200: { description: "Deleted output", schema: z.object({ success: z.literal(true) }) },
-  },
-  handler: async ({ params, serviceContext, user }) => {
-    await deleteOutput(serviceContext, user.id, params.outputId);
-
-    return { success: true as const };
-  },
-});
-
-addRoute(app, "get", "/:outputId/revisions", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  responses: {
-    200: {
-      description: "Output revisions",
-      schema: outputHistoryResponseSchema,
-    },
-  },
-  handler: ({ params, serviceContext, user }) =>
-    listOutputRevisions(serviceContext, user.id, params.outputId),
-});
-
-addRoute(app, "get", "/:outputId/reviews", {
-  tags: ["outputs"],
-  summary: "List council reviews of an output",
-  auth: true,
-  paramSchema: outputParams,
-  responses: {
-    200: { description: "Council reviews, newest first", schema: councilReviewListResponseSchema },
-  },
-  handler: ({ params, serviceContext }) => listOutputReviews(serviceContext, params.outputId),
-});
-
-addRoute(app, "post", "/:outputId/reviews", {
-  tags: ["outputs"],
-  summary: "Ask the council to review an output",
-  description:
-    "Four seats critique the current revision, read each other's critiques and vote; an adjudicator returns ship, revise or hold with a revision brief.",
-  auth: true,
-  paramSchema: outputParams,
-  responses: {
-    200: { description: "The new review", schema: councilReviewSchema },
-    409: { description: "The output is not finished", schema: errorResponseSchema },
-  },
-  handler: ({ params, serviceContext }) =>
-    reviewOutput(serviceContext, params.outputId, {
-      completionId: `output-review:${params.outputId}`,
-      usageScopeId: `output-review:${params.outputId}:${Date.now()}`,
-    }),
-});
-
-addRoute(app, "post", "/:outputId/revisions/:revision/restore", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputRevisionParams,
-  bodySchema: restoreOutputRevisionSchema,
-  responses: { 200: { description: "Restored output", schema: outputSchema } },
-  handler: ({ body, params, serviceContext, user }) =>
-    restoreOutputRevision(serviceContext, user.id, params.outputId, params.revision, body),
-});
-
-addRoute(app, "post", "/:outputId/shares", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  bodySchema: createOutputShareSchema,
-  responses: { 200: { description: "Output share", schema: outputShareDeliverySchema } },
-  handler: ({ body, params, serviceContext, user }) =>
-    createOutputShare(serviceContext, user.id, params.outputId, body.expiresAt),
-});
-
-addRoute(app, "get", "/:outputId/shares", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: outputParams,
-  responses: {
-    200: { description: "Active output shares", schema: outputShareListResponseSchema },
-  },
-  handler: ({ params, serviceContext, user }) =>
-    listOutputShares(serviceContext, user.id, params.outputId),
-});
-
-addRoute(app, "delete", "/:outputId/shares/:shareId", {
-  tags: ["outputs"],
-  auth: true,
-  paramSchema: shareParams,
-  responses: {
-    200: { description: "Revoked share", schema: z.object({ success: z.literal(true) }) },
-  },
-  handler: async ({ params, serviceContext, user }) => {
-    await revokeOutputShare(serviceContext, user.id, params.outputId, params.shareId);
-
-    return { success: true as const };
-  },
-});
-
-addRoute(app, "get", "/shared/:token", {
-  tags: ["outputs"],
-  paramSchema: sharedOutputParams,
-  responses: {
-    200: { description: "Shared output", schema: sharedOutputSchema },
-    404: { description: "Shared output not found", schema: errorResponseSchema },
-  },
-  handler: ({ params, serviceContext }) => getSharedOutput(serviceContext, params.token),
+  defineDocumentCollaboration(outputs);
 });
 
 export default app;

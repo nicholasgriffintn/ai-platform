@@ -27,6 +27,24 @@ const inboxQuerySchema = z.object({ limit: z.coerce.number().int().min(1).max(10
 const notificationParamsSchema = z.object({ notification_id: z.string().min(1).max(256) });
 const registrationParamsSchema = z.object({ registration_id: z.string().min(1).max(128) });
 
+defineSingleton(app, { path: "/settings", tags: ["notifications"] }, (settings) => {
+  settings
+    .read({
+      auth: true,
+      summary: "Get notification settings",
+      responses: { 200: { description: "Settings", schema: taskNotificationSettingsSchema } },
+      handler: ({ serviceContext }) => getTaskNotificationSettings(serviceContext),
+    })
+    .update({
+      auth: true,
+      summary: "Update notification preferences",
+      bodySchema: updateTaskNotificationPreferencesSchema,
+      responses: { 200: { description: "Settings", schema: taskNotificationSettingsSchema } },
+      handler: ({ serviceContext, body }) =>
+        updateTaskNotificationPreferences(serviceContext, body),
+    });
+});
+
 defineResource(app, { idParam: "notification_id", tags: ["notifications"] }, (notifications) => {
   notifications
     .list({
@@ -88,24 +106,6 @@ defineResource(app, { idParam: "notification_id", tags: ["notifications"] }, (no
 
         return { deleted: true };
       },
-    });
-});
-
-defineSingleton(app, { path: "/settings", tags: ["notifications"] }, (settings) => {
-  settings
-    .read({
-      auth: true,
-      summary: "Get notification settings",
-      responses: { 200: { description: "Settings", schema: taskNotificationSettingsSchema } },
-      handler: ({ serviceContext }) => getTaskNotificationSettings(serviceContext),
-    })
-    .update({
-      auth: true,
-      summary: "Update notification preferences",
-      bodySchema: updateTaskNotificationPreferencesSchema,
-      responses: { 200: { description: "Settings", schema: taskNotificationSettingsSchema } },
-      handler: ({ serviceContext, body }) =>
-        updateTaskNotificationPreferences(serviceContext, body),
     });
 });
 

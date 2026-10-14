@@ -281,18 +281,18 @@ describe("output listing", () => {
     } as unknown as ServiceContext;
 
     const result = await listOutputs(context, 42, {
-      capabilityId: "notes",
+      capability_id: "notes",
       kind: "document",
       limit: 20,
-      offset: 40,
+      after: "output-40",
     });
 
     expect(listPersonalOutputs).toHaveBeenCalledWith(42, "notes", {
       kind: "document",
-      limit: 20,
-      offset: 40,
+      limit: 21,
+      after: "output-40",
     });
-    expect(result.outputs).toHaveLength(1);
+    expect(result.data).toHaveLength(1);
   });
 });
 

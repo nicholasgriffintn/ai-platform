@@ -8,6 +8,7 @@ import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-
 import {
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   createKnowledgeSyncSchema,
+  listPageOf,
   recipeConnectorProviderSchema,
   type CreateKnowledgeSync,
   type KnowledgeSyncResource,
@@ -119,7 +120,10 @@ export async function listKnowledgeSyncs(context: ServiceContext, projectId: str
   await requireProjectAccess(context, projectId);
   const records = await context.repositories.knowledgeSyncs.list(projectId);
 
-  return { syncs: records.map((record) => formatKnowledgeSync(record, context.requireUser().id)) };
+  return listPageOf(
+    records.map((record) => formatKnowledgeSync(record, context.requireUser().id)),
+    (sync) => sync.id,
+  );
 }
 
 export async function createKnowledgeSync(context: ServiceContext, input: CreateKnowledgeSync) {

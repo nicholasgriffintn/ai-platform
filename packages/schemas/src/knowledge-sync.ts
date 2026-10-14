@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 const fieldPathSchema = z
   .array(z.union([z.string().min(1).max(200), z.number().int().nonnegative()]))
   .min(1)
@@ -83,7 +85,7 @@ export const knowledgeSyncSchema = z
     canManage: z.boolean(),
   })
   .strict();
-export const knowledgeSyncListSchema = z.object({ syncs: z.array(knowledgeSyncSchema) });
+export const knowledgeSyncListSchema = listSchema(knowledgeSyncSchema);
 export const updateKnowledgeSyncSchema = z
   .object({
     action: z.enum(["pause", "resume", "refresh"]),

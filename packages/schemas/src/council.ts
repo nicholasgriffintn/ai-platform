@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export const councilMemberIds = [
   "chair",
   "sceptic",
@@ -145,9 +147,7 @@ export const councilReviewSchema = z.object({
 
 export type CouncilReview = z.infer<typeof councilReviewSchema>;
 
-export const councilReviewListResponseSchema = z.object({
-  reviews: z.array(councilReviewSchema),
-});
+export const councilReviewListResponseSchema = listSchema(councilReviewSchema);
 
 export type CouncilReviewListResponse = z.infer<typeof councilReviewListResponseSchema>;
 

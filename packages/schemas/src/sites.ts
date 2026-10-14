@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { listSchema } from "./platform/list.js";
 import {
   siteCollectionSchema,
   siteDataBindingSchema,
@@ -708,7 +709,7 @@ export const listSitesQuerySchema = z
   .strict();
 export type ListSitesQuery = z.infer<typeof listSitesQuerySchema>;
 
-export const siteListResponseSchema = z.object({ sites: z.array(siteSummarySchema) }).strict();
+export const siteListResponseSchema = listSchema(siteSummarySchema);
 export type SiteListResponse = z.infer<typeof siteListResponseSchema>;
 
 export const siteResponseSchema = z.object({ site: siteRecordSchema }).strict();

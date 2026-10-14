@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { DOCUMENT_MAX_BODY } from "./documents.js";
+import { listSchema } from "./platform/list.js";
 
 export const documentAnchorSchema = z
   .object({
@@ -37,9 +38,7 @@ export const documentCommentSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
-export const documentCommentListSchema = z.object({
-  comments: z.array(documentCommentSchema),
-  nextCursor: z.string().nullable(),
+export const documentCommentListSchema = listSchema(documentCommentSchema).extend({
   permissions: z.object({
     actorUserId: z.number().int().positive(),
     canEditDocument: z.boolean(),

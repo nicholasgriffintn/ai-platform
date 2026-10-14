@@ -1,32 +1,31 @@
 import {
   addCollectionSourcesSchema,
+  createKnowledgeSyncSchema,
   createSourceCollectionSchema,
   createSourceSchema,
+  knowledgeSyncListSchema,
+  knowledgeSyncSchema,
+  projectKnowledgeSearchResponseSchema,
+  setProjectContextSourcesSchema,
   sourceCollectionListResponseSchema,
   sourceCollectionSchema,
-  sourceDetailListResponseSchema,
   sourceListQuerySchema,
   sourceListResponseSchema,
   sourceSchema,
-  projectKnowledgeSearchQuerySchema,
-  projectKnowledgeSearchResponseSchema,
-  setProjectContextSourcesSchema,
-  updateSourceSchema,
-  createKnowledgeSyncSchema,
-  knowledgeSyncListSchema,
-  knowledgeSyncSchema,
+  knowledgeSearchQuerySchema,
   updateKnowledgeSyncSchema,
+  updateSourceSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import {
-  listKnowledgeSyncs,
-  createKnowledgeSync,
   controlKnowledgeSync,
+  createKnowledgeSync,
+  listKnowledgeSyncs,
 } from "~/modules/sources/application/knowledge-sync";
 import {
   addCollectionSources,
@@ -45,203 +44,192 @@ import {
 } from "~/modules/sources/application/sources";
 
 const app = new Hono();
-const sourceParams = z.object({ sourceId: z.string().min(1) });
-const collectionParams = z.object({ collectionId: z.string().min(1) });
-const projectQuery = z.object({ project_id: z.string().min(1).optional() });
-const requiredProjectQuery = z.object({ project_id: z.string().min(1) });
+const sourceParamsSchema = z.object({ source_id: z.string().min(1) });
+const collectionParamsSchema = z.object({ collection_id: z.string().min(1) });
+const syncParamsSchema = z.object({ sync_id: z.string().min(1) });
+const projectQuerySchema = z.object({ project_id: z.string().min(1).optional() });
+const requiredProjectQuerySchema = z.object({ project_id: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
-const syncParams = z.object({ syncId: z.string().min(1) });
 
-addRoute(app, "get", "/knowledge-syncs", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: requiredProjectQuery,
-  responses: { 200: { description: "Knowledge sync freshness", schema: knowledgeSyncListSchema } },
-  handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.project_id),
+defineSingleton(app, { path: "/project_context", tags: ["sources"] }, (projectContext) => {
+  projectContext.update({
+    auth: true,
+    summary: "Set a project's context sources",
+    bodySchema: setProjectContextSourcesSchema,
+    responses: { 200: { description: "Context sources", schema: sourceListResponseSchema } },
+    handler: ({ body, serviceContext, user }) =>
+      setProjectContextSources(serviceContext, user.id, body.project_id, body.sourceIds),
+  });
 });
 
-addRoute(app, "post", "/knowledge-syncs", {
-  tags: ["sources"],
-  auth: true,
-  bodySchema: createKnowledgeSyncSchema,
-  responses: { 200: { description: "Saved knowledge sync", schema: knowledgeSyncSchema } },
-  handler: ({ body, serviceContext }) => createKnowledgeSync(serviceContext, body),
-});
+defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
+  sources
+    .list({
+      auth: true,
+      summary: "List sources",
+      description:
+        "Personal sources, or a project's when project_id is set. scope=context lists the project's context collection; scope=conversation lists the available context sources in full, as conversations read them.",
+      querySchema: sourceListQuerySchema,
+      responses: { 200: { description: "Sources", schema: sourceListResponseSchema } },
+      handler: ({ query, serviceContext, user }) => {
+        if (query.scope === "context" && query.project_id) {
+          return listProjectContextSources(serviceContext, user.id, query.project_id);
+        }
 
-addRoute(app, "patch", "/knowledge-syncs/:syncId", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: syncParams,
-  bodySchema: updateKnowledgeSyncSchema,
-  responses: { 200: { description: "Updated knowledge sync", schema: knowledgeSyncSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    controlKnowledgeSync(serviceContext, params.syncId, body),
-});
+        if (query.scope === "conversation" && query.project_id) {
+          return listProjectConversationSources(serviceContext, user.id, query.project_id);
+        }
 
-addRoute(app, "get", "/search", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: projectKnowledgeSearchQuerySchema,
-  responses: {
-    200: {
-      description: "Project knowledge passages",
-      schema: projectKnowledgeSearchResponseSchema,
-    },
-  },
-  handler: ({ query, serviceContext }) => searchProjectKnowledge(serviceContext, query),
-});
+        return listSources(serviceContext, user.id, {
+          projectId: query.project_id,
+          kind: query.kind,
+        });
+      },
+    })
+    .create({
+      auth: true,
+      summary: "Create a source",
+      bodySchema: createSourceRequestSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, serviceContext, user }) => createSource(serviceContext, user.id, body),
+    })
+    .view("search", {
+      auth: true,
+      summary: "Search project knowledge",
+      querySchema: knowledgeSearchQuerySchema,
+      responses: {
+        200: { description: "Passages", schema: projectKnowledgeSearchResponseSchema },
+      },
+      handler: ({ query: { project_id, ...query }, serviceContext }) =>
+        searchProjectKnowledge(serviceContext, { ...query, projectId: project_id }),
+    })
+    .read({
+      auth: true,
+      summary: "Read a source",
+      paramSchema: sourceParamsSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        getSource(serviceContext, user.id, params.source_id),
+    })
+    .update({
+      auth: true,
+      summary: "Update a source",
+      paramSchema: sourceParamsSchema,
+      bodySchema: updateSourceSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        updateSource(serviceContext, user.id, params.source_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete a source",
+      paramSchema: sourceParamsSchema,
+      handler: async ({ params, serviceContext, user }) => {
+        await deleteSource(serviceContext, user.id, params.source_id);
 
-addRoute(app, "get", "/:sourceId/content", {
-  tags: ["sources"],
-  paramSchema: sourceParams,
-  responses: { 200: { description: "Source file" } },
-  handler: async ({ params, serviceContext, user }) => {
-    const file = await readPrivateFile({
-      context: serviceContext,
-      kind: "source",
-      resourceId: params.sourceId,
-      userId: user?.id,
+        return { deleted: true };
+      },
     });
 
-    return await getPrivateFileResponse(file.record, file.object);
-  },
-});
+  sources.singleton("content").read({
+    auth: "user-or-anonymous",
+    summary: "Download a source's file",
+    paramSchema: sourceParamsSchema,
+    responses: { 200: { description: "Source file" } },
+    handler: async ({ params, serviceContext, user }) => {
+      const file = await readPrivateFile({
+        context: serviceContext,
+        kind: "source",
+        resourceId: params.source_id,
+        userId: user?.id,
+      });
 
-addRoute(app, "get", "/", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: sourceListQuerySchema,
-  responses: { 200: { description: "Sources", schema: sourceListResponseSchema } },
-  handler: ({ query, serviceContext, user }) => listSources(serviceContext, user.id, query),
-});
-
-addRoute(app, "post", "/", {
-  tags: ["sources"],
-  auth: true,
-  bodySchema: createSourceRequestSchema,
-  responses: { 200: { description: "Created source", schema: sourceSchema } },
-  handler: ({ body, serviceContext, user }) => createSource(serviceContext, user.id, body),
-});
-
-addRoute(app, "get", "/collections", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: projectQuery,
-  responses: {
-    200: { description: "Source collections", schema: sourceCollectionListResponseSchema },
-  },
-  handler: ({ query, serviceContext, user }) =>
-    listSourceCollections(serviceContext, user.id, query.project_id),
-});
-
-addRoute(app, "post", "/collections", {
-  tags: ["sources"],
-  auth: true,
-  bodySchema: createSourceCollectionSchema,
-  responses: { 200: { description: "Created collection", schema: sourceCollectionSchema } },
-  handler: ({ body, serviceContext, user }) =>
-    createSourceCollection(serviceContext, user.id, body),
-});
-
-addRoute(app, "get", "/collections/:collectionId/sources", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: collectionParams,
-  responses: { 200: { description: "Collection sources", schema: sourceListResponseSchema } },
-  handler: ({ params, serviceContext, user }) =>
-    listCollectionSources(serviceContext, user.id, params.collectionId),
-});
-
-addRoute(app, "post", "/collections/:collectionId/sources", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: collectionParams,
-  bodySchema: addCollectionSourcesSchema,
-  responses: {
-    200: {
-      description: "Sources added",
-      schema: z.object({ added: z.number().int().nonnegative() }),
+      return getPrivateFileResponse(file.record, file.object);
     },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    addCollectionSources(serviceContext, user.id, params.collectionId, body.sourceIds),
-});
+  });
 
-addRoute(app, "get", "/project-context", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: requiredProjectQuery,
-  responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
-  handler: ({ query, serviceContext, user }) =>
-    listProjectContextSources(serviceContext, user.id, query.project_id),
-});
+  const collections = sources.collection("collections", "collection_id");
 
-addRoute(app, "get", "/project-conversation", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: requiredProjectQuery,
-  responses: {
-    200: { description: "Project conversation sources", schema: sourceDetailListResponseSchema },
-  },
-  handler: ({ query, serviceContext, user }) =>
-    listProjectConversationSources(serviceContext, user.id, query.project_id),
-});
+  collections
+    .list({
+      auth: true,
+      summary: "List source collections",
+      querySchema: projectQuerySchema,
+      responses: {
+        200: { description: "Collections", schema: sourceCollectionListResponseSchema },
+      },
+      handler: ({ query, serviceContext, user }) =>
+        listSourceCollections(serviceContext, user.id, query.project_id),
+    })
+    .create({
+      auth: true,
+      summary: "Create a source collection",
+      bodySchema: createSourceCollectionSchema,
+      responses: { 200: { description: "The collection", schema: sourceCollectionSchema } },
+      handler: ({ body, serviceContext, user }) =>
+        createSourceCollection(serviceContext, user.id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete a source collection",
+      paramSchema: collectionParamsSchema,
+      handler: async ({ params, serviceContext, user }) => {
+        await deleteSourceCollection(serviceContext, user.id, params.collection_id);
 
-addRoute(app, "put", "/project-context", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: requiredProjectQuery,
-  bodySchema: setProjectContextSourcesSchema,
-  responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
-  handler: ({ body, query, serviceContext, user }) =>
-    setProjectContextSources(serviceContext, user.id, query.project_id, body.sourceIds),
-});
+        return { deleted: true };
+      },
+    });
 
-addRoute(app, "delete", "/collections/:collectionId", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: collectionParams,
-  responses: {
-    200: { description: "Deleted collection", schema: z.object({ success: z.literal(true) }) },
-  },
-  handler: async ({ params, serviceContext, user }) => {
-    await deleteSourceCollection(serviceContext, user.id, params.collectionId);
+  collections
+    .sub("sources", "source_id")
+    .list({
+      auth: true,
+      summary: "List a collection's sources",
+      paramSchema: collectionParamsSchema,
+      responses: { 200: { description: "Sources", schema: sourceListResponseSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        listCollectionSources(serviceContext, user.id, params.collection_id),
+    })
+    .create({
+      auth: true,
+      summary: "Add sources to a collection",
+      paramSchema: collectionParamsSchema,
+      bodySchema: addCollectionSourcesSchema,
+      responses: {
+        200: {
+          description: "Sources added",
+          schema: z.object({ added: z.number().int().nonnegative() }),
+        },
+      },
+      handler: ({ body, params, serviceContext, user }) =>
+        addCollectionSources(serviceContext, user.id, params.collection_id, body.sourceIds),
+    });
 
-    return { success: true as const };
-  },
-});
-
-addRoute(app, "get", "/:sourceId", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: sourceParams,
-  responses: { 200: { description: "Source", schema: sourceSchema } },
-  handler: ({ params, serviceContext, user }) =>
-    getSource(serviceContext, user.id, params.sourceId),
-});
-
-addRoute(app, "put", "/:sourceId", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: sourceParams,
-  bodySchema: updateSourceSchema,
-  responses: { 200: { description: "Updated source", schema: sourceSchema } },
-  handler: ({ body, params, serviceContext, user }) =>
-    updateSource(serviceContext, user.id, params.sourceId, body),
-});
-
-addRoute(app, "delete", "/:sourceId", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: sourceParams,
-  responses: {
-    200: { description: "Deleted source", schema: z.object({ success: z.literal(true) }) },
-  },
-  handler: async ({ params, serviceContext, user }) => {
-    await deleteSource(serviceContext, user.id, params.sourceId);
-
-    return { success: true as const };
-  },
+  sources
+    .collection("knowledge_syncs", "sync_id")
+    .list({
+      auth: true,
+      summary: "List a project's knowledge syncs",
+      querySchema: requiredProjectQuerySchema,
+      responses: { 200: { description: "Knowledge syncs", schema: knowledgeSyncListSchema } },
+      handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.project_id),
+    })
+    .create({
+      auth: true,
+      summary: "Start a knowledge sync",
+      bodySchema: createKnowledgeSyncSchema,
+      responses: { 200: { description: "The sync", schema: knowledgeSyncSchema } },
+      handler: ({ body, serviceContext }) => createKnowledgeSync(serviceContext, body),
+    })
+    .update({
+      auth: true,
+      summary: "Pause, resume or refresh a knowledge sync",
+      paramSchema: syncParamsSchema,
+      bodySchema: updateKnowledgeSyncSchema,
+      responses: { 200: { description: "The sync", schema: knowledgeSyncSchema } },
+      handler: ({ params, body, serviceContext }) =>
+        controlKnowledgeSync(serviceContext, params.sync_id, body),
+    });
 });
 
 export default app;

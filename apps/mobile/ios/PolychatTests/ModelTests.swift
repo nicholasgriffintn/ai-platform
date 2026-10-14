@@ -926,7 +926,7 @@ extension ModelTests {
                     "approvals": []
                 }
             },
-            "revisions": [],
+            "data": [],
             "restore": {
                 "supported": true,
                 "reason": null,

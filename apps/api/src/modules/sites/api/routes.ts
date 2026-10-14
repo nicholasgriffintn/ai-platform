@@ -1,6 +1,6 @@
 import { generateSiteFiles } from "@ngriffin_uk/polychat-library-sites";
 import {
-  errorResponseSchema,
+  listPageOf,
   siteBrowserEvidenceSchema,
   siteBrowserVerificationRequestSchema,
   siteConnectorSnapshotRequestSchema,
@@ -26,7 +26,7 @@ import {
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { defineResource } from "~/infrastructure/http/resource";
 import { verifyAndRepairSite } from "~/modules/sites/application/browser-verification";
 import { buildSiteInSandbox } from "~/modules/sites/application/build";
 import {
@@ -52,321 +52,274 @@ import {
 
 const app = new Hono();
 
-const siteParamsSchema = z.object({ id: z.string().min(1) });
+const siteParamsSchema = z.object({ site_id: z.string().min(1) });
+const sharedImageParamsSchema = z.object({
+  token: z.string().min(32),
+  image_id: z.string().min(1),
+});
 
-addRoute(app, "post", "/generate", {
-  tags: ["sites"],
-  summary: "Generate or refine a site",
-  description:
-    "Classifies the brief with Jev, then streams site changes as JSON patch events. High-confidence single visual edits to a selected element are applied directly by Jev; broader or uncertain work uses a tiered coding model. Pass siteId to refine an existing site instead of starting fresh. Ends with the saved record.",
-  auth: true,
-  bodySchema: siteGenerateRequestSchema,
-  responses: {
-    200: { description: "Server-sent site events" },
-    400: { description: "Bad request", schema: errorResponseSchema },
-  },
-  handler: async ({ body, serviceContext, user, raw }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      body.projectId,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
+function requireSitesAccess(
+  serviceContext: Parameters<typeof requireOptionalProjectCapabilityAccess>[0],
+  projectId: string | undefined,
+) {
+  return requireOptionalProjectCapabilityAccess(
+    serviceContext,
+    projectId,
+    "app",
+    SITES_CAPABILITY_ID,
+  );
+}
 
-    return streamSiteGeneration({
-      context: serviceContext,
-      user,
-      request: body,
-      signal: raw.req.raw.signal,
+defineResource(app, { idParam: "site_id", tags: ["sites"] }, (sites) => {
+  sites
+    .list({
+      auth: true,
+      summary: "List sites",
+      querySchema: listSitesQuerySchema,
+      responses: { 200: { description: "Sites", schema: siteListResponseSchema } },
+      handler: async ({ query, serviceContext, user }) => {
+        await requireSitesAccess(serviceContext, query.project_id);
+
+        return listPageOf(
+          await listSites(
+            { context: serviceContext, userId: user.id, projectId: query.project_id },
+            query.limit,
+          ),
+          (site) => site.id,
+        );
+      },
+    })
+    .collectionAction("generate", {
+      auth: true,
+      summary: "Generate or refine a site",
+      description:
+        "Classifies the brief with Jev, then streams site changes as JSON patch events. High-confidence single visual edits to a selected element are applied directly by Jev; broader or uncertain work uses a tiered coding model. Pass siteId to refine an existing site instead of starting fresh. Ends with the saved record.",
+      bodySchema: siteGenerateRequestSchema,
+      responses: { 200: { description: "Server-sent site events" } },
+      handler: async ({ body, serviceContext, user, raw }) => {
+        await requireSitesAccess(serviceContext, body.projectId);
+
+        return streamSiteGeneration({
+          context: serviceContext,
+          user,
+          request: body,
+          signal: raw.req.raw.signal,
+        });
+      },
+    })
+    .shared(
+      {
+        auth: false,
+        summary: "Serve an image referenced by a publicly shared site",
+        paramSchema: sharedImageParamsSchema,
+        responses: { 200: { description: "Image file" } },
+        handler: ({ params, serviceContext }) =>
+          readSharedSiteImage(serviceContext, params.token, params.image_id),
+      },
+      "images/:image_id",
+    )
+    .read({
+      auth: true,
+      summary: "Get a site",
+      paramSchema: siteParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      responses: { 200: { description: "The site", schema: siteResponseSchema } },
+      handler: async ({ params, query, serviceContext, user }) => {
+        await requireSitesAccess(serviceContext, query.project_id);
+
+        return {
+          site: await getSite(
+            { context: serviceContext, userId: user.id, projectId: query.project_id },
+            params.site_id,
+          ),
+        };
+      },
+    })
+    .update({
+      auth: true,
+      summary: "Edit a site without a model",
+      description:
+        "Applies JSON patches from the studio inspector (prop edits, moves, removals, duplicates) to the saved site, validates the result and stores a new revision.",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteEditRequestSchema,
+      responses: { 200: { description: "The site", schema: siteResponseSchema } },
+      handler: async ({ params, body, serviceContext, user }) => {
+        await requireSitesAccess(serviceContext, body.projectId);
+
+        return {
+          site: await editSite({
+            context: serviceContext,
+            user,
+            siteId: params.site_id,
+            request: body,
+          }),
+        };
+      },
+    })
+    .delete({
+      auth: true,
+      summary: "Delete a site",
+      paramSchema: siteParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      handler: async ({ params, query, serviceContext, user }) => {
+        await requireSitesAccess(serviceContext, query.project_id);
+        await deleteSite(
+          { context: serviceContext, userId: user.id, projectId: query.project_id },
+          params.site_id,
+        );
+
+        return { deleted: true };
+      },
+    })
+    .action("verify", {
+      auth: true,
+      summary: "Verify a site revision in desktop and mobile browsers",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteBrowserVerificationRequestSchema,
+      responses: { 200: { description: "Browser evidence", schema: siteBrowserEvidenceSchema } },
+      handler: ({ params, body, serviceContext, raw }) =>
+        verifyAndRepairSite(serviceContext, params.site_id, body, raw.req.raw.signal),
+    })
+    .action("build", {
+      auth: true,
+      summary: "Build a site in the project sandbox",
+      description:
+        "Hands the generated project files to the sandbox worker as a feature-implementation run against the project coding environment.",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteBuildRequestSchema,
+      responses: { 200: { description: "Queued sandbox run", schema: siteBuildResponseSchema } },
+      handler: ({ params, body, serviceContext, user }) =>
+        buildSiteInSandbox({
+          context: serviceContext,
+          user,
+          siteId: params.site_id,
+          projectId: body.projectId,
+          instructions: body.instructions,
+          target: body.target,
+        }),
+    })
+    .action("images", {
+      auth: true,
+      summary: "Generate images for the placeholders of a site",
+      description:
+        "Generates an image for each empty image slot (split heroes, Image elements, galleries, team portraits) from its alt text, stores them as outputs and patches the site.",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteImagesRequestSchema,
+      responses: {
+        200: { description: "Server-sent image progress and the site with generated images" },
+      },
+      handler: async ({ params, body, serviceContext, user }) => {
+        await requireSitesAccess(serviceContext, body.projectId);
+
+        return streamSiteImages({
+          context: serviceContext,
+          user,
+          siteId: params.site_id,
+          projectId: body.projectId,
+          limit: body.limit,
+        });
+      },
+    })
+    .action("pull_request", {
+      auth: true,
+      summary: "Open a pull request with the generated site",
+      description:
+        "Commits the deterministic project files to a new branch of the connected repository and opens a pull request. No model or sandbox run is involved.",
+      paramSchema: siteParamsSchema,
+      bodySchema: sitePullRequestRequestSchema,
+      responses: { 200: { description: "Pull request", schema: sitePullRequestResponseSchema } },
+      handler: ({ params, body, serviceContext, user }) =>
+        openSitePullRequest({
+          context: serviceContext,
+          user,
+          siteId: params.site_id,
+          request: body,
+        }),
     });
-  },
-});
 
-addRoute(app, "get", "/shared/:token/images/:outputId", {
-  tags: ["sites"],
-  summary: "Serve an image referenced by a publicly shared site",
-  paramSchema: z.object({ token: z.string().min(32), outputId: z.string().min(1) }),
-  responses: { 200: { description: "Image file" } },
-  handler: ({ params, serviceContext }) =>
-    readSharedSiteImage(serviceContext, params.token, params.outputId),
-});
+  sites.singleton("files").read({
+    auth: true,
+    summary: "Export a site as project files",
+    description:
+      "Deterministically generates a runnable React Router, Next.js or TanStack Router project from the saved site.",
+    paramSchema: siteParamsSchema,
+    querySchema: siteFilesQuerySchema,
+    responses: { 200: { description: "Generated files", schema: siteFilesResponseSchema } },
+    handler: async ({ params, query, serviceContext, user }) => {
+      await requireSitesAccess(serviceContext, query.project_id);
 
-addRoute(app, "get", "/", {
-  tags: ["sites"],
-  summary: "List sites",
-  auth: true,
-  querySchema: listSitesQuerySchema,
-  responses: {
-    200: { description: "Site summaries", schema: siteListResponseSchema },
-  },
-  handler: async ({ query, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      query.project_id,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
-
-    return {
-      sites: await listSites(
+      const site = await getSite(
         { context: serviceContext, userId: user.id, projectId: query.project_id },
-        query.limit,
-      ),
-    };
-  },
-});
+        params.site_id,
+      );
+      const generated = generateSiteFiles(site.project, query.target);
 
-addRoute(app, "get", "/:id", {
-  tags: ["sites"],
-  summary: "Get a site",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  querySchema: projectScopeQuerySchema,
-  responses: {
-    200: { description: "Site record", schema: siteResponseSchema },
-    404: { description: "Not found", schema: errorResponseSchema },
-  },
-  handler: async ({ params, query, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      query.project_id,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
+      return { target: generated.target, files: generated.files };
+    },
+  });
 
-    return {
-      site: await getSite(
-        { context: serviceContext, userId: user.id, projectId: query.project_id },
-        params.id,
-      ),
-    };
-  },
-});
-
-addRoute(app, "delete", "/:id", {
-  tags: ["sites"],
-  summary: "Delete a site",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  querySchema: projectScopeQuerySchema,
-  responses: {
-    200: { description: "Deleted", schema: z.object({ success: z.literal(true) }) },
-    404: { description: "Not found", schema: errorResponseSchema },
-  },
-  handler: async ({ params, query, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      query.project_id,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
-    await deleteSite(
-      { context: serviceContext, userId: user.id, projectId: query.project_id },
-      params.id,
-    );
-
-    return { success: true as const };
-  },
-});
-
-addRoute(app, "patch", "/:id", {
-  tags: ["sites"],
-  summary: "Edit a site without a model",
-  description:
-    "Applies JSON patches from the studio's inspector (prop edits, moves, removals, duplicates) to the saved site, validates the result and stores a new revision.",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteEditRequestSchema,
-  responses: {
-    200: { description: "Updated site", schema: siteResponseSchema },
-    400: { description: "Edit could not be applied", schema: errorResponseSchema },
-  },
-  handler: async ({ params, body, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      body.projectId,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
-
-    return {
-      site: await editSite({ context: serviceContext, user, siteId: params.id, request: body }),
-    };
-  },
-});
-
-addRoute(app, "get", "/:id/files", {
-  tags: ["sites"],
-  summary: "Export a site as project files",
-  description:
-    "Deterministically generates a runnable React Router, Next.js or TanStack Router project from the saved site.",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  querySchema: siteFilesQuerySchema,
-  responses: {
-    200: { description: "Generated files", schema: siteFilesResponseSchema },
-    404: { description: "Not found", schema: errorResponseSchema },
-  },
-  handler: async ({ params, query, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      query.project_id,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
-
-    const site = await getSite(
-      { context: serviceContext, userId: user.id, projectId: query.project_id },
-      params.id,
-    );
-
-    const generated = generateSiteFiles(site.project, query.target);
-
-    return { target: generated.target, files: generated.files };
-  },
-});
-
-addRoute(app, "post", "/:id/verify", {
-  tags: ["sites"],
-  summary: "Verify a site revision in desktop and mobile browsers",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteBrowserVerificationRequestSchema,
-  responses: { 200: { description: "Browser evidence", schema: siteBrowserEvidenceSchema } },
-  handler: ({ params, body, serviceContext, raw }) =>
-    verifyAndRepairSite(serviceContext, params.id, body, raw.req.raw.signal),
-});
-
-addRoute(app, "post", "/:id/build", {
-  tags: ["sites"],
-  summary: "Build a site in the project sandbox",
-  description:
-    "Hands the generated project files to the sandbox worker as a feature-implementation run against the project's coding environment.",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteBuildRequestSchema,
-  responses: {
-    200: { description: "Queued sandbox run", schema: siteBuildResponseSchema },
-    409: { description: "No coding environment", schema: errorResponseSchema },
-  },
-  handler: ({ params, body, serviceContext, user }) =>
-    buildSiteInSandbox({
-      context: serviceContext,
-      user,
-      siteId: params.id,
-      projectId: body.projectId,
-      instructions: body.instructions,
-      target: body.target,
-    }),
-});
-
-addRoute(app, "post", "/:id/images", {
-  tags: ["sites"],
-  summary: "Generate images for a site's placeholders",
-  description:
-    "Generates an image for each empty image slot (split heroes, Image elements, galleries, team portraits) from its alt text, stores them as outputs and patches the site.",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteImagesRequestSchema,
-  responses: {
-    200: { description: "Server-sent image progress and the site with generated images" },
-  },
-  handler: async ({ params, body, serviceContext, user }) => {
-    await requireOptionalProjectCapabilityAccess(
-      serviceContext,
-      body.projectId,
-      "app",
-      SITES_CAPABILITY_ID,
-    );
-
-    return streamSiteImages({
-      context: serviceContext,
-      user,
-      siteId: params.id,
-      projectId: body.projectId,
-      limit: body.limit,
+  sites
+    .singleton("data")
+    .create({
+      auth: true,
+      summary: "Update saved site records",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteDataRequestSchema,
+      responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
+      handler: ({ params, body, serviceContext }) =>
+        executeSiteDataAction(serviceContext, params.site_id, body),
+    })
+    .action("query", {
+      auth: true,
+      summary: "Read scoped site data",
+      description: "Reads against the revision the caller names, so stale editors see a conflict.",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteIntegrationScopeSchema,
+      responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
+      handler: ({ params, body, serviceContext }) =>
+        readSiteData(serviceContext, params.site_id, body),
+    })
+    .action("snapshot", {
+      auth: true,
+      summary: "Read site data from a selected connector account",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteConnectorSnapshotRequestSchema,
+      responses: { 200: { description: "The site", schema: siteResponseSchema } },
+      handler: async ({ params, body, serviceContext }) => ({
+        site: await snapshotSiteConnector(serviceContext, params.site_id, body),
+      }),
+    })
+    .action("refresh", {
+      auth: true,
+      summary: "Refresh a saved connector Source",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteSourceRefreshRequestSchema,
+      responses: { 200: { description: "The site", schema: siteResponseSchema } },
+      handler: async ({ params, body, serviceContext }) => ({
+        site: await refreshSiteConnectorSource(serviceContext, params.site_id, body),
+      }),
     });
-  },
+
+  sites
+    .singleton("runtime")
+    .create({
+      auth: true,
+      summary: "Enable saved records for this revision",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteIntegrationScopeSchema,
+      responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
+      handler: ({ params, body, serviceContext }) =>
+        activateSiteRuntime(serviceContext, params.site_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Disable saved records",
+      paramSchema: siteParamsSchema,
+      bodySchema: siteIntegrationScopeSchema,
+      responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
+      handler: ({ params, body, serviceContext }) =>
+        disableSiteRuntime(serviceContext, params.site_id, body),
+    });
 });
 
-addRoute(app, "post", "/:id/pull-request", {
-  tags: ["sites"],
-  summary: "Open a pull request with the generated site",
-  description:
-    "Commits the deterministic project files to a new branch of the project's connected repository and opens a pull request. No model or sandbox run is involved.",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: sitePullRequestRequestSchema,
-  responses: {
-    200: { description: "Opened pull request", schema: sitePullRequestResponseSchema },
-    409: { description: "No coding environment", schema: errorResponseSchema },
-  },
-  handler: ({ params, body, serviceContext, user }) =>
-    openSitePullRequest({ context: serviceContext, user, siteId: params.id, request: body }),
-});
-
-addRoute(app, "post", "/:id/data/read", {
-  tags: ["sites"],
-  summary: "Read scoped site data",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteIntegrationScopeSchema,
-  responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
-  handler: ({ params, body, serviceContext }) => readSiteData(serviceContext, params.id, body),
-});
-
-addRoute(app, "post", "/:id/data/connectors", {
-  tags: ["sites"],
-  summary: "Read site data from a selected connector account",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteConnectorSnapshotRequestSchema,
-  responses: { 200: { description: "Updated site", schema: siteResponseSchema } },
-  handler: async ({ params, body, serviceContext }) => ({
-    site: await snapshotSiteConnector(serviceContext, params.id, body),
-  }),
-});
-
-addRoute(app, "post", "/:id/data/refresh", {
-  tags: ["sites"],
-  summary: "Refresh a saved connector Source",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteSourceRefreshRequestSchema,
-  responses: { 200: { description: "Updated site", schema: siteResponseSchema } },
-  handler: async ({ params, body, serviceContext }) => ({
-    site: await refreshSiteConnectorSource(serviceContext, params.id, body),
-  }),
-});
-
-addRoute(app, "post", "/:id/data/actions", {
-  tags: ["sites"],
-  summary: "Update saved site records",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteDataRequestSchema,
-  responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    executeSiteDataAction(serviceContext, params.id, body),
-});
-addRoute(app, "post", "/:id/runtime", {
-  tags: ["sites"],
-  summary: "Enable saved records for this revision",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteIntegrationScopeSchema,
-  responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    activateSiteRuntime(serviceContext, params.id, body),
-});
-addRoute(app, "post", "/:id/runtime/disable", {
-  tags: ["sites"],
-  summary: "Disable saved records",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteIntegrationScopeSchema,
-  responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    disableSiteRuntime(serviceContext, params.id, body),
-});
 export default app;

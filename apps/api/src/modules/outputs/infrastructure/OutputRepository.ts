@@ -119,7 +119,7 @@ export interface OutputRevisionRecord {
 interface OutputListOptions {
   kind?: string;
   limit?: number;
-  offset?: number;
+  after?: string;
 }
 
 const OUTPUT_CACHE_TTL = 900;
@@ -408,13 +408,17 @@ export class OutputRepository extends BaseRepository {
       values.push(options.kind);
     }
 
-    const limit = options.limit ?? 100;
-    const offset = options.offset ?? 0;
+    if (options.after) {
+      conditions.push(
+        `(created_at, id) < (SELECT created_at, id FROM ${outputResourceSql} anchor WHERE anchor.id = ?)`,
+      );
+      values.push(options.after);
+    }
 
-    values.push(limit, offset);
+    values.push(options.limit ?? 100);
 
     const outputs = await this.runQuery<OutputRecord>(
-      `SELECT * FROM ${outputResourceSql} output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT * FROM ${outputResourceSql} output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC, id DESC LIMIT ?`,
       values,
       false,
     );

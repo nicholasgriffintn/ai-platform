@@ -947,7 +947,7 @@ extension UtilityTests {
                     "skills": [], "sources": [], "approvals": []
                 }
             },
-            "revisions": [{
+            "data": [{
                 "outputId": "output-1", "revision": 1, "parentRevision": null,
                 "title": "Earlier", "status": "ready", "sensitivity": "personal",
                 "content": { "body": "Earlier" }, "createdByUserId": 42,
