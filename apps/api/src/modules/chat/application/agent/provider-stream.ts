@@ -64,6 +64,7 @@ export interface ProviderStreamContext {
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
   step?: number;
+  messageId: string;
 }
 
 export interface StreamedTurn {
@@ -365,7 +366,11 @@ export async function consumeProviderStream(
         !openedThinkTag &&
         !contentDelta.trim().startsWith("<think>")
       ) {
-        await sink.writeEvent("content_block_delta", { content: "<think>\n" });
+        await sink.write({
+          type: "response.output_text.delta",
+          item_id: context.messageId,
+          delta: "<think>\n",
+        });
         content.add("<think>\n");
         openedThinkTag = true;
       }
@@ -374,7 +379,11 @@ export async function consumeProviderStream(
       appendTextPart(turn.parts, contentDelta, Date.now());
       isFirstContentChunk = false;
 
-      await sink.writeEvent("content_block_delta", { content: contentDelta });
+      await sink.write({
+        type: "response.output_text.delta",
+        item_id: context.messageId,
+        delta: contentDelta,
+      });
     }
 
     const thinkingData = StreamingFormatter.extractThinkingFromChunk(data, currentEventType);
@@ -394,10 +403,18 @@ export async function consumeProviderStream(
 
       thinking.add(thinkingData);
       appendReasoningPart(turn.parts, thinkingData, Date.now());
-      await sink.writeEvent("thinking_delta", { thinking: thinkingData });
+      await sink.write({
+        type: "response.reasoning.delta",
+        item_id: context.messageId,
+        delta: thinkingData,
+      });
     } else if (thinkingData?.type === "signature") {
       turn.signature = thinkingData.signature;
-      await sink.writeEvent("signature_delta", { signature: thinkingData.signature });
+      await sink.write({
+        type: "response.reasoning.signature",
+        item_id: context.messageId,
+        signature: thinkingData.signature,
+      });
     }
 
     const responseOutputItems =
@@ -423,7 +440,11 @@ export async function consumeProviderStream(
 
         thinking.add(reasoningSummary);
         appendReasoningPart(turn.parts, reasoningSummary, Date.now());
-        await sink.writeEvent("thinking_delta", { thinking: reasoningSummary });
+        await sink.write({
+          type: "response.reasoning.delta",
+          item_id: context.messageId,
+          delta: reasoningSummary,
+        });
 
         if (itemId) {
           handledReasoningItems.add(itemId);
@@ -563,7 +584,7 @@ export async function consumeProviderStream(
       const mergedUsage = mergeStreamedTokenUsage(turn.usage, extractedUsage);
 
       if (hasTokenUsageChanged(turn.usage, mergedUsage)) {
-        await sink.writeResponseEvent({ type: "response.usage", usage: mergedUsage });
+        await sink.write({ type: "response.usage", usage: mergedUsage });
       }
 
       turn.usage = mergedUsage;
@@ -853,7 +874,7 @@ async function finishToolInput(
 
   await emitPendingToolInput(sink, step, toolCall, eventState);
   eventState.finished.add(toolCallId);
-  await emitToolInputStop(sink, step, toolCallId, toolName);
+  await emitToolInputStop(sink, step, toolCallId, toolName, toolCall.function?.arguments);
 }
 
 async function finaliseToolInputEvents(

@@ -1,7 +1,16 @@
+import { toolOutputEvent, type ResponseEventInput } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { createStreamedToolResultEvent } from "~/modules/chat/application/streaming/tool-result-preview";
 import type { Message } from "~/types";
+
+function streamedItem(event: ResponseEventInput) {
+  if (event.type !== "response.output_item.done" || event.item.type !== "tool_output") {
+    throw new Error("Expected a tool output item");
+  }
+
+  return event.item;
+}
 
 function toolMessage(content: string, data: Record<string, unknown> = {}): Message {
   return {
@@ -18,10 +27,7 @@ describe("createStreamedToolResultEvent", () => {
   it("passes ordinary tool results through unchanged", () => {
     const message = toolMessage("small result");
 
-    expect(createStreamedToolResultEvent(message)).toEqual({
-      tool_id: message.id,
-      result: message,
-    });
+    expect(createStreamedToolResultEvent(message)).toEqual(toolOutputEvent(message));
   });
 
   it("streams a bounded preview while retaining recovery and interaction metadata", () => {
@@ -33,8 +39,8 @@ describe("createStreamedToolResultEvent", () => {
     const event = createStreamedToolResultEvent(message);
 
     expect(new TextEncoder().encode(JSON.stringify(event)).byteLength).toBeLessThan(64 * 1024);
-    expect(event.result.content).toContain("[Live preview truncated]");
-    expect(event.result.data).toMatchObject({
+    expect(JSON.stringify(streamedItem(event).content)).toContain("[Live preview truncated]");
+    expect(streamedItem(event).data).toMatchObject({
       responseType: "text",
       humanInTheLoop: { type: "approval", status: "pending" },
       streamPreview: {
@@ -43,7 +49,7 @@ describe("createStreamedToolResultEvent", () => {
         previewCharacters: 32 * 1024,
       },
     });
-    expect(event.result.data).not.toHaveProperty("providerPayload");
+    expect(streamedItem(event).data).not.toHaveProperty("providerPayload");
     expect(message.content).toHaveLength(96 * 1024);
     expect(message.data?.providerPayload).toHaveLength(96 * 1024);
   });
@@ -65,7 +71,7 @@ describe("createStreamedToolResultEvent", () => {
     );
 
     expect(new TextEncoder().encode(JSON.stringify(event)).byteLength).toBeLessThan(64 * 1024);
-    expect(event.result.data).toMatchObject({
+    expect(streamedItem(event).data).toMatchObject({
       humanInTheLoop: {
         interactionId: "interaction-1",
         requires_user_action: true,
@@ -74,7 +80,7 @@ describe("createStreamedToolResultEvent", () => {
       },
       streamPreview: { truncated: true, fullMessageId: "tool-message-1" },
     });
-    expect(event.result.data).not.toHaveProperty("attachments");
+    expect(streamedItem(event).data).not.toHaveProperty("attachments");
   });
 
   it("counts non-ASCII output against the byte ceiling", () => {

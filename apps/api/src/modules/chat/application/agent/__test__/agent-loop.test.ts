@@ -95,8 +95,7 @@ function creditSummary(overrides: Record<string, unknown> = {}) {
 function createParams(turns: TurnOutput[], maxSteps = 8) {
   const { transport, runTurn } = createTransport(turns);
   const sink = {
-    writeEvent: vi.fn<ChatEventSink["writeEvent"]>(async () => {}),
-    writeResponseEvent: vi.fn<ChatEventSink["writeResponseEvent"]>(async () => {}),
+    write: vi.fn<ChatEventSink["write"]>(async () => {}),
   };
 
   return {
@@ -263,7 +262,7 @@ describe("runAgentLoop", () => {
 
     await runAgentLoop(params);
 
-    const activities = sink.writeResponseEvent.mock.calls
+    const activities = sink.write.mock.calls
       .map(([event]) => event)
       .filter((event) => event.type === "response.activity")
       .map(({ type: _type, ...activity }) => activity);
@@ -325,7 +324,7 @@ describe("runAgentLoop", () => {
 
     await runAgentLoop(params);
 
-    const activities = sink.writeResponseEvent.mock.calls
+    const activities = sink.write.mock.calls
       .map(([event]) => event)
       .filter((event) => event.type === "response.activity")
       .map(({ type: _type, ...activity }) => activity);
@@ -374,7 +373,7 @@ describe("runAgentLoop", () => {
     await runAgentLoop(params);
 
     expect(
-      sink.writeResponseEvent.mock.calls
+      sink.write.mock.calls
         .map(([event]) => event)
         .filter((event) => event.type === "response.activity")
         .map(({ type: _type, ...activity }) => activity),

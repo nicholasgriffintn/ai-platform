@@ -1,35 +1,8 @@
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { toolCallAddedEvent, toolCallDoneEvent } from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
-import type { ToolCall, ToolEventPayload } from "~/types";
-import { ToolStage } from "~/types";
-
-export function getToolEventPayload(
-  toolCall: ToolCall,
-  stage: ToolStage,
-  parameters?: string,
-): ToolEventPayload {
-  const payload: ToolEventPayload = {
-    tool_id: toolCall.id,
-  };
-
-  switch (stage) {
-    case ToolStage.START:
-      payload.tool_name = toolCall.function?.name || "";
-      break;
-    case ToolStage.DELTA:
-      payload.parameters = parameters || "{}";
-      break;
-    case ToolStage.STOP:
-      break;
-    default: {
-      throw new AssistantError("Unsupported tool stage", ErrorType.INTERNAL_ERROR);
-    }
-  }
-
-  return payload;
-}
+import type { ToolCall } from "~/types";
 
 export async function emitToolInputStart(
   sink: ChatEventSink,
@@ -43,10 +16,7 @@ export async function emitToolInputStart(
     toolCallId,
     toolName,
   });
-  await sink.writeEvent("tool_use_start", {
-    tool_id: toolCallId,
-    tool_name: toolName,
-  });
+  await sink.write(toolCallAddedEvent(toolCallId, toolName));
 }
 
 export async function emitToolInputDelta(
@@ -58,9 +28,11 @@ export async function emitToolInputDelta(
     return;
   }
 
-  await sink.writeEvent("tool_use_delta", {
-    tool_id: toolCallId,
-    parameters,
+  await sink.write({
+    type: "response.tool_call.arguments.delta",
+    item_id: toolCallId,
+    call_id: toolCallId,
+    delta: parameters,
   });
 }
 
@@ -69,8 +41,9 @@ export async function emitToolInputStop(
   step: number,
   toolCallId: string,
   toolName: string,
+  toolArguments?: string | Record<string, unknown>,
 ) {
-  await sink.writeEvent("tool_use_stop", { tool_id: toolCallId });
+  await sink.write(toolCallDoneEvent(toolCallId, toolName, toolArguments));
   await writeTurnActivity(sink, {
     kind: "tool_input_finished",
     step,
@@ -82,8 +55,9 @@ export async function emitToolInputStop(
 export async function emitCompleteToolInput(sink: ChatEventSink, step: number, toolCall: ToolCall) {
   const toolCallId = toolCall.id || "unknown";
   const toolName = toolCall.function?.name || "unknown";
+  const toolArguments = toolCall.function?.arguments || "{}";
 
   await emitToolInputStart(sink, step, toolCallId, toolName);
-  await emitToolInputDelta(sink, toolCallId, toolCall.function?.arguments || "{}");
-  await emitToolInputStop(sink, step, toolCallId, toolName);
+  await emitToolInputDelta(sink, toolCallId, toolArguments);
+  await emitToolInputStop(sink, step, toolCallId, toolName, toolArguments);
 }

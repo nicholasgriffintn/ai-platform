@@ -3,6 +3,7 @@ import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   AGENT_HARNESS_PROVIDER,
+  assistantMessageDoneEvent,
   type InferenceImpact,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
@@ -52,6 +53,7 @@ export interface TurnOutput {
 
 export interface FinaliseAssistantTurnParams {
   turn: TurnOutput;
+  messageId: string;
   sink: ChatEventSink;
   conversationManager: ConversationManager;
   completionId: string;
@@ -106,11 +108,10 @@ export async function finaliseAssistantTurn(
         parts: [],
       };
 
-  await sink.writeEvent("content_block_stop", {});
-
   const auditedUsage = turn.usage;
 
   const assistantMessage = formatAssistantMessage({
+    id: params.messageId,
     content: visibleTurn.content,
     thinking: visibleTurn.thinking ?? "",
     signature: visibleTurn.signature ?? "",
@@ -194,30 +195,32 @@ export async function finaliseAssistantTurn(
 
   await params.conversationManager.releaseTurnReservation(usageReservationOutcome(usageOutcome));
 
-  await sink.writeEvent("message_delta", {
-    id: completionId,
-    message_id: message.id,
-    object: "chat.completion",
-    created: message.timestamp,
-    model: message.model,
-    provider: params.provider,
-    platform: message.platform,
-    provenance: params.provenance,
-    nonce: generateId(),
-    ...(!guardrailResult.passed || editedTurn.changed ? { content: visibleTurn.content } : {}),
-    post_processing: {
-      guardrails: assistantMessage.guardrails,
-    },
-    log_id: message.log_id,
-    usage: message.usage,
-    citations: message.citations,
-    tool_calls: assistantMessage.tool_calls,
-    finish_reason: assistantMessage.finish_reason,
-    status: message.status,
-    data: message.data,
-    parts,
-  });
-  await sink.writeEvent("message_stop", {});
+  await sink.write(
+    assistantMessageDoneEvent(
+      {
+        id: message.id ?? params.messageId,
+        created: message.timestamp,
+        model: message.model,
+        provider: params.provider,
+        platform: message.platform,
+        provenance: params.provenance,
+        nonce: generateId(),
+        ...(!guardrailResult.passed || editedTurn.changed ? { content: visibleTurn.content } : {}),
+        post_processing: {
+          guardrails: assistantMessage.guardrails,
+        },
+        log_id: message.log_id,
+        usage: message.usage,
+        citations: message.citations,
+        tool_calls: assistantMessage.tool_calls,
+        status: message.status,
+        data: message.data,
+        parts,
+      },
+      assistantMessage.finish_reason ?? null,
+    ),
+  );
+  await sink.write({ type: "response.content_part.done", item_id: message.id ?? params.messageId });
 
   return {
     message,

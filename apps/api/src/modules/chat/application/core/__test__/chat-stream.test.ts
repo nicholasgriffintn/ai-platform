@@ -69,7 +69,9 @@ describe("createChatTurnStream", () => {
       ({ sink }) =>
         new Promise<void>((resolve) => {
           finishTurn = () => {
-            void sink.writeEvent("state", { state: "content", content: "finished" }).then(resolve);
+            void sink
+              .write({ type: "response.state", state: "content", content: "finished" })
+              .then(resolve);
           };
 
           startTurn();

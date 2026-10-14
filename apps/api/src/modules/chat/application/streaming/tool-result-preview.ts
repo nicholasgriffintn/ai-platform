@@ -1,4 +1,8 @@
-import { RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS } from "@ngriffin_uk/polychat-schemas";
+import {
+  RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS,
+  toolOutputEvent,
+  type ResponseEventInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "~/types";
@@ -102,58 +106,57 @@ function minimalInteractionData(data: unknown): Record<string, unknown> {
   };
 }
 
-export function createStreamedToolResultEvent(result: Message): {
-  tool_id: string | undefined;
-  result: Message;
-} {
+export function createStreamedToolResultEvent(result: Message): ResponseEventInput {
+  return toolOutputEvent(boundedToolResult(result));
+}
+
+function eventBytes(result: Message): number {
+  return serialisedBytes(toolOutputEvent(result));
+}
+
+function boundedToolResult(result: Message): Message {
   const originalCharacters = serialisedLength(result);
 
-  if (serialisedBytes(result) <= CHAT_STREAM_TOOL_EVENT_BYTES) {
-    return { tool_id: result.id, result };
+  if (eventBytes(result) <= CHAT_STREAM_TOOL_EVENT_BYTES) {
+    return result;
   }
 
   const content = serialiseToolContent(result.content);
-  const buildEvent = (
-    previewCharacters: number,
-    data: Record<string, unknown>,
-  ): { tool_id: string | undefined; result: Message } => {
+  const buildEvent = (previewCharacters: number, data: Record<string, unknown>): Message => {
     const preview = content.slice(0, previewCharacters);
 
     return {
-      tool_id: result.id,
-      result: {
-        role: "tool",
-        id: result.id,
-        content: `${preview}${content.length > preview.length ? "\n\n[Live preview truncated]" : ""}`,
-        name: result.name,
-        status: result.status,
-        data: {
-          ...data,
-          streamPreview: {
-            truncated: true,
-            fullMessageId: result.id,
-            originalCharacters,
-            previewCharacters,
-          },
+      role: "tool",
+      id: result.id,
+      content: `${preview}${content.length > preview.length ? "\n\n[Live preview truncated]" : ""}`,
+      name: result.name,
+      status: result.status,
+      data: {
+        ...data,
+        streamPreview: {
+          truncated: true,
+          fullMessageId: result.id,
+          originalCharacters,
+          previewCharacters,
         },
-        timestamp: result.timestamp,
-        log_id: result.log_id,
-        model: result.model,
-        platform: result.platform,
-        tool_call_id: result.tool_call_id,
       },
+      timestamp: result.timestamp,
+      log_id: result.log_id,
+      model: result.model,
+      platform: result.platform,
+      tool_call_id: result.tool_call_id,
     };
   };
 
   let previewCharacters = RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS;
   let event = buildEvent(previewCharacters, retainPresentationData(result.data));
 
-  while (serialisedBytes(event) > CHAT_STREAM_TOOL_EVENT_BYTES && previewCharacters > 0) {
+  while (eventBytes(event) > CHAT_STREAM_TOOL_EVENT_BYTES && previewCharacters > 0) {
     previewCharacters = Math.floor(previewCharacters / 2);
     event = buildEvent(previewCharacters, retainPresentationData(result.data));
   }
 
-  if (serialisedBytes(event) > CHAT_STREAM_TOOL_EVENT_BYTES) {
+  if (eventBytes(event) > CHAT_STREAM_TOOL_EVENT_BYTES) {
     previewCharacters = Math.min(4096, content.length);
     event = buildEvent(previewCharacters, minimalInteractionData(result.data));
   }

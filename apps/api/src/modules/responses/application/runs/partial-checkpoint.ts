@@ -48,18 +48,13 @@ export function createPartialCheckpointSink(
   };
 
   return {
-    async writeResponseEvent(event) {
+    async write(event) {
       if (event.type === "response.activity" && event.kind === "model_step_started" && content) {
         content = "";
         dirty = true;
         void write();
-      }
-
-      await sink.writeResponseEvent(event);
-    },
-    async writeEvent(type, payload) {
-      if (type === "content_block_delta" && typeof payload?.content === "string") {
-        content += payload.content;
+      } else if (event.type === "response.output_text.delta") {
+        content += event.delta;
         dirty = true;
 
         if (now() - lastWrittenAt >= intervalMs) {
@@ -67,7 +62,7 @@ export function createPartialCheckpointSink(
         }
       }
 
-      await sink.writeEvent(type, payload);
+      await sink.write(event);
     },
     flush: write,
   };

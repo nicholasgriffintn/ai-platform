@@ -219,14 +219,13 @@ export async function createModelCompletion(params: {
   const write = (fields: CompletionChunkFields) =>
     writer.write(encodeServerSentEvent(completionChunk(chunkId, request.model, fields)));
   const sink: ChatEventSink = {
-    writeEvent: async (type, payload) => {
-      if (type === "content_block_delta" && typeof payload?.content === "string") {
-        await write({ content: payload.content });
-      } else if (type === "thinking_delta" && typeof payload?.thinking === "string") {
-        await write({ reasoning: payload.thinking });
+    write: async (event) => {
+      if (event.type === "response.output_text.delta") {
+        await write({ content: event.delta });
+      } else if (event.type === "response.reasoning.delta") {
+        await write({ reasoning: event.delta });
       }
     },
-    writeResponseEvent: async () => {},
   };
   const pump = async () => {
     try {
@@ -238,6 +237,7 @@ export async function createModelCompletion(params: {
           completionId,
           userId: user.id,
           serviceContext: context,
+          messageId: chunkId,
         });
 
         if (turn.toolCalls.length > 0) {

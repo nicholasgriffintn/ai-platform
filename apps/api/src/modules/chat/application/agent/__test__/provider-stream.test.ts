@@ -65,10 +65,7 @@ function createSink() {
   return {
     events,
     sink: {
-      writeEvent: async (type: string, payload?: unknown) => {
-        events.push({ type, payload });
-      },
-      writeResponseEvent: async ({ type, ...payload }: ResponseEventInput) => {
+      write: async ({ type, ...payload }: ResponseEventInput) => {
         events.push({ type, payload });
       },
     },
@@ -81,6 +78,7 @@ const context = {
   provider: "openai",
   completionId: "completion-1",
   userId: 7,
+  messageId: "message-1",
 };
 
 describe("createStreamingTurnTransport", () => {
@@ -194,7 +192,7 @@ describe("consumeProviderStream", () => {
     const turn = consumeProviderStream(stream, sink, context);
 
     await vi.waitFor(() =>
-      expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(1),
+      expect(events.filter((event) => event.type === "response.output_text.delta")).toHaveLength(1),
     );
 
     releaseSecondChunk();
@@ -323,8 +321,10 @@ describe("consumeProviderStream", () => {
 
     expect(turn).toMatchObject({ interrupted: true, toolCalls: [] });
     expect(events).not.toContainEqual({
-      type: "tool_use_stop",
-      payload: { tool_id: "call-1" },
+      type: "response.output_item.done",
+      payload: expect.objectContaining({
+        item: expect.objectContaining({ type: "tool_call", call_id: "call-1" }),
+      }),
     });
     expect(events).not.toContainEqual({
       type: "response.activity",
@@ -381,7 +381,7 @@ describe("consumeProviderStream", () => {
         content: "4\n",
       }),
     ]);
-    expect(events.filter((event) => event.type === "thinking_delta")).toHaveLength(1);
+    expect(events.filter((event) => event.type === "response.reasoning.delta")).toHaveLength(1);
   });
 
   it("assembles Google code execution chunks into real tool parts", async () => {
@@ -438,7 +438,7 @@ describe("consumeProviderStream", () => {
         },
       }),
     ]);
-    expect(events.filter((event) => event.type === "content_block_delta")).toHaveLength(1);
+    expect(events.filter((event) => event.type === "response.output_text.delta")).toHaveLength(1);
   });
 
   it("preserves Google Search grounding metadata from server-side tool streams", async () => {
@@ -558,20 +558,39 @@ describe("consumeProviderStream", () => {
         function: { name: "load_skill", arguments: '{"skill":"artifacts"}' },
       },
     ]);
-    expect(events.filter((event) => event.type.startsWith("tool_use_"))).toEqual([
+    expect(
+      events.filter(
+        (event) =>
+          event.type.startsWith("response.output_item") ||
+          event.type === "response.tool_call.arguments.delta",
+      ),
+    ).toEqual([
       {
-        type: "tool_use_start",
-        payload: { tool_id: "toolu-1", tool_name: "load_skill" },
+        type: "response.output_item.added",
+        payload: {
+          item: { type: "tool_call", call_id: "toolu-1", id: "toolu-1", name: "load_skill" },
+        },
       },
       {
-        type: "tool_use_delta",
-        payload: { tool_id: "toolu-1", parameters: '{"skill":"arti' },
+        type: "response.tool_call.arguments.delta",
+        payload: { item_id: "toolu-1", call_id: "toolu-1", delta: '{"skill":"arti' },
       },
       {
-        type: "tool_use_delta",
-        payload: { tool_id: "toolu-1", parameters: 'facts"}' },
+        type: "response.tool_call.arguments.delta",
+        payload: { item_id: "toolu-1", call_id: "toolu-1", delta: 'facts"}' },
       },
-      { type: "tool_use_stop", payload: { tool_id: "toolu-1" } },
+      {
+        type: "response.output_item.done",
+        payload: {
+          item: {
+            type: "tool_call",
+            call_id: "toolu-1",
+            id: "toolu-1",
+            name: "load_skill",
+            arguments: { skill: "artifacts" },
+          },
+        },
+      },
     ]);
   });
 

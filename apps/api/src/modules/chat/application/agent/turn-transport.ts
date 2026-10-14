@@ -29,6 +29,7 @@ export interface TurnTransportContext {
   shouldStop?: () => boolean;
   retry?: ProviderRetryExecutionOptions;
   step?: number;
+  messageId: string;
 }
 
 async function requestProviderResponse(
@@ -117,6 +118,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         serviceContext: context.serviceContext,
         shouldStop: context.shouldStop,
         step: context.step,
+        messageId: context.messageId,
       });
 
       if (

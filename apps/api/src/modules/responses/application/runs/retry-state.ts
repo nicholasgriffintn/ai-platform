@@ -1,4 +1,8 @@
-import type { ChatRetrySnapshot } from "@ngriffin_uk/polychat-schemas";
+import {
+  responseLifecycleEvent,
+  toResponse,
+  type ChatRetrySnapshot,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
 
@@ -11,13 +15,12 @@ export function createChatRetryStatePublisher(params: {
   return async (retry: ChatRetrySnapshot | null): Promise<void> => {
     const updatedRun = await params.runLifecycle?.recordRetry(retry);
 
-    await params.sink.writeEvent("state", { state: "retry", retry });
+    await params.sink.write({ type: "response.retry", retry });
 
     if (updatedRun && params.runLifecycle) {
-      await params.sink.writeEvent("state", {
-        state: "run",
-        receipt: params.runLifecycle.receipt,
-      });
+      const { receipt } = params.runLifecycle;
+
+      await params.sink.write(responseLifecycleEvent(toResponse(receipt.run, { receipt })));
     }
   };
 }

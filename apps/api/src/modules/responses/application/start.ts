@@ -1,6 +1,10 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { ResponseAuthority, ResponseCommand } from "@ngriffin_uk/polychat-schemas";
+import {
+  toolOutputEvent,
+  type ResponseAuthority,
+  type ResponseCommand,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -182,15 +186,8 @@ export const startResponse = async (req: {
     ...(connectorReplay
       ? {
           stream_prelude_events: [
-            { type: "tool_response_start", payload: { tool_calls: [connectorReplay.toolCall] } },
-            {
-              type: "tool_response",
-              payload: {
-                tool_id: connectorReplay.toolResult.id,
-                result: connectorReplay.toolResult,
-              },
-            },
-            { type: "tool_response_end", payload: {} },
+            toolOutputEvent(connectorReplay.toolResult),
+            { type: "response.tool_outputs.done" },
           ],
           disable_functions: true,
           conversation_history_write_mode: "append",

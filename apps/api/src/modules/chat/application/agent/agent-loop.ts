@@ -17,11 +17,12 @@ import {
   type NormalisedTokenUsage,
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import type {
-  ChatContextDocument,
-  ChatContextSnapshot,
-  ChatRetrySnapshot,
-  RunProvenance,
+import {
+  assistantMessageAddedEvent,
+  type ChatContextDocument,
+  type ChatContextSnapshot,
+  type ChatRetrySnapshot,
+  type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -68,18 +69,17 @@ import { createProviderRetryBudget } from "~/modules/chat/domain/provider-retry"
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
-import {
-  StreamState,
-  type ChatCompletionParameters,
-  type ChatMode,
-  type ChatRequestOptions,
-  type IEnv,
-  type IRequest,
-  type IUserSettings,
-  type MemoryScope,
-  type Message,
-  type Platform,
-  type ToolCall,
+import type {
+  ChatCompletionParameters,
+  ChatMode,
+  ChatRequestOptions,
+  IEnv,
+  IRequest,
+  IUserSettings,
+  MemoryScope,
+  Message,
+  Platform,
+  ToolCall,
 } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/agent/agent-loop" });
@@ -178,6 +178,7 @@ export interface AgentLoopExecutionParams {
   mode: ChatMode;
   memoryScope: MemoryScope;
   sink?: ChatEventSink;
+  openedMessageId?: string;
   context?: ServiceContext;
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
@@ -285,11 +286,42 @@ export async function runAgentLoop(
     shouldStop: params.shouldStop,
   };
 
+  let openMessageId: string | undefined;
+  let callerMessagePending = Boolean(params.openedMessageId);
+
+  const openMessage = async (): Promise<string> => {
+    if (callerMessagePending && params.openedMessageId) {
+      callerMessagePending = false;
+      openMessageId = params.openedMessageId;
+
+      return openMessageId;
+    }
+
+    openMessageId = generateId();
+    await sink.write(
+      assistantMessageAddedEvent(openMessageId, {
+        created: Date.now(),
+        model: params.model,
+        provider: params.provider,
+        platform: params.platform,
+      }),
+    );
+
+    return openMessageId;
+  };
+
+  const currentMessage = async (): Promise<string> => openMessageId ?? openMessage();
+
   const finalise = async (turn: TurnOutput) => {
-    await sink.writeEvent("state", { state: StreamState.POST_PROCESSING });
+    await sink.write({ type: "response.phase", phase: "post_processing" });
+
+    const messageId = await currentMessage();
+
+    openMessageId = undefined;
 
     const finalised = await finaliseAssistantTurn({
       turn,
+      messageId,
       sink,
       conversationManager: params.conversationManager,
       completionId: params.completionId,
@@ -318,7 +350,11 @@ export async function runAgentLoop(
     finalStatus = status;
 
     if (params.transport.streams && text) {
-      await sink.writeEvent("content_block_delta", { content: text });
+      await sink.write({
+        type: "response.output_text.delta",
+        item_id: await currentMessage(),
+        delta: text,
+      });
     }
 
     await finalise({ content: text, toolCalls: [], status });
@@ -331,7 +367,7 @@ export async function runAgentLoop(
   };
 
   for (const toolResult of params.initialToolResults ?? []) {
-    await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
+    await sink.write(createStreamedToolResultEvent(toolResult));
     await params.onToolResult?.(toolResult);
   }
 
@@ -418,7 +454,7 @@ export async function runAgentLoop(
 
       for (const result of results) {
         await params.conversationManager.add(params.completionId, result);
-        await sink.writeEvent("tool_response", createStreamedToolResultEvent(result));
+        await sink.write(createStreamedToolResultEvent(result));
       }
 
       toolResponses.push(...results);
@@ -444,14 +480,9 @@ export async function runAgentLoop(
         return closingTurn(pending.message, "pending");
       }
 
-      await sink.writeEvent("message_start", {
-        id: params.completionId,
-        created: Date.now(),
-        model: params.model,
-        provider: params.provider,
-        platform: params.platform,
-      });
-      await sink.writeEvent("state", { state: StreamState.THINKING });
+      const stepMessageId = await openMessage();
+
+      await sink.write({ type: "response.phase", phase: "thinking" });
 
       const goalFinalisationNotice = state.goalFinalisationNotice;
       const finalAnswerNotice = state.finalAnswerNotice;
@@ -520,6 +551,7 @@ export async function runAgentLoop(
           context: {
             ...transportContext,
             step,
+            messageId: stepMessageId,
             retry: providerRetryBudget.forStep(step, {
               shouldStop: params.shouldStop,
               onStateChange: params.onRetryState,
@@ -571,7 +603,11 @@ export async function runAgentLoop(
 
         if (isEmptyTurn(turn)) {
           if (params.transport.streams) {
-            await sink.writeEvent("content_block_delta", { content: EMPTY_REPLY_FALLBACK });
+            await sink.write({
+              type: "response.output_text.delta",
+              item_id: stepMessageId,
+              delta: EMPTY_REPLY_FALLBACK,
+            });
           }
 
           turn = { ...turn, content: EMPTY_REPLY_FALLBACK, status: "incomplete" };
@@ -723,9 +759,6 @@ export async function runAgentLoop(
         await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[], context.step);
       }
 
-      await sink.writeEvent("tool_response_start", {
-        tool_calls: providerToolCalls,
-      });
       const settledToolCallIds = new Set<string>();
 
       const toolResults = await handleToolCalls(
@@ -747,7 +780,7 @@ export async function runAgentLoop(
             });
           },
           onToolResult: async (toolResult) => {
-            await sink.writeEvent("tool_response", createStreamedToolResultEvent(toolResult));
+            await sink.write(createStreamedToolResultEvent(toolResult));
 
             const toolCallId = toolResult.tool_call_id;
 
@@ -778,7 +811,7 @@ export async function runAgentLoop(
         },
       );
 
-      await sink.writeEvent("tool_response_end", {});
+      await sink.write({ type: "response.tool_outputs.done" });
       await emitUsageLimits(sink, context.shared.conversationManager);
 
       const unknownToolResults = toolResults.filter(
@@ -885,7 +918,7 @@ export async function runAgentLoop(
     memoryMessages.push(...capturedMemories);
 
     for (const memoryMessage of capturedMemories) {
-      await sink.writeEvent("tool_response", createStreamedToolResultEvent(memoryMessage));
+      await sink.write(createStreamedToolResultEvent(memoryMessage));
     }
 
     return {
@@ -938,7 +971,7 @@ async function emitUsageLimits(sink: ChatEventSink, conversationManager: Convers
     const usageLimits = await conversationManager.getUsageLimits();
 
     if (usageLimits) {
-      await sink.writeResponseEvent({ type: "response.usage_limits", usage_limits: usageLimits });
+      await sink.write({ type: "response.usage_limits", usage_limits: usageLimits });
     }
   } catch (error) {
     logger.error("Failed to read updated usage limits", {

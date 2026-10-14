@@ -49,7 +49,7 @@ export function startConversationTitle(params: ConversationTitleRunParams): Conv
 
     await params.conversationManager.updateConversation(params.completionId, { title });
     applied = title;
-    await params.sink.writeEvent("state", { state: "conversation_title", title });
+    await params.sink.write({ type: "conversation.title_changed", title });
 
     try {
       await publishConversationChanged(

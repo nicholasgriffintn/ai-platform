@@ -2,7 +2,7 @@ import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { chatRetrySnapshotSchema } from "../chat-retries.js";
-import { chatRunCommandReceiptSchema } from "../chat-runs.js";
+import type { ChatRunCommandReceipt } from "../chat-runs.js";
 import { normaliseMessageParts, type MessagePart } from "../message-part-utils.js";
 import { runProvenanceSchema, type RunProvenance } from "../run-provenance.js";
 import {
@@ -213,7 +213,7 @@ export const responseStreamEventSchema = z.union([
 
 export type ResponseStreamEvent = z.infer<typeof responseStreamEventSchema>;
 
-type ResponseEnvelopeKey = "sequence_number" | "response_id" | "conversation_id";
+type ResponseEnvelopeKey = "sequence_number" | "response_id" | "conversation_id" | "output_index";
 
 type WithoutEnvelope<TEvent> = {
   [TKey in keyof TEvent as TKey extends ResponseEnvelopeKey ? never : TKey]: TEvent[TKey];
@@ -1000,19 +1000,192 @@ class ResponseStreamAssemblerState implements ResponseStreamAssembler {
   }
 }
 
-export interface ResponseEventProjectorOptions {
+export interface ResponseEventStamperOptions {
   responseId?: string;
   conversationId?: string;
-  createId?: () => string;
 }
 
-export interface ResponseEventProjector {
-  project(type: string, payload?: Record<string, unknown>): ResponseStreamEvent[];
+export interface ResponseEventStamper {
   stamp(event: ResponseEventInput): ResponseStreamEvent;
   readonly sequence: number;
 }
 
-function parseToolArguments(raw: string): string | Record<string, unknown> {
+interface ResponseEventParser {
+  parse(value: unknown): ResponseStreamEvent;
+}
+
+const EVENT_PARSERS = new Map<string, ResponseEventParser>();
+
+for (const option of responseStreamEventSchema.options) {
+  const type = option.shape.type.value;
+
+  EVENT_PARSERS.set(type, EVENT_PARSERS.has(type) ? responseStreamEventSchema : option);
+}
+
+function lifecycleResponse(event: ResponseEventInput): PlatformResponse | undefined {
+  switch (event.type) {
+    case "response.created":
+    case "response.in_progress":
+    case "response.waiting":
+    case "response.completed":
+    case "response.failed":
+    case "response.cancelled":
+    case "response.incomplete":
+    case "response.status_changed":
+      return event.response;
+    default:
+      return undefined;
+  }
+}
+
+const INDEXED_EVENT_TYPES = new Set([
+  "response.output_item.added",
+  "response.output_item.done",
+  "response.output_text.delta",
+  "response.reasoning.delta",
+]);
+
+function outputItemKey(event: ResponseEventInput): string | undefined {
+  switch (event.type) {
+    case "response.output_item.added":
+    case "response.output_item.done":
+      return event.item.type === "tool_call" ? event.item.call_id : event.item.id;
+    case "response.output_text.delta":
+    case "response.reasoning.delta":
+      return event.item_id;
+    default:
+      return undefined;
+  }
+}
+
+export function createResponseEventStamper(
+  options: ResponseEventStamperOptions = {},
+): ResponseEventStamper {
+  let sequence = 0;
+  let nextOutputIndex = 0;
+  let responseId = options.responseId;
+  let createdEmitted = false;
+  const outputIndexes = new Map<string, number>();
+
+  const outputIndexFor = (event: ResponseEventInput): number | undefined => {
+    if (!INDEXED_EVENT_TYPES.has(event.type)) {
+      return undefined;
+    }
+
+    const key = outputItemKey(event);
+    const known = key === undefined ? undefined : outputIndexes.get(key);
+
+    if (known !== undefined) {
+      return known;
+    }
+
+    const index = nextOutputIndex++;
+
+    if (key !== undefined) {
+      outputIndexes.set(key, index);
+    }
+
+    return index;
+  };
+
+  const stamp = (event: ResponseEventInput): ResponseStreamEvent => {
+    let type: string = event.type;
+    const response = lifecycleResponse(event);
+
+    if (response) {
+      responseId = response.id;
+
+      if (!createdEmitted) {
+        createdEmitted = true;
+        type = "response.created";
+      }
+    }
+
+    const outputIndex = outputIndexFor(event);
+    const parser = EVENT_PARSERS.get(type);
+
+    if (!parser) {
+      throw new Error(`Unknown response stream event ${type}`);
+    }
+
+    return parser.parse({
+      ...event,
+      type,
+      ...(outputIndex === undefined ? {} : { output_index: outputIndex }),
+      sequence_number: sequence++,
+      ...(responseId ? { response_id: responseId } : {}),
+      ...(options.conversationId ? { conversation_id: options.conversationId } : {}),
+    });
+  };
+
+  return {
+    stamp,
+    get sequence() {
+      return sequence;
+    },
+  };
+}
+
+export function responseLifecycleEvent(response: PlatformResponse): ResponseEventInput {
+  switch (response.status) {
+    case "in_progress":
+      return { type: "response.in_progress", response };
+    case "awaiting_approval":
+    case "awaiting_input":
+    case "awaiting_takeover":
+      return { type: "response.waiting", response };
+    case "completed":
+      return { type: "response.completed", response };
+    case "failed":
+      return { type: "response.failed", response };
+    case "cancelled":
+      return { type: "response.cancelled", response };
+    case "incomplete":
+      return { type: "response.incomplete", response };
+    default:
+      return { type: "response.status_changed", response };
+  }
+}
+
+export function responseReceiptEvent(receipt: ChatRunCommandReceipt): ResponseEventInput {
+  return responseLifecycleEvent(toResponse(receipt.run, { receipt }));
+}
+
+export function assistantMessageAddedEvent(
+  id: string,
+  metadata: Record<string, unknown> = {},
+): ResponseEventInput {
+  return {
+    type: "response.output_item.added",
+    item: {
+      type: "message",
+      role: "assistant",
+      id,
+      content: [],
+      status: "in_progress",
+      ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
+    },
+  };
+}
+
+export function assistantMessageDoneEvent(
+  message: Omit<ItemMessageLike, "role"> & { id: string } & Record<string, unknown>,
+  finishReason: string | null = null,
+): ResponseEventInput {
+  return {
+    type: "response.output_item.done",
+    item: messageToItem({ ...message, role: "assistant" }),
+    finish_reason: finishReason,
+  };
+}
+
+function parseToolArguments(
+  raw: string | Record<string, unknown>,
+): string | Record<string, unknown> {
+  if (typeof raw !== "string") {
+    return raw;
+  }
+
   try {
     const parsed: unknown = JSON.parse(raw);
 
@@ -1022,380 +1195,41 @@ function parseToolArguments(raw: string): string | Record<string, unknown> {
   }
 }
 
-const PHASES: Record<string, ResponsePhase> = {
-  init: "init",
-  thinking: "thinking",
-  post_processing: "post_processing",
-  done: "done",
-};
-
-export function createResponseEventProjector(
-  options: ResponseEventProjectorOptions = {},
-): ResponseEventProjector {
-  const createId = options.createId ?? defaultCreateId;
-  let sequence = 0;
-  let outputIndex = -1;
-  let currentMessageId: string | undefined;
-  let currentMessageIndex = 0;
-  let responseId = options.responseId;
-  let createdEmitted = false;
-  const toolCalls = new Map<string, { name: string; fragments: string[]; index: number }>();
-
-  const envelope = () => ({
-    sequence_number: sequence++,
-    ...(responseId ? { response_id: responseId } : {}),
-    ...(options.conversationId ? { conversation_id: options.conversationId } : {}),
-  });
-
-  const ensureMessageItem = (): ResponseStreamEvent[] => {
-    if (currentMessageId) {
-      return [];
-    }
-
-    currentMessageId = createId();
-    currentMessageIndex = ++outputIndex;
-
-    return [
-      {
-        type: "response.output_item.added",
-        output_index: currentMessageIndex,
-        item: { type: "message", role: "assistant", id: currentMessageId, content: [] },
-        ...envelope(),
-      },
-    ];
-  };
-
-  const responseEvent = (response: PlatformResponse): ResponseStreamEvent => {
-    responseId = response.id;
-
-    if (!createdEmitted) {
-      createdEmitted = true;
-
-      return { type: "response.created", response, ...envelope() };
-    }
-
-    switch (response.status) {
-      case "in_progress":
-        return { type: "response.in_progress", response, ...envelope() };
-      case "awaiting_approval":
-      case "awaiting_input":
-      case "awaiting_takeover":
-        return { type: "response.waiting", response, ...envelope() };
-      case "completed":
-        return { type: "response.completed", response, ...envelope() };
-      case "failed":
-        return { type: "response.failed", response, ...envelope() };
-      case "cancelled":
-        return { type: "response.cancelled", response, ...envelope() };
-      case "incomplete":
-        return { type: "response.incomplete", response, ...envelope() };
-      default:
-        return { type: "response.status_changed", response, ...envelope() };
-    }
-  };
-
-  const projectState = (payload: Record<string, unknown>): ResponseStreamEvent[] => {
-    const state = typeof payload.state === "string" ? payload.state : "";
-
-    if (state === "run") {
-      const receipt = chatRunCommandReceiptSchema.safeParse(payload.receipt);
-
-      return receipt.success
-        ? [responseEvent(toResponse(receipt.data.run, { receipt: receipt.data }))]
-        : [];
-    }
-
-    if (state in PHASES) {
-      return [{ type: "response.phase", phase: PHASES[state], ...envelope() }];
-    }
-
-    if (state === "retry") {
-      const retry = chatRetrySnapshotSchema.nullable().safeParse(payload.retry ?? null);
-
-      return retry.success ? [{ type: "response.retry", retry: retry.data, ...envelope() }] : [];
-    }
-
-    if (state === "compaction" && isRecord(payload.message)) {
-      const compactionMessage: ItemMessageLike = { ...payload.message, role: "compaction" };
-      const item = messageToItem(compactionMessage);
-
-      return [{ type: "conversation.compacted", item, ...envelope() }];
-    }
-
-    if (state === "conversation_title" && typeof payload.title === "string") {
-      return [{ type: "conversation.title_changed", title: payload.title, ...envelope() }];
-    }
-
-    if (state === "agent_event" && isRecord(payload.event)) {
-      return [{ type: "response.agent_event", event: payload.event, ...envelope() }];
-    }
-
-    if (!state) {
-      return [];
-    }
-
-    const { state: _state, type: _type, ...rest } = payload;
-
-    void _state;
-    void _type;
-
-    return [{ type: "response.state", state, ...rest, ...envelope() }];
-  };
-
-  const projectMessageStart = (payload: Record<string, unknown>): ResponseStreamEvent[] => {
-    currentMessageId = typeof payload.message_id === "string" ? payload.message_id : createId();
-    currentMessageIndex = ++outputIndex;
-    const { id: _id, message_id: _messageId, type: _type, ...metadata } = payload;
-
-    void _id;
-    void _messageId;
-    void _type;
-
-    return [
-      {
-        type: "response.output_item.added",
-        output_index: currentMessageIndex,
-        item: {
-          type: "message",
-          role: "assistant",
-          id: currentMessageId,
-          content: [],
-          status: "in_progress",
-          ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
-        },
-        ...envelope(),
-      },
-    ];
-  };
-
-  const projectMessageDelta = (payload: Record<string, unknown>): ResponseStreamEvent[] => {
-    const {
-      id: _id,
-      message_id: messageId,
-      object: _object,
-      type: _type,
-      content,
-      parts,
-      status,
-      finish_reason: finishReason,
-      ...metadata
-    } = payload;
-
-    void _id;
-    void _object;
-    void _type;
-
-    const prelude = ensureMessageItem();
-    const itemId = typeof messageId === "string" ? messageId : (currentMessageId as string);
-    const message = messageToItem({
-      role: "assistant",
-      id: itemId,
-      ...(typeof content === "string" ? { content } : {}),
-      ...(parts !== undefined ? { parts } : {}),
-      ...(typeof status === "string" || status === null ? { status } : {}),
-      ...metadata,
-    });
-
-    return [
-      ...prelude,
-      {
-        type: "response.output_item.done",
-        output_index: currentMessageIndex,
-        item: message,
-        finish_reason: typeof finishReason === "string" ? finishReason : null,
-        ...envelope(),
-      },
-    ];
-  };
-
-  const project = (type: string, payload: Record<string, unknown> = {}): ResponseStreamEvent[] => {
-    switch (type) {
-      case "state":
-        return projectState(payload);
-      case "message_start":
-        return projectMessageStart(payload);
-      case "message_delta":
-        return projectMessageDelta(payload);
-      case "message_stop":
-        return currentMessageId
-          ? [{ type: "response.content_part.done", item_id: currentMessageId, ...envelope() }]
-          : [];
-      case "content_block_delta": {
-        const delta =
-          typeof payload.content === "string"
-            ? payload.content
-            : isRecord(payload.delta) && typeof payload.delta.text === "string"
-              ? payload.delta.text
-              : "";
-
-        if (!delta) {
-          return [];
-        }
-
-        const prelude = ensureMessageItem();
-
-        return [
-          ...prelude,
-          {
-            type: "response.output_text.delta",
-            item_id: currentMessageId as string,
-            output_index: currentMessageIndex,
-            delta,
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "thinking_delta": {
-        if (typeof payload.thinking !== "string") {
-          return [];
-        }
-
-        const prelude = ensureMessageItem();
-
-        return [
-          ...prelude,
-          {
-            type: "response.reasoning.delta",
-            item_id: currentMessageId as string,
-            output_index: currentMessageIndex,
-            delta: payload.thinking,
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "signature_delta": {
-        if (typeof payload.signature !== "string") {
-          return [];
-        }
-
-        const prelude = ensureMessageItem();
-
-        return [
-          ...prelude,
-          {
-            type: "response.reasoning.signature",
-            item_id: currentMessageId as string,
-            signature: payload.signature,
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "tool_use_start": {
-        if (typeof payload.tool_id !== "string") {
-          return [];
-        }
-
-        const name = typeof payload.tool_name === "string" ? payload.tool_name : "unknown";
-        const index = ++outputIndex;
-
-        toolCalls.set(payload.tool_id, { name, fragments: [], index });
-
-        return [
-          {
-            type: "response.output_item.added",
-            output_index: index,
-            item: { type: "tool_call", call_id: payload.tool_id, id: payload.tool_id, name },
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "tool_use_delta": {
-        if (typeof payload.tool_id !== "string") {
-          return [];
-        }
-
-        const pending = toolCalls.get(payload.tool_id);
-        const delta = payload.parameters;
-
-        if (pending && typeof delta === "string") {
-          pending.fragments.push(delta);
-        }
-
-        if (typeof delta !== "string" && !isRecord(delta)) {
-          return [];
-        }
-
-        return [
-          {
-            type: "response.tool_call.arguments.delta",
-            item_id: payload.tool_id,
-            call_id: payload.tool_id,
-            delta,
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "tool_use_stop": {
-        if (typeof payload.tool_id !== "string") {
-          return [];
-        }
-
-        const pending = toolCalls.get(payload.tool_id);
-
-        toolCalls.delete(payload.tool_id);
-
-        return [
-          {
-            type: "response.output_item.done",
-            output_index: pending?.index ?? ++outputIndex,
-            item: {
-              type: "tool_call",
-              call_id: payload.tool_id,
-              id: payload.tool_id,
-              ...(pending ? { name: pending.name } : {}),
-              ...(pending && pending.fragments.length > 0
-                ? { arguments: parseToolArguments(pending.fragments.join("")) }
-                : {}),
-            },
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "tool_response": {
-        if (!isRecord(payload.result)) {
-          return [];
-        }
-
-        const toolMessage: ItemMessageLike = { ...payload.result, role: "tool" };
-        const item = messageToItem(toolMessage);
-
-        return [
-          {
-            type: "response.output_item.done",
-            output_index: ++outputIndex,
-            item,
-            ...envelope(),
-          },
-        ];
-      }
-
-      case "tool_response_end":
-        return [{ type: "response.tool_outputs.done", ...envelope() }];
-      case "error":
-        return [
-          {
-            type: "response.error",
-            error: payload.error,
-            ...(typeof payload.type === "string" ? { code: payload.type } : {}),
-            ...envelope(),
-          },
-        ];
-      default:
-        return [];
-    }
-  };
-
+export function toolCallAddedEvent(callId: string, name: string): ResponseEventInput {
   return {
-    project,
-    stamp: (event) => responseStreamEventSchema.parse({ ...event, ...envelope() }),
-    get sequence() {
-      return sequence;
+    type: "response.output_item.added",
+    item: { type: "tool_call", call_id: callId, id: callId, name },
+  };
+}
+
+export function toolCallDoneEvent(
+  callId: string,
+  name: string,
+  rawArguments?: string | Record<string, unknown>,
+): ResponseEventInput {
+  return {
+    type: "response.output_item.done",
+    item: {
+      type: "tool_call",
+      call_id: callId,
+      id: callId,
+      name,
+      ...(rawArguments === undefined || rawArguments === ""
+        ? {}
+        : { arguments: parseToolArguments(rawArguments) }),
     },
+  };
+}
+
+export function toolOutputEvent(result: Omit<ItemMessageLike, "role">): ResponseEventInput {
+  return { type: "response.output_item.done", item: messageToItem({ ...result, role: "tool" }) };
+}
+
+export function conversationCompactedEvent(
+  message: Omit<ItemMessageLike, "role">,
+): ResponseEventInput {
+  return {
+    type: "conversation.compacted",
+    item: messageToItem({ ...message, role: "compaction" }),
   };
 }

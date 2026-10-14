@@ -37,7 +37,7 @@ function createParams(overrides: Record<string, unknown> = {}) {
     getConversationMetadata: vi.fn(async () => conversation),
     updateConversation: vi.fn(async () => ({})),
   };
-  const sink = { writeEvent: vi.fn(async () => {}) };
+  const sink = { write: vi.fn(async () => {}) };
 
   return {
     completionId: "completion-1",
@@ -67,13 +67,13 @@ describe("startConversationTitle", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(params.sink.writeEvent).toHaveBeenCalledTimes(1);
+    expect(params.sink.write).toHaveBeenCalledTimes(1);
 
     expect(params.conversationManager.updateConversation).toHaveBeenCalledWith("completion-1", {
       title: "Durable Object concurrency",
     });
-    expect(params.sink.writeEvent).toHaveBeenCalledWith("state", {
-      state: "conversation_title",
+    expect(params.sink.write).toHaveBeenCalledWith({
+      type: "conversation.title_changed",
       title: "Durable Object concurrency",
     });
     expect(mocks.publishConversationChanged).toHaveBeenCalledWith(
@@ -131,7 +131,7 @@ describe("startConversationTitle", () => {
     mocks.generateConversationTitle.mockRejectedValue(new Error("provider down"));
 
     expect(await startConversationTitle(params).complete()).toBeNull();
-    expect(params.sink.writeEvent).not.toHaveBeenCalled();
+    expect(params.sink.write).not.toHaveBeenCalled();
     expect(mocks.enqueueTask).not.toHaveBeenCalled();
   });
 

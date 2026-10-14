@@ -1,7 +1,12 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import type { Goal, RunProvenance } from "@ngriffin_uk/polychat-schemas";
-import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
+import {
+  conversationCompactedEvent,
+  isAgentExecutionMode,
+  type Goal,
+  type ResponseEventInput,
+  type RunProvenance,
+} from "@ngriffin_uk/polychat-schemas";
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -28,7 +33,6 @@ import {
   RequestPreparer,
   type PreparedRequest,
 } from "~/modules/chat/application/preparation/RequestPreparer";
-import type { ChatStreamPreludeEvent } from "~/modules/chat/application/streaming/emitter";
 import { DISCARDING_EVENT_SINK } from "~/modules/chat/application/streaming/emitter";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { resolveApprovedToolInteraction } from "~/modules/chat/application/tools/approved-tool-interaction";
@@ -511,10 +515,8 @@ export class ChatOrchestrator {
       const runsEnsemble = !isAgentExecutionMode(currentMode) && modelConfigs.length > 1;
       const compactionMetadata =
         didCompact && compactionMessage ? buildChatCompactionMetadata(compactionMessage) : null;
-      const preludeEvents: ChatStreamPreludeEvent[] = [
-        ...(compactionMetadata
-          ? [{ type: "state", payload: { state: "compaction", ...compactionMetadata } }]
-          : []),
+      const preludeEvents: ResponseEventInput[] = [
+        ...(compactionMetadata ? [conversationCompactedEvent(compactionMetadata.message)] : []),
         ...(chatOptions.stream_prelude_events ?? []),
       ];
       const turnStream = runsEnsemble
