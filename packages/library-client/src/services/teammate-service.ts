@@ -27,7 +27,7 @@ type MarketplacePage = ListPage<SharedTeammateSummary> & {
   tags: string[];
 };
 
-const teammates = resource<TeammateResponse, object>("/teammates");
+const teammates = resource<TeammateResponse>("/teammates");
 const contexts = resource<TeammateContext>("/teammates/contexts");
 const memoryDocuments = resource<MemoryDocument>("/memory/documents");
 const MARKETPLACE_PATH = "/teammates/marketplace";
