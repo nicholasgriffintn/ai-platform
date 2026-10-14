@@ -13,7 +13,6 @@ import {
   siteBuildRequestSchema,
   siteBuildResponseSchema,
   siteEditRequestSchema,
-  siteEvaluationResponseSchema,
   siteFilesQuerySchema,
   siteFilesResponseSchema,
   siteGenerateRequestSchema,

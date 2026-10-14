@@ -18,7 +18,7 @@ import {
 
 import { apiService } from "./api-service.js";
 import { actOnEnvironment, environmentPath, environments } from "./environments.js";
-import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
+import { fetchApi } from "./fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 import { requestJson, resource } from "./resource.js";
 

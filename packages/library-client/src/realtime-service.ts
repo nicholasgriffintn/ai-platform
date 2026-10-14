@@ -7,11 +7,15 @@ import type { RealtimeLiveProviderCatalogueResponse } from "@ngriffin_uk/polycha
 
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
 export async function fetchRealtimeLiveProviders(): Promise<RealtimeLiveProviderCatalogueResponse> {
-  const response = await fetchApiOrThrow("/realtime/providers");
-
-  return returnFetchedData<RealtimeLiveProviderCatalogueResponse>(response);
+  return {
+    providers:
+      await resource<RealtimeLiveProviderCatalogueResponse["providers"][number]>(
+        "/realtime/providers",
+      ).listAll(),
+  };
 }
 
 function appendParam(params: URLSearchParams, key: string, value?: string): void {
@@ -31,7 +35,7 @@ function appendModalities(
 }
 
 export function buildRealtimeSessionPath(options: CreateRealtimeSessionOptions): string {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({ type: options.type });
 
   appendParam(params, "provider", options.provider);
   appendParam(params, "model", options.model);
@@ -44,9 +48,7 @@ export function buildRealtimeSessionPath(options: CreateRealtimeSessionOptions):
   appendModalities(params, "input_modalities", options.inputModalities);
   appendModalities(params, "output_modalities", options.outputModalities);
 
-  const query = params.toString();
-
-  return `/realtime/session/${options.type}${query ? `?${query}` : ""}`;
+  return `/realtime/sessions?${params.toString()}`;
 }
 
 export async function createRealtimeSession(

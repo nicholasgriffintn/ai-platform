@@ -1,8 +1,8 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { handleAIServiceError, normaliseApiError } from "~/infrastructure/errors";
 import type { IEnv, IUser } from "~/types";
 
 import realtimeRoutes from "../routes";
@@ -112,13 +112,7 @@ function createApp(user: IUser | null = testUser) {
   });
 
   app.route("/realtime", realtimeRoutes);
-  app.onError((error, c) => {
-    if (error instanceof AssistantError && error.statusCode === 401) {
-      return c.json({ status: "error", message: error.message }, 401);
-    }
-
-    throw error;
-  });
+  app.onError((error) => handleAIServiceError(normaliseApiError(error)));
 
   return app;
 }
@@ -141,7 +135,7 @@ describe("realtime routes", () => {
 
     const response = await createApp().request(
       new Request(
-        "https://api.polychat.test/realtime/mistral/transcription?grant=signed&session_id=session-1&model=voxtral-mini-transcribe-realtime-2602&delay=low",
+        "https://api.polychat.test/realtime/transcription?provider=mistral&grant=signed&session_id=session-1&model=voxtral-mini-transcribe-realtime-2602&delay=low",
       ),
     );
 
@@ -162,7 +156,7 @@ describe("realtime routes", () => {
   it("rejects a proxy request without a grant before provider connection", async () => {
     const response = await createApp().request(
       new Request(
-        "https://api.polychat.test/realtime/mistral/transcription?session_id=session-1&model=voxtral-mini-transcribe-realtime-2602",
+        "https://api.polychat.test/realtime/transcription?provider=mistral&session_id=session-1&model=voxtral-mini-transcribe-realtime-2602",
       ),
     );
 
@@ -186,7 +180,7 @@ describe("realtime routes", () => {
     });
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
+      new Request("https://api.polychat.test/realtime/sessions?type=realtime&provider=openai", {
         method: "POST",
       }),
       { ...testUser, plan_id: "free" },
@@ -203,15 +197,14 @@ describe("realtime routes", () => {
     filterModelsForUserAccessMock.mockResolvedValue({});
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
+      new Request("https://api.polychat.test/realtime/sessions?type=realtime&provider=openai", {
         method: "POST",
       }),
     );
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({
-      status: "error",
-      message: "Model not found or user does not have access",
+      error: "Model not found or user does not have access",
     });
     expect(createSessionMock).not.toHaveBeenCalled();
   });
@@ -227,7 +220,7 @@ describe("realtime routes", () => {
 
     const response = await requestApp(
       new Request(
-        "https://api.polychat.test/realtime/session/transcription?provider=mistral&model=voxtral-mini-transcribe-realtime",
+        "https://api.polychat.test/realtime/sessions?type=transcription&provider=mistral&model=voxtral-mini-transcribe-realtime",
         { method: "POST" },
       ),
     );
@@ -256,7 +249,7 @@ describe("realtime routes", () => {
     });
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/pipeline/session", {
+      new Request("https://api.polychat.test/realtime/sessions?type=pipeline", {
         method: "POST",
         body: JSON.stringify({
           input: {
@@ -280,8 +273,7 @@ describe("realtime routes", () => {
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({
-      status: "error",
-      message: "Output model not found or user does not have access",
+      error: "Output model not found or user does not have access",
     });
     expect(createSessionMock).not.toHaveBeenCalled();
   });
@@ -297,7 +289,7 @@ describe("realtime routes", () => {
     });
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/pipeline/session", {
+      new Request("https://api.polychat.test/realtime/sessions?type=pipeline", {
         method: "POST",
         body: JSON.stringify({
           input: {
@@ -321,8 +313,7 @@ describe("realtime routes", () => {
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({
-      status: "error",
-      message: "Reasoning model not found or user does not have access",
+      error: "Reasoning model not found or user does not have access",
     });
     expect(createSessionMock).not.toHaveBeenCalled();
   });
@@ -334,7 +325,7 @@ describe("realtime routes", () => {
 
     const response = await requestApp(
       new Request(
-        "https://api.polychat.test/realtime/session/realtime?provider=openai&model=upstream-realtime",
+        "https://api.polychat.test/realtime/sessions?type=realtime&provider=openai&model=upstream-realtime",
         { method: "POST" },
       ),
     );
@@ -354,7 +345,7 @@ describe("realtime routes", () => {
     });
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/pipeline/session", {
+      new Request("https://api.polychat.test/realtime/sessions?type=pipeline", {
         method: "POST",
         body: JSON.stringify({
           input: {
@@ -378,8 +369,7 @@ describe("realtime routes", () => {
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({
-      status: "error",
-      message: "Output model not found or user does not have access",
+      error: "Output model not found or user does not have access",
     });
     expect(createSessionMock).not.toHaveBeenCalled();
   });
@@ -401,7 +391,7 @@ describe("realtime routes", () => {
     });
 
     const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/pipeline/session", {
+      new Request("https://api.polychat.test/realtime/sessions?type=pipeline", {
         method: "POST",
         body: JSON.stringify({
           input: {

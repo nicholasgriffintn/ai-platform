@@ -9,236 +9,225 @@ import {
   authoredSkillRollbackInputSchema,
   authoredSkillVersionedDocumentSchema,
   errorResponseSchema,
-  skillAvailabilityResponseSchema,
+  listPageOf,
+  setSkillEnabledSchema,
   skillAvailabilitySchema,
   skillIdSchema,
-  setSkillEnabledSchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { defineResource } from "~/infrastructure/http/resource";
+import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
+
 import {
-  createPersonalSkill,
-  deletePersonalSkill,
-  getPersonalSkill,
-  getPersonalSkillHistory,
-  getPersonalSkillVersion,
-  getPersonalSkillAvailability,
-  importPersonalSkill,
-  listPersonalSkills,
-  setPersonalSkillEnabled,
-  promotePersonalSkillDraft,
-  rollbackPersonalSkill,
-  savePersonalSkillDraft,
-  updatePersonalSkill,
   createTeachingSkillDraft,
-} from "~/modules/skills/application";
+  getPersonalSkillAvailability,
+  setPersonalSkillEnabled,
+} from "../application";
+import {
+  createScopedSkill,
+  deleteScopedSkill,
+  getScopedSkill,
+  getScopedSkillHistory,
+  getScopedSkillRevision,
+  importScopedSkill,
+  listScopedSkills,
+  promoteScopedSkillDraft,
+  rollbackScopedSkill,
+  saveScopedSkillDraft,
+  updateScopedSkill,
+} from "../application/scoped";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("skills");
+const skillParamsSchema = z.object({ skill_id: skillIdSchema });
+const documentParamsSchema = z.object({ document_id: skillIdSchema });
+const revisionParamsSchema = documentParamsSchema.extend({ revision_id: z.string().min(1) });
 
-app.use("/*", (c, next) => {
-  routeLogger.info(`Processing skills route: ${c.req.path}`);
+defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
+  skills
+    .list({
+      auth: true,
+      summary: "List skills available to your own conversations",
+      description:
+        "Every skill with whether it is ready for this user's own conversations. Project skills are managed through project capabilities.",
+      handler: async ({ serviceContext, user }) =>
+        listPageOf(
+          await getPersonalSkillAvailability(serviceContext, user.id),
+          (skill) => skill.id,
+        ),
+    })
+    .update({
+      auth: true,
+      summary: "Turn a skill on or off",
+      description: "Always-on skills cannot be changed.",
+      paramSchema: skillParamsSchema,
+      bodySchema: setSkillEnabledSchema,
+      responses: { 200: { description: "The skill", schema: skillAvailabilitySchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        setPersonalSkillEnabled(serviceContext, user.id, params.skill_id, body.enabled),
+    });
 
-  return next();
-});
+  const documents = skills.collection("documents", "document_id");
 
-addRoute(app, "get", "/", {
-  auth: true,
-  tags: ["skills"],
-  summary: "List personal skill availability",
-  description:
-    "Returns every skill with whether it is ready for this user's own conversations. Project skills are managed through project capabilities.",
-  responses: {
-    200: { description: "Skill availability", schema: skillAvailabilityResponseSchema },
-  },
-  handler: async ({ serviceContext, user }) => ({
-    skills: await getPersonalSkillAvailability(serviceContext, user.id),
-  }),
-});
+  documents
+    .list({
+      auth: true,
+      summary: "List authored skills",
+      description: "Personal authored skills, or a project's skills when project_id is set.",
+      querySchema: projectScopeQuerySchema,
+      responses: {
+        200: { description: "Authored skills", schema: authoredSkillListResponseSchema },
+      },
+      handler: async ({ query, serviceContext, user }) =>
+        listPageOf(
+          (await listScopedSkills({ context: serviceContext, user, projectId: query.project_id }))
+            .skills,
+          (skill) => skill.id,
+        ),
+    })
+    .create({
+      auth: true,
+      summary: "Create an authored skill",
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillInputSchema,
+      responses: { 200: { description: "The skill", schema: authoredSkillDocumentSchema } },
+      handler: ({ body, query, serviceContext, user }) =>
+        createScopedSkill({ context: serviceContext, user, projectId: query.project_id }, body),
+    })
+    .collectionAction("import", {
+      auth: true,
+      summary: "Import an authorised skill revision",
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillImportInputSchema,
+      handler: ({ body, query, serviceContext, user }) =>
+        importScopedSkill({ context: serviceContext, user, projectId: query.project_id }, body),
+    })
+    .collectionAction("teach", {
+      auth: true,
+      summary: "Draft a personal skill from supervised teaching",
+      description: "Creates a disabled personal skill draft from a recorded teaching session.",
+      bodySchema: teachingSkillDraftInputSchema,
+      handler: ({ body, serviceContext, user }) =>
+        createTeachingSkillDraft(serviceContext, user.id, body),
+    })
+    .read({
+      auth: true,
+      summary: "Get an authored skill",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      responses: {
+        200: { description: "The skill", schema: authoredSkillDocumentSchema },
+        404: { description: "Skill not found", schema: errorResponseSchema },
+      },
+      handler: ({ params, query, serviceContext, user }) =>
+        getScopedSkill(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+        ),
+    })
+    .update({
+      auth: true,
+      summary: "Update an authored skill",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillInputSchema,
+      responses: { 200: { description: "The skill", schema: authoredSkillDocumentSchema } },
+      handler: ({ body, params, query, serviceContext, user }) =>
+        updateScopedSkill(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          body,
+        ),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete an authored skill",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      handler: ({ params, query, serviceContext, user }) =>
+        deleteScopedSkill(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+        ),
+    })
+    .revisioned()
+    .list({
+      auth: true,
+      summary: "List a skill's revisions",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      responses: {
+        200: { description: "Revision history", schema: authoredSkillHistoryResponseSchema },
+      },
+      handler: async ({ params, query, serviceContext, user }) => {
+        const history = await getScopedSkillHistory(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+        );
 
-addRoute(app, "put", "/:id/enabled", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Enable or disable a skill",
-  description:
-    "Turns a skill on or off for this user's own conversations. Always-on skills cannot be changed.",
-  paramSchema: z.object({ id: skillIdSchema }),
-  bodySchema: setSkillEnabledSchema,
-  responses: {
-    200: { description: "Updated skill", schema: skillAvailabilitySchema },
-    400: { description: "Skill cannot be changed", schema: errorResponseSchema },
-    404: { description: "Unknown skill", schema: errorResponseSchema },
-  },
-  handler: async ({ body, params, serviceContext, user }) =>
-    setPersonalSkillEnabled(serviceContext, user.id, params.id, body.enabled),
-});
-
-addRoute(app, "get", "/documents", {
-  auth: true,
-  tags: ["skills"],
-  summary: "List personal authored skills",
-  responses: {
-    200: { description: "Authored skills", schema: authoredSkillListResponseSchema },
-  },
-  handler: ({ serviceContext, user }) => listPersonalSkills(serviceContext, user.id),
-});
-
-addRoute(app, "post", "/documents", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Create a personal skill document",
-  bodySchema: authoredSkillInputSchema,
-  responses: {
-    200: { description: "Created skill", schema: authoredSkillDocumentSchema },
-    400: { description: "Invalid skill document", schema: errorResponseSchema },
-    409: { description: "Skill name already exists", schema: errorResponseSchema },
-  },
-  handler: ({ body, serviceContext, user }) => createPersonalSkill(serviceContext, user.id, body),
-});
-
-addRoute(app, "post", "/teaching-drafts", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Create a disabled personal skill draft from supervised teaching",
-  bodySchema: teachingSkillDraftInputSchema,
-  responses: {
-    200: { description: "Created teaching draft", schema: authoredSkillVersionedDocumentSchema },
-    404: { description: "Teammate context not found", schema: errorResponseSchema },
-    409: { description: "Skill name already exists", schema: errorResponseSchema },
-  },
-  handler: ({ body, serviceContext, user }) =>
-    createTeachingSkillDraft(serviceContext, user.id, body),
-});
-
-addRoute(app, "post", "/documents/import", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Import an authorised skill revision into personal skills",
-  bodySchema: authoredSkillImportInputSchema,
-  responses: {
-    200: { description: "Imported skill revision", schema: authoredSkillVersionedDocumentSchema },
-    403: { description: "Source project admin access required", schema: errorResponseSchema },
-    404: { description: "Source skill revision not found", schema: errorResponseSchema },
-    409: { description: "Skill name already exists", schema: errorResponseSchema },
-  },
-  handler: ({ body, serviceContext, user }) => importPersonalSkill(serviceContext, user.id, body),
-});
-
-addRoute(app, "get", "/documents/:id", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Get a personal skill document",
-  paramSchema: z.object({ id: skillIdSchema }),
-  responses: {
-    200: { description: "Skill document", schema: authoredSkillDocumentSchema },
-    404: { description: "Skill not found", schema: errorResponseSchema },
-  },
-  handler: ({ params, serviceContext, user }) =>
-    getPersonalSkill(serviceContext, user.id, params.id),
-});
-
-addRoute(app, "put", "/documents/:id", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Update a personal skill document",
-  paramSchema: z.object({ id: skillIdSchema }),
-  bodySchema: authoredSkillInputSchema,
-  responses: {
-    200: { description: "Updated skill", schema: authoredSkillDocumentSchema },
-    400: { description: "Invalid skill document", schema: errorResponseSchema },
-    404: { description: "Skill not found", schema: errorResponseSchema },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    updatePersonalSkill(serviceContext, user.id, params.id, body),
-});
-
-addRoute(app, "get", "/documents/:id/history", {
-  auth: true,
-  tags: ["skills"],
-  summary: "List personal skill revision history",
-  paramSchema: z.object({ id: skillIdSchema }),
-  responses: {
-    200: { description: "Skill revision history", schema: authoredSkillHistoryResponseSchema },
-    404: { description: "Skill not found", schema: errorResponseSchema },
-  },
-  handler: ({ params, serviceContext, user }) =>
-    getPersonalSkillHistory(serviceContext, user.id, params.id),
-});
-
-addRoute(app, "get", "/documents/:id/revisions/:revisionId", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Get one personal skill revision",
-  paramSchema: z.object({ id: skillIdSchema, revisionId: z.string().min(1) }),
-  responses: {
-    200: { description: "Skill revision", schema: authoredSkillVersionedDocumentSchema },
-    404: { description: "Skill revision not found", schema: errorResponseSchema },
-  },
-  handler: ({ params, serviceContext, user }) =>
-    getPersonalSkillVersion(serviceContext, user.id, params.id, params.revisionId),
-});
-
-addRoute(app, "put", "/documents/:id/draft", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Save a personal skill draft without activating it",
-  paramSchema: z.object({ id: skillIdSchema }),
-  bodySchema: authoredSkillDraftInputSchema,
-  responses: {
-    200: { description: "Saved draft", schema: authoredSkillVersionedDocumentSchema },
-    400: { description: "Invalid skill document", schema: errorResponseSchema },
-    404: { description: "Skill not found", schema: errorResponseSchema },
-    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    savePersonalSkillDraft(serviceContext, user.id, params.id, body),
-});
-
-addRoute(app, "post", "/documents/:id/promote", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Promote the current personal skill draft",
-  paramSchema: z.object({ id: skillIdSchema }),
-  bodySchema: authoredSkillPromotionInputSchema,
-  responses: {
-    200: { description: "Promoted revision", schema: authoredSkillVersionedDocumentSchema },
-    404: { description: "Skill not found", schema: errorResponseSchema },
-    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    promotePersonalSkillDraft(serviceContext, user.id, params.id, body),
-});
-
-addRoute(app, "post", "/documents/:id/rollback", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Roll a personal skill back through a new immutable revision",
-  paramSchema: z.object({ id: skillIdSchema }),
-  bodySchema: authoredSkillRollbackInputSchema,
-  responses: {
-    200: { description: "Rollback revision", schema: authoredSkillVersionedDocumentSchema },
-    404: { description: "Skill revision not found", schema: errorResponseSchema },
-    409: { description: "Skill changed concurrently", schema: errorResponseSchema },
-  },
-  handler: ({ body, params, serviceContext, user }) =>
-    rollbackPersonalSkill(serviceContext, user.id, params.id, body),
-});
-
-addRoute(app, "delete", "/documents/:id", {
-  auth: true,
-  tags: ["skills"],
-  summary: "Delete a personal skill document",
-  paramSchema: z.object({ id: skillIdSchema }),
-  responses: { 404: { description: "Skill not found", schema: errorResponseSchema } },
-  handler: async ({ params, serviceContext, user }) => {
-    await deletePersonalSkill(serviceContext, user.id, params.id);
-
-    return { success: true };
-  },
+        return {
+          ...listPageOf(history.revisions, (revision) => revision.id),
+          skill: history.skill,
+          state: history.state,
+        };
+      },
+    })
+    .read({
+      auth: true,
+      summary: "Get one skill revision",
+      paramSchema: revisionParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      responses: {
+        200: { description: "The revision", schema: authoredSkillVersionedDocumentSchema },
+      },
+      handler: ({ params, query, serviceContext, user }) =>
+        getScopedSkillRevision(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          params.revision_id,
+        ),
+    })
+    .draft({
+      auth: true,
+      summary: "Save a draft without activating it",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillDraftInputSchema,
+      handler: ({ body, params, query, serviceContext, user }) =>
+        saveScopedSkillDraft(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          body,
+        ),
+    })
+    .promote({
+      auth: true,
+      summary: "Promote the current draft",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillPromotionInputSchema,
+      handler: ({ body, params, query, serviceContext, user }) =>
+        promoteScopedSkillDraft(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          body,
+        ),
+    })
+    .rollback({
+      auth: true,
+      summary: "Roll back through a new immutable revision",
+      paramSchema: documentParamsSchema,
+      querySchema: projectScopeQuerySchema,
+      bodySchema: authoredSkillRollbackInputSchema,
+      handler: ({ body, params, query, serviceContext, user }) =>
+        rollbackScopedSkill(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          body,
+        ),
+    });
 });
 
 export default app;

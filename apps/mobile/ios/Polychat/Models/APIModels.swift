@@ -677,6 +677,10 @@ public struct ModelReadinessAction: Codable, Equatable {
 
 public typealias ModelsResponse = [String: ModelConfigItem]
 
+public struct ModelListResponse: Decodable {
+    public let data: [ModelConfigItem]
+}
+
 public struct AssistantRecipesResponse: Codable {
     public let recipes: [AssistantRecipe]
     public let categories: [String]

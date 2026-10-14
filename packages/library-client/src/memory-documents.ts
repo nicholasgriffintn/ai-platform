@@ -1,108 +1,68 @@
 import type {
   CreateMemoryDocumentInput,
+  ListPage,
   MemoryDocument,
   MemoryDocumentSummary,
   UpdateMemoryDocumentInput,
   ConversationBriefResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { requestJson, resource, singleton, withQuery } from "./resource.js";
 
-const BASE_PATH = "/memory/documents";
+const documents = resource<MemoryDocument, CreateMemoryDocumentInput, UpdateMemoryDocumentInput>(
+  "/memory/documents",
+);
 
-export async function fetchConversationBrief(
-  conversationId: string,
-): Promise<ConversationBriefResponse> {
-  const response = await fetchApiOrThrow(
-    `${BASE_PATH}/conversations/${encodeURIComponent(conversationId)}/brief`,
-    { method: "GET", headers: await apiService.getHeaders() },
+function briefOf(conversationId: string) {
+  return singleton<ConversationBriefResponse>(
+    `/conversations/${encodeURIComponent(conversationId)}/brief`,
   );
-
-  return returnFetchedData<ConversationBriefResponse>(response);
 }
 
-export async function ensureConversationBrief(
-  conversationId: string,
-): Promise<ConversationBriefResponse> {
-  const response = await fetchApiOrThrow(
-    `${BASE_PATH}/conversations/${encodeURIComponent(conversationId)}/brief`,
-    { method: "POST", headers: await apiService.getHeaders() },
-  );
-
-  return returnFetchedData<ConversationBriefResponse>(response);
+export function fetchConversationBrief(conversationId: string): Promise<ConversationBriefResponse> {
+  return briefOf(conversationId).get();
 }
 
-export async function updateConversationBrief(
+export function ensureConversationBrief(
+  conversationId: string,
+): Promise<ConversationBriefResponse> {
+  return briefOf(conversationId).create();
+}
+
+export function updateConversationBrief(
   conversationId: string,
   input: UpdateMemoryDocumentInput,
 ): Promise<MemoryDocument> {
-  const response = await fetchApiOrThrow(
-    `${BASE_PATH}/conversations/${encodeURIComponent(conversationId)}/brief`,
-    {
-      method: "PUT",
-      headers: await apiService.getHeaders(),
-      body: input,
-    },
+  return requestJson<MemoryDocument>(briefOf(conversationId).path, "PATCH", input);
+}
+
+export async function listMemoryDocuments(projectId?: string): Promise<MemoryDocumentSummary[]> {
+  const page = await requestJson<ListPage<MemoryDocumentSummary>>(
+    withQuery(documents.path, { project_id: projectId }),
+    "GET",
   );
 
-  return returnFetchedData<MemoryDocument>(response);
+  return page.data;
 }
 
-function scopeQuery(projectId?: string): string {
-  return projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+export function fetchMemoryDocument(name: string, projectId?: string): Promise<MemoryDocument> {
+  return documents.get(name, { project_id: projectId });
 }
 
-export async function listMemoryDocuments(projectId?: string) {
-  const response = await fetchApiOrThrow(`${BASE_PATH}${scopeQuery(projectId)}`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-
-  return returnFetchedData<{ documents: MemoryDocumentSummary[] }>(response);
+export function createMemoryDocument(input: CreateMemoryDocumentInput): Promise<MemoryDocument> {
+  return documents.create(input);
 }
 
-export async function fetchMemoryDocument(
-  name: string,
-  projectId?: string,
-): Promise<MemoryDocument> {
-  const response = await fetchApiOrThrow(
-    `${BASE_PATH}/${encodeURIComponent(name)}${scopeQuery(projectId)}`,
-    { method: "GET", headers: await apiService.getHeaders() },
-  );
-
-  return returnFetchedData<MemoryDocument>(response);
-}
-
-export async function createMemoryDocument(
-  input: CreateMemoryDocumentInput,
-): Promise<MemoryDocument> {
-  const response = await fetchApiOrThrow(BASE_PATH, {
-    method: "POST",
-    headers: await apiService.getHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData<MemoryDocument>(response);
-}
-
-export async function updateMemoryDocument(
+export function updateMemoryDocument(
   name: string,
   input: UpdateMemoryDocumentInput,
 ): Promise<MemoryDocument> {
-  const response = await fetchApiOrThrow(`${BASE_PATH}/${encodeURIComponent(name)}`, {
-    method: "PUT",
-    headers: await apiService.getHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData<MemoryDocument>(response);
+  return documents.update(name, input);
 }
 
 export async function deleteMemoryDocument(name: string, projectId?: string): Promise<void> {
-  await fetchApiOrThrow(`${BASE_PATH}/${encodeURIComponent(name)}${scopeQuery(projectId)}`, {
-    method: "DELETE",
-    headers: await apiService.getHeaders(),
-  });
+  await requestJson<unknown>(
+    withQuery(`${documents.path}/${encodeURIComponent(name)}`, { project_id: projectId }),
+    "DELETE",
+  );
 }

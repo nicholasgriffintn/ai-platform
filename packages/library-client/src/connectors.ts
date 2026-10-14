@@ -8,20 +8,7 @@ import {
   type RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
 import { requestJson, resource } from "./resource.js";
-
-async function getAuthHeaders() {
-  try {
-    return await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error preparing connector headers:", error);
-
-    return {};
-  }
-}
 
 function connectorPath(provider: RecipeConnectorProvider, suffix = ""): string {
   return `/connectors/${encodeURIComponent(provider)}${suffix}`;

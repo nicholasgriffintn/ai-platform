@@ -5,7 +5,6 @@ import {
   createWorkspaceInvitationSchema,
   createWorkspaceSchema,
   projectDetailSchema,
-  projectTaskAttentionResponseSchema,
   updateWorkspaceSchema,
   updateWorkspaceMemberSchema,
   transferWorkspaceOwnershipSchema,
@@ -23,7 +22,6 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { listWorkAttention } from "~/modules/attention/application";
 import { listWorkspaceAudit } from "~/modules/audit/application";
-import { listProjectTaskAttention } from "~/modules/project-tasks/application";
 import {
   createProject,
   createWorkspace,

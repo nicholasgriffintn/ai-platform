@@ -79,7 +79,7 @@ class ApiService {
     this.conversationsService = new ConversationsService(getHeaders);
     this.responsesService = new ResponsesService(getHeaders);
     this.audioService = new AudioService(getHeaders);
-    this.teammateService = new TeammateService(getHeaders);
+    this.teammateService = new TeammateService();
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
     this.polyService = new PolyService(getHeaders);

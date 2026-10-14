@@ -9,7 +9,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index.js";
-import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
+import { buildGrantedRealtimeProxyUrl, REALTIME_TRANSCRIPTION_PROXY_PATH } from "./proxyUrl.js";
 
 export const MISTRAL_REALTIME_DESCRIPTOR = {
   id: "mistral",
@@ -36,7 +36,6 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [DEFAULT_TRANSCRIPTION_MODEL],
 };
 
-const MISTRAL_REALTIME_PROXY_PATH = "/realtime/mistral/transcription";
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
 const MISTRAL_TARGET_DELAY_MS_BY_DELAY: Record<NonNullable<RealtimeTranscriptionDelay>, number> = {
   minimal: 240,
@@ -157,7 +156,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
       env: request.env,
       model,
       params: { delay: request.delay },
-      path: MISTRAL_REALTIME_PROXY_PATH,
+      path: REALTIME_TRANSCRIPTION_PROXY_PATH,
       provider: this.name,
       sessionId,
       userId: request.user.id,

@@ -40,6 +40,7 @@ vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
 }));
 
 vi.mock("./proxyUrl.js", () => ({
+  REALTIME_TRANSCRIPTION_PROXY_PATH: "/realtime/transcription",
   buildGrantedRealtimeProxyUrl: mocks.buildGrantedRealtimeProxyUrl,
 }));
 
@@ -74,7 +75,7 @@ describe("realtime provider session contracts", () => {
     mocks.sha256Hex.mockResolvedValue("hashed-user-42");
     mocks.generateId.mockReturnValue("session-fixture-id");
     mocks.buildGrantedRealtimeProxyUrl.mockImplementation(
-      async ({ apiBaseUrl, model, params, path, sessionId }) => {
+      async ({ apiBaseUrl, model, params, path, provider, sessionId }) => {
         const url = new URL(path, apiBaseUrl);
 
         url.protocol = "wss:";
@@ -86,6 +87,7 @@ describe("realtime provider session contracts", () => {
 
         url.searchParams.set("grant", "grant-fixture");
         url.searchParams.set("model", model);
+        url.searchParams.set("provider", provider);
         url.searchParams.set("session_id", sessionId);
 
         return { expiresAt: 1_788_172_200, url: url.toString() };
@@ -299,7 +301,7 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "mistral",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/mistral/transcription?delay=medium&grant=grant-fixture&model=voxtral-mini-transcribe-realtime-2602&session_id=session-fixture-id",
+      url: "wss://api.polychat.test/realtime/transcription?delay=medium&grant=grant-fixture&model=voxtral-mini-transcribe-realtime-2602&provider=mistral&session_id=session-fixture-id",
       proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
@@ -323,7 +325,7 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "elevenlabs",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/elevenlabs/transcription?delay=minimal&language=fr&grant=grant-fixture&model=scribe_v2_realtime&session_id=session-fixture-id",
+      url: "wss://api.polychat.test/realtime/transcription?delay=minimal&language=fr&grant=grant-fixture&model=scribe_v2_realtime&provider=elevenlabs&session_id=session-fixture-id",
       proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
@@ -346,7 +348,7 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "cartesia",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?delay=low&grant=grant-fixture&model=ink-2&session_id=session-fixture-id",
+      url: "wss://api.polychat.test/realtime/transcription?delay=low&grant=grant-fixture&model=ink-2&provider=cartesia&session_id=session-fixture-id",
       proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",

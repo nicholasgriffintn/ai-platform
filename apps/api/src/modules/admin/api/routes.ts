@@ -1,6 +1,4 @@
 import {
-  setTeammateFeaturedSchema,
-  moderateTeammateSchema,
   apiResponseSchema,
   createTaskResponseSchema,
   planCreditsUpdateSchema,
@@ -9,15 +7,9 @@ import {
 import { Hono } from "hono";
 import { z } from "zod/v4";
 
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { requireAdmin, requireStrictAdmin } from "~/middleware/adminMiddleware";
+import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import {
-  setTeammateFeaturedStatus,
-  moderateTeammate,
-  getAllSharedTeammatesForAdmin,
-} from "~/modules/admin/application/sharedTeammates";
 import { updatePlanCredits } from "~/modules/plans/application/plans";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
@@ -29,10 +21,6 @@ app.use("/*", async (ctx, next) => {
   logger.info(`Processing admin route: ${ctx.req.method} ${ctx.req.path}`);
 
   return next();
-});
-
-const sharedTeammateParamsSchema = z.object({
-  id: z.string().min(1),
 });
 
 const modelSyncCompletedSchema = z.object({
@@ -90,75 +78,6 @@ addRoute(app, "put", "/plans/:id/credits", {
   },
   handler: async ({ body, params, serviceContext }) =>
     updatePlanCredits(serviceContext.env, params.id, body),
-});
-
-addRoute(app, "put", "/shared-teammates/:id/featured", {
-  tags: ["admin"],
-  summary: "Set teammate featured status",
-  description: "Mark an teammate as featured or unfeatured (admin only)",
-  bodySchema: setTeammateFeaturedSchema,
-  paramSchema: sharedTeammateParamsSchema,
-  auth: true,
-  responses: {
-    "200": { description: "Success", schema: apiResponseSchema },
-  },
-  middleware: [requireStrictAdmin],
-  handler: async ({ body, params, raw, serviceContext, user }) => {
-    const result = await setTeammateFeaturedStatus({
-      context: serviceContext,
-      env: serviceContext.env,
-      teammateId: params.id,
-      featured: body.featured,
-      moderator: user,
-    });
-
-    if (!result.success) {
-      return ResponseFactory.error(raw, result.error || "Failed to set featured status", 400);
-    }
-
-    return result.data;
-  },
-});
-
-addRoute(app, "get", "/shared-teammates", {
-  tags: ["admin"],
-  summary: "Get all shared teammates for admin review",
-  description: "Get all shared teammates including non-public ones (admin only)",
-  responses: {
-    "200": { description: "Success", schema: apiResponseSchema },
-  },
-  auth: true,
-  middleware: [requireAdmin],
-  handler: async ({ serviceContext }) => getAllSharedTeammatesForAdmin({ context: serviceContext }),
-});
-
-addRoute(app, "put", "/shared-teammates/:id/moderate", {
-  tags: ["admin"],
-  summary: "Moderate shared teammate",
-  description: "Approve or reject a shared teammate (admin only)",
-  bodySchema: moderateTeammateSchema,
-  paramSchema: sharedTeammateParamsSchema,
-  auth: true,
-  responses: {
-    "200": { description: "Success", schema: apiResponseSchema },
-  },
-  middleware: [requireAdmin],
-  handler: async ({ body, params, raw, serviceContext, user }) => {
-    const result = await moderateTeammate({
-      context: serviceContext,
-      env: serviceContext.env,
-      teammateId: params.id,
-      isPublic: body.is_public,
-      reason: body.reason,
-      moderator: user,
-    });
-
-    if (!result.success) {
-      return ResponseFactory.error(raw, result.error || "Failed to moderate teammate", 400);
-    }
-
-    return result.data;
-  },
 });
 
 export default app;

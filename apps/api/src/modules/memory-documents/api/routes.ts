@@ -1,19 +1,18 @@
 import {
-  apiResponseSchema,
   createMemoryDocumentSchema,
-  listMemoryDocumentsResponseSchema,
+  listPageOf,
   memoryDocumentHistoryResponseSchema,
   memoryDocumentNameSchema,
   memoryDocumentSchema,
   updateMemoryDocumentSchema,
-  conversationBriefParamsSchema,
-  conversationBriefResponseSchema,
+  type MemoryDocument,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { defineResource } from "~/infrastructure/http/resource";
 import {
   createMemoryDocument,
   deleteMemoryDocument,
@@ -21,127 +20,117 @@ import {
   listMemoryDocumentRevisions,
   listMemoryDocuments,
   updateMemoryDocument,
-  ensureConversationBrief,
-  getConversationBrief,
-  updateConversationBrief,
 } from "~/modules/memory-documents/application/memory-documents";
+import {
+  getTeammateContextMemory,
+  updateTeammateContextMemory,
+} from "~/modules/teammates/application";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("memory-documents");
-
-app.use("/*", async (ctx, next) => {
-  routeLogger.info(`Processing memory documents route: ${ctx.req.method} ${ctx.req.path}`);
-
-  return next();
+const scopeQuerySchema = z.object({
+  project_id: z.string().min(1).optional(),
+  teammate_context_id: z.string().min(1).optional(),
 });
+const documentParamsSchema = z.object({ document_id: memoryDocumentNameSchema });
 
-const scopeQuerySchema = z.object({ project_id: z.string().min(1).optional() });
-const nameParamSchema = z.object({ name: memoryDocumentNameSchema });
+async function requireTeammateMemory(
+  context: ServiceContext,
+  teammateContextId: string,
+  documentId: string,
+): Promise<MemoryDocument> {
+  const document = await getTeammateContextMemory(context, teammateContextId);
 
-addRoute(app, "get", "/", {
-  tags: ["memory"],
-  summary: "List memory documents",
-  description: "List the memory documents in the caller's personal scope, or in a project.",
-  auth: true,
-  querySchema: scopeQuerySchema,
-  responses: { 200: { description: "Documents", schema: listMemoryDocumentsResponseSchema } },
-  handler: async ({ serviceContext, query }) =>
-    listMemoryDocuments(serviceContext, query.project_id),
-});
+  if (document.name !== documentId) {
+    throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
+  }
 
-addRoute(app, "post", "/", {
-  tags: ["memory"],
-  summary: "Create a memory document",
-  auth: true,
-  bodySchema: createMemoryDocumentSchema,
-  responses: { 200: { description: "Created document", schema: memoryDocumentSchema } },
-  handler: async ({ serviceContext, body }) => createMemoryDocument(serviceContext, body),
-});
+  return document;
+}
 
-addRoute(app, "get", "/conversations/:conversationId/brief", {
-  tags: ["memory"],
-  summary: "Read a conversation brief",
-  auth: true,
-  paramSchema: conversationBriefParamsSchema,
-  responses: {
-    200: { description: "Conversation brief", schema: conversationBriefResponseSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    getConversationBrief(serviceContext, params.conversationId),
-});
+defineResource(app, { idParam: "document_id", tags: ["memory"] }, (documents) => {
+  documents
+    .list({
+      auth: true,
+      summary: "List memory documents",
+      description:
+        "Personal or project memory, or one teammate context's private memory when teammate_context_id is set.",
+      querySchema: scopeQuerySchema,
+      handler: async ({ serviceContext, query }) =>
+        query.teammate_context_id
+          ? listPageOf(
+              [await getTeammateContextMemory(serviceContext, query.teammate_context_id)],
+              (document) => document.name,
+            )
+          : listPageOf(
+              (await listMemoryDocuments(serviceContext, query.project_id)).documents,
+              (document) => document.name,
+            ),
+    })
+    .create({
+      auth: true,
+      summary: "Create a memory document",
+      bodySchema: createMemoryDocumentSchema,
+      responses: { 200: { description: "The document", schema: memoryDocumentSchema } },
+      handler: ({ serviceContext, body }) => createMemoryDocument(serviceContext, body),
+    })
+    .read({
+      auth: true,
+      summary: "Read a memory document",
+      paramSchema: documentParamsSchema,
+      querySchema: scopeQuerySchema,
+      responses: { 200: { description: "The document", schema: memoryDocumentSchema } },
+      handler: ({ serviceContext, params, query }) =>
+        query.teammate_context_id
+          ? requireTeammateMemory(serviceContext, query.teammate_context_id, params.document_id)
+          : getMemoryDocument(serviceContext, params.document_id, query.project_id),
+    })
+    .update({
+      auth: true,
+      summary: "Save a memory document revision",
+      paramSchema: documentParamsSchema,
+      querySchema: scopeQuerySchema,
+      bodySchema: updateMemoryDocumentSchema,
+      responses: { 200: { description: "The document", schema: memoryDocumentSchema } },
+      handler: async ({ serviceContext, params, query, body }) => {
+        if (!query.teammate_context_id) {
+          return updateMemoryDocument(serviceContext, params.document_id, body);
+        }
 
-addRoute(app, "post", "/conversations/:conversationId/brief", {
-  tags: ["memory"],
-  summary: "Start a conversation brief",
-  description: "Creates and binds one scoped brief when the conversation does not have one.",
-  auth: true,
-  paramSchema: conversationBriefParamsSchema,
-  responses: {
-    200: { description: "Conversation brief", schema: conversationBriefResponseSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    ensureConversationBrief(serviceContext, params.conversationId),
-});
+        await requireTeammateMemory(serviceContext, query.teammate_context_id, params.document_id);
 
-addRoute(app, "put", "/conversations/:conversationId/brief", {
-  tags: ["memory"],
-  summary: "Save a conversation brief",
-  description: "Saves a new revision against the brief bound to this conversation.",
-  auth: true,
-  paramSchema: conversationBriefParamsSchema,
-  bodySchema: updateMemoryDocumentSchema,
-  responses: { 200: { description: "Saved brief", schema: memoryDocumentSchema } },
-  handler: async ({ serviceContext, params, body }) =>
-    updateConversationBrief(serviceContext, params.conversationId, body),
-});
+        return updateTeammateContextMemory(serviceContext, query.teammate_context_id, body);
+      },
+    })
+    .delete({
+      auth: true,
+      summary: "Delete a memory document",
+      paramSchema: documentParamsSchema,
+      querySchema: scopeQuerySchema,
+      handler: async ({ serviceContext, params, query }) => {
+        await deleteMemoryDocument(serviceContext, params.document_id, query.project_id);
 
-addRoute(app, "get", "/:name", {
-  tags: ["memory"],
-  summary: "Read a memory document",
-  auth: true,
-  paramSchema: nameParamSchema,
-  querySchema: scopeQuerySchema,
-  responses: { 200: { description: "Document", schema: memoryDocumentSchema } },
-  handler: async ({ serviceContext, params, query }) =>
-    getMemoryDocument(serviceContext, params.name, query.project_id),
-});
+        return { deleted: true };
+      },
+    })
+    .revisioned()
+    .list({
+      auth: true,
+      summary: "List a memory document's revisions",
+      paramSchema: documentParamsSchema,
+      querySchema: scopeQuerySchema,
+      responses: {
+        200: { description: "Revisions", schema: memoryDocumentHistoryResponseSchema },
+      },
+      handler: async ({ serviceContext, params, query }) => {
+        const history = await listMemoryDocumentRevisions(
+          serviceContext,
+          params.document_id,
+          query.project_id,
+        );
 
-addRoute(app, "put", "/:name", {
-  tags: ["memory"],
-  summary: "Save a memory document",
-  description: "Saves a new revision. The expected revision must match, so edits never overwrite.",
-  auth: true,
-  paramSchema: nameParamSchema,
-  bodySchema: updateMemoryDocumentSchema,
-  responses: { 200: { description: "Saved document", schema: memoryDocumentSchema } },
-  handler: async ({ serviceContext, params, body }) =>
-    updateMemoryDocument(serviceContext, params.name, body),
-});
-
-addRoute(app, "get", "/:name/revisions", {
-  tags: ["memory"],
-  summary: "List a memory document's revisions",
-  auth: true,
-  paramSchema: nameParamSchema,
-  querySchema: scopeQuerySchema,
-  responses: { 200: { description: "Revisions", schema: memoryDocumentHistoryResponseSchema } },
-  handler: async ({ serviceContext, params, query }) =>
-    listMemoryDocumentRevisions(serviceContext, params.name, query.project_id),
-});
-
-addRoute(app, "delete", "/:name", {
-  tags: ["memory"],
-  summary: "Delete a memory document",
-  description: "Removes it from the list. Its revisions are kept.",
-  auth: true,
-  paramSchema: nameParamSchema,
-  querySchema: scopeQuerySchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
-  handler: async ({ serviceContext, params, query }) => {
-    await deleteMemoryDocument(serviceContext, params.name, query.project_id);
-
-    return { success: true };
-  },
+        return listPageOf(history.revisions, (revision) => revision.id);
+      },
+    });
 });
 
 export default app;

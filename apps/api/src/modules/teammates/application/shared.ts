@@ -43,6 +43,16 @@ export const getSharedTeammateByTeammateId = async (
   return ensureDb(context).getSharedTeammateByTeammateId(teammateId);
 };
 
+export const getVisibleSharedTeammateByTeammateId = async (
+  context: ServiceContext,
+  teammateId: string,
+  userId?: number,
+): Promise<SharedTeammate | null> => {
+  const listing = await getSharedTeammateByTeammateId(context, teammateId);
+
+  return listing && (listing.is_public || listing.user_id === userId) ? listing : null;
+};
+
 export const getAllSharedTeammatesForAdmin = async (
   context: ServiceContext,
   filters: SharedTeammateFilters = {},

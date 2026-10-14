@@ -9,7 +9,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index.js";
-import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
+import { buildGrantedRealtimeProxyUrl, REALTIME_TRANSCRIPTION_PROXY_PATH } from "./proxyUrl.js";
 
 export const CARTESIA_REALTIME_DESCRIPTOR = {
   id: "cartesia",
@@ -35,7 +35,6 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [DEFAULT_TRANSCRIPTION_MODEL],
 };
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
-const CARTESIA_REALTIME_PROXY_PATH = "/realtime/cartesia/transcription";
 
 export class CartesiaRealtimeProvider implements RealtimeProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
@@ -116,7 +115,7 @@ export class CartesiaRealtimeProvider implements RealtimeProvider {
       params: {
         delay,
       },
-      path: CARTESIA_REALTIME_PROXY_PATH,
+      path: REALTIME_TRANSCRIPTION_PROXY_PATH,
       provider: this.name,
       sessionId,
       userId: request.user.id,

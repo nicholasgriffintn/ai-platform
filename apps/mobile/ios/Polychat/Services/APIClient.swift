@@ -234,11 +234,13 @@ final class APIClient: ObservableObject {
     }
 
     func fetchModels() async throws -> ModelsResponse {
-        try await send(
+        let response: ModelListResponse = try await send(
             path: "/models",
             method: "GET",
             additionalHeaders: ["Cache-Control": "no-cache"]
         )
+
+        return Dictionary(response.data.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     func fetchModelTiers() async throws -> ModelTiersResponse {

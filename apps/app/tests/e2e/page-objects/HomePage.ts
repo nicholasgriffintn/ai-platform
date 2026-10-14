@@ -334,7 +334,7 @@ export class HomePage extends BasePage {
     const sessionResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/realtime/session/realtime"),
+        new URL(response.url()).pathname.endsWith("/realtime/sessions"),
     );
 
     await this.page.getByRole("button", { name: "Start live session" }).click();

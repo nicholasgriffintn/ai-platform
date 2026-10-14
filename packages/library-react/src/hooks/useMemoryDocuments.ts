@@ -78,8 +78,7 @@ export function useMemoryDocuments(projectId?: string) {
 
   const documentsQuery = useQuery({
     queryKey: [MEMORY_DOCUMENT_QUERY_KEY, projectId],
-    queryFn: async (): Promise<MemoryDocumentSummary[]> =>
-      (await listMemoryDocuments(projectId)).documents,
+    queryFn: async (): Promise<MemoryDocumentSummary[]> => await listMemoryDocuments(projectId),
     staleTime: 1000 * 30,
   });
 

@@ -183,6 +183,66 @@ export class ResourceBuilder {
   singleton(name: string): SingletonBuilder {
     return new SingletonBuilder(this.routes, joinPath(this.itemPath, name));
   }
+
+  revisioned(): RevisionsBuilder {
+    return new RevisionsBuilder(this);
+  }
+}
+
+export class RevisionsBuilder {
+  private readonly revisions: ResourceBuilder;
+
+  constructor(private readonly item: ResourceBuilder) {
+    this.revisions = item.sub("revisions", "revision_id");
+  }
+
+  list<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ListOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.revisions.list(operation);
+
+    return this;
+  }
+
+  read<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ResourceOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.revisions.read(operation);
+
+    return this;
+  }
+
+  restore<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ResourceOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.revisions.action("restore", operation);
+
+    return this;
+  }
+
+  draft<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ResourceOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.item.singleton("draft").update(operation);
+
+    return this;
+  }
+
+  promote<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ResourceOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.item.action("promote", operation);
+
+    return this;
+  }
+
+  rollback<TBody = unknown, TParams = unknown, TQuery = unknown>(
+    operation: ResourceOperation<TBody, TParams, TQuery>,
+  ): this {
+    this.item.action("rollback", operation);
+
+    return this;
+  }
 }
 
 export class SingletonBuilder {

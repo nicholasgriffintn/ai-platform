@@ -1,5 +1,5 @@
 import {
-  decodeModelConfig,
+  decodeModelList,
   type ModelConfig,
   type ModelTiersResponse,
   type ProviderSyncStatus,
@@ -88,7 +88,7 @@ export class UserService {
 
     const responseData = await returnFetchedData<unknown>(response);
 
-    return decodeModelConfig(responseData);
+    return decodeModelList(responseData);
   }
 
   async fetchModelTiers(): Promise<ModelTiersResponse> {
@@ -123,7 +123,7 @@ export class UserService {
       throw new Error(`Failed to fetch model catalogue: ${response.statusText}`);
     }
 
-    return decodeModelConfig(await returnFetchedData<unknown>(response));
+    return decodeModelList(await returnFetchedData<unknown>(response));
   }
 
   async fetchTools(projectId?: string, workspaceId?: string): Promise<Tool[]> {
