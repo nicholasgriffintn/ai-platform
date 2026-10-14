@@ -1,5 +1,5 @@
 import { parseResponseStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
-import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({

@@ -9,7 +9,6 @@ import connectors from "./connectors";
 import drawing from "./drawing";
 import embeddings from "./embeddings";
 import notes from "./notes";
-import ocrBatches from "./ocr-batches";
 import recipes from "./recipes";
 import recordings from "./recordings";
 import replicate from "./replicate";
@@ -42,8 +41,6 @@ app.route("/articles", articles);
 app.route("/notes", notes);
 
 app.route("/retrieval", retrieval);
-
-app.route("/retrieval/ocr/batches", ocrBatches);
 
 app.route("/replicate", replicate);
 

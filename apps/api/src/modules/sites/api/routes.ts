@@ -13,7 +13,6 @@ import {
   siteBuildRequestSchema,
   siteBuildResponseSchema,
   siteEditRequestSchema,
-  siteEvaluationRequestSchema,
   siteEvaluationResponseSchema,
   siteFilesQuerySchema,
   siteFilesResponseSchema,
@@ -29,7 +28,6 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { requireAdmin } from "~/middleware/adminMiddleware";
 import { verifyAndRepairSite } from "~/modules/sites/application/browser-verification";
 import { buildSiteInSandbox } from "~/modules/sites/application/build";
 import {
@@ -37,7 +35,6 @@ import {
   refreshSiteConnectorSource,
 } from "~/modules/sites/application/connector-data";
 import { editSite } from "~/modules/sites/application/edit";
-import { evaluateSitePrompts } from "~/modules/sites/application/evaluate";
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
 import { streamSiteImages } from "~/modules/sites/application/images";
 import { openSitePullRequest } from "~/modules/sites/application/pull-request";
@@ -307,21 +304,6 @@ addRoute(app, "post", "/:id/pull-request", {
   },
   handler: ({ params, body, serviceContext, user }) =>
     openSitePullRequest({ context: serviceContext, user, siteId: params.id, request: body }),
-});
-
-addRoute(app, "post", "/evaluate", {
-  tags: ["sites"],
-  summary: "Run the site prompt evaluation",
-  description:
-    "Generates every brief under each prompt variant without saving anything, scores each result with Jev (brief coverage, placeholder copy, coherence) and reports the best variant. Admin only; every run spends model tokens.",
-  auth: true,
-  middleware: [requireAdmin],
-  bodySchema: siteEvaluationRequestSchema,
-  responses: {
-    200: { description: "Evaluation summary", schema: siteEvaluationResponseSchema },
-  },
-  handler: ({ body, serviceContext, user }) =>
-    evaluateSitePrompts({ context: serviceContext, user, request: body }),
 });
 
 addRoute(app, "post", "/:id/data/read", {

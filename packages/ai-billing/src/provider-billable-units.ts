@@ -4,11 +4,8 @@ import {
   type MessagePart,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import {
-  readNumericField,
-  readStringField,
-} from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
+import { readNumericField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { billableTokenQuantities } from "./billable-units.js";
 

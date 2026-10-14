@@ -192,7 +192,7 @@ export const deepWebSearchSchema = z.object({
 });
 
 export const deepResearchSchema = z.object({
-  provider: z.string().optional(),
+  provider: z.enum(["parallel", "exa"]).optional(),
   input: z.union([z.string(), z.record(z.string(), z.unknown())]),
   wait_for_completion: z.boolean().optional(),
   options: z

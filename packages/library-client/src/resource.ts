@@ -57,15 +57,21 @@ export function withQuery(path: string, query?: ResourceQuery): string {
   return search ? `${path}?${search}` : path;
 }
 
+export interface RequestJsonOptions {
+  timeoutMs?: number | null;
+}
+
 export async function requestJson<TResult>(
   path: string,
   method: "GET" | "POST" | "PATCH" | "DELETE",
   body?: BodyInit | object,
+  options: RequestJsonOptions = {},
 ): Promise<TResult> {
   const response = await fetchApiOrThrow(path, {
     method,
     headers: await getHeaders(),
     ...(body === undefined ? {} : { body }),
+    ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
   });
   const text = await response.text();
 

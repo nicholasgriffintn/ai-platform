@@ -1,23 +1,9 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-
-export function readRecordField(value: unknown, fieldName: string): unknown {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  return value[fieldName];
-}
+import { isRecord, readRecordField } from "@ngriffin_uk/polychat-utility-core";
 
 export function readRecordObjectField(value: unknown, fieldName: string): Record<string, unknown> {
   const field = readRecordField(value, fieldName);
 
   return isRecord(field) ? field : {};
-}
-
-export function readStringField(value: unknown, fieldName: string): string | undefined {
-  const field = readRecordField(value, fieldName);
-
-  return typeof field === "string" ? field : undefined;
 }
 
 export function readNumberField(value: unknown, fieldName: string): number | undefined {

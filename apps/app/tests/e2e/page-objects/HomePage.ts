@@ -409,7 +409,7 @@ export class HomePage extends BasePage {
     const generationResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/canvas/generate"),
+        new URL(response.url()).pathname.endsWith("/jobs"),
     );
 
     await this.page.getByRole("button", { name: "Generate", exact: true }).click();

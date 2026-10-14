@@ -6,8 +6,8 @@ import { z } from "zod/v4";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getResearchProvider } from "~/infrastructure/providers/capabilities/research";
+import { publishOutputJobChanged } from "~/modules/jobs/application/registry";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type {
   IEnv,
   IUser,
@@ -132,13 +132,16 @@ async function persistCompleted(
     lastSyncedAt: new Date().toISOString(),
   };
 
-  await responseRepo.updateOutput(response.id, {
-    status: "ready",
-    content: updatedData,
-    expectedRevision: response.revision,
-    updatedByUserId: data.userId,
-  });
-  publishUserEvent({ env }, data.userId, "research.changed", { runId: data.runId });
+  publishOutputJobChanged(
+    { env },
+    data.userId,
+    await responseRepo.updateOutput(response.id, {
+      status: "ready",
+      content: updatedData,
+      expectedRevision: response.revision,
+      updatedByUserId: data.userId,
+    }),
+  );
 }
 
 async function persistError(
@@ -200,11 +203,14 @@ async function persistError(
     lastSyncedAt: now,
   };
 
-  await responseRepo.updateOutput(response.id, {
-    status: "failed",
-    content: updatedData,
-    expectedRevision: response.revision,
-    updatedByUserId: data.userId,
-  });
-  publishUserEvent({ env }, data.userId, "research.changed", { runId: data.runId });
+  publishOutputJobChanged(
+    { env },
+    data.userId,
+    await responseRepo.updateOutput(response.id, {
+      status: "failed",
+      content: updatedData,
+      expectedRevision: response.revision,
+      updatedByUserId: data.userId,
+    }),
+  );
 }

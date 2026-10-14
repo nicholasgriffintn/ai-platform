@@ -1,3 +1,4 @@
+import type { deepResearchSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   apiResponseSchema,
   errorResponseSchema,
@@ -8,7 +9,6 @@ import {
   weatherQuerySchema,
   weatherResponseSchema,
   deepWebSearchSchema,
-  deepResearchSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { type Context, Hono } from "hono";
@@ -37,9 +37,8 @@ import {
   type DeepWebSearchParams,
   performDeepWebSearch,
 } from "~/modules/apps/application/retrieval/web-search";
-import { getResearchTaskStatus, startResearchTask } from "~/modules/research/application/task";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
-import type { IEnv, IUser, ResearchProviderName } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 const app = new Hono();
 
@@ -254,86 +253,6 @@ addRoute(app, "post", "/web-search", {
       const response = await performDeepWebSearch(context.env as IEnv, user, body);
 
       return ResponseFactory.success(context, { response });
-    })(raw),
-});
-
-addRoute(app, "post", "/research", {
-  tags: ["apps"],
-  description: "Execute a deep research task powered by Parallel Tasks via Cloudflare AI Gateway",
-  bodySchema: deepResearchSchema,
-  responses: {
-    200: { description: "Research task result", schema: apiResponseSchema },
-    400: {
-      description: "Bad request or validation error",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ raw }) =>
-    (async (context: Context) => {
-      const body = context.req.valid("json" as never) as DeepResearchBody;
-      const user = context.get("user");
-
-      if (!user?.id) {
-        return ResponseFactory.error(context, "User not authenticated", 401);
-      }
-
-      const handle = await startResearchTask({
-        env: context.env as IEnv,
-        user,
-        input: body.input,
-        provider: body.provider as ResearchProviderName | undefined,
-        options: body.options,
-      });
-
-      const pollInterval =
-        body.options?.polling?.interval_ms && body.options?.polling?.interval_ms >= 500
-          ? body.options.polling.interval_ms
-          : 5000;
-
-      return ResponseFactory.success(
-        context,
-        {
-          provider: handle.provider,
-          run: handle.run,
-          poll: {
-            interval_ms: pollInterval,
-            timeout_seconds: body.options?.polling?.timeout_seconds ?? 5,
-          },
-        },
-        200,
-      );
-    })(raw),
-});
-
-addRoute(app, "get", "/research/:runId", {
-  tags: ["apps"],
-  description: "Fetch the status/result for a previously started research task",
-  responses: {
-    200: { description: "Research task status", schema: apiResponseSchema },
-    400: { description: "Bad request", schema: errorResponseSchema },
-  },
-  handler: async ({ raw }) =>
-    (async (context: Context) => {
-      const runId = context.req.param("runId");
-      const providerParam = context.req.query("provider") as ResearchProviderName | undefined;
-      const user = context.get("user");
-
-      if (!user?.id) {
-        return ResponseFactory.error(context, "User not authenticated", 401);
-      }
-
-      if (!runId) {
-        throw new AssistantError("Missing runId", ErrorType.PARAMS_ERROR);
-      }
-
-      const result = await getResearchTaskStatus({
-        env: context.env as IEnv,
-        user,
-        runId,
-        provider: providerParam,
-      });
-
-      return ResponseFactory.success(context, result, 200);
     })(raw),
 });
 

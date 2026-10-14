@@ -362,14 +362,6 @@ export async function startOcrBatch(
   return { outputId: created.id, status: "pending" };
 }
 
-export async function getOcrBatchStatus(context: ServiceContext, userId: number, outputId: string) {
-  const output = await getOutput(context, userId, outputId);
-
-  requireBatchOutput(output);
-
-  return output;
-}
-
 export async function cancelOcrBatch(
   context: ServiceContext,
   user: IUser,

@@ -17,6 +17,7 @@ import corrections from "~/modules/corrections/api/routes";
 import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
 import flags from "~/modules/experiments/api/routes";
+import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
 import modelDatasets from "~/modules/model-datasets/api/routes";
@@ -62,6 +63,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
   app.route("/code", code);
+  app.route("/jobs", jobs);
   app.route("/apps", apps);
   app.route("/desktop", desktop);
   app.route("/machines", machines);

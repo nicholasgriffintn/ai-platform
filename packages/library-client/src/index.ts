@@ -7,6 +7,7 @@ export * from "./attention.js";
 export * from "./auth-service.js";
 export * from "./bounded-response.js";
 export * from "./canvas.js";
+export * from "./jobs.js";
 export * from "./capabilities.js";
 export * from "./chat-request-settings.js";
 export * from "./chat-stream-response.js";

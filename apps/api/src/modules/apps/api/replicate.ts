@@ -1,22 +1,14 @@
 import { getProviderModels } from "@ngriffin_uk/polychat-ai-models";
 import {
-  executeReplicateRequestSchema,
   type AppTheme,
   type ModelModalities,
-  replicateExecuteResponseSchema,
   replicateModelsResponseSchema,
-  replicatePredictionParamsSchema,
   replicatePredictionResponseSchema,
-  replicatePredictionsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { executeReplicateModel } from "~/modules/apps/application/replicate/execute";
-import { getReplicatePredictionDetails } from "~/modules/apps/application/replicate/get-details";
-import { listReplicatePredictions } from "~/modules/apps/application/replicate/list";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
@@ -157,121 +149,6 @@ addRoute(app, "get", "/models", {
     });
 
     return { models };
-  },
-});
-
-addRoute(app, "get", "/predictions", {
-  tags: ["apps"],
-  description: "List user's Replicate predictions",
-  responses: {
-    200: { description: "List of predictions", schema: replicatePredictionsResponseSchema },
-  },
-  auth: true,
-  querySchema: projectScopeQuerySchema,
-  handler: async ({ query, serviceContext, user }) => {
-    try {
-      await requireOptionalProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-replicate",
-      );
-
-      const predictions = await listReplicatePredictions({
-        context: serviceContext,
-        userId: user.id,
-        projectId: query.projectId,
-      });
-
-      return { predictions };
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-
-      routeLogger.error("Error fetching predictions:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new AssistantError("Failed to fetch predictions");
-    }
-  },
-});
-
-addRoute(app, "get", "/predictions/:id", {
-  tags: ["apps"],
-  description: "Get Replicate prediction details",
-  paramSchema: replicatePredictionParamsSchema,
-  responses: {
-    200: { description: "Prediction details", schema: replicatePredictionResponseSchema },
-  },
-  auth: true,
-  querySchema: projectScopeQuerySchema,
-  handler: async ({ params, query, serviceContext, user }) => {
-    try {
-      await requireOptionalProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-replicate",
-      );
-
-      const prediction = await getReplicatePredictionDetails({
-        context: serviceContext,
-        predictionId: params.id,
-        userId: user.id,
-        projectId: query.projectId,
-      });
-
-      return { prediction };
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-
-      routeLogger.error("Error fetching prediction:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new AssistantError("Failed to fetch prediction");
-    }
-  },
-});
-
-addRoute(app, "post", "/execute", {
-  tags: ["apps"],
-  description: "Execute a Replicate model",
-  bodySchema: executeReplicateRequestSchema,
-  responses: {
-    200: { description: "Execution result", schema: replicateExecuteResponseSchema },
-  },
-  auth: true,
-  querySchema: projectScopeQuerySchema,
-  handler: async ({ body, query, serviceContext, user }) => {
-    try {
-      await requireOptionalProjectCapabilityAccess(
-        serviceContext,
-        query.projectId,
-        "app",
-        "featured-replicate",
-      );
-
-      const result = await executeReplicateModel({
-        context: serviceContext,
-        params: body,
-        user,
-        storage: { projectId: query.projectId },
-      });
-
-      return { response: result };
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        throw error;
-      }
-
-      routeLogger.error("Error executing model:", {
-        error_message: error instanceof Error ? error.message : "Unknown error",
-      });
-      throw new AssistantError("Failed to execute model");
-    }
   },
 });
 

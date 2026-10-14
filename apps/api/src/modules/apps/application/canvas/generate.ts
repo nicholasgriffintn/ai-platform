@@ -1,10 +1,10 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
+import { readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import {
   resolveServiceContext,

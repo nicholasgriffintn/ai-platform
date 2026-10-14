@@ -1,44 +1,20 @@
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApi } from "../fetch-wrapper.js";
-import { returnFetchedData } from "../http.js";
+import { listJobsOfKind } from "../jobs.js";
 
 export class ResearchService {
-  constructor(private getHeaders: () => Promise<Record<string, string>>) {}
-
-  async fetchStatus(runId: string, provider?: string): Promise<ResearchStatus> {
+  async fetchStatus(runId: string): Promise<ResearchStatus> {
     if (!runId) {
       throw new Error("Research run ID is required");
     }
 
-    let headers: Record<string, string> = {};
+    const [job] = await listJobsOfKind("research", { external_id: runId });
+    const status = job?.result;
 
-    try {
-      headers = await this.getHeaders();
-    } catch (error) {
-      console.error("Error preparing headers for research status:", error);
+    if (!status?.run || !status.provider) {
+      throw new Error("Research run not found");
     }
 
-    const query = provider ? `?provider=${encodeURIComponent(provider)}` : "";
-    const response = await fetchApi(
-      `/apps/retrieval/research/${encodeURIComponent(runId)}${query}`,
-      {
-        method: "GET",
-        headers,
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch research status: ${response.statusText}`);
-    }
-
-    const payload = await returnFetchedData<Record<string, any>>(response);
-    const result = payload?.response?.data ?? payload?.response ?? payload?.data ?? payload;
-
-    if (!result?.run) {
-      throw new Error("Invalid research status response");
-    }
-
-    return result as ResearchStatus;
+    return { ...status, provider: status.provider, run: status.run };
   }
 }

@@ -7,8 +7,8 @@ import { z } from "zod/v4";
 
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
+import { publishOutputJobChanged } from "~/modules/jobs/application/registry";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { definePoll } from "../workflows";
@@ -114,16 +114,16 @@ export const replicatePolling = definePoll({
       predictionData.predictionData = result.result;
       predictionData.output = result.result.response;
 
-      await outputRepo.updateOutput(data.predictionId, {
-        status: "ready",
-        content: predictionData,
-        expectedRevision: prediction.revision,
-        updatedByUserId: data.userId,
-      });
-      publishUserEvent({ env }, data.userId, "replicate.changed", {
-        predictionId: data.predictionId,
-        status: "succeeded",
-      });
+      publishOutputJobChanged(
+        { env },
+        data.userId,
+        await outputRepo.updateOutput(data.predictionId, {
+          status: "ready",
+          content: predictionData,
+          expectedRevision: prediction.revision,
+          updatedByUserId: data.userId,
+        }),
+      );
 
       return {
         status: "success",
@@ -141,16 +141,16 @@ export const replicatePolling = definePoll({
       predictionData.status = "failed";
       predictionData.error = result.raw?.error || "Generation failed";
 
-      await outputRepo.updateOutput(data.predictionId, {
-        status: "failed",
-        content: predictionData,
-        expectedRevision: prediction.revision,
-        updatedByUserId: data.userId,
-      });
-      publishUserEvent({ env }, data.userId, "replicate.changed", {
-        predictionId: data.predictionId,
-        status: "failed",
-      });
+      publishOutputJobChanged(
+        { env },
+        data.userId,
+        await outputRepo.updateOutput(data.predictionId, {
+          status: "failed",
+          content: predictionData,
+          expectedRevision: prediction.revision,
+          updatedByUserId: data.userId,
+        }),
+      );
 
       return {
         status: "success",

@@ -85,7 +85,7 @@ class ApiService {
     this.deviceAuthorisationService = new DeviceAuthorisationService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
-    this.researchService = new ResearchService(getHeaders);
+    this.researchService = new ResearchService();
   }
 
   public static getInstance(): ApiService {
@@ -497,8 +497,8 @@ class ApiService {
     return this.subscriptionService.reactivateSubscription();
   };
 
-  fetchResearchStatus = (runId: string, provider?: string) => {
-    return this.researchService.fetchStatus(runId, provider);
+  fetchResearchStatus = (runId: string) => {
+    return this.researchService.fetchStatus(runId);
   };
 
   transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {

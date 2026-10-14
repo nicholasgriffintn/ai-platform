@@ -1,9 +1,8 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   readNumberField,
   readNumberFieldAlias,
   readRecordObjectField,
-  readStringField,
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import {

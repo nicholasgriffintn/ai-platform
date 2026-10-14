@@ -27,7 +27,7 @@ export interface ResponseReplayOutcome {
   requiresSnapshot: boolean;
 }
 
-type ReplayEvent = ResponseReplayResponse["events"][number];
+type ReplayEvent = ResponseReplayResponse["data"][number];
 
 function applyStatusEvent(response: PlatformResponse, event: ReplayEvent): PlatformResponse | null {
   const status = responseStatusSchema.safeParse(event.data.status);

@@ -23,12 +23,9 @@ import type {
   ChatRetrySnapshot,
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import {
-  readRecordObjectField,
-  readStringField,
-} from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { readRecordObjectField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 import { isRetryCancelledError } from "@ngriffin_uk/polychat-utility-server/retries";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

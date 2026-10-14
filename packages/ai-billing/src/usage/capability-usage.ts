@@ -4,11 +4,10 @@ import {
   rateEntriesFromModelConfig,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   findNumericFieldDeep,
   readNumericField,
-  readStringField,
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { userCreditActor } from "./credit-actor.js";
