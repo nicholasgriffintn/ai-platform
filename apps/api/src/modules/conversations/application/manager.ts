@@ -970,17 +970,6 @@ export class ConversationManager {
     }));
   }
 
-  async count(options: ConversationListOptions = {}): Promise<number> {
-    if (!this.user?.id) {
-      throw new AssistantError(
-        "Manager: User ID is required to count conversations",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
-
-    return this.database.repositories.conversations.countUserConversations(this.user.id, options);
-  }
-
   async setArchivedForAll(options: SetConversationsArchivedOptions): Promise<number> {
     if (!this.user?.id) {
       throw new AssistantError(

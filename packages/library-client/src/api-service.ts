@@ -100,9 +100,6 @@ class ApiService {
   listChats = (options?: ConversationListOptions): Promise<ConversationListPage> =>
     this.conversationsService.list(options);
 
-  countChats = (options?: ConversationListOptions): Promise<number> =>
-    this.conversationsService.count(options);
-
   setAllConversationsArchived = (options: {
     archived: boolean;
     activity?: ConversationActivityWindow;

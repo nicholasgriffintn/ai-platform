@@ -252,24 +252,6 @@ export class ConversationRepository extends BaseRepository {
     return { whereClause: whereClauses.join(" AND "), values };
   }
 
-  public async countUserConversations(
-    userId: number,
-    options: PersonalConversationFilter = {},
-  ): Promise<number> {
-    const { whereClause, values } = this.personalListFilter(userId, options);
-    const row = await this.runQuery<{ total: number }>(
-      `SELECT COUNT(*) as total
-       FROM conversation c
-       LEFT JOIN user_resource_state state
-         ON state.conversation_id = c.id AND state.user_id = ?
-       WHERE ${whereClause}`,
-      [userId, ...values],
-      true,
-    );
-
-    return Number(row?.total ?? 0);
-  }
-
   public async listUserConversations(
     userId: number,
     options: ListUserConversationsOptions = {},

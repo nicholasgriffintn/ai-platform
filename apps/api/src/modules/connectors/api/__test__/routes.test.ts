@@ -9,7 +9,8 @@ const verifyComposioConnectorAuthorizationMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/modules/connectors/application", () => ({
   deleteRecipeConnectorConnection: vi.fn(),
-  listRecipeConnectors: vi.fn(),
+  getRecipeConnector: vi.fn(),
+  listRecipeConnectorSummaries: vi.fn(),
   startRecipeConnectorAuthorization: vi.fn(),
   storeRecipeConnectorApiKey: vi.fn(),
   verifyComposioConnectorAuthorization: verifyComposioConnectorAuthorizationMock,

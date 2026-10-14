@@ -1,8 +1,6 @@
 import {
   archiveConversationsRequestSchema,
   archiveConversationsResponseSchema,
-  conversationCountResponseSchema,
-  conversationFilterQuerySchema,
   conversationListResponseSchema,
   conversationParamsSchema,
   conversationSchema,
@@ -24,10 +22,7 @@ import { handleDeleteAllChatCompletions } from "../application/deleteAllChatComp
 import { handleDeleteChatCompletion } from "../application/deleteChatCompletion";
 import { handleGenerateChatCompletionTitle } from "../application/generateChatCompletionTitle";
 import { handleGetChatCompletion } from "../application/getChatCompletion";
-import {
-  handleCountConversations,
-  handleListChatCompletions,
-} from "../application/listChatCompletions";
+import { handleListChatCompletions } from "../application/listChatCompletions";
 import { presentConversation, toApiMessages } from "../application/present";
 import { handleUpdateChatCompletion } from "../application/updateChatCompletion";
 
@@ -51,24 +46,6 @@ export function defineConversationRecords(conversations: ResourceBuilder): void 
           after: query.after,
           query: query.q,
           sortBy: query.sort_by,
-          updatedAfter: query.updated_after,
-        }),
-    })
-    .view("count", {
-      auth: true,
-      summary: "Count conversations",
-      description: "Counts stored personal conversations matching the same filters as the list.",
-      querySchema: conversationFilterQuerySchema,
-      responses: {
-        200: {
-          description: "Matching conversation count",
-          schema: conversationCountResponseSchema,
-        },
-      },
-      handler: ({ serviceContext, query }) =>
-        handleCountConversations(serviceContext, {
-          archiveFilter: query.archived ?? "active",
-          query: query.q,
           updatedAfter: query.updated_after,
         }),
     })

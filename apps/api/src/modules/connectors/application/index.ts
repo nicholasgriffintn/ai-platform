@@ -331,6 +331,33 @@ export async function listRecipeConnectors(params: {
   return { connectors };
 }
 
+export async function listRecipeConnectorSummaries(params: {
+  context: ServiceContext;
+  userId: number;
+  status?: RecipeConnectorStatus;
+}): Promise<RecipeConnectorManifest[]> {
+  const { connectors } = await listRecipeConnectors(params);
+
+  return connectors
+    .filter((connector) => !params.status || connector.status === params.status)
+    .map(({ operations: _operations, ...summary }) => summary);
+}
+
+export async function getRecipeConnector(params: {
+  context: ServiceContext;
+  userId: number;
+  provider: RecipeConnectorProvider;
+}): Promise<RecipeConnectorManifest> {
+  const { connectors } = await listRecipeConnectors(params);
+  const connector = connectors.find((candidate) => candidate.id === params.provider);
+
+  if (!connector) {
+    throw new AssistantError("Connector not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return connector;
+}
+
 export async function startRecipeConnectorAuthorization(params: {
   context: ServiceContext;
   userId: number;

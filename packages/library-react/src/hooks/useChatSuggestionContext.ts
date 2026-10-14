@@ -49,6 +49,7 @@ export function useChatSuggestionContext({
   const { data: toolsData, isLoading: isLoadingTools } = useTools({ enabled: wantsCapabilities });
   const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors({
     enabled: wantsCapabilities,
+    status: "connected",
   });
   const { data: installationsData, isLoading: isLoadingInstallations } = useRecipeInstallations(
     undefined,
@@ -69,7 +70,6 @@ export function useChatSuggestionContext({
     }
 
     return (connectorsData?.connectors ?? [])
-      .filter((connector) => connector.status === "connected")
       .slice(0, MAX_CONNECTOR_SIGNALS)
       .map((connector) => ({ id: connector.id, name: connector.name }));
   }, [connectorsData, wantsCapabilities]);

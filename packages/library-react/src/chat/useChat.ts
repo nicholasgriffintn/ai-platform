@@ -64,14 +64,6 @@ export function useChats(options: ConversationListOptions = {}) {
     enabled: isAuthenticated && isPro,
   });
 
-  const remoteCountQuery = useQuery({
-    queryKey: [CHATS_QUERY_KEY, "remote-count", queryOptions],
-    queryFn: () => apiService.countChats(queryOptions),
-    staleTime: CHAT_LIST_STALE_TIME,
-    gcTime: CHAT_QUERY_GC_TIME,
-    enabled: isAuthenticated && isPro,
-  });
-
   const localChatsQuery = useQuery({
     queryKey: [CHATS_QUERY_KEY, "local", localScope],
     queryFn: async () => await localChatService.listLocalChats(),
@@ -79,12 +71,12 @@ export function useChats(options: ConversationListOptions = {}) {
     gcTime: CHAT_QUERY_GC_TIME,
   });
 
-  const { chats: allChats, total } = useMemo(() => {
+  const allChats = useMemo(() => {
     const remoteChats = remoteChatsQuery.data?.pages.flatMap((page) => page.conversations) || [];
     const localChats = filterConversationsByListOptions(localChatsQuery.data || [], queryOptions);
 
     if (!isAuthenticated) {
-      return { chats: localChats, total: localChats.length };
+      return localChats;
     }
 
     const remoteIds = new Set(remoteChats.map((chat) => chat.id));
@@ -95,15 +87,10 @@ export function useChats(options: ConversationListOptions = {}) {
           chat.id === currentConversationId ||
           Boolean(chat.id && locallyCreatedConversationIds[chat.id])),
     );
-    const remoteTotal = remoteCountQuery.data ?? remoteChats.length;
 
-    return {
-      chats: [...remoteChats, ...uniqueLocalChats],
-      total: remoteTotal + uniqueLocalChats.length,
-    };
+    return [...remoteChats, ...uniqueLocalChats];
   }, [
     remoteChatsQuery.data,
-    remoteCountQuery.data,
     localChatsQuery.data,
     isAuthenticated,
     queryOptions,
@@ -113,7 +100,6 @@ export function useChats(options: ConversationListOptions = {}) {
 
   return {
     data: allChats,
-    total,
     error: remoteChatsQuery.error ?? localChatsQuery.error,
     fetchNextPage: remoteChatsQuery.fetchNextPage,
     hasNextPage: remoteChatsQuery.hasNextPage && isAuthenticated && isPro,

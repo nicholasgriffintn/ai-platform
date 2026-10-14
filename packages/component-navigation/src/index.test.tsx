@@ -344,37 +344,37 @@ describe("ConversationListActions", () => {
     const { rerender } = render(
       <ConversationListActions
         archiveFilter="active"
-        matchingCount={12}
+        hasConversations
         onArchiveAll={onArchiveAll}
         onRestoreAll={onRestoreAll}
       />,
     );
 
     openMenu();
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Archive all (12)" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Archive all" }));
     expect(onArchiveAll).toHaveBeenCalledOnce();
 
     rerender(
       <ConversationListActions
         archiveFilter="archived"
-        matchingCount={3}
+        hasConversations
         onArchiveAll={onArchiveAll}
         onRestoreAll={onRestoreAll}
       />,
     );
 
     openMenu();
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Restore all (3)" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Restore all" }));
     expect(onRestoreAll).toHaveBeenCalledOnce();
   });
 
-  it("withholds the bulk action when the count would not describe what changes", async () => {
+  it("withholds the bulk action when the list mixes active and archived", async () => {
     const onArchiveAll = vi.fn();
 
     render(
       <ConversationListActions
         archiveFilter="all"
-        matchingCount={12}
+        hasConversations
         onArchiveAll={onArchiveAll}
         onRestoreAll={vi.fn()}
       />,
@@ -396,7 +396,7 @@ describe("ConversationListActions", () => {
     render(
       <ConversationListActions
         archiveFilter="active"
-        matchingCount={0}
+        hasConversations={false}
         onArchiveAll={onArchiveAll}
         onRestoreAll={vi.fn()}
       />,

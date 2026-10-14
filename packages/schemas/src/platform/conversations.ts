@@ -36,12 +36,6 @@ export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilter
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
 export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
 
-export const conversationFilterQuerySchema = z.object({
-  archived: conversationArchiveFilterSchema.optional(),
-  q: z.string().trim().max(200).optional(),
-  updated_after: z.iso.datetime().optional(),
-});
-
 export const listConversationsQuerySchema = listQuerySchema.extend({
   archived: conversationArchiveFilterSchema.optional(),
   q: z.string().trim().max(200).optional(),
@@ -67,8 +61,6 @@ export const conversationSummarySchema = z
   .passthrough();
 
 export const conversationListResponseSchema = listSchema(conversationSummarySchema);
-
-export const conversationCountResponseSchema = z.object({ count: z.number().int() });
 
 export const archiveConversationsRequestSchema = z.object({
   archived: z.boolean(),

@@ -21,7 +21,7 @@ export function useAssistantActionCatalog({
   projectId?: string;
 } = {}): AssistantActionCatalog {
   const { data: installationsData } = useRecipeInstallations(projectId);
-  const { data: connectorsData } = useRecipeConnectors();
+  const { data: connectorsData } = useRecipeConnectors({ status: "connected" });
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);

@@ -3,6 +3,8 @@ import {
   recipeConnectorAccountSchema,
   recipeConnectorAccountUpdateRequestSchema,
   recipeConnectorApiKeyRequestSchema,
+  recipeConnectorListQuerySchema,
+  recipeConnectorManifestSchema,
   recipeConnectorProviderSchema,
   recipeConnectorStartRequestSchema,
   recipeConnectorStartResponseSchema,
@@ -14,7 +16,8 @@ import { defineResource } from "~/infrastructure/http/resource";
 
 import {
   deleteRecipeConnectorConnection,
-  listRecipeConnectors,
+  getRecipeConnector,
+  listRecipeConnectorSummaries,
   startRecipeConnectorAuthorization,
   storeRecipeConnectorApiKey,
   verifyComposioConnectorAuthorization,
@@ -50,17 +53,29 @@ defineResource(app, { idParam: "connector_id", tags: ["connectors"] }, (connecto
     .list({
       auth: true,
       summary: "List connectors",
-      handler: async ({ raw, serviceContext, user }) =>
+      description: "Summaries without operations. Read a connector for its operations.",
+      querySchema: recipeConnectorListQuerySchema,
+      handler: async ({ query, serviceContext, user }) =>
         listPageOf(
-          (
-            await listRecipeConnectors({
-              context: serviceContext,
-              userId: user.id,
-              requestUrl: raw.req.url,
-            })
-          ).connectors,
+          await listRecipeConnectorSummaries({
+            context: serviceContext,
+            userId: user.id,
+            status: query.status,
+          }),
           (connector) => connector.id,
         ),
+    })
+    .read({
+      auth: true,
+      summary: "Get a connector",
+      paramSchema: connectorParamsSchema,
+      responses: { 200: { description: "Connector", schema: recipeConnectorManifestSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        getRecipeConnector({
+          context: serviceContext,
+          userId: user.id,
+          provider: params.connector_id,
+        }),
     })
     .view("composio_callback", {
       auth: true,

@@ -20,10 +20,3 @@ export function handleListChatCompletions(
 ): Promise<ListPage<Record<string, unknown>>> {
   return managerFor(context).list(options);
 }
-
-export async function handleCountConversations(
-  context: ServiceContext,
-  options: ConversationListOptions = {},
-): Promise<{ count: number }> {
-  return { count: await managerFor(context).count(options) };
-}

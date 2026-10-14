@@ -4,7 +4,7 @@ import { Archive, ArchiveRestore, MoreVertical } from "lucide-react";
 
 export interface ConversationListActionsProps {
   archiveFilter: ConversationArchiveFilter;
-  matchingCount: number;
+  hasConversations: boolean;
   isBusy?: boolean;
   onArchiveAll: () => void;
   onRestoreAll: () => void;
@@ -12,14 +12,14 @@ export interface ConversationListActionsProps {
 
 export function ConversationListActions({
   archiveFilter,
-  matchingCount,
+  hasConversations,
   isBusy = false,
   onArchiveAll,
   onRestoreAll,
 }: ConversationListActionsProps) {
   const isRestoring = archiveFilter === "archived";
   const isMixed = archiveFilter === "all";
-  const isDisabled = isBusy || isMixed || matchingCount === 0;
+  const isDisabled = isBusy || isMixed || !hasConversations;
 
   return (
     <OptionsMenu
@@ -42,7 +42,6 @@ export function ConversationListActions({
           <Archive size={13} className="mr-2 shrink-0" aria-hidden="true" />
         )}
         {isRestoring ? "Restore all" : "Archive all"}
-        {!isMixed && matchingCount > 0 && ` (${matchingCount})`}
       </OptionsMenuAction>
       {isMixed && (
         <p className="px-2 py-1.5 text-muted-foreground">

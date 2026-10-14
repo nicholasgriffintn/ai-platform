@@ -79,7 +79,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
 
   const {
     data: conversations,
-    total: matchingConversationCount,
     error: conversationsError,
     fetchNextPage,
     hasNextPage,
@@ -199,14 +198,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     }
 
     try {
-      trackEvent({
-        name: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
-        category: "sidebar",
-        label: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
-        value: matchingConversationCount,
-      });
-
-      await setAllArchived.mutateAsync({
+      const changed = await setAllArchived.mutateAsync({
         archived: confirmArchiveAll,
         options: {
           activity: conversationListFilters.activity,
@@ -214,6 +206,12 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
         },
       });
 
+      trackEvent({
+        name: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
+        category: "sidebar",
+        label: confirmArchiveAll ? "archive_all_chats" : "restore_all_chats",
+        value: changed,
+      });
       setConfirmArchiveAll(null);
     } catch (error) {
       console.error("Failed to update archived conversations:", error);
@@ -294,7 +292,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                 <div className="flex items-center gap-0.5">
                   <ConversationListActions
                     archiveFilter={conversationListFilters.archiveFilter}
-                    matchingCount={matchingConversationCount}
+                    hasConversations={conversations.length > 0}
                     isBusy={setAllArchived.isPending}
                     onArchiveAll={() => setConfirmArchiveAll(true)}
                     onRestoreAll={() => setConfirmArchiveAll(false)}
@@ -344,8 +342,8 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
         title={confirmArchiveAll ? "Archive all conversations" : "Restore all conversations"}
         description={
           confirmArchiveAll
-            ? `Archive the ${matchingConversationCount} conversations matching your current filters. You can bring them back from the Archived view.`
-            : `Restore the ${matchingConversationCount} archived conversations matching your current filters back to your active list.`
+            ? "Archive every conversation matching your current filters. You can bring them back from the Archived view."
+            : "Restore every archived conversation matching your current filters to your active list."
         }
         confirmText={confirmArchiveAll ? "Archive all" : "Restore all"}
         onConfirm={confirmSetAllArchived}

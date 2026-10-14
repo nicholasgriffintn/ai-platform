@@ -43,7 +43,7 @@ export function useComposerBanner({
   const user = useChatStore((state) => state.user);
   const hasHydratedUserConfiguration = useChatStore((state) => state.hasHydratedUserConfiguration);
   const usageLimits = useUsageStore((state) => state.usageLimits);
-  const { data: connectorsData } = useRecipeConnectors();
+  const { data: connectorsData } = useRecipeConnectors({ status: "connected" });
   const { data: workspacesData } = useWorkspaces();
   const dismissals = useComposerBannerDismissals((state) => state.dismissals);
   const cooldownUntil = useComposerBannerDismissals((state) => state.cooldownUntil);
@@ -86,7 +86,7 @@ export function useComposerBanner({
       if (
         isPro &&
         connectorsData &&
-        !connectorsData.connectors.some((c) => c.status === "connected") &&
+        connectorsData.connectors.length === 0 &&
         messageCount >= CONNECTOR_SUGGESTION_MIN_MESSAGES
       ) {
         candidates.push({

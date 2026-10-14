@@ -3,6 +3,8 @@ import {
   type RecipeConnectorAccount,
   type RecipeConnectorAccountUpdateRequest,
   type RecipeConnectorApiKeyRequest,
+  type RecipeConnectorListQuery,
+  type RecipeConnectorManifest,
   type RecipeConnectorProvider,
   type RecipeConnectorsResponse,
   type RecipeConnectorStartResponse,
@@ -14,11 +16,18 @@ function connectorPath(provider: RecipeConnectorProvider, suffix = ""): string {
   return `/connectors/${encodeURIComponent(provider)}${suffix}`;
 }
 
-export async function listRecipeConnectors(): Promise<RecipeConnectorsResponse> {
-  return {
-    connectors:
-      await resource<RecipeConnectorsResponse["connectors"][number]>("/connectors").listAll(),
-  };
+const connectors = resource<RecipeConnectorManifest>("/connectors");
+
+export async function listRecipeConnectors(
+  query: RecipeConnectorListQuery = {},
+): Promise<RecipeConnectorsResponse> {
+  return { connectors: await connectors.listAll(query) };
+}
+
+export function getRecipeConnector(
+  provider: RecipeConnectorProvider,
+): Promise<RecipeConnectorManifest> {
+  return connectors.get(provider);
 }
 
 export function startRecipeConnector(

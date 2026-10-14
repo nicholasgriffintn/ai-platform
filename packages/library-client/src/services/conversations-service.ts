@@ -154,15 +154,6 @@ export class ConversationsService {
     };
   }
 
-  async count(options: ConversationListOptions = {}): Promise<number> {
-    const { count } = await conversations.view<{ count: number }>(
-      "count",
-      this.listFilterQuery(options),
-    );
-
-    return count;
-  }
-
   async setAllArchived(options: {
     archived: boolean;
     activity?: ConversationActivityWindow;

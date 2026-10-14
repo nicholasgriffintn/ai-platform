@@ -1,4 +1,5 @@
 import { OperationGrantForm } from "@ngriffin_uk/polychat-component-capabilities";
+import { useRecipeConnector } from "@ngriffin_uk/polychat-library-react";
 import { connectorGrantSchema, type RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 
 import type { CapabilityLibraryScope } from "../Capabilities/useCapabilityLibraryController.js";
@@ -10,7 +11,10 @@ export function ProjectConnectorGrantPanel({
   connector: RecipeConnectorManifest;
   scope: CapabilityLibraryScope;
 }) {
-  if (!scope.requiresExplicitEnablement || !connector.operations?.length) {
+  const { data: manifest } = useRecipeConnector(connector.id);
+  const operations = manifest?.operations ?? [];
+
+  if (!scope.requiresExplicitEnablement || operations.length === 0) {
     return null;
   }
 
@@ -22,7 +26,7 @@ export function ProjectConnectorGrantPanel({
   return (
     <OperationGrantForm
       key={`${connector.id}:${JSON.stringify(grant.success ? grant.data.operations : [])}`}
-      operations={connector.operations ?? []}
+      operations={operations}
       initialOperations={grant.success ? grant.data.operations : []}
       canManage={scope.canManage}
       isSaving={scope.projectMutations.add.isPending || scope.projectMutations.remove.isPending}

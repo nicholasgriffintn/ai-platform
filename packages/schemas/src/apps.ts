@@ -1288,6 +1288,10 @@ export const recipeConnectorsResponseSchema = z.object({
   connectors: z.array(recipeConnectorManifestSchema),
 });
 
+export const recipeConnectorListQuerySchema = z.object({
+  status: recipeConnectorStatusSchema.optional(),
+});
+
 export const recipeConnectorStartResponseSchema = z.object({
   provider: recipeConnectorProviderSchema,
   authorizationUrl: externalHttpUrlSchema,
@@ -1515,6 +1519,7 @@ export type RecipeConnectorProvider = z.infer<typeof recipeConnectorProviderSche
 export type RecipeConnectorStatus = z.infer<typeof recipeConnectorStatusSchema>;
 export type RecipeConnectorManifest = z.infer<typeof recipeConnectorManifestSchema>;
 export type RecipeConnectorsResponse = z.infer<typeof recipeConnectorsResponseSchema>;
+export type RecipeConnectorListQuery = z.infer<typeof recipeConnectorListQuerySchema>;
 export type RecipeConnectorStartResponse = z.infer<typeof recipeConnectorStartResponseSchema>;
 export type RecipeConnectorStartRequest = z.infer<typeof recipeConnectorStartRequestSchema>;
 export type RecipeConnectorApiKeyRequest = z.infer<typeof recipeConnectorApiKeyRequestSchema>;

@@ -1,5 +1,6 @@
 import {
   disconnectRecipeConnector,
+  getRecipeConnector,
   listRecipeConnectorAccounts,
   listRecipeConnectors,
   startRecipeConnector,
@@ -10,6 +11,7 @@ import {
 import type {
   RecipeConnectorAccount,
   RecipeConnectorProvider,
+  RecipeConnectorStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -19,12 +21,15 @@ export const RECIPE_CONNECTORS_QUERY_KEY = ["recipe-connectors"] as const;
 export const recipeConnectorAccountsQueryKey = (provider: RecipeConnectorProvider) =>
   [...RECIPE_CONNECTORS_QUERY_KEY, provider, "accounts"] as const;
 
-export function useRecipeConnectors({ enabled = true }: { enabled?: boolean } = {}) {
+export function useRecipeConnectors({
+  enabled = true,
+  status,
+}: { enabled?: boolean; status?: RecipeConnectorStatus } = {}) {
   const canAccessProFeatures = useCanAccessProFeatures();
   const isEnabled = canAccessProFeatures && enabled;
   const query = useQuery({
-    queryKey: RECIPE_CONNECTORS_QUERY_KEY,
-    queryFn: listRecipeConnectors,
+    queryKey: [...RECIPE_CONNECTORS_QUERY_KEY, { status: status ?? "all" }],
+    queryFn: () => listRecipeConnectors({ status }),
     enabled: isEnabled,
     staleTime: 60 * 1000,
   });
@@ -36,6 +41,17 @@ export function useRecipeConnectors({ enabled = true }: { enabled?: boolean } = 
     isFetching: isEnabled ? query.isFetching : false,
     isLoading: isEnabled ? query.isLoading : false,
   };
+}
+
+export function useRecipeConnector(provider: RecipeConnectorProvider) {
+  const canAccessProFeatures = useCanAccessProFeatures();
+
+  return useQuery({
+    queryKey: [...RECIPE_CONNECTORS_QUERY_KEY, provider],
+    queryFn: () => getRecipeConnector(provider),
+    enabled: canAccessProFeatures,
+    staleTime: 60 * 1000,
+  });
 }
 
 export function useStartRecipeConnector() {
