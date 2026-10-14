@@ -26,4 +26,4 @@ const { score, detail } = countdown.score("round-01", answer);
 
 ## Datasets
 
-`scripts/build-geoguess-dataset.mjs` gathers Panoramax candidates near each city and keeps only pictures in its reviewed allowlist. Pass a path to write every candidate for review. Photos are fetched, stripped of metadata and cached by the API at run time; none are committed. `scripts/build-world-outline.mjs` projects Natural Earth land into the Equal Earth outline the GeoGuess map draws.
+`scripts/build-geoguess-dataset.mjs` gathers Panoramax candidates near each city and, with a wider net, near each small town or rural road in its hard set, keeping only pictures in its reviewed allowlists. Pass a path to write every candidate for review, look at each picture before adding its id to an allowlist, and reject anything with burned-in coordinates, watermarks or no outdoor context. Photos are fetched, stripped of metadata and cached by the API at run time; none are committed. `scripts/build-world-outline.mjs` projects Natural Earth land into the Equal Earth outline the GeoGuess map draws.

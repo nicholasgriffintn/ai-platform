@@ -11,6 +11,8 @@ const LICENCES = new Map([
 const PER_PLACE = 2;
 const CANDIDATES_PER_PLACE = 4;
 const SPAN = 0.06;
+const HARD_CANDIDATES_PER_PLACE = 3;
+const HARD_SPAN = 0.12;
 const MIN_SEQUENCE_PICTURES = 20;
 const REVIEWED = new Set([
   "3103e90a-9e84-45d5-a7a3-a267a21abc33",
@@ -223,6 +225,189 @@ const PLACES = [
   ["Wellington", "NZ", -41.286, 174.776],
 ];
 
+const HARD_PLACES = [
+  ["Shkodër", "AL", 42.07, 19.51],
+  ["Córdoba", "AR", -31.42, -64.19],
+  ["Innsbruck", "AT", 47.27, 11.4],
+  ["Adelaide", "AU", -34.93, 138.6],
+  ["Mostar", "BA", 43.34, 17.81],
+  ["Bastogne", "BE", 50.004, 5.72],
+  ["Mons", "BE", 50.45, 3.95],
+  ["Plovdiv", "BG", 42.14, 24.75],
+  ["Veliko Tarnovo", "BG", 43.081, 25.629],
+  ["Chur", "CH", 46.85, 9.53],
+  ["Lugano", "CH", 46.0, 8.95],
+  ["Temuco", "CL", -38.74, -72.6],
+  ["Valdivia", "CL", -39.814, -73.246],
+  ["Limassol", "CY", 34.68, 33.04],
+  ["Fulda", "DE", 50.55, 9.68],
+  ["Görlitz", "DE", 51.15, 14.99],
+  ["Wernigerode", "DE", 51.835, 10.785],
+  ["Aalborg", "DK", 57.05, 9.92],
+  ["Pärnu", "EE", 58.39, 24.5],
+  ["Lugo", "ES", 43.01, -7.556],
+  ["Teruel", "ES", 40.345, -1.107],
+  ["Oulu", "FI", 65.01, 25.47],
+  ["Aurillac", "FR", 44.93, 2.44],
+  ["Digne-les-Bains", "FR", 44.09, 6.24],
+  ["Guingamp", "FR", 48.56, -3.15],
+  ["Loudéac", "FR", 48.178, -2.754],
+  ["Mende", "FR", 44.518, 3.5],
+  ["Pontarlier", "FR", 46.903, 6.355],
+  ["Rodez", "FR", 44.35, 2.57],
+  ["Saint-Flour", "FR", 45.034, 3.093],
+  ["Tulle", "FR", 45.27, 1.77],
+  ["Inverness", "GB", 57.48, -4.22],
+  ["Pitlochry", "GB", 56.704, -3.733],
+  ["Batumi", "GE", 41.64, 41.63],
+  ["Kutaisi", "GE", 42.27, 42.7],
+  ["Osijek", "HR", 45.555, 18.695],
+  ["Pécs", "HU", 46.07, 18.23],
+  ["Westport", "IE", 53.8, -9.52],
+  ["Bengaluru", "IN", 12.97, 77.59],
+  ["Kochi", "IN", 9.93, 76.27],
+  ["Pune", "IN", 18.52, 73.86],
+  ["Cagliari", "IT", 39.22, 9.11],
+  ["Catania", "IT", 37.5, 15.09],
+  ["Trento", "IT", 46.07, 11.12],
+  ["Osaka", "JP", 34.69, 135.5],
+  ["Kėdainiai", "LT", 55.288, 23.975],
+  ["Šiauliai", "LT", 55.93, 23.31],
+  ["Ettelbruck", "LU", 49.87, 6.09],
+  ["Cēsis", "LV", 57.313, 25.274],
+  ["Daugavpils", "LV", 55.87, 26.52],
+  ["Fort-de-France", "MQ", 14.6, -61.07],
+  ["Oaxaca", "MX", 17.073, -96.726],
+  ["Groningen", "NL", 53.22, 6.57],
+  ["Sneek", "NL", 53.033, 5.66],
+  ["Hamar", "NO", 60.794, 11.068],
+  ["Tromsø", "NO", 69.65, 18.96],
+  ["Christchurch", "NZ", -43.53, 172.63],
+  ["Dunedin", "NZ", -45.87, 170.5],
+  ["Nelson", "NZ", -41.271, 173.284],
+  ["Arequipa", "PE", -16.409, -71.537],
+  ["Cusco", "PE", -13.52, -71.97],
+  ["Davao", "PH", 7.07, 125.61],
+  ["Iloilo", "PH", 10.72, 122.56],
+  ["Rzeszów", "PL", 50.04, 22.0],
+  ["Évora", "PT", 38.571, -7.909],
+  ["Saint-Pierre", "RE", -21.34, 55.48],
+  ["Niš", "RS", 43.32, 21.9],
+  ["Novo Mesto", "SI", 45.804, 15.169],
+  ["Košice", "SK", 48.72, 21.26],
+  ["Chiang Mai", "TH", 18.788, 98.985],
+  ["İzmir", "TR", 38.42, 27.14],
+  ["Hualien", "TW", 23.991, 121.611],
+  ["Lviv", "UA", 49.84, 24.03],
+  ["Kampala", "UG", 0.32, 32.58],
+  ["Boston", "US", 42.36, -71.06],
+  ["Pittsburgh", "US", 40.44, -79.99],
+  ["Da Nang", "VN", 16.05, 108.2],
+];
+
+const HARD_REVIEWED = new Set([
+  "3c691dcd-1c06-4a31-9ea8-4e2d13af137a",
+  "91dcb6b1-3eed-424e-8cad-149885438d18",
+  "41288438-6836-4367-8e10-8246748ddf19",
+  "692b2295-9c78-4e68-bf1c-ea5a4600cd95",
+  "07c667e1-23d1-4d7d-97e2-edcd0c996429",
+  "469e62ee-cc75-4d75-88b4-30d79d7f35ea",
+  "d4269164-ecf3-4986-a9a6-5848ef52c230",
+  "cdb030e0-476f-43c4-92de-88db214f4c31",
+  "f31d57e0-b794-4ae4-a5eb-e5c205d92515",
+  "051c1ab4-8503-4421-8056-67a3c0c20152",
+  "82b0dbaa-0ad3-4593-90fa-f7fa49e397f1",
+  "6d03b65f-b48f-4e31-8bab-2a837b3f3362",
+  "dcca6d99-adf8-4749-b139-0c118e173621",
+  "a1d5a94d-4bdf-4012-bad4-21d48c8ab037",
+  "af8dbb8c-889a-4f6a-994e-de9d8d669178",
+  "e37981fd-62c2-4cc7-9e33-b0243137d765",
+  "7aaac1ad-c293-44be-8ddb-9c8503ef32ba",
+  "0483704b-832a-4a5e-b1dc-6052d57c23cd",
+  "1d97ce80-5aac-4d1a-9905-65d49fa578f0",
+  "b8b4a8b5-259b-4c3a-8d3c-d5f264b0c4ee",
+  "ecd99f01-ac52-430d-b34d-2904acb5de8c",
+  "ad87dd00-fa30-47e8-861b-80803db5d06e",
+  "7d432d59-0c5c-4a38-a0ae-b230dc1f0dd4",
+  "c8586d20-155a-446a-a3f1-ddacbff7b6b5",
+  "dea1a361-aa05-4750-82e1-a570aa4766c5",
+  "eaefcfb1-0c96-4244-8bc6-370842c6be41",
+  "b30bfd03-f4b0-49dc-9522-7287f1c1113f",
+  "14d829c3-8699-43dd-a458-e62923497c65",
+  "2a885d2d-92c1-4af3-82f5-6ed8096656da",
+  "9f765356-eb1c-45ec-aa01-95d9115d7fe5",
+  "a6bb3ef6-6f10-48f2-86fa-b80fdd01a486",
+  "c87f8420-9b80-4b23-a3f9-a6c056e16e63",
+  "6f9e016e-3467-4e5c-b223-2eb0501e9d89",
+  "05db6635-f4ec-403b-9104-a4b1c74d5eea",
+  "a21e88c5-012b-4584-9e17-a07119e671db",
+  "6f960b89-d810-4944-8286-45e2e0d6a3a1",
+  "37046217-9fd1-4f5d-9ba9-c45ba13bffe5",
+  "52b5c9f9-b063-469c-9283-8284b681d486",
+  "5557544c-87ee-4fc7-809f-803f6ba5a239",
+  "ed3fe22f-e8fe-4a8f-8d85-c86e347038e4",
+  "cd9405ef-c517-498c-b8b2-067aa5711651",
+  "956712f6-f82a-4fb0-b5ed-67c73ba8dfb2",
+  "ed889f35-faf8-4483-aa68-1fa1a66bbe61",
+  "3107dfa7-f0b6-4687-bd81-b29fc8dad41f",
+  "808becd8-54e8-4d46-801b-a94bca15c617",
+  "b8c7a9cf-47db-4882-918d-2c3a8d1d8a4e",
+  "6efd3145-20d2-46bc-b37d-ce6b260525b2",
+  "88d3390f-1673-4dc5-856f-622a387f879b",
+  "1502385a-4354-481f-a612-fb1f007c8675",
+  "c4f1ee07-cdaf-4389-94c9-87f63a4adcc9",
+  "650f5cdb-0ec7-4b5d-a589-3932b830c8f9",
+  "86cb82a6-cf88-4243-8625-4f3061efbacd",
+  "e2e75f37-37d5-4f61-b3af-73bf9a7f0a23",
+  "cb993d24-fdb1-4cdd-9ef2-d01d420e071a",
+  "8cea4a0c-4f6d-4eba-83b4-d344a8af90f6",
+  "418e4cf1-260f-4b1e-828e-8216863e316d",
+  "4642341d-c62d-4866-9407-43c8b7c56355",
+  "18c0f9c0-7c80-4d27-903d-4ded946907c4",
+  "044fef7e-b53b-4397-b8bc-77bef20dba85",
+  "72513c13-8766-494c-b13a-d0393e5d7184",
+  "752bc899-7fc6-4c37-ab77-3e1f10c078ec",
+  "8200d1b8-c4f7-4755-a8f6-9a80d301abb8",
+  "1781ae6b-0484-450a-9662-c64553ee8005",
+  "e7632051-4c35-4136-9e3e-5a4fa85ba43c",
+  "98ea34f4-ee04-4364-bb1a-35d9fbfa23e2",
+  "7f140534-d513-4e87-86f7-6d196441ab38",
+  "d0a9c6ae-c1a1-484a-a434-d15c104c1167",
+  "c03e44bc-e9fc-4e6a-9d59-7da11cb4107d",
+  "fdf262f5-f2db-4e01-9e69-2676d8e2f29c",
+  "c810e22a-808b-4788-bc25-d0d5243e4f0f",
+  "f8a5a8a3-2a51-4272-a565-39f455d5aa08",
+  "e56126fd-0340-4855-b687-43450cb06e76",
+  "5566d3ea-f098-4943-85b9-a8785e3dc212",
+  "b046ea68-5990-4861-a1e1-ab7283142df0",
+  "06385284-a2eb-4b4c-9b2d-8fe8504c4bbf",
+  "d521510e-d152-4e48-8014-c9c11e8e4c8d",
+  "4bfb8674-60a1-4952-90a2-98d3ee97b745",
+  "cb67552b-ab22-40b7-803f-e04564e7d7b0",
+  "fa47afc3-613f-47b8-91b3-260b989ac05b",
+  "ec9219b2-6800-47e9-b269-8b4bc9998b52",
+  "30e22b14-6127-4ee4-a9c2-cacae62f9385",
+  "43cdeaa6-19ea-46e0-b978-52c4a8d2e253",
+  "eda317f3-028c-4758-a9d0-b7582ba70157",
+  "a8897a91-1aa3-4c85-945c-870cafe0511f",
+  "19d32552-689a-48d2-bf81-3446b764a6d5",
+  "94e87180-9f72-40fd-83f9-143a6d5715b5",
+  "a559c172-596f-4d97-b1ff-c4e7950037be",
+  "374140a1-5552-45f0-99d4-18fc7c5b337c",
+  "f51690bd-db06-4d42-b4af-2104acd26e9f",
+  "55050c4d-1a00-4c1d-bc1a-558c37b3c26f",
+  "c6906c8e-ba7e-4397-a0f2-f63b51d9f52e",
+  "343a7092-4cc9-417b-86e2-90a8fe49d8b8",
+  "fbb34eb4-128f-4654-8377-4cd438ebb3eb",
+  "ff376133-3ea1-4d10-ac22-446215451f19",
+  "fc1a04c8-93f6-4924-9039-ee0abadd0e8f",
+  "fca855eb-8884-47be-8ad4-a361039ba494",
+  "7055a435-ad59-491d-a7ff-1bd34b16d812",
+  "b6e263cc-0537-480a-90fc-e72be3c10e72",
+  "35f560d8-371a-4c27-8c10-def93364af46",
+  "bb21a1a2-e5d2-42e4-bc8b-2c6d5f6a9e27",
+]);
+
 function isFlatPicture(feature) {
   const exif = JSON.stringify(feature.properties?.exif ?? {});
   const fieldOfView = feature.properties?.["pers:interior_orientation"]?.field_of_view;
@@ -236,8 +421,8 @@ function credit(feature) {
   return name && !name.includes("@") ? name : "Panoramax contributor";
 }
 
-async function search(lat, lng) {
-  const bbox = [lng - SPAN, lat - SPAN, lng + SPAN, lat + SPAN].join(",");
+async function search(lat, lng, span = SPAN) {
+  const bbox = [lng - span, lat - span, lng + span, lat + span].join(",");
   const response = await fetch(`${SEARCH_URL}?bbox=${bbox}&limit=200`);
 
   if (!response.ok) {
@@ -257,7 +442,28 @@ async function isStreetSequence(collectionId) {
   return ((await response.json())["stats:items"]?.count ?? 0) >= MIN_SEQUENCE_PICTURES;
 }
 
-async function pick(features) {
+function hash(text) {
+  let value = 0;
+
+  for (const character of text) {
+    value = (value * 31 + character.charCodeAt(0)) >>> 0;
+  }
+
+  return value;
+}
+
+const ORDERINGS = {
+  byId: {
+    prefer: (candidate, existing) => candidate.id.localeCompare(existing.id) < 0,
+    compare: (left, right) => left.id.localeCompare(right.id),
+  },
+  scattered: {
+    prefer: (candidate, existing) => hash(candidate.id) < hash(existing.id),
+    compare: (left, right) => hash(left.id) - hash(right.id),
+  },
+};
+
+async function pick(features, { limit, ordering }) {
   const byCollection = new Map();
 
   for (const feature of features) {
@@ -267,17 +473,17 @@ async function pick(features) {
       continue;
     }
 
-    if (!byCollection.has(feature.collection)) {
+    const existing = byCollection.get(feature.collection);
+
+    if (!existing || (ordering === ORDERINGS.scattered && ordering.prefer(feature, existing))) {
       byCollection.set(feature.collection, feature);
     }
   }
 
   const chosen = [];
 
-  for (const feature of [...byCollection.values()].sort((left, right) =>
-    left.id.localeCompare(right.id),
-  )) {
-    if (chosen.length >= CANDIDATES_PER_PLACE) {
+  for (const feature of [...byCollection.values()].sort(ordering.compare)) {
+    if (chosen.length >= limit) {
       break;
     }
 
@@ -309,12 +515,24 @@ const photos = [];
 const candidates = [];
 
 for (const [place, country, lat, lng] of PLACES) {
-  const found = (await pick(await search(lat, lng))).map((feature) =>
-    toPhoto(feature, place, country),
-  );
+  const found = (
+    await pick(await search(lat, lng), { limit: CANDIDATES_PER_PLACE, ordering: ORDERINGS.byId })
+  ).map((feature) => toPhoto(feature, place, country));
 
   candidates.push(...found);
   photos.push(...found.filter((photo) => REVIEWED.has(photo.pictureId)).slice(0, PER_PLACE));
+}
+
+for (const [place, country, lat, lng] of HARD_PLACES) {
+  const found = (
+    await pick(await search(lat, lng, HARD_SPAN), {
+      limit: HARD_CANDIDATES_PER_PLACE,
+      ordering: ORDERINGS.scattered,
+    })
+  ).map((feature) => toPhoto(feature, place, country));
+
+  candidates.push(...found);
+  photos.push(...found.filter((photo) => HARD_REVIEWED.has(photo.pictureId)));
 }
 
 const output = fileURLToPath(new URL("../src/data/geoguess-photos.ts", import.meta.url));

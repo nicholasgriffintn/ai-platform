@@ -101,7 +101,7 @@ function EntrantMark({ run }: { run: BenchmarkRun }) {
   if (run.entrant.kind === "model") {
     return (
       <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-surface">
-        <ModelIcon modelName={run.entrant.name} provider={run.entrant.provider} size={22} />
+        <ModelIcon modelName={run.entrant.name} provider={run.entrant.provider} size={22} mono />
       </span>
     );
   }

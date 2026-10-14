@@ -246,7 +246,7 @@ export function StrudelPlayer({
 
         {readOnly ? (
           <div>
-            <pre className="overflow-x-auto bg-surface/80 p-4 font-mono text-xs sm:text-sm">
+            <pre className="h-96 overflow-auto bg-surface/80 p-4 font-mono text-xs sm:text-sm">
               {code}
             </pre>
             <div ref={editorContainerRef} className="sr-only" aria-hidden="true" />

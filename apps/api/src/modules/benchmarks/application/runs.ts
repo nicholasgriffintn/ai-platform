@@ -305,17 +305,19 @@ export async function retryBenchmarkRun(
   }
 
   const retryChecks = request.failedChecks === true && benchmark.summary.scoring === "votes";
+  const newItems = benchmark.itemIds.length > record.items_total;
   const ownerUserId = record.scope === "official" && isPlatformAdmin(user) ? user.id : undefined;
   const requeued = await context.repositories.benchmarkRuns.requeue(record.id, {
     ownerUserId,
-    fromCompleted: retryChecks,
+    fromCompleted: retryChecks || newItems,
+    itemsTotal: benchmark.itemIds.length,
   });
 
   if (!requeued) {
     throw new AssistantError(
       retryChecks
         ? "Only finished runs can retry their failed checks"
-        : "Only failed or cancelled runs can be retried",
+        : "This run has answered everything it can; only failed or cancelled runs can be retried",
       ErrorType.CONFLICT_ERROR,
       409,
     );
@@ -330,6 +332,7 @@ export async function retryBenchmarkRun(
       failure_reason: null,
       completed_at: null,
       score: null,
+      items_total: benchmark.itemIds.length,
       owner_user_id: ownerUserId ?? record.owner_user_id,
     },
     { includeShareToken: true },

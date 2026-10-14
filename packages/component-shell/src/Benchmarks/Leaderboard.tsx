@@ -62,7 +62,7 @@ function EntrantCell({ board, standing }: { board: BenchmarkBoard; standing: Ben
   const content = (
     <span className="flex min-w-0 items-center gap-2.5">
       {entrant.kind === "model" ? (
-        <ModelIcon modelName={entrant.name} provider={entrant.provider} size={18} />
+        <ModelIcon modelName={entrant.name} provider={entrant.provider} size={18} mono />
       ) : null}
       <span className="truncate font-medium text-foreground">{entrant.name}</span>
     </span>

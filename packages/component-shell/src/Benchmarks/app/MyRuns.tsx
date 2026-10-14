@@ -56,7 +56,12 @@ function RunCard({
           <div className="flex min-w-0 items-center gap-3">
             {run.entrant.kind === "model" ? (
               <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface">
-                <ModelIcon modelName={run.entrant.name} provider={run.entrant.provider} size={18} />
+                <ModelIcon
+                  modelName={run.entrant.name}
+                  provider={run.entrant.provider}
+                  size={18}
+                  mono
+                />
               </span>
             ) : null}
             <div className="min-w-0">

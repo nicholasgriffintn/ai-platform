@@ -188,6 +188,7 @@ export function RunLauncher({ onStarted }: { onStarted: (runs: BenchmarkRun[]) =
                     provider={model.provider}
                     url={model.avatarUrl}
                     size={14}
+                    mono
                   />
                   {name}
                   <X size={12} aria-hidden />
@@ -220,6 +221,7 @@ export function RunLauncher({ onStarted }: { onStarted: (runs: BenchmarkRun[]) =
                     provider={model.provider}
                     url={model.avatarUrl}
                     size={16}
+                    mono
                   />
                   <span className="min-w-0 flex-1 truncate">{name}</span>
                   {isSelected ? (

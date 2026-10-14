@@ -8,7 +8,7 @@ import type { BenchmarkItem } from "../types.js";
 import type { GeoguessPhoto } from "./geoguess-types.js";
 
 export const GEOGUESS_MAX_POINTS = 5000;
-export const GEOGUESS_DECAY_KM = 1492.7;
+export const GEOGUESS_DECAY_KM = 200;
 
 const answerSchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -59,7 +59,7 @@ export const geoguess = defineBenchmark<GeoguessPhoto, GeoguessAnswer>({
     description:
       "Every model sees the same street photos and drops a pin. Closer pins score more, up to 5,000 points a photo, and you can play the same photos yourself.",
     method:
-      "100 street photos from 62 cities, sourced from Panoramax under open licences, re-encoded without metadata and reviewed by eye. Each guess scores 5000 × e^(−km / 1492.7). Medium reasoning effort, no tools, one image per guess.",
+      "200 street photos: 100 from well-known city centres and 100 from small towns, suburbs and rural roads across 77 places, all sourced from Panoramax under open licences, re-encoded without metadata and reviewed by eye. Each guess scores 5000 × e^(−km / 200), so naming the right city is worth little unless the pin lands nearby. Medium reasoning effort, no tools, one image per guess.",
     category: "Vision",
     scoring: "auto",
     input: "image",
@@ -88,7 +88,7 @@ export const geoguess = defineBenchmark<GeoguessPhoto, GeoguessAnswer>({
 
     return {
       score: geoguessPoints(km) / GEOGUESS_MAX_POINTS,
-      detail: { km: Math.round(km), countryHit, lat: answer.lat, lng: answer.lng },
+      detail: { km: Number(km.toFixed(1)), countryHit, lat: answer.lat, lng: answer.lng },
     };
   },
   reveal: (item) => ({

@@ -247,6 +247,25 @@ function totals(results: readonly BenchmarkItemResult[]) {
   };
 }
 
+export function rescoreAutoResults(
+  benchmark: Benchmark,
+  results: readonly BenchmarkItemResult[],
+): BenchmarkItemResult[] {
+  if (benchmark.summary.scoring !== "auto") {
+    return [...results];
+  }
+
+  return results.map((result) => {
+    if (result.error !== null || result.answer === null) {
+      return result;
+    }
+
+    const scored = benchmark.score(result.itemId, result.answer);
+
+    return { ...result, score: scored.score, detail: scored.detail };
+  });
+}
+
 export function summariseRunResults(benchmark: Benchmark, results: readonly BenchmarkItemResult[]) {
   return {
     score: summariseScores(
@@ -545,17 +564,19 @@ export async function executeBenchmarkRun(
       return failRun(repositories, run.id, outcome.reason);
     }
 
-    const results = progress.ordered();
-    const unanswered = describeUnanswered(results, benchmark.itemIds.length);
+    const unanswered = describeUnanswered(progress.ordered(), benchmark.itemIds.length);
 
     if (unanswered) {
       return failRun(repositories, run.id, unanswered);
     }
 
+    const results = rescoreAutoResults(benchmark, progress.ordered());
     const summary = summariseRunResults(benchmark, results);
 
+    await store.writeResults(run.id, results);
     await repositories.benchmarkRuns.update(run.id, {
       status: "completed",
+      items_total: benchmark.itemIds.length,
       score: summary.score,
       metrics: summary.metrics,
       completed_at: new Date().toISOString(),

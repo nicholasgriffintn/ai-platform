@@ -23,7 +23,7 @@ import { formatUsd } from "@ngriffin_uk/polychat-utility-core";
 import { Play, RotateCcw, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { BLOCK_LINK_CLASS, CATEGORY_TONES } from "../benchmark-display.js";
+import { CATEGORY_TONES } from "../benchmark-display.js";
 import {
   OFFICIAL_FILTERS,
   OFFICIAL_STATUS_LABEL,
@@ -137,20 +137,36 @@ function Cell({
   const title = entrant.reason ?? OFFICIAL_STATUS_LABEL[status];
 
   if (run && status === "completed" && run.score) {
+    const newItems = benchmark.itemCount - run.itemsTotal;
+
     return (
-      <Link
-        href={runHref(run.id)}
-        aria-label={`${entrant.name} on ${benchmark.name}: finished`}
-        className={cn(BLOCK_LINK_CLASS, "block")}
-        title={title}
-      >
-        <span className={cn(base, "hover:border-border-strong")}>
-          <span className="font-display text-base text-foreground tabular-nums">
+      <div className={base} title={title}>
+        <span className="flex items-center justify-between gap-2">
+          <Link
+            href={runHref(run.id)}
+            aria-label={`${entrant.name} on ${benchmark.name}: finished`}
+            className="font-display text-base text-foreground tabular-nums"
+          >
             {formatBenchmarkScore(benchmark, run.score.mean)}
-          </span>
-          <span className="text-muted-foreground tabular-nums">{formatUsd(run.usage.costUsd)}</span>
+          </Link>
+          {newItems > 0 ? (
+            <button
+              type="button"
+              aria-label={`Answer ${newItems} new items for ${entrant.name} on ${benchmark.name}`}
+              title={`${newItems} new items since this run`}
+              disabled={busy}
+              onClick={() => onRetry(run.id)}
+              className="rounded p-0.5 text-attention hover:text-foreground disabled:opacity-50"
+            >
+              <RotateCcw size={12} aria-hidden />
+            </button>
+          ) : null}
         </span>
-      </Link>
+        <span className="text-muted-foreground tabular-nums">
+          {formatUsd(run.usage.costUsd)}
+          {newItems > 0 ? ` · ${run.itemsTotal} of ${benchmark.itemCount}` : ""}
+        </span>
+      </div>
     );
   }
 
@@ -275,7 +291,7 @@ function ModelRow({
         className="sticky left-0 z-10 bg-surface py-2 pr-3 pl-4 text-left font-normal"
       >
         <div className="flex min-w-44 items-center gap-2.5">
-          <ModelIcon modelName={row.name} provider={row.provider} size={18} />
+          <ModelIcon modelName={row.name} provider={row.provider} size={18} mono />
           <div className="min-w-0">
             <p className="truncate text-sm text-foreground">{row.name}</p>
             <p className="truncate font-mono text-[10px] text-muted-foreground">{row.provider}</p>

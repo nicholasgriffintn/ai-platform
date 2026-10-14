@@ -43,6 +43,7 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
     run.status === "completed" &&
     benchmark.scoring === "votes" &&
     items.filter((item) => item.result && !item.result.error && !item.result.artefact).length;
+  const newItems = run.status === "completed" ? benchmark.itemCount - run.itemsTotal : 0;
   const error = cancel.error ?? retry.error ?? share.error ?? remove.error;
 
   const copy = async () => {
@@ -79,6 +80,19 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
             onClick={() => retry.mutate({ runId })}
           >
             Retry missing items
+          </Button>
+        ) : null}
+        {newItems > 0 ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            icon={<RotateCcw size={14} />}
+            disabled={retry.isPending}
+            isLoading={retry.isPending}
+            onClick={() => retry.mutate({ runId })}
+          >
+            Answer {newItems} new {newItems === 1 ? "item" : "items"}
           </Button>
         ) : null}
         {failedChecks ? (

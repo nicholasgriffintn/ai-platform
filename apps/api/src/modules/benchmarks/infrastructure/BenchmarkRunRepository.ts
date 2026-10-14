@@ -38,6 +38,7 @@ export type BenchmarkRunChanges = Partial<
     | "status"
     | "visibility"
     | "share_token"
+    | "items_total"
     | "items_completed"
     | "score"
     | "metrics"
@@ -146,7 +147,7 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async requeue(
     id: string,
-    options: { ownerUserId?: number; fromCompleted?: boolean } = {},
+    options: { ownerUserId?: number; fromCompleted?: boolean; itemsTotal?: number } = {},
   ): Promise<boolean> {
     const statuses: BenchmarkRunStatus[] = options.fromCompleted
       ? ["failed", "cancelled", "completed"]
@@ -158,6 +159,7 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
         failure_reason: null,
         completed_at: null,
         score: null,
+        ...(options.itemsTotal === undefined ? {} : { items_total: options.itemsTotal }),
         ...(options.ownerUserId === undefined ? {} : { owner_user_id: options.ownerUserId }),
       })
       .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, statuses)))

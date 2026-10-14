@@ -25,7 +25,12 @@ export function MedalTable({ medals }: { medals: readonly BenchmarkMedal[] }) {
             {index + 1}
           </span>
           {medal.entrant.kind === "model" ? (
-            <ModelIcon modelName={medal.entrant.name} provider={medal.entrant.provider} size={16} />
+            <ModelIcon
+              modelName={medal.entrant.name}
+              provider={medal.entrant.provider}
+              size={16}
+              mono
+            />
           ) : null}
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
             {medal.entrant.name}

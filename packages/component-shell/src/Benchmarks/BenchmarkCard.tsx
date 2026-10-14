@@ -26,6 +26,7 @@ function PodiumRow({ board, standing }: { board: BenchmarkBoard; standing: Bench
           modelName={standing.entrant.name}
           provider={standing.entrant.provider}
           size={14}
+          mono
         />
       ) : null}
       <span className="min-w-0 flex-1 truncate text-foreground">{standing.entrant.name}</span>
