@@ -47,6 +47,7 @@ export function convertCatalogue(providers, remoteProviders, previous) {
         provider: _provider,
         matchingModel,
         family: _family,
+        catalogueModel: _catalogueModel,
         id: ignoredId,
         ...values
       } = original;
@@ -84,6 +85,7 @@ export function convertCatalogue(providers, remoteProviders, previous) {
         family: group.family,
         provider: entry.provider,
         matchingModel: entry.matchingModel,
+        catalogueModel: key,
       };
     }
 

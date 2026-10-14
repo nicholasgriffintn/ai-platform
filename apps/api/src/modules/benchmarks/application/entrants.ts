@@ -1,10 +1,12 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import type { Benchmark } from "@ngriffin_uk/polychat-library-benchmarks";
 import {
+  findModelMaker,
   getModelDisplayName,
   isActiveModel,
   modelHasInputModalities,
   modelHasOutputModality,
+  resolveModelMakerId,
   type BenchmarkCredentialSource,
   type BenchmarkEntrant,
   type BenchmarkScope,
@@ -25,7 +27,14 @@ export type EntrantTarget =
   | { kind: "decision"; model: AuthorisedModelTarget }
   | { kind: "route"; route: ModelRouteRecord };
 
-export type OfficialModels = Record<string, ModelConfigItem>;
+export interface OfficialModel {
+  id: string;
+  config: ModelConfigItem;
+  runsOnId: string;
+  runsOn: ModelConfigItem;
+}
+
+export type OfficialModels = Record<string, OfficialModel>;
 
 const FATAL_ERROR_TYPES = new Set<string>([
   ErrorType.AUTHENTICATION_ERROR,
@@ -65,34 +74,94 @@ export function modelIneligibility(benchmark: Benchmark, config: ModelConfigItem
   return null;
 }
 
+export function officialLabOf(config: Pick<ModelConfigItem, "family" | "provider">): string | null {
+  const maker = findModelMaker(resolveModelMakerId(config));
+
+  if (!maker || !BENCHMARKS_CONFIG.officialLabs.includes(maker.id)) {
+    return null;
+  }
+
+  return maker.providers.includes(config.provider) ? maker.id : null;
+}
+
+export function isOfficialLabModel(config: Pick<ModelConfigItem, "family" | "provider">): boolean {
+  return officialLabOf(config) !== null;
+}
+
+export function isMirrored(official: OfficialModel): boolean {
+  return official.runsOnId !== official.id;
+}
+
+export function credentialSourceFor(official: OfficialModel): BenchmarkCredentialSource {
+  if (isMirrored(official)) {
+    return "mirror";
+  }
+
+  return official.runsOn.isPlatformEnabled === false ? "byok" : "platform";
+}
+
 export function modelEntrant(modelId: string, config: ModelConfigItem): BenchmarkEntrant {
   return { kind: "model", modelId, provider: config.provider, name: getModelDisplayName(config) };
 }
 
-export function isOfficialProvider(provider: string): boolean {
-  return BENCHMARKS_CONFIG.officialProviders.includes(provider);
+export function officialEntrant(official: OfficialModel): BenchmarkEntrant {
+  return {
+    ...modelEntrant(official.id, official.config),
+    ...(isMirrored(official)
+      ? { via: { modelId: official.runsOnId, provider: official.runsOn.provider } }
+      : {}),
+  };
 }
 
-export function credentialSourceFor(config: ModelConfigItem): BenchmarkCredentialSource {
-  return config.isPlatformEnabled === false ? "byok" : "platform";
+function hasKey(config: ModelConfigItem): boolean {
+  return config.isPlatformEnabled !== false || config.isByokEnabled === true;
 }
 
 export async function listOfficialModels(env: IEnv, user: IUser | null): Promise<OfficialModels> {
-  const accessible = await filterModelsForUserAccess(getModels(), env, user?.id, {
+  const catalogue = getModels();
+  const accessible = await filterModelsForUserAccess(catalogue, env, user?.id, {
     shouldUseCache: false,
   });
+  const mirrors = new Map<string, ModelConfigItem & { id: string }>();
 
-  return Object.fromEntries(
-    Object.entries(accessible).flatMap(([id, config]) =>
-      isOfficialProvider(config.provider) &&
-      (config.isPlatformEnabled !== false || config.isByokEnabled === true)
-        ? [[id, { ...config, id }]]
-        : [],
-    ),
-  );
+  for (const [id, config] of Object.entries(accessible)) {
+    if (
+      config.provider === BENCHMARKS_CONFIG.mirrorProvider &&
+      config.catalogueModel &&
+      isActiveModel(config) &&
+      hasKey(config)
+    ) {
+      mirrors.set(config.catalogueModel, { ...config, id });
+    }
+  }
+
+  const models: OfficialModels = {};
+
+  for (const [id, config] of Object.entries(catalogue)) {
+    if (!isOfficialLabModel(config)) {
+      continue;
+    }
+
+    const own = accessible[id];
+
+    if (own && hasKey(own)) {
+      const resolved = { ...own, id };
+
+      models[id] = { id, config: resolved, runsOnId: id, runsOn: resolved };
+      continue;
+    }
+
+    const mirror = config.catalogueModel ? mirrors.get(config.catalogueModel) : undefined;
+
+    if (mirror && mirror.id !== id) {
+      models[id] = { id, config: { ...config, id }, runsOnId: mirror.id, runsOn: mirror };
+    }
+  }
+
+  return models;
 }
 
-export function findOfficialModel(models: OfficialModels, modelId: string): ModelConfigItem | null {
+export function findOfficialModel(models: OfficialModels, modelId: string): OfficialModel | null {
   return models[modelId] ?? null;
 }
 
@@ -100,10 +169,14 @@ export function officialRunRefusal(run: {
   scope: BenchmarkScope;
   entrant: BenchmarkEntrant;
 }): string | null {
-  return run.scope === "official" &&
-    run.entrant.kind === "model" &&
-    !isOfficialProvider(run.entrant.provider)
-    ? `Official runs only go to approved labs, not ${run.entrant.provider}`
+  if (run.scope !== "official" || run.entrant.kind !== "model") {
+    return null;
+  }
+
+  const config = getModels()[run.entrant.modelId];
+
+  return config && !isOfficialLabModel(config)
+    ? `Official runs only go to approved labs on their own APIs, not ${run.entrant.provider}`
     : null;
 }
 
@@ -125,16 +198,19 @@ export async function resolveModelTarget(
   scope: BenchmarkScope,
 ): Promise<AuthorisedModelTarget> {
   if (scope === "official") {
-    const config = findOfficialModel(await listOfficialModels(env, user), entrant.modelId);
+    const official = findOfficialModel(await listOfficialModels(env, user), entrant.modelId);
 
-    if (!config) {
+    if (!official) {
       throw new AssistantError(
         `${entrant.name} has no key to run on: add a ${entrant.provider} key or set the platform key`,
         ErrorType.CONFIGURATION_ERROR,
       );
     }
 
-    return { config, credentialAuthority: credentialSourceFor(config) };
+    return {
+      config: official.runsOn,
+      credentialAuthority: official.runsOn.isPlatformEnabled === false ? "byok" : "platform",
+    };
   }
 
   if (!user) {

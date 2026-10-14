@@ -129,10 +129,17 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
     const claimed = await this.database
       .update(benchmarkRun)
       .set({ status: "running" })
-      .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, ACTIVE_STATUSES)))
+      .where(and(eq(benchmarkRun.id, id), eq(benchmarkRun.status, "queued")))
       .returning({ id: benchmarkRun.id });
 
     return claimed.length > 0;
+  }
+
+  async release(id: string): Promise<void> {
+    await this.database
+      .update(benchmarkRun)
+      .set({ status: "queued" })
+      .where(and(eq(benchmarkRun.id, id), eq(benchmarkRun.status, "running")));
   }
 
   async cancel(id: string, reason: string): Promise<boolean> {

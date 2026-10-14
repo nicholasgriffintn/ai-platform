@@ -37,6 +37,12 @@ import {
   type OfficialModelRow,
 } from "./official-runs.js";
 
+const CREDENTIAL_LABEL: Record<NonNullable<BenchmarkOfficialEntrant["credential"]>, string> = {
+  platform: "Platform",
+  byok: "Own key",
+  mirror: "Workers AI",
+};
+
 const CELL_TONE: Record<BenchmarkOfficialEntrant["status"], string> = {
   missing: "border-dashed border-border text-muted-foreground",
   unavailable: "border-border bg-canvas/60 text-muted-foreground",
@@ -249,9 +255,7 @@ function Cell({
         <span className="text-muted-foreground">
           {status === "cancelled"
             ? "Cancelled"
-            : entrant.credential === "byok"
-              ? "Own key"
-              : "Platform"}
+            : CREDENTIAL_LABEL[entrant.credential ?? "platform"]}
         </span>
       </button>
     );

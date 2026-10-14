@@ -469,10 +469,10 @@ async function failRun(
   repositories: RepositoryManager,
   runId: string,
   reason: string,
-): Promise<{ status: "error"; message: string }> {
+): Promise<{ status: "success"; message: string }> {
   await repositories.benchmarkRuns.update(runId, { status: "failed", failure_reason: reason });
 
-  return { status: "error", message: reason };
+  return { status: "success", message: `Benchmark run ${runId} failed: ${reason}` };
 }
 
 async function isOutOfCredit(repositories: RepositoryManager, user: IUser): Promise<boolean> {
@@ -509,9 +509,14 @@ export async function executeBenchmarkRun(
     return { status: "success" as const, message: `Benchmark run ${run.id} cancelled: ${refusal}` };
   }
 
-  try {
-    await repositories.benchmarkRuns.claim(run.id);
+  if (!(await repositories.benchmarkRuns.claim(run.id))) {
+    return {
+      status: "success" as const,
+      message: `Benchmark run ${run.id} is already held by another worker`,
+    };
+  }
 
+  try {
     const user = run.owner_user_id ? await repositories.users.getUserById(run.owner_user_id) : null;
 
     if (run.scope !== "official" && !user) {
@@ -550,6 +555,7 @@ export async function executeBenchmarkRun(
     }
 
     if (outcome.kind === "out_of_time") {
+      await repositories.benchmarkRuns.release(run.id);
       await enqueueBenchmarkRunTask(env, repositories, run.id, {
         retryChecks: data.retryChecks === true,
       });

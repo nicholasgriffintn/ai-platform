@@ -65,6 +65,18 @@ export const MODEL_MAKERS: readonly ModelMaker[] = [
     families: ["deepseek"],
   },
   {
+    id: "cloudflare",
+    label: "Cloudflare",
+    providers: ["workers-ai"],
+    families: ["cloudflare/clef"],
+  },
+  {
+    id: "typesafe",
+    label: "Typesafe",
+    providers: ["typesafe"],
+    families: ["typesafe/jev"],
+  },
+  {
     id: "zai",
     label: "Z.ai",
     providers: ["zai"],

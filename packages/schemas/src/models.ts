@@ -157,6 +157,7 @@ export const modelConfigItemSchema = z.object({
     .strict()
     .optional(),
   family: z.string().optional(),
+  catalogueModel: z.string().optional(),
   status: modelStatusSchema.optional(),
   openWeights: z.boolean().optional(),
   description: z.string().optional(),

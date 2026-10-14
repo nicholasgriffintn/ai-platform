@@ -144,6 +144,9 @@ export function RunDetailView({
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant={statusVariant(run)}>{RUN_STATUS_LABEL[run.status]}</Badge>
                 <Badge variant="outline">Season {run.version}</Badge>
+                {run.entrant.kind === "model" && run.entrant.via ? (
+                  <Badge variant="outline">Ran on {run.entrant.via.provider}</Badge>
+                ) : null}
                 {run.visibility === "link" ? <Badge variant="info">Shared by link</Badge> : null}
               </div>
             </div>

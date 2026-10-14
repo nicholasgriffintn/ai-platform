@@ -11,6 +11,7 @@ import {
   findModelByReference,
   getModelDisplayName,
   isActiveModel,
+  isLineupEligibleModel,
   type BenchmarkEntrant,
   type BenchmarkOfficialBoard,
   type BenchmarkOfficialEntrant,
@@ -29,10 +30,11 @@ import {
   credentialSourceFor,
   findOfficialModel,
   isDecisionModel,
-  isOfficialProvider,
+  isOfficialLabModel,
   listOfficialModels,
-  modelEntrant,
   modelIneligibility,
+  officialEntrant,
+  type OfficialModel,
   type OfficialModels,
 } from "./entrants";
 import { toBenchmarkRun } from "./mappers";
@@ -53,22 +55,43 @@ function startOfMonth(now: Date): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 }
 
-export function officialCandidateModelIds(catalogue = getModels()): string[] {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function releasedSince(config: ModelConfigItem, since: number): boolean {
+  const released = config.releaseDate ? Date.parse(config.releaseDate) : Number.NaN;
+
+  return Number.isFinite(released) && released >= since;
+}
+
+export function officialCandidateModelIds(catalogue = getModels(), now = Date.now()): string[] {
   const lineup = Object.values(MODEL_TIER_LINEUP.hosted).flatMap((roles) =>
     Object.values(roles).flatMap((candidates) => [...candidates]),
   );
-  const fromLineup = lineup.flatMap((candidate) => {
-    const resolved = findModelByReference(catalogue, candidate);
+  const fromLineup = new Set(
+    lineup.flatMap((candidate) => {
+      const resolved = findModelByReference(catalogue, candidate);
 
-    return resolved ? [resolved.id] : [];
-  });
-  const decisionModels = Object.entries(catalogue)
-    .filter(([, config]) => isActiveModel(config) && isDecisionModel(config))
-    .map(([id]) => id);
-
-  return [...new Set([...fromLineup, ...decisionModels])].filter((id) =>
-    isOfficialProvider(catalogue[id]?.provider ?? ""),
+      return resolved ? [resolved.id] : [];
+    }),
   );
+  const since = now - BENCHMARKS_CONFIG.recentReleaseDays * DAY_MS;
+
+  return Object.entries(catalogue)
+    .filter(([id, config]) => {
+      if (!isOfficialLabModel(config) || !isActiveModel(config)) {
+        return false;
+      }
+
+      if (isDecisionModel(config)) {
+        return true;
+      }
+
+      return (
+        isLineupEligibleModel(config) &&
+        (fromLineup.has(id) || config.isFeatured === true || releasedSince(config, since))
+      );
+    })
+    .map(([id]) => id);
 }
 
 export function officialEntrantsFor(
@@ -78,13 +101,13 @@ export function officialEntrantsFor(
   existing: ReadonlySet<string>,
 ): BenchmarkEntrant[] {
   return modelIds.flatMap((modelId) => {
-    const config = findOfficialModel(models, modelId);
+    const official = findOfficialModel(models, modelId);
 
-    if (!config || modelIneligibility(benchmark, config)) {
+    if (!official || modelIneligibility(benchmark, official.runsOn)) {
       return [];
     }
 
-    const entrant = modelEntrant(modelId, config);
+    const entrant = officialEntrant(official);
 
     return existing.has(benchmarkEntrantKey(entrant)) ? [] : [entrant];
   });
@@ -184,17 +207,17 @@ function latestOfficialRuns(
 function describeEntrant(
   benchmark: Benchmark,
   modelId: string,
-  config: ModelConfigItem | null,
+  official: OfficialModel | null,
   catalogued: ModelConfigItem | undefined,
   record: BenchmarkRunRecord | undefined,
 ): BenchmarkOfficialEntrant {
-  const known = config ?? catalogued;
+  const known = official?.config ?? catalogued;
   const run = record ? toBenchmarkRun(record) : null;
   const base = {
     modelId,
     name: known ? getModelDisplayName(known) : (run?.entrant.name ?? modelId),
     provider: known?.provider ?? (run?.entrant.kind === "model" ? run.entrant.provider : "unknown"),
-    credential: config ? credentialSourceFor(config) : null,
+    credential: official ? credentialSourceFor(official) : null,
     run,
   };
 
@@ -202,17 +225,17 @@ function describeEntrant(
     return { ...base, status: run.status, reason: run.failureReason };
   }
 
-  if (!config) {
+  if (!official) {
     return {
       ...base,
       status: "unavailable",
       reason: catalogued
-        ? `No ${base.provider} key: add your own or set the platform key`
+        ? `No ${base.provider} key and no Workers AI mirror: add your own or set the platform key`
         : "This model is no longer in the catalogue",
     };
   }
 
-  const ineligibility = modelIneligibility(benchmark, config);
+  const ineligibility = modelIneligibility(benchmark, official.runsOn);
 
   if (ineligibility) {
     return { ...base, status: "ineligible", reason: ineligibility };

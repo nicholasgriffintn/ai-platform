@@ -1,18 +1,24 @@
-export const OFFICIAL_BENCHMARK_PROVIDERS: readonly string[] = [
+export const OFFICIAL_BENCHMARK_LABS: readonly string[] = [
   "anthropic",
   "openai",
-  "google-ai-studio",
+  "google",
   "deepseek",
   "moonshot",
   "zai",
   "mistral",
-  "grok",
+  "xai",
   "minimax",
-  "alibaba",
+  "qwen",
+  "cloudflare",
+  "typesafe",
 ];
 
+export const BENCHMARK_MIRROR_PROVIDER = "workers-ai";
+
 export const BENCHMARKS_CONFIG = {
-  officialProviders: OFFICIAL_BENCHMARK_PROVIDERS,
+  officialLabs: OFFICIAL_BENCHMARK_LABS,
+  mirrorProvider: BENCHMARK_MIRROR_PROVIDER,
+  recentReleaseDays: 183,
   officialMonthlyBudgetUsd: 50,
   officialRunsPerQueuePass: 12,
   itemConcurrency: 6,

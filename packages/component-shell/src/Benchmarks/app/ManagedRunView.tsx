@@ -38,7 +38,10 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
   const { run, benchmark, items } = query.data;
   const isShared = run.visibility !== "private" && run.shareToken;
   const isActive = isActiveBenchmarkRunStatus(run.status);
-  const canRetry = run.status === "failed" || run.status === "cancelled";
+  const canRetry =
+    run.status === "failed" ||
+    run.status === "cancelled" ||
+    (run.status === "completed" && items.some((item) => item.result?.error));
   const failedChecks =
     run.status === "completed" &&
     benchmark.scoring === "votes" &&

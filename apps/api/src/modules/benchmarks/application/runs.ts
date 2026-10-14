@@ -306,10 +306,15 @@ export async function retryBenchmarkRun(
 
   const retryChecks = request.failedChecks === true && benchmark.summary.scoring === "votes";
   const newItems = benchmark.itemIds.length > record.items_total;
+  const unanswered =
+    record.status === "completed" &&
+    (await BenchmarkResultStore.forEnv(context.env).readResults(record.id)).some(
+      (result) => result.error !== null,
+    );
   const ownerUserId = record.scope === "official" && isPlatformAdmin(user) ? user.id : undefined;
   const requeued = await context.repositories.benchmarkRuns.requeue(record.id, {
     ownerUserId,
-    fromCompleted: retryChecks || newItems,
+    fromCompleted: retryChecks || newItems || unanswered,
     itemsTotal: benchmark.itemIds.length,
   });
 

@@ -59,12 +59,18 @@ export const benchmarkSummarySchema = z.object({
   credit: z.object({ label: z.string(), url: z.string() }).nullable(),
 });
 
+export const benchmarkEntrantHostSchema = z.object({
+  modelId: z.string(),
+  provider: z.string(),
+});
+
 export const benchmarkEntrantSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("model"),
     modelId: z.string(),
     provider: z.string(),
     name: z.string(),
+    via: benchmarkEntrantHostSchema.optional(),
   }),
   z.object({
     kind: z.literal("route"),
@@ -222,7 +228,7 @@ export const benchmarkQueueResultSchema = z.object({
   remaining: z.number().int().nonnegative(),
 });
 
-export const benchmarkCredentialSourceSchema = z.enum(["platform", "byok"]);
+export const benchmarkCredentialSourceSchema = z.enum(["platform", "byok", "mirror"]);
 
 export const benchmarkOfficialEntrantStatusSchema = z.enum([
   "missing",
@@ -361,6 +367,7 @@ export type BenchmarkVoteWinner = z.infer<typeof benchmarkVoteWinnerSchema>;
 export type BenchmarkMetricDefinition = z.infer<typeof benchmarkMetricDefinitionSchema>;
 export type BenchmarkSummary = z.infer<typeof benchmarkSummarySchema>;
 export type BenchmarkEntrant = z.infer<typeof benchmarkEntrantSchema>;
+export type BenchmarkEntrantHost = z.infer<typeof benchmarkEntrantHostSchema>;
 export type BenchmarkUsage = z.infer<typeof benchmarkUsageSchema>;
 export type BenchmarkRating = z.infer<typeof benchmarkRatingSchema>;
 export type BenchmarkRun = z.infer<typeof benchmarkRunSchema>;

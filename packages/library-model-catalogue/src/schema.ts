@@ -3,7 +3,7 @@ import type { ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas
 import z from "zod/v4";
 
 export const modelDefaultsSchema = modelConfigItemSchema
-  .omit({ id: true, provider: true, matchingModel: true, family: true })
+  .omit({ id: true, provider: true, matchingModel: true, family: true, catalogueModel: true })
   .partial()
   .strict();
 
@@ -90,6 +90,7 @@ export function resolveCatalogueProvider(
         provider: providerId,
         matchingModel: offering.matchingModel,
         family: familyId,
+        catalogueModel: offering.model,
       };
 
       for (const field of offering.unset ?? []) {

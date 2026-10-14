@@ -116,10 +116,12 @@ describe("layered model catalogue", () => {
     expect(Object.keys(resolved)).toEqual(["alpha", "second/alpha"]);
     expect(resolved.alpha).toEqual({
       ...providers.first.alpha,
+      catalogueModel: "test/alpha",
       description: "Shared upstream description",
     });
     expect(resolved["second/alpha"]).toEqual({
       ...providers.second.alpha,
+      catalogueModel: "test/alpha",
       description: "Shared upstream description",
     });
     expect(
