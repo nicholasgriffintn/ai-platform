@@ -8,18 +8,14 @@ import {
   environmentParamsSchema,
   environmentPreviewParamsSchema,
   environmentQuerySchema,
-  environmentRunParamsSchema,
   environmentSchema,
   errorResponseSchema,
   listEnvironmentsQuerySchema,
   listPageOf,
   listRunInstructionsQuerySchema,
-  machineRunRequestSchema,
   recordGoalIterationRequestSchema,
   sandboxRunUsageReportSchema,
-  setGoalRequestSchema,
   submitRunInstructionSchema,
-  updateGoalRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
@@ -27,13 +23,7 @@ import { Hono } from "hono";
 import { defineResource } from "~/infrastructure/http/resource";
 import { requirePlan } from "~/middleware/requirePlan";
 import { getComputerUseAvailability } from "~/modules/computer-use/application/access";
-import {
-  handleGetRunGoal,
-  handleRecordRunGoalIteration,
-  handleSetRunGoal,
-  handleUpdateRunGoal,
-} from "~/modules/conversations/application/conversationGoal";
-import { callMachineRun } from "~/modules/machines/application/runs";
+import { handleRecordRunGoalIteration } from "~/modules/conversations/application/conversationGoal";
 import {
   createSandboxPreview,
   getSandboxPreview,
@@ -252,44 +242,16 @@ defineResource(app, { idParam: "environment_id", tags: ["environments"] }, (envi
       ),
   });
 
-  environments
-    .singleton("goal")
-    .read({
-      auth: true,
-      summary: "Get the goal a sandbox is working toward",
-      middleware: sandboxOnly,
-      paramSchema: environmentParamsSchema,
-      handler: ({ serviceContext, params }) =>
-        handleGetRunGoal(serviceContext, params.environment_id),
-    })
-    .create({
-      auth: true,
-      summary: "Set the goal for a sandbox",
-      middleware: sandboxOnly,
-      paramSchema: environmentParamsSchema,
-      bodySchema: setGoalRequestSchema,
-      handler: ({ serviceContext, params, body }) =>
-        handleSetRunGoal(serviceContext, params.environment_id, body.objective),
-    })
-    .update({
-      auth: true,
-      summary: "Pause, resume or clear the sandbox goal",
-      middleware: sandboxOnly,
-      paramSchema: environmentParamsSchema,
-      bodySchema: updateGoalRequestSchema,
-      handler: ({ serviceContext, params, body }) =>
-        handleUpdateRunGoal(serviceContext, params.environment_id, body),
-    })
-    .action("iterate", {
-      auth: true,
-      summary: "Record one unit of work against the sandbox goal",
-      description: "Records progress and says whether the run should keep going.",
-      middleware: sandboxOnly,
-      paramSchema: environmentParamsSchema,
-      bodySchema: recordGoalIterationRequestSchema,
-      handler: ({ serviceContext, params, body }) =>
-        handleRecordRunGoalIteration(serviceContext, params.environment_id, body),
-    });
+  environments.singleton("goal").action("iterate", {
+    auth: true,
+    summary: "Record one unit of work against the sandbox goal",
+    description: "Records progress and says whether the run should keep going.",
+    middleware: sandboxOnly,
+    paramSchema: environmentParamsSchema,
+    bodySchema: recordGoalIterationRequestSchema,
+    handler: ({ serviceContext, params, body }) =>
+      handleRecordRunGoalIteration(serviceContext, params.environment_id, body),
+  });
 
   environments.sub("usage_reports", "report_id").create({
     auth: true,
@@ -310,31 +272,6 @@ defineResource(app, { idParam: "environment_id", tags: ["environments"] }, (envi
       });
     },
   });
-
-  environments
-    .sub("runs", "run_id")
-    .create({
-      auth: true,
-      summary: "Start a run on a machine",
-      paramSchema: environmentParamsSchema,
-      bodySchema: machineRunRequestSchema,
-      handler: ({ serviceContext, params, body }) =>
-        callMachineRun(serviceContext, params.environment_id, "/create", body),
-    })
-    .read({
-      auth: true,
-      summary: "Get a machine run",
-      paramSchema: environmentRunParamsSchema,
-      handler: ({ serviceContext, params }) =>
-        callMachineRun(serviceContext, params.environment_id, `/read/${params.run_id}`),
-    })
-    .action("cancel", {
-      auth: true,
-      summary: "Cancel a machine run",
-      paramSchema: environmentRunParamsSchema,
-      handler: ({ serviceContext, params }) =>
-        callMachineRun(serviceContext, params.environment_id, `/cancel/${params.run_id}`),
-    });
 });
 
 export default app;

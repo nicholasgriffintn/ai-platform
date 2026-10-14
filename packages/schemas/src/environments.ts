@@ -80,10 +80,6 @@ export const environmentActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("release"), fence: z.number().int().positive() }),
 ]);
 
-export const environmentRunParamsSchema = environmentParamsSchema.extend({
-  run_id: z.uuid(),
-});
-
 export const environmentPreviewParamsSchema = environmentParamsSchema.extend({
   preview_id: z.string().trim().min(1),
 });

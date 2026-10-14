@@ -6,7 +6,7 @@ import type { IEnv } from "~/types";
 
 import { grammarViolations } from "./route-grammar";
 
-const ROUTE_CEILING = 520;
+const ROUTE_CEILING = 514;
 
 function mountedRoutes(): string[] {
   const app = new Hono<{ Bindings: IEnv }>();

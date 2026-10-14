@@ -155,7 +155,7 @@ struct ChatView: View {
                 activeModelProvider: activeModelProvider,
                 isTemporaryConversation: isTemporaryConversation,
                 modelReadinessMessage: modelReadinessMessage,
-                isRunActive: currentResponse?.isActive == true || (conversationManager.activeMachineRun != nil && conversationManager.activeMachineRun?.conversationId == conversationManager.currentConversation?.id),
+                isRunActive: currentResponse?.isActive == true,
                 isCancellationPending: currentResponse?.status == "cancelling",
                 onFilesPicked: uploadFiles,
                 onVoiceTapped: {

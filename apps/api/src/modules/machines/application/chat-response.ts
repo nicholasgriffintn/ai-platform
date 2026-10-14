@@ -6,11 +6,18 @@ import {
   modelRuntimeVendorSchema,
   teammateRunConfigurationSchema,
   type MachineRunRequest,
+  type MachineRunSnapshot,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { abortableDelay, generateId } from "@ngriffin_uk/polychat-utility-core";
+import {
+  abortableDelay,
+  encodeServerSentEvent,
+  encodeServerSentEventDone,
+  generateId,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ChatCompletionParameters } from "~/types";
 
 import { callMachineRun } from "./runs";
@@ -60,7 +67,7 @@ async function machineRunDeadline(params: ChatCompletionParameters): Promise<num
 export async function executeMachineChatResponse(
   params: ChatCompletionParameters,
   model: ModelConfigItem & { machineId: string },
-): Promise<{ response: string }> {
+): Promise<{ response: string } | ReadableStream<Uint8Array>> {
   const context = params.context;
 
   if (!context?.user) {
@@ -114,16 +121,57 @@ export async function executeMachineChatResponse(
   }
 
   const parsedRequest = machineRunRequestSchema.parse(request);
-  let snapshot = await parseMachineSnapshot(
+  const created = await parseMachineSnapshot(
     await callMachineRun(context, model.machineId, "/create", parsedRequest),
   );
   const deadline = await machineRunDeadline(params);
+  const poll = (onText: (text: string) => void) =>
+    pollMachineRun(context, model.machineId, parsedRequest.id, created, deadline, onText);
+
+  if (!params.stream) {
+    return { response: await poll(() => undefined) };
+  }
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let sent = 0;
+
+      try {
+        await poll((text) => {
+          if (text.length > sent) {
+            controller.enqueue(
+              encodeServerSentEvent({
+                type: "response.output_text.delta",
+                delta: text.slice(sent),
+              }),
+            );
+            sent = text.length;
+          }
+        });
+        controller.enqueue(encodeServerSentEventDone());
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+}
+
+async function pollMachineRun(
+  context: ServiceContext,
+  machineId: string,
+  machineRunId: string,
+  created: MachineRunSnapshot,
+  deadline: number,
+  onText: (text: string) => void,
+): Promise<string> {
+  let snapshot = created;
+
+  onText(snapshot.text);
 
   while (snapshot.state === "pending" || snapshot.state === "running") {
     if (Date.now() >= deadline) {
-      await callMachineRun(context, model.machineId, `/cancel/${parsedRequest.id}`).catch(
-        () => undefined,
-      );
+      await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);
       throw new AssistantError(
         "Machine execution exceeded its deadline",
         ErrorType.PROVIDER_ERROR,
@@ -135,16 +183,15 @@ export async function executeMachineChatResponse(
     const run = runId ? await context.repositories.conversationRuns.getById(runId) : null;
 
     if (run?.cancellationRequestedAt || run?.status === "cancelled") {
-      await callMachineRun(context, model.machineId, `/cancel/${parsedRequest.id}`).catch(
-        () => undefined,
-      );
+      await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);
       throw new AssistantError("Machine execution was cancelled", ErrorType.CONFLICT_ERROR, 409);
     }
 
     await abortableDelay(MACHINE_RUN_POLL_INTERVAL_MS);
     snapshot = await parseMachineSnapshot(
-      await callMachineRun(context, model.machineId, `/read/${parsedRequest.id}`),
+      await callMachineRun(context, machineId, `/read/${machineRunId}`),
     );
+    onText(snapshot.text);
   }
 
   if (snapshot.state !== "completed") {
@@ -154,5 +201,5 @@ export async function executeMachineChatResponse(
     );
   }
 
-  return { response: snapshot.text };
+  return snapshot.text;
 }

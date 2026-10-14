@@ -6,7 +6,6 @@ class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
-    @Published private(set) var activeMachineRun: (id: String, machineId: String, conversationId: String)?
     @Published var isLoading: Bool = false
     @Published var loadingConversationID: String?
     @Published private(set) var isLoadingEarlierMessages = false
@@ -409,15 +408,6 @@ class ConversationManager: ObservableObject {
     }
 
     func cancelCurrentRun() async {
-        if let run = activeMachineRun, let apiClient {
-            do {
-                try await apiClient.cancelMachineModelRun(id: run.id, machineId: run.machineId)
-            } catch {
-                self.error = "The device run could not be stopped: \(error.localizedDescription)"
-            }
-            return
-        }
-
         guard let apiClient,
               let conversation = currentConversation,
               let response = conversation.latestResponse,
@@ -688,7 +678,6 @@ class ConversationManager: ObservableObject {
 
         defer {
             progressCoalescer?.stop()
-            if activeMachineRun?.conversationId == conversationId { activeMachineRun = nil }
         }
 
         do {
@@ -720,16 +709,8 @@ class ConversationManager: ObservableObject {
                              userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
             }
 
-            let stream: AsyncThrowingStream<ChatStreamEvent, Error>
-            if let machineId = selectedModel?.machineId, let modelId = selectedModel?.id {
-                let runId = UUID().uuidString
-                activeMachineRun = (runId, machineId, conversationId)
-                stream = apiClient.streamMachineModelRun(
-                    id: runId, machineId: machineId, modelId: modelId,
-                    messages: requestMessages, conversationId: conversationId
-                )
-            } else {
-            stream = connectorApprovalId.map {
+            let computeSite = selectedModel?.machineId == nil ? "hosted" : "machine"
+            let stream = connectorApprovalId.map {
                 apiClient.streamApprovedConnectorOperation(
                     messages: requestMessages,
                     modelId: modelToUse,
@@ -739,7 +720,7 @@ class ConversationManager: ObservableObject {
                     approvalId: $0,
                     idempotencyKey: commandId,
                     modelTier: requestedModelTier,
-                    computeSite: "hosted"
+                    computeSite: computeSite
                 )
             } ?? apiClient.streamResponse(
                 messages: requestMessages,
@@ -749,10 +730,8 @@ class ConversationManager: ObservableObject {
                 settings: settings,
                 idempotencyKey: commandId,
                 modelTier: requestedModelTier,
-                computeSite: "hosted"
+                computeSite: computeSite
             )
-
-            }
 
             var streamedReasoning = ""
             var responseModelId = modelToUse ?? "auto"
