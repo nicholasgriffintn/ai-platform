@@ -1,5 +1,11 @@
 # @ngriffin_uk/polychat-library-policy
 
+## 0.3.0
+
+### Minor Changes
+
+- 7bec25b: Add Polychat Benchmarks: GeoGuess, Countdown, Fermi Bets, Long Odds, Hamster Wheel and Strudel Groove, run on one engine for official, personal and workspace scopes. Results at `/benchmarks` show intervals, Artificial Analysis indexes with attribution, measured cost and a medal table, people can play the auto-scored benchmarks and vote on blind pairs, the Benchmarks app runs them against your own models and keys, and the model selector previews each model's standings.
+
 ## 0.2.0
 
 ### Minor Changes
