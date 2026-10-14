@@ -1,79 +1,49 @@
 import { md } from "@ngriffin_uk/polychat-utility-server/markdown";
 
 export const apiInfoDescription = md`
-# API Documentation
+# Polychat API
 
-Welcome to the AI Platform API documentation. This API provides a unified interface to multiple AI models and providers, following OpenAI-compatible conventions while extending functionality with additional features.
+One API for models, teammates and the work they do. It accepts OpenAI-compatible request bodies and adds Polychat parameters on top, so an unmodified OpenAI client works and a Polychat-aware client can do more.
 
-## Overview
+## Start here
 
-The API is built on Cloudflare Workers and provides:
+- **Responses** run a model, a teammate or an agent. Every run anywhere in Polychat is a Response with one sequenced event stream.
+- **Conversations** hold the items Responses produce.
+- **Chat Completions** is an OpenAI-compatible port onto the same engine.
+- **Models** lists what you can run. Pass \`model_tier\` instead of a model to let your plan pick.
 
-- **OpenAI-Compatible Endpoints** - Drop-in replacement for OpenAI API
-- **Multi-Provider Support** - Access 40+ AI models from a single API
-- **Advanced Features** - Agents, RAG, guardrails, and more
-- **Flexible Authentication** - Multiple auth methods to suit your needs
-- **Built for Scale** - Powered by Cloudflare's global network
+## What else is here
 
-## Core Features
+- **Teammates, Poly, Skills and Memory** for configured agents that remember and learn.
+- **Workspaces, Projects and Tasks** for shared work, boards and pull request reviews.
+- **Environments, Machines and Jobs** for sandboxes, browsers, paired desktops and long-running work.
+- **Outputs, Documents, Sources and Sites** for what gets made and what it is made from.
+- **Recipes, Connectors, Channels and Webhooks** for integrations in and out.
+- **The model platform** (registry, datasets, training, evaluation, serving and governance) for bringing your own models into a workspace.
 
-### Responses and Conversations
+## Authentication
 
-Run models, teammates and agents as Responses inside Conversations, with one sequenced event stream for every run. Chat Completions remains available as an OpenAI-compatible port onto the same engine.
+Send a JWT or API key as a bearer token:
 
-### Code Generation
+~~~http
+Authorization: Bearer <jwt_or_api_key>
+~~~
 
-Specialized endpoints for code completion, editing, and application:
+See Authentication for sign-in methods, including device sign-in for CLIs.
 
-- Fill-in-the-middle (FIM) completions
-- Next edit suggestions
-- Apply code snippets
+## Limits
 
-### Models & Capabilities
+Requests are rate limited per caller: 100 a minute when authenticated and 10 a minute otherwise. Model usage is metered in credits against your plan; read your balance at \`GET /usage/balance\` and the plans at \`GET /plans\`.
 
-Browse and discover models based on capabilities like vision, function calling, and streaming.
-
-### Agents
-
-Create AI agents with custom configurations, tools, and MCP server integrations.
-
-### Authentication
-
-Secure your API access with GitHub OAuth, magic links, passkeys, JWT tokens, or API keys.
-
-### Sources, outputs & RAG
-
-Store personal or project source material, retrieve relevant context with vector embeddings, and manage generated outputs.
-
-### Guardrails
-
-Built-in content safety with LlamaGuard, Mistral Moderation, Shieldstral, and AWS Bedrock Guardrails.
-
-## Resources
-
-- **Authentication** - Review the available authentication routes and security schemes below.
-- **API Reference** - Browse the endpoint documentation in this reference.
-- **Self-hosting** - Use the repository's \`$polychat-setup\` agent skill for guided setup and configuration.
-
-## API Base URL
+## Base URL
 
 ~~~
 https://api.polychat.app
 ~~~
 
-## Support & Community
+## Links
 
 - **Issues**: [GitHub Issues](https://github.com/nicholasgriffintn/assistant/issues)
-- **Live API**: [polychat.app](https://polychat.app)
-- **Blog**: [nicholasgriffin.dev/blog](https://nicholasgriffin.dev/blog)
-
-## Usage Limits
-
-The hosted version at polychat.app has the following limits:
-
-- **Unauthenticated**: 10 messages/day
-- **Authenticated (Free)**: 50 messages/day
-- **Authenticated (Pro tokens)**: 200 pro tokens/day
-
-Pro tokens scale based on model cost, allowing ~22 expensive model messages or ~200 cheaper model messages.
+- **App**: [polychat.app](https://polychat.app)
+- **Self-hosting**: use the repository's \`$polychat-setup\` agent skill.
 `;

@@ -1,238 +1,52 @@
 import { md } from "@ngriffin_uk/polychat-utility-server/markdown";
 
 export const teammatesTagDescription = md`
-# Agents
+# Teammates
 
-Create AI teammates with custom configurations, tools, and MCP (Model Context Protocol) server integrations.
+Teammates are configured agents with their own instructions, model, tools, skills and MCP servers. A teammate works as a \`colleague\` or a \`bot\`.
 
-## Overview
+## Create
 
-Agents are configurable AI assistants that can:
-
-- Use custom system prompts and instructions
-- Connect to MCP servers for extended capabilities
-- Access specific models with custom parameters
-- Maintain their own configuration
-- Use few-shot examples for better performance
-
-## Using Agents
-
-### Create Teammate Completion
-
-~~~http
-POST /v1/teammates/{teammateId}/completions
-~~~
-
-Start a conversation with an teammate. The teammate will use its configured model, system prompt, MCP servers, and tools automatically.
-
-**Request:**
+Write one from scratch with \`POST /teammates\`, or hire one with \`POST /teammates/hire\` from a built-in role, a job description, or both.
 
 ~~~json
 {
-  "messages": [
-    {
-      "role": "user",
-      "content": "Review this code: function add(a,b){return a+b}"
-    }
-  ],
+  "name": "Code reviewer",
+  "kind": "colleague",
+  "system_prompt": "Review code for security, performance and clarity. Be specific.",
+  "temperature": 0.2,
+  "enabled_tools": ["web_search"],
+  "skill_ids": ["skill_123"]
+}
+~~~
+
+\`servers\` attaches MCP servers through an existing credential connection, limited to \`allowedTools\`.
+
+## Run
+
+A teammate turn is a Response. Pass the teammate as the agent:
+
+~~~json
+{
+  "agent": { "type": "teammate", "id": "teammate_123" },
+  "input": "Review the open pull request",
   "stream": true
 }
 ~~~
 
-Uses the same parameters as \`/v1/chat/completions\`, but with teammate configuration applied automatically.
+## Contexts and autonomy
 
-**Response:**
-Same format as chat completions, with the teammate's configuration applied.
+A teammate works inside a scoped context, personal or project, with its own private memory. Each context has a status (\`active\`, \`paused\` or \`archived\`) and an autonomy level:
 
-## MCP Server Integration
+- \`observer\` only reads and drafts.
+- \`assistant\` asks before writes.
+- \`partner\` writes within its connection grants.
 
-### What are MCP Servers?
+Sends, spending, deletes, credentials and exports always ask. Grant exact connection operations with \`PATCH /teammates/contexts/{context_id}/connections\`.
 
-MCP (Model Context Protocol) servers provide external context and capabilities to teammates:
+## Workspaces and the marketplace
 
-- File system access
-- Database connections
-- API integrations
-- Custom tools
-- Real-time data sources
-
-### MCP Server Configuration
-
-Each server in the \`servers\` array supports:
-
-**Required:**
-
-- \`url\` - MCP server endpoint URL
-
-**Optional:**
-
-- \`type\` - \`"sse"\` (Server-Sent Events) or \`"stdio"\` (default: "sse")
-- \`command\` - Command for stdio transports
-- \`args\` - Arguments for stdio transports
-
-**Example SSE Server:**
-
-~~~json
-{
-  "url": "https://mcp.example.com",
-  "type": "sse"
-}
-~~~
-
-**Example stdio Server:**
-
-~~~json
-{
-  "url": "file:///path/to/server",
-  "type": "stdio",
-  "command": "node",
-  "args": ["server.js"]
-}
-~~~
-
-## Teammate Configuration
-
-### System Prompts
-
-Define how your teammate behaves:
-
-~~~json
-{
-  "system_prompt": "You are a helpful coding assistant. Always provide examples and explain your reasoning. Format code using markdown."
-}
-~~~
-
-### Model Parameters
-
-Control the model:
-
-~~~json
-{
-  "model": "claude-3-5-sonnet-20241022",
-  "temperature": 0.7,
-  "max_steps": 10
-}
-~~~
-
-- \`model\` - Any available model ID
-- \`temperature\` - 0-1, controls randomness
-- \`max_steps\` - Maximum sequential LLM calls (for tool use)
-
-### Few-Shot Examples
-
-Provide example inputs/outputs to guide behavior:
-
-~~~json
-{
-  "few_shot_examples": [
-    {
-      "input": "How do I sort a list?",
-      "output": "Here's how to sort a list in Python:\\n\`\`\`python\\nmy_list.sort()\\n\`\`\`"
-    }
-  ]
-}
-~~~
-
-## Use Cases
-
-### Code Review Teammate
-
-~~~json
-{
-  "name": "Senior Code Reviewer",
-  "model": "claude-3-5-sonnet-20241022",
-  "system_prompt": "Review code for:\\n1. Security issues\\n2. Performance problems\\n3. Best practices\\n4. Code style\\nProvide specific, actionable feedback.",
-  "temperature": 0.2,
-  "servers": [
-    {
-      "url": "https://git-mcp.example.com",
-      "type": "sse"
-    }
-  ]
-}
-~~~
-
-### Research Assistant
-
-~~~json
-{
-  "name": "Research Assistant",
-  "model": "gpt-4o",
-  "system_prompt": "Help with research by finding, summarizing, and citing sources. Always verify information and provide links.",
-  "max_steps": 15,
-  "servers": [
-    {
-      "url": "https://web-search-mcp.example.com",
-      "type": "sse"
-    }
-  ]
-}
-~~~
-
-### Customer Support
-
-~~~json
-{
-  "name": "Support Teammate",
-  "model": "claude-3-5-haiku-20241022",
-  "system_prompt": "Provide friendly, helpful customer support. Be concise and solution-focused.",
-  "temperature": 0.5,
-  "servers": [
-    {
-      "url": "https://database-mcp.example.com",
-      "type": "sse"
-    }
-  ]
-}
-~~~
-
-## Examples
-
-### Create a Code Assistant
-
-~~~bash
-curl -X POST https://api.polychat.app/teammates \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "name": "Code Helper",
-    "model": "claude-3-5-sonnet-20241022",
-    "system_prompt": "You are a code assistant. Help with coding questions and provide clean, documented code examples.",
-    "temperature": 0.4
-  }'
-~~~
-
-### Use an Teammate
-
-~~~bash
-curl -X POST https://api.polychat.app/teammates/teammate_abc123/completions \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "messages": [
-      {"role": "user", "content": "How do I handle errors in async functions?"}
-    ]
-  }'
-~~~
-
-### Update an Teammate
-
-~~~bash
-curl -X PUT https://api.polychat.app/teammates/teammate_abc123 \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
-  -H "Content-Type": application/json" \\
-  -d '{
-    "system_prompt": "Updated system prompt with new instructions...",
-    "temperature": 0.6
-  }'
-~~~
-
-## Best Practices
-
-1. **Specific System Prompts** - Be clear about the teammate's role and behavior
-2. **Appropriate Models** - Choose models that fit the task (cost vs capability)
-3. **Temperature Settings** - Lower for deterministic tasks, higher for creative ones
-4. **Test Thoroughly** - Test teammates before production use
-5. **MCP Security** - Secure MCP server endpoints with proper authentication
-6. **Few-Shot Examples** - Provide examples for complex or specific behavior
+- \`POST /teammates/{teammate_id}/publish\` copies a personal teammate into a workspace. \`workspace_default\` gives it to every project, and a project can opt out.
+- \`POST /teammates/{teammate_id}/feedback\` records whether it got a conversation right, building its scorecard.
+- \`/teammates/marketplace\` shares teammates publicly for others to install and rate. Admins moderate and feature listings.
 `;

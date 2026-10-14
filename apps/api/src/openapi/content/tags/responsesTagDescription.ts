@@ -50,4 +50,10 @@ data: [DONE]
 - \`GET /responses/{id}/events?after=N\` replays lifecycle events, or returns a snapshot when the cursor is too old.
 - \`POST /responses/{id}/input\` answers a question, resolves an approval or steers. Set \`when: "after"\` to queue a message for when the response finishes.
 - \`POST /responses/{id}/cancel\` cancels an exact attempt.
+- \`GET /responses\` lists responses, and finds an accepted create by \`idempotency_key\`.
+
+## Utilities
+
+- \`POST /responses/input_tokens\` counts the tokens a model would read for an input and instructions.
+- \`POST /responses/compact\` summarises a conversation's older items so the next response fits the context window.
 `;

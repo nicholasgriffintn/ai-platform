@@ -22,6 +22,8 @@ import type { AnonymousUser, IUser } from "~/types";
 
 export type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
+export const INTERNAL_ROUTE_TAG = "internal";
+
 interface RouteResponseSpec {
   description: string;
   schema?: ZodType;
@@ -106,34 +108,33 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 ): void {
   const middlewares: MiddlewareHandler[] = [];
 
-  if (config.summary || config.description || config.responses) {
-    type ResponsesMap = NonNullable<DescribeRouteOptions["responses"]>;
-    const responses: ResponsesMap = {};
+  type ResponsesMap = NonNullable<DescribeRouteOptions["responses"]>;
+  const responses: ResponsesMap = {};
 
-    if (config.responses) {
-      for (const [code, spec] of Object.entries(config.responses)) {
-        responses[code] = spec.schema
-          ? {
-              description: spec.description,
-              content: {
-                "application/json": {
-                  schema: resolver(spec.schema),
-                },
+  if (config.responses) {
+    for (const [code, spec] of Object.entries(config.responses)) {
+      responses[code] = spec.schema
+        ? {
+            description: spec.description,
+            content: {
+              "application/json": {
+                schema: resolver(spec.schema),
               },
-            }
-          : { description: spec.description };
-      }
+            },
+          }
+        : { description: spec.description };
     }
-
-    middlewares.push(
-      describeRoute({
-        tags: config.tags || ["uncategorised"],
-        summary: config.summary,
-        description: config.description,
-        responses,
-      }),
-    );
   }
+
+  middlewares.push(
+    describeRoute({
+      tags: config.tags,
+      summary: config.summary,
+      description: config.description,
+      responses,
+      hide: config.tags.includes(INTERNAL_ROUTE_TAG),
+    }),
+  );
 
   if (config.paramSchema) {
     middlewares.push(zValidator("param", config.paramSchema));

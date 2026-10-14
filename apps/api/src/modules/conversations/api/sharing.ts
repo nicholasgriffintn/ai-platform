@@ -1,5 +1,6 @@
 import {
   checkConversationRequestSchema,
+  checkConversationResponseSchema,
   conversationFeedbackRequestSchema,
   conversationParamsSchema,
   errorResponseSchema,
@@ -30,14 +31,7 @@ export function defineConversationSharing(conversations: ResourceBuilder): void 
     responses: {
       200: {
         description: "Guardrail check results",
-        schema: z.object({
-          response: z.object({
-            status: z.string(),
-            flagged: z.boolean(),
-            reasons: z.array(z.string()).optional(),
-            category: z.array(z.string()).optional(),
-          }),
-        }),
+        schema: checkConversationResponseSchema,
       },
       404: { description: "Conversation not found", schema: errorResponseSchema },
     },

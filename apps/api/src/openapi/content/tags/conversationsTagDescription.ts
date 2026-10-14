@@ -22,9 +22,10 @@ Items are the only content contract. A stored conversation is a list of items, a
 
 ## Routes
 
-- \`GET /conversations\` lists conversations. \`GET /conversations/{id}\` returns one with its latest items and \`latest_response\`.
-- \`GET /conversations/{id}/items\` pages through items. \`GET /conversations/items/{item_id}\` returns one item.
-- \`PATCH /conversations/{id}\` updates the title, archive state, permission mode, branch parent or items.
-- \`POST /conversations/{id}/title\` generates a title. \`POST /conversations/{id}/share\` publishes a share link read at \`GET /conversations/shared/{share_id}\`.
-- \`/goal\`, \`/delegations\`, \`/queue\`, \`/organisation\` and \`/artifact-bindings/read\` live under the conversation they belong to.
+- \`GET /conversations\` lists conversations and \`GET /conversations/count\` counts them. \`GET /conversations/{id}\` returns one with its latest items and \`latest_response\`.
+- \`GET /conversations/{id}/items\` pages through items. \`GET /conversations/items/{item_id}\` returns one item. \`GET /conversations/{id}/branches\` lists its branches.
+- \`PATCH /conversations/{id}\` updates the title, archive state, permission mode, branch parent or items. \`POST /conversations/archive\` archives in bulk.
+- \`POST /conversations/{id}/title\` generates a title. \`POST /conversations/{id}/share\` publishes a share link read at \`GET /conversations/shared/{token}\`.
+- \`/goal\`, \`/brief\`, \`/delegations\`, \`/queue\`, \`/organisation\`, \`/feedback\`, \`/check\` and \`/artifact_bindings/read\` live under the conversation they belong to.
+- \`/conversations/groups\` and \`/conversations/saved_items\` organise conversations across the account. \`/conversations/handles\` lists the agent handles granted to delegations.
 `;
