@@ -1,22 +1,25 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { Guardrails } from "~/infrastructure/providers/capabilities/guardrails";
+import {
+  Guardrails,
+  type GuardrailResult,
+} from "~/infrastructure/providers/capabilities/guardrails";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 
 export const handleCheckChatCompletion = async (
   context: ServiceContext,
   completion_id: string,
-  role: string,
+  role = "user",
 ): Promise<{
   content: string;
-  data: any;
+  data: GuardrailResult;
 }> => {
   const user = context.requireUser();
 
-  if (!completion_id || !role) {
-    throw new AssistantError("Missing completion_id or role", ErrorType.PARAMS_ERROR);
+  if (!completion_id) {
+    throw new AssistantError("Missing completion_id", ErrorType.PARAMS_ERROR);
   }
 
   context.ensureDatabase();
@@ -47,21 +50,19 @@ export const handleCheckChatCompletion = async (
     .map((message) => {
       return `${message.role}: ${typeof message.content === "string" ? message.content : JSON.stringify(message.content)}`;
     })
-    .join("\\n");
-
-  const roleToCheck = role || "user";
+    .join("\n");
 
   const userSettings = await context.getUserSettings();
   const guardrails = new Guardrails(context.env, user, userSettings);
   const validation =
-    roleToCheck === "user"
+    role === "user"
       ? await guardrails.validateInput(messageHistoryAsString, user.id, completion_id)
       : await guardrails.validateOutput(messageHistoryAsString, user.id, completion_id);
 
   return {
     content: validation.isValid
-      ? `${roleToCheck === "user" ? "Input" : "Output"} is valid`
-      : `${roleToCheck === "user" ? "Input" : "Output"} is not valid`,
+      ? `${role === "user" ? "Input" : "Output"} is valid`
+      : `${role === "user" ? "Input" : "Output"} is not valid`,
     data: validation,
   };
 };

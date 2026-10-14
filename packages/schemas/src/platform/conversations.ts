@@ -174,6 +174,18 @@ export const checkConversationRequestSchema = z.object({
   role: z.enum(["user", "assistant", "tool"]).optional(),
 });
 
+export const checkConversationResponseSchema = z.object({
+  response: z.object({
+    content: z.string(),
+    data: z.object({
+      provider: z.string(),
+      isValid: z.boolean(),
+      violations: z.array(z.string()),
+      rawResponse: z.unknown().optional(),
+    }),
+  }),
+});
+
 export const conversationFeedbackRequestSchema = z.object({
   item_id: z.string().min(1).optional(),
   log_id: z.string().min(1).optional(),

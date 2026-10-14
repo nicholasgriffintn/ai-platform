@@ -195,7 +195,7 @@ export class UserService {
   }
 
   async syncProviders(): Promise<void> {
-    await providers.collectionAction<unknown>("sync");
+    await providers.collectionAction("sync");
   }
 
   getUserApiKeys(): Promise<ApiKeySummary[]> {

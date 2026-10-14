@@ -1,7 +1,7 @@
 import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
 import type { Hono } from "hono";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { addRoute, INTERNAL_ROUTE_TAG } from "~/infrastructure/http/routeBuilder";
 import {
   proxySandboxBranch,
   proxySandboxBranchDelivery,
@@ -21,7 +21,7 @@ import type { IEnv } from "~/types";
 
 export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv }>): void {
   addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/git/info/refs`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
       proxySandboxGitInfoRefs({
@@ -32,7 +32,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/git/:operation`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerGitOperationParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
       proxySandboxGitOperation({
@@ -43,7 +43,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/repository`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
       proxySandboxRepository({
@@ -54,7 +54,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/branches/:branch`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerBranchParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
       proxySandboxBranch({
@@ -65,7 +65,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/deliveries`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerParamsSchema,
     bodySchema: sandboxBrokerDeliveryBodySchema,
     handler: ({ raw, params, body, serviceContext }) =>
@@ -78,7 +78,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/pulls`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerParamsSchema,
     querySchema: sandboxBrokerPullRequestQuerySchema,
     handler: ({ raw, params, query, serviceContext }) =>
@@ -91,7 +91,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
   });
 
   addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/pulls`, {
-    tags: ["internal"],
+    tags: [INTERNAL_ROUTE_TAG],
     paramSchema: sandboxBrokerParamsSchema,
     bodySchema: sandboxBrokerPullRequestBodySchema,
     handler: ({ raw, params, body, serviceContext }) =>

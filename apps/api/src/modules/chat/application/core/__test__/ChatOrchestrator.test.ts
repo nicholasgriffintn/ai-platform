@@ -393,7 +393,7 @@ describe("ChatOrchestrator", () => {
           type: "conversation.compacted",
           item: { type: "compaction", id: compactionMessage.id },
         });
-        expect(events.indexOf(compaction as (typeof events)[number])).toBeLessThan(firstDelta);
+        expect(events.indexOf(compaction)).toBeLessThan(firstDelta);
         expect(events).toContainEqual(
           expect.objectContaining({ type: "response.output_text.delta", delta: "Hello" }),
         );
@@ -441,7 +441,7 @@ describe("ChatOrchestrator", () => {
           type: "conversation.compacted",
           item: { type: "compaction", id: compactionMessage.id },
         });
-        expect(events.indexOf(compaction as (typeof events)[number])).toBeLessThan(firstDelta);
+        expect(events.indexOf(compaction)).toBeLessThan(firstDelta);
         expect(events).toContainEqual(
           expect.objectContaining({ type: "response.output_text.delta", delta: "Hello" }),
         );

@@ -3,234 +3,39 @@ import { md } from "@ngriffin_uk/polychat-utility-server/markdown";
 export const guardrailsTagDescription = md`
 # Guardrails
 
-Content safety and moderation using LlamaGuard, Mistral Moderation, Shieldstral, and AWS Bedrock Guardrails.
-
-## Overview
-
-Guardrails protect your application by validating content for safety violations. The system supports four providers:
-
-- **LlamaGuard** - Meta's content moderation model (default, free)
-- **AWS Bedrock Guardrails** - Enterprise-grade filtering (requires AWS setup)
-- **Mistral Moderation** - Hosted category-based moderation
-- **Shieldstral** - Self-hosted, policy-adaptive moderation for text and images
-
-## How It Works
-
-1. **User Settings** - Enable guardrails in your user settings
-2. **Validation** - Input and/or output content is checked against safety policies
-3. **Response** - Returns validation status and any violations found
-4. **Monitoring** - Violations are tracked in Analytics Engine
-
-## Configuration
-
-### User Settings
-
-Guardrails are configured per-user via settings:
-
-- \`guardrails_enabled\` (boolean) - Enable/disable guardrails (on by default)
-- \`guardrails_provider\` (string) - \`"typesafe"\` (default), \`"llamaguard"\`, \`"bedrock"\`, \`"mistral"\`, or \`"shieldstral"\`. TypeSafe falls back to LlamaGuard when no TypeSafe key is available to the account.
-
-### Bedrock Settings
-
-If using Bedrock, also configure:
-
-- \`bedrock_guardrail_id\` (string) - Your Bedrock guardrail ID
-- \`bedrock_guardrail_version\` (string) - Version (default: "1")
+Content safety checks on input and output. Guardrails are on by default and configured per user, not per request.
 
 ## Providers
 
-### LlamaGuard
+Set \`guardrails_provider\` in user settings:
 
-Meta's Llama Guard model for content moderation.
+- \`typesafe\` (default) judges content with the account's decision model and falls back to LlamaGuard when none is available.
+- \`llamaguard\` runs Meta's Llama Guard on Workers AI.
+- \`mistral\` uses Mistral's hosted moderation, including jailbreak detection.
+- \`shieldstral\` calls an operator-managed Shieldstral endpoint for text, images and prompt-response pairs. It needs \`SHIELDSTRAL_BASE_URL\`, and optionally \`SHIELDSTRAL_API_KEY\`, \`SHIELDSTRAL_MODEL\`, \`SHIELDSTRAL_POLICY\`, \`SHIELDSTRAL_POLICY_VERSION\` and \`SHIELDSTRAL_THRESHOLD\`.
+- \`bedrock\` uses AWS Bedrock Guardrails with \`bedrock_guardrail_id\` and \`bedrock_guardrail_version\` from user settings.
 
-**Features:**
+Set \`guardrails_enabled: false\` to turn checks off.
 
-- Free to use
-- Runs on Cloudflare Workers AI
-- Fast response (~200-500ms)
-- 13 safety categories
+## Checking a conversation
 
-**Categories:**
-
-| Code | Category               |
-| ---- | ---------------------- |
-| S1   | Violent Crimes         |
-| S2   | Non-Violent Crimes     |
-| S3   | Sex Crimes             |
-| S4   | Child Exploitation     |
-| S5   | Defamation             |
-| S6   | Specialized Advice     |
-| S7   | Privacy                |
-| S8   | Intellectual Property  |
-| S9   | Indiscriminate Weapons |
-| S10  | Hate                   |
-| S11  | Self-Harm              |
-| S12  | Sexual Content         |
-| S13  | Elections              |
-
-**Response:**
-
-- Returns \`"safe"\` or \`"unsafe"\`
-- If unsafe, includes violated category codes
-
-### AWS Bedrock Guardrails
-
-Amazon's enterprise guardrails service.
-
-**Features:**
-
-- Enterprise-grade filtering
-- PII detection
-- Custom content policies
-- Topic-based filtering
-- Requires AWS credentials and guardrail configuration
-
-**Setup Required:**
-
-1. AWS account with Bedrock access
-2. Created guardrail in AWS Bedrock
-3. AWS credentials configured in environment:
-   - \`BEDROCK_AWS_ACCESS_KEY\`
-   - \`BEDROCK_AWS_SECRET_KEY\`
-   - \`AWS_REGION\` (default: "us-east-1")
-
-**Response Structure:**
-
-- Topic policy violations
-- Content filter violations
-- PII entity detections
-
-### Mistral Moderation
-
-Mistral's hosted Moderation 2 API provides category-level text classification, including
-jailbreak detection, without additional inference infrastructure.
-
-### Shieldstral
-
-Mistral's open-weight, policy-adaptive safety classifier. Polychat sends text, image, and
-prompt-response inputs to an operator-managed OpenAI-compatible inference endpoint and derives a
-continuous unsafe score from the model's \`yes\` and \`no\` token probabilities.
-
-Configure \`SHIELDSTRAL_BASE_URL\` and, when the endpoint requires it,
-\`SHIELDSTRAL_API_KEY\`. Optional \`SHIELDSTRAL_MODEL\`, \`SHIELDSTRAL_POLICY\`,
-\`SHIELDSTRAL_POLICY_VERSION\`, and \`SHIELDSTRAL_THRESHOLD\` values control the pinned checkpoint,
-server-owned policy, audit version, and enforcement threshold.
-
-## Validation
-
-### Input Validation
-
-Validates user messages before processing:
-
-~~~typescript
-const result = await guardrails.validateInput(message, userId, completionId);
-
-if (!result.isValid) {
-	// Handle violation
-}
-~~~
-
-### Output Validation
-
-Validates model responses before returning:
-
-~~~typescript
-const result = await guardrails.validateOutput(response, userId, completionId);
-
-if (!result.isValid) {
-	// Handle violation
-}
-~~~
-
-### Validation Result
-
-~~~typescript
-{
-  isValid: boolean;
-  violations: string[];
-  rawResponse?: string;
-}
-~~~
-
-## Integration
-
-### Chat Completions
-
-Guardrails are automatically applied during chat completions if enabled in user settings.
-
-The system validates:
-
-- User input messages (before processing)
-- Model output (after generation)
-
-Results are included in the response:
-
-~~~json
-{
-  "id": "cmpl_abc123",
-  "choices": [...],
-  "post_processing": {
-    "guardrails": {
-      "passed": true
-    }
-  }
-}
-~~~
-
-Or if violations occur:
-
-~~~json
-{
-  "post_processing": {
-    "guardrails": {
-      "passed": false,
-      "error": "Content policy violation",
-      "violations": ["S10: Hate"]
-    }
-  }
-}
-~~~
-
-## Monitoring
-
-Violations are automatically tracked to Cloudflare Analytics Engine with:
-
-- Violation type (\`input_violation\` or \`output_violation\`)
-- User ID
-- Completion ID
-- Violation details
-
-## Limitations
-
-- **Operator-owned policies** - Shieldstral policy changes require deployment configuration
-- **No per-request configuration** - Settings are user-level only
-- **No dedicated endpoint** - Only \`/v1/chat/completions/{id}/check\` exists
-- **No bypass rules** - Cannot configure exemptions
-- **No action types** - Only returns validation status (no redaction, warnings, etc.)
-- **No stats endpoint** - No aggregated violation statistics API
-
-## Examples
-
-### Check a Conversation
+\`POST /conversations/{conversation_id}/check\` checks the conversation as input when \`role\` is \`user\` (the default) and as output otherwise:
 
 ~~~bash
-curl -X POST https://api.polychat.app/chat/completions/cmpl_abc123/check \\
+curl -X POST https://api.polychat.app/conversations/conv_123/check \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
-  -d '{
-    "role": "user"
-  }'
+  -d '{ "role": "user" }'
 ~~~
 
-### Enable Guardrails (User Settings)
+~~~json
+{
+  "response": {
+    "content": "Input is valid",
+    "data": { "provider": "typesafe", "isValid": true, "violations": [] }
+  }
+}
+~~~
 
-Guardrails must be enabled via user settings. There's no per-request parameter to enable them.
-
-## Best Practices
-
-1. **Enable for Production** - Use guardrails for user-facing applications
-2. **Choose Provider** - Match the provider to the required policy, modality, and deployment model
-3. **Monitor Violations** - Track violations in analytics
-4. **Handle Failures** - Implement fallbacks if guardrail validation fails
-5. **Test Thoroughly** - Test with various content types before deployment
+Chat Completions reports the same outcome under \`post_processing.guardrails\`.
 `;
