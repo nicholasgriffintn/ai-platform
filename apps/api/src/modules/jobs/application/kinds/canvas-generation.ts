@@ -1,8 +1,8 @@
 import type { JobStatus } from "@ngriffin_uk/polychat-schemas";
 
-import { generateCanvasBatch } from "~/modules/apps/application/canvas/generate";
-import { mapCanvasGenerationRecord } from "~/modules/apps/application/canvas/records";
-import type { CanvasGenerationStatus } from "~/modules/apps/application/canvas/types";
+import { generateCanvasBatch } from "~/modules/experiences/application/canvas/generate";
+import { mapCanvasGenerationRecord } from "~/modules/experiences/application/canvas/records";
+import type { CanvasGenerationStatus } from "~/modules/experiences/application/canvas/types";
 
 import type { JobKindDefinition } from "../../domain/job-kind";
 import { readScopedOutput } from "../outputs";

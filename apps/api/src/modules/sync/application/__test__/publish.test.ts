@@ -1,8 +1,8 @@
 import { createFakeUsageStore } from "@ngriffin_uk/polychat-ai-billing/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSandboxSyncNotifier } from "~/modules/apps/application/sandbox/sync-events";
 import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
+import { createSandboxSyncNotifier } from "~/modules/sandbox/application/sync-events";
 import { publishUsageChanged } from "~/modules/usage/application/events";
 import { publishWorkspaceUsageChanged } from "~/modules/usage/application/workspace-events";
 import type { IEnv } from "~/types";

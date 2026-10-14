@@ -13,12 +13,12 @@ import { z } from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { handleRecordingGenerateImage } from "~/modules/apps/application/recordings/generate-image";
-import { handleRecordingDetail } from "~/modules/apps/application/recordings/get-details";
-import { handleRecordingList } from "~/modules/apps/application/recordings/list";
-import { handleRecordingSummarise } from "~/modules/apps/application/recordings/summarise";
-import { handleRecordingTranscribe } from "~/modules/apps/application/recordings/transcribe";
-import { handleRecordingUpload } from "~/modules/apps/application/recordings/upload";
+import { handleRecordingGenerateImage } from "~/modules/experiences/application/recordings/generate-image";
+import { handleRecordingDetail } from "~/modules/experiences/application/recordings/get-details";
+import { handleRecordingList } from "~/modules/experiences/application/recordings/list";
+import { handleRecordingSummarise } from "~/modules/experiences/application/recordings/summarise";
+import { handleRecordingTranscribe } from "~/modules/experiences/application/recordings/transcribe";
+import { handleRecordingUpload } from "~/modules/experiences/application/recordings/upload";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

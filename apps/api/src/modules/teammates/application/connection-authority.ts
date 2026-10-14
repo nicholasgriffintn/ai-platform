@@ -11,7 +11,7 @@ import type {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
+import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { requireProjectTeammate } from "./access";
 

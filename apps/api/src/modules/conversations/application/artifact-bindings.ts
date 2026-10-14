@@ -18,7 +18,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { KVCache } from "~/infrastructure/cache";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { executeRecipeConnectorOperation } from "~/modules/apps/application/connectors/operations";
+import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 
 import { requireConversationAccess } from "./access";
 

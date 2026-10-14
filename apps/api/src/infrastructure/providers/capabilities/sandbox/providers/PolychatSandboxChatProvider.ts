@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { executeSandboxRunStream } from "~/modules/apps/application/sandbox/execute-stream";
+import { executeSandboxRunStream } from "~/modules/sandbox/application/execute-stream";
 import type { ChatCompletionParameters } from "~/types";
 
 async function readRunResult(response: Response): Promise<{

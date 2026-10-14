@@ -16,7 +16,7 @@ import {
   listRecipeWebhookTriggers,
   rotateRecipeWebhookTrigger,
   setRecipeWebhookTriggerStatus,
-} from "~/modules/apps/application/recipes/webhook-triggers";
+} from "~/modules/recipes/application/webhook-triggers";
 
 const app = new Hono();
 const installationParamsSchema = z.object({ installationId: z.string().min(1) });

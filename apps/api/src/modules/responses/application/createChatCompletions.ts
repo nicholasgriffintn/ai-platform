@@ -7,8 +7,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { sseResponse } from "~/infrastructure/http/streaming";
-import { replayApprovedConnectorOperation } from "~/modules/apps/application/connectors/approved-operation-replay";
-import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { processChatRequest } from "~/modules/chat/application/core";
 import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
@@ -18,6 +16,8 @@ import {
   toProviderResponseMessages,
 } from "~/modules/chat/application/messages/provider-mapping";
 import { buildChatPostProcessing } from "~/modules/chat/application/streaming/post-processing";
+import { replayApprovedConnectorOperation } from "~/modules/connectors/application/approved-operation-replay";
+import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";

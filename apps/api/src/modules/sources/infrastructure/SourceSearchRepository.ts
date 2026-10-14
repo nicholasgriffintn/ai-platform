@@ -1,6 +1,6 @@
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
-import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
+import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
 import type { EmbeddingRuntimeTarget, IEnv } from "~/types";
 
 import { sourceVisibilitySql } from "./source-visibility";

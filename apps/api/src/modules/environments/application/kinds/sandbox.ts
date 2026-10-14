@@ -3,7 +3,7 @@ import type { EnvironmentAction, UpdateSandboxRunControl } from "@ngriffin_uk/po
 import {
   getSandboxRunRecordForUser,
   requestSandboxRunControlAction,
-} from "~/modules/apps/application/sandbox/runs";
+} from "~/modules/sandbox/application/runs";
 
 import type { EnvironmentKindDefinition } from "../../domain/environment-kind";
 

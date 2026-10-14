@@ -1,6 +1,6 @@
 import type { JobStatus } from "@ngriffin_uk/polychat-schemas";
 
-import { cancelOcrBatch, startOcrBatch } from "~/modules/apps/application/retrieval/ocr/batch";
+import { cancelOcrBatch, startOcrBatch } from "~/modules/tools/application/retrieval/ocr/batch";
 
 import type { JobKindDefinition } from "../../domain/job-kind";
 import { requireScopedOutput } from "../outputs";

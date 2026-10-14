@@ -7,11 +7,11 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { listRecipeCatalogueSummaries } from "~/modules/apps/application/recipes";
 import {
   getProjectExperienceCatalog,
   MODEL_TOOL_DEFINITIONS,
 } from "~/modules/experiences/application/config";
+import { listRecipeCatalogueSummaries } from "~/modules/recipes/application";
 import { listScopedSkillSummaries } from "~/modules/skills/application";
 import { listScopedTeammateSummaries } from "~/modules/teammates/application";
 import { listCatalogueTools } from "~/modules/tools/application/toolsOperations";

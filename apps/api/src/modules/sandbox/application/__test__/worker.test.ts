@@ -11,7 +11,7 @@ vi.mock("~/modules/models/application/resolve", async (importOriginal) => {
   };
 });
 
-import { resolveSandboxApiBaseUrl } from "~/modules/apps/application/sandbox/urls";
+import { resolveSandboxApiBaseUrl } from "~/modules/sandbox/application/urls";
 
 import { resolveSandboxModel } from "../worker";
 

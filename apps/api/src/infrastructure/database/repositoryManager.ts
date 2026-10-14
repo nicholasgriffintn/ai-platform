@@ -1,11 +1,5 @@
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
-import { ComposioConnectorSessionRepository } from "~/modules/apps/infrastructure/ComposioConnectorSessionRepository";
-import { ConnectorOperationApprovalRepository } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
-import { ProviderConnectionRepository } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
-import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
-import { RecipeEventReceiptRepository } from "~/modules/apps/infrastructure/RecipeEventReceiptRepository";
-import { RecipeWebhookTriggerRepository } from "~/modules/apps/infrastructure/RecipeWebhookTriggerRepository";
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
@@ -18,6 +12,9 @@ import { CapabilityConfigurationRepository } from "~/modules/capabilities/infras
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
@@ -56,6 +53,9 @@ import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetReposito
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { RecipeComposioTriggerRepository } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";

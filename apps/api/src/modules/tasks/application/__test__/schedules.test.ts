@@ -26,11 +26,11 @@ vi.mock("../scheduledTasks", () => ({
   scheduleTrainingQualityScoring: vi.fn(),
 }));
 
-vi.mock("~/modules/apps/application/connectors/composio-cleanup", () => ({
+vi.mock("~/modules/connectors/application/composio-cleanup", () => ({
   reapComposioConnectorSessions: mocks.reapComposioConnectorSessions,
 }));
 
-vi.mock("~/modules/apps/application/connectors/connector-approval-cleanup", () => ({
+vi.mock("~/modules/connectors/application/connector-approval-cleanup", () => ({
   deleteExpiredConnectorOperationApprovals: mocks.deleteExpiredConnectorOperationApprovals,
 }));
 

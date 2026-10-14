@@ -22,21 +22,21 @@ import { requirePlan } from "~/middleware/requirePlan";
 import {
   type ContentExtractParams,
   extractContent,
-} from "~/modules/apps/application/retrieval/content-extract";
+} from "~/modules/tools/application/retrieval/content-extract";
 import {
   analyseHackerNewsStories,
   retrieveHackerNewsTopStories,
-} from "~/modules/apps/application/retrieval/hackernews";
-import { performOcr } from "~/modules/apps/application/retrieval/ocr";
+} from "~/modules/tools/application/retrieval/hackernews";
+import { performOcr } from "~/modules/tools/application/retrieval/ocr";
 import {
   type CaptureScreenshotParams,
   captureScreenshot,
-} from "~/modules/apps/application/retrieval/screenshot";
-import { getWeatherForLocation } from "~/modules/apps/application/retrieval/weather";
+} from "~/modules/tools/application/retrieval/screenshot";
+import { getWeatherForLocation } from "~/modules/tools/application/retrieval/weather";
 import {
   type DeepWebSearchParams,
   performDeepWebSearch,
-} from "~/modules/apps/application/retrieval/web-search";
+} from "~/modules/tools/application/retrieval/web-search";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser } from "~/types";
 

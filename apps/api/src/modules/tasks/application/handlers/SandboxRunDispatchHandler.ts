@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
-import { isSandboxRunDispatchMessage } from "~/modules/apps/application/sandbox/dispatch";
-import { startRunCoordinatorDispatchFiber } from "~/modules/apps/application/sandbox/run-coordinator";
+import { isSandboxRunDispatchMessage } from "~/modules/sandbox/application/dispatch";
+import { startRunCoordinatorDispatchFiber } from "~/modules/sandbox/application/run-coordinator";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";

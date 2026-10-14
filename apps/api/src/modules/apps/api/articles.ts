@@ -17,16 +17,16 @@ import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { analyseArticle } from "~/modules/apps/application/articles/analyse";
-import { generateArticlesReport } from "~/modules/apps/application/articles/generate-report";
-import { getArticleDetails } from "~/modules/apps/application/articles/get-details";
-import { getSourceArticles } from "~/modules/apps/application/articles/get-source-articles";
-import { listArticles } from "~/modules/apps/application/articles/list";
+import { analyseArticle } from "~/modules/experiences/application/articles/analyse";
+import { generateArticlesReport } from "~/modules/experiences/application/articles/generate-report";
+import { getArticleDetails } from "~/modules/experiences/application/articles/get-details";
+import { getSourceArticles } from "~/modules/experiences/application/articles/get-source-articles";
+import { listArticles } from "~/modules/experiences/application/articles/list";
 import {
   summariseArticle,
   cleanupArticleSession,
-} from "~/modules/apps/application/articles/summarise";
-import { extractContent } from "~/modules/apps/application/retrieval/content-extract";
+} from "~/modules/experiences/application/articles/summarise";
+import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

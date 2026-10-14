@@ -26,18 +26,6 @@ import { Hono } from "hono";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import { requirePlan } from "~/middleware/requirePlan";
-import {
-  createSandboxPreview,
-  getSandboxPreview,
-  revokeSandboxPreview,
-} from "~/modules/apps/application/sandbox/previews";
-import {
-  getSandboxRunControlState,
-  listSandboxRunEventsForUser,
-  listSandboxRunInstructionsForUser,
-  requestSandboxRunInstruction,
-} from "~/modules/apps/application/sandbox/runs";
-import { recordSandboxRunUsage } from "~/modules/apps/application/sandbox/usage";
 import { getComputerUseAvailability } from "~/modules/computer-use/application/access";
 import {
   handleGetRunGoal,
@@ -46,6 +34,18 @@ import {
   handleUpdateRunGoal,
 } from "~/modules/conversations/application/conversationGoal";
 import { callMachineRun } from "~/modules/machines/application/runs";
+import {
+  createSandboxPreview,
+  getSandboxPreview,
+  revokeSandboxPreview,
+} from "~/modules/sandbox/application/previews";
+import {
+  getSandboxRunControlState,
+  listSandboxRunEventsForUser,
+  listSandboxRunInstructionsForUser,
+  requestSandboxRunInstruction,
+} from "~/modules/sandbox/application/runs";
+import { recordSandboxRunUsage } from "~/modules/sandbox/application/usage";
 
 import {
   actOnEnvironment,

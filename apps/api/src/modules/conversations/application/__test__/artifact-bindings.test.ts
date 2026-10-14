@@ -9,7 +9,7 @@ vi.mock("../access", () => ({
   requireConversationAccess: mocks.requireConversationAccess,
 }));
 
-vi.mock("~/modules/apps/application/connectors/operations", () => ({
+vi.mock("~/modules/connectors/application/operations", () => ({
   executeRecipeConnectorOperation: mocks.executeRecipeConnectorOperation,
 }));
 

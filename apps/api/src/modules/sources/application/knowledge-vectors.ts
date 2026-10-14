@@ -9,8 +9,8 @@ import {
   getPersonalEmbeddingScopeTag,
   getProjectEmbeddingScopeTag,
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
-import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
-import { generateEmbeddingVectors } from "~/modules/apps/application/embeddings/lifecycle";
+import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
+import { generateEmbeddingVectors } from "~/modules/sources/application/embeddings/lifecycle";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import type { EmbeddingRuntimeTarget } from "~/types";
 

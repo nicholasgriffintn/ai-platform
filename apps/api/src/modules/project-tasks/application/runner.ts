@@ -30,8 +30,8 @@ import {
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { scheduleComposioConnectorRunCleanup } from "~/modules/apps/application/connectors/composio-run";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
+import { scheduleComposioConnectorRunCleanup } from "~/modules/connectors/application/composio-run";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";

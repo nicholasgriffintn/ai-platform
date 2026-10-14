@@ -21,15 +21,15 @@ import {
   startRecipeConnectorAuthorization,
   storeRecipeConnectorApiKey,
   verifyComposioConnectorAuthorization,
-} from "~/modules/apps/application/connectors";
+} from "~/modules/connectors/application";
 import {
   listRecipeConnectorAccounts,
   updateRecipeConnectorAccount,
-} from "~/modules/apps/application/connectors/accounts";
+} from "~/modules/connectors/application/accounts";
 import {
   getConnectorOperationApproval,
   resolveConnectorOperationApproval,
-} from "~/modules/apps/application/connectors/operation-approvals";
+} from "~/modules/connectors/application/operation-approvals";
 
 const app = new Hono();
 

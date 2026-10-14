@@ -13,8 +13,8 @@ import {
   sourceResourceSql,
   synthesisResourceSql,
 } from "~/infrastructure/database/resource-storage";
-import { scheduleDueRecipeExecutions } from "~/modules/apps/application/recipes/scheduler";
 import { previousUtcDay } from "~/modules/infra/application/reconciliation";
+import { scheduleDueRecipeExecutions } from "~/modules/recipes/application/scheduler";
 import { overageSyncHourIso } from "~/modules/subscription/application/stripeOverageSync";
 import type { IEnv } from "~/types";
 

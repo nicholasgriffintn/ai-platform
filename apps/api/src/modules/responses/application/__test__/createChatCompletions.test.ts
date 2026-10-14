@@ -28,7 +28,7 @@ vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   withThreadLock: vi.fn(async (_params, run) => run(mockThreadLease)),
 }));
 
-vi.mock("~/modules/apps/application/connectors/approved-operation-replay", () => ({
+vi.mock("~/modules/connectors/application/approved-operation-replay", () => ({
   replayApprovedConnectorOperation: vi.fn(),
 }));
 
@@ -179,7 +179,7 @@ describe("handleCreateChatCompletions", () => {
 
     it("replays the authoritative stored action and only asks the model to summarise", async () => {
       const { replayApprovedConnectorOperation } =
-        await import("~/modules/apps/application/connectors/approved-operation-replay");
+        await import("~/modules/connectors/application/approved-operation-replay");
       const completionId = "completion-with-approval";
       const authoritativeToolCall = {
         id: "call-authoritative",

@@ -3,7 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type z from "zod/v4";
 
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
-import { executeReplicateModel } from "~/modules/apps/application/replicate/execute";
+import { executeReplicateModel } from "~/modules/experiences/application/replicate/execute";
 import { requireOptionalProjectCapabilityAccess } from "~/modules/workspaces/application/access";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";

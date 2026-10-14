@@ -18,13 +18,13 @@ import { z } from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { deletePattern } from "~/modules/apps/application/strudel/delete";
-import { submitStrudelFeedback } from "~/modules/apps/application/strudel/feedback";
-import { generateStrudelCode } from "~/modules/apps/application/strudel/generate";
-import { getPatternDetails } from "~/modules/apps/application/strudel/get-details";
-import { listPatterns } from "~/modules/apps/application/strudel/list";
-import { savePattern } from "~/modules/apps/application/strudel/save";
-import { updatePattern } from "~/modules/apps/application/strudel/update";
+import { deletePattern } from "~/modules/experiences/application/strudel/delete";
+import { submitStrudelFeedback } from "~/modules/experiences/application/strudel/feedback";
+import { generateStrudelCode } from "~/modules/experiences/application/strudel/generate";
+import { getPatternDetails } from "~/modules/experiences/application/strudel/get-details";
+import { listPatterns } from "~/modules/experiences/application/strudel/list";
+import { savePattern } from "~/modules/experiences/application/strudel/save";
+import { updatePattern } from "~/modules/experiences/application/strudel/update";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

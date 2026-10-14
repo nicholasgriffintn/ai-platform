@@ -2,7 +2,7 @@ import { replicatePredictionStatusSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { executeReplicateModel } from "~/modules/apps/application/replicate/execute";
+import { executeReplicateModel } from "~/modules/experiences/application/replicate/execute";
 
 import type { JobKindDefinition } from "../../domain/job-kind";
 import { requireScopedOutput } from "../outputs";

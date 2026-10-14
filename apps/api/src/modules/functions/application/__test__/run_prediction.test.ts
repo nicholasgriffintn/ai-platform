@@ -16,7 +16,7 @@ const getProviderModels = vi.hoisted(() =>
 );
 
 vi.mock("~/infrastructure/providers/credentials", () => ({ hasUserProviderApiKey }));
-vi.mock("~/modules/apps/application/replicate/execute", () => ({ executeReplicateModel }));
+vi.mock("~/modules/experiences/application/replicate/execute", () => ({ executeReplicateModel }));
 vi.mock("~/modules/workspaces/application/access", () => ({
   requireOptionalProjectCapabilityAccess,
 }));

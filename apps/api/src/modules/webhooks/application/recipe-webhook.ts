@@ -5,8 +5,8 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   admitRecipeEvent,
   type RecipeEventSubscription,
-} from "~/modules/apps/application/recipes/event-admission";
-import { parseStoredRecipeInstallationData } from "~/modules/apps/application/recipes/installation-persistence";
+} from "~/modules/recipes/application/event-admission";
+import { parseStoredRecipeInstallationData } from "~/modules/recipes/application/installation-persistence";
 import {
   hashWebhookToken,
   isWellFormedWebhookToken,

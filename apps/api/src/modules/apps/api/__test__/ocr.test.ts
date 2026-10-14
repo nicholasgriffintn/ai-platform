@@ -7,7 +7,7 @@ import retrievalRoutes from "../retrieval";
 
 const performOcr = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/apps/application/retrieval/ocr", () => ({ performOcr }));
+vi.mock("~/modules/tools/application/retrieval/ocr", () => ({ performOcr }));
 
 const user = { id: 42, plan_id: "pro" } as IUser;
 

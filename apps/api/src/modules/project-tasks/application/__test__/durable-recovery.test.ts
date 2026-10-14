@@ -14,7 +14,7 @@ vi.mock("@ngriffin_uk/polychat-ai-billing", async (importOriginal) => ({
   finishUsageReservation: mocks.finishUsageReservation,
 }));
 
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
+vi.mock("~/modules/connectors/application/composio-run", () => ({
   scheduleComposioConnectorRunCleanup: mocks.scheduleComposioConnectorRunCleanup,
 }));
 

@@ -19,10 +19,10 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import type { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
+import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
 import {
   publishConversationChanged,
   publishRunChanged,

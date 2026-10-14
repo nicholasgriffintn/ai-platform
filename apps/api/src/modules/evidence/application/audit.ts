@@ -15,7 +15,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { ai } from "~/infrastructure/ai";
-import { extractContent } from "~/modules/apps/application/retrieval/content-extract";
+import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
 import type { IRequest } from "~/types";
 
 const MAX_AUDIT_CONTENT_CHARS = 48_000;

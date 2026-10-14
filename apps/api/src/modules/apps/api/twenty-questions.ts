@@ -14,7 +14,7 @@ import {
   askTwentyQuestions,
   revealTwentyQuestions,
   startTwentyQuestions,
-} from "~/modules/apps/application/twenty-questions/game";
+} from "~/modules/experiences/application/twenty-questions/game";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { installAssistantRecipe } from "~/modules/apps/application/recipes";
+import { installAssistantRecipe } from "~/modules/recipes/application";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

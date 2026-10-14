@@ -22,7 +22,7 @@ import {
   listAssistantRecipes,
   listRecipeInstallations,
   updateRecipeInstallation,
-} from "~/modules/apps/application/recipes";
+} from "~/modules/recipes/application";
 
 import recipeComposioTriggers from "./recipe-composio-triggers";
 import recipeWebhookTriggers from "./recipe-webhook-triggers";

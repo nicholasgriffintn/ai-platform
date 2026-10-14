@@ -1,4 +1,4 @@
-import { retrieveHackerNewsTopStories } from "~/modules/apps/application/retrieval/hackernews";
+import { retrieveHackerNewsTopStories } from "~/modules/tools/application/retrieval/hackernews";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_hacker_news_stories as get_hacker_news_storiesDescriptor } from "./definitions/hacker_news";

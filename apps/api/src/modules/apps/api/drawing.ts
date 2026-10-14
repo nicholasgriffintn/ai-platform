@@ -11,10 +11,10 @@ import { z } from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { generateImageFromDrawing } from "~/modules/apps/application/drawing/create";
-import { getDrawingDetails } from "~/modules/apps/application/drawing/get-details";
-import { guessDrawingFromImage } from "~/modules/apps/application/drawing/guess";
-import { listDrawings } from "~/modules/apps/application/drawing/list";
+import { generateImageFromDrawing } from "~/modules/experiences/application/drawing/create";
+import { getDrawingDetails } from "~/modules/experiences/application/drawing/get-details";
+import { guessDrawingFromImage } from "~/modules/experiences/application/drawing/guess";
+import { listDrawings } from "~/modules/experiences/application/drawing/list";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

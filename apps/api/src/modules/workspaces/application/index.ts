@@ -18,8 +18,8 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { validateProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
+import { validateProjectConnectorGrant } from "~/modules/connectors/application/project-grants";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { deleteOutput } from "~/modules/outputs/application";
 import { forgetWorkspaceAudience } from "~/modules/sync/application/audience";

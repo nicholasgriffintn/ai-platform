@@ -4,7 +4,7 @@ import { extract_text_from_document } from "../ocr";
 
 const performOcr = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/apps/application/retrieval/ocr", () => ({ performOcr }));
+vi.mock("~/modules/tools/application/retrieval/ocr", () => ({ performOcr }));
 
 const serviceContext = {
   env: {},

@@ -15,7 +15,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
-import { executeSandboxRunStream } from "~/modules/apps/application/sandbox/execute-stream";
+import { executeSandboxRunStream } from "~/modules/sandbox/application/execute-stream";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,

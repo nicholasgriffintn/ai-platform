@@ -13,7 +13,7 @@ import {
   resolveConnectorOperationApproval,
   toConnectorOperationApprovalStatusView,
   type ConnectorOperationApprovalStatusView,
-} from "~/modules/apps/application/connectors/operation-approvals";
+} from "~/modules/connectors/application/operation-approvals";
 import { listProjectTaskAttention } from "~/modules/project-tasks/application/attention";
 
 const PENDING_LIMIT = 100;

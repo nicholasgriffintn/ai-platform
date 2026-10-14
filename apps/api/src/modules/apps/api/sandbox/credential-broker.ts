@@ -15,7 +15,7 @@ import {
   sandboxBrokerParamsSchema,
   sandboxBrokerPullRequestBodySchema,
   sandboxBrokerPullRequestQuerySchema,
-} from "~/modules/apps/application/sandbox/credential-broker";
+} from "~/modules/sandbox/application/credential-broker";
 import type { IEnv } from "~/types";
 
 export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv }>): void {

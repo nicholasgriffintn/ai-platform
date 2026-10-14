@@ -12,7 +12,7 @@ import {
   getRecipeById,
   RECIPE_LOOKUP_TOOL,
   RECIPE_SETUP_TOOL,
-} from "~/modules/apps/application/recipes/catalog";
+} from "~/modules/recipes/application/catalog";
 import { resolveProjectSkillGrants } from "~/modules/skills/application/scope";
 import type { CoreChatOptions } from "~/types";
 

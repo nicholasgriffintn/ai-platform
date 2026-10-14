@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("~/modules/chat/application/agent/agent-loop", () => ({
   runAgentLoop: mocks.runAgentLoop,
 }));
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
+vi.mock("~/modules/connectors/application/composio-run", () => ({
   closeComposioConnectorRun: mocks.closeComposioConnectorRun,
 }));
 

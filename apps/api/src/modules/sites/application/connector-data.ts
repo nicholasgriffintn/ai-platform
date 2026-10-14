@@ -21,13 +21,13 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import { getRecipeConnectorAdapter } from "~/modules/apps/application/connectors/connector-adapters";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
+import { getRecipeConnectorAdapter } from "~/modules/connectors/application/connector-adapters";
 import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
   getActiveComposioAccountForProvider,
-} from "~/modules/apps/application/connectors/operations";
+} from "~/modules/connectors/application/operations";
 import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 import { createSource, deleteSource } from "~/modules/sources/application/sources";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";

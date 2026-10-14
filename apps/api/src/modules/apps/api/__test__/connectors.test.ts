@@ -7,7 +7,7 @@ import connectorRoutes from "../connectors";
 
 const verifyComposioConnectorAuthorizationMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/apps/application/connectors", () => ({
+vi.mock("~/modules/connectors/application", () => ({
   deleteRecipeConnectorConnection: vi.fn(),
   listRecipeConnectors: vi.fn(),
   startRecipeConnectorAuthorization: vi.fn(),

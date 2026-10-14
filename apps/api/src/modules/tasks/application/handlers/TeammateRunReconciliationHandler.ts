@@ -2,7 +2,7 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { teammateRunReconciliationTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";
+import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
 import { reconcileTeammateRun } from "~/modules/teammates/application/run-reconciliation";
 import type { IEnv } from "~/types";
 

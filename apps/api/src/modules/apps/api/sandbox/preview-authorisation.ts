@@ -2,7 +2,7 @@ import { sandboxPreviewAuthorisationRequestSchema } from "@ngriffin_uk/polychat-
 import type { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { authoriseSandboxPreview } from "~/modules/apps/application/sandbox/previews";
+import { authoriseSandboxPreview } from "~/modules/sandbox/application/previews";
 import type { IEnv } from "~/types";
 
 export function registerSandboxPreviewAuthorisationRoute(app: Hono<{ Bindings: IEnv }>): void {

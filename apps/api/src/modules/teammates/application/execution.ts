@@ -13,9 +13,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
-import { parseRecipeInstallationRecord } from "~/modules/apps/application/recipes";
 import { requireChannelSenderMapping } from "~/modules/channels/application/access";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { parseRecipeInstallationRecord } from "~/modules/recipes/application";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {

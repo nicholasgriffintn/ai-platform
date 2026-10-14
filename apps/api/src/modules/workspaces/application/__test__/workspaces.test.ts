@@ -9,8 +9,8 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getAssistantRecipes } from "~/modules/apps/application/recipes/catalog";
 import { sendEmail } from "~/modules/email/application";
+import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
 import type {
   ProjectCapabilityRow,
   ProjectRow,

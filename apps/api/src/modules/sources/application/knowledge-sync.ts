@@ -19,7 +19,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+import { getRecipeById } from "~/modules/recipes/application/catalog";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import {

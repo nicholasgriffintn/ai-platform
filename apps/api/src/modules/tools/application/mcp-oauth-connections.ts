@@ -28,7 +28,7 @@ import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
+import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import {
   MCP_OAUTH_CONNECTION_KIND,

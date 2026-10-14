@@ -1,8 +1,8 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type z from "zod/v4";
 
-import { generateStrudelCode } from "~/modules/apps/application/strudel/generate";
-import { savePattern } from "~/modules/apps/application/strudel/save";
+import { generateStrudelCode } from "~/modules/experiences/application/strudel/generate";
+import { savePattern } from "~/modules/experiences/application/strudel/save";
 import { requireOptionalProjectCapabilityAccess } from "~/modules/workspaces/application/access";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";

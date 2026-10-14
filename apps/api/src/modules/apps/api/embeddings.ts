@@ -11,9 +11,9 @@ import { Hono } from "hono";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
-import { deleteEmbedding } from "~/modules/apps/application/embeddings/delete";
-import { insertEmbedding } from "~/modules/apps/application/embeddings/insert";
-import { queryEmbeddings } from "~/modules/apps/application/embeddings/query";
+import { deleteEmbedding } from "~/modules/sources/application/embeddings/delete";
+import { insertEmbedding } from "~/modules/sources/application/embeddings/insert";
+import { queryEmbeddings } from "~/modules/sources/application/embeddings/query";
 
 const app = new Hono();
 

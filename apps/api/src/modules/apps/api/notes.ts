@@ -18,6 +18,7 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
+import { generateDocumentFromMedia } from "~/modules/documents/application";
 import {
   createNote,
   deleteNote,
@@ -25,8 +26,7 @@ import {
   getNote,
   listNotes,
   updateNote,
-} from "~/modules/apps/application/notes/list";
-import { generateDocumentFromMedia } from "~/modules/documents/application";
+} from "~/modules/experiences/application/notes/list";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

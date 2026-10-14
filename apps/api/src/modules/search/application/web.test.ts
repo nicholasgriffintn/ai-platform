@@ -20,8 +20,8 @@ vi.mock("~/infrastructure/providers/capabilities/search", () => ({
 
 import { deepWebSearchSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { performDeepWebSearch } from "~/modules/apps/application/retrieval/web-search";
 import { getAuxiliarySearchProvider } from "~/modules/models/application/resolve";
+import { performDeepWebSearch } from "~/modules/tools/application/retrieval/web-search";
 
 import { handleWebSearch } from "./web";
 

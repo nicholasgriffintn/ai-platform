@@ -6,7 +6,7 @@ import {
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { streamVerbatimSegment } from "~/modules/apps/application/verbatim/stream-segment";
+import { streamVerbatimSegment } from "~/modules/experiences/application/verbatim/stream-segment";
 import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,

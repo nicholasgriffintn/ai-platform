@@ -6,7 +6,6 @@ import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import {
   runAgentLoop,
   type AgentLoopExecutionParams,
@@ -22,6 +21,7 @@ import {
 } from "~/modules/chat/application/streaming/emitter";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
 import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
 import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";

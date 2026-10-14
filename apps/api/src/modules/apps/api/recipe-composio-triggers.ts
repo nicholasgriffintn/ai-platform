@@ -17,7 +17,7 @@ import {
   listRecipeComposioTriggers,
   listRecipeComposioTriggerTypes,
   setRecipeComposioTriggerStatus,
-} from "~/modules/apps/application/recipes/composio-triggers";
+} from "~/modules/recipes/application/composio-triggers";
 
 const app = new Hono();
 const installationParamsSchema = z.object({ installationId: z.string().min(1) });

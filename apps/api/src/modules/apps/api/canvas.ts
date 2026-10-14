@@ -4,8 +4,8 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { listCanvasModels } from "~/modules/apps/application/canvas/list-models";
-import type { CanvasMode } from "~/modules/apps/application/canvas/types";
+import { listCanvasModels } from "~/modules/experiences/application/canvas/list-models";
+import type { CanvasMode } from "~/modules/experiences/application/canvas/types";
 
 const app = new Hono();
 

@@ -2,8 +2,8 @@ import { DEFAULT_OCR_PROVIDER } from "@ngriffin_uk/polychat-ai-providers";
 import type { OcrInput, OcrRequest } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { performOcr } from "~/modules/apps/application/retrieval/ocr";
 import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
+import { performOcr } from "~/modules/tools/application/retrieval/ocr";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { extract_text_from_document as extract_text_from_documentDescriptor } from "./definitions/ocr";

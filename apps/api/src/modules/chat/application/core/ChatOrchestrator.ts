@@ -7,7 +7,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { isAbortError } from "~/infrastructure/abort";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import { runAgentLoop } from "~/modules/chat/application/agent/agent-loop";
 import { createGoalFinishGate } from "~/modules/chat/application/agent/goal-gate";
 import {
@@ -35,6 +34,7 @@ import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn
 import { resolveApprovedToolInteraction } from "~/modules/chat/application/tools/approved-tool-interaction";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
 import { applyTierReasoningEffort } from "~/modules/chat/domain/tier-reasoning";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { SessionManager } from "~/modules/conversations/application/SessionManager";
 import {
