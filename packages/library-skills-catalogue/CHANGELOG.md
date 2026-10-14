@@ -1,5 +1,25 @@
 # @ngriffin_uk/polychat-library-skills-catalogue
 
+## 0.3.0
+
+### Minor Changes
+
+- e7177c1: The research tool now takes a brief, a depth (quick, standard or deep), a format and a provider instead of fifteen transport options, defaults to Parallel's pro processor rather than ultra, and ships with a web-research skill that sharpens vague briefs with up to three questions before a paid run.
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-schemas@1.4.0
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-realtime",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Realtime protocol, audio, WebRTC, and WebSocket modules for Polychat",
   "license": "Apache-2.0",
   "files": [

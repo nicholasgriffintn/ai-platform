@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-tools",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": false,
   "description": "Tool primitives for Polychat runtimes: executable tool definitions, provider declarations, catalogues, registries, validation and execution, mode step budgets, and permission gating",
   "license": "Apache-2.0",

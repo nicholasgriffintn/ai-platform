@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sign gateways, scripts and terminals in to Polychat with a device code instead of a pasted API key",
   "license": "Apache-2.0",
   "bin": {
