@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 131072,
-    "maxTokens": 117964,
     "modalities": {
       "input": [
         "text"
@@ -16,14 +15,7 @@
     "supportsToolCalls": false,
     "supportsResponseFormat": false,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
   "models": {
@@ -45,7 +37,15 @@
     "hermes-4-70b": {
       "defaults": {
         "name": "Hermes 4 70B",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 117964,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

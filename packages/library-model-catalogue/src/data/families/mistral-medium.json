@@ -79,7 +79,7 @@
     "mistral-medium-3-5-eu": {
       "defaults": {
         "name": "mistral-medium-3-5@eu",
-        "description": "Mistral Medium 3.5 is a dense 128B instruction following model from Mistral AI. It supports text and image inputs with text output, and is designed for agentic workflows, coding, and complex multi step reasoning. It is particularly strong at reliable multi tool calling and long horizon tasks, with a 256K context window, configurable reasoning effort per request, and a custom vision encoder that handles variable image sizes and aspect ratios. Self hostable on as few as four GPUs and available under open weights.",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
@@ -91,6 +91,7 @@
             "text"
           ]
         },
+        "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -101,6 +102,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.2,
+          "codingIndex": 46.9,
+          "agenticIndex": 7,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

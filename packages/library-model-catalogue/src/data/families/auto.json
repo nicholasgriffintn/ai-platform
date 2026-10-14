@@ -161,9 +161,9 @@
     "standard-compute": {
       "defaults": {
         "name": "Standard Compute",
-        "description": "Flat-rate smart-routing gateway: one model id, each request routed across a curated catalog of 1M-context models (DeepSeek, GLM, MiniMax, Qwen, GPT-5.6, Claude 5, Gemini 2.5, Kimi) or pinned to a user-selected model",
+        "description": "Flat-rate smart-routing gateway: one model id, each request routed across the customer's enabled models from a curated ~1M-context catalog (Claude, GPT, Gemini, DeepSeek, GLM, Qwen, Kimi, MiniMax, Grok, MiMo) or pinned to a user-selected model",
         "contextWindow": 1000000,
-        "maxTokens": 24576,
+        "maxTokens": 50000,
         "modalities": {
           "input": [
             "text"

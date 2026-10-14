@@ -1192,6 +1192,17 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       }
+    },
+    "anthropic/claude-fable-5": {
+      "model": "claude-fable/claude-fable-5",
+      "matchingModel": "anthropic/claude-fable-5",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05,
+        "supportsTemperature": false
+      }
     }
   }
 }

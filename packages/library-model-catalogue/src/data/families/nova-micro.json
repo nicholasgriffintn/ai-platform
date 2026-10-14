@@ -53,12 +53,9 @@
     },
     "nova-micro-1-0": {
       "defaults": {
-        "name": "Nova Micro 1.0",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "maxTokens": 5120,
         "knowledgeCutoffDate": "October 31, 2024",
-        "releaseDate": "December 5, 2024",
-        "supportsResponseFormat": false
+        "releaseDate": "December 5, 2024"
       }
     },
     "nova-micro-apac": {

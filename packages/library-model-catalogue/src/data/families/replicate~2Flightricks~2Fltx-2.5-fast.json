@@ -30,7 +30,7 @@
         {
           "key": "text_to_videoElo",
           "label": "Text-to-video arena",
-          "value": 938,
+          "value": 941,
           "min": 800,
           "max": 1400,
           "confidenceInterval95": 11

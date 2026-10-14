@@ -434,7 +434,17 @@
         "maxTokens": 131072,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0002
+        "costPer1kOutputTokens": 0.0002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "deepseek-v4.1-flash": {
@@ -598,6 +608,16 @@
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "cat-jam-free": {
+      "model": "opencode-go/cat-jam-free/cat-jam-free",
+      "matchingModel": "cat-jam-free",
+      "overrides": {
+        "lastUpdated": "October 12, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
       }
     }
   }

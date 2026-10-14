@@ -157,7 +157,7 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -269,7 +269,6 @@
       "matchingModel": "glm-5.1",
       "overrides": {
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 7, 2026",
@@ -1472,6 +1471,27 @@
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "cat-jam-free": {
+      "model": "opencode/cat-jam-free/cat-jam-free",
+      "matchingModel": "cat-jam-free",
+      "overrides": {
+        "lastUpdated": "October 12, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "gemini-4-argon",
+      "overrides": {
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
       }
     }
   }

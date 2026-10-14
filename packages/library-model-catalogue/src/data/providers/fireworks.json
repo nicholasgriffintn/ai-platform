@@ -361,7 +361,6 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",

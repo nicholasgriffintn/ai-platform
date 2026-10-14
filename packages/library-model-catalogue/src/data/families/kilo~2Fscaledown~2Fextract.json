@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 900000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 13, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The kilo/scaledown/extract family includes models that produce text.",
+  "models": {
+    "scaledown-extract": {
+      "defaults": {
+        "name": "ScaleDown: Extract",
+        "description": "Extract is a description-driven entity extraction model from ScaleDown. Instead of a fixed set of entity types, callers describe the fields they want in plain English through `provider.options.scaledown.entities`, and the..."
+      }
+    }
+  }
+}

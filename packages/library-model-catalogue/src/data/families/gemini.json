@@ -639,24 +639,9 @@
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio"
-        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 15, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -695,24 +680,9 @@
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio"
-        ],
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "September 15, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -812,6 +782,104 @@
         }
       }
     },
+    "gemini-4-argon": {
+      "defaults": {
+        "name": "Gemini 4 Argon",
+        "openWeights": false,
+        "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "October 13, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 52.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "gemini-4-argon-eu": {
+      "defaults": {
+        "name": "Gemini 4 Argon (EU)",
+        "openWeights": false,
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "October 13, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 52.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "gemini-embedding-001": {
       "defaults": {
         "name": "Gemini Embedding 001",
@@ -842,51 +910,6 @@
         "knowledgeCutoffDate": "November 2025",
         "releaseDate": "April 22, 2026",
         "supportsToolCalls": false
-      }
-    },
-    "gemini-live-2-5-flash": {
-      "defaults": {
-        "name": "Gemini Live 2.5 Flash",
-        "description": "Gemini Live 2.5 Flash accepts text, image, audio, video and produces text, audio.",
-        "contextWindow": 128000,
-        "maxTokens": 8000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "September 1, 2025"
-      }
-    },
-    "gemini-live-2-5-flash-preview-native-audio": {
-      "defaults": {
-        "name": "Gemini Live 2.5 Flash Preview Native Audio",
-        "description": "Gemini Live 2.5 Flash Preview Native Audio accepts text, audio, video and produces text, audio.",
-        "contextWindow": 131072,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "June 17, 2025",
-        "supportsAttachments": false,
-        "supportsTemperature": false
       }
     },
     "gemini-omni-flash-preview": {
