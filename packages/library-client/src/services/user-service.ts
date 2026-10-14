@@ -1,6 +1,7 @@
 import {
   decodeModelList,
   type ModelConfig,
+  type ListPage,
   type ModelTiersResponse,
   type ProviderSyncStatus,
   type Tool,
@@ -159,9 +160,7 @@ export class UserService {
       throw new Error(`Failed to fetch tools: ${response.statusText}`);
     }
 
-    const responseData = await returnFetchedData<Tool[]>(response);
-
-    return responseData;
+    return (await returnFetchedData<ListPage<Tool>>(response)).data;
   }
 
   async storeProviderApiKey(

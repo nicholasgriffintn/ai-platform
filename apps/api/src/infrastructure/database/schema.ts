@@ -68,6 +68,8 @@ export const plans = sqliteTable("plans", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
+export type PlanRecord = typeof plans.$inferSelect;
+
 export const anonymousUser = sqliteTable("anonymous_user", {
   id: text().primaryKey(),
   ip_address: text().notNull(),

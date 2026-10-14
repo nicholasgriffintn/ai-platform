@@ -1,17 +1,15 @@
 import {
-  apiResponseSchema,
   channelBindingSchema,
+  channelPairingChallengeSchema,
   createChannelBindingSchema,
   listChannelBindingsResponseSchema,
   listChannelSendersResponseSchema,
-  channelPairingChallengeSchema,
   revokeChannelSenderSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { defineResource } from "~/infrastructure/http/resource";
 import {
   createChannelBinding,
   deleteChannelBinding,
@@ -24,85 +22,78 @@ import {
 } from "~/modules/channels/application/senders";
 
 const app = new Hono();
-const routeLogger = createRouteLogger("channels");
+const bindingParamsSchema = z.object({ binding_id: z.string().min(1) });
+const senderParamsSchema = bindingParamsSchema.extend({ sender_id: z.string().min(1) });
 
-app.use("/*", async (ctx, next) => {
-  routeLogger.info(`Processing channels route: ${ctx.req.method} ${ctx.req.path}`);
+defineResource(
+  app,
+  { path: "/bindings", idParam: "binding_id", tags: ["channels"] },
+  (bindings) => {
+    bindings
+      .list({
+        auth: true,
+        summary: "List the channels connected to Polychat",
+        responses: { 200: { description: "Bindings", schema: listChannelBindingsResponseSchema } },
+        handler: ({ serviceContext }) => listChannelBindings(serviceContext),
+      })
+      .create({
+        auth: true,
+        summary: "Connect a channel",
+        description:
+          "Bind a Slack channel or Telegram chat to a person or a project. Slack may bind to either; Telegram is personal only.",
+        bodySchema: createChannelBindingSchema,
+        responses: { 200: { description: "The binding", schema: channelBindingSchema } },
+        handler: ({ serviceContext, body }) => createChannelBinding(serviceContext, body),
+      })
+      .delete({
+        auth: true,
+        summary: "Disconnect a channel",
+        paramSchema: bindingParamsSchema,
+        handler: async ({ serviceContext, params }) => {
+          await deleteChannelBinding(serviceContext, params.binding_id);
 
-  return next();
-});
+          return { deleted: true };
+        },
+      });
 
-addRoute(app, "get", "/bindings", {
-  tags: ["channels"],
-  summary: "List the channels connected to Polychat",
-  auth: true,
-  responses: { 200: { description: "Bindings", schema: listChannelBindingsResponseSchema } },
-  handler: async ({ serviceContext }) => listChannelBindings(serviceContext),
-});
+    bindings.sub("pairing_challenges", "challenge_id").create({
+      auth: true,
+      summary: "Link your own channel identity",
+      paramSchema: bindingParamsSchema,
+      responses: {
+        200: { description: "One-time linking command", schema: channelPairingChallengeSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        issueChannelPairingChallenge(serviceContext, params.binding_id),
+    });
 
-addRoute(app, "post", "/bindings", {
-  tags: ["channels"],
-  summary: "Connect a channel",
-  description:
-    "Bind a Slack channel or Telegram chat to a person or a project. Slack may bind to either; Telegram is personal only.",
-  auth: true,
-  bodySchema: createChannelBindingSchema,
-  responses: { 200: { description: "Binding", schema: channelBindingSchema } },
-  handler: async ({ serviceContext, body }) => createChannelBinding(serviceContext, body),
-});
+    bindings
+      .sub("senders", "sender_id")
+      .list({
+        auth: true,
+        summary: "List verified channel senders",
+        paramSchema: bindingParamsSchema,
+        responses: { 200: { description: "Senders", schema: listChannelSendersResponseSchema } },
+        handler: ({ serviceContext, params }) =>
+          listChannelSenders(serviceContext, params.binding_id),
+      })
+      .action("revoke", {
+        auth: true,
+        summary: "Revoke a linked sender",
+        paramSchema: senderParamsSchema,
+        bodySchema: revokeChannelSenderSchema,
+        handler: async ({ serviceContext, params, body }) => {
+          await revokeChannelSender(
+            serviceContext,
+            params.binding_id,
+            params.sender_id,
+            body.expectedRevision,
+          );
 
-addRoute(app, "delete", "/bindings/:bindingId", {
-  tags: ["channels"],
-  summary: "Disconnect a channel",
-  auth: true,
-  paramSchema: z.object({ bindingId: z.string().min(1) }),
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
-  handler: async ({ serviceContext, params }) => {
-    await deleteChannelBinding(serviceContext, params.bindingId);
-
-    return { success: true };
+          return { revoked: true };
+        },
+      });
   },
-});
-
-addRoute(app, "post", "/bindings/:bindingId/pairing-challenges", {
-  tags: ["channels"],
-  summary: "Link your own channel identity",
-  auth: true,
-  paramSchema: z.object({ bindingId: z.string().min(1) }),
-  responses: {
-    200: { description: "One-time linking command", schema: channelPairingChallengeSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    issueChannelPairingChallenge(serviceContext, params.bindingId),
-});
-
-addRoute(app, "get", "/bindings/:bindingId/senders", {
-  tags: ["channels"],
-  summary: "List verified channel senders",
-  auth: true,
-  paramSchema: z.object({ bindingId: z.string().min(1) }),
-  responses: { 200: { description: "Senders", schema: listChannelSendersResponseSchema } },
-  handler: async ({ serviceContext, params }) =>
-    listChannelSenders(serviceContext, params.bindingId),
-});
-
-addRoute(app, "post", "/bindings/:bindingId/senders/:senderId/revoke", {
-  tags: ["channels"],
-  summary: "Revoke a linked sender",
-  auth: true,
-  paramSchema: z.object({ bindingId: z.string().min(1), senderId: z.string().min(1) }),
-  bodySchema: revokeChannelSenderSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
-  handler: async ({ serviceContext, params, body }) => {
-    await revokeChannelSender(
-      serviceContext,
-      params.bindingId,
-      params.senderId,
-      body.expectedRevision,
-    );
-
-    return { success: true };
-  },
-});
+);
 
 export default app;

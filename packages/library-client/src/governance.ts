@@ -1,5 +1,6 @@
 import type {
   CreateTemplateInput,
+  ListPage,
   ProjectDetail,
   ProjectStarterSummary,
   Template,
@@ -31,10 +32,8 @@ export function listWorkspaceAudit(workspaceId: string): Promise<WorkspaceAuditR
 
 export async function listWorkspaceTemplates(workspaceId: string): Promise<Template[]> {
   return (
-    await request<{ templates: Template[] }>(
-      `/templates?workspaceId=${encodeURIComponent(workspaceId)}`,
-    )
-  ).templates;
+    await request<ListPage<Template>>(`/templates?workspace_id=${encodeURIComponent(workspaceId)}`)
+  ).data;
 }
 
 export async function createTemplate(input: CreateTemplateInput): Promise<Template> {
@@ -56,7 +55,7 @@ export async function instantiateTemplate(
 }
 
 export async function listProjectStarters(): Promise<ProjectStarterSummary[]> {
-  return (await request<{ starters: ProjectStarterSummary[] }>("/templates/starters")).starters;
+  return (await request<ListPage<ProjectStarterSummary>>("/templates/starters")).data;
 }
 
 export async function instantiateProjectStarter(

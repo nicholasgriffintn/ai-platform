@@ -28,6 +28,14 @@ export interface ActivityRecord {
   updated_at: string;
 }
 
+interface ActivityListOptions {
+  conversationId?: string;
+  capabilityId?: string;
+  status?: ActivityStatus;
+  limit: number;
+  after?: string;
+}
+
 export class ActivityRepository extends BaseRepository {
   private announce(record: ActivityRecord | null): void {
     if (record?.capability_id === SANDBOX_RUNS_CAPABILITY_ID && record.project_id) {
@@ -181,51 +189,51 @@ export class ActivityRepository extends BaseRepository {
 
   async listPersonalActivities(
     userId: number,
-    options: {
-      conversationId?: string;
-      capabilityId?: string;
-      status?: ActivityStatus;
-      limit: number;
-      offset: number;
-    },
+    options: ActivityListOptions,
   ): Promise<ActivityRecord[]> {
-    const { query, values } = this.buildSelectQuery(
-      "activity_record",
-      {
-        created_by_user_id: userId,
-        project_id: null,
-        conversation_id: options.conversationId,
-        capability_id: options.capabilityId,
-        status: options.status,
-      },
-      { orderBy: "created_at DESC", limit: options.limit, offset: options.offset },
-    );
-
-    return this.runQuery<ActivityRecord>(query, values);
+    return this.listActivities(["created_by_user_id = ?", "project_id IS NULL"], [userId], options);
   }
 
   async listProjectActivities(
     projectId: string,
-    options: {
-      conversationId?: string;
-      capabilityId?: string;
-      status?: ActivityStatus;
-      limit: number;
-      offset: number;
-    },
+    options: ActivityListOptions,
   ): Promise<ActivityRecord[]> {
-    const { query, values } = this.buildSelectQuery(
-      "activity_record",
-      {
-        project_id: projectId,
-        conversation_id: options.conversationId,
-        capability_id: options.capabilityId,
-        status: options.status,
-      },
-      { orderBy: "created_at DESC", limit: options.limit, offset: options.offset },
-    );
+    return this.listActivities(["project_id = ?"], [projectId], options);
+  }
 
-    return this.runQuery<ActivityRecord>(query, values);
+  private async listActivities(
+    scope: string[],
+    scopeValues: unknown[],
+    options: ActivityListOptions,
+  ): Promise<ActivityRecord[]> {
+    const conditions = [...scope];
+    const values = [...scopeValues];
+    const filters: Array<[string, string | undefined]> = [
+      ["conversation_id", options.conversationId],
+      ["capability_id", options.capabilityId],
+      ["status", options.status],
+    ];
+
+    for (const [column, value] of filters) {
+      if (value !== undefined) {
+        conditions.push(`${column} = ?`);
+        values.push(value);
+      }
+    }
+
+    if (options.after) {
+      conditions.push(
+        "(created_at, id) < (SELECT created_at, id FROM activity_record WHERE id = ?)",
+      );
+      values.push(options.after);
+    }
+
+    values.push(options.limit);
+
+    return this.runQuery<ActivityRecord>(
+      `SELECT * FROM activity_record WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC, id DESC LIMIT ?`,
+      values,
+    );
   }
 
   async updateActivity(

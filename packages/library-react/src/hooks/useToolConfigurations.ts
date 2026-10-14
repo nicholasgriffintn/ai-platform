@@ -6,7 +6,7 @@ import {
 import type {
   ModelToolConfiguration,
   ModelToolId,
-  SavedToolConfigurationsResponse,
+  SavedToolConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -29,15 +29,12 @@ export function useToolConfigurations() {
       configuration: ModelToolConfiguration;
     }) => saveToolConfiguration(toolId, { configuration }),
     onSuccess: (saved) => {
-      queryClient.setQueryData<SavedToolConfigurationsResponse>(
+      queryClient.setQueryData<SavedToolConfiguration[]>(
         TOOL_CONFIGURATIONS_QUERY_KEY,
-        (current) => {
-          const configurations = (current?.configurations ?? []).filter(
-            (configuration) => configuration.toolId !== saved.toolId,
-          );
-
-          return { configurations: [...configurations, saved] };
-        },
+        (current) => [
+          ...(current ?? []).filter((configuration) => configuration.toolId !== saved.toolId),
+          saved,
+        ],
       );
     },
   });

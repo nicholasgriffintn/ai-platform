@@ -1,5 +1,7 @@
 import {
+  listPageOf,
   modelToolIdSchema,
+  type ListPage,
   type ModelToolId,
   type SavedToolConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
@@ -12,11 +14,11 @@ import { validateModelToolConfiguration } from "./modelToolConfiguration";
 export async function listModelToolConfigurations(
   context: ServiceContext,
   scope: CapabilityConfigurationScope,
-): Promise<{ configurations: SavedToolConfiguration[] }> {
+): Promise<ListPage<SavedToolConfiguration>> {
   const records = await context.repositories.capabilityConfigurations.list(scope, "tool");
 
-  return {
-    configurations: records.flatMap((record) => {
+  return listPageOf(
+    records.flatMap((record) => {
       const toolId = modelToolIdSchema.safeParse(record.capabilityId);
 
       return toolId.success
@@ -30,7 +32,8 @@ export async function listModelToolConfigurations(
           ]
         : [];
     }),
-  };
+    (configuration) => configuration.toolId,
+  );
 }
 
 export async function saveModelToolConfiguration(

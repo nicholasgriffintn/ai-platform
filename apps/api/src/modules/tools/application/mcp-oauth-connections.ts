@@ -39,7 +39,7 @@ import {
 const STATE_PROVIDER = "mcp";
 const STATE_TTL_MS = 10 * 60 * 1000;
 const REFRESH_MARGIN_MS = 60 * 1000;
-const CALLBACK_PATH = "/tools/mcp/oauth/callback";
+const CALLBACK_PATH = "/tools/mcp_connections/callback";
 const RETURN_PATH = "/chat/plugins";
 
 const storedServerSchema = z.object({

@@ -20,7 +20,7 @@ const app = new Hono();
 const routeLogger = createRouteLogger("desktop");
 
 const downloadParamsSchema = z.object({
-  bundle: z.string().min(1),
+  download_id: z.string().min(1),
 });
 
 const updaterArtifactParamsSchema = z.object({
@@ -44,7 +44,7 @@ addRoute(app, "get", "/downloads", {
   handler: async ({ serviceContext }) => getDesktopDownloads(serviceContext.env),
 });
 
-addRoute(app, "get", "/downloads/:bundle", {
+addRoute(app, "get", "/downloads/:download_id", {
   tags: ["desktop"],
   summary: "Download a desktop bundle",
   paramSchema: downloadParamsSchema,
@@ -53,7 +53,7 @@ addRoute(app, "get", "/downloads/:bundle", {
     404: { description: "Unknown bundle", schema: errorResponseSchema },
   },
   handler: async ({ params, serviceContext }) =>
-    streamDesktopArchive(serviceContext.env, params.bundle),
+    streamDesktopArchive(serviceContext.env, params.download_id),
 });
 
 addRoute(app, "get", "/updates/:bundle/:filename", {

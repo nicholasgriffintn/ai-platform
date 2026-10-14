@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
 import { addProjectCapabilitySchema, createProjectSchema } from "./workspaces.js";
 
 export const templateKindSchema = z.enum(["project", "recipe", "capability"]);
@@ -20,7 +21,7 @@ export const templateSchema = z.object({
 });
 
 export const templateListQuerySchema = z.object({
-  workspaceId: z.string().min(1).optional(),
+  workspace_id: z.string().min(1).optional(),
   kind: templateKindSchema.optional(),
 });
 
@@ -43,7 +44,7 @@ export const updateTemplateSchema = z
   })
   .refine((value) => Object.keys(value).length > 0, { error: "Provide a template change" });
 
-export const templateListResponseSchema = z.object({ templates: z.array(templateSchema) });
+export const templateListResponseSchema = listSchema(templateSchema);
 
 export const projectTemplateConfigurationSchema = z.object({
   project: createProjectSchema,

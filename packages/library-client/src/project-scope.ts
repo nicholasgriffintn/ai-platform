@@ -15,5 +15,5 @@ export function withWorkspaceScope(path: string, workspaceId?: string): string {
 
   const separator = path.includes("?") ? "&" : "?";
 
-  return `${path}${separator}workspaceId=${encodeURIComponent(workspaceId)}`;
+  return `${path}${separator}workspace_id=${encodeURIComponent(workspaceId)}`;
 }

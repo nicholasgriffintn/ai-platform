@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { inboundChannelIdSchema } from "./chat-mode.js";
+import { listSchema } from "./platform/list.js";
 
 export const slackChannelAddressSchema = z.string().regex(/^T[A-Z0-9]+:[CDG][A-Z0-9]+$/);
 export const emailChannelAddressSchema = z.email().max(200);
@@ -57,9 +58,7 @@ export const createChannelBindingSchema = z
     { message: "Enter the email address you will send from", path: ["externalId"] },
   );
 
-export const listChannelBindingsResponseSchema = z.object({
-  bindings: z.array(channelBindingSchema),
-});
+export const listChannelBindingsResponseSchema = listSchema(channelBindingSchema);
 
 export const channelMessageContextSchema = z
   .object({
@@ -80,7 +79,7 @@ export const channelSenderSchema = z.object({
   canRevoke: z.boolean(),
 });
 
-export const listChannelSendersResponseSchema = z.object({ senders: z.array(channelSenderSchema) });
+export const listChannelSendersResponseSchema = listSchema(channelSenderSchema);
 export const channelPairingChallengeSchema = z.object({
   command: z.string(),
   expiresAt: z.string(),

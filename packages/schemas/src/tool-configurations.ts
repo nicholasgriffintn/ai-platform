@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { modelToolIdSchema } from "./apps.js";
 import { mcpToolServerConfigurationSchema } from "./mcp.js";
+import { listSchema } from "./platform/list.js";
 
 export { mcpToolServerConfigurationSchema } from "./mcp.js";
 
@@ -20,9 +21,7 @@ export const savedToolConfigurationSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
-export const savedToolConfigurationsResponseSchema = z.object({
-  configurations: z.array(savedToolConfigurationSchema),
-});
+export const savedToolConfigurationsResponseSchema = listSchema(savedToolConfigurationSchema);
 
 export const saveToolConfigurationSchema = z.object({
   configuration: z.record(z.string(), z.unknown()),

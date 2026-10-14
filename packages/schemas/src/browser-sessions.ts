@@ -121,8 +121,8 @@ export const browserAvailabilitySchema = z.object({
 });
 
 export const browserScopeQuerySchema = z.object({
-  projectId: identifier.optional(),
-  workspaceId: identifier.optional(),
+  project_id: identifier.optional(),
+  workspace_id: identifier.optional(),
 });
 export const browserSessionParamsSchema = z.object({ id: identifier });
 export const browserSessionViewDataSchema = z.object({

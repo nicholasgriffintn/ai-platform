@@ -1,6 +1,7 @@
-import type { ProjectDetail, ProjectStarterSummary } from "@ngriffin_uk/polychat-schemas";
+import type { ListPage, ProjectDetail, ProjectStarterSummary } from "@ngriffin_uk/polychat-schemas";
 import {
   deriveProjectColour,
+  listPageOf,
   findProjectStarter,
   findTeammateRole,
   PROJECT_STARTERS,
@@ -15,9 +16,9 @@ import { getProject } from "~/modules/workspaces/application";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 import { validateProjectToolConfiguration } from "~/modules/workspaces/application/projectTools";
 
-export function listProjectStarters(): { starters: ProjectStarterSummary[] } {
-  return {
-    starters: PROJECT_STARTERS.map((starter) => ({
+export function listProjectStarters(): ListPage<ProjectStarterSummary> {
+  return listPageOf(
+    PROJECT_STARTERS.map((starter) => ({
       slug: starter.slug,
       name: starter.name,
       description: starter.description,
@@ -30,7 +31,8 @@ export function listProjectStarters(): { starters: ProjectStarterSummary[] } {
       apps: [...starter.apps],
       tools: [...starter.tools],
     })),
-  };
+    (starter) => starter.slug,
+  );
 }
 
 export async function instantiateProjectStarter(

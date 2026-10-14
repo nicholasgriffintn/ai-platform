@@ -12,6 +12,7 @@ import type {
   BenchmarkVisibility,
   BenchmarkVoteRequest,
   BenchmarkVoteResult,
+  ListPage,
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -37,7 +38,7 @@ export const benchmarksService = {
     );
   },
   shared(token: string): Promise<BenchmarkRunDetail> {
-    return fetchApiData(`${BENCHMARKS_PATH}/shared/${encodeURIComponent(token)}`);
+    return fetchApiData(`${BENCHMARKS_PATH}/runs/shared/${encodeURIComponent(token)}`);
   },
   estimate(request: StartBenchmarkRunsRequest): Promise<BenchmarkEstimate> {
     return fetchApiData(`${BENCHMARKS_PATH}/runs/estimate`, { method: "POST", body: request });
@@ -45,8 +46,8 @@ export const benchmarksService = {
   start(request: StartBenchmarkRunsRequest): Promise<{ runs: BenchmarkRun[] }> {
     return fetchApiData(`${BENCHMARKS_PATH}/runs`, { method: "POST", body: request });
   },
-  myRuns(): Promise<{ runs: BenchmarkRun[] }> {
-    return fetchApiData(`${BENCHMARKS_PATH}/runs`);
+  async myRuns(): Promise<BenchmarkRun[]> {
+    return (await fetchApiData<ListPage<BenchmarkRun>>(`${BENCHMARKS_PATH}/runs`)).data;
   },
   run(runId: string): Promise<BenchmarkRunDetail> {
     return fetchApiData(`${BENCHMARKS_PATH}/runs/${encodeURIComponent(runId)}`);
@@ -74,6 +75,6 @@ export const benchmarksService = {
     });
   },
   submitPlay(request: BenchmarkPlaySubmitRequest): Promise<BenchmarkPlayResult> {
-    return fetchApiData(`${BENCHMARKS_PATH}/play/submit`, { method: "POST", body: request });
+    return fetchApiData(`${BENCHMARKS_PATH}/plays`, { method: "POST", body: request });
   },
 };

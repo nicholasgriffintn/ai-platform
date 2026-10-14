@@ -13,7 +13,7 @@ async function readHeaders(): Promise<Record<string, string>> {
   return await apiService.getHeaders();
 }
 
-export async function fetchToolConfigurations(): Promise<SavedToolConfigurationsResponse> {
+export async function fetchToolConfigurations(): Promise<SavedToolConfiguration[]> {
   const response = await fetchApi("/tools/configurations", {
     method: "GET",
     headers: await readHeaders(),
@@ -23,7 +23,7 @@ export async function fetchToolConfigurations(): Promise<SavedToolConfigurations
     throw await createApiErrorFromResponse(response, "Failed to load tool configurations");
   }
 
-  return returnFetchedData<SavedToolConfigurationsResponse>(response);
+  return (await returnFetchedData<SavedToolConfigurationsResponse>(response)).data;
 }
 
 export async function saveToolConfiguration(
@@ -31,7 +31,7 @@ export async function saveToolConfiguration(
   input: SaveToolConfiguration,
 ): Promise<SavedToolConfiguration> {
   const response = await fetchApi(`/tools/${encodeURIComponent(toolId)}/configuration`, {
-    method: "PUT",
+    method: "PATCH",
     headers: await readHeaders(),
     body: input,
   });

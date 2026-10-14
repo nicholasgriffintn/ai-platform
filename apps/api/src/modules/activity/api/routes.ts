@@ -6,24 +6,29 @@ import {
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { defineResource } from "~/infrastructure/http/resource";
 import { getActivity, listActivity } from "~/modules/activity/application";
 
 const app = new Hono();
 
-addRoute(app, "get", "/", {
-  tags: ["activity"],
-  auth: true,
-  querySchema: activityListQuerySchema,
-  responses: { 200: { description: "Activity", schema: activityListResponseSchema } },
-  handler: ({ query, serviceContext, user }) => listActivity(serviceContext, user.id, query),
+defineResource(app, { idParam: "activity_id", tags: ["activity"] }, (activity) => {
+  activity
+    .list({
+      auth: true,
+      summary: "List activity",
+      description: "Personal activity, or a project's when project_id is set. Newest first.",
+      querySchema: activityListQuerySchema,
+      responses: { 200: { description: "Activity", schema: activityListResponseSchema } },
+      handler: ({ query, serviceContext, user }) => listActivity(serviceContext, user.id, query),
+    })
+    .read({
+      auth: true,
+      summary: "Read an activity record",
+      paramSchema: z.object({ activity_id: z.string().min(1) }),
+      responses: { 200: { description: "Activity record", schema: activityRecordSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        getActivity(serviceContext, user.id, params.activity_id),
+    });
 });
-addRoute(app, "get", "/:activityId", {
-  tags: ["activity"],
-  auth: true,
-  paramSchema: z.object({ activityId: z.string().min(1) }),
-  responses: { 200: { description: "Activity record", schema: activityRecordSchema } },
-  handler: ({ params, serviceContext, user }) =>
-    getActivity(serviceContext, user.id, params.activityId),
-});
+
 export default app;

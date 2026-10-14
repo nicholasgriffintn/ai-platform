@@ -1,6 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import type { PlanRecord } from "~/infrastructure/database/schema";
 
 export const PLAN_CREDIT_COLUMNS = [
   "included_credits",
@@ -14,16 +15,16 @@ export type PlanCreditColumn = (typeof PLAN_CREDIT_COLUMNS)[number];
 export type PlanCreditFields = Partial<Record<PlanCreditColumn, number | string | null>>;
 
 export class PlanRepository extends BaseRepository {
-  public async getAllPlans(): Promise<Record<string, unknown>[]> {
+  public async getAllPlans(): Promise<PlanRecord[]> {
     const { query, values } = this.buildSelectQuery("plans");
 
-    return this.runQuery<Record<string, unknown>>(query, values);
+    return this.runQuery<PlanRecord>(query, values);
   }
 
-  public async getPlanById(planId: string): Promise<Record<string, unknown> | null> {
+  public async getPlanById(planId: string): Promise<PlanRecord | null> {
     const { query, values } = this.buildSelectQuery("plans", { id: planId });
 
-    return this.runQuery<Record<string, unknown>>(query, values, true);
+    return this.runQuery<PlanRecord>(query, values, true);
   }
 
   public async updatePlanCredits(planId: string, fields: PlanCreditFields): Promise<boolean> {

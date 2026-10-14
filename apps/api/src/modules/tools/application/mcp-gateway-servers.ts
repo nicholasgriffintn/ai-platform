@@ -143,7 +143,7 @@ export async function shouldUseNativeMcpGateway(params: {
     return false;
   }
 
-  const { connections } = await listMcpConnections(params.context);
+  const { data: connections } = await listMcpConnections(params.context);
 
   return connections.some(
     (connection) => connectionIds.has(connection.id) && connection.credentialRecipient !== "openai",

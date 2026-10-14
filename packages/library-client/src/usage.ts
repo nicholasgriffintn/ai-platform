@@ -1,4 +1,5 @@
 import type {
+  ListPage,
   Plan,
   UsageBalanceResponse,
   UsageEventsResponse,
@@ -70,9 +71,8 @@ export async function listUsageEvents(options: {
 
 export async function listPlans(): Promise<Plan[]> {
   const response = await fetchApiOrThrow("/plans", { method: "GET" });
-  const payload = await returnFetchedData<{ data?: Plan[] } | Plan[]>(response);
 
-  return Array.isArray(payload) ? payload : (payload.data ?? []);
+  return (await returnFetchedData<ListPage<Plan>>(response)).data;
 }
 
 export async function createBillingPortalSession(

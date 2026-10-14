@@ -324,7 +324,7 @@ export function usePersonalCapabilityScope(): CapabilityLibraryScope {
     conversationPath: getConversationPath(PERSONAL_SURFACE),
     isLoading: configurations.query.isLoading || skills.query.isLoading,
     error: configurations.query.error ?? skills.query.error,
-    toolConfigurations: configurations.query.data?.configurations ?? [],
+    toolConfigurations: configurations.query.data ?? [],
     personalSkills: {
       byId: skillsById,
       error: skills.setEnabled.error,

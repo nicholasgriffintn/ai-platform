@@ -140,7 +140,7 @@ export async function fetchArtificialAnalysisData({ apiUrl, apiKey }) {
 }
 
 export function buildArtificialAnalysisTriggerUrl(apiUrl) {
-  return new URL("/admin/model-analysis/sync-completed", apiUrl).toString();
+  return new URL("/admin/model_analysis/ingestions", apiUrl).toString();
 }
 
 export async function triggerArtificialAnalysisIngest({ apiUrl, apiKey, write, stats }) {

@@ -30,9 +30,7 @@ export function ChannelBindingCard({
   const { challenge, issue } = useChannelPairing(binding.id);
   const { senders, revoke } = useChannelSenders(binding.id, Boolean(challenge));
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
-  const linked = senders.data?.senders.some(
-    (sender) => sender.userId === user?.id && !sender.revokedAt,
-  );
+  const linked = senders.data?.some((sender) => sender.userId === user?.id && !sender.revokedAt);
 
   return (
     <div className="min-w-0 space-y-4 rounded-lg border border-border bg-surface p-4">
@@ -121,7 +119,7 @@ export function ChannelBindingCard({
         <p role="status" className="text-xs text-muted-foreground">
           Loading linked accounts…
         </p>
-      ) : senders.error ? null : !senders.data?.senders.length ? (
+      ) : senders.error ? null : !senders.data?.length ? (
         binding.enabled && (
           <p className="text-xs text-muted-foreground">
             Link your account to send messages with your Polychat permissions.
@@ -129,7 +127,7 @@ export function ChannelBindingCard({
         )
       ) : (
         <ul className="space-y-2">
-          {senders.data.senders.map((sender) => (
+          {senders.data.map((sender) => (
             <li
               key={sender.id}
               className="flex flex-wrap items-center justify-between gap-2 text-sm"

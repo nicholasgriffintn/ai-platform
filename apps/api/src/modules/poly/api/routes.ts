@@ -40,20 +40,20 @@ addRoute(app, "get", "/agenda", {
   handler: async ({ serviceContext }) => readPolyAgenda(serviceContext),
 });
 
-addRoute(app, "post", "/handoffs/:handoffId/disagree", {
+addRoute(app, "post", "/handoffs/:handoff_id/disagree", {
   tags: ["poly"],
   summary: "Tell Poly it should not have kept a result quiet",
   description:
     "Record a rule that results from the same routine always reach you, and return where the result is.",
   auth: true,
-  paramSchema: z.object({ handoffId: z.string().min(1) }),
+  paramSchema: z.object({ handoff_id: z.string().min(1) }),
   responses: {
     200: { description: "The rule and the result", schema: polyHandoffDisagreementSchema },
     404: { description: "Not in your Poly thread", schema: errorResponseSchema },
     409: { description: "Poly already told you", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, params }) =>
-    disagreeWithPolyHandoff(serviceContext, params.handoffId),
+    disagreeWithPolyHandoff(serviceContext, params.handoff_id),
 });
 
 export default app;

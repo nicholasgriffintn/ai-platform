@@ -5,15 +5,11 @@ import type {
   TriggerMemorySynthesisRequest,
   MemorySynthesis,
   GetMemorySynthesisResponse,
+  ListPage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
-
-interface MemorySynthesisHistoryResponse {
-  syntheses: MemorySynthesis[];
-  total: number;
-}
 
 class TaskService {
   private static instance: TaskService;
@@ -64,8 +60,8 @@ class TaskService {
 
   public async cancelTask(taskId: string): Promise<{ success: boolean }> {
     try {
-      const response = await fetchApi(`/tasks/${taskId}`, {
-        method: "DELETE",
+      const response = await fetchApi(`/tasks/${encodeURIComponent(taskId)}/cancel`, {
+        method: "POST",
       });
 
       if (!response.ok) {
@@ -85,7 +81,7 @@ class TaskService {
     data?: TriggerMemorySynthesisRequest,
   ): Promise<CreateTaskResponse> {
     try {
-      const response = await fetchApi("/tasks/memory-synthesis", {
+      const response = await fetchApi("/memory/syntheses", {
         method: "POST",
         body: data || {},
       });
@@ -105,9 +101,12 @@ class TaskService {
 
   public async getActiveSynthesis(namespace = "global"): Promise<GetMemorySynthesisResponse> {
     try {
-      const response = await fetchApi(`/tasks/memory/synthesis?namespace=${namespace}`, {
-        method: "GET",
-      });
+      const response = await fetchApi(
+        `/memory/syntheses/active?namespace=${encodeURIComponent(namespace)}`,
+        {
+          method: "GET",
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch memory synthesis");
@@ -123,10 +122,10 @@ class TaskService {
   public async getSynthesisHistory(
     namespace = "global",
     limit = 10,
-  ): Promise<MemorySynthesisHistoryResponse> {
+  ): Promise<ListPage<MemorySynthesis>> {
     try {
       const response = await fetchApi(
-        `/tasks/memory/syntheses?namespace=${namespace}&limit=${limit}`,
+        `/memory/syntheses?namespace=${encodeURIComponent(namespace)}&limit=${limit}`,
         {
           method: "GET",
         },
@@ -136,7 +135,7 @@ class TaskService {
         throw new Error("Failed to fetch synthesis history");
       }
 
-      return await returnFetchedData<MemorySynthesisHistoryResponse>(response);
+      return await returnFetchedData<ListPage<MemorySynthesis>>(response);
     } catch (error) {
       console.error("Error fetching synthesis history:", error);
       throw error;

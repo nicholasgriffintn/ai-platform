@@ -165,7 +165,7 @@ export function CapabilityLibrary({
         onClose={controller.toolConfigurationDialog.close}
         onSubmit={controller.toolConfigurationDialog.submit}
         tool={controller.toolConfigurationDialog.tool}
-        mcpConnections={mcpConnections.query.data?.connections ?? []}
+        mcpConnections={mcpConnections.query.data ?? []}
         mcpConnectionManager={<McpConnectionManager connections={mcpConnections} />}
       />
       <AddSkillDialog

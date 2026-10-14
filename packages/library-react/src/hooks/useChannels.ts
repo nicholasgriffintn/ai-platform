@@ -36,7 +36,7 @@ export function useChannelBindings(projectId?: string) {
     create,
     disconnect,
     visibleBindings:
-      bindings.data?.bindings.filter((binding) =>
+      bindings.data?.filter((binding) =>
         projectId
           ? binding.scopeType === "project" && binding.scopeId === projectId
           : binding.scopeType === "personal",
