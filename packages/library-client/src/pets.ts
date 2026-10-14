@@ -1,40 +1,15 @@
 import type { PetOrigin, UserPet, UserPetsPage } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApi } from "./fetch-wrapper.js";
-import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
+import { requestJson, resource } from "./resource.js";
 
-async function readHeaders(): Promise<Record<string, string>> {
-  return await apiService.getHeaders();
+const pets = resource<UserPet>("/pets");
+
+export function fetchUserPets(after?: string): Promise<UserPetsPage> {
+  return pets.list({ after });
 }
 
-export async function fetchUserPets(page = 1): Promise<UserPetsPage> {
-  const params = new URLSearchParams({ page: String(page) });
-  const response = await fetchApi(`/user/pets?${params.toString()}`, {
-    method: "GET",
-    headers: await readHeaders(),
-  });
-
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(response, "Failed to load pets");
-  }
-
-  return await returnFetchedData<UserPetsPage>(response);
-}
-
-export async function fetchUserPet(petId: string): Promise<UserPet> {
-  const response = await fetchApi(`/user/pets/${encodeURIComponent(petId)}`, {
-    method: "GET",
-    headers: await readHeaders(),
-  });
-
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(response, "Failed to load the pet");
-  }
-
-  const data = await returnFetchedData<{ pet: UserPet }>(response);
-
-  return data.pet;
+export function fetchUserPet(petId: string): Promise<UserPet> {
+  return pets.get(petId);
 }
 
 export interface CreateUserPetInput {
@@ -46,7 +21,7 @@ export interface CreateUserPetInput {
   filename: string;
 }
 
-export async function createUserPet(input: CreateUserPetInput): Promise<UserPet> {
+export function createUserPet(input: CreateUserPetInput): Promise<UserPet> {
   const formData = new FormData();
 
   formData.append("name", input.name);
@@ -61,44 +36,15 @@ export async function createUserPet(input: CreateUserPetInput): Promise<UserPet>
     formData.append("prompt", input.prompt);
   }
 
-  const response = await fetchApi("/user/pets", {
-    method: "POST",
-    headers: await readHeaders(),
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(response, "Failed to save the pet");
-  }
-
-  const data = await returnFetchedData<{ pet: UserPet }>(response);
-
-  return data.pet;
+  return requestJson<UserPet>(pets.path, "POST", formData);
 }
 
-export async function deleteUserPet(petId: string): Promise<void> {
-  const response = await fetchApi(`/user/pets/${encodeURIComponent(petId)}`, {
-    method: "DELETE",
-    headers: await readHeaders(),
-  });
-
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(response, "Failed to delete the pet");
-  }
+export function deleteUserPet(petId: string): Promise<void> {
+  return pets.delete(petId);
 }
 
 export async function generatePetImage(prompt: string, name: string): Promise<string> {
-  const response = await fetchApi("/user/pets/generate", {
-    method: "POST",
-    headers: await readHeaders(),
-    body: { name, prompt },
-  });
+  const { image } = await pets.collectionAction<{ image: string }>("generate", { name, prompt });
 
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(response, "Failed to generate a pet");
-  }
-
-  const data = await returnFetchedData<{ image: string }>(response);
-
-  return data.image;
+  return image;
 }

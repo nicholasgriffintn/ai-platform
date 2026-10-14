@@ -1,6 +1,7 @@
 import { isHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
 import { createProjectTaskSchema, projectTaskSchema } from "./project-tasks.js";
 
 const externalUrl = z.url().refine(isHttpUrl, "Use an HTTP or HTTPS URL");
@@ -122,12 +123,9 @@ export const pullRequestReviewSchema = z
   })
   .strict();
 
-export const projectReviewListResponseSchema = z
-  .object({
-    policies: z.array(reviewPolicySchema),
-    reviews: z.array(pullRequestReviewSchema),
-  })
-  .strict();
+export const projectReviewListResponseSchema = listSchema(pullRequestReviewSchema).extend({
+  policies: z.array(reviewPolicySchema),
+});
 
 export const publishPullRequestReviewSchema = z
   .object({

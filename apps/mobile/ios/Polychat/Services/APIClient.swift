@@ -73,7 +73,7 @@ final class APIClient: ObservableObject {
     }
 
     func fetchTaskInbox() async throws -> TaskInboxResponse {
-        try await send(path: "/notifications/inbox", method: "GET")
+        try await send(path: "/notifications", method: "GET")
     }
 
     func fetchTaskNotificationSettings() async throws -> TaskNotificationSettings {
@@ -83,12 +83,12 @@ final class APIClient: ObservableObject {
     func updateTaskNotificationPreferences(
         _ request: UpdateTaskNotificationPreferencesRequest
     ) async throws -> TaskNotificationSettings {
-        try await send(path: "/notifications/settings", method: "PUT", body: request)
+        try await send(path: "/notifications/settings", method: "PATCH", body: request)
     }
 
     func updateTaskInbox(itemIds: [String], action: String) async throws -> TaskInboxMutationResponse {
         try await send(
-            path: "/notifications/inbox/\(action)",
+            path: "/notifications/\(action)",
             method: "POST",
             body: TaskInboxReceiptRequest(itemIds: itemIds)
         )
@@ -263,7 +263,7 @@ final class APIClient: ObservableObject {
 
     func fetchWorkspaces() async throws -> [WorkspaceSummary] {
         let response: WorkspaceListResponse = try await send(path: "/workspaces", method: "GET")
-        return response.workspaces
+        return response.data
     }
 
     func fetchMyModelPermissions(workspaceId: String) async throws -> MyModelPermissions {
@@ -321,7 +321,7 @@ final class APIClient: ObservableObject {
 
     func fetchWorkAttention(limit: Int = 25) async throws -> WorkAttentionResponse {
         try await send(
-            path: "/workspaces/attention",
+            path: "/attention",
             method: "GET",
             queryItems: [URLQueryItem(name: "limit", value: String(limit))]
         )
@@ -394,9 +394,9 @@ final class APIClient: ObservableObject {
     }
 
     func registerMobilePushDevice(token: String, environment: String) async throws {
-        let _: SuccessResponse = try await send(
-            path: "/user/push-devices",
-            method: "PUT",
+        let _: EmptyResponse = try await send(
+            path: "/devices",
+            method: "POST",
             body: RegisterMobilePushDeviceRequest(
                 token: token,
                 environment: environment,
@@ -406,11 +406,7 @@ final class APIClient: ObservableObject {
     }
 
     func unregisterMobilePushDevice(token: String) async throws {
-        let _: SuccessResponse = try await send(
-            path: "/user/push-devices",
-            method: "DELETE",
-            body: UnregisterMobilePushDeviceRequest(token: token)
-        )
+        let _: EmptyResponse = try await send(path: "/devices/\(token)", method: "DELETE")
     }
 
     func installAssistantRecipe(

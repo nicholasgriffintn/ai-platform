@@ -113,13 +113,8 @@ export const conversationHandleSchema = z
 export type ConversationHandle = z.infer<typeof conversationHandleSchema>;
 
 export const conversationHandleParamsSchema = z.object({
-  handleId: z.string().min(1),
+  handle_id: z.string().min(1),
 });
-
-export const conversationHandleListResponseSchema = z.object({
-  handles: z.array(conversationHandleSchema),
-});
-export type ConversationHandleListResponse = z.infer<typeof conversationHandleListResponseSchema>;
 
 export const delegationListResponseSchema = listSchema(delegationSchema).extend({
   canControl: z.boolean().optional(),

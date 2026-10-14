@@ -346,7 +346,7 @@ export class ConversationsService {
   }
 
   async recordOffPlatformRunUsage(input: RecordOffPlatformUsageRequest): Promise<void> {
-    await fetchApiOrThrow("/user/usage/off-platform", {
+    await fetchApiOrThrow("/usage/events", {
       method: "POST",
       headers: await this.headers(),
       body: input,

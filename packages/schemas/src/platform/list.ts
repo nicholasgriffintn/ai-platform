@@ -55,3 +55,7 @@ export function listPageOf<TItem>(
 ): ListPage<TItem> {
   return toListPage(items, items.length, idOf);
 }
+
+export function nextPageCursor(page: Pick<ListPage<unknown>, "has_more" | "last_id">) {
+  return page.has_more && page.last_id ? page.last_id : undefined;
+}

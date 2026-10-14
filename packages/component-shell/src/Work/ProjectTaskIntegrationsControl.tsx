@@ -49,7 +49,7 @@ export function ProjectTaskIntegrationsControl({
             Automatic reviews enabled for {policy.repository} ({policy.provider}).
           </p>
         ))}
-      {reviews.data?.reviews.slice(0, 5).map((review) => (
+      {reviews.data?.data.slice(0, 5).map((review) => (
         <div key={review.id} className="flex flex-wrap justify-between gap-2 text-sm">
           <a className="text-link" href={`${taskBasePath}/${review.taskId}`}>
             {review.target.repository}#{review.target.pullRequestNumber} ·{" "}

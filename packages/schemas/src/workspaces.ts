@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { conversationGroupSchema, conversationSnoozeSchema } from "./conversation-organisation.js";
 import { conversationTypeSchema } from "./conversation-type.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { listSchema } from "./platform/list.js";
 import { projectFlowSchema } from "./project-tasks.js";
 import { sandboxEnvironmentCacheSummarySchema } from "./sandbox-cache.js";
 import {
@@ -120,9 +121,7 @@ export const workspaceDetailSchema = workspaceSummarySchema.extend({
   invitations: z.array(workspaceInvitationSchema),
 });
 
-export const workspaceListResponseSchema = z.object({
-  workspaces: z.array(workspaceSummarySchema),
-});
+export const workspaceListResponseSchema = listSchema(workspaceSummarySchema);
 
 const workspaceFields = {
   name: z.string().trim().min(2).max(80),
@@ -157,6 +156,10 @@ export const createProjectSchema = z.object({
   instructions: projectFields.instructions.default(""),
   colour: projectFields.colour.optional(),
   codingEnvironment: projectCodingEnvironmentSchema.nullable().optional(),
+});
+
+export const createProjectRequestSchema = createProjectSchema.extend({
+  workspace_id: z.string().min(1),
 });
 
 export const updateProjectSchema = z

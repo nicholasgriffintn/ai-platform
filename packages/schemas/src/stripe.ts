@@ -14,8 +14,8 @@ export const billingPortalResponseSchema = z.object({
   url: z.string(),
 });
 
-export const overageUpdateSchema = z.object({
-  enabled: z.boolean(),
+export const updateSubscriptionSchema = z.object({
+  overage_enabled: z.boolean(),
 });
 
 export const overageStatusResponseSchema = z.object({

@@ -52,10 +52,7 @@ export function useTeammateCapabilityActions(
     hireTeammateError,
     resetHireTeammate,
   } = useTeammates();
-  const workspaces = useMemo(
-    () => workspacesQuery.data?.workspaces ?? [],
-    [workspacesQuery.data?.workspaces],
-  );
+  const workspaces = useMemo(() => workspacesQuery.data ?? [], [workspacesQuery.data]);
   const manageableTeammateIds = useMemo(
     () =>
       new Set(

@@ -9,6 +9,7 @@ import {
 import { PetPreview } from "@ngriffin_uk/polychat-component-ui";
 import {
   useAuthStatus,
+  useCursorPages,
   useModels,
   usePet,
   usePets,
@@ -41,17 +42,17 @@ function messageFrom(error: unknown, fallback: string): string {
 
 export function PetsPanel() {
   const { user, userSettings, updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
-  const [petPage, setPetPage] = useState(1);
+  const petPages = useCursorPages();
   const {
     pets,
-    hasMorePets,
+    nextPetsCursor,
     createPet,
     isCreatingPet,
     deletePet,
     isDeletingPet,
     generatePet,
     isGeneratingPet,
-  } = usePets(petPage);
+  } = usePets(petPages.cursor);
   const { data: models = {} } = useModels();
 
   const [error, setError] = useState<string | null>(null);
@@ -166,14 +167,14 @@ export function PetsPanel() {
 
       try {
         await deletePet(option.id);
-        if (pets.length === 1 && petPage > 1) {
-          setPetPage((page) => page - 1);
+        if (pets.length === 1) {
+          petPages.previous();
         }
       } catch (deleteError) {
         setError(messageFrom(deleteError, "That pet could not be deleted."));
       }
     },
-    [deletePet, petPage, pets.length],
+    [deletePet, petPages, pets.length],
   );
 
   const handleUpload = useCallback(
@@ -188,13 +189,13 @@ export function PetsPanel() {
           sheet: submission.sheet,
           filename: submission.sheet.name,
         });
-        setPetPage(1);
+        petPages.reset();
         setIsUploadOpen(false);
       } catch (submitError) {
         setUploadError(messageFrom(submitError, "The upload failed."));
       }
     },
-    [createPet],
+    [createPet, petPages],
   );
 
   const handleGenerate = useCallback(
@@ -230,13 +231,13 @@ export function PetsPanel() {
           sheet,
           filename: "pet.webp",
         });
-        setPetPage(1);
+        petPages.reset();
         setIsGenerateOpen(false);
       } catch (saveError) {
         setGenerateError(messageFrom(saveError, "The pet could not be saved."));
       }
     },
-    [createPet, previewImage],
+    [createPet, petPages, previewImage],
   );
 
   return (
@@ -249,17 +250,17 @@ export function PetsPanel() {
         canAuthor={canAuthor}
         modelTargets={modelTargets}
         modelOverrides={modelOverrides}
-        customPetPage={petPage}
-        hasPreviousCustomPets={petPage > 1}
-        hasNextCustomPets={hasMorePets}
+        customPetPage={petPages.page}
+        hasPreviousCustomPets={petPages.hasPrevious}
+        hasNextCustomPets={Boolean(nextPetsCursor)}
         isBusy={isCreatingPet || isDeletingPet || isGeneratingPet || isUpdatingUserSettings}
         error={error}
         onSelect={(option) => void handleSelect(option)}
         onTravelChange={(enabled) => void handleTravelChange(enabled)}
         onAnimationChange={(enabled) => void handleAnimationChange(enabled)}
         onModelOverridesChange={(overrides) => void handleModelOverridesChange(overrides)}
-        onPreviousCustomPets={() => setPetPage((page) => Math.max(1, page - 1))}
-        onNextCustomPets={() => setPetPage((page) => page + 1)}
+        onPreviousCustomPets={petPages.previous}
+        onNextCustomPets={() => petPages.next(nextPetsCursor)}
         onDelete={(option) => void handleDelete(option)}
         onUpload={() => setIsUploadOpen(true)}
         onGenerate={() => setIsGenerateOpen(true)}

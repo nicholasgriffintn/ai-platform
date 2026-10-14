@@ -5,11 +5,14 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useCursorPages,
   useWorkAttention,
   readWorkAttentionQuery,
+  workAttentionFiltersOf,
   workAttentionItemHref,
   writeWorkAttentionFilters,
 } from "@ngriffin_uk/polychat-library-react";
+import { nextPageCursor } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { BriefcaseBusiness } from "lucide-react";
 import { useMemo } from "react";
@@ -23,19 +26,13 @@ import { AttentionInbox } from "./AttentionInbox.js";
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = useMemo(() => readWorkAttentionQuery(searchParams), [searchParams]);
-  const attention = useWorkAttention(query);
+  const pages = useCursorPages();
+  const attention = useWorkAttention({ ...query, after: pages.cursor });
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
-  const filters: WorkAttentionFilters = {
-    kind: query.kind,
-    workspaceId: query.workspaceId,
-    projectId: query.projectId,
-    ownerUserId: query.ownerUserId,
-    type: query.type,
-    from: query.from,
-    to: query.to,
-  };
+  const filters: WorkAttentionFilters = workAttentionFiltersOf(query);
+  const nextCursor = attention.data ? nextPageCursor(attention.data) : undefined;
 
   return (
     <PageShell.Content className="max-w-6xl">
@@ -48,12 +45,14 @@ export function AttentionPage() {
         />
       ) : !isPro ? null : (
         <WorkAttentionView
-          items={attention.data?.items ?? []}
+          items={attention.data?.data ?? []}
           facets={attention.data?.facets}
           filters={filters}
           total={attention.data?.total ?? 0}
-          offset={query.offset}
+          page={pages.page}
           limit={query.limit}
+          hasPrevious={pages.hasPrevious}
+          hasNext={Boolean(nextCursor)}
           isLoading={attention.isLoading}
           errorMessage={
             attention.error
@@ -61,12 +60,12 @@ export function AttentionPage() {
               : undefined
           }
           itemHref={workAttentionItemHref}
-          onFiltersChange={(nextFilters) =>
-            setSearchParams(writeWorkAttentionFilters(nextFilters, query.limit))
-          }
-          onPageChange={(offset) =>
-            setSearchParams(writeWorkAttentionFilters(filters, query.limit, offset))
-          }
+          onFiltersChange={(nextFilters) => {
+            pages.reset();
+            setSearchParams(writeWorkAttentionFilters(nextFilters, query.limit));
+          }}
+          onPrevious={pages.previous}
+          onNext={() => pages.next(nextCursor)}
         />
       )}
 

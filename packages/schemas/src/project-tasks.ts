@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes.js";
 import { chatRunStatusSchema } from "./chat-runs.js";
 import { goalEvidenceEntrySchema, goalSchema } from "./goals.js";
+import { listSchema } from "./platform/list.js";
 import { outputProvenanceSchema } from "./provenance.js";
 import { chatRunUsageSchema } from "./usage.js";
 import {
@@ -412,11 +413,11 @@ export const projectTaskAttentionItemSchema = z.object({
 
 export type ProjectTaskAttentionItem = z.infer<typeof projectTaskAttentionItemSchema>;
 
-export const projectTaskAttentionResponseSchema = z.object({
-  items: z.array(projectTaskAttentionItemSchema),
-  total: z.number().int().nonnegative(),
-  unread: z.number().int().nonnegative(),
-});
+export const projectTaskAttentionResponseSchema = listSchema(projectTaskAttentionItemSchema).extend(
+  {
+    unread: z.number().int().nonnegative(),
+  },
+);
 
 export type ProjectTaskAttentionResponse = z.infer<typeof projectTaskAttentionResponseSchema>;
 
@@ -470,8 +471,8 @@ export type UpdateProjectTaskInput = z.infer<typeof updateProjectTaskSchema>;
 
 export const projectTaskListQuerySchema = z.object({
   status: projectTaskStatusSchema.optional(),
-  assigneeUserId: z.coerce.number().int().positive().optional(),
-  includeDone: z.coerce.boolean().optional(),
+  assignee_user_id: z.coerce.number().int().positive().optional(),
+  include_done: z.coerce.boolean().optional(),
 });
 
 export const projectTaskResponseSchema = z.object({ task: projectTaskSchema });
@@ -669,8 +670,7 @@ export const projectTaskDetailResponseSchema = z.object({
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
 
-export const projectTaskListResponseSchema = z.object({
-  tasks: z.array(projectTaskSchema),
+export const projectTaskListResponseSchema = listSchema(projectTaskSchema).extend({
   flow: projectFlowSchema.nullable(),
 });
 

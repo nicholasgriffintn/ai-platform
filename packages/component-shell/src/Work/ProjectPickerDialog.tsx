@@ -32,7 +32,7 @@ export function ProjectPickerDialog({
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const workspacesQuery = useWorkspaces();
   const workspaceQuery = useWorkspace(workspaceId ?? undefined);
-  const workspaces = workspacesQuery.data?.workspaces ?? [];
+  const workspaces = workspacesQuery.data ?? [];
   const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId) ?? null;
   const error = workspacesQuery.error ?? workspaceQuery.error;
   const isCanvas = destination === "canvas";

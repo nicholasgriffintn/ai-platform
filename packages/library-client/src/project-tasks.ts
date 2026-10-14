@@ -142,7 +142,7 @@ export async function setProjectFlow(
   flow: ProjectFlow | null,
 ): Promise<{ flow: ProjectFlow | null }> {
   const response = await fetchApiOrThrow(`/projects/${projectId}/flow`, {
-    method: "PUT",
+    method: "PATCH",
     headers: await authHeaders(),
     body: { flow },
   });

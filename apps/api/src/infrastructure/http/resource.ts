@@ -318,3 +318,17 @@ export function defineResource(
     route.register(app, options.tags);
   }
 }
+
+export function defineSingleton(
+  app: HonoLike,
+  options: ResourceOptions & { path?: string },
+  define: (singleton: SingletonBuilder) => void,
+): void {
+  const routes: PendingRoute[] = [];
+
+  define(new SingletonBuilder(routes, options.path ?? "/"));
+
+  for (const route of routes) {
+    route.register(app, options.tags);
+  }
+}

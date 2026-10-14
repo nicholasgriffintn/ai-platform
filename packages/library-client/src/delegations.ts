@@ -1,11 +1,5 @@
-import type {
-  ConversationHandleListResponse,
-  DelegationListResponse,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ConversationHandle, DelegationListResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
 import { requestJson, resource } from "./resource.js";
 
 const conversations = resource<unknown>("/conversations");
@@ -23,18 +17,10 @@ export async function cancelConversationDelegations(conversationId: string): Pro
   await conversations.sub<unknown>(conversationId, "delegations").collectionAction("cancel");
 }
 
-export async function listConversationHandles(): Promise<ConversationHandleListResponse> {
-  const response = await fetchApiOrThrow("/user/conversation-handles", {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function listConversationHandles(): Promise<ConversationHandle[]> {
+  return resource<ConversationHandle>("/conversations/handles").listAll();
 }
 
-export async function revokeConversationHandle(handleId: string): Promise<void> {
-  await fetchApiOrThrow(`/user/conversation-handles/${encodeURIComponent(handleId)}`, {
-    method: "DELETE",
-    headers: await apiService.getHeaders(),
-  });
+export function revokeConversationHandle(handleId: string): Promise<void> {
+  return resource<ConversationHandle>("/conversations/handles").delete(handleId);
 }

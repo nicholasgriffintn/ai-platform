@@ -101,7 +101,7 @@ export function useComposerBanner({
       }
 
       if (messageCount >= WORK_SUGGESTION_MIN_MESSAGES) {
-        if (isPro && workspacesData && workspacesData.workspaces.length === 0) {
+        if (isPro && workspacesData && workspacesData.length === 0) {
           candidates.push({
             id: "work-suggest",
             tone: "info",

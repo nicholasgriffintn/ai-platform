@@ -11,6 +11,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   deriveProjectColour,
+  listPageOf,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-core";
@@ -69,7 +70,7 @@ export async function listWorkspaces(context: ServiceContext) {
   const user = requireWorkAccess(context);
   const workspaces = await context.repositories.workspaces.listWorkspaces(user.id);
 
-  return { workspaces: workspaces.map(formatWorkspaceSummary) };
+  return listPageOf(workspaces.map(formatWorkspaceSummary), (workspace) => workspace.id);
 }
 
 export async function createWorkspace(context: ServiceContext, input: CreateWorkspaceInput) {

@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listQuerySchema, listSchema } from "./platform/list.js";
+
 export const workspaceAuditRecordSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
@@ -11,13 +13,10 @@ export const workspaceAuditRecordSchema = z.object({
   createdAt: z.string(),
 });
 
-export const workspaceAuditListQuerySchema = z.object({
+export const workspaceAuditListQuerySchema = listQuerySchema.extend({
   limit: z.coerce.number().int().min(1).max(200).default(50),
-  after: z.string().optional(),
 });
 
-export const workspaceAuditListResponseSchema = z.object({
-  records: z.array(workspaceAuditRecordSchema),
-});
+export const workspaceAuditListResponseSchema = listSchema(workspaceAuditRecordSchema);
 
 export type WorkspaceAuditRecord = z.infer<typeof workspaceAuditRecordSchema>;

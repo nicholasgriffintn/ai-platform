@@ -13,171 +13,108 @@ import type {
   WorkspaceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { requestJson, resource } from "./resource.js";
 
-async function authHeaders() {
-  return apiService.getHeaders();
+const workspaces = resource<WorkspaceSummary>("/workspaces");
+const projects = resource<ProjectDetail>("/projects");
+
+export function listWorkspaces(): Promise<WorkspaceSummary[]> {
+  return workspaces.listAll();
 }
 
-export async function listWorkspaces(): Promise<{ workspaces: WorkspaceSummary[] }> {
-  const response = await fetchApiOrThrow("/workspaces", {
-    method: "GET",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function getWorkspace(workspaceId: string): Promise<WorkspaceDetail> {
+  return requestJson<WorkspaceDetail>(
+    `${workspaces.path}/${encodeURIComponent(workspaceId)}`,
+    "GET",
+  );
 }
 
-export async function getWorkspace(workspaceId: string): Promise<WorkspaceDetail> {
-  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-    method: "GET",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function createWorkspace(input: CreateWorkspaceInput): Promise<WorkspaceDetail> {
+  return requestJson<WorkspaceDetail>(workspaces.path, "POST", input);
 }
 
-export async function createWorkspace(input: CreateWorkspaceInput): Promise<WorkspaceDetail> {
-  const response = await fetchApiOrThrow("/workspaces", {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
-}
-
-export async function updateWorkspace(
+export function updateWorkspace(
   workspaceId: string,
   input: UpdateWorkspaceInput,
 ): Promise<WorkspaceDetail> {
-  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-    method: "PUT",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return requestJson<WorkspaceDetail>(
+    `${workspaces.path}/${encodeURIComponent(workspaceId)}`,
+    "PATCH",
+    input,
+  );
 }
 
-export async function deleteWorkspace(workspaceId: string): Promise<void> {
-  await fetchApiOrThrow(`/workspaces/${workspaceId}`, {
-    method: "DELETE",
-    headers: await authHeaders(),
-  });
+export function deleteWorkspace(workspaceId: string): Promise<void> {
+  return workspaces.delete(workspaceId);
 }
 
-export async function createProject(
+export function createProject(
   workspaceId: string,
   input: CreateProjectInput,
 ): Promise<ProjectDetail> {
-  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/projects`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return projects.create({ ...input, workspace_id: workspaceId });
 }
 
-export async function getProject(projectId: string): Promise<ProjectDetail> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}`, {
-    method: "GET",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function getProject(projectId: string): Promise<ProjectDetail> {
+  return projects.get(projectId);
 }
 
-export async function updateProject(
+export function updateProject(
   projectId: string,
   input: UpdateProjectInput,
 ): Promise<ProjectDetail> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}`, {
-    method: "PUT",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return projects.update(projectId, input);
 }
 
-export async function archiveProject(projectId: string): Promise<void> {
-  await fetchApiOrThrow(`/projects/${projectId}`, {
-    method: "DELETE",
-    headers: await authHeaders(),
-  });
+export function archiveProject(projectId: string): Promise<void> {
+  return projects.delete(projectId);
 }
 
-export async function updateProjectEnvironmentCache(
+export function updateProjectEnvironmentCache(
   projectId: string,
   input: SandboxEnvironmentCacheAction,
 ): Promise<SandboxEnvironmentCacheActionResponse> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/environment-cache`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return requestJson<SandboxEnvironmentCacheActionResponse>(
+    projects.singleton(projectId, "environment_cache").path,
+    input.action === "rebuild" ? "POST" : "DELETE",
+  );
 }
 
-export async function inviteWorkspaceMember(
+export function inviteWorkspaceMember(
   workspaceId: string,
   input: CreateWorkspaceInvitationInput,
 ): Promise<WorkspaceInvitationDelivery> {
-  const response = await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return requestJson<WorkspaceInvitationDelivery>(
+    workspaces.sub(workspaceId, "invitations").path,
+    "POST",
+    input,
+  );
 }
 
-export async function revokeWorkspaceInvitation(
+export function revokeWorkspaceInvitation(
   workspaceId: string,
   invitationId: string,
 ): Promise<void> {
-  await fetchApiOrThrow(`/workspaces/${workspaceId}/invitations/${invitationId}`, {
-    method: "DELETE",
-    headers: await authHeaders(),
-  });
+  return workspaces.sub(workspaceId, "invitations").delete(invitationId);
 }
 
-export async function acceptWorkspaceInvitation(token: string): Promise<WorkspaceDetail> {
-  const response = await fetchApiOrThrow("/workspace-invitations/accept", {
-    method: "POST",
-    headers: await authHeaders(),
-    body: { token },
-  });
-
-  return returnFetchedData(response);
+export function acceptWorkspaceInvitation(token: string): Promise<WorkspaceDetail> {
+  return requestJson<WorkspaceDetail>(`${workspaces.path}/invitations/accept`, "POST", { token });
 }
 
-export async function addProjectCapability(
+export function addProjectCapability(
   projectId: string,
   input: AddProjectCapabilityInput,
 ): Promise<ProjectDetail> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return requestJson<ProjectDetail>(projects.sub(projectId, "capabilities").path, "POST", input);
 }
 
-export async function removeProjectCapability(
+export function removeProjectCapability(
   projectId: string,
   capabilityId: string,
 ): Promise<ProjectDetail> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/capabilities/${capabilityId}`, {
-    method: "DELETE",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
+  return requestJson<ProjectDetail>(
+    `${projects.sub(projectId, "capabilities").path}/${encodeURIComponent(capabilityId)}`,
+    "DELETE",
+  );
 }

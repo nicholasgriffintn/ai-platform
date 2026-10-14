@@ -486,11 +486,10 @@ export const list_attention: ApiToolDefinition = {
   execute: async (args: z.infer<typeof listAttentionInputSchema>, toolContext) => {
     const scope = requirePolyNavigationScope(toolContext, listAttentionDescriptor.name);
     const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_POLY_ATTENTION_LIMIT);
-    const { items, total } = await listWorkAttention(scope.context, {
+    const { data: items, total } = await listWorkAttention(scope.context, {
       ...(args.kind ? { kind: args.kind } : {}),
-      ...(args.projectId ? { projectId: args.projectId } : {}),
+      ...(args.projectId ? { project_id: args.projectId } : {}),
       limit,
-      offset: 0,
     });
 
     if (items.length === 0) {

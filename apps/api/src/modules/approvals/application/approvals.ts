@@ -71,7 +71,7 @@ async function listTaskApprovals(context: ServiceContext): Promise<Approval[]> {
     return [];
   }
 
-  const { items } = await listProjectTaskAttention(context, { limit: PENDING_LIMIT });
+  const { data: items } = await listProjectTaskAttention(context, { limit: PENDING_LIMIT });
 
   return items.flatMap((item) => {
     const approval = presentTaskAttention(item);

@@ -15,7 +15,8 @@ struct ModelTests {
     @Test func taskInboxDecodesReadStateAndCurrentDeepLink() throws {
         let inbox = try JSONDecoder().decode(TaskInboxResponse.self, from: Data("""
         {
-            "items": [{
+            "object": "list",
+            "data": [{
                 "id": "task-1:v3",
                 "kind": "approval",
                 "taskId": "task-1",
@@ -31,7 +32,8 @@ struct ModelTests {
                 "readAt": null,
                 "deepLink": "/work/workspace-1/projects/project-1/tasks/task-1"
             }],
-            "total": 1,
+            "has_more": false,
+            "last_id": "task-1:v3",
             "unread": 1
         }
         """.utf8))

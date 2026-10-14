@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listQuerySchema, listSchema } from "./platform/list.js";
+
 export const WORK_ATTENTION_KINDS = [
   "approval",
   "input",
@@ -13,17 +15,15 @@ export const WORK_ATTENTION_TYPES = ["task", "run"] as const;
 export const workAttentionKindSchema = z.enum(WORK_ATTENTION_KINDS);
 export const workAttentionTypeSchema = z.enum(WORK_ATTENTION_TYPES);
 
-export const workAttentionQuerySchema = z
-  .object({
+export const workAttentionQuerySchema = listQuerySchema
+  .extend({
     kind: workAttentionKindSchema.optional(),
-    workspaceId: z.string().trim().min(1).optional(),
-    projectId: z.string().trim().min(1).optional(),
-    ownerUserId: z.coerce.number().int().positive().optional(),
+    workspace_id: z.string().trim().min(1).optional(),
+    project_id: z.string().trim().min(1).optional(),
+    owner_user_id: z.coerce.number().int().positive().optional(),
     type: workAttentionTypeSchema.optional(),
     from: z.iso.date().optional(),
     to: z.iso.date().optional(),
-    limit: z.coerce.number().int().min(1).max(100).default(25),
-    offset: z.coerce.number().int().min(0).default(0),
   })
   .refine(
     ({ from, to }) => !from || !to || Date.parse(from) <= Date.parse(to),
@@ -50,10 +50,8 @@ export const workAttentionItemSchema = z.object({
 
 const workAttentionFacetSchema = z.object({ id: z.string().min(1), name: z.string().min(1) });
 
-export const workAttentionResponseSchema = z.object({
-  items: z.array(workAttentionItemSchema),
+export const workAttentionResponseSchema = listSchema(workAttentionItemSchema).extend({
   total: z.number().int().nonnegative(),
-  hasMore: z.boolean(),
   facets: z.object({
     workspaces: z.array(workAttentionFacetSchema),
     projects: z.array(workAttentionFacetSchema.extend({ workspaceId: z.string().min(1) })),

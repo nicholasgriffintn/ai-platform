@@ -25,6 +25,7 @@ export * from "./hooks/useConnectors.js";
 export * from "./hooks/useConversationModelOptions.js";
 export * from "./hooks/useConversationOrganisation.js";
 export * from "./hooks/useConversationRoute.js";
+export * from "./hooks/useCursorPages.js";
 export * from "./hooks/useDeferredPetPreview.js";
 export * from "./hooks/useDrawings.js";
 export * from "./hooks/useDelegations.js";

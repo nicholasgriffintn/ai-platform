@@ -18,6 +18,7 @@ import type {
   CreateProjectTaskInput,
   ProjectFlow,
   ProjectTask,
+  ProjectTaskListResponse,
   ResolveProjectTaskToolApprovalInput,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -90,27 +91,27 @@ export function useProjectTasks(projectId: string) {
     refetchInterval: (activeQuery) =>
       liveOrPoll(
         activeQuery,
-        (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.tasks),
+        (currentQuery) => projectTasksRefetchInterval(currentQuery.state.data?.data),
         "project_task.changed",
       ),
     refetchIntervalInBackground: true,
   });
 
   const writeTask = (task: ProjectTask) => {
-    queryClient.setQueryData<{ tasks: ProjectTask[]; flow: ProjectFlow | null }>(
+    queryClient.setQueryData<ProjectTaskListResponse>(
       projectTasksQueryKey(projectId),
       (current) => {
         if (!current) {
           return current;
         }
 
-        const exists = current.tasks.some((candidate) => candidate.id === task.id);
+        const exists = current.data.some((candidate) => candidate.id === task.id);
 
         return {
           ...current,
-          tasks: exists
-            ? current.tasks.map((candidate) => (candidate.id === task.id ? task : candidate))
-            : [task, ...current.tasks],
+          data: exists
+            ? current.data.map((candidate) => (candidate.id === task.id ? task : candidate))
+            : [task, ...current.data],
         };
       },
     );
@@ -192,11 +193,11 @@ export function useProjectTasks(projectId: string) {
   const remove = useMutation({
     mutationFn: (taskId: string) => deleteProjectTask(projectId, taskId),
     onSuccess: (_result, taskId) => {
-      queryClient.setQueryData<{ tasks: ProjectTask[]; flow: ProjectFlow | null }>(
+      queryClient.setQueryData<ProjectTaskListResponse>(
         projectTasksQueryKey(projectId),
         (current) =>
           current
-            ? { ...current, tasks: current.tasks.filter((task) => task.id !== taskId) }
+            ? { ...current, data: current.data.filter((task) => task.id !== taskId) }
             : current,
       );
       queryClient.removeQueries({ queryKey: projectTaskDetailQueryKey(projectId, taskId) });
@@ -210,7 +211,7 @@ export function useProjectTasks(projectId: string) {
   });
 
   return {
-    tasks: query.data?.tasks ?? [],
+    tasks: query.data?.data ?? [],
     flow: query.data?.flow ?? null,
     isLoading: query.isLoading,
     error: query.error,
@@ -246,8 +247,7 @@ export function useTaskAttention() {
   });
 
   return {
-    items: query.data?.items ?? [],
-    total: query.data?.total ?? 0,
+    items: query.data?.data ?? [],
     unread: query.data?.unread ?? 0,
     isLoading: query.isLoading,
     error: query.error,

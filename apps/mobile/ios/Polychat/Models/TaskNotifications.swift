@@ -19,8 +19,12 @@ struct TaskInboxItem: Codable, Equatable, Identifiable {
 
 struct TaskInboxResponse: Codable, Equatable {
     let items: [TaskInboxItem]
-    let total: Int
     let unread: Int
+
+    enum CodingKeys: String, CodingKey {
+        case items = "data"
+        case unread
+    }
 }
 
 struct TaskNotificationPreferences: Codable, Equatable {

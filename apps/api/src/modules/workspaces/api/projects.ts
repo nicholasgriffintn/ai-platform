@@ -1,283 +1,183 @@
 import {
   addProjectCapabilitySchema,
-  createProjectTaskSchema,
-  errorResponseSchema,
+  createProjectRequestSchema,
+  listPageOf,
   projectDetailSchema,
   projectFlowResponseSchema,
-  projectTaskListQuerySchema,
-  projectTaskListResponseSchema,
-  projectTaskDetailResponseSchema,
-  projectTaskResponseSchema,
+  sandboxEnvironmentCacheActionResponseSchema,
   sandboxEnvironmentVariableInputSchema,
   sandboxEnvironmentVariableNameSchema,
   sandboxEnvironmentVariablesResponseSchema,
-  sandboxEnvironmentCacheActionResponseSchema,
-  sandboxEnvironmentCacheActionSchema,
   setProjectFlowSchema,
   updateProjectSchema,
-  updateProjectTaskSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
-import taskIntegrations from "~/modules/project-tasks/api/integrations";
+import { defineResource } from "~/infrastructure/http/resource";
 import {
-  acceptProjectTask,
-  createProjectTask,
-  deleteProjectTask,
-  getProjectFlow,
-  getProjectTask,
-  listProjectTasks,
-  setProjectFlow,
-  startProjectTask,
-  updateProjectTask,
-} from "~/modules/project-tasks/application";
+  defineProjectImports,
+  defineProjectReviews,
+} from "~/modules/project-tasks/api/integrations";
+import { defineProjectTasks } from "~/modules/project-tasks/api/tasks";
+import { getProjectFlow, setProjectFlow } from "~/modules/project-tasks/application";
 import {
   addProjectCapability,
   archiveProject,
-  getProject,
-  removeProjectCapability,
-  updateProject,
   clearProjectEnvironmentVariable,
+  createProject,
+  getProject,
   listProjectEnvironmentVariables,
+  removeProjectCapability,
   setProjectEnvironmentVariable,
+  updateProject,
 } from "~/modules/workspaces/application";
 import { applyProjectEnvironmentCacheAction } from "~/modules/workspaces/application/environment-cache";
 
 const app = new Hono();
-const projectParams = z.object({ projectId: z.string().min(1) });
-const projectTaskParams = projectParams.extend({ taskId: z.string().min(1) });
+const projectParamsSchema = z.object({ project_id: z.string().min(1) });
 
-addRoute(app, "get", "/:projectId", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Get a project work surface",
-  paramSchema: projectParams,
-  responses: { 200: { description: "Project details", schema: projectDetailSchema } },
-  handler: ({ serviceContext, params }) => getProject(serviceContext, params.projectId),
+defineResource(app, { idParam: "project_id", tags: ["projects"] }, (projects) => {
+  projects
+    .create({
+      auth: true,
+      summary: "Create a project in a workspace",
+      bodySchema: createProjectRequestSchema,
+      responses: { 200: { description: "The project", schema: projectDetailSchema } },
+      handler: ({ serviceContext, body: { workspace_id, ...input } }) =>
+        createProject(serviceContext, workspace_id, input),
+    })
+    .read({
+      auth: true,
+      summary: "Get a project work surface",
+      paramSchema: projectParamsSchema,
+      responses: { 200: { description: "The project", schema: projectDetailSchema } },
+      handler: ({ serviceContext, params }) => getProject(serviceContext, params.project_id),
+    })
+    .update({
+      auth: true,
+      summary: "Update a project",
+      paramSchema: projectParamsSchema,
+      bodySchema: updateProjectSchema,
+      responses: { 200: { description: "The project", schema: projectDetailSchema } },
+      handler: ({ serviceContext, params, body }) =>
+        updateProject(serviceContext, params.project_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Archive a project",
+      paramSchema: projectParamsSchema,
+      handler: ({ serviceContext, params }) => archiveProject(serviceContext, params.project_id),
+    });
+
+  projects
+    .singleton("environment_cache")
+    .create({
+      auth: true,
+      summary: "Rebuild the project environment cache",
+      paramSchema: projectParamsSchema,
+      responses: {
+        200: { description: "Cache result", schema: sandboxEnvironmentCacheActionResponseSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        applyProjectEnvironmentCacheAction(serviceContext, params.project_id, {
+          action: "rebuild",
+        }),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete the project environment cache",
+      paramSchema: projectParamsSchema,
+      responses: {
+        200: { description: "Cache result", schema: sandboxEnvironmentCacheActionResponseSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        applyProjectEnvironmentCacheAction(serviceContext, params.project_id, {
+          action: "delete",
+        }),
+    });
+
+  projects
+    .sub("environment_variables", "variable_id")
+    .list({
+      auth: true,
+      summary: "List project environment variable names",
+      description: "Values are write-only; the list carries names and metadata.",
+      paramSchema: projectParamsSchema,
+      handler: async ({ serviceContext, params }) =>
+        listPageOf(
+          (await listProjectEnvironmentVariables(serviceContext, params.project_id)).variables,
+          (variable) => variable.name,
+        ),
+    })
+    .create({
+      auth: true,
+      summary: "Set a project environment variable",
+      paramSchema: projectParamsSchema,
+      bodySchema: sandboxEnvironmentVariableInputSchema,
+      responses: {
+        200: { description: "Variable names", schema: sandboxEnvironmentVariablesResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        setProjectEnvironmentVariable(serviceContext, params.project_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Clear a project environment variable",
+      paramSchema: projectParamsSchema.extend({
+        variable_id: sandboxEnvironmentVariableNameSchema,
+      }),
+      responses: {
+        200: { description: "Variable names", schema: sandboxEnvironmentVariablesResponseSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        clearProjectEnvironmentVariable(serviceContext, params.project_id, params.variable_id),
+    });
+
+  projects
+    .sub("capabilities", "capability_id")
+    .create({
+      auth: true,
+      summary: "Add an app, recipe or tool to a project",
+      paramSchema: projectParamsSchema,
+      bodySchema: addProjectCapabilitySchema,
+      responses: { 200: { description: "The project", schema: projectDetailSchema } },
+      handler: ({ serviceContext, params, body }) =>
+        addProjectCapability(serviceContext, params.project_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Remove a capability from a project",
+      paramSchema: projectParamsSchema.extend({ capability_id: z.string().min(1) }),
+      responses: { 200: { description: "The project", schema: projectDetailSchema } },
+      handler: ({ serviceContext, params }) =>
+        removeProjectCapability(serviceContext, params.project_id, params.capability_id),
+    });
+
+  projects
+    .singleton("flow")
+    .read({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Get the project flow",
+      paramSchema: projectParamsSchema,
+      responses: { 200: { description: "The flow", schema: projectFlowResponseSchema } },
+      handler: ({ serviceContext, params }) => getProjectFlow(serviceContext, params.project_id),
+    })
+    .update({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Set or clear the project flow",
+      paramSchema: projectParamsSchema,
+      bodySchema: setProjectFlowSchema,
+      responses: { 200: { description: "The flow", schema: projectFlowResponseSchema } },
+      handler: ({ serviceContext, params, body }) =>
+        setProjectFlow(serviceContext, params.project_id, body.flow),
+    });
+
+  defineProjectTasks(projects);
+  defineProjectReviews(projects);
+  defineProjectImports(projects);
 });
 
-addRoute(app, "put", "/:projectId", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Update a project",
-  paramSchema: projectParams,
-  bodySchema: updateProjectSchema,
-  responses: { 200: { description: "Updated project", schema: projectDetailSchema } },
-  handler: ({ serviceContext, params, body }) =>
-    updateProject(serviceContext, params.projectId, body),
-});
-
-addRoute(app, "delete", "/:projectId", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Archive a project",
-  paramSchema: projectParams,
-  handler: ({ serviceContext, params }) => archiveProject(serviceContext, params.projectId),
-});
-
-addRoute(app, "post", "/:projectId/environment-cache", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Rebuild or delete a project environment cache",
-  paramSchema: projectParams,
-  bodySchema: sandboxEnvironmentCacheActionSchema,
-  responses: {
-    200: {
-      description: "Environment cache action result",
-      schema: sandboxEnvironmentCacheActionResponseSchema,
-    },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    applyProjectEnvironmentCacheAction(serviceContext, params.projectId, body),
-});
-
-addRoute(app, "get", "/:projectId/environment-variables", {
-  auth: true,
-  tags: ["projects"],
-  summary: "List configured project environment variable names",
-  paramSchema: projectParams,
-  responses: {
-    200: {
-      description: "Environment variable names",
-      schema: sandboxEnvironmentVariablesResponseSchema,
-    },
-  },
-  handler: ({ serviceContext, params }) =>
-    listProjectEnvironmentVariables(serviceContext, params.projectId),
-});
-
-addRoute(app, "post", "/:projectId/environment-variables", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Set a project environment variable",
-  paramSchema: projectParams,
-  bodySchema: sandboxEnvironmentVariableInputSchema,
-  responses: {
-    200: {
-      description: "Environment variable names",
-      schema: sandboxEnvironmentVariablesResponseSchema,
-    },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    setProjectEnvironmentVariable(serviceContext, params.projectId, body),
-});
-
-addRoute(app, "delete", "/:projectId/environment-variables/:name", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Clear a project environment variable",
-  paramSchema: projectParams.extend({ name: sandboxEnvironmentVariableNameSchema }),
-  responses: {
-    200: {
-      description: "Environment variable names",
-      schema: sandboxEnvironmentVariablesResponseSchema,
-    },
-  },
-  handler: ({ serviceContext, params }) =>
-    clearProjectEnvironmentVariable(serviceContext, params.projectId, params.name),
-});
-
-addRoute(app, "post", "/:projectId/capabilities", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Add an app, recipe, or tool to a project",
-  paramSchema: projectParams,
-  bodySchema: addProjectCapabilitySchema,
-  responses: { 200: { description: "Updated project", schema: projectDetailSchema } },
-  handler: ({ serviceContext, params, body }) =>
-    addProjectCapability(serviceContext, params.projectId, body),
-});
-
-addRoute(app, "delete", "/:projectId/capabilities/:capabilityId", {
-  auth: true,
-  tags: ["projects"],
-  summary: "Remove a capability from a project",
-  paramSchema: projectParams.extend({ capabilityId: z.string().min(1) }),
-  responses: { 200: { description: "Updated project", schema: projectDetailSchema } },
-  handler: ({ serviceContext, params }) =>
-    removeProjectCapability(serviceContext, params.projectId, params.capabilityId),
-});
-
-addRoute(app, "get", "/:projectId/tasks", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "List project tasks",
-  paramSchema: projectParams,
-  querySchema: projectTaskListQuerySchema,
-  responses: {
-    200: { description: "Tasks and the project flow", schema: projectTaskListResponseSchema },
-  },
-  handler: ({ serviceContext, params, query }) =>
-    listProjectTasks(serviceContext, params.projectId, query),
-});
-
-addRoute(app, "post", "/:projectId/tasks", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Add a task to the project board",
-  paramSchema: projectParams,
-  bodySchema: createProjectTaskSchema,
-  responses: {
-    200: { description: "The created task", schema: projectTaskResponseSchema },
-    400: { description: "Invalid task", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    createProjectTask(serviceContext, params.projectId, body),
-});
-
-addRoute(app, "get", "/:projectId/tasks/:taskId", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Get one project task",
-  paramSchema: projectTaskParams,
-  responses: {
-    200: {
-      description: "The task and its latest run goal",
-      schema: projectTaskDetailResponseSchema,
-    },
-    404: { description: "Task not found", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params }) =>
-    getProjectTask(serviceContext, params.projectId, params.taskId),
-});
-
-addRoute(app, "patch", "/:projectId/tasks/:taskId", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Update a project task",
-  paramSchema: projectTaskParams,
-  bodySchema: updateProjectTaskSchema,
-  responses: {
-    200: { description: "The updated task", schema: projectTaskResponseSchema },
-    403: { description: "Transition not allowed", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    updateProjectTask(serviceContext, params.projectId, params.taskId, body),
-});
-
-addRoute(app, "post", "/:projectId/tasks/:taskId/start", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Queue a project task for its runner",
-  description:
-    "The caller becomes the run's identity: it executes with their connections and installations.",
-  paramSchema: projectTaskParams,
-  responses: {
-    200: { description: "The queued task", schema: projectTaskResponseSchema },
-    409: { description: "Too many tasks already in flight", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params }) =>
-    startProjectTask(serviceContext, params.projectId, params.taskId),
-});
-
-addRoute(app, "post", "/:projectId/tasks/:taskId/accept", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Accept a reviewed task",
-  description: "Moves the task to done, or to the next flow stage when the project has one.",
-  paramSchema: projectTaskParams,
-  responses: {
-    200: { description: "The accepted task", schema: projectTaskResponseSchema },
-    400: { description: "The task is not in review", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params }) =>
-    acceptProjectTask(serviceContext, params.projectId, params.taskId),
-});
-
-addRoute(app, "delete", "/:projectId/tasks/:taskId", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Delete a project task",
-  paramSchema: projectTaskParams,
-  handler: ({ serviceContext, params }) =>
-    deleteProjectTask(serviceContext, params.projectId, params.taskId),
-});
-
-addRoute(app, "get", "/:projectId/flow", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Get the project flow",
-  paramSchema: projectParams,
-  responses: { 200: { description: "The flow", schema: projectFlowResponseSchema } },
-  handler: ({ serviceContext, params }) => getProjectFlow(serviceContext, params.projectId),
-});
-
-addRoute(app, "put", "/:projectId/flow", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Set or clear the project flow",
-  paramSchema: projectParams,
-  bodySchema: setProjectFlowSchema,
-  responses: {
-    200: { description: "The stored flow", schema: projectFlowResponseSchema },
-    400: { description: "Invalid flow", schema: errorResponseSchema },
-    403: { description: "Project admin access required", schema: errorResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    setProjectFlow(serviceContext, params.projectId, body.flow),
-});
-
-app.route("/", taskIntegrations);
 export default app;

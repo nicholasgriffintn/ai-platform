@@ -19,7 +19,7 @@ import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
 export async function previewProjectIssue(projectId: string, locator: IssueLocator) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/issue-imports/preview`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/imports/preview`, {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: locator,
@@ -29,7 +29,7 @@ export async function previewProjectIssue(projectId: string, locator: IssueLocat
 }
 
 export async function importProjectIssue(projectId: string, input: ImportProjectIssueInput) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/issue-imports`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/imports`, {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: input,
@@ -39,7 +39,7 @@ export async function importProjectIssue(projectId: string, input: ImportProject
 }
 
 export async function listProjectReviews(projectId: string) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/pr-reviews`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/reviews`, {
     method: "GET",
     headers: await apiService.getHeaders(),
   });
@@ -48,7 +48,7 @@ export async function listProjectReviews(projectId: string) {
 }
 
 export async function getProjectTaskReview(projectId: string, taskId: string) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/pr-review`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/review`, {
     method: "GET",
     headers: await apiService.getHeaders(),
   });
@@ -57,8 +57,8 @@ export async function getProjectTaskReview(projectId: string, taskId: string) {
 }
 
 export async function setProjectReviewPolicy(projectId: string, input: ReviewPolicyInput) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/pr-reviews/policy`, {
-    method: "PUT",
+  const response = await fetchApiOrThrow(`/projects/${projectId}/review_policy`, {
+    method: "PATCH",
     headers: await apiService.getHeaders(),
     body: input,
   });
@@ -67,7 +67,7 @@ export async function setProjectReviewPolicy(projectId: string, input: ReviewPol
 }
 
 export async function startPullRequestReview(projectId: string, locator: PullRequestLocator) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/pr-reviews`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/reviews`, {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: locator,
@@ -78,7 +78,7 @@ export async function startPullRequestReview(projectId: string, locator: PullReq
 
 export async function prepareReviewPublication(projectId: string, reviewId: string) {
   const response = await fetchApiOrThrow(
-    `/projects/${projectId}/pr-reviews/${reviewId}/prepare-publication`,
+    `/projects/${projectId}/reviews/${reviewId}/prepare_publication`,
     { method: "POST", headers: await apiService.getHeaders() },
   );
 
@@ -90,7 +90,7 @@ export async function publishPullRequestReview(
   reviewId: string,
   input: PublishPullRequestReviewInput,
 ) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/pr-reviews/${reviewId}/publish`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/reviews/${reviewId}/publish`, {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: input,
@@ -101,7 +101,7 @@ export async function publishPullRequestReview(
 
 export async function reconcileReviewPublication(projectId: string, reviewId: string) {
   const response = await fetchApiOrThrow(
-    `/projects/${projectId}/pr-reviews/${reviewId}/check-publication`,
+    `/projects/${projectId}/reviews/${reviewId}/check_publication`,
     { method: "POST", headers: await apiService.getHeaders() },
   );
 

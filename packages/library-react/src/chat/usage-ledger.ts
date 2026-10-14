@@ -5,10 +5,6 @@ import type {
   UsageEventsResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-export function getNextUsageEventsPageParam(lastPage: UsageEventsResponse): string | undefined {
-  return lastPage.next_cursor ?? undefined;
-}
-
 export function flattenUsageEventPages(
   pages: UsageEventsResponse[] | undefined,
 ): UsageEventRecord[] {
@@ -20,7 +16,7 @@ export function flattenUsageEventPages(
   const events: UsageEventRecord[] = [];
 
   for (const page of pages) {
-    for (const event of page.events) {
+    for (const event of page.data) {
       if (!seen.has(event.id)) {
         seen.add(event.id);
         events.push(event);

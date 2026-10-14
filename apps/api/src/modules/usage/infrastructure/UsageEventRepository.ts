@@ -53,7 +53,7 @@ export interface ListUsageEventsParams {
   userId: number;
   period: string;
   limit: number;
-  cursor?: { occurredAt: string; id: string } | null;
+  after?: string | null;
   source?: string | null;
 }
 
@@ -197,9 +197,10 @@ export class UsageEventRepository extends BaseRepository {
       values.push(params.source);
     }
 
-    if (params.cursor) {
-      cursorClause = " AND (occurred_at < ? OR (occurred_at = ? AND id < ?))";
-      values.push(params.cursor.occurredAt, params.cursor.occurredAt, params.cursor.id);
+    if (params.after) {
+      cursorClause =
+        " AND (occurred_at, id) < (SELECT occurred_at, id FROM usage_event WHERE id = ? AND user_id = ?)";
+      values.push(params.after, params.userId);
     }
 
     values.push(params.limit);

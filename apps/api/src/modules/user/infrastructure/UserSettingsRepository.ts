@@ -1,4 +1,3 @@
-import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
 import {
   DEFAULT_GUARDRAILS_ENABLED,
@@ -303,40 +302,6 @@ export class UserSettingsRepository extends BaseRepository {
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
       last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,
     };
-  }
-
-  public async getUserEnabledModels(userId: number): Promise<Record<string, unknown>[]> {
-    const { query, values } = this.buildSelectQuery(
-      "scoped_configuration",
-      { user_id: userId, kind: "model" },
-      { columns: ["id", "target_id AS model_id", "enabled"] },
-    );
-    const userModels = (await this.runQuery<{
-      model_id: string;
-      enabled: number;
-    }>(query, values)) as { model_id: string; enabled: number }[];
-
-    const userModelMap = new Map(userModels.map((model) => [model.model_id, model.enabled === 1]));
-
-    const models = getModels();
-
-    return Object.values(models).reduce(
-      (enabledModels, model) => {
-        const isModelEnabled = userModelMap.has(model.matchingModel)
-          ? userModelMap.get(model.matchingModel)
-          : model.isFeatured;
-
-        if (isModelEnabled) {
-          enabledModels.push({
-            ...model,
-            enabled: true,
-          });
-        }
-
-        return enabledModels;
-      },
-      [] as Record<string, unknown>[],
-    );
   }
 
   public async storeProviderApiKey(

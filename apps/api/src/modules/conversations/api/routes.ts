@@ -7,6 +7,7 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { defineConversationArtifactBindings } from "./artifact-bindings";
 import { defineConversationBrief } from "./brief";
 import { defineConversationGoalAndDelegations } from "./goals-and-delegations";
+import { defineConversationHandles } from "./handles";
 import { defineConversationItems } from "./items";
 import { defineConversationOrganisation } from "./organisation";
 import { defineConversationQueue } from "./queue";
@@ -32,6 +33,7 @@ defineResource(app, { idParam: "conversation_id", tags: ["conversations"] }, (co
   defineConversationArtifactBindings(conversations);
   defineConversationGoalAndDelegations(conversations);
   defineSavedItems(conversations);
+  defineConversationHandles(conversations);
   defineConversationBrief(conversations);
 });
 

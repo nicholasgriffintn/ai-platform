@@ -1,7 +1,7 @@
 import Foundation
 
 struct WorkspaceListResponse: Decodable {
-    let workspaces: [WorkspaceSummary]
+    let data: [WorkspaceSummary]
 }
 
 struct WorkspaceSummary: Decodable, Identifiable {

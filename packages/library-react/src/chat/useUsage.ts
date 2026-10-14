@@ -5,9 +5,9 @@ import {
   getWorkspaceUsageSummary,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
+import { nextPageCursor } from "@ngriffin_uk/polychat-schemas";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
 import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const USAGE_QUERY_KEYS = {
@@ -77,12 +77,12 @@ export function useUsageEvents(
     queryFn: ({ pageParam }) =>
       listUsageEvents({
         period: options.period,
-        cursor: pageParam,
+        after: pageParam,
         limit: USAGE_EVENTS_PAGE_SIZE,
         source: options.source,
       }),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: getNextUsageEventsPageParam,
+    getNextPageParam: nextPageCursor,
     refetchInterval: (query) => liveOrPoll(query, USAGE_STALE_TIME, "usage.changed"),
     staleTime: USAGE_STALE_TIME,
     enabled: (options.enabled ?? true) && isAuthenticated,

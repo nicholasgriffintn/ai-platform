@@ -1,8 +1,6 @@
 import {
-  errorResponseSchema,
   generateUserPetSchema,
-  successResponseSchema,
-  userPetResponseSchema,
+  userPetSchema,
   userPetsQuerySchema,
   userPetsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -10,8 +8,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { Hono } from "hono";
 import * as z from "zod/v4";
 
+import { defineResource } from "~/infrastructure/http/resource";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
-import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
   createPet,
   deletePet,
@@ -22,160 +20,86 @@ import {
 } from "~/modules/pets/application/pets";
 
 const app = new Hono();
+const petParamsSchema = z.object({ pet_id: z.string().min(1) });
+const SHEET_CACHE_CONTROL = "private, max-age=3600, stale-while-revalidate=86400";
 
-const petParamsSchema = z.object({
-  petId: z.string().min(1),
-});
+defineResource(app, { idParam: "pet_id", tags: ["pets"] }, (pets) => {
+  pets
+    .list({
+      auth: true,
+      summary: "List pets",
+      description: "The pets the user has uploaded or generated, newest first.",
+      querySchema: userPetsQuerySchema,
+      responses: { 200: { description: "Pets", schema: userPetsResponseSchema } },
+      handler: ({ query, serviceContext }) => listPets(serviceContext, query),
+    })
+    .create({
+      auth: true,
+      summary: "Create a pet",
+      description:
+        "Stores an uploaded or generated sprite sheet as a pet. Send multipart form data.",
+      responses: { 201: { description: "The pet", schema: userPetSchema } },
+      handler: async ({ raw, serviceContext }) => {
+        let formData: FormData;
 
-addRoute(app, "get", "/", {
-  tags: ["user"],
-  summary: "List pets",
-  description: "List the pets the user has uploaded or generated",
-  auth: true,
-  querySchema: userPetsQuerySchema,
-  responses: {
-    200: {
-      description: "Pets fetched successfully",
-      schema: userPetsResponseSchema,
-    },
-    401: {
-      description: "Authentication required",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ query, serviceContext }) => listPets(serviceContext, query.page, query.limit),
-});
+        try {
+          formData = await raw.req.formData();
+        } catch {
+          throw new AssistantError("Failed to parse pet upload", ErrorType.PARAMS_ERROR, 400);
+        }
 
-addRoute(app, "post", "/", {
-  tags: ["user"],
-  summary: "Create a pet",
-  description: "Store an uploaded or generated sprite sheet as a pet",
-  auth: true,
-  responses: {
-    201: {
-      description: "Pet created successfully",
-      schema: userPetResponseSchema,
-    },
-    400: {
-      description: "Bad request or invalid sheet",
-      schema: errorResponseSchema,
-    },
-    403: {
-      description: "A Pro plan is required",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ raw, serviceContext }) => {
-    let formData: FormData;
+        return ResponseFactory.success(raw, await createPet(serviceContext, formData), 201);
+      },
+    })
+    .collectionAction("generate", {
+      auth: true,
+      summary: "Generate a pet image",
+      description: "Generates a mascot image from a description, ready to compose into a sheet.",
+      bodySchema: generateUserPetSchema,
+      responses: {
+        200: { description: "The generated image", schema: z.object({ image: z.string() }) },
+      },
+      handler: ({ body, serviceContext }) => generatePetImage(serviceContext, body.prompt),
+    })
+    .read({
+      auth: true,
+      summary: "Read a pet",
+      paramSchema: petParamsSchema,
+      responses: { 200: { description: "The pet", schema: userPetSchema } },
+      handler: ({ params, serviceContext }) => getPet(serviceContext, params.pet_id),
+    })
+    .delete({
+      auth: true,
+      summary: "Delete a pet",
+      description: "Deletes the pet and its sprite sheet.",
+      paramSchema: petParamsSchema,
+      handler: async ({ params, serviceContext }) => {
+        await deletePet(serviceContext, params.pet_id);
 
-    try {
-      formData = await raw.req.formData();
-    } catch {
-      throw new AssistantError("Failed to parse pet upload", ErrorType.PARAMS_ERROR, 400);
-    }
-
-    const pet = await createPet(serviceContext, formData);
-
-    return ResponseFactory.success(raw, { pet }, 201);
-  },
-});
-
-addRoute(app, "post", "/generate", {
-  tags: ["user"],
-  summary: "Generate a pet image",
-  description: "Generate a mascot image from a description, ready to be composed into a sheet",
-  auth: true,
-  bodySchema: generateUserPetSchema,
-  responses: {
-    200: {
-      description: "Pet image generated successfully",
-      schema: z.object({ image: z.string() }),
-    },
-    403: {
-      description: "A Pro plan is required",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ body, serviceContext }) => generatePetImage(serviceContext, body.prompt),
-});
-
-addRoute(app, "get", "/:petId", {
-  tags: ["user"],
-  summary: "Read a pet",
-  description: "Read one of the user's custom pets",
-  auth: true,
-  paramSchema: petParamsSchema,
-  responses: {
-    200: {
-      description: "Pet fetched successfully",
-      schema: userPetResponseSchema,
-    },
-    404: {
-      description: "Pet not found",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ params, serviceContext }) => ({
-    pet: await getPet(serviceContext, params.petId),
-  }),
-});
-
-addRoute(app, "get", "/:petId/sheet", {
-  tags: ["user"],
-  summary: "Read a pet sheet",
-  description: "Stream the sprite sheet for one of the user's pets",
-  auth: true,
-  paramSchema: petParamsSchema,
-  responses: {
-    200: {
-      description: "Sheet streamed successfully",
-      schema: successResponseSchema,
-    },
-    404: {
-      description: "Pet not found",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ params, raw, serviceContext }) => {
-    const { data, contentType, etag } = await readPetSheet(serviceContext, params.petId);
-
-    if (raw.req.header("If-None-Match") === etag) {
-      return raw.newResponse(null, 304, {
-        ETag: etag,
-        "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
-      });
-    }
-
-    return raw.newResponse(data, 200, {
-      "Content-Type": contentType,
-      "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
-      ETag: etag,
-      "X-Content-Type-Options": "nosniff",
+        return { deleted: true };
+      },
     });
-  },
-});
 
-addRoute(app, "delete", "/:petId", {
-  tags: ["user"],
-  summary: "Delete a pet",
-  description: "Delete one of the user's pets and its sprite sheet",
-  auth: true,
-  paramSchema: petParamsSchema,
-  responses: {
-    200: {
-      description: "Pet deleted successfully",
-      schema: successResponseSchema,
-    },
-    404: {
-      description: "Pet not found",
-      schema: errorResponseSchema,
-    },
-  },
-  handler: async ({ params, serviceContext }) => {
-    await deletePet(serviceContext, params.petId);
+  pets.singleton("sheet").read({
+    auth: true,
+    summary: "Read a pet's sprite sheet",
+    paramSchema: petParamsSchema,
+    responses: { 200: { description: "The sprite sheet image" } },
+    handler: async ({ params, raw, serviceContext }) => {
+      const { data, contentType, etag } = await readPetSheet(serviceContext, params.pet_id);
 
-    return { message: "Pet deleted successfully" };
-  },
+      if (raw.req.header("If-None-Match") === etag) {
+        return raw.newResponse(null, 304, { ETag: etag, "Cache-Control": SHEET_CACHE_CONTROL });
+      }
+
+      return raw.newResponse(data, 200, {
+        "Content-Type": contentType,
+        "Cache-Control": SHEET_CACHE_CONTROL,
+        ETag: etag,
+        "X-Content-Type-Options": "nosniff",
+      });
+    },
+  });
 });
 
 export default app;

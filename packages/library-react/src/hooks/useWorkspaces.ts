@@ -38,7 +38,7 @@ export const projectQueryKey = (projectId: string) => ["project", projectId] as 
 const WORK_QUERY_STALE_TIME = 2 * 60 * 1000;
 const WORK_QUERY_GC_TIME = 30 * 60 * 1000;
 
-type WorkspaceListData = { workspaces: WorkspaceSummary[] };
+type WorkspaceListData = WorkspaceSummary[];
 
 function projectSummaryFromDetail(project: ProjectDetail): ProjectSummary {
   return {
@@ -110,23 +110,21 @@ function addProjectToWorkspaceCaches(queryClient: QueryClient, project: ProjectD
       return data;
     }
 
-    return {
-      workspaces: data.workspaces.map((workspace) =>
-        workspace.id === project.workspaceId
-          ? { ...workspace, projectCount: workspace.projectCount + 1 }
-          : workspace,
-      ),
-    };
+    return data.map((workspace) =>
+      workspace.id === project.workspaceId
+        ? { ...workspace, projectCount: workspace.projectCount + 1 }
+        : workspace,
+    );
   });
 }
 
 function addWorkspaceToListCache(queryClient: QueryClient, workspace: WorkspaceDetail) {
   queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
-    if (!data || data.workspaces.some((item) => item.id === workspace.id)) {
+    if (!data || data.some((item) => item.id === workspace.id)) {
       return data;
     }
 
-    return { workspaces: [workspaceSummaryFromDetail(workspace), ...data.workspaces] };
+    return [workspaceSummaryFromDetail(workspace), ...data];
   });
 }
 
@@ -138,22 +136,18 @@ function upsertWorkspaceInListCache(queryClient: QueryClient, workspace: Workspa
 
     const summary = workspaceSummaryFromDetail(workspace);
 
-    if (!data.workspaces.some((item) => item.id === workspace.id)) {
-      return { workspaces: [summary, ...data.workspaces] };
+    if (!data.some((item) => item.id === workspace.id)) {
+      return [summary, ...data];
     }
 
-    return {
-      workspaces: data.workspaces.map((item) => (item.id === workspace.id ? summary : item)),
-    };
+    return data.map((item) => (item.id === workspace.id ? summary : item));
   });
 }
 
 function removeWorkspaceFromCaches(queryClient: QueryClient, workspaceId: string) {
   queryClient.removeQueries({ queryKey: workspaceQueryKey(workspaceId) });
   queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) =>
-    data
-      ? { workspaces: data.workspaces.filter((workspace) => workspace.id !== workspaceId) }
-      : data,
+    data ? data.filter((workspace) => workspace.id !== workspaceId) : data,
   );
 }
 
@@ -175,13 +169,11 @@ function removeProjectFromCaches(queryClient: QueryClient, workspaceId: string, 
       return data;
     }
 
-    return {
-      workspaces: data.workspaces.map((workspace) =>
-        workspace.id === workspaceId
-          ? { ...workspace, projectCount: Math.max(0, workspace.projectCount - 1) }
-          : workspace,
-      ),
-    };
+    return data.map((workspace) =>
+      workspace.id === workspaceId
+        ? { ...workspace, projectCount: Math.max(0, workspace.projectCount - 1) }
+        : workspace,
+    );
   });
 }
 

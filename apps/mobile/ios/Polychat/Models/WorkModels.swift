@@ -4,6 +4,12 @@ struct WorkAttentionResponse: Decodable {
     let items: [WorkAttentionItem]
     let total: Int
     let hasMore: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case items = "data"
+        case total
+        case hasMore = "has_more"
+    }
 }
 
 struct WorkAttentionItem: Decodable, Identifiable {
@@ -172,10 +178,6 @@ struct RegisterMobilePushDeviceRequest: Encodable {
     let token: String
     let environment: String
     let appBundleId: String
-}
-
-struct UnregisterMobilePushDeviceRequest: Encodable {
-    let token: String
 }
 
 struct SubmitSandboxRunInstructionRequest: Encodable {

@@ -1,7 +1,7 @@
 import type { UsageEventRecord, UsageEventsResponse } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { flattenUsageEventPages, getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
+import { flattenUsageEventPages } from "../chat/usage-ledger.js";
 
 function event(id: string): UsageEventRecord {
   return {
@@ -28,19 +28,15 @@ function event(id: string): UsageEventRecord {
   };
 }
 
-function page(events: UsageEventRecord[], nextCursor: string | null): UsageEventsResponse {
-  return { period: "2026-08", events, next_cursor: nextCursor };
+function page(events: UsageEventRecord[], hasMore: boolean): UsageEventsResponse {
+  return {
+    object: "list",
+    data: events,
+    has_more: hasMore,
+    last_id: events.at(-1)?.id ?? null,
+    period: "2026-08",
+  };
 }
-
-describe("getNextUsageEventsPageParam", () => {
-  it("continues from the cursor the API returned", () => {
-    expect(getNextUsageEventsPageParam(page([event("a")], "cursor-2"))).toBe("cursor-2");
-  });
-
-  it("stops paginating when the cursor is null", () => {
-    expect(getNextUsageEventsPageParam(page([event("a")], null))).toBeUndefined();
-  });
-});
 
 describe("flattenUsageEventPages", () => {
   it("returns an empty ledger for missing pages", () => {
@@ -48,10 +44,7 @@ describe("flattenUsageEventPages", () => {
   });
 
   it("flattens pages in order and drops duplicate rows across page boundaries", () => {
-    const pages = [
-      page([event("a"), event("b")], "cursor-2"),
-      page([event("b"), event("c")], null),
-    ];
+    const pages = [page([event("a"), event("b")], true), page([event("b"), event("c")], false)];
 
     expect(flattenUsageEventPages(pages).map((entry) => entry.id)).toEqual(["a", "b", "c"]);
   });

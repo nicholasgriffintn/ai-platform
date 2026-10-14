@@ -7,16 +7,16 @@ A Stripe secret alone cannot configure Checkout. Each paid plan needs a recurrin
 - Create the plan's product and recurring Price in the matching Stripe test or live account. Store the Price ID, not Product ID, on the plan row.
 - Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` as Worker secrets. Keep keys, Prices and webhook secrets in the same mode.
 - Set `APP_BASE_URL`; Checkout and portal return URLs must use that exact origin.
-- Register `/stripe/webhook` for Checkout completion, subscription update/deletion, invoice paid/payment failed, and trial-will-end events. Confirm the exact event names in the handler before configuring the dashboard.
+- Register `/webhooks/stripe` for Checkout completion, subscription update/deletion, invoice paid/payment failed, and trial-will-end events. Confirm the exact event names in the handler before configuring the dashboard.
 - Apply local migrations before local plan edits. Remote plan changes require authority and must target the correct D1 database; account-specific Stripe IDs do not belong in migrations.
 
-For local testing, forward Stripe CLI events to the running local API's `/stripe/webhook`, using the listener's signing secret. Do not send local test traffic to the public API. Keep the listener active to test cancellation and invoice state, even when subscription status reconciliation recovers a delayed Checkout webhook.
+For local testing, forward Stripe CLI events to the running local API's `/webhooks/stripe`, using the listener's signing secret. Do not send local test traffic to the public API. Keep the listener active to test cancellation and invoice state, even when subscription status reconciliation recovers a delayed Checkout webhook.
 
 ## Enable overage
 
 Create a Billing Meter and a recurring metered Price on the subscription product. Set `stripe_meter_id` to the meter's **event name**, and `overage_price_id` to the metered Price ID, through the admin plan-credit operation. Keep these unset until the external objects exist.
 
-Overage is opt-in. `/stripe/overage` requires an entitled subscription and payment method and adds/removes the metered subscription item. Hourly `stripe_usage_sync` sends whole-credit deltas with stable identifiers; fractional remainder stays pending. A plan without a meter event name is skipped, so check that first when an invoice is short. A downgrade to Free disables overage.
+Overage is opt-in. `PATCH /billing/subscription` with `overage_enabled` requires an entitled subscription and payment method and adds/removes the metered subscription item. Hourly `stripe_usage_sync` sends whole-credit deltas with stable identifiers; fractional remainder stays pending. A plan without a meter event name is skipped, so check that first when an invoice is short. A downgrade to Free disables overage.
 
 ## Staff access and revocation
 
