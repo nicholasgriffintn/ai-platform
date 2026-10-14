@@ -63,6 +63,7 @@ export type {
   AssistantActionModelToolDefinition,
   AssistantRecipeActionContext,
 } from "./assistant-actions.js";
+export * from "./approvals.js";
 export * from "./apps.js";
 export { prepareToolFormData } from "./utils/tool-form-values.js";
 export * from "./capability-catalogue.js";

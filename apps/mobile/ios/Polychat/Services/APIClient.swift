@@ -503,25 +503,18 @@ final class APIClient: ObservableObject {
     }
 
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval {
-        let response: ConnectorOperationApprovalResponse = try await send(
-            path: "/apps/connectors/approvals/\(id)",
-            method: "GET"
-        )
-
-        return response.approval
+        try await send(path: "/approvals/\(id)", method: "GET")
     }
 
     func resolveConnectorApproval(
         id: String,
         resolution: String
     ) async throws -> ConnectorApprovalResolution {
-        let response: ConnectorApprovalResolutionResponse = try await send(
-            path: "/apps/connectors/approvals/\(id)",
-            method: "PUT",
-            body: ResolveConnectorApprovalRequest(resolution: resolution)
+        try await send(
+            path: "/approvals/\(id)",
+            method: "PATCH",
+            body: ResolveApprovalRequest(state: resolution)
         )
-
-        return response.approval
     }
 
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse {
@@ -534,13 +527,11 @@ final class APIClient: ObservableObject {
         interactionId: String,
         answers: [UserQuestionAnswer]
     ) async throws -> ProjectTaskResponse {
-        try await send(
-            path: "/projects/\(projectId)/tasks/\(taskId)/answers",
-            method: "POST",
-            body: AnswerProjectTaskQuestionsRequest(
-                interactionId: interactionId,
-                answers: answers
-            )
+        try await sendProjectTaskInteraction(
+            projectId: projectId,
+            taskId: taskId,
+            toolName: "ask_user",
+            payload: AnswerProjectTaskQuestionsRequest(interactionId: interactionId, answers: answers)
         )
     }
 
@@ -550,14 +541,35 @@ final class APIClient: ObservableObject {
         interactionId: String,
         resolution: String
     ) async throws -> ProjectTaskResponse {
-        try await send(
-            path: "/projects/\(projectId)/tasks/\(taskId)/tool-approval",
+        try await sendProjectTaskInteraction(
+            projectId: projectId,
+            taskId: taskId,
+            toolName: "tool_approval",
+            payload: ResolveProjectTaskApprovalRequest(interactionId: interactionId, resolution: resolution)
+        )
+    }
+
+    private func sendProjectTaskInteraction<Payload: Encodable>(
+        projectId: String,
+        taskId: String,
+        toolName: String,
+        payload: Payload
+    ) async throws -> ProjectTaskResponse {
+        let detail = try await fetchProjectTask(projectId: projectId, taskId: taskId)
+
+        guard let responseId = detail.task.runId else {
+            throw APIClientError.invalidRequest("This task has no response waiting for input.")
+        }
+
+        let _: PlatformResponse = try await send(
+            path: "/responses/\(responseId)/input",
             method: "POST",
-            body: ResolveProjectTaskApprovalRequest(
-                interactionId: interactionId,
-                resolution: resolution
+            body: ResponseInteractionRequest(
+                input: [InteractionResponseItem(toolName: toolName, response: payload)]
             )
         )
+
+        return ProjectTaskResponse(task: try await fetchProjectTask(projectId: projectId, taskId: taskId).task)
     }
 
     func updateConversation(

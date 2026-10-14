@@ -12,6 +12,7 @@ import type {
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { requestJson } from "./resource.js";
 
 async function authHeaders() {
   return apiService.getHeaders();
@@ -89,32 +90,44 @@ export async function acceptProjectTask(
   return returnFetchedData(response);
 }
 
-export async function answerProjectTaskQuestions(
+async function sendTaskInteraction(
+  projectId: string,
+  taskId: string,
+  interaction: (detail: ProjectTaskDetailResponse) => { toolName: string; response: object },
+): Promise<{ task: ProjectTask }> {
+  const detail = await getProjectTask(projectId, taskId);
+  const responseId = detail.task.runId;
+
+  if (!responseId) {
+    throw new Error("This task has no response waiting for input");
+  }
+
+  const { toolName, response } = interaction(detail);
+
+  await requestJson<unknown>(`/responses/${encodeURIComponent(responseId)}/input`, "POST", {
+    input: [{ type: "interaction_response", tool_name: toolName, response }],
+  });
+
+  return { task: (await getProjectTask(projectId, taskId)).task };
+}
+
+export function answerProjectTaskQuestions(
   projectId: string,
   taskId: string,
   input: AnswerUserQuestionsInput,
 ): Promise<{ task: ProjectTask }> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/answers`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return sendTaskInteraction(projectId, taskId, () => ({ toolName: "ask_user", response: input }));
 }
 
-export async function resolveProjectTaskToolApproval(
+export function resolveProjectTaskToolApproval(
   projectId: string,
   taskId: string,
   input: ResolveProjectTaskToolApprovalInput,
 ): Promise<{ task: ProjectTask }> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/tool-approval`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData(response);
+  return sendTaskInteraction(projectId, taskId, (detail) => ({
+    toolName: detail.pendingApproval?.toolName ?? "tool_approval",
+    response: input,
+  }));
 }
 
 export async function deleteProjectTask(projectId: string, taskId: string): Promise<void> {

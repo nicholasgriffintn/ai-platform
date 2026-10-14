@@ -1,7 +1,15 @@
-import type { PolyAgenda, PolyHandoffDisagreement, PolyHome } from "@ngriffin_uk/polychat-schemas";
+import {
+  standingApprovalId,
+  standingApprovalSchema,
+  type PolyAgenda,
+  type PolyHandoffDisagreement,
+  type PolyHome,
+  type StandingApproval,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
+import { requestJson } from "../resource.js";
 
 export class PolyService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
@@ -45,31 +53,16 @@ export class PolyService {
     return returnFetchedData<PolyHandoffDisagreement>(response);
   }
 
-  async grantPolyStandingApproval(interactionId: string): Promise<PolyHome> {
-    const response = await fetchApi("/poly/standing-approvals", {
-      method: "POST",
-      headers: await this.getHeaders(),
-      body: { interaction_id: interactionId },
-    });
-
-    if (!response.ok) {
-      throw await createApiErrorFromResponse(response, "Poly could not keep that approval");
-    }
-
-    return returnFetchedData<PolyHome>(response);
+  async grantPolyStandingApproval(interactionId: string): Promise<StandingApproval> {
+    return standingApprovalSchema.parse(
+      await requestJson<unknown>("/approvals/standing", "POST", { interaction_id: interactionId }),
+    );
   }
 
-  async revokePolyStandingApproval(toolName: string, destination: string): Promise<PolyHome> {
-    const response = await fetchApi("/poly/standing-approvals", {
-      method: "DELETE",
-      headers: await this.getHeaders(),
-      body: { tool_name: toolName, destination },
-    });
-
-    if (!response.ok) {
-      throw await createApiErrorFromResponse(response, "Poly could not forget that approval");
-    }
-
-    return returnFetchedData<PolyHome>(response);
+  async revokePolyStandingApproval(toolName: string, destination: string): Promise<void> {
+    await requestJson<unknown>(
+      `/approvals/standing/${encodeURIComponent(standingApprovalId(toolName, destination))}`,
+      "DELETE",
+    );
   }
 }

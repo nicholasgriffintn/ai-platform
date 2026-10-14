@@ -12,6 +12,7 @@ import type {
   PolyAgenda,
   PolyHandoffDisagreement,
   PolyHome,
+  StandingApproval,
   TeammateAutonomyLevel,
   TeammateResponse,
   CreateTeammateInput,
@@ -249,10 +250,10 @@ class ApiService {
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
     this.polyService.disagreeWithPolyHandoff(handoffId);
 
-  grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
+  grantPolyStandingApproval = (interactionId: string): Promise<StandingApproval> =>
     this.polyService.grantPolyStandingApproval(interactionId);
 
-  revokePolyStandingApproval = (toolName: string, destination: string): Promise<PolyHome> =>
+  revokePolyStandingApproval = (toolName: string, destination: string): Promise<void> =>
     this.polyService.revokePolyStandingApproval(toolName, destination);
 
   listTeammates = (): Promise<TeammateResponse[]> => {

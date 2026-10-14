@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hasStandingApproval } from "~/modules/chat/application/tools/effects";
 
-import { grantPolyStandingApproval } from "../standing-approvals";
+import { grantPolyStandingApproval } from "../standing";
 
 const ensureContext = vi.hoisted(() => vi.fn());
 
@@ -56,18 +56,22 @@ describe("grantPolyStandingApproval", () => {
   beforeEach(() => ensureContext.mockResolvedValue(polyContext));
 
   it("keeps a write Poly is waiting on, for that tool and destination only", async () => {
-    const { context: service } = context(
+    const { context: service, updateStandingApprovals } = context(
       pendingCall({ url: "https://api.example.com/tickets", method: "POST" }),
     );
 
-    const home = await grantPolyStandingApproval(service, "call_1");
+    const granted = await grantPolyStandingApproval(service, "call_1");
+    const stored = updateStandingApprovals.mock.calls[0]?.[1] ?? [];
 
-    expect(home.standing_approvals).toEqual([
-      expect.objectContaining({ toolName: "call_api", destination: "https://api.example.com" }),
-    ]);
+    expect(granted).toMatchObject({
+      object: "standing_approval",
+      id: "call_api:https://api.example.com",
+      tool_name: "call_api",
+      destination: "https://api.example.com",
+    });
     expect(
       hasStandingApproval({
-        approvals: home.standing_approvals,
+        approvals: stored,
         toolName: "call_api",
         destination: "https://api.example.com",
         now: Date.now(),
@@ -75,7 +79,7 @@ describe("grantPolyStandingApproval", () => {
     ).toBe(true);
     expect(
       hasStandingApproval({
-        approvals: home.standing_approvals,
+        approvals: stored,
         toolName: "call_api",
         destination: "https://other.example.com",
         now: Date.now(),

@@ -6,7 +6,7 @@ import { recordApprovalOutcome } from "~/modules/poly/domain/earned-trust";
 import { readToolInteractionResolution } from "~/modules/responses/application/runs/interactions";
 
 import { markPolyOwnerSeen } from "./home";
-import { readPendingPolyCall } from "./standing-approvals";
+import { readPendingPolyCall } from "./pending-call";
 
 export async function recordPolyApprovalOutcome(params: {
   context: ServiceContext;

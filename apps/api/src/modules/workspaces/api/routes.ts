@@ -79,18 +79,6 @@ addRoute(app, "get", "/attention", {
   handler: ({ serviceContext, query }) => listWorkAttention(serviceContext, query),
 });
 
-addRoute(app, "get", "/attention/tasks", {
-  auth: true,
-  tags: ["workspaces", "tasks"],
-  summary: "List tasks waiting on the signed-in user",
-  querySchema: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }),
-  responses: {
-    200: { description: "Tasks waiting on you", schema: projectTaskAttentionResponseSchema },
-  },
-  handler: ({ serviceContext, query }) =>
-    listProjectTaskAttention(serviceContext, { limit: query.limit }),
-});
-
 addRoute(app, "get", "/:workspaceId", {
   auth: true,
   tags: ["workspaces"],

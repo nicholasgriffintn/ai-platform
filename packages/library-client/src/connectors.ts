@@ -1,15 +1,17 @@
-import type {
-  RecipeConnectorAccount,
-  RecipeConnectorAccountUpdateRequest,
-  RecipeConnectorApiKeyRequest,
-  RecipeConnectorProvider,
-  RecipeConnectorsResponse,
-  RecipeConnectorStartResponse,
+import {
+  approvalSchema,
+  type RecipeConnectorAccount,
+  type RecipeConnectorAccountUpdateRequest,
+  type RecipeConnectorApiKeyRequest,
+  type RecipeConnectorProvider,
+  type RecipeConnectorsResponse,
+  type RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { requestJson } from "./resource.js";
 
 async function getAuthHeaders() {
   try {
@@ -96,11 +98,11 @@ export async function resolveConnectorOperationApproval(
   approvalId: string,
   resolution: "approved" | "rejected",
 ): Promise<{ approval: { id: string; state: "approved" | "rejected" } }> {
-  const response = await fetchApiOrThrow(`/apps/connectors/approvals/${approvalId}`, {
-    method: "PUT",
-    headers: await getAuthHeaders(),
-    body: { resolution },
-  });
+  const approval = approvalSchema.parse(
+    await requestJson<unknown>(`/approvals/${encodeURIComponent(approvalId)}`, "PATCH", {
+      state: resolution,
+    }),
+  );
 
-  return returnFetchedData<{ approval: { id: string; state: "approved" | "rejected" } }>(response);
+  return { approval: { id: approval.id, state: resolution } };
 }

@@ -121,47 +121,6 @@ addRoute(app, "get", "/composio/verify", {
   },
 });
 
-addRoute(app, "get", "/approvals/:approvalId", {
-  auth: true,
-  tags: ["apps"],
-  summary: "Get an exact connector operation approval",
-  paramSchema: approvalParamSchema,
-  responses: {
-    200: {
-      description: "Connector approval state",
-      schema: connectorOperationApprovalResponseSchema,
-    },
-    404: { description: "Connector approval missing", schema: errorResponseSchema },
-  },
-  handler: async ({ params, serviceContext, user }) => ({
-    approval: await getConnectorOperationApproval({
-      context: serviceContext,
-      userId: user.id,
-      approvalId: params.approvalId,
-    }),
-  }),
-});
-
-addRoute(app, "put", "/approvals/:approvalId", {
-  auth: true,
-  tags: ["apps"],
-  summary: "Resolve an exact connector operation approval",
-  paramSchema: approvalParamSchema,
-  bodySchema: approvalResolutionSchema,
-  responses: {
-    200: { description: "Connector approval resolved" },
-    404: { description: "Connector approval missing or expired", schema: errorResponseSchema },
-  },
-  handler: async ({ params, body, serviceContext, user }) => ({
-    approval: await resolveConnectorOperationApproval({
-      context: serviceContext,
-      userId: user.id,
-      approvalId: params.approvalId,
-      resolution: body.resolution,
-    }),
-  }),
-});
-
 addRoute(app, "post", "/:provider/api-key", {
   auth: true,
   tags: ["apps"],

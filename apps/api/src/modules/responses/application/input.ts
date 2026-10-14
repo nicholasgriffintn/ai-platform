@@ -1,19 +1,27 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
+  answerUserQuestionsSchema,
   createResponseRequestSchema,
+  resolveProjectTaskToolApprovalSchema,
   isStoredItem,
   itemToMessage,
   queuedChatUserMessageSchema,
   type PlatformResponse,
+  type InteractionResponseItem,
   type QueuedChatMessage,
   type ResponseInputRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  respondToProjectTaskQuestions,
+  respondToProjectTaskToolApproval,
+} from "~/modules/project-tasks/application";
 import type { AnonymousUser, IUser } from "~/types";
 
 import { createResponse } from "./create";
+import { getResponse } from "./read";
 import { queueFollowUp } from "./runs/follow-up-queue";
 import { requireChatRunAccess } from "./runs/status";
 
@@ -33,6 +41,31 @@ export type SubmitResponseInputResult =
   | Response
   | { object: "queued_item"; queued: QueuedChatMessage };
 
+async function resumeProjectTaskInteraction(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+  interaction: InteractionResponseItem,
+): Promise<void> {
+  if (interaction.tool_name === "ask_user") {
+    await respondToProjectTaskQuestions(
+      context,
+      projectId,
+      taskId,
+      answerUserQuestionsSchema.parse(interaction.response),
+    );
+
+    return;
+  }
+
+  await respondToProjectTaskToolApproval(
+    context,
+    projectId,
+    taskId,
+    resolveProjectTaskToolApprovalSchema.parse(interaction.response),
+  );
+}
+
 export async function submitResponseInput({
   context,
   responseId,
@@ -44,6 +77,15 @@ export async function submitResponseInput({
   platform,
 }: SubmitResponseInputParams): Promise<SubmitResponseInputResult> {
   const run = await requireChatRunAccess(context, responseId);
+  const interaction = request.input.find(
+    (item): item is InteractionResponseItem => item.type === "interaction_response",
+  );
+
+  if (run.projectId && run.projectTaskId && interaction) {
+    await resumeProjectTaskInteraction(context, run.projectId, run.projectTaskId, interaction);
+
+    return getResponse(context, run.id);
+  }
 
   if (request.when === "after") {
     const stored = request.input.find(isStoredItem);

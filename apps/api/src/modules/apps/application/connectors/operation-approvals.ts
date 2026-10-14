@@ -43,7 +43,7 @@ export interface ConnectorOperationApprovalStatusView {
   consumedAt: string | null;
 }
 
-function toConnectorOperationApprovalStatusView(
+export function toConnectorOperationApprovalStatusView(
   approval: ConnectorOperationApprovalRecord,
   now: string,
 ): ConnectorOperationApprovalStatusView {

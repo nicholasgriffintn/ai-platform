@@ -103,6 +103,22 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     return results.map(parseApproval);
   }
 
+  async listPendingForUser(
+    userId: number,
+    now: string,
+    limit: number,
+  ): Promise<ConnectorOperationApprovalRecord[]> {
+    const results = await this.runQuery<ConnectorOperationApproval>(
+      `SELECT * FROM approval
+       WHERE kind = 'connector' AND user_id = ? AND state = 'pending' AND expires_at > ?
+       ORDER BY created_at DESC, id DESC
+       LIMIT ?`,
+      [userId, now, limit],
+    );
+
+    return results.map(parseApproval);
+  }
+
   async getByIdForUser(
     id: string,
     userId: number,

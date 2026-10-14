@@ -1,21 +1,19 @@
 import {
   POLY_CONVERSATION_TYPE,
+  parseStandingApprovalId,
+  standingApprovalId,
   TEAMMATE_STANDING_APPROVAL_DAYS,
-  type PolyHome,
-  type TeammateContext,
+  listPageOf,
+  type ListPage,
+  type StandingApproval,
   type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  isStandingApprovalEligible,
-  resolveToolCallDestination,
-  resolveToolCallEffectClass,
-} from "~/modules/chat/application/tools/effects";
-import { resolveFunctionTool } from "~/modules/functions/application";
-
-import { requirePolyContext, toPolyHome } from "./home";
+import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
+import { requirePolyContext } from "~/modules/poly/application/home";
+import { readPendingPolyCall } from "~/modules/poly/application/pending-call";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -23,34 +21,21 @@ function isLive(approval: TeammateStandingApproval, now: number): boolean {
   return Date.parse(approval.expiresAt) > now;
 }
 
-export async function readPendingPolyCall(
-  context: ServiceContext,
-  polyContext: TeammateContext,
-  interactionId: string,
-) {
-  const pending = await context.repositories.messages.getLatestPendingToolMessage(
-    polyContext.homeConversationId,
-  );
-
-  if (!pending || pending.tool_call_id !== interactionId || typeof pending.name !== "string") {
-    return null;
-  }
-
-  const toolName = pending.name;
-  const effects = resolveFunctionTool(toolName).effects;
-  const rawArguments = pending.tool_call_arguments;
-
+function presentStandingApproval(approval: TeammateStandingApproval): StandingApproval {
   return {
-    toolName,
-    destination: resolveToolCallDestination({ effects, rawArguments }),
-    effectClass: resolveToolCallEffectClass({ toolName, effects, rawArguments }),
+    object: "standing_approval",
+    id: standingApprovalId(approval.toolName, approval.destination),
+    tool_name: approval.toolName,
+    destination: approval.destination,
+    granted_at: approval.grantedAt,
+    expires_at: approval.expiresAt,
   };
 }
 
 export async function grantPolyStandingApproval(
   context: ServiceContext,
   interactionId: string,
-): Promise<PolyHome> {
+): Promise<StandingApproval> {
   const polyContext = await requirePolyContext(context);
   const call = await readPendingPolyCall(context, polyContext, interactionId);
 
@@ -96,18 +81,40 @@ export async function grantPolyStandingApproval(
     polyContext.id,
     approvals,
   );
+  const granted = approvals.at(-1);
 
-  if (!updated) {
+  if (!updated || !granted) {
     throw new AssistantError("Poly is not available", ErrorType.NOT_FOUND, 404);
   }
 
-  return toPolyHome(updated, now);
+  return presentStandingApproval(granted);
+}
+
+export async function listPolyStandingApprovals(
+  context: ServiceContext,
+): Promise<ListPage<StandingApproval>> {
+  const polyContext = await requirePolyContext(context);
+  const now = Date.now();
+
+  return listPageOf(
+    polyContext.standingApprovals
+      .filter((approval) => isLive(approval, now))
+      .map(presentStandingApproval),
+    (approval) => approval.id,
+  );
 }
 
 export async function revokePolyStandingApproval(
   context: ServiceContext,
-  revoke: { toolName: string; destination: string },
-): Promise<PolyHome> {
+  standingApprovalId: string,
+): Promise<{ deleted: true }> {
+  const parsed = parseStandingApprovalId(standingApprovalId);
+
+  if (!parsed) {
+    throw new AssistantError("Standing approval not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const { toolName, destination } = parsed;
   const polyContext = await requirePolyContext(context);
   const now = Date.now();
   const updated = await context.repositories.teammateContexts.updateStandingApprovals(
@@ -115,7 +122,7 @@ export async function revokePolyStandingApproval(
     polyContext.standingApprovals.filter(
       (approval) =>
         isLive(approval, now) &&
-        !(approval.toolName === revoke.toolName && approval.destination === revoke.destination),
+        !(approval.toolName === toolName && approval.destination === destination),
     ),
   );
 
@@ -123,5 +130,5 @@ export async function revokePolyStandingApproval(
     throw new AssistantError("Poly is not available", ErrorType.NOT_FOUND, 404);
   }
 
-  return toPolyHome(updated, now);
+  return { deleted: true };
 }
