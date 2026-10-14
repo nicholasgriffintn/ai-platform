@@ -1,4 +1,4 @@
-import { SITE_PROMPT_MAX_LENGTH } from "@ngriffin_uk/polychat-schemas";
+import { SITE_PROMPT_MAX_LENGTH, siteReferenceUrlSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "./types";
@@ -19,6 +19,11 @@ export const buildSiteInputSchema = z.object({
     .describe(
       "The id of a site built earlier in this conversation when the user wants it changed.",
     ),
+  referenceUrl: siteReferenceUrlSchema
+    .optional()
+    .describe(
+      "A public HTTPS page whose colours and fonts the site should borrow, only when the user names or links a site to look like.",
+    ),
 });
 
 export const build_site: FunctionToolDescriptor = {
@@ -32,6 +37,7 @@ export const build_site: FunctionToolDescriptor = {
     operation: input.siteId ? "update_site" : "create_site",
     brief: input.brief,
     siteId: input.siteId,
+    referenceUrl: input.referenceUrl,
   }),
   inputSchema: buildSiteInputSchema,
 };

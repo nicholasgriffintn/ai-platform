@@ -150,7 +150,7 @@ function RecordingDetail({ recording, projectId }: { recording: Recording; proje
       ) : (
         process.error && <p className="text-sm text-failure">{process.error.message}</p>
       )}
-      <RecordingView recording={recording} />
+      <RecordingView recording={recording} projectId={projectId} />
     </div>
   );
 }

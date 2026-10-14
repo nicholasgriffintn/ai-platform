@@ -4,6 +4,7 @@ import type { Env } from "../../types";
 import { INTERNAL_COMPUTER_ORIGIN } from "./config";
 import { handleComputerRequest } from "./lifecycle";
 import { handleScreenRequest } from "./screen";
+import { handleSiteReference } from "./site-reference";
 import { handleSiteVerification } from "./site-verification";
 
 function isScreenHost(url: URL, env: Env): boolean {
@@ -29,6 +30,10 @@ export async function handleComputerTraffic(request: Request, env: Env): Promise
 
   if (url.pathname === "/computer/site-verify") {
     return handleSiteVerification(request, env);
+  }
+
+  if (url.pathname === "/computer/site-reference") {
+    return handleSiteReference(request, env);
   }
 
   if (!url.pathname.startsWith("/computer/")) {
