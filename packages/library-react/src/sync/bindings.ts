@@ -220,9 +220,14 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       refreshPolyAgenda(context, event);
     },
   },
-  { type: "research.changed", apply: (context) => context.invalidate(["research-status"]) },
-  { type: "canvas.changed", apply: (context) => context.invalidate(["canvas"]) },
-  { type: "replicate.changed", apply: (context) => context.invalidate([REPLICATE_QUERY_KEY]) },
+  {
+    type: "job.changed",
+    apply: (context) => {
+      context.invalidate(["research-status"]);
+      context.invalidate(["canvas"]);
+      context.invalidate([REPLICATE_QUERY_KEY]);
+    },
+  },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
   { type: "attention.changed", apply: (context) => context.invalidate(TASK_ATTENTION_QUERY_KEY) },
 ];

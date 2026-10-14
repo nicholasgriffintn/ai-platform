@@ -9,12 +9,12 @@ import {
   type SandboxTaskType,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { executeSandboxRunStream } from "~/modules/apps/application/sandbox/execute-stream";
 import {
   buildSandboxEventToolResponse,
   buildSandboxPlanToolResponse,
   buildSandboxResultToolResponse,
 } from "~/modules/chat/application/messages/sandbox-messages";
+import { executeSandboxRunStream } from "~/modules/sandbox/application/execute-stream";
 import type { IFunctionResponse, IRequest } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

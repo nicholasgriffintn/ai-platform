@@ -36,15 +36,15 @@ export function useSetPolyAutonomy(home: PolyHome | undefined) {
 
 export function usePolyStandingApprovals() {
   const queryClient = useQueryClient();
-  const store = (home: PolyHome) => queryClient.setQueryData(POLY_HOME_QUERY_KEY, home);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: POLY_HOME_QUERY_KEY });
   const grant = useMutation({
     mutationFn: (interactionId: string) => apiService.grantPolyStandingApproval(interactionId),
-    onSuccess: store,
+    onSuccess: refresh,
   });
   const revoke = useMutation({
     mutationFn: (approval: { toolName: string; destination: string }) =>
       apiService.revokePolyStandingApproval(approval.toolName, approval.destination),
-    onSuccess: store,
+    onSuccess: refresh,
   });
 
   return { grant, revoke };

@@ -3,13 +3,11 @@ import type { PlanCreditsUpdate } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { PlanRecord } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-function toPublicPlan(plan: Record<string, unknown>) {
-  const allowance =
-    typeof plan.id === "string"
-      ? resolvePlanAllowanceCredits(plan.id, plan.included_credits, plan.grace_credits)
-      : null;
+function toPublicPlan(plan: PlanRecord) {
+  const allowance = resolvePlanAllowanceCredits(plan.id, plan.included_credits, plan.grace_credits);
 
   return {
     id: plan.id,

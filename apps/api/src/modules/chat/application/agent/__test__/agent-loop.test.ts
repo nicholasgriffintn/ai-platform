@@ -95,7 +95,7 @@ function creditSummary(overrides: Record<string, unknown> = {}) {
 function createParams(turns: TurnOutput[], maxSteps = 8) {
   const { transport, runTurn } = createTransport(turns);
   const sink = {
-    writeEvent: vi.fn<ChatEventSink["writeEvent"]>(async () => {}),
+    write: vi.fn<ChatEventSink["write"]>(async () => {}),
   };
 
   return {
@@ -262,9 +262,10 @@ describe("runAgentLoop", () => {
 
     await runAgentLoop(params);
 
-    const activities = sink.writeEvent.mock.calls
-      .filter(([type]) => type === "turn_activity")
-      .map(([, activity]) => activity);
+    const activities = sink.write.mock.calls
+      .map(([event]) => event)
+      .filter((event) => event.type === "response.activity")
+      .map(({ type: _type, ...activity }) => activity);
 
     expect(activities).toEqual([
       { kind: "model_step_started", step: 1 },
@@ -323,9 +324,10 @@ describe("runAgentLoop", () => {
 
     await runAgentLoop(params);
 
-    const activities = sink.writeEvent.mock.calls
-      .filter(([type]) => type === "turn_activity")
-      .map(([, activity]) => activity);
+    const activities = sink.write.mock.calls
+      .map(([event]) => event)
+      .filter((event) => event.type === "response.activity")
+      .map(({ type: _type, ...activity }) => activity);
 
     expect(activities).toContainEqual({
       kind: "waiting_for_user",
@@ -371,9 +373,10 @@ describe("runAgentLoop", () => {
     await runAgentLoop(params);
 
     expect(
-      sink.writeEvent.mock.calls
-        .filter(([type]) => type === "turn_activity")
-        .map(([, activity]) => activity),
+      sink.write.mock.calls
+        .map(([event]) => event)
+        .filter((event) => event.type === "response.activity")
+        .map(({ type: _type, ...activity }) => activity),
     ).toContainEqual({
       kind: "waiting_for_user",
       step: 1,

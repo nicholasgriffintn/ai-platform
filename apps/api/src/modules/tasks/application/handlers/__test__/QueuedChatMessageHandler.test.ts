@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   latestRun: vi.fn(),
-  handleCreateChatCompletions: vi.fn(),
+  startResponse: vi.fn(),
 }));
 
 vi.mock("~/infrastructure/context/serviceContext", () => ({
@@ -24,8 +24,8 @@ vi.mock("~/modules/conversations/application/manager", () => ({
   ConversationManager: { getInstance: () => ({ get: async () => [] }) },
 }));
 
-vi.mock("~/modules/responses/application/createChatCompletions", () => ({
-  handleCreateChatCompletions: mocks.handleCreateChatCompletions,
+vi.mock("~/modules/responses/application/start", () => ({
+  startResponse: mocks.startResponse,
 }));
 
 import { QueuedChatMessageHandler } from "../QueuedChatMessageHandler";
@@ -53,15 +53,15 @@ describe("QueuedChatMessageHandler", () => {
     await expect(
       new QueuedChatMessageHandler().handle(message, {} as never),
     ).resolves.toMatchObject({ status: "suspended" });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
+    expect(mocks.startResponse).not.toHaveBeenCalled();
   });
 
   it("sends the queued turn with the task id as its command id", async () => {
     await new QueuedChatMessageHandler().handle(message, {} as never);
 
-    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith(
+    expect(mocks.startResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        request: expect.objectContaining({
+        command: expect.objectContaining({
           command_id: "queued_chat_1",
           completion_id: "conversation-1",
           stream: false,
@@ -71,7 +71,7 @@ describe("QueuedChatMessageHandler", () => {
   });
 
   it("goes back to waiting when the conversation is busy", async () => {
-    mocks.handleCreateChatCompletions.mockRejectedValue(
+    mocks.startResponse.mockRejectedValue(
       new AssistantError("busy", ErrorType.CONFLICT_ERROR, 409),
     );
 

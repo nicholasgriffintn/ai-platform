@@ -32,7 +32,7 @@ async function validGrant() {
 
 function proxyRequest(origin = "https://polychat.test") {
   return new Request(
-    "https://api.polychat.test/realtime/elevenlabs/transcription?session_id=session-1",
+    "https://api.polychat.test/realtime/transcription?provider=elevenlabs&session_id=session-1",
     {
       headers: { Origin: origin },
     },

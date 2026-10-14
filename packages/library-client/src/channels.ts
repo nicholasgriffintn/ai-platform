@@ -8,11 +8,10 @@ import type {
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
-export async function listChannelBindings(): Promise<{ bindings: ChannelBinding[] }> {
-  return returnFetchedData(
-    await fetchApiOrThrow("/channels/bindings", { headers: await apiService.getHeaders() }),
-  );
+export function listChannelBindings(): Promise<ChannelBinding[]> {
+  return resource<ChannelBinding>("/channels/bindings").listAll();
 }
 
 export async function createChannelBinding(
@@ -34,12 +33,10 @@ export async function deleteChannelBinding(bindingId: string): Promise<void> {
   });
 }
 
-export async function listChannelSenders(bindingId: string): Promise<{ senders: ChannelSender[] }> {
-  return returnFetchedData(
-    await fetchApiOrThrow(`/channels/bindings/${encodeURIComponent(bindingId)}/senders`, {
-      headers: await apiService.getHeaders(),
-    }),
-  );
+export function listChannelSenders(bindingId: string): Promise<ChannelSender[]> {
+  return resource<ChannelBinding>("/channels/bindings")
+    .sub<ChannelSender>(bindingId, "senders")
+    .listAll();
 }
 
 export async function issueChannelPairingChallenge(
@@ -47,7 +44,7 @@ export async function issueChannelPairingChallenge(
 ): Promise<ChannelPairingChallenge> {
   return returnFetchedData(
     await fetchApiOrThrow(
-      `/channels/bindings/${encodeURIComponent(bindingId)}/pairing-challenges`,
+      `/channels/bindings/${encodeURIComponent(bindingId)}/pairing_challenges`,
       { method: "POST", headers: await apiService.getHeaders() },
     ),
   );

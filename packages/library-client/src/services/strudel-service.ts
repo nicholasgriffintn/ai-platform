@@ -1,6 +1,7 @@
 import type {
   GenerateStrudelRequest,
   GenerateStrudelResponse,
+  ListPage,
   SaveStrudelPatternInput,
   StrudelPattern,
   UpdateStrudelPatternInput,
@@ -10,7 +11,7 @@ import { fetchApi } from "../fetch-wrapper.js";
 import { returnFetchedData } from "../http.js";
 import { withProjectScope } from "../project-scope.js";
 
-const STRUDEL_BASE_PATH = "/apps/strudel";
+const STRUDEL_BASE_PATH = "/experiences/strudel";
 
 async function parseResponse<T>(response: Response, errorMessage: string): Promise<T> {
   if (!response.ok) {
@@ -25,12 +26,12 @@ export const strudelService = {
     const response = await fetchApi(withProjectScope(STRUDEL_BASE_PATH, projectId), {
       method: "GET",
     });
-    const payload = await parseResponse<{ patterns: StrudelPattern[] }>(
+    const payload = await parseResponse<ListPage<StrudelPattern>>(
       response,
       "Failed to fetch Strudel patterns",
     );
 
-    return payload.patterns;
+    return payload.data;
   },
 
   async get(id: string, projectId?: string): Promise<StrudelPattern> {
@@ -76,7 +77,7 @@ export const strudelService = {
     projectId?: string,
   ): Promise<StrudelPattern> {
     const response = await fetchApi(withProjectScope(`${STRUDEL_BASE_PATH}/${id}`, projectId), {
-      method: "PUT",
+      method: "PATCH",
       body: request,
     });
     const payload = await parseResponse<{ pattern: StrudelPattern }>(

@@ -1,8 +1,8 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { hydrateConnectorApprovalMessageState } from "~/modules/apps/application/connectors/approval-message-state";
-import type { ConnectorOperationApprovalRepository } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
+import { hydrateConnectorApprovalMessageState } from "~/modules/connectors/application/approval-message-state";
+import type { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { AnonymousUser, Message } from "~/types";
 

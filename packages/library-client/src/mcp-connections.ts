@@ -8,18 +8,17 @@ import {
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
-export async function listMcpConnections(): Promise<{ connections: McpConnection[] }> {
-  return returnFetchedData(
-    await fetchApiOrThrow("/tools/mcp/connections", {
-      headers: await apiService.getHeaders(),
-    }),
-  );
+const MCP_CONNECTIONS_PATH = "/tools/mcp_connections";
+
+export function listMcpConnections(): Promise<McpConnection[]> {
+  return resource<McpConnection>(MCP_CONNECTIONS_PATH).listAll();
 }
 
 export async function createMcpConnection(input: McpConnectionInput): Promise<McpConnection> {
   return returnFetchedData(
-    await fetchApiOrThrow("/tools/mcp/connections", {
+    await fetchApiOrThrow(MCP_CONNECTIONS_PATH, {
       method: "POST",
       headers: await apiService.getHeaders(),
       body: input,
@@ -28,7 +27,7 @@ export async function createMcpConnection(input: McpConnectionInput): Promise<Mc
 }
 
 export async function deleteMcpConnection(id: string): Promise<void> {
-  await fetchApiOrThrow(`/tools/mcp/connections/${encodeURIComponent(id)}`, {
+  await fetchApiOrThrow(`${MCP_CONNECTIONS_PATH}/${encodeURIComponent(id)}`, {
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });
@@ -39,7 +38,7 @@ export async function startMcpOAuthConnection(
 ): Promise<{ authorizationUrl: string }> {
   return mcpOAuthStartResponseSchema.parse(
     await returnFetchedData<unknown>(
-      await fetchApiOrThrow("/tools/mcp/oauth/start", {
+      await fetchApiOrThrow(`${MCP_CONNECTIONS_PATH}/authorise`, {
         method: "POST",
         headers: await apiService.getHeaders(),
         body: input,

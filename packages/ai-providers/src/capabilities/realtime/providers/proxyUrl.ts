@@ -5,6 +5,8 @@ import type { ProviderHost } from "../../../host.js";
 
 export type RealtimeProxyScheme = "websocket" | "https";
 
+export const REALTIME_TRANSCRIPTION_PROXY_PATH = "/realtime/transcription";
+
 export function buildRealtimeProxyUrl({
   apiBaseUrl,
   path,
@@ -87,6 +89,7 @@ export async function buildGrantedRealtimeProxyUrl({
         ...params,
         grant: grant.token,
         model,
+        provider,
         session_id: sessionId,
       },
     }),

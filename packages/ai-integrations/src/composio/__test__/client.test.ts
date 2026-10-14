@@ -305,7 +305,7 @@ describe("Composio REST client", () => {
         userId: 42,
         provider: gmailProvider(),
         authConfigId: "ac_gmail",
-        callbackUrl: "https://api.polychat.test/apps/connectors/composio/verify",
+        callbackUrl: "https://api.polychat.test/connectors/composio_callback",
       }),
     ).resolves.toEqual({
       redirectUrl: "https://connect.composio.dev/link/token",
@@ -359,7 +359,7 @@ describe("Composio REST client", () => {
       userId: 42,
       provider: gmailProvider("ac_configured"),
       authConfigId: "ac_configured",
-      callbackUrl: "https://api.polychat.test/apps/connectors/composio/verify",
+      callbackUrl: "https://api.polychat.test/connectors/composio_callback",
     });
 
     expect(fetchMock.mock.calls.some(([input]) => String(input).includes("/auth_configs?"))).toBe(
@@ -405,7 +405,7 @@ describe("Composio REST client", () => {
         userId: 42,
         provider: gmailProvider(),
         authConfigId: "ac_gmail",
-        callbackUrl: "https://api.polychat.test/apps/connectors/composio/verify",
+        callbackUrl: "https://api.polychat.test/connectors/composio_callback",
       }),
     ).rejects.toMatchObject({ message: "Composio link response is invalid", statusCode: 502 });
   });

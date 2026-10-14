@@ -4,6 +4,12 @@ struct OutputHistoryResponse: Codable, Equatable {
     let current: OutputRevision
     let revisions: [OutputRevision]
     let restore: OutputRestoreCapability
+
+    enum CodingKeys: String, CodingKey {
+        case current
+        case revisions = "data"
+        case restore
+    }
 }
 
 struct OutputRevision: Codable, Equatable, Identifiable {

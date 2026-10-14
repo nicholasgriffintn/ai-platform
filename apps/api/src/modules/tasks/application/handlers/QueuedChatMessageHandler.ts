@@ -8,8 +8,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
+import { startResponse } from "~/modules/responses/application/start";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -66,7 +66,7 @@ export class QueuedChatMessageHandler implements TaskHandler {
     });
 
     try {
-      await handleCreateChatCompletions({ env, context, user, request: chatRequest });
+      await startResponse({ env, context, user, command: chatRequest });
     } catch (error) {
       if (error instanceof AssistantError && error.type === ErrorType.CONFLICT_ERROR) {
         return { status: "suspended", message: "The conversation is busy" };

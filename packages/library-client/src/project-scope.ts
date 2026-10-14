@@ -5,7 +5,7 @@ export function withProjectScope(path: string, projectId?: string): string {
 
   const separator = path.includes("?") ? "&" : "?";
 
-  return `${path}${separator}projectId=${encodeURIComponent(projectId)}`;
+  return `${path}${separator}project_id=${encodeURIComponent(projectId)}`;
 }
 
 export function withWorkspaceScope(path: string, workspaceId?: string): string {
@@ -15,5 +15,5 @@ export function withWorkspaceScope(path: string, workspaceId?: string): string {
 
   const separator = path.includes("?") ? "&" : "?";
 
-  return `${path}${separator}workspaceId=${encodeURIComponent(workspaceId)}`;
+  return `${path}${separator}workspace_id=${encodeURIComponent(workspaceId)}`;
 }

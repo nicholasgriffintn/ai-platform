@@ -9,7 +9,7 @@ import {
   useDelegations,
   useRecordTeammateFeedback,
 } from "@ngriffin_uk/polychat-library-react";
-import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { delegationCardDataSchema } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 export function DelegationTimelineView({
@@ -19,7 +19,7 @@ export function DelegationTimelineView({
   data: unknown;
   onToolInteraction?: ToolInteractionHandler;
 }) {
-  const parsed = delegationListResponseSchema.safeParse(data);
+  const parsed = delegationCardDataSchema.safeParse(data);
   const parentConversationId = parsed.success
     ? parsed.data.delegations[0]?.parentConversationId
     : undefined;
@@ -30,9 +30,9 @@ export function DelegationTimelineView({
   const [recordedFeedback, setRecordedFeedback] = useState<
     Record<string, DelegationFeedbackVerdict>
   >({});
-  const delegations = (
-    query.data?.delegations ?? (parsed.success ? parsed.data.delegations : [])
-  ).filter((delegation) => delegation.parentRunId === parentRunId);
+  const delegations = (query.data?.data ?? (parsed.success ? parsed.data.delegations : [])).filter(
+    (delegation) => delegation.parentRunId === parentRunId,
+  );
   const first = delegations[0];
 
   if (!first) {

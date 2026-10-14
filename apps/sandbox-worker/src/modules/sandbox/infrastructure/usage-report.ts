@@ -38,7 +38,7 @@ export async function reportSandboxRunUsage(params: {
       async () => {
         const response = await params.polychatApi.fetch(
           createPolychatRequest(
-            `/apps/sandbox/runs/${encodeURIComponent(params.report.runId)}/usage`,
+            `/environments/${encodeURIComponent(params.report.runId)}/usage_reports`,
             {
               method: "POST",
               headers: {

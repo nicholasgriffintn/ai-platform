@@ -121,7 +121,7 @@ export function MyRuns({ runHref }: { runHref: (runId: string) => string }) {
     return <EmptyState title="Runs unavailable" message={runs.error.message} />;
   }
 
-  const list: BenchmarkRun[] = runs.data?.runs ?? [];
+  const list: BenchmarkRun[] = runs.data ?? [];
 
   if (list.length === 0) {
     return (

@@ -59,7 +59,7 @@ export function SiteHistory({
 }: SiteHistoryProps) {
   const { data, isLoading } = useOutputHistory(siteId);
   const restore = useRestoreOutputRevision();
-  const revisions = data ? [data.current, ...data.revisions] : [];
+  const revisions = data ? [data.current, ...data.data] : [];
   const seen = new Set<number>();
   const ordered = revisions
     .filter((revision) => {

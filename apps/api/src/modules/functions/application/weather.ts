@@ -1,4 +1,4 @@
-import { getWeatherForLocation } from "~/modules/apps/application/retrieval/weather";
+import { getWeatherForLocation } from "~/modules/tools/application/retrieval/weather";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_weather as get_weatherDescriptor } from "./definitions/weather";

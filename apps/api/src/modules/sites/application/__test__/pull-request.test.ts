@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("~/infrastructure/github/api-client", () => ({ githubApiRequest: mocks.githubApiRequest }));
-vi.mock("~/modules/apps/application/sandbox/github-credentials", () => ({
+vi.mock("~/modules/sandbox/application/github-credentials", () => ({
   resolveSandboxGitHubToken: mocks.resolveSandboxGitHubToken,
 }));
 vi.mock("~/modules/workspaces/application/access", () => ({

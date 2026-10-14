@@ -21,7 +21,7 @@ export async function listLibrary(
 ): Promise<{ entries: LibraryEntry[] }> {
   await requireModelAction(context, workspaceId, "view");
 
-  const projectId = await requireWorkspaceProject(context, workspaceId, query.projectId);
+  const projectId = await requireWorkspaceProject(context, workspaceId, query.project_id);
   const scope = await loadRegistryScope(context.repositories, workspaceId, projectId);
   const latestByAsset = new Map<string, (typeof scope.versions)[number]>();
 
@@ -41,7 +41,7 @@ export async function listLibrary(
       continue;
     }
 
-    if (query.approvedOnly && !standing.usable) {
+    if (query.approved_only && !standing.usable) {
       continue;
     }
 

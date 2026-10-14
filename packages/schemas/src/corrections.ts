@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
 import { skillIdSchema } from "./skills.js";
 
 export const PROPOSE_CORRECTION_TOOL_NAME = "propose_correction";
@@ -66,8 +67,6 @@ export const correctionSchema = z.object({
 
 export type Correction = z.infer<typeof correctionSchema>;
 
-export const correctionListResponseSchema = z.object({
-  corrections: z.array(correctionSchema),
-});
+export const correctionListResponseSchema = listSchema(correctionSchema);
 
 export type CorrectionListResponse = z.infer<typeof correctionListResponseSchema>;

@@ -1,4 +1,9 @@
-import { documentCommentSchema, type DocumentComment } from "@ngriffin_uk/polychat-schemas";
+import {
+  documentCommentSchema,
+  toListPage,
+  type DocumentComment,
+  type ListPage,
+} from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
@@ -8,6 +13,8 @@ import {
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { outputResourceSql } from "~/infrastructure/database/resource-storage";
+
+const COMMENT_PAGE_SIZE = 100;
 
 interface DocumentCommentRow {
   id: string;
@@ -49,11 +56,7 @@ function formatComment(row: DocumentCommentRow): DocumentComment {
 }
 
 export class DocumentCommentRepository extends BaseRepository {
-  async list(
-    outputId: string,
-    userId: number,
-    after?: string,
-  ): Promise<{ comments: DocumentComment[]; nextCursor: string | null }> {
+  async list(outputId: string, userId: number, after?: string): Promise<ListPage<DocumentComment>> {
     if (after && !(await this.get(outputId, after, userId))) {
       throw new AssistantError("Comment cursor not found", ErrorType.PARAMS_ERROR, 400);
     }
@@ -61,12 +64,11 @@ export class DocumentCommentRepository extends BaseRepository {
     const rows = await this.runQuery<DocumentCommentRow>(
       `SELECT * FROM document_comment WHERE output_id = ? AND
        (? IS NULL OR (created_at, id) > (SELECT created_at, id FROM document_comment WHERE output_id = ? AND id = ?))
-       AND ${COMMENT_READ_GUARD} ORDER BY created_at, id LIMIT 101`,
+       AND ${COMMENT_READ_GUARD} ORDER BY created_at, id LIMIT ${COMMENT_PAGE_SIZE + 1}`,
       [outputId, after ?? null, outputId, after ?? null, userId, userId],
     );
-    const comments = rows.slice(0, 100).map(formatComment);
 
-    return { comments, nextCursor: rows.length > 100 ? (comments.at(-1)?.id ?? null) : null };
+    return toListPage(rows.map(formatComment), COMMENT_PAGE_SIZE, (comment) => comment.id);
   }
 
   async get(outputId: string, commentId: string, userId: number): Promise<DocumentComment | null> {

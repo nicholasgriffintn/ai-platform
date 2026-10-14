@@ -14,7 +14,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
-import { resolveSandboxGitHubToken } from "~/modules/apps/application/sandbox/github-credentials";
+import { resolveSandboxGitHubToken } from "~/modules/sandbox/application/github-credentials";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,

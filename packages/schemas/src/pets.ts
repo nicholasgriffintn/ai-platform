@@ -1,6 +1,7 @@
 import * as z from "zod/v4";
 
 import { resolveModelMakerId } from "./model-makers.js";
+import { listQuerySchema, listSchema } from "./platform/list.js";
 
 export const PET_FRAME_WIDTH = 192;
 export const PET_FRAME_HEIGHT = 208;
@@ -249,19 +250,10 @@ export const userPetSchema = z.object({
   created_at: z.string(),
 });
 
-export const userPetsResponseSchema = z.object({
-  pets: z.array(userPetSchema),
-  page: z.number().int().min(1),
-  has_more: z.boolean(),
-});
+export const userPetsResponseSchema = listSchema(userPetSchema);
 
-export const userPetsQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+export const userPetsQuerySchema = listQuerySchema.extend({
   limit: z.coerce.number().int().min(1).max(50).default(PET_LIBRARY_PAGE_SIZE),
-});
-
-export const userPetResponseSchema = z.object({
-  pet: userPetSchema,
 });
 
 export const generateUserPetSchema = z.object({

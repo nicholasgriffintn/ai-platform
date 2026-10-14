@@ -2,20 +2,19 @@ import z from "zod/v4";
 
 export const mobilePushEnvironmentSchema = z.enum(["sandbox", "production"]);
 
+const mobilePushTokenSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-fA-F0-9]{32,256}$/);
+
 export const registerMobilePushDeviceSchema = z.object({
-  token: z
-    .string()
-    .trim()
-    .regex(/^[a-fA-F0-9]{32,256}$/),
+  token: mobilePushTokenSchema,
   environment: mobilePushEnvironmentSchema,
   appBundleId: z.string().trim().min(3).max(200),
 });
 
-export const unregisterMobilePushDeviceSchema = z.object({
-  token: z
-    .string()
-    .trim()
-    .regex(/^[a-fA-F0-9]{32,256}$/),
+export const mobilePushDeviceParamsSchema = z.object({
+  device_id: mobilePushTokenSchema,
 });
 
 export const mobileWorkNotificationKindSchema = z.enum([

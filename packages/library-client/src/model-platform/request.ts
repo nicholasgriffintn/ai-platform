@@ -7,7 +7,7 @@ export async function platformRequest<T>(
   init: { method?: string; body?: object | Blob; contentType?: string } = {},
 ): Promise<T> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApiOrThrow(`/model-platform${path}`, {
+  const response = await fetchApiOrThrow(`/model_platform${path}`, {
     method: init.method ?? "GET",
     headers: init.contentType ? { ...headers, "Content-Type": init.contentType } : headers,
     body: init.body,

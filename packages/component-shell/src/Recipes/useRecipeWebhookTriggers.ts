@@ -1,9 +1,9 @@
 import {
   createRecipeWebhookTrigger,
-  deleteRecipeWebhookTrigger,
+  deleteInstallationTrigger,
   listRecipeWebhookTriggers,
   rotateRecipeWebhookTrigger,
-  updateRecipeWebhookTrigger,
+  updateRecipeWebhookTriggerStatus,
 } from "@ngriffin_uk/polychat-library-client";
 import type { RecipeWebhookTriggerCreateRequest } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,15 +26,15 @@ export function useRecipeWebhookTriggers(installationId: string) {
   });
   const updateTrigger = useMutation({
     mutationFn: ({ triggerId, status }: { triggerId: string; status: "active" | "paused" }) =>
-      updateRecipeWebhookTrigger(triggerId, status),
+      updateRecipeWebhookTriggerStatus(installationId, triggerId, status),
     onSuccess: refreshTriggers,
   });
   const rotateTrigger = useMutation({
-    mutationFn: rotateRecipeWebhookTrigger,
+    mutationFn: (triggerId: string) => rotateRecipeWebhookTrigger(installationId, triggerId),
     onSuccess: refreshTriggers,
   });
   const deleteTrigger = useMutation({
-    mutationFn: deleteRecipeWebhookTrigger,
+    mutationFn: (triggerId: string) => deleteInstallationTrigger(installationId, triggerId),
     onSuccess: refreshTriggers,
   });
 

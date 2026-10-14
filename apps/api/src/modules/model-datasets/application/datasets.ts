@@ -415,7 +415,7 @@ export async function readDatasetRows(
       continue;
     }
 
-    const matches = !query.flaggedOnly || flagged.has(index);
+    const matches = !query.flagged_only || flagged.has(index);
     const include = matches && matched++ >= query.offset;
 
     if (include) {
@@ -436,7 +436,7 @@ export async function readDatasetRows(
     }
   }
 
-  return { rows, total: query.flaggedOnly ? flagged.size : total };
+  return { rows, total: query.flagged_only ? flagged.size : total };
 }
 
 async function deriveWithout(

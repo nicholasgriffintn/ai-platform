@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_PET_PRESET_SLUG,
   EMPTY_PET_MODEL_OVERRIDES,
+  nextPageCursor,
   parsePetModelOverrides,
   resolvePetForModel,
   resolvePetSelectionForModel,
@@ -23,17 +24,17 @@ import { useAuthStatus } from "../hooks/useAuth.js";
 
 export const PET_QUERY_KEYS = {
   all: ["user-pets"],
-  page: (page: number) => ["user-pets", "page", page] as const,
+  page: (after: string | undefined) => ["user-pets", "page", after ?? "first"] as const,
   detail: (petId: string) => ["user-pets", "detail", petId] as const,
 } as const;
 
-export function usePets(page = 1) {
+export function usePets(after?: string) {
   const queryClient = useQueryClient();
   const { isAuthenticated, refreshAuthStatus } = useAuthStatus();
 
   const { data, isLoading } = useQuery({
-    queryKey: PET_QUERY_KEYS.page(page),
-    queryFn: () => fetchUserPets(page),
+    queryKey: PET_QUERY_KEYS.page(after),
+    queryFn: () => fetchUserPets(after),
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5,
   });
@@ -62,8 +63,8 @@ export function usePets(page = 1) {
   });
 
   return {
-    pets: data?.pets ?? [],
-    hasMorePets: data?.has_more ?? false,
+    pets: data?.data ?? [],
+    nextPetsCursor: data ? nextPageCursor(data) : undefined,
     isLoadingPets: isLoading,
     createPet: createMutation.mutateAsync,
     isCreatingPet: createMutation.isPending,
@@ -94,7 +95,7 @@ export function useActivePet(
   conversationState?: PetConversationState,
 ): ActivePet {
   const { isAuthenticated, isLoading: isAuthLoading, userSettings } = useAuthStatus();
-  const { pets, isLoadingPets } = usePets(1);
+  const { pets, isLoadingPets } = usePets();
 
   const selection = isAuthenticated
     ? {

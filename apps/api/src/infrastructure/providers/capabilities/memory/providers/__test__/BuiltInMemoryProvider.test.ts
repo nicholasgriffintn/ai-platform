@@ -47,7 +47,7 @@ vi.mock("~/infrastructure/providers/capabilities/embedding/helpers", () => ({
 }));
 vi.mock("~/infrastructure/providers/library", () => ({ providerLibrary: {} }));
 vi.mock("~/infrastructure/providers/lib/fetch", () => ({ fetchProviderJson: vi.fn() }));
-vi.mock("~/modules/apps/application/connectors", () => ({
+vi.mock("~/modules/connectors/application", () => ({
   getRecipeConnectorAccessToken: vi.fn(),
 }));
 vi.mock("~/modules/sources/infrastructure/SourceRepository", () => ({

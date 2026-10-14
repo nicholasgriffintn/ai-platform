@@ -1,5 +1,6 @@
 import type {
   CreateTemplateInput,
+  ListPage,
   ProjectDetail,
   ProjectStarterSummary,
   Template,
@@ -11,6 +12,7 @@ import type {
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
 async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
   const response = await fetchApiOrThrow(path, {
@@ -22,17 +24,16 @@ async function request<T>(path: string, init: { method?: string; body?: object }
   return returnFetchedData<T>(response);
 }
 
-export async function listWorkspaceAudit(workspaceId: string): Promise<WorkspaceAuditRecord[]> {
-  return (await request<{ records: WorkspaceAuditRecord[] }>(`/workspaces/${workspaceId}/audit`))
-    .records;
+export function listWorkspaceAudit(workspaceId: string): Promise<WorkspaceAuditRecord[]> {
+  return resource<WorkspaceAuditRecord>(
+    `/workspaces/${encodeURIComponent(workspaceId)}/audit`,
+  ).listAll();
 }
 
 export async function listWorkspaceTemplates(workspaceId: string): Promise<Template[]> {
   return (
-    await request<{ templates: Template[] }>(
-      `/templates?workspaceId=${encodeURIComponent(workspaceId)}`,
-    )
-  ).templates;
+    await request<ListPage<Template>>(`/templates?workspace_id=${encodeURIComponent(workspaceId)}`)
+  ).data;
 }
 
 export async function createTemplate(input: CreateTemplateInput): Promise<Template> {
@@ -54,7 +55,7 @@ export async function instantiateTemplate(
 }
 
 export async function listProjectStarters(): Promise<ProjectStarterSummary[]> {
-  return (await request<{ starters: ProjectStarterSummary[] }>("/templates/starters")).starters;
+  return (await request<ListPage<ProjectStarterSummary>>("/templates/starters")).data;
 }
 
 export async function instantiateProjectStarter(
@@ -72,8 +73,8 @@ export async function updateWorkspaceMember(
   userId: number,
   role: Exclude<WorkspaceRole, "owner">,
 ): Promise<WorkspaceDetail> {
-  return request(`/workspaces/${workspaceId}/members/${userId}`, {
-    method: "PUT",
+  return request(`/workspaces/${encodeURIComponent(workspaceId)}/members/${userId}`, {
+    method: "PATCH",
     body: { role },
   });
 }
@@ -82,18 +83,20 @@ export async function removeWorkspaceMember(
   workspaceId: string,
   userId: number,
 ): Promise<WorkspaceDetail> {
-  return request(`/workspaces/${workspaceId}/members/${userId}`, { method: "DELETE" });
+  return request(`/workspaces/${encodeURIComponent(workspaceId)}/members/${userId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function leaveWorkspace(workspaceId: string): Promise<void> {
-  await request(`/workspaces/${workspaceId}/leave`, { method: "POST" });
+  await request(`/workspaces/${encodeURIComponent(workspaceId)}/leave`, { method: "POST" });
 }
 
 export async function transferWorkspaceOwnership(
   workspaceId: string,
   newOwnerUserId: number,
 ): Promise<WorkspaceDetail> {
-  return request(`/workspaces/${workspaceId}/transfer-ownership`, {
+  return request(`/workspaces/${encodeURIComponent(workspaceId)}/transfer_ownership`, {
     method: "POST",
     body: { newOwnerUserId },
   });

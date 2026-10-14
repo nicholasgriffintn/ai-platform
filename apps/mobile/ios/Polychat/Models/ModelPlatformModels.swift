@@ -1,7 +1,7 @@
 import Foundation
 
 struct WorkspaceListResponse: Decodable {
-    let workspaces: [WorkspaceSummary]
+    let data: [WorkspaceSummary]
 }
 
 struct WorkspaceSummary: Decodable, Identifiable {
@@ -78,6 +78,10 @@ struct ModelDeploymentItem: Decodable, Identifiable {
 
 struct ResolveModelDecisionRequest: Encodable {
     let state: String
+}
+
+struct DeploymentActionRequest: Encodable {
+    let action: String
 }
 
 struct ResolveSpendRequestBody: Encodable {

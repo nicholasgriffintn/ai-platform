@@ -9,7 +9,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index.js";
-import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
+import { buildGrantedRealtimeProxyUrl, REALTIME_TRANSCRIPTION_PROXY_PATH } from "./proxyUrl.js";
 
 export const GREENPT_REALTIME_DESCRIPTOR = {
   id: "greenpt",
@@ -34,7 +34,6 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [DEFAULT_TRANSCRIPTION_MODEL, "green-s-pro"],
 };
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
-const GREENPT_REALTIME_PROXY_PATH = "/realtime/greenpt/transcription";
 
 export class GreenPtRealtimeProvider implements RealtimeProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
@@ -113,7 +112,7 @@ export class GreenPtRealtimeProvider implements RealtimeProvider {
         delay: this.getTranscriptionDelay(request),
         language: request.language,
       },
-      path: GREENPT_REALTIME_PROXY_PATH,
+      path: REALTIME_TRANSCRIPTION_PROXY_PATH,
       provider: this.name,
       sessionId,
       userId: request.user.id,

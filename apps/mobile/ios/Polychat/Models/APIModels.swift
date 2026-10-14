@@ -677,10 +677,19 @@ public struct ModelReadinessAction: Codable, Equatable {
 
 public typealias ModelsResponse = [String: ModelConfigItem]
 
+public struct ModelListResponse: Decodable {
+    public let data: [ModelConfigItem]
+}
+
 public struct AssistantRecipesResponse: Codable {
     public let recipes: [AssistantRecipe]
     public let categories: [String]
     public let filters: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case categories, filters
+        case recipes = "data"
+    }
 }
 
 public struct AssistantRecipe: Codable, Identifiable, Equatable {

@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { scoreSummarySchema } from "./model-registry.js";
+import { listSchema } from "./platform/list.js";
 
 export const BENCHMARK_RUN_TASK_TYPE = "benchmark_run" as const;
 
@@ -189,6 +190,10 @@ export const benchmarkRunDetailSchema = z.object({
 
 export const benchmarkRunsResponseSchema = z.object({ runs: z.array(benchmarkRunSchema) });
 
+export const benchmarkRunListSchema = listSchema(benchmarkRunSchema);
+
+export const benchmarkRunListQuerySchema = z.object({ workspace_id: z.string().min(1).optional() });
+
 export const startBenchmarkRunsRequestSchema = z.object({
   benchmarkId: benchmarkIdSchema,
   modelIds: z.array(z.string().min(1)).min(1).max(5),
@@ -198,6 +203,11 @@ export const startWorkspaceBenchmarkRunsRequestSchema = z.object({
   benchmarkId: benchmarkIdSchema,
   routeIds: z.array(z.string().min(1)).min(1).max(5),
 });
+
+export const createBenchmarkRunsRequestSchema = z.union([
+  startWorkspaceBenchmarkRunsRequestSchema.extend({ workspace_id: z.string().min(1) }),
+  startBenchmarkRunsRequestSchema,
+]);
 
 export const queueOfficialBenchmarkRunsRequestSchema = z.object({
   benchmarkIds: z.array(benchmarkIdSchema).optional(),
@@ -270,15 +280,15 @@ export const benchmarkPlayResultSchema = z.object({
   officialCount: z.number().int().nonnegative(),
 });
 
-export const benchmarkIdParamsSchema = z.object({ benchmarkId: benchmarkIdSchema });
-export const benchmarkRunParamsSchema = z.object({ runId: z.string().min(1) });
+export const benchmarkIdParamsSchema = z.object({ benchmark_id: benchmarkIdSchema });
+export const benchmarkRunParamsSchema = z.object({ run_id: z.string().min(1) });
 export const benchmarkShareParamsSchema = z.object({ token: z.string().min(1) });
-export const benchmarkEntrantParamsSchema = z.object({
-  benchmarkId: benchmarkIdSchema,
-  modelId: z.string().min(1),
+export const benchmarkEntrantParamsSchema = benchmarkIdParamsSchema.extend({
+  model_id: z.string().min(1),
 });
-export const benchmarkPhotoParamsSchema = z.object({ itemId: z.string().min(1) });
-export const workspaceBenchmarkParamsSchema = z.object({ workspaceId: z.string().min(1) });
+export const benchmarkPhotoParamsSchema = benchmarkIdParamsSchema.extend({
+  photo_id: z.string().min(1),
+});
 
 export const benchmarkRunTaskDataSchema = z.object({
   runId: z.string(),

@@ -38,7 +38,7 @@ export function useResearchStatus({
         throw new Error("Research run ID is required");
       }
 
-      return apiService.fetchResearchStatus(runId, provider);
+      return apiService.fetchResearchStatus(runId);
     },
     enabled: Boolean(runId) && enabled,
     initialData,
@@ -76,7 +76,7 @@ export function useResearchStatus({
 
           return effectiveInterval;
         },
-        "research.changed",
+        "job.changed",
       ),
     retry: 3,
     staleTime: 0,

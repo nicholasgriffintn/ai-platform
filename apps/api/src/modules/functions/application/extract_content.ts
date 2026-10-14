@@ -1,8 +1,8 @@
 import { buildContentExtractionPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 
 import { ai } from "~/infrastructure/ai";
-import { extractContent } from "~/modules/apps/application/retrieval/content-extract";
 import { getAuxiliaryModelForRetrieval } from "~/modules/models/application/resolve";
+import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { extract_content as extract_contentDescriptor } from "./definitions/extract_content";

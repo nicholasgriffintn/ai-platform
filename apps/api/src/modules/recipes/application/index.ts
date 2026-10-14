@@ -1,0 +1,944 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+import {
+  type AssistantRecipe,
+  type AssistantRecipeConnection,
+  type RecipeConfiguration,
+  type RecipeConnectionStatus,
+  type RecipeInstallation,
+  type RecipeInstallationTrigger,
+  type RecipeInstallationUpdateRequest,
+  type RecipeConnectorManifest,
+  isSupportedCronExpression,
+  type RecipeCatalogueSummary,
+} from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { listRecipeConnectors } from "~/modules/connectors/application";
+import { TaskService } from "~/modules/tasks/application/TaskService";
+import { requireTeammateContext } from "~/modules/teammates/application/contexts";
+import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
+
+import { createRecipeCapabilityDescriptor } from "./capabilities";
+import {
+  getAssistantRecipes,
+  getRecipeIdAliases,
+  getRecipeCategories,
+  recipeFilters,
+  resolveRecipeId,
+  getRecipeById,
+} from "./catalog";
+import {
+  deleteRecipeComposioTriggers,
+  syncRecipeComposioTriggerStatus,
+} from "./composio-trigger-lifecycle";
+import {
+  normaliseRecipeConfigurationForRecipe,
+  validateRecipeConfiguration,
+  isRequiredRecipeConfigurationValueMissing,
+} from "./configuration";
+import {
+  parseStoredRecipeInstallationData,
+  type StoredRecipeInstallationData,
+} from "./installation-persistence";
+import { matchInstalledRecipe } from "./matching";
+import {
+  buildRecipeConnections,
+  buildRecipeInvocationRuntime,
+  buildRecipeSetupRuntime,
+  getBlockingConnections,
+} from "./runtime";
+import { buildRecipeScheduleState } from "./scheduleState";
+import { createRecipeExecutionTaskData } from "./task-data";
+import { normaliseRecipeInstallationTriggers } from "./triggers";
+
+export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
+export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
+
+export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
+  const summaries: RecipeCatalogueSummary[] = [];
+
+  for (const recipe of getAssistantRecipes()) {
+    const integrations: RecipeCatalogueSummary["integrations"] = [];
+
+    for (const integration of recipe.integrations) {
+      integrations.push({
+        id: integration.id,
+        providerId: integration.providerId,
+        name: integration.name,
+      });
+    }
+
+    summaries.push({
+      id: recipe.id,
+      title: recipe.title,
+      summary: recipe.summary,
+      kind: recipe.kind,
+      category: recipe.category,
+      featured: recipe.featured,
+      integrations,
+    });
+  }
+
+  return summaries;
+}
+
+interface RecipeListOptions {
+  context?: ServiceContext;
+  userId?: number;
+  requestUrl?: string;
+  connectors?: readonly RecipeConnectorManifest[];
+}
+
+interface RecipeInstallOptions extends RecipeListOptions {
+  channel: "web" | "ios" | "sms" | "slack" | "telegram" | "email";
+  projectId?: string;
+  teammateContextId?: string;
+  triggers?: RecipeInstallationTrigger[];
+  configuration?: RecipeConfiguration;
+}
+
+interface RecipeConnectionContext {
+  statusByProviderId: Map<string, RecipeConnectionStatus>;
+  setupUrlByProviderId: Map<string, string | undefined>;
+}
+
+type RecipeInstallationRecord = TemplateRecord;
+
+export async function requireEnabledProjectRecipe(
+  context: ServiceContext,
+  projectId: string,
+  recipeId: string,
+): Promise<void> {
+  await requireProjectAccess(context, projectId);
+  const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+
+  if (
+    !capabilities.some(
+      (capability) =>
+        capability.kind === "recipe" &&
+        !capability.excluded &&
+        resolveRecipeId(capability.capability_id) === recipeId,
+    )
+  ) {
+    throw new AssistantError(
+      "This recipe is not enabled for the project",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+}
+
+async function getRecipeConnectionContext({
+  context,
+  userId,
+  requestUrl,
+  connectors: providedConnectors,
+}: RecipeListOptions): Promise<RecipeConnectionContext> {
+  const statusByProviderId = new Map<string, RecipeConnectionStatus>();
+  const setupUrlByProviderId = new Map<string, string | undefined>();
+
+  if (!context || !userId) {
+    return { statusByProviderId, setupUrlByProviderId };
+  }
+
+  const connectors =
+    providedConnectors ?? (await listRecipeConnectors({ context, userId, requestUrl })).connectors;
+
+  for (const connector of connectors) {
+    statusByProviderId.set(
+      connector.id,
+      connector.status === "connected"
+        ? "connected"
+        : connector.status === "unconfigured"
+          ? "unconfigured"
+          : "missing",
+    );
+    setupUrlByProviderId.set(connector.id, connector.authorizationUrl || connector.setupUrl);
+  }
+
+  return { statusByProviderId, setupUrlByProviderId };
+}
+
+function getConnectionStatus(
+  providerId: string,
+  requiresConnection: boolean,
+  connectionContext: RecipeConnectionContext,
+): RecipeConnectionStatus {
+  return (
+    connectionContext.statusByProviderId.get(providerId) ??
+    (requiresConnection ? "unknown" : "not_required")
+  );
+}
+
+function enrichRecipe(
+  recipe: AssistantRecipe,
+  connectionContext: RecipeConnectionContext,
+): AssistantRecipe {
+  return {
+    ...recipe,
+    capability: createRecipeCapabilityDescriptor(recipe),
+    integrations: recipe.integrations.map((integration) => {
+      const connectionStatus = getConnectionStatus(
+        integration.providerId,
+        integration.requiresConnection,
+        connectionContext,
+      );
+
+      return {
+        ...integration,
+        connectionStatus,
+        setupUrl:
+          connectionStatus === "missing" || connectionStatus === "unconfigured"
+            ? connectionContext.setupUrlByProviderId.get(integration.providerId)
+            : undefined,
+      };
+    }),
+  };
+}
+
+function getUnavailableConnections(connections: AssistantRecipeConnection[]) {
+  const groupsWithAvailableOption = new Set(
+    connections
+      .filter(
+        (connection) =>
+          connection.connectionGroup &&
+          connection.status !== "unconfigured" &&
+          connection.status !== "unknown",
+      )
+      .map((connection) => connection.connectionGroup),
+  );
+
+  return connections.filter(
+    (connection) =>
+      connection.requiresConnection &&
+      connection.status === "unconfigured" &&
+      (!connection.connectionGroup || !groupsWithAvailableOption.has(connection.connectionGroup)),
+  );
+}
+
+function assertNoUnavailableConnections(
+  recipe: AssistantRecipe,
+  connections: AssistantRecipeConnection[],
+  action: string,
+) {
+  const unavailableConnections = getUnavailableConnections(connections);
+
+  if (unavailableConnections.length === 0) {
+    return;
+  }
+
+  throw new AssistantError(
+    `${recipe.title} cannot be ${action} because these connectors are unavailable: ${unavailableConnections
+      .map((connection) => connection.name)
+      .join(", ")}`,
+    ErrorType.PARAMS_ERROR,
+    400,
+  );
+}
+
+function validateRecipeInstallationTriggers(
+  recipe: AssistantRecipe,
+  triggers: readonly RecipeInstallationTrigger[],
+) {
+  const supportedRecipeTriggers = new Set(recipe.triggers.map((trigger) => trigger.type));
+
+  for (const trigger of triggers) {
+    if (
+      (trigger.type === "schedule" || trigger.type === "once") &&
+      !supportedRecipeTriggers.has("schedule")
+    ) {
+      throw new AssistantError(
+        `${recipe.title} does not support scheduled triggers`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    if (
+      trigger.type === "schedule" &&
+      trigger.cronExpression &&
+      !isSupportedCronExpression(trigger.cronExpression)
+    ) {
+      throw new AssistantError(
+        `${recipe.title} schedule uses an unsupported cron expression`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+  }
+}
+
+function hasEnabledScheduleTrigger(triggers: readonly RecipeInstallationTrigger[]) {
+  return triggers.some(
+    (trigger) => (trigger.type === "schedule" || trigger.type === "once") && trigger.enabled,
+  );
+}
+
+function validateScheduledRecipeConfiguration(params: {
+  recipe: AssistantRecipe;
+  triggers: readonly RecipeInstallationTrigger[];
+  configuration: RecipeConfiguration;
+}) {
+  if (!hasEnabledScheduleTrigger(params.triggers)) {
+    return;
+  }
+
+  if (params.recipe.connectorPolicy?.requireConfiguredIntegration) {
+    validateRecipeConfiguration(params.recipe, params.configuration, true);
+  }
+
+  const missingFields = params.recipe.configurationFields.filter(
+    (field) =>
+      field.required &&
+      isRequiredRecipeConfigurationValueMissing(field, params.configuration[field.key]),
+  );
+
+  if (missingFields.length === 0) {
+    return;
+  }
+
+  throw new AssistantError(
+    `${params.recipe.title} scheduled triggers require recipe configuration: ${missingFields
+      .map((field) => field.label)
+      .join(", ")}`,
+    ErrorType.PARAMS_ERROR,
+    400,
+  );
+}
+
+export function parseRecipeInstallationRecord(
+  record: RecipeInstallationRecord,
+): RecipeInstallation | null {
+  const parsed = parseStoredRecipeInstallationData(record);
+
+  if (!parsed) {
+    return null;
+  }
+
+  return {
+    id: record.id,
+    recipeId: resolveRecipeId(parsed.recipeId),
+    userId: record.created_by_user_id,
+    projectId: record.project_id,
+    status: record.status === "active" && parsed.status !== "paused" ? "active" : "paused",
+    triggers: Array.isArray(parsed.triggers) ? parsed.triggers : [],
+    configuration: normaliseRecipeConfigurationForRecipe(
+      getRecipeById(parsed.recipeId),
+      parsed.configuration,
+    ),
+    teammateContextId: parsed.teammateContextId ?? null,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at,
+  };
+}
+
+async function getRecipeInstallationRecord(params: {
+  context: ServiceContext;
+  userId: number;
+  installationId: string;
+}): Promise<{ record: RecipeInstallationRecord; data: StoredRecipeInstallationData } | null> {
+  const record = await params.context.repositories.templates.getTemplateById(params.installationId);
+
+  if (
+    !record ||
+    !ownsResource(params.userId, record.created_by_user_id) ||
+    record.kind !== "recipe"
+  ) {
+    return null;
+  }
+
+  if (record.project_id) {
+    await requireProjectAccess(params.context, record.project_id);
+  }
+
+  const data = parseStoredRecipeInstallationData(record);
+
+  if (!data) {
+    return null;
+  }
+
+  return { record, data };
+}
+
+async function findRecipeInstallationRecord(params: {
+  context: ServiceContext;
+  userId: number;
+  recipeId: string;
+  projectId?: string;
+}): Promise<RecipeInstallationRecord | null> {
+  for (const recipeId of getRecipeIdAliases(params.recipeId)) {
+    const record = params.projectId
+      ? await params.context.repositories.templates.getProjectTemplate(
+          params.userId,
+          params.projectId,
+          "recipe",
+          recipeId,
+        )
+      : await params.context.repositories.templates.getPersonalTemplate(
+          params.userId,
+          "recipe",
+          recipeId,
+        );
+
+    if (record) {
+      return record;
+    }
+  }
+
+  return null;
+}
+
+async function requireRoutineTarget(
+  context: ServiceContext,
+  teammateContextId: string,
+  projectId: string | null,
+): Promise<void> {
+  const teammateContext = await requireTeammateContext(context, teammateContextId);
+
+  if (teammateContext.scope.type === "project" && teammateContext.scope.id !== projectId) {
+    throw new AssistantError(
+      "The routine target must use the same project scope as its installation",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  if (teammateContext.scope.type === "personal" && projectId) {
+    throw new AssistantError(
+      "A project routine cannot target a personal teammate context",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+}
+
+async function upsertRecipeInstallation(params: {
+  context: ServiceContext;
+  userId: number;
+  recipe: AssistantRecipe;
+  projectId?: string;
+  teammateContextId?: string;
+  triggers?: RecipeInstallationTrigger[];
+  configuration?: RecipeConfiguration;
+}): Promise<RecipeInstallation> {
+  params.context.ensureDatabase();
+  const existing = await findRecipeInstallationRecord({
+    context: params.context,
+    userId: params.userId,
+    recipeId: params.recipe.id,
+    projectId: params.projectId,
+  });
+  const existingData = existing ? parseStoredRecipeInstallationData(existing) : null;
+  const now = new Date().toISOString();
+  const triggers = await normaliseRecipeInstallationTriggers(
+    params.triggers && params.triggers.length > 0
+      ? params.triggers
+      : Array.isArray(existingData?.triggers) && existingData.triggers.length > 0
+        ? existingData.triggers
+        : [
+            {
+              type: "manual" as const,
+              enabled: true,
+            },
+          ],
+  );
+
+  validateRecipeInstallationTriggers(params.recipe, triggers);
+  const configuration = normaliseRecipeConfigurationForRecipe(
+    params.recipe,
+    params.configuration ?? existingData?.configuration,
+  );
+
+  validateRecipeConfiguration(params.recipe, configuration);
+
+  validateScheduledRecipeConfiguration({
+    recipe: params.recipe,
+    triggers,
+    configuration,
+  });
+
+  if (params.teammateContextId) {
+    await requireRoutineTarget(params.context, params.teammateContextId, params.projectId ?? null);
+  }
+
+  const data: StoredRecipeInstallationData = {
+    recipeId: params.recipe.id,
+    status: "active",
+    triggers,
+    configuration,
+    scheduleState: buildRecipeScheduleState({
+      triggers,
+      existingState: existingData?.scheduleState,
+      activatedAt: now,
+    }),
+    teammateContextId: params.teammateContextId ?? existingData?.teammateContextId,
+  };
+
+  if (existing) {
+    const updated = await params.context.repositories.templates.updateTemplate(existing.id, {
+      name: params.recipe.title,
+      capabilityId: params.recipe.id,
+      configuration: data,
+      status: data.status,
+    });
+
+    if (updated) {
+      const parsed = parseRecipeInstallationRecord(updated);
+
+      if (parsed) {
+        return parsed;
+      }
+    }
+  }
+
+  const created = await params.context.repositories.templates.createTemplate({
+    createdByUserId: params.userId,
+    projectId: params.projectId,
+    kind: "recipe",
+    capabilityId: params.recipe.id,
+    name: params.recipe.title,
+    description: params.recipe.description,
+    configuration: data,
+    status: data.status,
+  });
+  const parsed = parseRecipeInstallationRecord(created);
+
+  if (!parsed) {
+    throw new AssistantError("Recipe installation could not be created", ErrorType.INTERNAL_ERROR);
+  }
+
+  return parsed;
+}
+
+async function getRecipeInstallation(params: {
+  context: ServiceContext;
+  userId: number;
+  recipeId: string;
+  projectId?: string;
+}): Promise<RecipeInstallation | null> {
+  const record = await findRecipeInstallationRecord(params);
+
+  return record ? parseRecipeInstallationRecord(record) : null;
+}
+
+export async function listRecipeInstallations(params: {
+  context: ServiceContext;
+  userId: number;
+  projectId?: string;
+}): Promise<{ installations: RecipeInstallation[] }> {
+  params.context.ensureDatabase();
+  const records = params.projectId
+    ? (await requireProjectAccess(params.context, params.projectId),
+      await params.context.repositories.templates.listProjectTemplates(params.projectId, "recipe"))
+    : await params.context.repositories.templates.listPersonalTemplates(params.userId, "recipe");
+
+  return {
+    installations: records
+      .map((record) => parseRecipeInstallationRecord(record))
+      .filter((installation): installation is RecipeInstallation => Boolean(installation)),
+  };
+}
+
+export async function resolveInstalledAssistantRecipe(params: {
+  context: ServiceContext;
+  userId: number;
+  query: string;
+  requestUrl?: string;
+}) {
+  const [recipeList, installationList] = await Promise.all([
+    listAssistantRecipes({
+      context: params.context,
+      userId: params.userId,
+      requestUrl: params.requestUrl,
+    }),
+    listRecipeInstallations({
+      context: params.context,
+      userId: params.userId,
+    }),
+  ]);
+
+  return matchInstalledRecipe({
+    query: params.query,
+    recipes: recipeList.recipes,
+    installations: installationList.installations,
+  });
+}
+
+export async function updateRecipeInstallation(params: {
+  context: ServiceContext;
+  userId: number;
+  installationId: string;
+  update: RecipeInstallationUpdateRequest;
+  requestUrl?: string;
+}): Promise<RecipeInstallation | null> {
+  params.context.ensureDatabase();
+
+  const existing = await getRecipeInstallationRecord({
+    context: params.context,
+    userId: params.userId,
+    installationId: params.installationId,
+  });
+
+  if (!existing) {
+    return null;
+  }
+
+  const recipe = await getAssistantRecipe(existing.data.recipeId, {
+    context: params.context,
+    userId: params.userId,
+    requestUrl: params.requestUrl,
+  });
+  const triggers = await normaliseRecipeInstallationTriggers(
+    params.update.triggers ?? existing.data.triggers,
+    existing.record.id,
+  );
+  const configuration = normaliseRecipeConfigurationForRecipe(
+    recipe,
+    params.update.configuration ?? existing.data.configuration,
+  );
+
+  if (recipe) {
+    validateRecipeConfiguration(recipe, configuration);
+  }
+
+  const data: StoredRecipeInstallationData = {
+    recipeId: existing.data.recipeId,
+    status: params.update.status ?? existing.data.status,
+    triggers,
+    configuration,
+    scheduleState: buildRecipeScheduleState({
+      triggers,
+      existingState: existing.data.scheduleState,
+      activatedAt: new Date().toISOString(),
+    }),
+    teammateContextId:
+      params.update.teammateContextId === null
+        ? undefined
+        : (params.update.teammateContextId ?? existing.data.teammateContextId),
+  };
+
+  if (data.teammateContextId) {
+    await requireRoutineTarget(
+      params.context,
+      data.teammateContextId,
+      existing.record.project_id ?? null,
+    );
+  }
+
+  if (recipe) {
+    if (params.update.configuration !== undefined || params.update.triggers !== undefined) {
+      assertNoUnavailableConnections(
+        recipe,
+        buildRecipeConnections(recipe),
+        params.update.triggers !== undefined ? "scheduled" : "configured",
+      );
+    }
+
+    validateRecipeInstallationTriggers(recipe, data.triggers);
+    validateScheduledRecipeConfiguration({
+      recipe,
+      triggers: data.triggers,
+      configuration: data.configuration,
+    });
+  }
+
+  const updated = await params.context.repositories.templates.updateTemplate(existing.record.id, {
+    configuration: data,
+    status: data.status,
+  });
+
+  if (params.update.status && params.update.status !== existing.data.status) {
+    await syncRecipeComposioTriggerStatus({
+      context: params.context,
+      userId: params.userId,
+      installationId: existing.record.id,
+      enabled: data.status === "active",
+    });
+  }
+
+  return updated ? parseRecipeInstallationRecord(updated) : null;
+}
+
+export async function deleteRecipeInstallation(params: {
+  context: ServiceContext;
+  userId: number;
+  installationId: string;
+}): Promise<boolean> {
+  params.context.ensureDatabase();
+
+  const existing = await getRecipeInstallationRecord({
+    context: params.context,
+    userId: params.userId,
+    installationId: params.installationId,
+  });
+
+  if (!existing) {
+    return false;
+  }
+
+  await deleteRecipeComposioTriggers({
+    context: params.context,
+    userId: params.userId,
+    installationId: existing.record.id,
+  });
+
+  await params.context.repositories.templates.deleteTemplate(existing.record.id);
+
+  return true;
+}
+
+export async function listAssistantRecipes(options: RecipeListOptions = {}) {
+  const connectionContext = await getRecipeConnectionContext(options);
+
+  return {
+    recipes: getAssistantRecipes().map((recipe) => enrichRecipe(recipe, connectionContext)),
+    categories: getRecipeCategories(),
+    filters: recipeFilters,
+  };
+}
+
+export async function getAssistantRecipe(id: string, options: RecipeListOptions = {}) {
+  const recipe = getRecipeById(id);
+
+  if (!recipe) {
+    return null;
+  }
+
+  const connectionContext = await getRecipeConnectionContext(options);
+
+  return enrichRecipe(recipe, connectionContext);
+}
+
+export async function installAssistantRecipe(id: string, options: RecipeInstallOptions) {
+  const recipe = await getAssistantRecipe(id, options);
+
+  if (!recipe) {
+    return null;
+  }
+
+  if (!options.context || !options.userId) {
+    throw new AssistantError(
+      "Recipe install requires an authenticated user",
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
+
+  if (options.projectId) {
+    await requireEnabledProjectRecipe(options.context, options.projectId, recipe.id);
+  }
+
+  const connections = buildRecipeConnections(recipe);
+
+  assertNoUnavailableConnections(recipe, connections, "set up");
+  const readyToRun = getBlockingConnections(connections).length === 0;
+  const installation = await upsertRecipeInstallation({
+    context: options.context,
+    userId: options.userId,
+    recipe,
+    projectId: options.projectId,
+    teammateContextId: options.teammateContextId,
+    triggers: options.triggers,
+    configuration: options.configuration,
+  });
+  const runtime = buildRecipeSetupRuntime({
+    recipe,
+    connections,
+    configuration: installation.configuration,
+  });
+
+  return {
+    recipe,
+    conversationStarter: runtime.conversationStarter,
+    messageUrl: runtime.messageUrl,
+    checklist: runtime.checklist ?? [],
+    connections,
+    readyToRun,
+    enabledTools: runtime.enabledTools,
+    allowedConnectorProviders: runtime.allowedConnectorProviders,
+    allowedConnectorOperations: runtime.allowedConnectorOperations,
+    installation,
+  };
+}
+
+export async function invokeAssistantRecipe(
+  id: string,
+  options: RecipeListOptions & {
+    channel:
+      | "web"
+      | "ios"
+      | "sms"
+      | "slack"
+      | "telegram"
+      | "email"
+      | "scheduled"
+      | "event"
+      | "tool";
+    input?: string;
+    configuration?: RecipeConfiguration;
+    queue?: boolean;
+    requireInstalled?: boolean;
+    projectId?: string;
+    installationId?: string;
+  },
+) {
+  if (!options.context || !options.userId) {
+    throw new AssistantError(
+      "Recipe invocation requires an authenticated user",
+      ErrorType.AUTHENTICATION_ERROR,
+    );
+  }
+
+  const recipe = await getAssistantRecipe(id, options);
+
+  if (!recipe) {
+    return null;
+  }
+
+  if (options.projectId) {
+    await requireEnabledProjectRecipe(options.context, options.projectId, recipe.id);
+  }
+
+  const connections = buildRecipeConnections(recipe);
+  const blockingConnections = getBlockingConnections(connections);
+  const exactInstallationRecord = options.installationId
+    ? await getRecipeInstallationRecord({
+        context: options.context,
+        userId: options.userId,
+        installationId: options.installationId,
+      })
+    : null;
+  const exactInstallation = exactInstallationRecord
+    ? parseRecipeInstallationRecord(exactInstallationRecord.record)
+    : null;
+  const exactInstallationMatches =
+    exactInstallation?.recipeId === recipe.id &&
+    exactInstallation.projectId === (options.projectId ?? null);
+  const existingInstallation = options.installationId
+    ? exactInstallationMatches
+      ? exactInstallation
+      : null
+    : await getRecipeInstallation({
+        context: options.context,
+        userId: options.userId,
+        recipeId: recipe.id,
+        projectId: options.projectId,
+      });
+  const installation =
+    existingInstallation ??
+    (options.requireInstalled
+      ? null
+      : await upsertRecipeInstallation({
+          context: options.context,
+          userId: options.userId,
+          recipe,
+          projectId: options.projectId,
+        }));
+  const invocationConfiguration = installation
+    ? options.configuration
+      ? normaliseRecipeConfigurationForRecipe(recipe, options.configuration)
+      : installation.configuration
+    : {};
+  const runtime = buildRecipeInvocationRuntime({
+    recipe,
+    connections,
+    installation,
+    input: options.input,
+    configuration: invocationConfiguration,
+  });
+
+  if (!installation) {
+    return {
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      projectId: options.projectId ?? null,
+      status: "not_installed" as const,
+      channel: options.channel,
+      conversationStarter: runtime.conversationStarter,
+      messageUrl: runtime.messageUrl,
+      missingConnections: [],
+      enabledTools: runtime.enabledTools,
+      allowedConnectorProviders: runtime.allowedConnectorProviders,
+      allowedConnectorOperations: runtime.allowedConnectorOperations,
+      configuration: invocationConfiguration,
+    };
+  }
+
+  if (installation.status !== "active") {
+    return {
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      installationId: installation.id,
+      projectId: installation.projectId,
+      status: "paused" as const,
+      channel: options.channel,
+      conversationStarter: runtime.conversationStarter,
+      messageUrl: runtime.messageUrl,
+      missingConnections: [],
+      enabledTools: runtime.enabledTools,
+      allowedConnectorProviders: runtime.allowedConnectorProviders,
+      allowedConnectorOperations: runtime.allowedConnectorOperations,
+      configuration: invocationConfiguration,
+    };
+  }
+
+  if (blockingConnections.length > 0) {
+    return {
+      recipeId: recipe.id,
+      recipeTitle: recipe.title,
+      installationId: installation.id,
+      projectId: installation.projectId,
+      status: "blocked" as const,
+      channel: options.channel,
+      conversationStarter: runtime.conversationStarter,
+      messageUrl: runtime.messageUrl,
+      missingConnections: blockingConnections,
+      enabledTools: runtime.enabledTools,
+      allowedConnectorProviders: runtime.allowedConnectorProviders,
+      allowedConnectorOperations: runtime.allowedConnectorOperations,
+      configuration: invocationConfiguration,
+    };
+  }
+
+  let taskId: string | undefined;
+
+  if (options.queue) {
+    const taskService = new TaskService(options.context.env, options.context.repositories.tasks);
+    const occurrenceId = `manual:${generateId()}`;
+
+    taskId = await taskService.enqueueTask({
+      task_type: "recipe_execution",
+      user_id: options.userId,
+      project_id: installation.projectId ?? undefined,
+      task_data: createRecipeExecutionTaskData({
+        recipeId: recipe.id,
+        installationId: installation.id,
+        occurrenceId,
+        projectId: installation.projectId,
+        input: options.input,
+        channel: options.channel,
+        configuration: invocationConfiguration,
+      }),
+      priority: 5,
+    });
+  }
+
+  return {
+    recipeId: recipe.id,
+    recipeTitle: recipe.title,
+    installationId: installation.id,
+    projectId: installation.projectId,
+    status: options.queue ? ("queued" as const) : ("ready" as const),
+    channel: options.channel,
+    conversationStarter: runtime.conversationStarter,
+    messageUrl: runtime.messageUrl,
+    missingConnections: [],
+    enabledTools: runtime.enabledTools,
+    allowedConnectorProviders: runtime.allowedConnectorProviders,
+    allowedConnectorOperations: runtime.allowedConnectorOperations,
+    configuration: invocationConfiguration,
+    taskId,
+  };
+}

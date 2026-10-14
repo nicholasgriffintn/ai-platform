@@ -29,15 +29,25 @@ export const conversationOrganisationSchema = z.object({
 
 export const updateConversationOrganisationSchema = z
   .object({
-    expectedRevision: z.number().int().nonnegative(),
+    expectedRevision: z.number().int().nonnegative().optional(),
     isPinned: z.boolean().optional(),
     isUnread: z.boolean().optional(),
     snooze: conversationSnoozeSchema.nullable().optional(),
+    groupId: z.string().min(1).nullable().optional(),
   })
   .refine(
-    ({ isPinned, isUnread, snooze }) =>
-      isPinned !== undefined || isUnread !== undefined || snooze !== undefined,
+    ({ isPinned, isUnread, snooze, groupId }) =>
+      isPinned !== undefined ||
+      isUnread !== undefined ||
+      snooze !== undefined ||
+      groupId !== undefined,
     "At least one organisation field must be provided",
+  )
+  .refine(
+    ({ isPinned, isUnread, snooze, expectedRevision }) =>
+      expectedRevision !== undefined ||
+      (isPinned === undefined && isUnread === undefined && snooze === undefined),
+    "expectedRevision is required when changing pin, unread or snooze state",
   );
 
 export const createConversationGroupSchema = z.object({
@@ -45,13 +55,7 @@ export const createConversationGroupSchema = z.object({
   scope: conversationGroupScopeSchema,
 });
 
-export const conversationGroupParamsSchema = z.object({ groupId: z.string().min(1) });
-export const conversationOrganisationParamsSchema = z.object({
-  completionId: z.string().min(1),
-});
-export const moveConversationToGroupSchema = z.object({
-  groupId: z.string().min(1).nullable(),
-});
+export const conversationGroupParamsSchema = z.object({ group_id: z.string().min(1) });
 
 export type ConversationGroupScope = z.infer<typeof conversationGroupScopeSchema>;
 export type ConversationGroup = z.infer<typeof conversationGroupSchema>;
@@ -59,4 +63,3 @@ export type ConversationSnooze = z.infer<typeof conversationSnoozeSchema>;
 export type ConversationOrganisation = z.infer<typeof conversationOrganisationSchema>;
 export type UpdateConversationOrganisation = z.infer<typeof updateConversationOrganisationSchema>;
 export type CreateConversationGroup = z.infer<typeof createConversationGroupSchema>;
-export type MoveConversationToGroup = z.infer<typeof moveConversationToGroupSchema>;

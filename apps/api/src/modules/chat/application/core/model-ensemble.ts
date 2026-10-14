@@ -5,7 +5,14 @@ import {
   normaliseTokenUsage,
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
+import {
+  assistantMessageAddedEvent,
+  assistantMessageDoneEvent,
+  responseReceiptEvent,
+  type ModelConfigInfo,
+  type ResponseEventInput,
+} from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
@@ -19,7 +26,6 @@ import {
   type TurnContinuityOutcome,
 } from "~/modules/chat/application/streaming/continuity-telemetry";
 import {
-  type ChatStreamPreludeEvent,
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
   type ChatEventSink,
@@ -30,11 +36,16 @@ import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn
 import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
 import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
-import { StreamState, type Message } from "~/types";
+import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/core/model-ensemble" });
 
-const SUPPRESSED_PRIMARY_EVENTS = new Set(["message_delta", "message_stop"]);
+function isPrimaryMessageCompletion(event: ResponseEventInput): boolean {
+  return (
+    event.type === "response.content_part.done" ||
+    (event.type === "response.output_item.done" && event.item.type === "message")
+  );
+}
 
 export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "sink" | "emit"> & {
   models: ModelConfigInfo[];
@@ -42,7 +53,7 @@ export type CreateModelEnsembleStreamParams = Omit<AgentLoopExecutionParams, "si
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
   runLifecycle?: ChatRunLifecycle | null;
-  preludeEvents?: ChatStreamPreludeEvent[];
+  preludeEvents?: ResponseEventInput[];
 };
 
 export function createModelEnsembleStream(params: CreateModelEnsembleStreamParams): ReadableStream {
@@ -67,13 +78,12 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
     requestSecondaryAnswer(params, modelConfig, index),
   );
 
+  const messageId = generateId();
   const primarySink: ChatEventSink = {
-    writeEvent: async (type, payload) => {
-      if (SUPPRESSED_PRIMARY_EVENTS.has(type)) {
-        return;
+    write: async (event) => {
+      if (!isPrimaryMessageCompletion(event)) {
+        await stream.write(event);
       }
-
-      await stream.writeEvent(type, payload);
     },
   };
 
@@ -123,33 +133,42 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 
     try {
       if (params.runLifecycle) {
-        await stream.writeEvent("state", {
-          state: "run",
-          receipt: params.runLifecycle.receipt,
-        });
+        await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
       }
 
       await writeTurnActivity(stream, { kind: "turn_started" });
-      await stream.writeEvent("state", { state: StreamState.INIT });
+      await stream.write({ type: "response.phase", phase: "init" });
 
       for (const prelude of params.preludeEvents ?? []) {
-        await stream.writeEvent(prelude.type, prelude.payload);
+        await stream.write(prelude);
       }
 
       const usageLimits = await params.conversationManager.getUsageLimits();
 
       if (usageLimits) {
-        await stream.writeEvent("usage_limits", { usage_limits: usageLimits });
+        await stream.write({
+          type: "response.usage_limits",
+          usage_limits: usageLimits,
+        });
       }
 
       const header = `Using the following models: ${params.models
         .map((modelConfig) => modelConfig.displayName)
         .join(", ")}\n\n`;
 
-      await stream.writeEvent("content_block_delta", { content: header });
+      await stream.write(
+        assistantMessageAddedEvent(messageId, {
+          created: Date.now(),
+          model: params.model,
+          provider: params.provider,
+          platform: params.platform,
+        }),
+      );
+      await stream.write({ type: "response.output_text.delta", item_id: messageId, delta: header });
 
       const primary = await runAgentLoop({
         ...params,
+        openedMessageId: messageId,
         sink: primarySink,
         shouldStop: stopSignal.shouldStop,
         onRetryState: createChatRetryStatePublisher({
@@ -170,6 +189,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
               : "completed";
       const secondaryText = await streamSecondaryAnswers(
         stream,
+        messageId,
         secondaryModels,
         secondaryResponses,
       );
@@ -181,32 +201,31 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         secondaryModels,
       });
 
-      await stream.writeEvent("message_delta", {
-        id: params.completionId,
-        message_id: merged.id,
-        object: "chat.completion",
-        created: merged.timestamp,
-        model: merged.model,
-        provider: params.provider,
-        platform: merged.platform,
-        provenance: merged.provenance,
-        usage: merged.usage,
-        citations: merged.citations,
-        data: merged.data,
-        parts: merged.parts,
-        finish_reason: "stop",
-      });
-      await stream.writeEvent("message_stop", {});
+      await stream.write(
+        assistantMessageDoneEvent(
+          {
+            id: merged.id ?? messageId,
+            created: merged.timestamp,
+            model: merged.model,
+            provider: params.provider,
+            platform: merged.platform,
+            provenance: merged.provenance,
+            usage: merged.usage,
+            citations: merged.citations,
+            data: merged.data,
+            parts: merged.parts,
+          },
+          "stop",
+        ),
+      );
+      await stream.write({ type: "response.content_part.done", item_id: merged.id ?? messageId });
       if (params.runLifecycle) {
         await params.runLifecycle.complete(primary);
-        await stream.writeEvent("state", {
-          state: "run",
-          receipt: params.runLifecycle.receipt,
-        });
+        await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
       }
 
       await writeTurnActivity(stream, { kind: "turn_finished", outcome });
-      await stream.writeEvent("state", { state: StreamState.DONE });
+      await stream.write({ type: "response.phase", phase: "done" });
 
       await closeVisibleStream();
       await releaseTurn();
@@ -225,10 +244,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       if (params.runLifecycle) {
         try {
           await params.runLifecycle.fail(error);
-          await stream.writeEvent("state", {
-            state: "run",
-            receipt: params.runLifecycle.receipt,
-          });
+          await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
         } catch (runError) {
           logger.error("Failed to record model ensemble run failure", {
             error: runError,
@@ -238,11 +254,12 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       }
 
       await writeTurnActivity(stream, { kind: "turn_finished", outcome: "failed" });
-      await stream.writeEvent("error", {
+      await stream.write({
+        type: "response.error",
         error: {
           message: error instanceof Error ? error.message : "Failed to complete the response",
         },
-        type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
+        code: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
 
       await closeVisibleStream();
@@ -339,6 +356,7 @@ async function requestSecondaryAnswer(
 
 async function streamSecondaryAnswers(
   sink: ChatEventSink,
+  messageId: string,
   secondaryModels: ModelConfigInfo[],
   responses: Promise<string>[],
 ): Promise<string> {
@@ -352,7 +370,7 @@ async function streamSecondaryAnswers(
       : `\n\n***\n### ${modelName} response\n\nThis model did not return an answer.`;
 
     combined += section;
-    await sink.writeEvent("content_block_delta", { content: section });
+    await sink.write({ type: "response.output_text.delta", item_id: messageId, delta: section });
   }
 
   return combined;

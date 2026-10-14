@@ -1,10 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { AgentHarnessEvent, AgentHarnessEventRecord } from "@ngriffin_uk/polychat-schemas";
-import { readServerSentEvents } from "@ngriffin_uk/polychat-utility-core";
-import {
-  readRecordObjectField,
-  readStringField,
-} from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { readServerSentEvents, readStringField } from "@ngriffin_uk/polychat-utility-core";
+import { readRecordObjectField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 const logger = getLogger({ prefix: "agents/agent-sessions" });
 

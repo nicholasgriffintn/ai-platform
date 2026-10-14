@@ -310,6 +310,14 @@ export function decodeModelConfig(value: unknown): ModelConfig {
   return models;
 }
 
+export function decodeModelList(value: unknown): ModelConfig {
+  const { data } = z
+    .object({ data: z.array(z.object({ id: z.string() }).passthrough()) })
+    .parse(value);
+
+  return decodeModelConfig(Object.fromEntries(data.map((model) => [model.id, model])));
+}
+
 const artificialAnalysisScoresSchema = z.object({
   intelligence: z.number().optional(),
   coding: z.number().optional(),
@@ -378,7 +386,7 @@ export const capabilitiesResponseSchema = z.object({
 
 export const capabilityParamsSchema = z.object({ capability: z.string() });
 export const modalityParamsSchema = z.object({ modality: modelModalitySchema });
-export const modelParamsSchema = z.object({ id: z.string() });
+export const modelParamsSchema = z.object({ model_id: z.string() });
 
 export type ModelRanking = z.infer<typeof modelRankingSchema>;
 export type ModelModality = z.infer<typeof modelModalitySchema>;

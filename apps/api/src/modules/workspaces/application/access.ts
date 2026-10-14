@@ -15,7 +15,7 @@ export interface WorkspaceAccess {
 }
 
 export const projectScopeQuerySchema = z.object({
-  projectId: z.string().min(1).optional(),
+  project_id: z.string().min(1).optional(),
 });
 
 export function requireWorkAccess(context: ServiceContext) {

@@ -227,7 +227,7 @@ export const connectionCheckSchema = z.object({
 export type ConnectionCheck = z.infer<typeof connectionCheckSchema>;
 
 export const modelConnectionParamsSchema = registryWorkspaceParamsSchema.extend({
-  provider: modelProviderIdSchema,
+  provider_id: modelProviderIdSchema,
 });
 
 export const providerTargetSchema = z.object({
@@ -501,11 +501,9 @@ export const deploymentsResponseSchema = z.object({
 export type DeploymentsResponse = z.infer<typeof deploymentsResponseSchema>;
 
 export const modelDeploymentParamsSchema = registryWorkspaceParamsSchema.extend({
-  deploymentId: z.string().min(1),
+  deployment_id: z.string().min(1),
 });
-export const modelDeploymentActionParamsSchema = modelDeploymentParamsSchema.extend({
-  action: deploymentActionSchema,
-});
+export const deploymentActionRequestSchema = z.object({ action: deploymentActionSchema });
 
 export const aliasGateSchema = z.object({
   suiteId: z.string().min(1),
@@ -627,7 +625,7 @@ export const aliasesResponseSchema = z.object({
 export type AliasesResponse = z.infer<typeof aliasesResponseSchema>;
 
 export const modelAliasParamsSchema = registryWorkspaceParamsSchema.extend({
-  aliasId: z.string().min(1),
+  alias_id: z.string().min(1),
 });
 
 export const graderConfigSchema = z.discriminatedUnion("kind", [
@@ -687,7 +685,7 @@ export const graderPreviewRequestSchema = z.object({
 export const graderPreviewSchema = z.object({ score: z.number().min(0).max(1).nullable() });
 
 export const modelGraderParamsSchema = registryWorkspaceParamsSchema.extend({
-  graderId: z.string().min(1),
+  grader_id: z.string().min(1),
 });
 
 export const DATASET_COLLECTION_METHODS = [
@@ -867,7 +865,7 @@ export const datasetRowsQuerySchema = z.object({
   split: datasetSplitSchema.default("train"),
   offset: z.coerce.number().int().nonnegative().default(0),
   limit: z.coerce.number().int().positive().max(100).default(25),
-  flaggedOnly: z
+  flagged_only: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
     .default(false),
@@ -928,7 +926,7 @@ export const datasetDetailSchema = datasetSummarySchema.extend({
 export type DatasetDetail = z.infer<typeof datasetDetailSchema>;
 
 export const modelDatasetParamsSchema = registryWorkspaceParamsSchema.extend({
-  versionId: z.string().min(1),
+  version_id: z.string().min(1),
 });
 
 export const UPLOAD_PURPOSES = ["model", "adapter", "dataset"] as const;
@@ -979,11 +977,11 @@ export const uploadSessionSchema = z.object({
 export type UploadSession = z.infer<typeof uploadSessionSchema>;
 
 export const modelUploadParamsSchema = registryWorkspaceParamsSchema.extend({
-  uploadId: z.string().min(1),
+  upload_id: z.string().min(1),
 });
 export const modelUploadPartParamsSchema = modelUploadParamsSchema.extend({
-  fileIndex: z.coerce.number().int().nonnegative(),
-  partNumber: z.coerce.number().int().positive().max(10_000),
+  file_id: z.coerce.number().int().nonnegative(),
+  part_id: z.coerce.number().int().positive().max(10_000),
 });
 
 export const registerUploadedModelRequestSchema = z.object({
@@ -1139,7 +1137,7 @@ export const startTrainingRunRequestSchema = z.object({
 export type StartTrainingRunRequest = z.input<typeof startTrainingRunRequestSchema>;
 
 export const modelTrainingRunParamsSchema = registryWorkspaceParamsSchema.extend({
-  runId: z.string().min(1),
+  run_id: z.string().min(1),
 });
 
 export const BUDGET_SCOPES = ["workspace", "project"] as const;
@@ -1256,8 +1254,8 @@ export const myModelPermissionsSchema = z.object({
 export type MyModelPermissions = z.infer<typeof myModelPermissionsSchema>;
 
 export const modelAuditQuerySchema = z.object({
-  targetType: z.string().max(60).optional(),
-  targetId: z.string().max(120).optional(),
+  target_type: z.string().max(60).optional(),
+  target_id: z.string().max(120).optional(),
   limit: z.coerce.number().int().positive().max(500).default(100),
 });
 export type ModelAuditQuery = z.infer<typeof modelAuditQuerySchema>;
@@ -1391,7 +1389,7 @@ export const resolveSpendRequestSchema = z.object({ state: z.enum(["approved", "
 export type ResolveSpendRequest = z.infer<typeof resolveSpendRequestSchema>;
 
 export const modelSpendRequestParamsSchema = registryWorkspaceParamsSchema.extend({
-  requestId: z.string().min(1),
+  request_id: z.string().min(1),
 });
 
 export const deploymentStartResultSchema = z.object({
@@ -1408,7 +1406,7 @@ export const trainingStartResultSchema = z.object({
 });
 export type TrainingStartResult = z.infer<typeof trainingStartResultSchema>;
 
-export const budgetScopeQuerySchema = z.object({ projectId: z.string().min(1).optional() });
+export const budgetScopeQuerySchema = z.object({ project_id: z.string().min(1).optional() });
 
 export const PLATFORM_DEPLOYMENT_CHAT_PROVIDER = "polychat-deployment";
 

@@ -29,7 +29,15 @@ export async function searchModelSources(
 ): Promise<SourceSearchResult[]> {
   return (
     await platformRequest<{ results: SourceSearchResult[] }>(
-      workspacePath(workspaceId, `/sources${toQueryString(params)}`),
+      workspacePath(
+        workspaceId,
+        `/sources${toQueryString({
+          q: params.q,
+          kind: params.kind,
+          project_id: params.projectId,
+          limit: params.limit,
+        })}`,
+      ),
     )
   ).results;
 }
@@ -40,7 +48,14 @@ export async function listModelLibrary(
 ): Promise<LibraryEntry[]> {
   return (
     await platformRequest<{ entries: LibraryEntry[] }>(
-      workspacePath(workspaceId, `/library${toQueryString(params)}`),
+      workspacePath(
+        workspaceId,
+        `/library${toQueryString({
+          kind: params.kind,
+          project_id: params.projectId,
+          approved_only: params.approvedOnly,
+        })}`,
+      ),
     )
   ).entries;
 }
@@ -85,7 +100,7 @@ export function uploadModelPart(
       workspaceId,
       `/uploads/${segment(uploadId)}/files/${fileIndex}/parts/${partNumber}`,
     ),
-    { method: "PUT", body: bytes, contentType: "application/octet-stream" },
+    { method: "PATCH", body: bytes, contentType: "application/octet-stream" },
   );
 }
 
@@ -117,7 +132,10 @@ export function getModelVersion(
   projectId?: string,
 ): Promise<VersionDetail> {
   return platformRequest(
-    workspacePath(workspaceId, `/versions/${segment(versionId)}${toQueryString({ projectId })}`),
+    workspacePath(
+      workspaceId,
+      `/versions/${segment(versionId)}${toQueryString({ project_id: projectId })}`,
+    ),
   );
 }
 
@@ -138,14 +156,14 @@ export function saveModelPolicy(
   workspaceId: string,
   input: UpsertPolicyRequest,
 ): Promise<ModelPolicy> {
-  return platformRequest(workspacePath(workspaceId, "/policies"), { method: "PUT", body: input });
+  return platformRequest(workspacePath(workspaceId, "/policies"), { method: "PATCH", body: input });
 }
 
 export function dryRunModelPolicy(
   workspaceId: string,
   input: PolicyDryRunRequest,
 ): Promise<PolicyDryRunResult> {
-  return platformRequest(workspacePath(workspaceId, "/policies/dry-run"), {
+  return platformRequest(workspacePath(workspaceId, "/policies/dry_run"), {
     method: "POST",
     body: input,
   });

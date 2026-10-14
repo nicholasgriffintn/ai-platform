@@ -29,6 +29,7 @@ import { runProvenanceSchema } from "../run-provenance.js";
 import { sandboxRequestOptionsSchema } from "../sandbox.js";
 import { chatRunUsageSchema } from "../usage.js";
 import { itemSchema, itemsSchema, storedItemSchema } from "./items.js";
+import { listQuerySchema, listSchema } from "./list.js";
 import { responseToolChoiceSchema, responseToolsSchema } from "./tools.js";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -402,13 +403,18 @@ export const responseReplayQuerySchema = z.object({
 
 export type ResponseReplayQuery = z.infer<typeof responseReplayQuerySchema>;
 
-export const responseReplayResponseSchema = z.object({
+export const responseListSchema = listSchema(responseSchema);
+
+export const responseReplayResponseSchema = listSchema(responseEventRecordSchema).extend({
   response_id: responseIdSchema,
   from_cursor: z.number().int().nonnegative(),
   next_cursor: z.number().int().nonnegative(),
   reset_required: z.boolean(),
-  events: z.array(responseEventRecordSchema),
   snapshot: responseSnapshotSchema.nullable(),
+});
+
+export const responseLookupQuerySchema = listQuerySchema.extend({
+  idempotency_key: responseIdempotencyKeySchema,
 });
 
 export type ResponseReplayResponse = z.infer<typeof responseReplayResponseSchema>;

@@ -1,240 +1,125 @@
 import { availableModalities } from "@ngriffin_uk/polychat-ai-models";
 import {
-  capabilitiesResponseSchema,
-  capabilityParamsSchema,
   artificialAnalysisModelsQuerySchema,
   artificialAnalysisModelsResponseSchema,
-  modelTiersResponseSchema,
-  modelParamsSchema,
-  modelResponseSchema,
-  modelsResponseSchema,
-  modalityParamsSchema,
   errorResponseSchema,
+  listPageOf,
+  modelParamsSchema,
+  modelTiersResponseSchema,
+  type ModelConfig,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
+import z from "zod/v4";
 
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
-import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { defineResource } from "~/infrastructure/http/resource";
 import {
   getModelDetails,
   listArtificialAnalysisModels,
-  listStrengths,
   listModalities,
   listModelCatalogue,
   listModels,
-  listModelsByStrength,
   listModelsByModality,
   listModelsByOutputModality,
+  listModelsByStrength,
+  listStrengths,
 } from "~/modules/models/application";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
 import { resolveTierLineup } from "~/modules/models/application/tiers";
 
 const app = new Hono();
-
-const routeLogger = createRouteLogger("models");
-
-app.use("/*", (c, next) => {
-  routeLogger.info(`Processing models route: ${c.req.path}`);
-
-  return next();
+const modalitySchema = z.enum(availableModalities);
+const listModelsQuerySchema = z.object({
+  capability: z.string().min(1).optional(),
+  modality: modalitySchema.optional(),
+  output: modalitySchema.optional(),
 });
 
-addRoute(app, "get", "/", {
-  tags: ["models"],
-  summary: "List models",
-  description:
-    "Lists the currently available models, and provides basic information about each one such as the capabilities and pricing.",
-  responses: {
-    200: {
-      description: "List of available models with their details",
-      schema: modelsResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
-  cache: "no-store",
-});
+function modelPage(models: ModelConfig) {
+  return listPageOf(
+    Object.entries(models).map(([id, model]) => ({ ...model, id })),
+    (model) => model.id,
+  );
+}
 
-addRoute(app, "get", "/catalogue", {
-  tags: ["models"],
-  summary: "List the model catalogue",
-  description:
-    "Lists every model the platform knows about, with the same details as the models list but without filtering by the caller's access. Intended for public catalogue surfaces.",
-  responses: {
-    200: {
-      description: "Every model in the catalogue with its details",
-      schema: modelsResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async () => listModelCatalogue(),
-  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
-});
+defineResource(app, { idParam: "model_id", tags: ["models"] }, (models) => {
+  models
+    .list({
+      auth: false,
+      summary: "List models",
+      description:
+        "Models the caller can use, with capabilities and pricing. Filter by capability, input modality or output modality. The page also lists every capability and modality you can filter by.",
+      cache: "no-store",
+      querySchema: listModelsQuerySchema,
+      responses: { 400: { description: "Unknown capability", schema: errorResponseSchema } },
+      handler: async ({ query, serviceContext, user }) => {
+        if (query.capability && !listStrengths().includes(query.capability)) {
+          throw new AssistantError("Invalid capability parameter", ErrorType.PARAMS_ERROR, 400);
+        }
 
-addRoute(app, "get", "/capabilities", {
-  tags: ["models"],
-  summary: "Get all capabilities",
-  description: "Returns a list of all available model capabilities",
-  responses: {
-    200: {
-      description: "List of all available model capabilities",
-      schema: capabilitiesResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async () => listStrengths(),
-  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
-});
+        const listed = query.capability
+          ? await listModelsByStrength(serviceContext.env, query.capability, user?.id)
+          : query.modality
+            ? await listModelsByModality(serviceContext.env, query.modality, user?.id)
+            : query.output
+              ? await listModelsByOutputModality(serviceContext.env, query.output, user?.id)
+              : await listModels(serviceContext.env, user);
 
-addRoute(app, "get", "/capabilities/:capability", {
-  tags: ["models"],
-  summary: "Get models by capability",
-  description: "Returns all models that support a specific capability",
-  paramSchema: capabilityParamsSchema,
-  responses: {
-    200: {
-      description: "List of models with the specified capability",
-      schema: modelsResponseSchema,
-    },
-    400: {
-      description: "Invalid capability parameter",
-      schema: errorResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ params, raw, serviceContext, user }) => {
-    const validCapabilities = listStrengths();
-
-    if (!validCapabilities.includes(params.capability)) {
-      return ResponseFactory.error(raw, "Invalid capability parameter", 400);
-    }
-
-    return listModelsByStrength(serviceContext.env, params.capability, user?.id);
-  },
-});
-
-addRoute(app, "get", "/modalities", {
-  tags: ["models"],
-  summary: "Get all model modalities",
-  description: "Returns a list of all supported input/output modalities",
-  responses: {
-    200: {
-      description: "List of all available model modalities",
-      schema: capabilitiesResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async () => listModalities(),
-  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
-});
-
-addRoute(app, "get", "/modalities/:modality", {
-  tags: ["models"],
-  summary: "Get models by modality",
-  description: "Returns all models that support a specific modality",
-  paramSchema: modalityParamsSchema,
-  responses: {
-    200: {
-      description: "List of models of the specified modality",
-      schema: modelsResponseSchema,
-    },
-    400: {
-      description: "Invalid modality parameter",
-      schema: errorResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ params, raw, serviceContext, user }) => {
-    if (!availableModalities.includes(params.modality)) {
-      return ResponseFactory.error(raw, "Invalid modality parameter", 400);
-    }
-
-    return listModelsByModality(serviceContext.env, params.modality, user?.id);
-  },
-});
-
-addRoute(app, "get", "/output/:modality", {
-  tags: ["models"],
-  summary: "Get models by output modality",
-  description: "Returns all models that output the specified modality",
-  paramSchema: modalityParamsSchema,
-  responses: {
-    200: {
-      description: "List of models with the specified output modality",
-      schema: modelsResponseSchema,
-    },
-    400: {
-      description: "Invalid modality parameter",
-      schema: errorResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ params, raw, serviceContext, user }) => {
-    if (!availableModalities.includes(params.modality)) {
-      return ResponseFactory.error(raw, "Invalid modality parameter", 400);
-    }
-
-    return listModelsByOutputModality(serviceContext.env, params.modality, user?.id);
-  },
-});
-
-addRoute(app, "get", "/artificial-analysis", {
-  tags: ["models"],
-  summary: "List cached Artificial Analysis model data",
-  description:
-    "Returns cached Artificial Analysis benchmark, arena, pricing, and performance data with source attribution.",
-  querySchema: artificialAnalysisModelsQuerySchema,
-  responses: {
-    200: {
-      description: "Cached Artificial Analysis model data",
-      schema: artificialAnalysisModelsResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ query, serviceContext }) =>
-    listArtificialAnalysisModels(serviceContext.env, query),
-});
-
-addRoute(app, "get", "/tiers", {
-  tags: ["models"],
-  summary: "Resolve model tiers",
-  description:
-    "Returns the model selected by each tier and role for the calling account across each supported runtime.",
-  responses: {
-    200: {
-      description: "Account-specific model tier resolution",
-      schema: modelTiersResponseSchema,
-    },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ serviceContext, user }) => {
-    const models = await getLineupModelsForUser(serviceContext.env, user, {
-      shouldUseCache: false,
+        return {
+          ...modelPage(listed),
+          capabilities: listStrengths(),
+          modalities: listModalities(),
+        };
+      },
+    })
+    .view("catalogue", {
+      auth: false,
+      summary: "List the model catalogue",
+      description:
+        "Every model the platform knows about, without filtering by the caller's access. Intended for public catalogue surfaces.",
+      cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
+      handler: async () => modelPage(listModelCatalogue()),
+    })
+    .view("tiers", {
+      auth: false,
+      summary: "Resolve model tiers",
+      description: "The model selected by each tier and role for the caller across each runtime.",
+      responses: { 200: { description: "Tier lineup", schema: modelTiersResponseSchema } },
+      handler: async ({ serviceContext, user }) =>
+        resolveTierLineup(
+          await getLineupModelsForUser(serviceContext.env, user, { shouldUseCache: false }),
+          user,
+        ),
+    })
+    .view("artificial_analysis", {
+      auth: false,
+      summary: "List cached Artificial Analysis model data",
+      description:
+        "Cached Artificial Analysis benchmark, arena, pricing and performance data with source attribution.",
+      querySchema: artificialAnalysisModelsQuerySchema,
+      responses: {
+        200: { description: "Model data", schema: artificialAnalysisModelsResponseSchema },
+      },
+      handler: ({ query, serviceContext }) =>
+        listArtificialAnalysisModels(serviceContext.env, query),
+    })
+    .read({
+      auth: false,
+      summary: "Get a model",
+      paramSchema: modelParamsSchema,
+      responses: { 404: { description: "Model not found", schema: errorResponseSchema } },
+      handler: async ({ params, serviceContext, user }) => {
+        try {
+          return await getModelDetails(serviceContext.env, params.model_id, user?.id);
+        } catch {
+          throw new AssistantError(
+            "Model not found or user does not have access",
+            ErrorType.NOT_FOUND,
+            404,
+          );
+        }
+      },
     });
-
-    return resolveTierLineup(models, user);
-  },
-});
-
-addRoute(app, "get", "/:id", {
-  tags: ["models"],
-  summary: "Retrieve model",
-  description: "Retrieves a model instance, providing basic information about the model.",
-  paramSchema: modelParamsSchema,
-  responses: {
-    200: { description: "Model details", schema: modelResponseSchema },
-    400: { description: "Invalid model ID", schema: errorResponseSchema },
-    404: { description: "Model not found", schema: errorResponseSchema },
-    500: { description: "Server error", schema: errorResponseSchema },
-  },
-  handler: async ({ params, raw, serviceContext, user }) => {
-    try {
-      return await getModelDetails(serviceContext.env, params.id, user?.id);
-    } catch {
-      return ResponseFactory.error(raw, "Model not found or user does not have access", 404);
-    }
-  },
 });
 
 export default app;

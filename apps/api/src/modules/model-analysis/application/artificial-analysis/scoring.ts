@@ -1,7 +1,7 @@
+import { readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   readNumberField,
   readNumberFieldAlias,
-  readStringField,
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { deriveBlendedPrice } from "~/modules/model-analysis/application/artificial-analysis/pricing";

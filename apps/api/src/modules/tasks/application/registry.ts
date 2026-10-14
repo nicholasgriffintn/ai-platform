@@ -27,10 +27,12 @@ import {
   QUEUED_CHAT_MESSAGE_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
+  WEBHOOK_DELIVERY_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { ProjectReviewIntakeHandler } from "~/modules/project-tasks/application/review-intake";
 import { TaskNotificationDeliveryHandler } from "~/modules/task-notifications/application/delivery";
+import { WebhookDeliveryHandler } from "~/modules/webhook-endpoints/application/delivery";
 
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
@@ -114,5 +116,6 @@ workflows.register(QUEUED_CHAT_MESSAGE_TASK_TYPE, new QueuedChatMessageHandler()
 workflows.register(MODEL_REGISTRY_INSPECT_TASK_TYPE, new ModelRegistryInspectHandler());
 workflows.register(MODEL_REGISTRY_EVAL_TASK_TYPE, new ModelRegistryEvalHandler());
 workflows.register(BENCHMARK_RUN_TASK_TYPE, new BenchmarkRunHandler());
+workflows.register(WEBHOOK_DELIVERY_TASK_TYPE, new WebhookDeliveryHandler());
 
 export { workflows };

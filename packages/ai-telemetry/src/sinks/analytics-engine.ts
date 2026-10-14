@@ -1,9 +1,8 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
-import { secondsToMilliseconds } from "@ngriffin_uk/polychat-utility-core";
+import { secondsToMilliseconds, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   readNumberField,
   readNumberFieldAlias,
-  readStringField,
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import type { TelemetryEnv, TelemetryEvent, TelemetryMetric, TelemetrySink } from "../types.js";

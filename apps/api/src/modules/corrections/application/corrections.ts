@@ -1,10 +1,11 @@
 import { choice } from "@ngriffin_uk/polychat-ai-functions";
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type {
-  Correction,
-  CorrectionListResponse,
-  CorrectionPlacement,
+import {
+  listPageOf,
+  type Correction,
+  type CorrectionListResponse,
+  type CorrectionPlacement,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, truncateText } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -26,9 +27,10 @@ const NEW_RULE_OPTION = "new_rule";
 export async function listCorrections(context: ServiceContext): Promise<CorrectionListResponse> {
   const user = context.requireUser();
 
-  return {
-    corrections: await context.repositories.corrections.listActive(user.id, LIST_LIMIT),
-  };
+  return listPageOf(
+    await context.repositories.corrections.listActive(user.id, LIST_LIMIT),
+    (correction) => correction.id,
+  );
 }
 
 export async function dismissCorrection(context: ServiceContext, id: string): Promise<void> {

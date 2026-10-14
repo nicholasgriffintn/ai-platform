@@ -158,6 +158,28 @@ struct ResolveProjectTaskApprovalRequest: Encodable {
     let resolution: String
 }
 
+struct InteractionResponseItem<Payload: Encodable>: Encodable {
+    let toolName: String
+    let response: Payload
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case toolName = "tool_name"
+        case response
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode("interaction_response", forKey: .type)
+        try container.encode(toolName, forKey: .toolName)
+        try container.encode(response, forKey: .response)
+    }
+}
+
+struct ResponseInteractionRequest<Payload: Encodable>: Encodable {
+    let input: [InteractionResponseItem<Payload>]
+}
+
 struct ProjectTaskDestination: Equatable {
     let workspaceId: String
     let projectId: String

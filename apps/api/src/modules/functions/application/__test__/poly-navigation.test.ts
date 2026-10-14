@@ -92,9 +92,11 @@ function createToolContext(conversationType: string | undefined, uiContext?: Pol
   const repositories = {
     conversations: {
       getConversation: vi.fn(async () => conversationRow),
-      getUserConversations: vi.fn(async () => ({
-        conversations: [conversationRow],
-        total: 1,
+      listUserConversations: vi.fn(async () => ({
+        object: "list",
+        data: [conversationRow],
+        has_more: false,
+        last_id: conversationRow.id,
       })),
       createConversation: vi.fn(async () => ({ id: "conversation-2" })),
     },

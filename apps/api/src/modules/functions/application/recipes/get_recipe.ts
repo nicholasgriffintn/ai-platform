@@ -1,10 +1,10 @@
-import { getAssistantRecipe } from "~/modules/apps/application/recipes";
-import { getRecipeNotificationCapabilities } from "~/modules/apps/application/recipes/notificationCapabilities";
+import { getAssistantRecipe } from "~/modules/recipes/application";
+import { getRecipeNotificationCapabilities } from "~/modules/recipes/application/notificationCapabilities";
 import {
   getActiveRecipeSetup,
   getRecipeConfiguration,
   getRecipeExecutionChannel,
-} from "~/modules/apps/application/recipes/toolContext";
+} from "~/modules/recipes/application/toolContext";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_recipe as get_recipeDescriptor } from "../definitions/recipes/get_recipe";

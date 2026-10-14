@@ -1,6 +1,7 @@
 import {
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   NO_STORE,
+  SANDBOX_PREVIEW_AUTHORISATION_PATH,
   sandboxPreviewAuthorisationResponseSchema,
   sandboxPreviewExposureRequestSchema,
   sandboxPreviewExposureResponseSchema,
@@ -14,7 +15,7 @@ import type { Env } from "../../../types";
 import { verifySandboxPreviewGrant } from "./auth";
 
 const INTERNAL_EXPOSURE_ORIGIN = "http://sandbox";
-const INTERNAL_AUTHORISATION_URL = "http://api/apps/sandbox/previews/authorise";
+const INTERNAL_AUTHORISATION_URL = `http://api${SANDBOX_PREVIEW_AUTHORISATION_PATH}`;
 const PREVIEW_COOKIE = "__Host-polychat_preview";
 const PREVIEW_OPEN_PATH = "/__polychat/preview/open";
 const MAX_WEBSOCKET_MESSAGE_BYTES = 1024 * 1024;

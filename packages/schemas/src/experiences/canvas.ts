@@ -65,21 +65,23 @@ export interface CanvasGenerationResult {
   error?: string;
 }
 
-export interface CanvasGeneration {
-  id: string;
-  itemId?: string;
-  modelId: string;
-  modelName?: string;
-  provider?: string;
-  mode?: CanvasMode;
-  status: CanvasGenerationStatus;
-  createdAt?: string;
-  updatedAt?: string;
-  input?: Record<string, unknown>;
-  output?: unknown;
-  error?: string;
-  predictionData?: unknown;
-}
+export const canvasGenerationSchema = z.object({
+  id: z.string(),
+  itemId: z.string().nullable().optional(),
+  modelId: z.string(),
+  modelName: z.string().optional(),
+  provider: z.string().optional(),
+  mode: z.enum(["image", "video"]).optional(),
+  status: z.enum(["queued", "processing", "succeeded", "completed", "failed"]),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  input: z.record(z.string(), z.unknown()).optional(),
+  output: z.unknown().optional(),
+  error: z.string().optional(),
+  predictionData: z.unknown().optional(),
+});
+
+export type CanvasGeneration = z.infer<typeof canvasGenerationSchema>;
 
 export interface CanvasGenerateResponse {
   generations: CanvasGenerationResult[];

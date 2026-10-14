@@ -1,6 +1,7 @@
 import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   CreateTemplateInput,
+  ListPage,
   Template,
   TemplateKind,
   UpdateTemplateInput,
@@ -9,6 +10,7 @@ import type {
 import {
   projectTemplateConfigurationSchema,
   deriveProjectColour,
+  listPageOf,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -97,7 +99,7 @@ export async function listTemplates(
   context: ServiceContext,
   userId: number,
   filters: { workspaceId?: string; kind?: TemplateKind },
-): Promise<{ templates: Template[] }> {
+): Promise<ListPage<Template>> {
   const records = filters.workspaceId
     ? (await requireWorkspaceAccess(context, filters.workspaceId),
       await context.repositories.templates.listWorkspaceTemplates(
@@ -106,7 +108,7 @@ export async function listTemplates(
       ))
     : await context.repositories.templates.listPersonalTemplates(userId, filters.kind);
 
-  return { templates: records.map(formatTemplate) };
+  return listPageOf(records.map(formatTemplate), (template) => template.id);
 }
 
 export async function createTemplate(

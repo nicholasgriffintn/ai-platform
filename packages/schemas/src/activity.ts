@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listQuerySchema, listSchema } from "./platform/list.js";
+
 export const activityStatusSchema = z.enum([
   "queued",
   "running",
@@ -24,19 +26,17 @@ export const activityRecordSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
-export const activityListQuerySchema = z.object({
-  projectId: z.string().min(1).optional(),
-  conversationId: z.string().min(1).optional(),
-  capabilityId: z.string().min(1).optional(),
+export const activityListQuerySchema = listQuerySchema.extend({
+  project_id: z.string().min(1).optional(),
+  conversation_id: z.string().min(1).optional(),
+  capability_id: z.string().min(1).optional(),
   status: activityStatusSchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
 });
 
-export const activityListResponseSchema = z.object({
-  activities: z.array(activityRecordSchema),
-  hasMore: z.boolean(),
-});
+export type ActivityListQuery = z.infer<typeof activityListQuerySchema>;
+
+export const activityListResponseSchema = listSchema(activityRecordSchema);
 
 export type ActivityStatus = z.infer<typeof activityStatusSchema>;
 export type ActivityRecord = z.infer<typeof activityRecordSchema>;

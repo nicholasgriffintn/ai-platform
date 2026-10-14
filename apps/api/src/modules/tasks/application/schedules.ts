@@ -1,9 +1,9 @@
 import { SCHEDULES } from "~/config/schedules";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { reapComposioConnectorSessions } from "~/modules/apps/application/connectors/composio-cleanup";
-import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
 import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
 import { queueOfficialRuns } from "~/modules/benchmarks/application/official";
+import { reapComposioConnectorSessions } from "~/modules/connectors/application/composio-cleanup";
+import { deleteExpiredConnectorOperationApprovals } from "~/modules/connectors/application/connector-approval-cleanup";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
 import {
   runModelGovernanceMaintenance,

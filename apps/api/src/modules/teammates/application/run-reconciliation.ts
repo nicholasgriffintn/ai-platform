@@ -12,9 +12,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { deliverRecipeOccurrenceToTeammateHome } from "~/modules/apps/application/recipes/occurrences";
-import { deliverRecipeSmsNotification } from "~/modules/apps/application/recipes/sms-notification";
-import { getRecipeExecutionTaskId } from "~/modules/apps/application/recipes/task-reconciliation";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import {
   buildDelegationPendingResult,
@@ -27,6 +24,9 @@ import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
 import { notifyMobileWork } from "~/modules/mobile-push/application";
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
+import { deliverRecipeOccurrenceToTeammateHome } from "~/modules/recipes/application/occurrences";
+import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
+import { getRecipeExecutionTaskId } from "~/modules/recipes/application/task-reconciliation";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IUser, Message } from "~/types";
 

@@ -1,7 +1,6 @@
 import type {
   Drawing,
   DrawingResponse,
-  DrawingsResponse,
   GenerateImageResponse,
   GuessResponse,
 } from "@ngriffin_uk/polychat-schemas/experiences";
@@ -9,32 +8,11 @@ import type {
 import { apiService } from "./api-service.js";
 import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { withProjectScope } from "./project-scope.js";
+import { resource } from "./resource.js";
 
-export const fetchDrawings = async (projectId?: string): Promise<Drawing[]> => {
-  let headers = {};
-
-  try {
-    headers = await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error fetching drawings:", error);
-  }
-
-  const response = await fetchApi(
-    `/apps/drawing${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
-    {
-      method: "GET",
-      headers,
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch drawings: ${response.statusText}`);
-  }
-
-  const data = await returnFetchedData<DrawingsResponse>(response);
-
-  return data.drawings || [];
-};
+export const fetchDrawings = (projectId?: string): Promise<Drawing[]> =>
+  resource<Drawing>("/experiences/drawings").listAll({ project_id: projectId });
 
 export const fetchDrawing = async (id: string, projectId?: string): Promise<Drawing> => {
   let headers = {};
@@ -46,7 +24,7 @@ export const fetchDrawing = async (id: string, projectId?: string): Promise<Draw
   }
 
   const response = await fetchApi(
-    `/apps/drawing/${id}${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
+    withProjectScope(`/experiences/drawings/${encodeURIComponent(id)}`, projectId),
     {
       method: "GET",
       headers,
@@ -89,14 +67,11 @@ export const generateImageFromDrawing = async ({
 
   const filteredHeaders = { ...headers };
 
-  const response = await fetchApi(
-    `/apps/drawing${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
-    {
-      method: "POST",
-      body: formData,
-      headers: filteredHeaders,
-    },
-  );
+  const response = await fetchApi(withProjectScope("/experiences/drawings", projectId), {
+    method: "POST",
+    body: formData,
+    headers: filteredHeaders,
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to generate image: ${response.statusText}`);
@@ -126,14 +101,11 @@ export const guessDrawingFromImage = async ({
 
   const filteredHeaders = { ...headers };
 
-  const response = await fetchApi(
-    `/apps/drawing/guess${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ""}`,
-    {
-      method: "POST",
-      body: formData,
-      headers: filteredHeaders,
-    },
-  );
+  const response = await fetchApi(withProjectScope("/experiences/drawings/guess", projectId), {
+    method: "POST",
+    body: formData,
+    headers: filteredHeaders,
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to guess drawing: ${response.statusText}`);

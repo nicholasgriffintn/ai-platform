@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export const planSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -13,17 +15,14 @@ export const planSchema = z.object({
 
 export type Plan = z.infer<typeof planSchema>;
 
-export const plansResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.array(planSchema),
-});
+export const plansResponseSchema = listSchema(planSchema);
 
 export const planResponseSchema = z.object({
   success: z.boolean(),
   data: planSchema,
 });
 
-export const planParamsSchema = z.object({ id: z.string() });
+export const planParamsSchema = z.object({ plan_id: z.string().min(1) });
 
 export const planCreditsUpdateSchema = z
   .object({

@@ -7,7 +7,7 @@ import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { EmbeddingProviderTarget } from "~/infrastructure/providers/capabilities/embedding/helpers";
-import { getRecipeConnectorAccessToken } from "~/modules/apps/application/connectors";
+import { getRecipeConnectorAccessToken } from "~/modules/connectors/application";
 import {
   SourceRepository,
   type SourceRecord,

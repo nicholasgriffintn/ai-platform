@@ -4,12 +4,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { updateRecipeInstallation } from "~/modules/apps/application/recipes";
+import { updateRecipeInstallation } from "~/modules/recipes/application";
 import {
   getRecipeNotificationCapabilities,
   hasSmsNotificationTrigger,
-} from "~/modules/apps/application/recipes/notificationCapabilities";
-import { getActiveRecipeSetup } from "~/modules/apps/application/recipes/toolContext";
+} from "~/modules/recipes/application/notificationCapabilities";
+import { getActiveRecipeSetup } from "~/modules/recipes/application/toolContext";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { configure_recipe as configure_recipeDescriptor } from "../definitions/recipes/configure_recipe";

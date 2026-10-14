@@ -53,7 +53,7 @@ export function useMyBenchmarkRuns(enabled = true) {
     queryKey: [BENCHMARKS_QUERY_KEY, "mine"],
     queryFn: () => benchmarksService.myRuns(),
     enabled,
-    refetchInterval: (query) => (hasActiveRun(query.state.data?.runs) ? ACTIVE_RUN_POLL_MS : false),
+    refetchInterval: (query) => (hasActiveRun(query.state.data) ? ACTIVE_RUN_POLL_MS : false),
   });
 }
 

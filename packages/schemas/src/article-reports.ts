@@ -46,35 +46,12 @@ export interface AnalyseArticleParams {
   itemId: string;
 }
 
-export interface AnalyseArticleResponse {
-  status: "success";
-  message?: string;
-  outputId: string;
-  itemId: string;
-  analysis?: GeneratedArticleContent;
-}
-
 export interface SummariseArticleParams {
   article: string;
   itemId: string;
 }
 
-export interface SummariseArticleResponse {
-  status: "success";
-  message?: string;
-  outputId: string;
-  itemId: string;
-  summary?: GeneratedArticleContent;
-}
-
 export interface GenerateReportParams {
-  itemId: string;
-}
-
-export interface GenerateReportResponse {
-  status: "success";
-  message?: string;
-  outputId: string;
   itemId: string;
 }
 

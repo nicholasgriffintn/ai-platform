@@ -38,7 +38,7 @@ import {
 
 const app = new Hono();
 const tags = ["model-evaluation"];
-const base = "/workspaces/:workspaceId";
+const base = "/workspaces/:workspace_id";
 const deleted = { 200: { description: "Deleted", schema: z.object({ deleted: z.literal(true) }) } };
 
 addRoute(app, "get", `${base}/graders`, {
@@ -49,7 +49,7 @@ addRoute(app, "get", `${base}/graders`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Graders", schema: gradersResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listGraders(serviceContext, params.workspaceId, query.projectId),
+    listGraders(serviceContext, params.workspace_id, query.project_id),
 });
 
 addRoute(app, "post", `${base}/graders`, {
@@ -60,10 +60,10 @@ addRoute(app, "post", `${base}/graders`, {
   bodySchema: createGraderRequestSchema,
   responses: { 200: { description: "Grader", schema: graderSchema } },
   handler: ({ serviceContext, params, body }) =>
-    createGrader(serviceContext, params.workspaceId, body),
+    createGrader(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "put", `${base}/graders/:graderId`, {
+addRoute(app, "patch", `${base}/graders/:grader_id`, {
   auth: true,
   tags,
   summary: "Update a grader",
@@ -71,20 +71,20 @@ addRoute(app, "put", `${base}/graders/:graderId`, {
   bodySchema: createGraderRequestSchema,
   responses: { 200: { description: "Grader", schema: graderSchema } },
   handler: ({ serviceContext, params, body }) =>
-    updateGrader(serviceContext, params.workspaceId, params.graderId, body),
+    updateGrader(serviceContext, params.workspace_id, params.grader_id, body),
 });
 
-addRoute(app, "delete", `${base}/graders/:graderId`, {
+addRoute(app, "delete", `${base}/graders/:grader_id`, {
   auth: true,
   tags,
   summary: "Delete a grader",
   paramSchema: modelGraderParamsSchema,
   responses: deleted,
   handler: ({ serviceContext, params }) =>
-    deleteGrader(serviceContext, params.workspaceId, params.graderId),
+    deleteGrader(serviceContext, params.workspace_id, params.grader_id),
 });
 
-addRoute(app, "post", `${base}/graders/:graderId/preview`, {
+addRoute(app, "post", `${base}/graders/:grader_id/preview`, {
   auth: true,
   tags,
   summary: "Score one output with a grader",
@@ -92,10 +92,10 @@ addRoute(app, "post", `${base}/graders/:graderId/preview`, {
   bodySchema: graderPreviewRequestSchema,
   responses: { 200: { description: "Score", schema: graderPreviewSchema } },
   handler: ({ serviceContext, params, body }) =>
-    previewGrader(serviceContext, params.workspaceId, params.graderId, body),
+    previewGrader(serviceContext, params.workspace_id, params.grader_id, body),
 });
 
-addRoute(app, "get", `${base}/eval-suites`, {
+addRoute(app, "get", `${base}/eval_suites`, {
   auth: true,
   tags,
   summary: "List eval suites",
@@ -103,10 +103,10 @@ addRoute(app, "get", `${base}/eval-suites`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Suites", schema: evalSuitesResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listEvalSuites(serviceContext, params.workspaceId, query.projectId),
+    listEvalSuites(serviceContext, params.workspace_id, query.project_id),
 });
 
-addRoute(app, "post", `${base}/eval-suites`, {
+addRoute(app, "post", `${base}/eval_suites`, {
   auth: true,
   tags,
   summary: "Create an eval suite",
@@ -114,20 +114,20 @@ addRoute(app, "post", `${base}/eval-suites`, {
   bodySchema: createEvalSuiteRequestSchema,
   responses: { 200: { description: "Suite", schema: evalSuiteSchema } },
   handler: ({ serviceContext, params, body }) =>
-    createEvalSuite(serviceContext, params.workspaceId, body),
+    createEvalSuite(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "delete", `${base}/eval-suites/:suiteId`, {
+addRoute(app, "delete", `${base}/eval_suites/:suite_id`, {
   auth: true,
   tags,
   summary: "Delete an eval suite",
   paramSchema: registrySuiteParamsSchema,
   responses: deleted,
   handler: ({ serviceContext, params }) =>
-    deleteEvalSuite(serviceContext, params.workspaceId, params.suiteId),
+    deleteEvalSuite(serviceContext, params.workspace_id, params.suite_id),
 });
 
-addRoute(app, "post", `${base}/eval-suites/:suiteId/runs`, {
+addRoute(app, "post", `${base}/eval_suites/:suite_id/runs`, {
   auth: true,
   tags,
   summary: "Run a suite against up to six routes",
@@ -135,27 +135,27 @@ addRoute(app, "post", `${base}/eval-suites/:suiteId/runs`, {
   bodySchema: startEvalRunsRequestSchema,
   responses: { 200: { description: "Queued runs", schema: evalRunsResponseSchema } },
   handler: ({ serviceContext, params, body }) =>
-    startEvalRuns(serviceContext, params.workspaceId, params.suiteId, body),
+    startEvalRuns(serviceContext, params.workspace_id, params.suite_id, body),
 });
 
-addRoute(app, "get", `${base}/eval-suites/:suiteId/runs`, {
+addRoute(app, "get", `${base}/eval_suites/:suite_id/runs`, {
   auth: true,
   tags,
   summary: "List runs for a suite",
   paramSchema: registrySuiteParamsSchema,
   responses: { 200: { description: "Runs", schema: evalRunsResponseSchema } },
   handler: ({ serviceContext, params }) =>
-    listEvalRuns(serviceContext, params.workspaceId, params.suiteId),
+    listEvalRuns(serviceContext, params.workspace_id, params.suite_id),
 });
 
-addRoute(app, "get", `${base}/eval-runs/:runId/results`, {
+addRoute(app, "get", `${base}/eval_runs/:run_id/results`, {
   auth: true,
   tags,
   summary: "Per-case outputs and scores for a run",
   paramSchema: registryRunParamsSchema,
   responses: { 200: { description: "Case results", schema: evalCaseResultsResponseSchema } },
   handler: ({ serviceContext, params }) =>
-    readEvalCaseResults(serviceContext, params.workspaceId, params.runId),
+    readEvalCaseResults(serviceContext, params.workspace_id, params.run_id),
 });
 
 export default app;

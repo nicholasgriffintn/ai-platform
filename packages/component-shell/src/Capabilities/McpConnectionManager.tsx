@@ -36,7 +36,7 @@ export function McpConnectionManager({
           Saved connections could not be loaded.
         </p>
       ) : null}
-      {connections.query.data?.connections.map((connection) => (
+      {connections.query.data?.map((connection) => (
         <div className="flex items-center justify-between gap-2 text-sm" key={connection.id}>
           <span className="min-w-0 truncate">
             {connection.label}

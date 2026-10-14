@@ -88,17 +88,6 @@ export async function updateUserSettings(
   };
 }
 
-export async function getUserEnabledModels(
-  context: ServiceContext,
-  userId?: number,
-): Promise<string[]> {
-  const repo = ensureRepo(context);
-  const id = userId ?? context.requireUser().id;
-  const models = await repo.getUserEnabledModels(id);
-
-  return models.map((model: any) => model.model_id || model);
-}
-
 export async function storeProviderApiKey(
   context: ServiceContext,
   providerId: string,

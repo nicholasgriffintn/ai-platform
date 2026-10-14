@@ -268,16 +268,16 @@ function filtersQuery(query: WorkAttentionQuery): { sql: string; values: unknown
     add("kind = ?", query.kind);
   }
 
-  if (query.workspaceId) {
-    add("workspace_id = ?", query.workspaceId);
+  if (query.workspace_id) {
+    add("workspace_id = ?", query.workspace_id);
   }
 
-  if (query.projectId) {
-    add("project_id = ?", query.projectId);
+  if (query.project_id) {
+    add("project_id = ?", query.project_id);
   }
 
-  if (query.ownerUserId) {
-    add("owner_user_id = ?", query.ownerUserId);
+  if (query.owner_user_id) {
+    add("owner_user_id = ?", query.owner_user_id);
   }
 
   if (query.type) {
@@ -332,13 +332,16 @@ export class AttentionRepository extends BaseRepository {
       userId,
       userId,
     ];
+    const cursor = query.after
+      ? `${filters.sql ? " AND" : " WHERE"} (occurred_at, id) < (SELECT occurred_at, id FROM candidates WHERE id = ?)`
+      : "";
     const [rows, count] = await Promise.all([
       this.runQuery<AttentionRow>(
         `${CANDIDATES_QUERY}
-         SELECT * FROM candidates${filters.sql}
+         SELECT * FROM candidates${filters.sql}${cursor}
          ORDER BY occurred_at DESC, id DESC
-         LIMIT ? OFFSET ?`,
-        [...baseValues, ...filters.values, query.limit, query.offset],
+         LIMIT ?`,
+        [...baseValues, ...filters.values, ...(query.after ? [query.after] : []), query.limit + 1],
       ),
       this.runQuery<CountRow>(
         `${CANDIDATES_QUERY}

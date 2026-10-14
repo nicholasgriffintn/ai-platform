@@ -1,9 +1,11 @@
-import type {
-  Delegation,
-  DelegationOutputReference,
-  DelegationTeammateReference,
+import {
+  isLiveDelegationState,
+  listPageOf,
+  type Delegation,
+  type DelegationOutputReference,
+  type DelegationTeammateReference,
+  type ListPage,
 } from "@ngriffin_uk/polychat-schemas";
-import { isLiveDelegationState } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { filterAccessibleOutputs } from "~/modules/outputs/application/access";
@@ -46,12 +48,13 @@ async function resolveTeammateReferences(
 export async function listDelegationsWithReferences(
   context: ServiceContext,
   parentConversationId: string,
-): Promise<{
-  delegations: Delegation[];
-  teammates: DelegationTeammateReference[];
-  outputs: DelegationOutputReference[];
-  canControl: boolean;
-}> {
+): Promise<
+  ListPage<Delegation> & {
+    teammates: DelegationTeammateReference[];
+    outputs: DelegationOutputReference[];
+    canControl: boolean;
+  }
+> {
   const user = context.requireUser();
   const delegations =
     await context.repositories.delegations.listByParentConversationId(parentConversationId);
@@ -65,5 +68,10 @@ export async function listDelegationsWithReferences(
     ),
   ]);
 
-  return { delegations, teammates, outputs, canControl };
+  return {
+    ...listPageOf(delegations, (delegation) => delegation.id),
+    teammates,
+    outputs,
+    canControl,
+  };
 }

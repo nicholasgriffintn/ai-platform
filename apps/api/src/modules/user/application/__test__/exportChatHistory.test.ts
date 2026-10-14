@@ -1,3 +1,4 @@
+import type { ListPage } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -23,14 +24,19 @@ function createContext() {
   let inFlight = 0;
   let peakInFlight = 0;
 
-  const getUserConversations = async (
+  const listUserConversations = async (
     _userId: number,
-    _limit: number,
-    page: number,
-  ): Promise<{ conversations: Record<string, unknown>[]; totalPages: number }> => ({
-    conversations: buildConversations(page),
-    totalPages: 2,
-  });
+    options: { after?: string },
+  ): Promise<ListPage<Record<string, unknown>>> => {
+    const page = options.after ? 2 : 1;
+
+    return {
+      object: "list",
+      data: buildConversations(page),
+      has_more: page === 1,
+      last_id: `page-${page}`,
+    };
+  };
 
   const getConversationMessages = async (
     conversationId: string,
@@ -62,7 +68,7 @@ function createContext() {
 
   const context = {
     repositories: {
-      conversations: { getUserConversations },
+      conversations: { listUserConversations },
       messages: { getConversationMessages },
     },
   } as unknown as ServiceContext;

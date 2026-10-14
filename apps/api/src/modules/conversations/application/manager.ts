@@ -9,8 +9,14 @@ import {
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type { ConversationType, ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
-import { permissionModeSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  mapListPage,
+  permissionModeSchema,
+  type ConversationType,
+  type ListPage,
+  type ModelTier,
+  type PermissionMode,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -59,7 +65,7 @@ const logger = getLogger({ prefix: "services/conversations/manager" });
 export interface ConversationListOptions {
   archiveFilter?: ConversationArchiveFilter;
   limit?: number;
-  page?: number;
+  after?: string;
   query?: string;
   sortBy?: ConversationSortBy;
   updatedAfter?: string;
@@ -945,13 +951,7 @@ export class ConversationManager {
     });
   }
 
-  async list(options: ConversationListOptions = {}): Promise<{
-    conversations: Record<string, unknown>[];
-    total: number;
-    totalPages: number;
-    pageNumber: number;
-    pageSize: number;
-  }> {
+  async list(options: ConversationListOptions = {}): Promise<ListPage<Record<string, unknown>>> {
     if (!this.user?.id) {
       throw new AssistantError(
         "Manager: User ID is required to list conversations",
@@ -959,34 +959,26 @@ export class ConversationManager {
       );
     }
 
-    const {
-      archiveFilter = "active",
-      limit = 25,
-      page = 1,
-      query,
-      sortBy = "updated",
-      updatedAfter,
-    } = options;
-
-    const result = await this.database.repositories.conversations.getUserConversations(
-      this.user?.id,
-      {
-        archiveFilter,
-        limit,
-        page,
-        query,
-        sortBy,
-        updatedAfter,
-      },
+    const page = await this.database.repositories.conversations.listUserConversations(
+      this.user.id,
+      options,
     );
 
-    return {
-      ...result,
-      conversations: result.conversations.map((conversation) => ({
-        ...conversation,
-        model: conversation.model_id ?? null,
-      })),
-    };
+    return mapListPage(page, (conversation) => ({
+      ...conversation,
+      model: conversation.model_id ?? null,
+    }));
+  }
+
+  async count(options: ConversationListOptions = {}): Promise<number> {
+    if (!this.user?.id) {
+      throw new AssistantError(
+        "Manager: User ID is required to count conversations",
+        ErrorType.AUTHENTICATION_ERROR,
+      );
+    }
+
+    return this.database.repositories.conversations.countUserConversations(this.user.id, options);
   }
 
   async setArchivedForAll(options: SetConversationsArchivedOptions): Promise<number> {

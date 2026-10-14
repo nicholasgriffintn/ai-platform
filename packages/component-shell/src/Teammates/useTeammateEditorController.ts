@@ -91,7 +91,7 @@ export function useTeammateEditorController({
   const [deleteRequested, setDeleteRequested] = useState(false);
 
   const teammate = isCreate ? null : (teammateQuery.data ?? null);
-  const workspaces = workspacesQuery.data?.workspaces ?? [];
+  const workspaces = workspacesQuery.data ?? [];
   const permission = resolveTeammateManagePermission(teammate, currentUserId, workspaces);
   const publishTargets = getTeammatePublishTargets(workspaces);
 

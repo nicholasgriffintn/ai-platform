@@ -20,6 +20,7 @@ import {
   type ChatRun,
   type ProjectTask,
   type ProjectTaskBlockedReason,
+  type ResponseAuthority,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
@@ -30,14 +31,14 @@ import {
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { scheduleComposioConnectorRunCleanup } from "~/modules/apps/application/connectors/composio-run";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
+import { scheduleComposioConnectorRunCleanup } from "~/modules/connectors/application/composio-run";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
+import { startResponse } from "~/modules/responses/application/start";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
@@ -731,11 +732,6 @@ export async function runProjectTaskDispatch(params: {
       options: params.interaction ? { toolInteraction: params.interaction } : undefined,
       require_approval_for: [...runtime.requireApprovalFor],
       enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
-      durable_execution: {
-        kind: "project_task" as const,
-        dispatchTaskId: params.dispatchTaskId,
-        executionOwnerToken: params.executionLease.ownerToken,
-      },
       tool_choice: "auto" as const,
       metadata: { project_id: claimed.projectId },
     };
@@ -770,6 +766,13 @@ export async function runProjectTaskDispatch(params: {
     }
 
     const parsedRequest = responseCommandSchema.parse(request);
+    const authority: ResponseAuthority = {
+      durableExecution: {
+        kind: "project_task",
+        dispatchTaskId: params.dispatchTaskId,
+        executionOwnerToken: params.executionLease.ownerToken,
+      },
+    };
     const response = runtime.teammate
       ? await enqueueTeammateRun({
           env,
@@ -784,7 +787,7 @@ export async function runProjectTaskDispatch(params: {
             taskId: claimed.id,
             projectId: claimed.projectId,
           },
-          durableExecution: request.durable_execution,
+          authority,
           executionPolicy: {
             model: runtime.model,
             mode: runtime.mode,
@@ -794,7 +797,7 @@ export async function runProjectTaskDispatch(params: {
           ...(resumeConfiguration ? { resumeConfiguration } : {}),
           ...(remainingSteps !== undefined ? { maxStepsOverride: remainingSteps } : {}),
         })
-      : await handleCreateChatCompletions({ env, context, user, request: parsedRequest });
+      : await startResponse({ env, context, user, command: parsedRequest, authority });
 
     if (response instanceof Response) {
       const receiptResponse = chatRunCommandReceiptResponseSchema.safeParse(

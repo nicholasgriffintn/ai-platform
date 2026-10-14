@@ -1,4 +1,4 @@
-import { performDeepWebSearch } from "~/modules/apps/application/retrieval/web-search";
+import { performDeepWebSearch } from "~/modules/tools/application/retrieval/web-search";
 import type { SearchOptions } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

@@ -6,73 +6,49 @@ import type {
   UpdateTaskNotificationPreferences,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { requestJson, singleton } from "./resource.js";
 
-async function authHeaders() {
-  return apiService.getHeaders();
+const NOTIFICATIONS_PATH = "/notifications";
+const settings = singleton<TaskNotificationSettings, UpdateTaskNotificationPreferences>(
+  `${NOTIFICATIONS_PATH}/settings`,
+);
+
+export function listTaskInbox(): Promise<ProjectTaskAttentionResponse> {
+  return requestJson<ProjectTaskAttentionResponse>(NOTIFICATIONS_PATH, "GET");
 }
 
-export async function listTaskInbox(): Promise<ProjectTaskAttentionResponse> {
-  const response = await fetchApiOrThrow("/notifications/inbox", {
-    method: "GET",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
-}
-
-export async function updateTaskInboxReceipts(
+export function updateTaskInboxReceipts(
   itemIds: string[],
   action: "read" | "dismiss",
 ): Promise<{ updated: number }> {
-  const response = await fetchApiOrThrow(`/notifications/inbox/${action}`, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: { itemIds },
-  });
-
-  return returnFetchedData(response);
+  return requestJson<{ updated: number }>(`${NOTIFICATIONS_PATH}/${action}`, "POST", { itemIds });
 }
 
-export async function getTaskNotificationSettings(): Promise<TaskNotificationSettings> {
-  const response = await fetchApiOrThrow("/notifications/settings", {
-    method: "GET",
-    headers: await authHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function getTaskNotificationSettings(): Promise<TaskNotificationSettings> {
+  return settings.get();
 }
 
-export async function updateTaskNotificationSettings(
+export function updateTaskNotificationSettings(
   updates: UpdateTaskNotificationPreferences,
 ): Promise<TaskNotificationSettings> {
-  const response = await fetchApiOrThrow("/notifications/settings", {
-    method: "PUT",
-    headers: await authHeaders(),
-    body: updates,
-  });
-
-  return returnFetchedData(response);
+  return settings.update(updates);
 }
 
 export async function registerTaskNotifications(
   input: RegisterTaskNotification,
 ): Promise<TaskNotificationRegistration> {
-  const response = await fetchApiOrThrow("/notifications/registrations", {
-    method: "POST",
-    headers: await authHeaders(),
-    body: input,
-  });
-  const result = await returnFetchedData<{ registration: TaskNotificationRegistration }>(response);
+  const result = await requestJson<{ registration: TaskNotificationRegistration }>(
+    `${NOTIFICATIONS_PATH}/registrations`,
+    "POST",
+    input,
+  );
 
   return result.registration;
 }
 
 export async function removeTaskNotificationRegistration(installationId: string): Promise<void> {
-  await fetchApiOrThrow(`/notifications/registrations/${encodeURIComponent(installationId)}`, {
-    method: "DELETE",
-    headers: await authHeaders(),
-  });
+  await requestJson<unknown>(
+    `${NOTIFICATIONS_PATH}/registrations/${encodeURIComponent(installationId)}`,
+    "DELETE",
+  );
 }

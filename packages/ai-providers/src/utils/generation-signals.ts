@@ -1,8 +1,5 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import {
-  readNumberField,
-  readStringField,
-} from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
+import { readNumberField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import type { ToolDefinitionLike } from "../tool-definitions.js";
 import type { ChatCompletionParameters } from "../types/index.js";

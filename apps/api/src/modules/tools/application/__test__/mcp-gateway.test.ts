@@ -57,7 +57,7 @@ describe("native MCP gateway selection", () => {
 
   it("keeps OpenAI's hosted tool unless a credential is only for Polychat", async () => {
     mocks.listMcpConnections.mockResolvedValueOnce({
-      connections: [{ id: "connection-1", credentialRecipient: "openai" }],
+      data: [{ id: "connection-1", credentialRecipient: "openai" }],
     });
     await expect(
       shouldUseNativeMcpGateway({
@@ -69,7 +69,7 @@ describe("native MCP gateway selection", () => {
     ).resolves.toBe(false);
 
     mocks.listMcpConnections.mockResolvedValueOnce({
-      connections: [{ id: "connection-1", credentialRecipient: "polychat" }],
+      data: [{ id: "connection-1", credentialRecipient: "polychat" }],
     });
     await expect(
       shouldUseNativeMcpGateway({

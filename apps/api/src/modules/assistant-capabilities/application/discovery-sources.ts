@@ -6,16 +6,16 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
-import { listRecipeConnectors } from "~/modules/apps/application/connectors";
-import { listAssistantRecipes, listRecipeInstallations } from "~/modules/apps/application/recipes";
 import type {
   CapabilityDiscoverySources,
   DiscoverableFunctionTool,
 } from "~/modules/assistant-capabilities/application/discovery";
+import { listRecipeConnectors } from "~/modules/connectors/application";
 import { resolveEnabledFunctionToolNames } from "~/modules/functions/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { INTERNAL_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
+import { listAssistantRecipes, listRecipeInstallations } from "~/modules/recipes/application";
 import { formatFunctionName } from "~/modules/tools/application/functions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";

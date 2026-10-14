@@ -12,6 +12,7 @@ import type {
   PolyAgenda,
   PolyHandoffDisagreement,
   PolyHome,
+  StandingApproval,
   TeammateAutonomyLevel,
   TeammateResponse,
   CreateTeammateInput,
@@ -78,14 +79,14 @@ class ApiService {
     this.conversationsService = new ConversationsService(getHeaders);
     this.responsesService = new ResponsesService(getHeaders);
     this.audioService = new AudioService(getHeaders);
-    this.teammateService = new TeammateService(getHeaders);
+    this.teammateService = new TeammateService();
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
     this.polyService = new PolyService(getHeaders);
     this.deviceAuthorisationService = new DeviceAuthorisationService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
-    this.researchService = new ResearchService(getHeaders);
+    this.researchService = new ResearchService();
   }
 
   public static getInstance(): ApiService {
@@ -100,6 +101,9 @@ class ApiService {
 
   listChats = (options?: ConversationListOptions): Promise<ConversationListPage> =>
     this.conversationsService.list(options);
+
+  countChats = (options?: ConversationListOptions): Promise<number> =>
+    this.conversationsService.count(options);
 
   setAllConversationsArchived = (options: {
     archived: boolean;
@@ -246,10 +250,10 @@ class ApiService {
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
     this.polyService.disagreeWithPolyHandoff(handoffId);
 
-  grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
+  grantPolyStandingApproval = (interactionId: string): Promise<StandingApproval> =>
     this.polyService.grantPolyStandingApproval(interactionId);
 
-  revokePolyStandingApproval = (toolName: string, destination: string): Promise<PolyHome> =>
+  revokePolyStandingApproval = (toolName: string, destination: string): Promise<void> =>
     this.polyService.revokePolyStandingApproval(toolName, destination);
 
   listTeammates = (): Promise<TeammateResponse[]> => {
@@ -494,8 +498,8 @@ class ApiService {
     return this.subscriptionService.reactivateSubscription();
   };
 
-  fetchResearchStatus = (runId: string, provider?: string) => {
-    return this.researchService.fetchStatus(runId, provider);
+  fetchResearchStatus = (runId: string) => {
+    return this.researchService.fetchStatus(runId);
   };
 
   transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {

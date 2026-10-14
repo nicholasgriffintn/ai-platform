@@ -2,6 +2,7 @@ import type {
   CouncilReview,
   CouncilReviewListResponse,
   DocumentMetadata,
+  ListPage,
   Output,
   OutputHistoryResponse,
   OutputShare,
@@ -13,6 +14,7 @@ import { apiService } from "./api-service.js";
 import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
 async function getHeaders(): Promise<Record<string, string>> {
   return apiService.getHeaders();
@@ -25,27 +27,13 @@ export async function listOutputs(
     kind?: string;
   } = {},
 ): Promise<OutputSummary[]> {
-  const query = new URLSearchParams();
-
-  if (filters.projectId) {
-    query.set("projectId", filters.projectId);
-  }
-
-  if (filters.capabilityId) {
-    query.set("capabilityId", filters.capabilityId);
-  }
-
-  if (filters.kind) {
-    query.set("kind", filters.kind);
-  }
-
-  const suffix = query.size ? `?${query.toString()}` : "";
-  const response = await fetchApiOrThrow(`/outputs${suffix}`, {
-    method: "GET",
-    headers: await getHeaders(),
+  const page = await resource<OutputSummary>("/outputs").list({
+    project_id: filters.projectId,
+    capability_id: filters.capabilityId,
+    kind: filters.kind,
   });
 
-  return (await returnFetchedData<{ outputs: OutputSummary[] }>(response)).outputs;
+  return page.data;
 }
 
 export async function getOutput(outputId: string): Promise<Output> {
@@ -72,7 +60,7 @@ export async function listOutputReviews(outputId: string): Promise<CouncilReview
     headers: await getHeaders(),
   });
 
-  return (await returnFetchedData<CouncilReviewListResponse>(response)).reviews;
+  return (await returnFetchedData<CouncilReviewListResponse>(response)).data;
 }
 
 export async function requestOutputReview(outputId: string): Promise<CouncilReview> {
@@ -106,7 +94,7 @@ export async function updateOutput(
   updates: { content?: Record<string, unknown>; title?: string; expectedRevision: number },
 ): Promise<Output> {
   const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: await getHeaders(),
     body: updates,
   });
@@ -180,7 +168,7 @@ export async function listOutputShares(outputId: string): Promise<OutputShare[]>
     headers: await getHeaders(),
   });
 
-  return (await returnFetchedData<{ shares: OutputShare[] }>(response)).shares;
+  return (await returnFetchedData<ListPage<OutputShare>>(response)).data;
 }
 
 export async function revokeOutputShare(outputId: string, shareId: string): Promise<void> {

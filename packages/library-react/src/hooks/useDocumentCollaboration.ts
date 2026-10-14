@@ -5,11 +5,12 @@ import {
   proposeDocumentEdit,
   resolveDocumentThread,
 } from "@ngriffin_uk/polychat-library-client";
-import type {
-  CreateDocumentCommentInput,
-  DocumentEditProposal,
-  ProposeDocumentEditInput,
-  ResolveDocumentThreadInput,
+import {
+  nextPageCursor,
+  type CreateDocumentCommentInput,
+  type DocumentEditProposal,
+  type ProposeDocumentEditInput,
+  type ResolveDocumentThreadInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -25,7 +26,7 @@ export function useDocumentCollaboration(outputId: string) {
     queryKey,
     queryFn: ({ pageParam }) => listDocumentComments(outputId, pageParam || undefined),
     initialPageParam: "",
-    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    getNextPageParam: nextPageCursor,
     refetchInterval: (query) => liveOrPoll(query, 15_000, "document_comments.changed"),
   });
   const create = useMutation({
@@ -54,7 +55,7 @@ export function useDocumentCollaboration(outputId: string) {
   const latest = comments.data?.pages.at(-1);
   const data = latest
     ? {
-        comments: comments.data?.pages.flatMap((page) => page.comments) ?? [],
+        comments: comments.data?.pages.flatMap((page) => page.data) ?? [],
         permissions: latest.permissions,
       }
     : undefined;

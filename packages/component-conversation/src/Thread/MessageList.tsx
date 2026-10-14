@@ -27,7 +27,7 @@ import {
   useLoadEarlierChatMessages,
   useChatManager,
   useModels,
-  useSavedMessages,
+  useSavedItems,
   useWebLLMModels,
   useIsLoading,
   useLoadingMessage,
@@ -108,7 +108,7 @@ export const MessageList = ({
 }: MessageListProps) => {
   const computeSite = useChatStore((state) => state.computeSite);
   const { currentConversationId } = useConversationScope();
-  const savedMessages = useSavedMessages(Boolean(currentConversationId));
+  const savedMessages = useSavedItems(currentConversationId);
 
   const { data: conversation, isLoading: isLoadingConversation } = useChat(
     !isSharedView ? currentConversationId : undefined,

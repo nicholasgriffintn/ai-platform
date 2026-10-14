@@ -31,7 +31,7 @@ describe("completeMcpOAuthConnection", () => {
     const { context, upsertConnection } = createContext({
       provider: "mcp",
       codeVerifier: "verifier",
-      redirectUri: "https://api.example.com/tools/mcp/oauth/callback",
+      redirectUri: "https://api.example.com/tools/mcp_connections/callback",
       context: {},
       createdAt: new Date(0),
       expiresAt: new Date(1),

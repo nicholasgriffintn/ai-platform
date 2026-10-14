@@ -1,4 +1,9 @@
-import type { ChannelPairingChallenge, ChannelSender } from "@ngriffin_uk/polychat-schemas";
+import {
+  listPageOf,
+  type ChannelPairingChallenge,
+  type ChannelSender,
+  type ListPage,
+} from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -83,13 +88,13 @@ export async function consumeChannelPairingCommand(
 export async function listChannelSenders(
   context: ServiceContext,
   bindingId: string,
-): Promise<{ senders: ChannelSender[] }> {
+): Promise<ListPage<ChannelSender>> {
   const { canManage } = await requireChannelBindingAccess(context, bindingId);
   const user = context.requireUser();
   const rows = await context.repositories.channelSenders.list(bindingId, user.id, canManage);
 
-  return {
-    senders: rows.map((row) => ({
+  return listPageOf(
+    rows.map((row) => ({
       id: row.id,
       senderId: row.sender_id,
       userId: row.user_id,
@@ -98,7 +103,8 @@ export async function listChannelSenders(
       createdAt: row.created_at,
       canRevoke: canManage || row.user_id === user.id,
     })),
-  };
+    (sender) => sender.id,
+  );
 }
 
 export async function revokeChannelSender(

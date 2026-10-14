@@ -10,7 +10,7 @@ import {
   decodeEmbeddingRuntimeTarget,
   toEmbeddingRuntimeTarget,
 } from "~/infrastructure/providers/capabilities/embedding/target";
-import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
+import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";

@@ -20,11 +20,6 @@ import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { Database } from "~/infrastructure/database";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import {
-  getConnectedRecipeConnectorProviders,
-  listRecipeConnectors,
-} from "~/modules/apps/application/connectors";
-import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
@@ -50,6 +45,10 @@ import {
   mergeEnabledGoalToolNames,
 } from "~/modules/chat/domain/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
+import {
+  getConnectedRecipeConnectorProviders,
+  listRecipeConnectors,
+} from "~/modules/connectors/application";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import {
@@ -57,6 +56,7 @@ import {
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
 import { getConversationBrief } from "~/modules/memory-documents/application/memory-documents";
+import { isRecipeExecutionRequest } from "~/modules/recipes/application/toolContext";
 import { isBuiltInToolApprovalResolution } from "~/modules/responses/application/runs/interactions";
 import {
   buildSkillAvailabilityInput,

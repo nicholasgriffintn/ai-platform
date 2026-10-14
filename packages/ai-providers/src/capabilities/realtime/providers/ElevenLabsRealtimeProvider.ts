@@ -9,7 +9,7 @@ import type {
   RealtimeSessionRequest,
   RealtimeTranscriptionDelay,
 } from "../index.js";
-import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
+import { buildGrantedRealtimeProxyUrl, REALTIME_TRANSCRIPTION_PROXY_PATH } from "./proxyUrl.js";
 
 export const ELEVENLABS_REALTIME_DESCRIPTOR = {
   id: "elevenlabs",
@@ -35,7 +35,6 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
   transcription: [DEFAULT_TRANSCRIPTION_MODEL],
 };
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "minimal";
-const ELEVENLABS_REALTIME_PROXY_PATH = "/realtime/elevenlabs/transcription";
 
 export class ElevenLabsRealtimeProvider implements RealtimeProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
@@ -117,7 +116,7 @@ export class ElevenLabsRealtimeProvider implements RealtimeProvider {
         delay,
         language: request.language,
       },
-      path: ELEVENLABS_REALTIME_PROXY_PATH,
+      path: REALTIME_TRANSCRIPTION_PROXY_PATH,
       provider: this.name,
       sessionId,
       userId: request.user.id,

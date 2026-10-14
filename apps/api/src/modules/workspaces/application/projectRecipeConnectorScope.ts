@@ -1,12 +1,12 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { parseProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
-import { getAssistantRecipes, resolveRecipeId } from "~/modules/apps/application/recipes/catalog";
+import { parseProjectConnectorGrant } from "~/modules/connectors/application/project-grants";
+import { getAssistantRecipes, resolveRecipeId } from "~/modules/recipes/application/catalog";
 import {
   buildAllowedConnectorOperations,
   buildAllowedConnectorProviders,
-} from "~/modules/apps/application/recipes/runtime";
+} from "~/modules/recipes/application/runtime";
 
 interface ProjectCapabilityReference {
   capability_id: string;

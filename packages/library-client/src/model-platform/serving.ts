@@ -43,7 +43,7 @@ export async function listDeployments(
 ): Promise<DeploymentsResponse["deployments"]> {
   return (
     await platformRequest<DeploymentsResponse>(
-      workspacePath(workspaceId, `/deployments${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/deployments${toQueryString({ project_id: projectId })}`),
     )
   ).deployments;
 }
@@ -85,9 +85,10 @@ export function changeDeploymentState(
   action: DeploymentAction,
 ): Promise<ModelDeployment> {
   return platformRequest(
-    workspacePath(workspaceId, `/deployments/${segment(deploymentId)}/${action}`),
+    workspacePath(workspaceId, `/deployments/${segment(deploymentId)}/actions`),
     {
       method: "POST",
+      body: { action },
     },
   );
 }
@@ -112,7 +113,7 @@ export async function listAliases(
 ): Promise<AliasesResponse["aliases"]> {
   return (
     await platformRequest<AliasesResponse>(
-      workspacePath(workspaceId, `/aliases${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/aliases${toQueryString({ project_id: projectId })}`),
     )
   ).aliases;
 }
@@ -131,7 +132,7 @@ export function updateAlias(
   input: UpdateAliasRequest,
 ): Promise<ModelAlias> {
   return platformRequest(workspacePath(workspaceId, `/aliases/${segment(aliasId)}`), {
-    method: "PUT",
+    method: "PATCH",
     body: input,
   });
 }
@@ -165,7 +166,7 @@ export async function listModelRoutes(
 ): Promise<RoutesResponse["routes"]> {
   return (
     await platformRequest<RoutesResponse>(
-      workspacePath(workspaceId, `/routes${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/routes${toQueryString({ project_id: projectId })}`),
     )
   ).routes;
 }
@@ -193,7 +194,7 @@ export async function listRouteSuggestions(
 ): Promise<RouteSuggestion[]> {
   return (
     await platformRequest<{ suggestions: RouteSuggestion[] }>(
-      workspacePath(workspaceId, `/versions/${segment(versionId)}/route-suggestions`),
+      workspacePath(workspaceId, `/versions/${segment(versionId)}/route_suggestions`),
     )
   ).suggestions;
 }

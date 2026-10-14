@@ -26,7 +26,7 @@ extension RecipesAPIClient {
 }
 
 protocol ConversationAPIClient {
-    func fetchConversations(limit: Int, page: Int, includeArchived: Bool) async throws -> ConversationListResponse
+    func fetchConversations(limit: Int, after: String?, includeArchived: Bool) async throws -> ConversationListResponse
     func fetchConversation(
         id: String,
         refreshPending: Bool
@@ -115,7 +115,7 @@ extension ConversationAPIClient {
     }
 
     func fetchConversations() async throws -> ConversationListResponse {
-        try await fetchConversations(limit: 50, page: 1, includeArchived: false)
+        try await fetchConversations(limit: 50, after: nil, includeArchived: false)
     }
 
     func fetchConversation(id: String) async throws -> ConversationDetailResponse {

@@ -61,7 +61,7 @@ import { listSpendRequests } from "~/modules/model-governance/application/spend-
 
 const app = new Hono();
 const tags = ["model-governance"];
-const base = "/workspaces/:workspaceId";
+const base = "/workspaces/:workspace_id";
 
 addRoute(app, "get", `${base}/overview`, {
   auth: true,
@@ -71,7 +71,7 @@ addRoute(app, "get", `${base}/overview`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Overview", schema: modelsOverviewSchema } },
   handler: ({ serviceContext, params, query }) =>
-    getModelsOverview(serviceContext, params.workspaceId, query.projectId),
+    getModelsOverview(serviceContext, params.workspace_id, query.project_id),
 });
 
 addRoute(app, "get", `${base}/providers`, {
@@ -83,10 +83,10 @@ addRoute(app, "get", `${base}/providers`, {
     200: { description: "Provider catalogue", schema: providerCatalogueResponseSchema },
   },
   handler: ({ serviceContext, params }) =>
-    listProviderCatalogue(serviceContext, params.workspaceId),
+    listProviderCatalogue(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "post", `${base}/providers/:provider/check`, {
+addRoute(app, "post", `${base}/providers/:provider_id/check`, {
   auth: true,
   tags,
   summary: "Check provider credentials before saving them",
@@ -94,10 +94,10 @@ addRoute(app, "post", `${base}/providers/:provider/check`, {
   bodySchema: saveModelConnectionRequestSchema,
   responses: { 200: { description: "Check result", schema: connectionCheckSchema } },
   handler: ({ serviceContext, params, body }) =>
-    checkModelConnection(serviceContext, params.workspaceId, params.provider, body),
+    checkModelConnection(serviceContext, params.workspace_id, params.provider_id, body),
 });
 
-addRoute(app, "put", `${base}/providers/:provider`, {
+addRoute(app, "patch", `${base}/providers/:provider_id`, {
   auth: true,
   tags,
   summary: "Connect this workspace to a provider account",
@@ -105,17 +105,17 @@ addRoute(app, "put", `${base}/providers/:provider`, {
   bodySchema: saveModelConnectionRequestSchema,
   responses: { 200: { description: "Connection", schema: modelConnectionSchema } },
   handler: ({ serviceContext, params, body }) =>
-    saveModelConnection(serviceContext, params.workspaceId, params.provider, body),
+    saveModelConnection(serviceContext, params.workspace_id, params.provider_id, body),
 });
 
-addRoute(app, "delete", `${base}/providers/:provider`, {
+addRoute(app, "delete", `${base}/providers/:provider_id`, {
   auth: true,
   tags,
   summary: "Disconnect a provider account",
   paramSchema: modelConnectionParamsSchema,
   responses: { 200: { description: "Deleted", schema: z.object({ deleted: z.boolean() }) } },
   handler: ({ serviceContext, params }) =>
-    deleteModelConnection(serviceContext, params.workspaceId, params.provider),
+    deleteModelConnection(serviceContext, params.workspace_id, params.provider_id),
 });
 
 addRoute(app, "get", `${base}/permissions`, {
@@ -124,7 +124,7 @@ addRoute(app, "get", `${base}/permissions`, {
   summary: "Get which roles may take each model action",
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Permissions", schema: modelPermissionsSchema } },
-  handler: ({ serviceContext, params }) => getModelPermissions(serviceContext, params.workspaceId),
+  handler: ({ serviceContext, params }) => getModelPermissions(serviceContext, params.workspace_id),
 });
 
 addRoute(app, "get", `${base}/permissions/me`, {
@@ -134,10 +134,10 @@ addRoute(app, "get", `${base}/permissions/me`, {
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Permissions", schema: myModelPermissionsSchema } },
   handler: ({ serviceContext, params }) =>
-    getMyModelPermissions(serviceContext, params.workspaceId),
+    getMyModelPermissions(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "put", `${base}/permissions`, {
+addRoute(app, "patch", `${base}/permissions`, {
   auth: true,
   tags,
   summary: "Save role grants and separation of duties",
@@ -145,7 +145,7 @@ addRoute(app, "put", `${base}/permissions`, {
   bodySchema: saveModelPermissionsRequestSchema,
   responses: { 200: { description: "Permissions", schema: modelPermissionsSchema } },
   handler: ({ serviceContext, params, body }) =>
-    saveModelPermissions(serviceContext, params.workspaceId, body),
+    saveModelPermissions(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "get", `${base}/spend`, {
@@ -154,10 +154,10 @@ addRoute(app, "get", `${base}/spend`, {
   summary: "Month-to-date spend, commitments and budgets",
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Spend", schema: spendSummarySchema } },
-  handler: ({ serviceContext, params }) => getSpendSummary(serviceContext, params.workspaceId),
+  handler: ({ serviceContext, params }) => getSpendSummary(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "put", `${base}/budgets`, {
+addRoute(app, "patch", `${base}/budgets`, {
   auth: true,
   tags,
   summary: "Save the workspace or a project budget",
@@ -165,7 +165,7 @@ addRoute(app, "put", `${base}/budgets`, {
   bodySchema: saveBudgetRequestSchema,
   responses: { 200: { description: "Budget", schema: modelBudgetSchema } },
   handler: ({ serviceContext, params, body }) =>
-    saveBudget(serviceContext, params.workspaceId, body),
+    saveBudget(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "delete", `${base}/budgets`, {
@@ -176,19 +176,19 @@ addRoute(app, "delete", `${base}/budgets`, {
   querySchema: budgetScopeQuerySchema,
   responses: { 200: { description: "Deleted", schema: z.object({ deleted: z.literal(true) }) } },
   handler: ({ serviceContext, params, query }) =>
-    deleteBudget(serviceContext, params.workspaceId, query.projectId ?? null),
+    deleteBudget(serviceContext, params.workspace_id, query.project_id ?? null),
 });
 
-addRoute(app, "get", `${base}/spend-requests`, {
+addRoute(app, "get", `${base}/spend_requests`, {
   auth: true,
   tags,
   summary: "List spend requests awaiting or past approval",
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Requests", schema: spendRequestsResponseSchema } },
-  handler: ({ serviceContext, params }) => listSpendRequests(serviceContext, params.workspaceId),
+  handler: ({ serviceContext, params }) => listSpendRequests(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "post", `${base}/spend-requests/:requestId/resolve`, {
+addRoute(app, "post", `${base}/spend_requests/:request_id/resolve`, {
   auth: true,
   tags,
   summary: "Approve and start, or reject, a spend request",
@@ -196,7 +196,7 @@ addRoute(app, "post", `${base}/spend-requests/:requestId/resolve`, {
   bodySchema: resolveSpendRequestSchema,
   responses: { 200: { description: "Request", schema: spendRequestSchema } },
   handler: ({ serviceContext, params, body }) =>
-    resolveSpendRequest(serviceContext, params.workspaceId, params.requestId, body),
+    resolveSpendRequest(serviceContext, params.workspace_id, params.request_id, body),
 });
 
 addRoute(app, "get", `${base}/audit`, {
@@ -207,7 +207,7 @@ addRoute(app, "get", `${base}/audit`, {
   querySchema: modelAuditQuerySchema,
   responses: { 200: { description: "Audit events", schema: modelAuditResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listModelAudit(serviceContext, params.workspaceId, query),
+    listModelAudit(serviceContext, params.workspace_id, query),
 });
 
 addRoute(app, "get", `${base}/inventory`, {
@@ -216,10 +216,10 @@ addRoute(app, "get", `${base}/inventory`, {
   summary: "Export the AI system inventory",
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Inventory", schema: modelInventoryResponseSchema } },
-  handler: ({ serviceContext, params }) => exportInventory(serviceContext, params.workspaceId),
+  handler: ({ serviceContext, params }) => exportInventory(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "post", `${base}/versions/:versionId/revoke`, {
+addRoute(app, "post", `${base}/versions/:version_id/revoke`, {
   auth: true,
   tags,
   summary: "Revoke a version and everything derived from it",
@@ -228,10 +228,10 @@ addRoute(app, "post", `${base}/versions/:versionId/revoke`, {
   bodySchema: revokeVersionRequestSchema,
   responses: { 200: { description: "Revocation", schema: revocationResultSchema } },
   handler: ({ serviceContext, params, body }) =>
-    revokeVersion(serviceContext, params.workspaceId, params.versionId, body),
+    revokeVersion(serviceContext, params.workspace_id, params.version_id, body),
 });
 
-addRoute(app, "get", `${base}/versions/:versionId/bom`, {
+addRoute(app, "get", `${base}/versions/:version_id/bom`, {
   auth: true,
   tags,
   summary: "Export a CycloneDX or SPDX AI bill of materials",
@@ -239,27 +239,27 @@ addRoute(app, "get", `${base}/versions/:versionId/bom`, {
   querySchema: bomQuerySchema,
   responses: { 200: { description: "BOM document", schema: z.record(z.string(), z.unknown()) } },
   handler: ({ serviceContext, params, query }) =>
-    exportBom(serviceContext, params.workspaceId, params.versionId, query.format, query.routeId),
+    exportBom(serviceContext, params.workspace_id, params.version_id, query.format, query.route_id),
 });
 
-addRoute(app, "get", `${base}/versions/:versionId/card`, {
+addRoute(app, "get", `${base}/versions/:version_id/card`, {
   auth: true,
   tags,
   summary: "Render a model card",
   paramSchema: registryVersionParamsSchema,
   responses: { 200: { description: "Model card", schema: z.object({ markdown: z.string() }) } },
   handler: ({ serviceContext, params }) =>
-    exportModelCard(serviceContext, params.workspaceId, params.versionId),
+    exportModelCard(serviceContext, params.workspace_id, params.version_id),
 });
 
-addRoute(app, "get", `${base}/versions/:versionId/training-content`, {
+addRoute(app, "get", `${base}/versions/:version_id/training_content`, {
   auth: true,
   tags,
   summary: "Summarise training content for a modified model",
   paramSchema: registryVersionParamsSchema,
   responses: { 200: { description: "Summary", schema: trainingContentSummarySchema } },
   handler: ({ serviceContext, params }) =>
-    exportTrainingContentSummary(serviceContext, params.workspaceId, params.versionId),
+    exportTrainingContentSummary(serviceContext, params.workspace_id, params.version_id),
 });
 
 export default app;

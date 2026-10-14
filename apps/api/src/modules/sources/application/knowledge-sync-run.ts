@@ -5,8 +5,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import { executeRecipeConnectorOperation } from "~/modules/apps/application/connectors/operations";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
+import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import type { IEnv } from "~/types";
 

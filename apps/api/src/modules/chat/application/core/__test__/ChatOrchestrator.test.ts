@@ -178,11 +178,17 @@ describe("ChatOrchestrator", () => {
       messages: input.messages,
       compacted: false,
     }));
-    mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
-      await sink.writeEvent("content_block_delta", { content: "Hello" });
+    mockConsumeProviderStream.mockImplementation(
+      async (_stream: unknown, sink: any, context: { messageId: string }) => {
+        await sink.write({
+          type: "response.output_text.delta",
+          item_id: context.messageId,
+          delta: "Hello",
+        });
 
-      return { content: "Hello", toolCalls: [], parts: [], error: null };
-    });
+        return { content: "Hello", toolCalls: [], parts: [], error: null };
+      },
+    );
 
     mockOptions = {
       completion_id: "test-completion-id",
@@ -715,22 +721,28 @@ describe("ChatOrchestrator", () => {
           currentMode: "chat",
         });
         mockGetAIResponse.mockResolvedValue(new ReadableStream());
-        mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
-          await sink.writeEvent("content_block_delta", { content: "unsafe streamed output" });
+        mockConsumeProviderStream.mockImplementation(
+          async (_stream: unknown, sink: any, context: { messageId: string }) => {
+            await sink.write({
+              type: "response.output_text.delta",
+              item_id: context.messageId,
+              delta: "unsafe streamed output",
+            });
 
-          return {
-            content: "unsafe streamed output",
-            toolCalls: [
-              {
-                id: "call-1",
-                type: "function",
-                function: { name: "dangerous_tool", arguments: "{}" },
-              },
-            ],
-            parts: [],
-            error: null,
-          };
-        });
+            return {
+              content: "unsafe streamed output",
+              toolCalls: [
+                {
+                  id: "call-1",
+                  type: "function",
+                  function: { name: "dangerous_tool", arguments: "{}" },
+                },
+              ],
+              parts: [],
+              error: null,
+            };
+          },
+        );
         mockGuardrails.validateOutput.mockResolvedValue({
           isValid: false,
           violations: ["unsafe_response"],

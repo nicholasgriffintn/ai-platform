@@ -3,13 +3,13 @@ import { extractChatCompletionNotification } from "@ngriffin_uk/polychat-ai-prov
 import {
   invokeAssistantRecipe,
   resolveInstalledAssistantRecipe,
-} from "~/modules/apps/application/recipes";
-import { getRecipeConversationContext } from "~/modules/apps/application/recipes/conversationContext";
-import { executeRecipeInvocationChat } from "~/modules/apps/application/recipes/execution";
+} from "~/modules/recipes/application";
+import { getRecipeConversationContext } from "~/modules/recipes/application/conversationContext";
+import { executeRecipeInvocationChat } from "~/modules/recipes/application/execution";
 import {
   getRecipeExecutionChannelContext,
   getTriggerRecipeChannel,
-} from "~/modules/apps/application/recipes/toolContext";
+} from "~/modules/recipes/application/toolContext";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { trigger_recipe as trigger_recipeDescriptor } from "../definitions/recipes/trigger_recipe";

@@ -8,9 +8,12 @@ import {
   PET_SHEET_MAX_BYTES,
   PET_SHEET_MIME_TYPES,
   describePetSheetSizes,
+  mapListPage,
   matchPetSheetLayout,
   parsePetModelOverrides,
   removeCustomPetFromModelOverrides,
+  toListPage,
+  type ListQuery,
   type PetOrigin,
   type PetSheetLayout,
   type UserPet,
@@ -40,7 +43,7 @@ function assertPetAuthoring(user: IUser): void {
 
 function buildSheetUrl(context: ServiceContext, petId: string): string {
   const baseUrl = context.env.API_BASE_URL?.replace(/\/$/, "");
-  const path = `/user/pets/${petId}/sheet`;
+  const path = `/pets/${petId}/sheet`;
 
   return baseUrl ? `${baseUrl}${path}` : path;
 }
@@ -128,23 +131,18 @@ function assertSheetIsValid(bytes: Uint8Array): {
   };
 }
 
-export async function listPets(
-  context: ServiceContext,
-  page: number,
-  limit: number,
-): Promise<UserPetsPage> {
+export async function listPets(context: ServiceContext, query: ListQuery): Promise<UserPetsPage> {
   const user = context.requireUser();
-  const { records, hasMore } = await context.repositories.userPets.listUserPetsPage(
+  const records = await context.repositories.userPets.listUserPets(
     user.id,
-    page,
-    limit,
+    query.limit + 1,
+    query.after,
   );
 
-  return {
-    pets: records.map((record) => toUserPet(context, record)),
-    page,
-    has_more: hasMore,
-  };
+  return mapListPage(
+    toListPage(records, query.limit, (record) => record.id),
+    (record) => toUserPet(context, record),
+  );
 }
 
 export async function getPet(context: ServiceContext, petId: string): Promise<UserPet> {

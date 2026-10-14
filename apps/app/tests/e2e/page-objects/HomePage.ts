@@ -334,7 +334,7 @@ export class HomePage extends BasePage {
     const sessionResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/realtime/session/realtime"),
+        new URL(response.url()).pathname.endsWith("/realtime/sessions"),
     );
 
     await this.page.getByRole("button", { name: "Start live session" }).click();
@@ -409,7 +409,7 @@ export class HomePage extends BasePage {
     const generationResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/canvas/generate"),
+        new URL(response.url()).pathname.endsWith("/jobs"),
     );
 
     await this.page.getByRole("button", { name: "Generate", exact: true }).click();
@@ -472,7 +472,7 @@ export class HomePage extends BasePage {
     const guessResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/drawing/guess"),
+        new URL(response.url()).pathname.endsWith("/experiences/drawings/guess"),
     );
 
     await this.page.getByRole("button", { name: "Guess What I Drew" }).click();
@@ -487,7 +487,7 @@ export class HomePage extends BasePage {
     const transformResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/drawing"),
+        new URL(response.url()).pathname.endsWith("/experiences/drawings"),
     );
 
     await this.page.getByRole("button", { name: "Transform Drawing" }).click();

@@ -162,7 +162,7 @@ export async function returnFetchedData<T>(response: Response): Promise<T> {
   try {
     const data: T = await response.json();
 
-    return isRecord(data) && "data" in data ? (data.data as T) : data;
+    return isRecord(data) && "data" in data && data.object !== "list" ? (data.data as T) : data;
   } catch {
     throw new Error("Failed to parse response JSON");
   }

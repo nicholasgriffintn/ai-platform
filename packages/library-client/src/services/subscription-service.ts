@@ -3,7 +3,7 @@ import { returnFetchedData } from "../http.js";
 
 export class SubscriptionService {
   async getSubscription(): Promise<any> {
-    const response = await fetchApi("/stripe/subscription");
+    const response = await fetchApi("/billing/subscription");
 
     if (response.status === 404) {
       return null;
@@ -23,7 +23,7 @@ export class SubscriptionService {
     successUrl: string,
     cancelUrl: string,
   ): Promise<{ url: string }> {
-    const response = await fetchApi("/stripe/checkout", {
+    const response = await fetchApi("/billing/checkout_sessions", {
       method: "POST",
       body: { plan_id: planId, success_url: successUrl, cancel_url: cancelUrl },
     });
@@ -37,7 +37,7 @@ export class SubscriptionService {
   }
 
   async cancelSubscription(): Promise<any> {
-    const response = await fetchApi("/stripe/subscription/cancel", {
+    const response = await fetchApi("/billing/subscription/cancel", {
       method: "POST",
     });
     const data = await returnFetchedData<{ error?: string }>(response);
@@ -50,7 +50,7 @@ export class SubscriptionService {
   }
 
   async reactivateSubscription(): Promise<any> {
-    const response = await fetchApi("/stripe/subscription/reactivate", {
+    const response = await fetchApi("/billing/subscription/reactivate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

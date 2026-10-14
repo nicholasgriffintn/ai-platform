@@ -3,6 +3,7 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { listSchema } from "./platform/list.js";
 import {
   siteCollectionSchema,
   siteDataBindingSchema,
@@ -612,7 +613,7 @@ export type SiteFilesResponse = z.infer<typeof siteFilesResponseSchema>;
 
 export const siteFilesQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     target: siteExportTargetSchema.default(DEFAULT_SITE_EXPORT_TARGET),
   })
   .strict();
@@ -752,13 +753,13 @@ export type SiteEvaluationResponse = z.infer<typeof siteEvaluationResponseSchema
 
 export const listSitesQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
   })
   .strict();
 export type ListSitesQuery = z.infer<typeof listSitesQuerySchema>;
 
-export const siteListResponseSchema = z.object({ sites: z.array(siteSummarySchema) }).strict();
+export const siteListResponseSchema = listSchema(siteSummarySchema);
 export type SiteListResponse = z.infer<typeof siteListResponseSchema>;
 
 export const siteResponseSchema = z.object({ site: siteRecordSchema }).strict();

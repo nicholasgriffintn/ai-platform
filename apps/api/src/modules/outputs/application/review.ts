@@ -1,4 +1,8 @@
-import type { CouncilReview, CouncilReviewListResponse } from "@ngriffin_uk/polychat-schemas";
+import {
+  listPageOf,
+  type CouncilReview,
+  type CouncilReviewListResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -77,5 +81,8 @@ export async function listOutputReviews(
 
   await requireOutputAccess(context, user.id, outputId);
 
-  return { reviews: await context.repositories.outputReviews.listForOutput(outputId, LIST_LIMIT) };
+  return listPageOf(
+    await context.repositories.outputReviews.listForOutput(outputId, LIST_LIMIT),
+    (review) => review.id,
+  );
 }

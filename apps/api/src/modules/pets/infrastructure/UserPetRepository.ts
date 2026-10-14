@@ -3,7 +3,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { PaginationHelper } from "~/infrastructure/database/PaginationHelper";
 
 export interface UserPetRecord {
   id: string;
@@ -40,28 +39,26 @@ export interface CreateUserPetInput {
 }
 
 export class UserPetRepository extends BaseRepository {
-  public async listUserPetsPage(
+  public async listUserPets(
     userId: number,
-    page: number,
     limit: number,
-  ): Promise<{ records: UserPetRecord[]; hasMore: boolean }> {
-    const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
-    const { query, values } = this.buildSelectQuery(
-      "user_pet",
-      { user_id: userId },
-      {
-        columns: COLUMNS,
-        orderBy: "created_at DESC, id DESC",
-        limit: safeLimit + 1,
-        offset,
-      },
-    );
-    const records = await this.runQuery<UserPetRecord>(query, values);
+    after?: string,
+  ): Promise<UserPetRecord[]> {
+    const values: unknown[] = [userId];
+    let cursorClause = "";
 
-    return {
-      records: records.slice(0, safeLimit),
-      hasMore: records.length > safeLimit,
-    };
+    if (after) {
+      cursorClause =
+        " AND (created_at, id) < (SELECT created_at, id FROM user_pet WHERE id = ? AND user_id = ?)";
+      values.push(after, userId);
+    }
+
+    values.push(limit);
+
+    return this.runQuery<UserPetRecord>(
+      `SELECT ${COLUMNS.join(", ")} FROM user_pet WHERE user_id = ?${cursorClause} ORDER BY created_at DESC, id DESC LIMIT ?`,
+      values,
+    );
   }
 
   public async listOwnedPetIds(userId: number, petIds: readonly string[]): Promise<Set<string>> {

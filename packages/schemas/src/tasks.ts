@@ -20,6 +20,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
+import { listSchema } from "./platform/list.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -36,6 +37,7 @@ export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 export const QUEUED_CHAT_MESSAGE_TASK_TYPE = "queued_chat_message";
 export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
 export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
+export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -76,6 +78,7 @@ export const TASK_TYPES = [
   MODEL_UPLOAD_FINALISE_TASK_TYPE,
   MODEL_PLATFORM_RECONCILE_TASK_TYPE,
   BENCHMARK_RUN_TASK_TYPE,
+  WEBHOOK_DELIVERY_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({
@@ -104,8 +107,6 @@ export const recipeExecutionTaskDataSchema = z.object({
   notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
   notificationTarget: z.string().min(1).optional(),
 });
-
-export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
 
 export const taskTypeSchema = z.enum(TASK_TYPES);
 
@@ -189,17 +190,6 @@ export const createTaskRequestSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
-export const publicTaskTypeSchema = z.enum(PUBLIC_TASK_TYPES);
-
-export const createPublicTaskRequestSchema = z.object({
-  task_type: publicTaskTypeSchema,
-  task_data: z.record(z.string(), z.any()),
-  schedule_type: scheduleTypeSchema.optional(),
-  scheduled_at: scheduledAtSchema.optional(),
-  priority: z.number().min(1).max(10).optional(),
-  metadata: z.record(z.string(), z.any()).optional(),
-});
-
 export const createTaskResponseSchema = z.object({
   task_id: z.string(),
   status: taskStatusSchema,
@@ -208,10 +198,9 @@ export const createTaskResponseSchema = z.object({
 
 export const getTaskResponseSchema = taskSchema;
 
-export const listTasksResponseSchema = z.object({
-  tasks: z.array(taskSchema),
-  total: z.number(),
-});
+export const listTasksResponseSchema = listSchema(taskSchema);
+
+export const memorySynthesisListSchema = listSchema(memorySynthesisSchema);
 
 export const getMemorySynthesisResponseSchema = z.object({
   synthesis: memorySynthesisSchema.optional(),
@@ -229,10 +218,15 @@ export type Task = z.infer<typeof taskSchema>;
 export type TaskExecution = z.infer<typeof taskExecutionSchema>;
 export type MemorySynthesis = z.infer<typeof memorySynthesisSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
-export type CreatePublicTaskRequest = z.infer<typeof createPublicTaskRequestSchema>;
 export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
 export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
 export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
 export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;
 export type RecipeExecutionTaskData = z.infer<typeof recipeExecutionTaskDataSchema>;
+
+export const webhookDeliveryTaskDataSchema = z.object({
+  endpointId: z.string().min(1),
+  userId: z.number().int().positive(),
+  event: z.record(z.string(), z.unknown()),
+});

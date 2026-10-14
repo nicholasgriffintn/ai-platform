@@ -1,4 +1,4 @@
-import type { WorkspaceAuditRecord } from "@ngriffin_uk/polychat-schemas";
+import { toListPage, type WorkspaceAuditRecord } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -25,11 +25,12 @@ export async function listWorkspaceAudit(
 ) {
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
 
-  return {
-    records: (await context.repositories.audit.listRecords(workspaceId, options)).map(
-      formatAuditRecord,
-    ),
-  };
+  const rows = await context.repositories.audit.listRecords(workspaceId, {
+    ...options,
+    limit: options.limit + 1,
+  });
+
+  return toListPage(rows.map(formatAuditRecord), options.limit, (record) => record.id);
 }
 
 export async function recordProjectAudit(

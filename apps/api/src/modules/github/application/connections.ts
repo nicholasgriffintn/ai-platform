@@ -5,7 +5,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/infrastructure/github";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
-import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
+import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import {
   decryptGitHubConnectionPayload,

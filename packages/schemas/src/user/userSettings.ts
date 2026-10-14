@@ -168,11 +168,6 @@ export const updateUserSettingsSchema = z
     }
   });
 
-export const userModelsResponseSchema = z.object({
-  success: z.boolean(),
-  models: z.array(z.string()),
-});
-
 export const providersResponseSchema = z.array(
   z.object({
     id: z.string(),

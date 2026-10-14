@@ -1,11 +1,11 @@
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { startRunCoordinatorDispatchFiber } from "~/modules/apps/application/sandbox/run-coordinator";
+import { startRunCoordinatorDispatchFiber } from "~/modules/sandbox/application/run-coordinator";
 
 import { SandboxRunDispatchHandler } from "../SandboxRunDispatchHandler";
 
-vi.mock("~/modules/apps/application/sandbox/dispatch", () => ({
+vi.mock("~/modules/sandbox/application/dispatch", () => ({
   isSandboxRunDispatchMessage: vi.fn((value: unknown) => {
     return (
       !!value &&
@@ -14,7 +14,7 @@ vi.mock("~/modules/apps/application/sandbox/dispatch", () => ({
     );
   }),
 }));
-vi.mock("~/modules/apps/application/sandbox/run-coordinator", () => ({
+vi.mock("~/modules/sandbox/application/run-coordinator", () => ({
   startRunCoordinatorDispatchFiber: vi.fn(),
 }));
 

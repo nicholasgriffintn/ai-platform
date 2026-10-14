@@ -1,33 +1,20 @@
 import {
-  parseRealtimeModalities,
-  parseRealtimeTranscriptionDelay,
-  parseRealtimeTransport,
-} from "@ngriffin_uk/polychat-ai-providers";
-import {
   errorResponseSchema,
   NO_STORE,
+  listPageOf,
   realtimeLiveProviderCatalogueResponseSchema,
   realtimePipelineSessionCreateSchema,
-  realtimePipelineSessionResponseSchema,
   realtimeProxyGrantQuerySchema,
   realtimeSessionResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
-import { Hono } from "hono";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { type Context, Hono } from "hono";
+import z from "zod/v4";
 
 import { optionalRepositories, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
+import { defineResource } from "~/infrastructure/http/resource";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import {
-  getRealtimeProvider,
-  listRealtimeProviders,
-} from "~/infrastructure/providers/capabilities/realtime";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import {
-  getAccessibleRealtimeModel,
-  lacksRealtimeEntitlement,
-  REALTIME_ENTITLEMENT_MESSAGE,
-} from "~/modules/realtime/application/access";
 import { createCartesiaRealtimeProxyResponse } from "~/modules/realtime/application/cartesia";
 import { listRealtimeLiveProviders } from "~/modules/realtime/application/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/modules/realtime/application/elevenlabs";
@@ -39,14 +26,12 @@ import {
   assertRealtimeProxyGrant,
   connectReservedRealtimeProxy,
 } from "~/modules/realtime/application/proxy-grant";
-import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
-import {
-  admitRealtimeSession,
-  priceRealtimeReservation,
-  registerRealtimeSessionUsage,
-  settleRealtimeSessionUsage,
-} from "~/modules/realtime/application/sessionUsage";
-import type { RealtimeProxySessionSummary } from "~/modules/realtime/application/transcriptionProxy";
+import { createRealtimeSession } from "~/modules/realtime/application/session";
+import { settleRealtimeSessionUsage } from "~/modules/realtime/application/sessionUsage";
+import type {
+  RealtimeProxySessionEndHandler,
+  RealtimeProxySessionSummary,
+} from "~/modules/realtime/application/transcriptionProxy";
 import type { IEnv, IUser } from "~/types";
 
 const app = new Hono<{
@@ -94,188 +79,156 @@ app.use("/*", async (c, next) => {
   c.res.headers.set("Cache-Control", NO_STORE);
 });
 
-addRoute(app, "get", "/providers", {
-  tags: ["realtime"],
-  summary: "List realtime live providers",
-  auth: true,
-  responses: {
-    200: {
-      description: "Realtime live provider catalogue with current readiness",
-      schema: realtimeLiveProviderCatalogueResponseSchema,
-    },
-  },
-  handler: async ({ serviceContext }) => ({
-    providers: await listRealtimeLiveProviders(serviceContext),
-  }),
+const transcriptionProviderSchema = z.enum(["mistral", "elevenlabs", "cartesia", "greenpt"]);
+const transcriptionQuerySchema = realtimeProxyGrantQuerySchema.extend({
+  provider: transcriptionProviderSchema,
+});
+const sessionQuerySchema = z.object({
+  type: z.enum(["realtime", "translation", "transcription", "pipeline"]),
+  provider: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  language: z.string().min(1).optional(),
+  target_language: z.string().min(1).optional(),
+  voice: z.string().min(1).optional(),
+  instructions: z.string().min(1).optional(),
+  delay: z.string().min(1).optional(),
+  transport: z.string().min(1).optional(),
+  input_modalities: z.string().min(1).optional(),
+  output_modalities: z.string().min(1).optional(),
 });
 
-addRoute(app, "post", "/session/:type", {
-  tags: ["realtime"],
-  summary: "Create a new realtime session",
-  auth: true,
-  responses: {
-    200: {
-      description: "Realtime session created",
-      schema: realtimeSessionResponseSchema,
-    },
-    400: { description: "Bad request", schema: errorResponseSchema },
-  },
-  handler: async ({ raw, serviceContext, user }) => {
-    const env = serviceContext.env;
-    const type = raw.req.param("type");
-    const model = raw.req.query("model");
-    const language = raw.req.query("language");
-    const targetLanguage = raw.req.query("target_language");
-    const voice = raw.req.query("voice");
-    const instructions = raw.req.query("instructions");
-    const delay = parseRealtimeTranscriptionDelay(raw.req.query("delay"));
-    const transportQuery = raw.req.query("transport");
-    const inputModalitiesQuery = raw.req.query("input_modalities");
-    const outputModalitiesQuery =
-      raw.req.query("output_modalities") ||
-      raw.req.query("response_modalities") ||
-      raw.req.query("modalities");
-    const providerName = raw.req.query("provider") || "openai";
+type TranscriptionProvider = z.infer<typeof transcriptionProviderSchema>;
+type TranscriptionQuery = z.infer<typeof transcriptionQuerySchema>;
 
-    if (type !== "realtime" && type !== "translation" && type !== "transcription") {
-      return ResponseFactory.error(raw, "Invalid session type", 400);
-    }
-
-    if (!listRealtimeProviders().includes(providerName)) {
-      return ResponseFactory.error(raw, "Invalid provider specified", 400);
-    }
-
-    const provider = getRealtimeProvider(providerName, { env, user });
-
-    if (model && provider.models && !provider.models.includes(model)) {
-      return ResponseFactory.error(raw, "Invalid model specified", 400);
-    }
-
-    let requestedModel = model;
-
-    if (!requestedModel) {
-      try {
-        requestedModel = provider.getDefaultModel(type);
-      } catch (error) {
-        return ResponseFactory.error(
-          raw,
-          error instanceof Error ? error.message : "Invalid session type",
-          400,
-        );
-      }
-    }
-
-    if (lacksRealtimeEntitlement(user)) {
-      return ResponseFactory.error(raw, REALTIME_ENTITLEMENT_MESSAGE, 403);
-    }
-
-    const accessibleModel = await getAccessibleRealtimeModel({
-      env,
-      user,
-      model: requestedModel,
-      provider: providerName,
-    });
-
-    if (!accessibleModel) {
-      return ResponseFactory.error(raw, "Model not found or user does not have access", 403);
-    }
-
-    const transport = parseRealtimeTransport(transportQuery);
-    const inputModalities = parseRealtimeModalities(inputModalitiesQuery);
-    const outputModalities = parseRealtimeModalities(outputModalitiesQuery);
-
-    const pricing = priceRealtimeReservation(
-      accessibleModel.config,
-      providerName,
-      accessibleModel.id,
-    );
-    const admitted = await admitRealtimeSession({
-      repositories: optionalRepositories(serviceContext),
-      userId: user.id,
-      creditMicros: pricing.creditMicros,
-    });
-
-    if (!admitted) {
-      return ResponseFactory.error(
-        raw,
-        "Realtime session refused: usage allowance is exhausted",
-        403,
-      );
-    }
-
-    const maxSessionSeconds = resolveRealtimeMaxSessionSeconds(env);
-
-    const session = await provider.createSession({
-      env,
-      user,
-      credentialAuthority: accessibleModel.credentialAuthority,
-      type,
-      model: accessibleModel.id,
-      language,
-      targetLanguage,
-      voice,
-      instructions,
-      delay,
-      transport,
-      inputModalities,
-      outputModalities,
-    });
-
-    if (!session) {
-      return ResponseFactory.error(raw, "Failed to create realtime session", 500);
-    }
-
-    const sessionId =
-      isRecord(session) && typeof session.id === "string" && session.id ? session.id : generateId();
-
-    await registerRealtimeSessionUsage({
-      env,
-      repositories: optionalRepositories(serviceContext),
-      userId: user.id,
-      sessionId,
-      model: accessibleModel.id,
-      provider: providerName,
-      byok: accessibleModel.credentialAuthority === "byok",
-      pricing,
-      maxSessionSeconds,
-    });
-
-    if (isRecord(session)) {
-      return { ...session, max_session_seconds: maxSessionSeconds };
-    }
-
-    return session;
-  },
-});
-
-addRoute(app, "post", "/pipeline/session", {
-  tags: ["realtime"],
-  summary: "Create a composed realtime pipeline session",
-  auth: true,
-  bodySchema: realtimePipelineSessionCreateSchema,
-  responses: {
-    200: {
-      description: "Composed realtime pipeline session created",
-      schema: realtimePipelineSessionResponseSchema,
-    },
-    400: { description: "Bad request", schema: errorResponseSchema },
-    403: { description: "Model access denied", schema: errorResponseSchema },
-  },
-  handler: async ({ body, raw, serviceContext, user }) => {
-    type PipelineResult = Awaited<ReturnType<typeof createRealtimePipelineSession>>;
-    const result: PipelineResult = await createRealtimePipelineSession({
+function transcriptionProxy(
+  provider: TranscriptionProvider,
+  raw: Context,
+  serviceContext: ServiceContext,
+  user: IUser,
+  query: TranscriptionQuery,
+) {
+  return (onSessionEnd: RealtimeProxySessionEndHandler) => {
+    const shared = {
+      context: raw,
       env: serviceContext.env,
-      request: body,
+      user,
+      model: query.model,
+      onSessionEnd,
+    };
+
+    switch (provider) {
+      case "mistral":
+        return createMistralRealtimeProxyResponse({ ...shared, delay: query.delay });
+      case "elevenlabs":
+        return createElevenLabsRealtimeProxyResponse({ ...shared, language: query.language });
+      case "cartesia":
+        return createCartesiaRealtimeProxyResponse({ ...shared, delay: query.delay });
+      case "greenpt":
+        return createGreenPtRealtimeProxyResponse({
+          ...shared,
+          delay: query.delay,
+          language: query.language,
+        });
+    }
+  };
+}
+
+defineResource(
+  app,
+  { idParam: "provider_id", path: "/providers", tags: ["realtime"] },
+  (providers) => {
+    providers.list({
+      auth: true,
+      summary: "List realtime live providers",
+      responses: {
+        200: {
+          description: "Realtime providers",
+          schema: realtimeLiveProviderCatalogueResponseSchema,
+        },
+      },
+      handler: async ({ serviceContext }) =>
+        listPageOf(await listRealtimeLiveProviders(serviceContext), (provider) => provider.id),
+    });
+  },
+);
+
+defineResource(
+  app,
+  { idParam: "session_id", path: "/sessions", tags: ["realtime"] },
+  (sessions) => {
+    sessions.create({
+      auth: true,
+      summary: "Create a realtime session",
+      description:
+        "Creates a realtime, translation or transcription session from the query, or a composed pipeline session from the body when type is pipeline.",
+      querySchema: sessionQuerySchema,
+      responses: {
+        200: { description: "Realtime session", schema: realtimeSessionResponseSchema },
+        400: { description: "Bad request", schema: errorResponseSchema },
+        403: { description: "Model access denied", schema: errorResponseSchema },
+      },
+      handler: async ({ query, raw, serviceContext, user }) => {
+        if (query.type === "pipeline") {
+          const result = await createRealtimePipelineSession({
+            env: serviceContext.env,
+            request: realtimePipelineSessionCreateSchema.parse(await raw.req.json()),
+            user,
+          });
+
+          if (result.ok === false) {
+            throw new AssistantError(result.message, ErrorType.PARAMS_ERROR, result.status);
+          }
+
+          return result.session;
+        }
+
+        return createRealtimeSession(serviceContext, user, {
+          type: query.type,
+          provider: query.provider,
+          model: query.model,
+          language: query.language,
+          targetLanguage: query.target_language,
+          voice: query.voice,
+          instructions: query.instructions,
+          delay: query.delay,
+          transport: query.transport,
+          inputModalities: query.input_modalities,
+          outputModalities: query.output_modalities,
+        });
+      },
+    });
+  },
+);
+
+addRoute(app, "get", "/transcription", {
+  tags: ["realtime"],
+  summary: "Connect to realtime transcription",
+  description: "Upgrades to a transcription websocket for the provider named in the session grant.",
+  auth: true,
+  querySchema: transcriptionQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: query.provider,
+      request: raw.req.raw,
+      sessionId: query.session_id,
       user,
     });
 
-    if (!result.ok) {
-      const failure = result as Extract<PipelineResult, { ok: false }>;
-
-      return ResponseFactory.error(raw, failure.message, failure.status);
-    }
-
-    return result.session;
+    return connectReservedRealtimeProxy(
+      reservation,
+      transcriptionProxy(query.provider, raw, serviceContext, user, query),
+      settleProxySession({
+        serviceContext,
+        user,
+        sessionId: query.session_id,
+        model: query.model,
+        provider: query.provider,
+        byok: reservation.byok,
+      }),
+    );
   },
 });
 
@@ -307,163 +260,6 @@ addRoute(app, "post", "/openai/live/calls", {
     } finally {
       await reservation.release();
     }
-  },
-});
-
-addRoute(app, "get", "/mistral/transcription", {
-  tags: ["realtime"],
-  summary: "Connect to Mistral realtime transcription",
-  auth: true,
-  querySchema: realtimeProxyGrantQuerySchema,
-  handler: async ({ query, raw, serviceContext, user }) => {
-    const reservation = await assertRealtimeProxyGrant({
-      env: serviceContext.env,
-      grant: query.grant,
-      model: query.model,
-      provider: "mistral",
-      request: raw.req.raw,
-      sessionId: query.session_id,
-      user,
-    });
-
-    return connectReservedRealtimeProxy(
-      reservation,
-      (onSessionEnd) =>
-        createMistralRealtimeProxyResponse({
-          context: raw,
-          delay: query.delay,
-          env: serviceContext.env,
-          user,
-          model: query.model,
-          onSessionEnd,
-        }),
-      settleProxySession({
-        serviceContext,
-        user,
-        sessionId: query.session_id,
-        model: query.model,
-        provider: "mistral",
-        byok: reservation.byok,
-      }),
-    );
-  },
-});
-
-addRoute(app, "get", "/elevenlabs/transcription", {
-  tags: ["realtime"],
-  summary: "Connect to ElevenLabs realtime transcription",
-  auth: true,
-  querySchema: realtimeProxyGrantQuerySchema,
-  handler: async ({ query, raw, serviceContext, user }) => {
-    const reservation = await assertRealtimeProxyGrant({
-      env: serviceContext.env,
-      grant: query.grant,
-      model: query.model,
-      provider: "elevenlabs",
-      request: raw.req.raw,
-      sessionId: query.session_id,
-      user,
-    });
-
-    return connectReservedRealtimeProxy(
-      reservation,
-      (onSessionEnd) =>
-        createElevenLabsRealtimeProxyResponse({
-          context: raw,
-          env: serviceContext.env,
-          user,
-          model: query.model,
-          language: query.language,
-          onSessionEnd,
-        }),
-      settleProxySession({
-        serviceContext,
-        user,
-        sessionId: query.session_id,
-        model: query.model,
-        provider: "elevenlabs",
-        byok: reservation.byok,
-      }),
-    );
-  },
-});
-
-addRoute(app, "get", "/cartesia/transcription", {
-  tags: ["realtime"],
-  summary: "Connect to Cartesia realtime transcription",
-  auth: true,
-  querySchema: realtimeProxyGrantQuerySchema,
-  handler: async ({ query, raw, serviceContext, user }) => {
-    const reservation = await assertRealtimeProxyGrant({
-      env: serviceContext.env,
-      grant: query.grant,
-      model: query.model,
-      provider: "cartesia",
-      request: raw.req.raw,
-      sessionId: query.session_id,
-      user,
-    });
-
-    return connectReservedRealtimeProxy(
-      reservation,
-      (onSessionEnd) =>
-        createCartesiaRealtimeProxyResponse({
-          context: raw,
-          delay: query.delay,
-          env: serviceContext.env,
-          user,
-          model: query.model,
-          onSessionEnd,
-        }),
-      settleProxySession({
-        serviceContext,
-        user,
-        sessionId: query.session_id,
-        model: query.model,
-        provider: "cartesia",
-        byok: reservation.byok,
-      }),
-    );
-  },
-});
-
-addRoute(app, "get", "/greenpt/transcription", {
-  tags: ["realtime"],
-  summary: "Connect to GreenPT realtime transcription",
-  auth: true,
-  querySchema: realtimeProxyGrantQuerySchema,
-  handler: async ({ query, raw, serviceContext, user }) => {
-    const reservation = await assertRealtimeProxyGrant({
-      env: serviceContext.env,
-      grant: query.grant,
-      model: query.model,
-      provider: "greenpt",
-      request: raw.req.raw,
-      sessionId: query.session_id,
-      user,
-    });
-
-    return connectReservedRealtimeProxy(
-      reservation,
-      (onSessionEnd) =>
-        createGreenPtRealtimeProxyResponse({
-          context: raw,
-          delay: query.delay,
-          env: serviceContext.env,
-          user,
-          model: query.model,
-          language: query.language,
-          onSessionEnd,
-        }),
-      settleProxySession({
-        serviceContext,
-        user,
-        sessionId: query.session_id,
-        model: query.model,
-        provider: "greenpt",
-        byok: reservation.byok,
-      }),
-    );
   },
 });
 

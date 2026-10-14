@@ -7,20 +7,20 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
 import {
   invokeAssistantRecipe,
   parseRecipeInstallationRecord,
-} from "~/modules/apps/application/recipes";
+} from "~/modules/recipes/application";
 import {
   executeRecipeInvocationChat,
   recordRecipeInvocationFailure,
-} from "~/modules/apps/application/recipes/execution";
+} from "~/modules/recipes/application/execution";
 import {
   deliverRecipeOccurrenceToTeammateHome,
   ensureRecipeOccurrenceConversation,
-} from "~/modules/apps/application/recipes/occurrences";
-import { deliverRecipeSmsNotification } from "~/modules/apps/application/recipes/sms-notification";
-import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
+} from "~/modules/recipes/application/occurrences";
+import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
 import { prepareTeammateRun } from "~/modules/teammates/application/execution";
 import { reconcileTeammateRun } from "~/modules/teammates/application/run-reconciliation";
 import type { IEnv } from "~/types";

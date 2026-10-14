@@ -9,7 +9,6 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getSandboxRunRecordForUser } from "~/modules/apps/application/sandbox/runs";
 import { GOAL_UNSATISFIED_INSTRUCTION } from "~/modules/chat/application/agent/goal-gate";
 import {
   requireConversationAccess,
@@ -19,6 +18,7 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { recordGoalMarker } from "~/modules/goals/application/goalMarker";
 import type { GoalService } from "~/modules/goals/application/GoalService";
+import { getSandboxRunRecordForUser } from "~/modules/sandbox/application/runs";
 
 export type ConversationGoalContext = ServiceContext;
 

@@ -1,4 +1,5 @@
 import {
+  listPageOf,
   mcpConnectionInputSchema,
   mcpCredentialEndpointSchema,
   type McpConnectionInput,
@@ -57,11 +58,12 @@ export async function listMcpConnections(context: ServiceContext) {
     "mcp",
   );
 
-  return {
-    connections: records
+  return listPageOf(
+    records
       .filter((r) => MCP_CONNECTION_KINDS.has(r.kind) && r.status === "connected")
       .map(publicMcpConnection),
-  };
+    (connection) => connection.id,
+  );
 }
 
 export async function deleteMcpConnection(context: ServiceContext, connectionId: string) {

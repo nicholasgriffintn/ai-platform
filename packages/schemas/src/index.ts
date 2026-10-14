@@ -63,6 +63,7 @@ export type {
   AssistantActionModelToolDefinition,
   AssistantRecipeActionContext,
 } from "./assistant-actions.js";
+export * from "./approvals.js";
 export * from "./apps.js";
 export { prepareToolFormData } from "./utils/tool-form-values.js";
 export * from "./capability-catalogue.js";
@@ -105,11 +106,12 @@ export * from "./goals.js";
 export * from "./human-in-the-loop.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
-export * from "./saved-messages.js";
+export * from "./saved-items.js";
 export * from "./poly.js";
 export * from "./thread-operations.js";
 export * from "./edit.js";
 export * from "./embeddings.js";
+export * from "./environments.js";
 export * from "./fim.js";
 export * from "./impact.js";
 export * from "./magicLink.js";
@@ -136,6 +138,7 @@ export * from "./providers.js";
 export * from "./navigation.js";
 export * from "./outputs.js";
 export * from "./ocr.js";
+export * from "./jobs.js";
 export * from "./ocr-batch.js";
 export * from "./pets.js";
 export * from "./platform-teammates.js";
@@ -183,6 +186,7 @@ export * from "./uploads.js";
 export * from "./usage.js";
 export * from "./pricing/index.js";
 export * from "./user/index.js";
+export * from "./webhook-endpoints.js";
 export * from "./webhooks.js";
 export * from "./model-registry.js";
 export * from "./benchmarks.js";

@@ -17,7 +17,7 @@ vi.mock("~/modules/chat/application/streaming/responses", async (importOriginal)
   ...(await importOriginal<Record<string, unknown>>()),
   getAIResponse: mocks.getAIResponse,
 }));
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
+vi.mock("~/modules/connectors/application/composio-run", () => ({
   closeComposioConnectorRun: mocks.closeComposioConnectorRun,
 }));
 vi.mock("@ngriffin_uk/polychat-ai-billing", async (importOriginal) => ({

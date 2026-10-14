@@ -6,6 +6,7 @@ import {
   toolResponseSchema,
   capabilityThemeSchema,
 } from "./apps.js";
+import { listSchema } from "./platform/list.js";
 import { toolIdSchema, toolIdsSchema } from "./tool-ids.js";
 
 export { mergeToolIds, normaliseToolIds, readToolIds } from "./tool-ids.js";
@@ -55,11 +56,7 @@ export const runnableToolResponseSchema = z.object({
 
 export const runnableToolExecuteRequestSchema = z.record(z.string(), z.any());
 
-export const toolsResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: z.array(toolSchema),
-});
+export const toolsResponseSchema = listSchema(toolSchema);
 
 export type Tool = z.infer<typeof toolSchema>;
 export type ToolCategory = z.infer<typeof toolCategorySchema>;

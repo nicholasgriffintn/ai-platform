@@ -1,50 +1,23 @@
-import type { ActivityRecord, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
+import type { ActivityRecord, ActivityStatus, ListPage } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
-export async function listActivity(
+export function listActivity(
   filters: {
     projectId?: string;
     conversationId?: string;
     capabilityId?: string;
     status?: ActivityStatus;
     limit?: number;
-    offset?: number;
+    after?: string;
   } = {},
-): Promise<{ activities: ActivityRecord[]; hasMore: boolean }> {
-  const query = new URLSearchParams();
-
-  if (filters.projectId) {
-    query.set("projectId", filters.projectId);
-  }
-
-  if (filters.conversationId) {
-    query.set("conversationId", filters.conversationId);
-  }
-
-  if (filters.capabilityId) {
-    query.set("capabilityId", filters.capabilityId);
-  }
-
-  if (filters.status) {
-    query.set("status", filters.status);
-  }
-
-  if (filters.limit !== undefined) {
-    query.set("limit", String(filters.limit));
-  }
-
-  if (filters.offset !== undefined) {
-    query.set("offset", String(filters.offset));
-  }
-
-  const suffix = query.size ? `?${query.toString()}` : "";
-  const response = await fetchApiOrThrow(`/activity${suffix}`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
+): Promise<ListPage<ActivityRecord>> {
+  return resource<ActivityRecord>("/activity").list({
+    project_id: filters.projectId,
+    conversation_id: filters.conversationId,
+    capability_id: filters.capabilityId,
+    status: filters.status,
+    limit: filters.limit,
+    after: filters.after,
   });
-
-  return returnFetchedData<{ activities: ActivityRecord[]; hasMore: boolean }>(response);
 }

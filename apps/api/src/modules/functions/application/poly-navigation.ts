@@ -18,7 +18,7 @@ import { isPolyNavigationTurn } from "~/modules/chat/application/policy/poly";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import {
   getConversationOrganisation,
-  updateConversationOrganisation,
+  changeConversationOrganisation,
 } from "~/modules/conversations/application/conversation-organisation";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
 import { handleUpdateChatCompletion } from "~/modules/conversations/application/updateChatCompletion";
@@ -117,17 +117,13 @@ async function listRecentConversations(
   scope: PolyNavigationToolScope,
   limit: number,
 ): Promise<PolyFoundConversation[]> {
-  const result = await scope.context.repositories.conversations.getUserConversations(
-    scope.user.id,
-    {
-      archiveFilter: "active",
-      limit,
-      page: 1,
-      sortBy: "updated",
-    },
-  );
+  const page = await scope.context.repositories.conversations.listUserConversations(scope.user.id, {
+    archiveFilter: "active",
+    limit,
+    sortBy: "updated",
+  });
 
-  return result.conversations.map(toFoundConversation);
+  return page.data.map(toFoundConversation);
 }
 
 function extractMessageText(row: Record<string, unknown>): string {
@@ -351,7 +347,7 @@ export const organise_conversation: ApiToolDefinition = {
                   ? { snooze: { kind: "next_response" as const } }
                   : { snooze: null };
 
-        await updateConversationOrganisation(scope.context, args.conversationId, {
+        await changeConversationOrganisation(scope.context, args.conversationId, {
           expectedRevision: current.revision,
           ...update,
         });
@@ -490,11 +486,10 @@ export const list_attention: ApiToolDefinition = {
   execute: async (args: z.infer<typeof listAttentionInputSchema>, toolContext) => {
     const scope = requirePolyNavigationScope(toolContext, listAttentionDescriptor.name);
     const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_POLY_ATTENTION_LIMIT);
-    const { items, total } = await listWorkAttention(scope.context, {
+    const { data: items, total } = await listWorkAttention(scope.context, {
       ...(args.kind ? { kind: args.kind } : {}),
-      ...(args.projectId ? { projectId: args.projectId } : {}),
+      ...(args.projectId ? { project_id: args.projectId } : {}),
       limit,
-      offset: 0,
     });
 
     if (items.length === 0) {

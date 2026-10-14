@@ -1,5 +1,10 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  listPageOf,
+  type ChannelBinding,
+  type CreateChannelBindingInput,
+  type ListPage,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -108,7 +113,7 @@ export async function createChannelBinding(
 
 export async function listChannelBindings(
   context: ServiceContext,
-): Promise<{ bindings: ChannelBinding[] }> {
+): Promise<ListPage<ChannelBinding>> {
   context.ensureDatabase();
   const user = context.requireUser();
   const rows = await context.repositories.channelBindings.listForUser(user.id);
@@ -124,7 +129,7 @@ export async function listChannelBindings(
     }),
   );
 
-  return { bindings };
+  return listPageOf(bindings, (binding) => binding.id);
 }
 
 export async function deleteChannelBinding(

@@ -34,13 +34,16 @@ export interface WorkAttentionViewProps {
   facets?: WorkAttentionResponse["facets"];
   filters: WorkAttentionFilters;
   total: number;
-  offset: number;
+  page: number;
   limit: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
   isLoading?: boolean;
   errorMessage?: string;
   itemHref: (item: WorkAttentionItem) => string;
   onFiltersChange: (filters: WorkAttentionFilters) => void;
-  onPageChange: (offset: number) => void;
+  onPrevious: () => void;
+  onNext: () => void;
 }
 
 const KIND_OPTIONS: Array<{ value: WorkAttentionKind; label: string }> = [
@@ -110,14 +113,19 @@ export function WorkAttentionView({
   facets,
   filters,
   total,
-  offset,
+  page,
   limit,
+  hasPrevious,
+  hasNext,
   isLoading = false,
   errorMessage,
   itemHref,
   onFiltersChange,
-  onPageChange,
+  onPrevious,
+  onNext,
 }: WorkAttentionViewProps) {
+  const offset = (page - 1) * limit;
+
   const projects = (facets?.projects ?? []).filter(
     (project) => !filters.workspaceId || project.workspaceId === filters.workspaceId,
   );
@@ -303,15 +311,15 @@ export function WorkAttentionView({
       {total > 0 ? (
         <nav aria-label="Attention pages" className="flex items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            {offset + 1}–{Math.min(offset + limit, total)} of {total}
+            {offset + 1}–{offset + items.length} of {total}
           </p>
           <div className="flex gap-2">
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              disabled={offset === 0 || isLoading}
-              onClick={() => onPageChange(Math.max(0, offset - limit))}
+              disabled={!hasPrevious || isLoading}
+              onClick={onPrevious}
             >
               Previous
             </Button>
@@ -319,8 +327,8 @@ export function WorkAttentionView({
               type="button"
               variant="secondary"
               size="sm"
-              disabled={offset + limit >= total || isLoading}
-              onClick={() => onPageChange(offset + limit)}
+              disabled={!hasNext || isLoading}
+              onClick={onNext}
             >
               Next
             </Button>

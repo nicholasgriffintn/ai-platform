@@ -240,7 +240,7 @@ function ProjectWorkbenchConversationInner({
     hasChanges: recordedFiles.length > 0 || Boolean(diff.content),
     hasFiles: recordedFiles.length > 0 || artifacts.length > 0,
     hasProof: Boolean(runsQuery.currentRun),
-    hasDelegates: Boolean(delegationsQuery.data?.delegations.length),
+    hasDelegates: Boolean(delegationsQuery.data?.data.length),
   });
   const panels = {
     context: effectiveConversationId ? (
@@ -323,7 +323,7 @@ function ProjectWorkbenchConversationInner({
     proof: renderPanel("proof"),
     delegates: (
       <ProjectDelegatesPanel
-        delegations={delegationsQuery.data?.delegations ?? []}
+        delegations={delegationsQuery.data?.data ?? []}
         teammates={delegationsQuery.data?.teammates}
         outputs={delegationsQuery.data?.outputs}
         canControl={delegationsQuery.data?.canControl ?? false}

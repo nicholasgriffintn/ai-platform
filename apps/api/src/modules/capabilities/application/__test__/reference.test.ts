@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getAssistantRecipes } from "~/modules/apps/application/recipes/catalog";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
+import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
 
 function createTeammateContext(overrides: {
   userId: number;

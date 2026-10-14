@@ -228,7 +228,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         }
         workspaceShortcuts={
           !workspaceId
-            ? data?.workspaces.map((item) => ({
+            ? data?.map((item) => ({
                 id: item.id,
                 name: item.name,
                 href: `/work/${item.id}`,

@@ -10,7 +10,7 @@ describe("applyAgentHarnessToolEvent", () => {
     const parts: MessagePart[] = [];
     const target = {
       sink: {
-        writeEvent: async (type: string) => {
+        write: async ({ type }: { type: string }) => {
           events.push(type);
         },
       },
@@ -49,7 +49,7 @@ describe("applyAgentHarnessToolEvent", () => {
         content: "exit 1",
       },
     ]);
-    expect(events).toContain("tool_use_start");
-    expect(events).toContain("tool_response");
+    expect(events).toContain("response.output_item.added");
+    expect(events).toContain("response.output_item.done");
   });
 });

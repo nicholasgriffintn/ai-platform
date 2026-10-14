@@ -19,7 +19,7 @@ export const fetchCapabilityCatalog = async (
   }
 
   const path = projectId
-    ? `/capabilities?projectId=${encodeURIComponent(projectId)}`
+    ? `/capabilities?project_id=${encodeURIComponent(projectId)}`
     : "/capabilities";
   const response = await fetchApi(path, { method: "GET", headers });
 

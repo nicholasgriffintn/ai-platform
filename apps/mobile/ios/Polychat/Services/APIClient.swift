@@ -73,7 +73,7 @@ final class APIClient: ObservableObject {
     }
 
     func fetchTaskInbox() async throws -> TaskInboxResponse {
-        try await send(path: "/notifications/inbox", method: "GET")
+        try await send(path: "/notifications", method: "GET")
     }
 
     func fetchTaskNotificationSettings() async throws -> TaskNotificationSettings {
@@ -83,12 +83,12 @@ final class APIClient: ObservableObject {
     func updateTaskNotificationPreferences(
         _ request: UpdateTaskNotificationPreferencesRequest
     ) async throws -> TaskNotificationSettings {
-        try await send(path: "/notifications/settings", method: "PUT", body: request)
+        try await send(path: "/notifications/settings", method: "PATCH", body: request)
     }
 
     func updateTaskInbox(itemIds: [String], action: String) async throws -> TaskInboxMutationResponse {
         try await send(
-            path: "/notifications/inbox/\(action)",
+            path: "/notifications/\(action)",
             method: "POST",
             body: TaskInboxReceiptRequest(itemIds: itemIds)
         )
@@ -200,10 +200,10 @@ final class APIClient: ObservableObject {
             id: id, machineId: machineId, modelId: modelId,
             messages: messages, conversationId: conversationId,
             create: { request in
-                try await self.send(path: "/machines/\(machineId)/runs", method: "POST", body: request)
+                try await self.send(path: "/environments/\(machineId)/runs", method: "POST", body: request)
             },
             read: {
-                try await self.send(path: "/machines/\(machineId)/runs/\(id)", method: "GET")
+                try await self.send(path: "/environments/\(machineId)/runs/\(id)", method: "GET")
             },
             cancel: { try await self.cancelMachineModelRun(id: id, machineId: machineId) }
         )
@@ -211,7 +211,7 @@ final class APIClient: ObservableObject {
 
     func cancelMachineModelRun(id: String, machineId: String) async throws {
         let _: MachineRunSnapshot = try await send(
-            path: "/machines/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
+            path: "/environments/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
         )
     }
 
@@ -234,11 +234,13 @@ final class APIClient: ObservableObject {
     }
 
     func fetchModels() async throws -> ModelsResponse {
-        try await send(
+        let response: ModelListResponse = try await send(
             path: "/models",
             method: "GET",
             additionalHeaders: ["Cache-Control": "no-cache"]
         )
+
+        return Dictionary(response.data.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     func fetchModelTiers() async throws -> ModelTiersResponse {
@@ -246,25 +248,31 @@ final class APIClient: ObservableObject {
     }
 
     func fetchMachines() async throws -> [MachineRecord] {
-        try await send(path: "/machines", method: "GET")
+        let response: EnvironmentListResponse<MachineRecord> = try await send(
+            path: "/environments",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "kind", value: "machine")]
+        )
+
+        return response.data.map(\.detail)
     }
 
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {
-        try await send(path: "/apps/recipes", method: "GET")
+        try await send(path: "/recipes", method: "GET")
     }
 
     func fetchWorkspaces() async throws -> [WorkspaceSummary] {
         let response: WorkspaceListResponse = try await send(path: "/workspaces", method: "GET")
-        return response.workspaces
+        return response.data
     }
 
     func fetchMyModelPermissions(workspaceId: String) async throws -> MyModelPermissions {
-        try await send(path: "/model-platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
+        try await send(path: "/model_platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
     }
 
     func fetchPendingModelDecisions(workspaceId: String) async throws -> [ModelDecisionItem] {
         let response: ModelDecisionsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/decisions",
+            path: "/model_platform/workspaces/\(workspaceId)/decisions",
             method: "GET",
             queryItems: [URLQueryItem(name: "state", value: "pending")]
         )
@@ -273,7 +281,7 @@ final class APIClient: ObservableObject {
 
     func resolveModelDecision(workspaceId: String, decisionId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
+            path: "/model_platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
             method: "POST",
             body: ResolveModelDecisionRequest(state: state)
         )
@@ -281,7 +289,7 @@ final class APIClient: ObservableObject {
 
     func fetchSpendRequests(workspaceId: String) async throws -> [SpendRequestItem] {
         let response: SpendRequestsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/spend-requests",
+            path: "/model_platform/workspaces/\(workspaceId)/spend_requests",
             method: "GET"
         )
         return response.requests
@@ -289,7 +297,7 @@ final class APIClient: ObservableObject {
 
     func resolveSpendRequest(workspaceId: String, requestId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/spend-requests/\(requestId)/resolve",
+            path: "/model_platform/workspaces/\(workspaceId)/spend_requests/\(requestId)/resolve",
             method: "POST",
             body: ResolveSpendRequestBody(state: state)
         )
@@ -297,7 +305,7 @@ final class APIClient: ObservableObject {
 
     func fetchModelDeployments(workspaceId: String) async throws -> [ModelDeploymentItem] {
         let response: ModelDeploymentsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/deployments",
+            path: "/model_platform/workspaces/\(workspaceId)/deployments",
             method: "GET"
         )
         return response.deployments
@@ -305,22 +313,28 @@ final class APIClient: ObservableObject {
 
     func changeModelDeployment(workspaceId: String, deploymentId: String, action: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/\(action)",
+            path: "/model_platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/actions",
             method: "POST",
-            emptyBody: true
+            body: DeploymentActionRequest(action: action)
         )
     }
 
     func fetchWorkAttention(limit: Int = 25) async throws -> WorkAttentionResponse {
         try await send(
-            path: "/workspaces/attention",
+            path: "/attention",
             method: "GET",
             queryItems: [URLQueryItem(name: "limit", value: String(limit))]
         )
     }
 
     func fetchSandboxRun(id: String) async throws -> SandboxRunDetail {
-        try await send(path: "/apps/sandbox/runs/\(id)", method: "GET")
+        let response: EnvironmentResponse<SandboxRunDetail> = try await send(
+            path: "/environments/\(id)",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "kind", value: "sandbox")]
+        )
+
+        return response.detail
     }
 
     func acceptProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskResponse {
@@ -332,15 +346,15 @@ final class APIClient: ObservableObject {
     }
 
     func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse {
-        try await send(path: "/apps/sandbox/runs/\(id)/events", method: "GET")
+        try await send(path: "/environments/\(id)/events", method: "GET")
     }
 
     func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse {
-        try await send(path: "/apps/sandbox/runs/\(id)/instructions", method: "GET")
+        try await send(path: "/environments/\(id)/instructions", method: "GET")
     }
 
     func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl {
-        try await send(path: "/apps/sandbox/runs/\(id)/control", method: "GET")
+        try await send(path: "/environments/\(id)/control", method: "GET")
     }
 
     func sendSandboxRunInstruction(
@@ -351,7 +365,7 @@ final class APIClient: ObservableObject {
         approvalStatus: String? = nil
     ) async throws -> SandboxRunInstructionResponse {
         try await send(
-            path: "/apps/sandbox/runs/\(id)/instructions",
+            path: "/environments/\(id)/instructions",
             method: "POST",
             body: SubmitSandboxRunInstructionRequest(
                 kind: kind,
@@ -369,9 +383,10 @@ final class APIClient: ObservableObject {
         expectedUpdatedAt: String
     ) async throws -> SandboxRunControl {
         try await send(
-            path: "/apps/sandbox/runs/\(id)/control",
-            method: "PATCH",
-            body: UpdateSandboxRunControlRequest(
+            path: "/environments/\(id)/actions",
+            method: "POST",
+            queryItems: [URLQueryItem(name: "kind", value: "sandbox")],
+            body: EnvironmentActionRequest(
                 action: action,
                 expectedUpdatedAt: expectedUpdatedAt
             )
@@ -379,9 +394,9 @@ final class APIClient: ObservableObject {
     }
 
     func registerMobilePushDevice(token: String, environment: String) async throws {
-        let _: SuccessResponse = try await send(
-            path: "/user/push-devices",
-            method: "PUT",
+        let _: EmptyResponse = try await send(
+            path: "/devices",
+            method: "POST",
             body: RegisterMobilePushDeviceRequest(
                 token: token,
                 environment: environment,
@@ -391,11 +406,7 @@ final class APIClient: ObservableObject {
     }
 
     func unregisterMobilePushDevice(token: String) async throws {
-        let _: SuccessResponse = try await send(
-            path: "/user/push-devices",
-            method: "DELETE",
-            body: UnregisterMobilePushDeviceRequest(token: token)
-        )
+        let _: EmptyResponse = try await send(path: "/devices/\(token)", method: "DELETE")
     }
 
     func installAssistantRecipe(
@@ -404,7 +415,7 @@ final class APIClient: ObservableObject {
         configuration: RecipeConfiguration? = nil
     ) async throws -> AssistantRecipeInstallResponse {
         try await send(
-            path: "/apps/recipes/\(id)/install",
+            path: "/recipes/\(id)/install",
             method: "POST",
             body: AssistantRecipeInstallRequest(
                 channel: "ios",
@@ -424,18 +435,19 @@ final class APIClient: ObservableObject {
 
     func fetchConversations(
         limit: Int = 50,
-        page: Int = 1,
+        after: String? = nil,
         includeArchived: Bool = false
     ) async throws -> ConversationListResponse {
-        try await send(
-            path: "/conversations",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "limit", value: String(limit)),
-                URLQueryItem(name: "page", value: String(page)),
-                URLQueryItem(name: "archived", value: includeArchived ? "all" : "active")
-            ]
-        )
+        var queryItems = [
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "archived", value: includeArchived ? "all" : "active")
+        ]
+
+        if let after {
+            queryItems.append(URLQueryItem(name: "after", value: after))
+        }
+
+        return try await send(path: "/conversations", method: "GET", queryItems: queryItems)
     }
 
     func fetchConversation(
@@ -502,25 +514,18 @@ final class APIClient: ObservableObject {
     }
 
     func fetchConnectorApproval(id: String) async throws -> ConnectorOperationApproval {
-        let response: ConnectorOperationApprovalResponse = try await send(
-            path: "/apps/connectors/approvals/\(id)",
-            method: "GET"
-        )
-
-        return response.approval
+        try await send(path: "/approvals/\(id)", method: "GET")
     }
 
     func resolveConnectorApproval(
         id: String,
         resolution: String
     ) async throws -> ConnectorApprovalResolution {
-        let response: ConnectorApprovalResolutionResponse = try await send(
-            path: "/apps/connectors/approvals/\(id)",
-            method: "PUT",
-            body: ResolveConnectorApprovalRequest(resolution: resolution)
+        try await send(
+            path: "/approvals/\(id)",
+            method: "PATCH",
+            body: ResolveApprovalRequest(state: resolution)
         )
-
-        return response.approval
     }
 
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse {
@@ -533,13 +538,11 @@ final class APIClient: ObservableObject {
         interactionId: String,
         answers: [UserQuestionAnswer]
     ) async throws -> ProjectTaskResponse {
-        try await send(
-            path: "/projects/\(projectId)/tasks/\(taskId)/answers",
-            method: "POST",
-            body: AnswerProjectTaskQuestionsRequest(
-                interactionId: interactionId,
-                answers: answers
-            )
+        try await sendProjectTaskInteraction(
+            projectId: projectId,
+            taskId: taskId,
+            toolName: "ask_user",
+            payload: AnswerProjectTaskQuestionsRequest(interactionId: interactionId, answers: answers)
         )
     }
 
@@ -549,14 +552,35 @@ final class APIClient: ObservableObject {
         interactionId: String,
         resolution: String
     ) async throws -> ProjectTaskResponse {
-        try await send(
-            path: "/projects/\(projectId)/tasks/\(taskId)/tool-approval",
+        try await sendProjectTaskInteraction(
+            projectId: projectId,
+            taskId: taskId,
+            toolName: "tool_approval",
+            payload: ResolveProjectTaskApprovalRequest(interactionId: interactionId, resolution: resolution)
+        )
+    }
+
+    private func sendProjectTaskInteraction<Payload: Encodable>(
+        projectId: String,
+        taskId: String,
+        toolName: String,
+        payload: Payload
+    ) async throws -> ProjectTaskResponse {
+        let detail = try await fetchProjectTask(projectId: projectId, taskId: taskId)
+
+        guard let responseId = detail.task.runId else {
+            throw APIClientError.invalidRequest("This task has no response waiting for input.")
+        }
+
+        let _: PlatformResponse = try await send(
+            path: "/responses/\(responseId)/input",
             method: "POST",
-            body: ResolveProjectTaskApprovalRequest(
-                interactionId: interactionId,
-                resolution: resolution
+            body: ResponseInteractionRequest(
+                input: [InteractionResponseItem(toolName: toolName, response: payload)]
             )
         )
+
+        return ProjectTaskResponse(task: try await fetchProjectTask(projectId: projectId, taskId: taskId).task)
     }
 
     func updateConversation(

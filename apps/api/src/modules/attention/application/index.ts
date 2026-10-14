@@ -1,4 +1,4 @@
-import type { WorkAttentionQuery } from "@ngriffin_uk/polychat-schemas";
+import { toListPage, type WorkAttentionQuery } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireWorkAccess } from "~/modules/workspaces/application/access";
@@ -10,10 +10,5 @@ export async function listWorkAttention(context: ServiceContext, query: WorkAtte
     context.repositories.attention.listFacets(user.id),
   ]);
 
-  return {
-    items,
-    total,
-    hasMore: query.offset + items.length < total,
-    facets,
-  };
+  return { ...toListPage(items, query.limit, (item) => item.id), total, facets };
 }

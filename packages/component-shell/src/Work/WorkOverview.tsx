@@ -84,7 +84,7 @@ export function WorkOverview() {
           />
         ) : null}
 
-        {canAccessWork && data?.workspaces.length === 0 && (
+        {canAccessWork && data?.length === 0 && (
           <EmptyState
             icon={<BriefcaseBusiness className="text-muted-foreground" size={24} />}
             title="No workspaces yet"
@@ -94,9 +94,9 @@ export function WorkOverview() {
           />
         )}
 
-        {canAccessWork && data?.workspaces.length ? (
+        {canAccessWork && data?.length ? (
           <WorkspaceCardGrid
-            workspaces={data.workspaces.map((workspace) => ({
+            workspaces={data.map((workspace) => ({
               ...workspace,
               href: `/work/${workspace.id}`,
             }))}

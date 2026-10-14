@@ -60,9 +60,8 @@ describe("ConversationRepository", () => {
     ]);
     const repository = new ConversationRepository({ DB: db } as any);
 
-    const result = await repository.getUserConversations(123, {
+    const result = await repository.listUserConversations(123, {
       limit: 2,
-      page: 1,
       sortBy: "title",
       updatedAfter: "2026-06-01T00:00:00.000Z",
     });
@@ -71,11 +70,32 @@ describe("ConversationRepository", () => {
       "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
     );
     expect(calls[0]?.params).toEqual([123, 123, "2026-06-01T00:00:00.000Z"]);
-    expect(calls[1]?.params).toEqual([123, 123, "2026-06-01T00:00:00.000Z"]);
-    expect(calls[1]?.query).toContain("AS next_response_arrived");
-    expect(result.conversations.map((conversation) => conversation.id)).toEqual(["one", "two"]);
-    expect(result.total).toBe(3);
-    expect(result.totalPages).toBe(2);
+    expect(calls[0]?.query).toContain("AS next_response_arrived");
+    expect(result.data.map((conversation) => conversation.id)).toEqual(["one", "two"]);
+    expect(result.has_more).toBe(true);
+    expect(result.last_id).toBe("two");
+  });
+
+  it("pages after a cursor by pin, recency and id instead of an offset", async () => {
+    const { calls, db } = createMockD1([
+      { id: "b", title: "Second" },
+      { id: "c", title: "Third" },
+    ]);
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    const result = await repository.listUserConversations(123, { limit: 1, after: "a" });
+
+    expect(calls[0]?.query).toContain(
+      "(COALESCE(state.is_pinned, 0), COALESCE(c.updated_at, c.created_at), c.id) < (",
+    );
+    expect(calls[0]?.query).not.toContain("OFFSET");
+    expect(calls[0]?.params.slice(-3)).toEqual([123, "a", 2]);
+    expect(result).toEqual({
+      object: "list",
+      data: [{ id: "b", title: "Second" }],
+      has_more: true,
+      last_id: "b",
+    });
   });
 
   it("carries the natural title order across the page boundary", async () => {
@@ -86,13 +106,14 @@ describe("ConversationRepository", () => {
     ]);
     const repository = new ConversationRepository({ DB: db } as any);
 
-    const result = await repository.getUserConversations(123, {
+    const result = await repository.listUserConversations(123, {
       limit: 2,
-      page: 2,
+      after: "two",
       sortBy: "title",
     });
 
-    expect(result.conversations.map((conversation) => conversation.id)).toEqual(["ten"]);
+    expect(result.data.map((conversation) => conversation.id)).toEqual(["ten"]);
+    expect(result.has_more).toBe(false);
   });
 
   it("restores conversations by inverting the state it matches on", async () => {
@@ -126,7 +147,7 @@ describe("ConversationRepository", () => {
     const { calls, db } = createMockD1();
     const repository = new ConversationRepository({ DB: db } as any);
 
-    await repository.getUserConversations(123);
+    await repository.listUserConversations(123);
     await repository.listConversationThreads("conversation-1", 123, null, 200);
     await repository.searchAccessibleConversations(123, "pricing", 8);
 

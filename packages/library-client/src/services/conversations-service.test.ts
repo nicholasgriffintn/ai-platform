@@ -7,25 +7,22 @@ describe("ConversationsService list", () => {
     vi.unstubAllGlobals();
   });
 
-  it("encodes title search, sorting, archive filter, and pagination in the list request", async () => {
+  it("encodes title search, sorting, archive filter, and the cursor in the list request", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       Response.json({
-        data: {
-          conversations: [
-            {
-              id: "conversation-1",
-              title: "Design review",
-              messages: ["message-1"],
-              created_at: "2026-06-20T10:00:00.000Z",
-              updated_at: "2026-06-22T10:00:00.000Z",
-              last_message_at: "2026-06-22T10:00:00.000Z",
-              is_archived: true,
-            },
-          ],
-          pageNumber: 2,
-          pageSize: 30,
-          totalPages: 4,
-        },
+        object: "list",
+        data: [
+          {
+            id: "conversation-1",
+            title: "Design review",
+            created_at: "2026-06-20T10:00:00.000Z",
+            updated_at: "2026-06-22T10:00:00.000Z",
+            last_message_at: "2026-06-22T10:00:00.000Z",
+            is_archived: true,
+          },
+        ],
+        has_more: true,
+        last_id: "conversation-1",
       }),
     );
 
@@ -35,16 +32,22 @@ describe("ConversationsService list", () => {
     const result = await service.list({
       archived: "archived",
       limit: 30,
-      page: 2,
+      after: "conversation-0",
       query: "design review",
       sortBy: "created",
     });
 
     const [url, request] = fetchMock.mock.calls[0];
+    const requested = new URL(String(url), "https://example.test");
 
-    expect(String(url)).toContain(
-      "/conversations?limit=30&page=2&archived=archived&sort_by=created&q=design+review",
-    );
+    expect(requested.pathname).toBe("/conversations");
+    expect(Object.fromEntries(requested.searchParams)).toEqual({
+      archived: "archived",
+      q: "design review",
+      limit: "30",
+      after: "conversation-0",
+      sort_by: "created",
+    });
     expect(request?.method).toBe("GET");
     expect(result.conversations).toEqual([
       expect.objectContaining({
@@ -54,14 +57,12 @@ describe("ConversationsService list", () => {
         title: "Design review",
       }),
     ]);
-    expect(result.totalPages).toBe(4);
+    expect(result).toMatchObject({ hasMore: true, lastId: "conversation-1" });
   });
 
   it("resolves the activity window to an absolute cutoff the API can compare directly", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json({
-        data: { conversations: [], pageNumber: 1, pageSize: 25, totalPages: 1 },
-      }),
+      Response.json({ object: "list", data: [], has_more: false, last_id: null }),
     );
 
     vi.stubGlobal("fetch", fetchMock);

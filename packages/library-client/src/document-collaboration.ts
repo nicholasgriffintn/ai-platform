@@ -44,7 +44,7 @@ export async function resolveDocumentThread(
   const response = await fetchApiOrThrow(
     `/outputs/${encodeURIComponent(outputId)}/comments/${encodeURIComponent(commentId)}`,
     {
-      method: "PUT",
+      method: "PATCH",
       headers: await apiService.getHeaders(),
       body: input,
     },
@@ -54,7 +54,7 @@ export async function resolveDocumentThread(
 }
 
 export async function proposeDocumentEdit(outputId: string, input: ProposeDocumentEditInput) {
-  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/edits/propose`, {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/edits`, {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: input,

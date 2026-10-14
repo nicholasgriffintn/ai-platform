@@ -95,6 +95,7 @@ describe("ReplicatePollingHandler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getOutput.mockResolvedValue(outputRecord());
+    mocks.updateOutput.mockResolvedValue(outputRecord());
     mocks.getUserById.mockResolvedValue(user);
     mocks.resolveExecutableModelForRequest.mockResolvedValue({
       id: "flux-dev",

@@ -13,6 +13,7 @@ import type {
   ConversationType,
   PolyRequest,
   PermissionMode,
+  ResponseEventInput,
   RunProvenance,
   TeammateAutonomyLevel,
   TeammateApprovalStreak,
@@ -107,13 +108,8 @@ export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "e
 
 export type ChatCompletionParametersWithModel = ChatCompletionParameters;
 
-export interface ChatStreamPreludeEvent {
-  type: string;
-  payload?: Record<string, unknown>;
-}
-
 export type CoreChatOptions = ChatCompletionParameters & {
   anonymousUser?: any;
   context?: ServiceContext;
-  stream_prelude_events?: ChatStreamPreludeEvent[];
+  stream_prelude_events?: ResponseEventInput[];
 };

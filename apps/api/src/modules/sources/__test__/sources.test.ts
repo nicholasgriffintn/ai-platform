@@ -259,7 +259,7 @@ describe("project conversation context", () => {
       "project-1",
       expect.objectContaining({ action: "project.context.updated" }),
     );
-    expect(result.sources).toEqual([expect.objectContaining({ id: projectSource.id })]);
+    expect(result.data).toEqual([expect.objectContaining({ id: projectSource.id })]);
   });
 
   it("loads only curated context because project memories use memory retrieval", async () => {
@@ -283,7 +283,7 @@ describe("project conversation context", () => {
 
     const result = await listProjectConversationSources(context, 42, "project-1");
 
-    expect(result.sources).toEqual([
+    expect(result.data).toEqual([
       expect.objectContaining({ id: projectSource.id, content: projectSource.content }),
     ]);
     expect(requireProjectAccessMock).toHaveBeenCalledWith(context, "project-1");

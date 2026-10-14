@@ -7,6 +7,10 @@ import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-act
 import { emitToolInputStart, emitToolInputStop } from "~/modules/chat/application/tools/events";
 import type { MessagePart } from "~/types";
 
+function toolArguments(value: unknown): string | Record<string, unknown> | undefined {
+  return typeof value === "string" || isRecord(value) ? value : undefined;
+}
+
 function toolInput(value: unknown): string | unknown[] | Record<string, unknown> | undefined {
   return typeof value === "string" || Array.isArray(value) || isRecord(value) ? value : undefined;
 }
@@ -19,7 +23,13 @@ export async function applyAgentHarnessToolEvent(
 
   if (event.phase === "started") {
     await emitToolInputStart(target.sink, target.step, event.toolCallId, event.toolName);
-    await emitToolInputStop(target.sink, target.step, event.toolCallId, event.toolName);
+    await emitToolInputStop(
+      target.sink,
+      target.step,
+      event.toolCallId,
+      event.toolName,
+      toolArguments(event.input),
+    );
     await writeTurnActivity(target.sink, {
       kind: "tool_execution_started",
       step: target.step,
@@ -50,8 +60,7 @@ export async function applyAgentHarnessToolEvent(
     data: { formattedName: event.toolName, responseType: "text", result: content },
     timestamp,
   });
-  await target.sink.writeEvent(
-    "tool_response",
+  await target.sink.write(
     createStreamedToolResultEvent({
       role: "tool",
       id: event.toolCallId,

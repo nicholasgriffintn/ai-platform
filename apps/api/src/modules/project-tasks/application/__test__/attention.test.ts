@@ -89,8 +89,8 @@ describe("task attention inbox", () => {
 
     const response = await listProjectTaskAttention(serviceContext);
 
-    expect(response).toMatchObject({ total: 2, unread: 64 });
-    expect(response.items.map((item) => [item.id, item.kind, item.requiresAction])).toEqual([
+    expect(response).toMatchObject({ has_more: false, unread: 64 });
+    expect(response.data.map((item) => [item.id, item.kind, item.requiresAction])).toEqual([
       ["failed-task:v3", "blocked", true],
       ["done-task:v2", "completion", false],
     ]);

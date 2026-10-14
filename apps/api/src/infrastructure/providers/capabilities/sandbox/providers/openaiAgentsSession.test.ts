@@ -6,7 +6,7 @@ describe("OpenAI Agents sandbox adapter", () => {
   it("maps the shared hosted plan into an OpenAI session", () => {
     const body = buildOpenAIAgentsSessionBody({
       credentialBroker: {
-        baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+        baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
         expiresAt: "2026-09-12T12:00:00.000Z",
         grant: "scoped-broker-grant",
       },
@@ -35,7 +35,7 @@ describe("OpenAI Agents sandbox adapter", () => {
 
     expect(environment.env).toEqual({
       POLYCHAT_BROKER_GRANT: "scoped-broker-grant",
-      POLYCHAT_BROKER_URL: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+      POLYCHAT_BROKER_URL: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
     });
     expect(environment.setup_commands).toEqual(
       expect.arrayContaining([
@@ -53,7 +53,7 @@ describe("OpenAI Agents sandbox adapter", () => {
   it("uses the shared environment preparation mode", () => {
     const body = buildOpenAIAgentsSessionBody({
       credentialBroker: {
-        baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+        baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
         expiresAt: "2026-09-12T12:00:00.000Z",
         grant: "scoped-broker-grant",
       },
@@ -93,7 +93,7 @@ describe("OpenAI Agents sandbox adapter", () => {
   it("routes direct delivery through the broker-owned non-force update", () => {
     const body = buildOpenAIAgentsSessionBody({
       credentialBroker: {
-        baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+        baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
         expiresAt: "2026-09-12T12:00:00.000Z",
         grant: "scoped-broker-grant",
       },

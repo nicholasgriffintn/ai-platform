@@ -1,5 +1,5 @@
 import { parseResponseStreamSseBuffer } from "@ngriffin_uk/polychat-schemas";
-import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
+import { readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("~/modules/chat/application/agent/agent-loop", () => ({
   runAgentLoop: mocks.runAgentLoop,
 }));
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
+vi.mock("~/modules/connectors/application/composio-run", () => ({
   closeComposioConnectorRun: mocks.closeComposioConnectorRun,
 }));
 
@@ -69,7 +69,9 @@ describe("createChatTurnStream", () => {
       ({ sink }) =>
         new Promise<void>((resolve) => {
           finishTurn = () => {
-            void sink.writeEvent("state", { state: "content", content: "finished" }).then(resolve);
+            void sink
+              .write({ type: "response.state", state: "content", content: "finished" })
+              .then(resolve);
           };
 
           startTurn();

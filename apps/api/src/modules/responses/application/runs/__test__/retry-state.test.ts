@@ -1,7 +1,8 @@
-import type {
-  ChatRetrySnapshot,
-  ChatRun,
-  ChatRunCommandReceipt,
+import {
+  responseReceiptEvent,
+  type ChatRetrySnapshot,
+  type ChatRun,
+  type ChatRunCommandReceipt,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
@@ -57,29 +58,29 @@ describe("createChatRetryStatePublisher", () => {
 
       return updatedRun;
     });
-    const writeEvent = vi.fn(async () => undefined);
+    const write = vi.fn(async () => undefined);
     const publish = createChatRetryStatePublisher({
-      sink: { writeEvent },
+      sink: { write },
       runLifecycle: { receipt, recordRetry },
     });
 
     await publish(retry);
 
     expect(recordRetry).toHaveBeenCalledWith(retry);
-    expect(recordRetry.mock.invocationCallOrder[0]).toBeLessThan(
-      writeEvent.mock.invocationCallOrder[0],
-    );
-    expect(writeEvent).toHaveBeenNthCalledWith(1, "state", { state: "retry", retry });
-    expect(writeEvent).toHaveBeenNthCalledWith(2, "state", { state: "run", receipt });
+    expect(recordRetry.mock.invocationCallOrder[0]).toBeLessThan(write.mock.invocationCallOrder[0]);
+    expect(write).toHaveBeenNthCalledWith(1, { type: "response.retry", retry });
+    expect(write).toHaveBeenNthCalledWith(2, responseReceiptEvent(receipt));
   });
 
   it("still emits stream state for an unstored run", async () => {
-    const writeEvent = vi.fn(async () => undefined);
-    const publish = createChatRetryStatePublisher({ sink: { writeEvent } });
+    const write = vi.fn(async () => undefined);
+    const publish = createChatRetryStatePublisher({
+      sink: { write },
+    });
 
     await publish(retry);
 
-    expect(writeEvent).toHaveBeenCalledOnce();
-    expect(writeEvent).toHaveBeenCalledWith("state", { state: "retry", retry });
+    expect(write).toHaveBeenCalledOnce();
+    expect(write).toHaveBeenCalledWith({ type: "response.retry", retry });
   });
 });

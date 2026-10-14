@@ -38,7 +38,28 @@ import {
 } from "../conversation-response.js";
 import { fetchApi, fetchApiOrThrow } from "../fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
+import { resource, type ResourceQuery } from "../resource.js";
 import type { ConversationShare } from "../shared-conversation.js";
+
+interface ConversationSummaryRow {
+  id: string;
+  title: string;
+  model?: string | null;
+  model_tier?: ModelTier | null;
+  permission_mode?: PermissionMode;
+  created_at?: string;
+  updated_at?: string;
+  last_message_at: string;
+  parent_conversation_id?: string;
+  parent_message_id?: string;
+  is_archived?: boolean;
+  is_pinned?: number;
+  is_unread?: number;
+  next_response_arrived?: number;
+  group?: string | object | null;
+}
+
+const conversations = resource<ConversationSummaryRow>("/conversations");
 
 export interface ConversationUpdateRequest {
   archived?: boolean;
@@ -82,79 +103,22 @@ export class ConversationsService {
     }
   }
 
+  private listFilterQuery(options: ConversationListOptions): ResourceQuery {
+    return {
+      archived: options.archived,
+      updated_after: conversationActivityCutoff(options.activity)?.toISOString(),
+      q: options.query?.trim() || undefined,
+    };
+  }
+
   async list(options: ConversationListOptions = {}): Promise<ConversationListPage> {
-    const params = new URLSearchParams();
-
-    if (options.limit) {
-      params.set("limit", String(options.limit));
-    }
-
-    if (options.page) {
-      params.set("page", String(options.page));
-    }
-
-    if (options.archived) {
-      params.set("archived", options.archived);
-    }
-
-    const activityCutoff = conversationActivityCutoff(options.activity);
-
-    if (activityCutoff) {
-      params.set("updated_after", activityCutoff.toISOString());
-    }
-
-    if (options.sortBy) {
-      params.set("sort_by", options.sortBy);
-    }
-
-    if (options.query?.trim()) {
-      params.set("q", options.query.trim());
-    }
-
-    const queryString = params.toString();
-    const endpoint = queryString ? `/conversations?${queryString}` : "/conversations";
-    const response = await fetchApiOrThrow(endpoint, {
-      method: "GET",
-      headers: await this.headers(),
+    const page = await conversations.list({
+      ...this.listFilterQuery(options),
+      limit: options.limit,
+      after: options.after,
+      sort_by: options.sortBy,
     });
-    const data = await returnFetchedData<{
-      conversations: {
-        id: string;
-        title: string;
-        messages: string[];
-        model?: string | null;
-        model_tier?: ModelTier | null;
-        permission_mode?: PermissionMode;
-        created_at?: string;
-        updated_at?: string;
-        last_message_at: string;
-        parent_conversation_id?: string;
-        parent_message_id?: string;
-        is_archived?: boolean;
-        is_pinned?: number;
-        is_unread?: number;
-        next_response_arrived?: number;
-        group?: string | object | null;
-      }[];
-      pageNumber?: number;
-      pageSize?: number;
-      total?: number;
-      totalPages?: number;
-    }>(response);
-
-    if (!data.conversations || !Array.isArray(data.conversations)) {
-      console.error("Unexpected response format from /conversations endpoint:", data);
-
-      return {
-        conversations: [],
-        pageNumber: options.page ?? 1,
-        pageSize: options.limit ?? 25,
-        total: 0,
-        totalPages: 0,
-      };
-    }
-
-    const results = data.conversations.map((conversation) => {
+    const results = page.data.map((conversation) => {
       let group: unknown = conversation.group ?? null;
 
       if (typeof group === "string") {
@@ -178,18 +142,25 @@ export class ConversationsService {
       };
     });
     const sortBy = options.sortBy ?? "updated";
-    const conversations = sortCopy(
-      results,
-      (a, b) => Number(b.isPinned) - Number(a.isPinned) || compareConversationsBySort(a, b, sortBy),
-    );
 
     return {
-      conversations,
-      pageNumber: data.pageNumber ?? options.page ?? 1,
-      pageSize: data.pageSize ?? options.limit ?? 25,
-      total: data.total ?? conversations.length,
-      totalPages: data.totalPages ?? 0,
+      conversations: sortCopy(
+        results,
+        (a, b) =>
+          Number(b.isPinned) - Number(a.isPinned) || compareConversationsBySort(a, b, sortBy),
+      ),
+      hasMore: page.has_more,
+      lastId: page.last_id,
     };
+  }
+
+  async count(options: ConversationListOptions = {}): Promise<number> {
+    const { count } = await conversations.view<{ count: number }>(
+      "count",
+      this.listFilterQuery(options),
+    );
+
+    return count;
   }
 
   async setAllArchived(options: {
@@ -252,13 +223,13 @@ export class ConversationsService {
     const data = await returnFetchedData<{
       data?: unknown[];
       has_more?: boolean;
-      oldest_item_id?: string | null;
+      last_id?: string | null;
     }>(response);
 
     return {
       messages: normaliseConversationItems(data.data ?? []),
       hasMore: data.has_more === true,
-      oldestMessageId: typeof data.oldest_item_id === "string" ? data.oldest_item_id : null,
+      oldestMessageId: typeof data.last_id === "string" ? data.last_id : null,
     };
   }
 
@@ -375,7 +346,7 @@ export class ConversationsService {
   }
 
   async recordOffPlatformRunUsage(input: RecordOffPlatformUsageRequest): Promise<void> {
-    await fetchApiOrThrow("/user/usage/off-platform", {
+    await fetchApiOrThrow("/usage/events", {
       method: "POST",
       headers: await this.headers(),
       body: input,
@@ -461,7 +432,7 @@ export class ConversationsService {
     input: ArtifactBindingReadRequest,
   ): Promise<ArtifactBindingReadResponse> {
     const response = await fetchApiOrThrow(
-      conversationPath(conversationId, "/artifact-bindings/read"),
+      conversationPath(conversationId, "/artifact_bindings/read"),
       { method: "POST", headers: await this.getHeaders(), body: input },
     );
 
@@ -474,8 +445,7 @@ export class ConversationsService {
       headers: await this.getHeaders(),
     });
 
-    return queuedChatMessagesResponseSchema.parse(await returnFetchedData<unknown>(response))
-      .messages;
+    return queuedChatMessagesResponseSchema.parse(await returnFetchedData<unknown>(response)).data;
   }
 
   async queueMessage(

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { executeSandboxProvider, type SandboxProvider } from "./index";
 
 const credentialBroker = {
-  baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-1",
+  baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-1",
   expiresAt: "2026-09-12T12:00:00.000Z",
   grant: "scoped-grant",
 };

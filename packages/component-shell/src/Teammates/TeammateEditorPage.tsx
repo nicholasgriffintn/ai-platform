@@ -76,7 +76,7 @@ export function TeammateEditorPage({
       />
 
       <TeammateEditor
-        mcpConnections={mcpConnections.query.data?.connections}
+        mcpConnections={mcpConnections.query.data}
         teammate={controller.teammate}
         models={controller.models}
         tools={controller.tools}

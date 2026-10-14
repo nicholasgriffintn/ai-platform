@@ -56,7 +56,7 @@ export async function searchSources(
 ): Promise<{ results: SourceSearchResult[] }> {
   await requireModelAction(context, workspaceId, "view");
 
-  const projectId = await requireWorkspaceProject(context, workspaceId, query.projectId);
+  const projectId = await requireWorkspaceProject(context, workspaceId, query.project_id);
   const repositories = context.repositories;
   const [items, stack, assets, versions, decisions] = await Promise.all([
     withProviderErrors(async () =>

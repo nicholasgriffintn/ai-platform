@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export const sourceKindSchema = z.enum([
   "file",
   "memory",
@@ -54,6 +56,10 @@ export const projectKnowledgeSearchQuerySchema = z
     top_k: z.coerce.number().int().min(1).max(30).optional(),
   })
   .strict();
+
+export const knowledgeSearchQuerySchema = projectKnowledgeSearchQuerySchema
+  .omit({ projectId: true })
+  .extend({ project_id: z.string().min(1).optional() });
 
 export const projectKnowledgeSearchResponseSchema = z.object({
   status: z.literal("success"),
@@ -114,18 +120,22 @@ export const updateSourceSchema = z
     error: "At least one source field must be provided",
   });
 
-export const sourceListResponseSchema = z
-  .object({ sources: z.array(sourceSummarySchema) })
-  .strict();
+export const sourceListResponseSchema = listSchema(sourceSummarySchema);
 
-export const sourceDetailListResponseSchema = z.object({ sources: z.array(sourceSchema) }).strict();
+export const sourceDetailListResponseSchema = listSchema(sourceSchema);
+
+export const sourceListScopeSchema = z.enum(["all", "context", "conversation"]);
 
 export const sourceListQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     kind: sourceKindSchema.optional(),
+    scope: sourceListScopeSchema.default("all"),
   })
-  .strict();
+  .strict()
+  .refine((query) => query.scope === "all" || query.project_id, {
+    message: "Context and conversation sources need a project_id",
+  });
 
 export const sourceCollectionSchema = z
   .object({
@@ -150,16 +160,14 @@ export const createSourceCollectionSchema = z
   })
   .strict();
 
-export const sourceCollectionListResponseSchema = z
-  .object({ collections: z.array(sourceCollectionSchema) })
-  .strict();
+export const sourceCollectionListResponseSchema = listSchema(sourceCollectionSchema);
 
 export const addCollectionSourcesSchema = z
   .object({ sourceIds: z.array(z.string().min(1)).min(1).max(100) })
   .strict();
 
 export const setProjectContextSourcesSchema = z
-  .object({ sourceIds: z.array(z.string().min(1)).max(100) })
+  .object({ project_id: z.string().min(1), sourceIds: z.array(z.string().min(1)).max(100) })
   .strict();
 
 export const providerConnectionSummarySchema = z

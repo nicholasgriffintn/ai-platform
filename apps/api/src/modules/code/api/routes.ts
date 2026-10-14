@@ -58,7 +58,7 @@ addRoute(app, "post", "/fim", {
     ),
 });
 
-addRoute(app, "post", "/next-edit", {
+addRoute(app, "post", "/next_edit", {
   tags: ["code"],
   summary: "Create next edit completion",
   description: "Produces the next edit suggestion for a file using Mercury's code edit model.",

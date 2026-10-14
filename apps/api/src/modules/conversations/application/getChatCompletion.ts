@@ -2,7 +2,7 @@ import { isAsyncInvocationPending } from "@ngriffin_uk/polychat-ai-providers";
 import { settleWithin } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { hydrateConnectorApprovalMessageState } from "~/modules/apps/application/connectors/approval-message-state";
+import { hydrateConnectorApprovalMessageState } from "~/modules/connectors/application/approval-message-state";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import {
   getActiveThreadOperation,

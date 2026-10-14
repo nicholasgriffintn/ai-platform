@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export const conversationThreadSchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
@@ -7,10 +9,7 @@ export const conversationThreadSchema = z.object({
   created_at: z.string(),
   is_archived: z.boolean(),
 });
-export const conversationThreadsResponseSchema = z.object({
-  threads: z.array(conversationThreadSchema),
-  truncated: z.boolean(),
-});
+export const conversationThreadsResponseSchema = listSchema(conversationThreadSchema);
 export type ConversationThread = z.infer<typeof conversationThreadSchema>;
 export type ConversationThreadsResponse = z.infer<typeof conversationThreadsResponseSchema>;
 

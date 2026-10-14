@@ -12,7 +12,7 @@ export async function listCorrections(): Promise<Correction[]> {
     headers: await apiService.getHeaders(),
   });
 
-  return (await returnFetchedData<CorrectionListResponse>(response)).corrections;
+  return (await returnFetchedData<CorrectionListResponse>(response)).data;
 }
 
 export async function dismissCorrection(correctionId: string): Promise<void> {

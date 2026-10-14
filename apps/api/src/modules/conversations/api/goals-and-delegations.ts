@@ -7,9 +7,8 @@ import {
   updateGoalRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import type { Hono } from "hono";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import type { ResourceBuilder } from "~/infrastructure/http/resource";
 import { cancelDelegationsForConversation } from "~/modules/delegations/application/cancel-tree";
 import { listDelegationsWithReferences } from "~/modules/delegations/application/list";
 
@@ -20,9 +19,12 @@ import {
   handleUpdateConversationGoal,
 } from "../application/conversationGoal";
 
-export function registerConversationGoalAndDelegationRoutes(app: Hono): void {
-  addRoute(app, "get", "/:conversation_id/goal", {
-    tags: ["conversations"],
+export function defineConversationGoalAndDelegations(conversations: ResourceBuilder): void {
+  const goal = conversations.singleton("goal");
+  const delegations = conversations.sub("delegations", "delegation_id");
+
+  goal.read({
+    auth: "user-or-anonymous",
     summary: "Get the conversation goal",
     paramSchema: conversationParamsSchema,
     responses: {
@@ -33,8 +35,8 @@ export function registerConversationGoalAndDelegationRoutes(app: Hono): void {
       handleGetConversationGoal(serviceContext, params.conversation_id),
   });
 
-  addRoute(app, "post", "/:conversation_id/goal", {
-    tags: ["conversations"],
+  goal.create({
+    auth: "user-or-anonymous",
     summary: "Set the conversation goal",
     description: "Sets a persistent objective. Replaces the objective in place when one is active.",
     paramSchema: conversationParamsSchema,
@@ -49,8 +51,8 @@ export function registerConversationGoalAndDelegationRoutes(app: Hono): void {
       }),
   });
 
-  addRoute(app, "patch", "/:conversation_id/goal", {
-    tags: ["conversations"],
+  goal.update({
+    auth: "user-or-anonymous",
     summary: "Update the conversation goal lifecycle",
     description: "Pauses, resumes, or clears the active goal.",
     paramSchema: conversationParamsSchema,
@@ -63,8 +65,8 @@ export function registerConversationGoalAndDelegationRoutes(app: Hono): void {
       handleUpdateConversationGoal(serviceContext, params.conversation_id, body),
   });
 
-  addRoute(app, "get", "/:conversation_id/delegations", {
-    tags: ["conversations"],
+  delegations.list({
+    auth: true,
     summary: "List conversation delegations",
     paramSchema: conversationParamsSchema,
     responses: {
@@ -78,8 +80,8 @@ export function registerConversationGoalAndDelegationRoutes(app: Hono): void {
     },
   });
 
-  addRoute(app, "post", "/:conversation_id/delegations/cancel", {
-    tags: ["conversations"],
+  delegations.collectionAction("cancel", {
+    auth: true,
     summary: "Cancel conversation delegations",
     paramSchema: conversationParamsSchema,
     responses: {

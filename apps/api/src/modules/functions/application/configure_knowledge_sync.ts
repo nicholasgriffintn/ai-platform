@@ -1,7 +1,7 @@
 import { createKnowledgeSyncSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { getActiveRecipeSetup } from "~/modules/apps/application/recipes/toolContext";
+import { getActiveRecipeSetup } from "~/modules/recipes/application/toolContext";
 import { createKnowledgeSync } from "~/modules/sources/application/knowledge-sync";
 import type { ApiToolDefinition } from "~/types/functions";
 

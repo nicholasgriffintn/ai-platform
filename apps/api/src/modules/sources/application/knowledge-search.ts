@@ -12,8 +12,8 @@ import {
   getPersonalEmbeddingScopeTag,
   getProjectEmbeddingScopeTag,
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
-import { queryEmbeddingRuntime } from "~/modules/apps/application/embeddings/provider-query";
 import { rerankAuthorisedDocuments } from "~/modules/functions/application/document-reranking";
+import { queryEmbeddingRuntime } from "~/modules/sources/application/embeddings/provider-query";
 import type {
   KnowledgeScope,
   SourceSearchPassage,

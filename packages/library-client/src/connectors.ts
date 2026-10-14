@@ -1,106 +1,82 @@
-import type {
-  RecipeConnectorAccount,
-  RecipeConnectorAccountUpdateRequest,
-  RecipeConnectorApiKeyRequest,
-  RecipeConnectorProvider,
-  RecipeConnectorsResponse,
-  RecipeConnectorStartResponse,
+import {
+  approvalSchema,
+  type RecipeConnectorAccount,
+  type RecipeConnectorAccountUpdateRequest,
+  type RecipeConnectorApiKeyRequest,
+  type RecipeConnectorProvider,
+  type RecipeConnectorsResponse,
+  type RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { requestJson, resource } from "./resource.js";
 
-async function getAuthHeaders() {
-  try {
-    return await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error preparing connector headers:", error);
-
-    return {};
-  }
+function connectorPath(provider: RecipeConnectorProvider, suffix = ""): string {
+  return `/connectors/${encodeURIComponent(provider)}${suffix}`;
 }
 
 export async function listRecipeConnectors(): Promise<RecipeConnectorsResponse> {
-  const response = await fetchApiOrThrow("/apps/connectors", {
-    method: "GET",
-    headers: await getAuthHeaders(),
-  });
-
-  return returnFetchedData<RecipeConnectorsResponse>(response);
+  return {
+    connectors:
+      await resource<RecipeConnectorsResponse["connectors"][number]>("/connectors").listAll(),
+  };
 }
 
-export async function startRecipeConnector(
+export function startRecipeConnector(
   provider: RecipeConnectorProvider,
   returnTo?: string,
   authConfigId?: string,
 ): Promise<RecipeConnectorStartResponse> {
-  const response = await fetchApiOrThrow(`/apps/connectors/${provider}/start`, {
-    method: "POST",
-    headers: await getAuthHeaders(),
-    body: { returnTo, authConfigId },
+  return requestJson<RecipeConnectorStartResponse>(connectorPath(provider, "/connect"), "POST", {
+    returnTo,
+    authConfigId,
   });
-
-  return returnFetchedData<RecipeConnectorStartResponse>(response);
 }
 
-export async function storeRecipeConnectorApiKey(
+export function storeRecipeConnectorApiKey(
   provider: RecipeConnectorProvider,
   request: RecipeConnectorApiKeyRequest,
 ): Promise<{ success: boolean }> {
-  const response = await fetchApiOrThrow(`/apps/connectors/${provider}/api-key`, {
-    method: "POST",
-    headers: await getAuthHeaders(),
-    body: request,
-  });
-
-  return returnFetchedData<{ success: boolean }>(response);
+  return requestJson<{ success: boolean }>(connectorPath(provider, "/api_key"), "POST", request);
 }
 
-export async function disconnectRecipeConnector(
+export function disconnectRecipeConnector(
   provider: RecipeConnectorProvider,
 ): Promise<{ success: boolean }> {
-  const response = await fetchApiOrThrow(`/apps/connectors/${provider}`, {
-    method: "DELETE",
-    headers: await getAuthHeaders(),
-  });
-
-  return returnFetchedData<{ success: boolean }>(response);
+  return requestJson<{ success: boolean }>(connectorPath(provider), "DELETE");
 }
 
 export async function listRecipeConnectorAccounts(
   provider: RecipeConnectorProvider,
 ): Promise<{ accounts: RecipeConnectorAccount[] }> {
-  const response = await fetchApiOrThrow(`/apps/connectors/${provider}/accounts`, {
-    method: "GET",
-    headers: await getAuthHeaders(),
-  });
-
-  return returnFetchedData<{ accounts: RecipeConnectorAccount[] }>(response);
+  return {
+    accounts: await resource<RecipeConnectorAccount>(
+      connectorPath(provider, "/accounts"),
+    ).listAll(),
+  };
 }
 
-export async function updateRecipeConnectorAccount(
+export function updateRecipeConnectorAccount(
   provider: RecipeConnectorProvider,
   request: RecipeConnectorAccountUpdateRequest,
 ): Promise<RecipeConnectorAccount> {
-  const response = await fetchApiOrThrow(`/apps/connectors/${provider}/accounts`, {
-    method: "PUT",
-    headers: await getAuthHeaders(),
-    body: request,
-  });
+  const { accountId, ...update } = request;
 
-  return returnFetchedData<RecipeConnectorAccount>(response);
+  return requestJson<RecipeConnectorAccount>(
+    connectorPath(provider, `/accounts/${encodeURIComponent(accountId)}`),
+    "PATCH",
+    update,
+  );
 }
 
 export async function resolveConnectorOperationApproval(
   approvalId: string,
   resolution: "approved" | "rejected",
 ): Promise<{ approval: { id: string; state: "approved" | "rejected" } }> {
-  const response = await fetchApiOrThrow(`/apps/connectors/approvals/${approvalId}`, {
-    method: "PUT",
-    headers: await getAuthHeaders(),
-    body: { resolution },
-  });
+  const approval = approvalSchema.parse(
+    await requestJson<unknown>(`/approvals/${encodeURIComponent(approvalId)}`, "PATCH", {
+      state: resolution,
+    }),
+  );
 
-  return returnFetchedData<{ approval: { id: string; state: "approved" | "rejected" } }>(response);
+  return { approval: { id: approval.id, state: resolution } };
 }

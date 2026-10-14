@@ -1,45 +1,26 @@
-import type {
-  ConversationHandleListResponse,
-  DelegationListResponse,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ConversationHandle, DelegationListResponse } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { requestJson, resource } from "./resource.js";
 
-export async function listConversationDelegations(
+const conversations = resource<unknown>("/conversations");
+
+export function listConversationDelegations(
   conversationId: string,
 ): Promise<DelegationListResponse> {
-  const response = await fetchApiOrThrow(
-    `/conversations/${encodeURIComponent(conversationId)}/delegations`,
-    {
-      method: "GET",
-      headers: await apiService.getHeaders(),
-    },
+  return requestJson<DelegationListResponse>(
+    conversations.sub<unknown>(conversationId, "delegations").path,
+    "GET",
   );
-
-  return returnFetchedData(response);
 }
 
 export async function cancelConversationDelegations(conversationId: string): Promise<void> {
-  await fetchApiOrThrow(`/conversations/${encodeURIComponent(conversationId)}/delegations/cancel`, {
-    method: "POST",
-    headers: await apiService.getHeaders(),
-  });
+  await conversations.sub<unknown>(conversationId, "delegations").collectionAction("cancel");
 }
 
-export async function listConversationHandles(): Promise<ConversationHandleListResponse> {
-  const response = await fetchApiOrThrow("/user/conversation-handles", {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-
-  return returnFetchedData(response);
+export function listConversationHandles(): Promise<ConversationHandle[]> {
+  return resource<ConversationHandle>("/conversations/handles").listAll();
 }
 
-export async function revokeConversationHandle(handleId: string): Promise<void> {
-  await fetchApiOrThrow(`/user/conversation-handles/${encodeURIComponent(handleId)}`, {
-    method: "DELETE",
-    headers: await apiService.getHeaders(),
-  });
+export function revokeConversationHandle(handleId: string): Promise<void> {
+  return resource<ConversationHandle>("/conversations/handles").delete(handleId);
 }

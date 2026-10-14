@@ -1,7 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type z from "zod/v4";
 
-import { analyseArticle } from "~/modules/apps/application/articles/analyse";
+import { analyseArticle } from "~/modules/experiences/application/articles/analyse";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

@@ -15,24 +15,24 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import {
   retainComposioConnectorSession,
   resolveComposioRunAccount,
-} from "~/modules/apps/application/connectors/composio-run";
-import { authoriseConnectorOperation } from "~/modules/apps/application/connectors/operation-approvals";
+} from "~/modules/connectors/application/composio-run";
+import { authoriseConnectorOperation } from "~/modules/connectors/application/operation-approvals";
 import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
-} from "~/modules/apps/application/connectors/operations";
-import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+} from "~/modules/connectors/application/operations";
+import { getRecipeById } from "~/modules/recipes/application/catalog";
 import {
   requireRecipeConnectorAccess,
   getRecipeConnectorParameters,
-} from "~/modules/apps/application/recipes/configuration";
+} from "~/modules/recipes/application/configuration";
 import {
   getRecipeConfiguration,
   getActiveRecipeSetup,
   getRecipeAllowedConnectorOperations,
   getRecipeAllowedConnectorProviders,
   getRecipeExecutionChannel,
-} from "~/modules/apps/application/recipes/toolContext";
+} from "~/modules/recipes/application/toolContext";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import {

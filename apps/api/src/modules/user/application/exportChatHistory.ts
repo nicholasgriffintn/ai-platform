@@ -92,22 +92,18 @@ export async function handleExportChatHistory({
 
   const rows: ExportRow[] = [];
 
-  let page = 1;
-  let totalPages = 1;
+  let after: string | undefined;
+  let hasMore = true;
 
-  do {
-    const { conversations, totalPages: pageCount } =
-      await serviceContext.repositories.conversations.getUserConversations(
-        user.id,
-        CONVERSATION_PAGE_SIZE,
-        page,
-        true,
-      );
-
-    totalPages = pageCount || 1;
+  while (hasMore) {
+    const page = await serviceContext.repositories.conversations.listUserConversations(user.id, {
+      archiveFilter: "all",
+      limit: CONVERSATION_PAGE_SIZE,
+      after,
+    });
 
     const conversationRows = await mapWithConcurrency(
-      conversations,
+      page.data,
       CONVERSATION_CONCURRENCY,
       (conversation) => collectConversationRows(serviceContext, conversation),
     );
@@ -117,7 +113,10 @@ export async function handleExportChatHistory({
         rows.push(row);
       }
     }
-  } while (page++ < totalPages);
+
+    hasMore = page.has_more && page.last_id !== null;
+    after = page.last_id ?? undefined;
+  }
 
   return rows;
 }

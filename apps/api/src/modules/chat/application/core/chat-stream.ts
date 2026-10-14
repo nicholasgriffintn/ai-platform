@@ -1,12 +1,15 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { AgentEvent } from "@ngriffin_uk/polychat-ai-agents";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
-import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
+import {
+  isAgentExecutionMode,
+  responseReceiptEvent,
+  type ChatRunCommandReceipt,
+  type ResponseEventInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import {
   runAgentLoop,
   type AgentLoopExecutionParams,
@@ -18,15 +21,14 @@ import {
 import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
-  type ChatStreamPreludeEvent,
 } from "~/modules/chat/application/streaming/emitter";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
 import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
 import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
-import { StreamState } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/core/chat-stream" });
 
@@ -34,7 +36,7 @@ export type CreateChatTurnStreamParams = Omit<AgentLoopExecutionParams, "sink" |
   executionCtx?: ExecutionContext;
   onTurnEnd?: () => Promise<void>;
   runLifecycle?: ChatRunLifecycle | null;
-  preludeEvents?: ChatStreamPreludeEvent[];
+  preludeEvents?: ResponseEventInput[];
 };
 
 export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): ReadableStream {
@@ -45,7 +47,7 @@ export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): Read
 
   void (async () => {
     try {
-      await stream.writeEvent("state", { state: "run", receipt });
+      await stream.write(responseReceiptEvent(receipt));
       await stream.writeDone();
       await stream.close();
     } catch (error) {
@@ -120,23 +122,23 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
 
     try {
       if (params.runLifecycle) {
-        await stream.writeEvent("state", {
-          state: "run",
-          receipt: params.runLifecycle.receipt,
-        });
+        await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
       }
 
       await writeTurnActivity(stream, { kind: "turn_started" });
-      await stream.writeEvent("state", { state: StreamState.INIT });
+      await stream.write({ type: "response.phase", phase: "init" });
 
       for (const prelude of params.preludeEvents ?? []) {
-        await stream.writeEvent(prelude.type, prelude.payload);
+        await stream.write(prelude);
       }
 
       const usageLimits = await params.conversationManager.getUsageLimits();
 
       if (usageLimits) {
-        await stream.writeEvent("usage_limits", { usage_limits: usageLimits });
+        await stream.write({
+          type: "response.usage_limits",
+          usage_limits: usageLimits,
+        });
       }
 
       const result = await runAgentLoop({
@@ -150,17 +152,14 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         onRetryState: createChatRetryStatePublisher({ sink: stream, runLifecycle }),
         emit: tracesAgentEvents
           ? async (event: AgentEvent) => {
-              await stream.writeEvent("state", { state: "agent_event", event: { ...event } });
+              await stream.write({ type: "response.agent_event", event: { ...event } });
             }
           : undefined,
       });
 
       if (params.runLifecycle) {
         await params.runLifecycle.complete(result);
-        await stream.writeEvent("state", {
-          state: "run",
-          receipt: params.runLifecycle.receipt,
-        });
+        await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
       }
 
       outcome =
@@ -173,7 +172,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
               : "completed";
 
       await writeTurnActivity(stream, { kind: "turn_finished", outcome });
-      await stream.writeEvent("state", { state: StreamState.DONE });
+      await stream.write({ type: "response.phase", phase: "done" });
 
       await closeVisibleStream();
       await releaseTurn();
@@ -192,10 +191,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
       if (params.runLifecycle) {
         try {
           await params.runLifecycle.fail(error);
-          await stream.writeEvent("state", {
-            state: "run",
-            receipt: params.runLifecycle.receipt,
-          });
+          await stream.write(responseReceiptEvent(params.runLifecycle.receipt));
         } catch (runError) {
           logger.error("Failed to record streamed run failure", {
             error: runError,
@@ -209,11 +205,12 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         outcome: "failed",
         errorType: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
-      await stream.writeEvent("error", {
+      await stream.write({
+        type: "response.error",
         error: {
           message: error instanceof Error ? error.message : "Failed to complete the response",
         },
-        type: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
+        code: error instanceof AssistantError ? error.type : ErrorType.PROVIDER_ERROR,
       });
 
       await closeVisibleStream();

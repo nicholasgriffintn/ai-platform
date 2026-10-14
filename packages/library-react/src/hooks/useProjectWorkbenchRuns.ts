@@ -43,7 +43,7 @@ export function useProjectWorkbenchRuns({
         limit: 100,
       });
 
-      const runs = response.activities.flatMap((activity) => {
+      const runs = response.data.flatMap((activity) => {
         const parsed = sandboxRunDataSchema.safeParse(activity.data);
 
         return parsed.success ? [{ activity, run: parsed.data }] : [];

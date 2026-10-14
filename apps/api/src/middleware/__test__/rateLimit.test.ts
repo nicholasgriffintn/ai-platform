@@ -77,8 +77,8 @@ describe("Rate Limit Middleware", () => {
       const getContextVariable = vi.fn().mockReturnValue(null);
       const context = createMockContext({
         req: {
-          url: "http://example.com/apps/sandbox/credential-broker/run-123/git/info/refs",
-          path: "/apps/sandbox/credential-broker/run-123/git/info/refs",
+          url: "http://example.com/internal/sandbox/credential_broker/run-123/git/info/refs",
+          path: "/internal/sandbox/credential_broker/run-123/git/info/refs",
           header: requestHeader,
         },
         get: getContextVariable,
@@ -98,8 +98,8 @@ describe("Rate Limit Middleware", () => {
     it("does not let rotating broker grants evade the source rate limit", async () => {
       const context = createMockContext({
         req: {
-          url: "http://example.com/apps/sandbox/credential-broker/run-123/git/info/refs",
-          path: "/apps/sandbox/credential-broker/run-123/git/info/refs",
+          url: "http://example.com/internal/sandbox/credential_broker/run-123/git/info/refs",
+          path: "/internal/sandbox/credential_broker/run-123/git/info/refs",
           header: vi.fn((name: string) =>
             name === "CF-Connecting-IP" ? "203.0.113.10" : "Bearer another-grant",
           ),

@@ -1,4 +1,5 @@
 import type {
+  ListPage,
   Plan,
   UsageBalanceResponse,
   UsageEventsResponse,
@@ -16,7 +17,7 @@ async function authHeaders() {
 
 export async function getUsageBalance(period?: string): Promise<UsageBalanceResponse> {
   const query = period ? `?period=${period}` : "";
-  const response = await fetchApiOrThrow(`/user/usage/balance${query}`, {
+  const response = await fetchApiOrThrow(`/usage/balance${query}`, {
     method: "GET",
     headers: await authHeaders(),
   });
@@ -26,7 +27,7 @@ export async function getUsageBalance(period?: string): Promise<UsageBalanceResp
 
 export async function getUsageSummary(period?: string): Promise<UsageSummaryResponse> {
   const query = period ? `?period=${period}` : "";
-  const response = await fetchApiOrThrow(`/user/usage/summary${query}`, {
+  const response = await fetchApiOrThrow(`/usage/summary${query}`, {
     method: "GET",
     headers: await authHeaders(),
   });
@@ -36,7 +37,7 @@ export async function getUsageSummary(period?: string): Promise<UsageSummaryResp
 
 export async function listUsageEvents(options: {
   period?: string;
-  cursor?: string;
+  after?: string;
   limit?: number;
   source?: string;
 }): Promise<UsageEventsResponse> {
@@ -46,8 +47,8 @@ export async function listUsageEvents(options: {
     params.set("period", options.period);
   }
 
-  if (options.cursor) {
-    params.set("cursor", options.cursor);
+  if (options.after) {
+    params.set("after", options.after);
   }
 
   if (options.limit) {
@@ -60,7 +61,7 @@ export async function listUsageEvents(options: {
 
   const encoded = params.toString();
   const query = encoded ? `?${encoded}` : "";
-  const response = await fetchApiOrThrow(`/user/usage/events${query}`, {
+  const response = await fetchApiOrThrow(`/usage/events${query}`, {
     method: "GET",
     headers: await authHeaders(),
   });
@@ -70,15 +71,14 @@ export async function listUsageEvents(options: {
 
 export async function listPlans(): Promise<Plan[]> {
   const response = await fetchApiOrThrow("/plans", { method: "GET" });
-  const payload = await returnFetchedData<{ data?: Plan[] } | Plan[]>(response);
 
-  return Array.isArray(payload) ? payload : (payload.data ?? []);
+  return (await returnFetchedData<ListPage<Plan>>(response)).data;
 }
 
 export async function createBillingPortalSession(
   returnUrl: string,
 ): Promise<{ url: string } | null> {
-  const response = await fetchApi("/stripe/portal", {
+  const response = await fetchApi("/billing/portal_sessions", {
     method: "POST",
     headers: await authHeaders(),
     body: { return_url: returnUrl },
@@ -98,10 +98,10 @@ export async function createBillingPortalSession(
 }
 
 export async function setOverageEnabled(enabled: boolean): Promise<{ enabled: boolean } | null> {
-  const response = await fetchApi("/stripe/overage", {
-    method: "POST",
+  const response = await fetchApi("/billing/subscription", {
+    method: "PATCH",
     headers: await authHeaders(),
-    body: { enabled },
+    body: { overage_enabled: enabled },
   });
 
   if (response.status === 404) {

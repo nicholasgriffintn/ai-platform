@@ -20,11 +20,11 @@ export function OutputRevisionReview({
   onRestore,
 }: OutputRevisionReviewProps) {
   const [selectedRevision, setSelectedRevision] = useState<number | null>(
-    history.revisions[0]?.revision ?? null,
+    history.data[0]?.revision ?? null,
   );
   const selected =
-    history.revisions.find((revision) => revision.revision === selectedRevision) ??
-    history.revisions[0] ??
+    history.data.find((revision) => revision.revision === selectedRevision) ??
+    history.data[0] ??
     null;
 
   if (!selected) {
@@ -59,7 +59,7 @@ export function OutputRevisionReview({
           fullWidth={false}
           className="min-w-48"
           value={String(selected.revision)}
-          options={history.revisions.map((revision) => ({
+          options={history.data.map((revision) => ({
             value: String(revision.revision),
             label: `Revision ${revision.revision} · ${revision.operation}`,
           }))}

@@ -43,7 +43,7 @@ export async function sha256Stream(stream: ReadableStream<Uint8Array>): Promise<
   }
 }
 
-export function toHex(buffer: ArrayBuffer): string {
+export function toHex(buffer: ArrayBuffer | Uint8Array): string {
   return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 

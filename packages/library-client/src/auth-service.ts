@@ -225,8 +225,8 @@ class AuthService {
 
   public async updateUserSettings(settings: Partial<UserSettings>): Promise<boolean> {
     try {
-      const response = await fetchApi("/user/settings", {
-        method: "PUT",
+      const response = await fetchApi("/account", {
+        method: "PATCH",
         body: settings,
       });
 

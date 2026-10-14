@@ -3,12 +3,12 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import { z } from "zod";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { markComposioAccountExpired } from "~/modules/apps/application/connectors/composio-account-mirror";
+import { markComposioAccountExpired } from "~/modules/connectors/application/composio-account-mirror";
 import {
   admitRecipeEvent,
   type RecipeEventSubscription,
-} from "~/modules/apps/application/recipes/event-admission";
-import { parseStoredRecipeInstallationData } from "~/modules/apps/application/recipes/installation-persistence";
+} from "~/modules/recipes/application/event-admission";
+import { parseStoredRecipeInstallationData } from "~/modules/recipes/application/installation-persistence";
 import { verifyHmacSha256Webhook } from "~/modules/webhooks/infrastructure/webhook-signatures";
 import type { IEnv } from "~/types";
 

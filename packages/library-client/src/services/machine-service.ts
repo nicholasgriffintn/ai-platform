@@ -1,7 +1,7 @@
 import {
   machineForgetResponseSchema,
   machineHeartbeatSchema,
-  machineListResponseSchema,
+  environmentListSchema,
   machineRecordSchema,
   type MachineHeartbeat,
   type MachineRecord,
@@ -14,7 +14,7 @@ export class MachineService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
   async fetchMachines(): Promise<MachineRecord[]> {
-    const response = await fetchApi("/machines", {
+    const response = await fetchApi("/environments?kind=machine", {
       method: "GET",
       headers: await this.getHeaders(),
       timeoutMs: 10000,
@@ -24,7 +24,9 @@ export class MachineService {
       throw new Error(`Failed to fetch machines: ${response.statusText}`);
     }
 
-    return machineListResponseSchema.parse(await returnFetchedData<unknown>(response));
+    return environmentListSchema
+      .parse(await returnFetchedData<unknown>(response))
+      .data.flatMap((environment) => (environment.kind === "machine" ? [environment.detail] : []));
   }
 
   async heartbeat(input: MachineHeartbeat): Promise<MachineRecord | null> {
@@ -43,7 +45,7 @@ export class MachineService {
   }
 
   async forget(machineId: string): Promise<void> {
-    const response = await fetchApi(`/machines/${encodeURIComponent(machineId)}`, {
+    const response = await fetchApi(`/environments/${encodeURIComponent(machineId)}?kind=machine`, {
       method: "DELETE",
       headers: await this.getHeaders(),
       timeoutMs: 10000,

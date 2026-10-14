@@ -27,7 +27,7 @@ export interface ResponseReplayOutcome {
   requiresSnapshot: boolean;
 }
 
-type ReplayEvent = ResponseReplayResponse["events"][number];
+type ReplayEvent = ResponseReplayResponse["data"][number];
 
 function applyStatusEvent(response: PlatformResponse, event: ReplayEvent): PlatformResponse | null {
   const status = responseStatusSchema.safeParse(event.data.status);
@@ -107,7 +107,7 @@ export function applyResponseReplay(
     };
   }
 
-  const events = [...replay.events].sort((left, right) => left.sequence - right.sequence);
+  const events = [...replay.data].sort((left, right) => left.sequence - right.sequence);
   const { messages, cursor: _cursor, ...response } = state.snapshot;
   let next: PlatformResponse = response;
   let nextCursor = state.cursor;

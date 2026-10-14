@@ -18,6 +18,7 @@ vi.mock("../../../credentials.js", () => ({
 }));
 
 vi.mock("./proxyUrl.js", () => ({
+  REALTIME_TRANSCRIPTION_PROXY_PATH: "/realtime/transcription",
   buildGrantedRealtimeProxyUrl: buildGrantedRealtimeProxyUrlMock,
 }));
 
@@ -46,7 +47,7 @@ describe("CartesiaRealtimeProvider", () => {
     });
     buildGrantedRealtimeProxyUrlMock.mockResolvedValue({
       expiresAt: 1_788_134_400,
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=minimal&session_id=session-1&grant=grant-1",
+      url: "wss://api.polychat.test/realtime/transcription?delay=minimal&grant=grant-1&model=ink-2&provider=cartesia&session_id=session-1",
     });
   });
 
@@ -58,7 +59,7 @@ describe("CartesiaRealtimeProvider", () => {
     ).resolves.toMatchObject({
       provider: "cartesia",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=minimal&session_id=session-1&grant=grant-1",
+      url: "wss://api.polychat.test/realtime/transcription?delay=minimal&grant=grant-1&model=ink-2&provider=cartesia&session_id=session-1",
       proxy_grant_expires_at: 1_788_134_400,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_transcription: { model: "ink-2" },

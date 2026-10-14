@@ -8,6 +8,7 @@ import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-
 import {
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   createKnowledgeSyncSchema,
+  listPageOf,
   recipeConnectorProviderSchema,
   type CreateKnowledgeSync,
   type KnowledgeSyncResource,
@@ -19,7 +20,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+import { getRecipeById } from "~/modules/recipes/application/catalog";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import {
@@ -119,7 +120,10 @@ export async function listKnowledgeSyncs(context: ServiceContext, projectId: str
   await requireProjectAccess(context, projectId);
   const records = await context.repositories.knowledgeSyncs.list(projectId);
 
-  return { syncs: records.map((record) => formatKnowledgeSync(record, context.requireUser().id)) };
+  return listPageOf(
+    records.map((record) => formatKnowledgeSync(record, context.requireUser().id)),
+    (sync) => sync.id,
+  );
 }
 
 export async function createKnowledgeSync(context: ServiceContext, input: CreateKnowledgeSync) {

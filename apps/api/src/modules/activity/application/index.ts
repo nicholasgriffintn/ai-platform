@@ -1,5 +1,11 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type { ActivityRecord as Activity, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
+import {
+  mapListPage,
+  toListPage,
+  type ActivityListQuery,
+  type ActivityRecord as Activity,
+  type ListPage,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -27,31 +33,24 @@ function formatActivity(record: ActivityRecord): Activity {
 export async function listActivity(
   context: ServiceContext,
   userId: number,
-  filters: {
-    projectId?: string;
-    conversationId?: string;
-    capabilityId?: string;
-    status?: ActivityStatus;
-    limit: number;
-    offset: number;
-  },
-): Promise<{ activities: Activity[]; hasMore: boolean }> {
-  const pageOptions = {
-    conversationId: filters.conversationId,
-    capabilityId: filters.capabilityId,
-    status: filters.status,
-    limit: filters.limit + 1,
-    offset: filters.offset,
+  query: ActivityListQuery,
+): Promise<ListPage<Activity>> {
+  const options = {
+    conversationId: query.conversation_id,
+    capabilityId: query.capability_id,
+    status: query.status,
+    limit: query.limit + 1,
+    after: query.after,
   };
-  const records = filters.projectId
-    ? (await requireProjectAccess(context, filters.projectId),
-      await context.repositories.activities.listProjectActivities(filters.projectId, pageOptions))
-    : await context.repositories.activities.listPersonalActivities(userId, pageOptions);
+  const records = query.project_id
+    ? (await requireProjectAccess(context, query.project_id),
+      await context.repositories.activities.listProjectActivities(query.project_id, options))
+    : await context.repositories.activities.listPersonalActivities(userId, options);
 
-  return {
-    activities: records.slice(0, filters.limit).map(formatActivity),
-    hasMore: records.length > filters.limit,
-  };
+  return mapListPage(
+    toListPage(records, query.limit, (record) => record.id),
+    formatActivity,
+  );
 }
 
 export async function getActivity(

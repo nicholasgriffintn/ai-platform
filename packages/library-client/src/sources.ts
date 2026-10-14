@@ -8,6 +8,7 @@ import type {
   ProjectKnowledgeSearchQuery,
   ProjectKnowledgeSearchResponse,
   KnowledgeSync,
+  ListPage,
   CreateKnowledgeSync,
   UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
@@ -23,7 +24,7 @@ export async function listSources(
   const query = new URLSearchParams();
 
   if (filters.projectId) {
-    query.set("projectId", filters.projectId);
+    query.set("project_id", filters.projectId);
   }
 
   if (filters.kind) {
@@ -32,7 +33,7 @@ export async function listSources(
 
   const suffix = query.size ? `?${query.toString()}` : "";
 
-  return (await request<{ sources: SourceSummary[] }>(`/sources${suffix}`)).sources;
+  return (await request<ListPage<SourceSummary>>(`/sources${suffix}`)).data;
 }
 
 export async function getSource(sourceId: string): Promise<Source> {
@@ -41,21 +42,21 @@ export async function getSource(sourceId: string): Promise<Source> {
 
 export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {
   return (
-    await request<{ syncs: KnowledgeSync[] }>(
-      `/sources/knowledge-syncs?projectId=${encodeURIComponent(projectId)}`,
+    await request<ListPage<KnowledgeSync>>(
+      `/sources/knowledge_syncs?project_id=${encodeURIComponent(projectId)}`,
     )
-  ).syncs;
+  ).data;
 }
 
 export async function createKnowledgeSync(input: CreateKnowledgeSync): Promise<KnowledgeSync> {
-  return request("/sources/knowledge-syncs", { method: "POST", body: input });
+  return request("/sources/knowledge_syncs", { method: "POST", body: input });
 }
 
 export async function controlKnowledgeSync(
   id: string,
   input: UpdateKnowledgeSync,
 ): Promise<KnowledgeSync> {
-  return request(`/sources/knowledge-syncs/${encodeURIComponent(id)}`, {
+  return request(`/sources/knowledge_syncs/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: input,
   });
@@ -67,7 +68,7 @@ export async function searchProjectKnowledge(
   const query = new URLSearchParams({ query: input.query });
 
   if (input.projectId) {
-    query.set("projectId", input.projectId);
+    query.set("project_id", input.projectId);
   }
 
   if (input.type) {
@@ -90,10 +91,9 @@ export async function deleteSource(sourceId: string): Promise<void> {
 }
 
 export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {
-  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+  const suffix = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
 
-  return (await request<{ collections: SourceCollection[] }>(`/sources/collections${suffix}`))
-    .collections;
+  return (await request<ListPage<SourceCollection>>(`/sources/collections${suffix}`)).data;
 }
 
 export async function createSourceCollection(
@@ -108,10 +108,10 @@ export async function deleteSourceCollection(collectionId: string): Promise<void
 
 export async function listCollectionSources(collectionId: string): Promise<SourceSummary[]> {
   return (
-    await request<{ sources: SourceSummary[] }>(
+    await request<ListPage<SourceSummary>>(
       `/sources/collections/${encodeURIComponent(collectionId)}/sources`,
     )
-  ).sources;
+  ).data;
 }
 
 export async function addCollectionSources(
@@ -126,18 +126,18 @@ export async function addCollectionSources(
 
 export async function listProjectContextSources(projectId: string): Promise<SourceSummary[]> {
   return (
-    await request<{ sources: SourceSummary[] }>(
-      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+    await request<ListPage<SourceSummary>>(
+      `/sources?project_id=${encodeURIComponent(projectId)}&scope=context`,
     )
-  ).sources;
+  ).data;
 }
 
 export async function listProjectConversationSources(projectId: string): Promise<Source[]> {
   return (
-    await request<{ sources: Source[] }>(
-      `/sources/project-conversation?projectId=${encodeURIComponent(projectId)}`,
+    await request<ListPage<Source>>(
+      `/sources?project_id=${encodeURIComponent(projectId)}&scope=conversation`,
     )
-  ).sources;
+  ).data;
 }
 
 export async function setProjectContextSources(
@@ -145,9 +145,9 @@ export async function setProjectContextSources(
   sourceIds: string[],
 ): Promise<SourceSummary[]> {
   return (
-    await request<{ sources: SourceSummary[] }>(
-      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
-      { method: "PUT", body: { sourceIds } },
-    )
-  ).sources;
+    await request<ListPage<SourceSummary>>("/sources/project_context", {
+      method: "PATCH",
+      body: { project_id: projectId, sourceIds },
+    })
+  ).data;
 }

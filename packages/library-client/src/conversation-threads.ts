@@ -1,19 +1,11 @@
-import type { ConversationThreadsResponse } from "@ngriffin_uk/polychat-schemas";
+import type { ConversationThread, ListPage } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { resource } from "./resource.js";
 
-export async function getConversationBranches(
+const conversations = resource<unknown>("/conversations");
+
+export function getConversationBranches(
   conversationId: string,
-): Promise<ConversationThreadsResponse> {
-  const response = await fetchApiOrThrow(
-    `/conversations/${encodeURIComponent(conversationId)}/branches`,
-    {
-      method: "GET",
-      headers: await apiService.getHeaders(),
-    },
-  );
-
-  return returnFetchedData(response);
+): Promise<ListPage<ConversationThread>> {
+  return conversations.sub<ConversationThread>(conversationId, "branches").list();
 }

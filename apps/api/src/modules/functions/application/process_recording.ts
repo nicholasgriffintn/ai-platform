@@ -1,7 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type z from "zod/v4";
 
-import { handleRecordingTranscribe } from "~/modules/apps/application/recordings/transcribe";
+import { handleRecordingTranscribe } from "~/modules/experiences/application/recordings/transcribe";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

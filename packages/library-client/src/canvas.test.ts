@@ -3,46 +3,50 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { generateCanvasOutputs } from "./canvas.js";
 
 const mocks = vi.hoisted(() => ({
-  fetchApi: vi.fn(),
-  getHeaders: vi.fn(),
+  fetchApiOrThrow: vi.fn(),
 }));
 
-vi.mock("./api-service.js", () => ({
-  apiService: {
-    getHeaders: mocks.getHeaders,
-  },
+vi.mock("./utils/headers.js", () => ({
+  getHeaders: async () => ({ Authorization: "Bearer token" }),
 }));
 
 vi.mock("./fetch-wrapper.js", () => ({
-  fetchApi: mocks.fetchApi,
-  returnFetchedData: (response: Response) => response.json(),
+  fetchApiOrThrow: mocks.fetchApiOrThrow,
 }));
 
 describe("canvas api", () => {
   beforeEach(() => {
-    mocks.fetchApi.mockReset();
-    mocks.getHeaders.mockReset();
-    mocks.getHeaders.mockResolvedValue({ Authorization: "Bearer token" });
+    mocks.fetchApiOrThrow.mockReset();
   });
 
-  it("does not apply the short default fetch timeout to generation requests", async () => {
-    mocks.fetchApi.mockResolvedValue(
+  it("starts a canvas job without the short default fetch timeout and reports rejected models", async () => {
+    mocks.fetchApiOrThrow.mockResolvedValue(
       Response.json({
-        generations: [],
+        object: "list",
+        data: [],
+        has_more: false,
+        last_id: null,
+        rejected: [{ error: "Unavailable", detail: { modelId: "gpt-image-2", modelName: "GPT" } }],
       }),
     );
 
-    await generateCanvasOutputs({
+    const result = await generateCanvasOutputs({
       mode: "image",
       prompt: "generate a mountain",
       modelIds: ["gpt-image-2"],
+      projectId: "project-1",
     });
 
-    expect(mocks.fetchApi).toHaveBeenCalledWith(
-      "/apps/canvas/generate",
+    expect(mocks.fetchApiOrThrow).toHaveBeenCalledWith(
+      "/jobs",
       expect.objectContaining({
+        method: "POST",
         timeoutMs: null,
+        body: expect.objectContaining({ kind: "canvas_generation", project_id: "project-1" }),
       }),
     );
+    expect(result.generations).toEqual([
+      expect.objectContaining({ modelId: "gpt-image-2", status: "failed", error: "Unavailable" }),
+    ]);
   });
 });

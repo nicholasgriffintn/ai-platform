@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export interface ProjectStarterTeammate {
   roleSlug: string;
   name: string;
@@ -51,9 +53,7 @@ export const projectStarterSummarySchema = z.object({
   tools: z.array(z.string()),
 });
 
-export const projectStarterListResponseSchema = z.object({
-  starters: z.array(projectStarterSummarySchema),
-});
+export const projectStarterListResponseSchema = listSchema(projectStarterSummarySchema);
 
 export const instantiateProjectStarterSchema = z.object({
   workspaceId: z.string().min(1),

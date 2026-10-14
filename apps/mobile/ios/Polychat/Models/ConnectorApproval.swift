@@ -11,10 +11,16 @@ struct ConnectorOperationApproval: Codable, Equatable {
     let expiresAt: String
     let resolvedAt: String?
     let consumedAt: String?
-}
 
-struct ConnectorOperationApprovalResponse: Codable, Equatable {
-    let approval: ConnectorOperationApproval
+    enum CodingKeys: String, CodingKey {
+        case id, provider, operation, state
+        case runId = "response_id"
+        case completionId = "conversation_id"
+        case createdAt = "created_at"
+        case expiresAt = "expires_at"
+        case resolvedAt = "resolved_at"
+        case consumedAt = "consumed_at"
+    }
 }
 
 struct ConnectorApprovalResolution: Codable, Equatable {
@@ -22,12 +28,8 @@ struct ConnectorApprovalResolution: Codable, Equatable {
     let state: String
 }
 
-struct ConnectorApprovalResolutionResponse: Codable, Equatable {
-    let approval: ConnectorApprovalResolution
-}
-
-struct ResolveConnectorApprovalRequest: Encodable {
-    let resolution: String
+struct ResolveApprovalRequest: Encodable {
+    let state: String
 }
 
 struct ConnectorApprovalCandidate: Equatable {

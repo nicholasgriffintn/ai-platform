@@ -58,7 +58,7 @@ import {
 
 const app = new Hono();
 const tags = ["model-registry"];
-const base = "/workspaces/:workspaceId";
+const base = "/workspaces/:workspace_id";
 
 addRoute(app, "get", `${base}/sources`, {
   auth: true,
@@ -70,7 +70,7 @@ addRoute(app, "get", `${base}/sources`, {
   querySchema: sourceSearchQuerySchema,
   responses: { 200: { description: "Search results", schema: sourceSearchResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    searchSources(serviceContext, params.workspaceId, query),
+    searchSources(serviceContext, params.workspace_id, query),
 });
 
 addRoute(app, "get", `${base}/library`, {
@@ -81,7 +81,7 @@ addRoute(app, "get", `${base}/library`, {
   querySchema: libraryQuerySchema,
   responses: { 200: { description: "Library entries", schema: libraryResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listLibrary(serviceContext, params.workspaceId, query),
+    listLibrary(serviceContext, params.workspace_id, query),
 });
 
 addRoute(app, "post", `${base}/imports`, {
@@ -94,7 +94,7 @@ addRoute(app, "post", `${base}/imports`, {
   bodySchema: importAssetRequestSchema,
   responses: { 200: { description: "Imported version", schema: versionDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
-    importAsset(serviceContext, params.workspaceId, body),
+    importAsset(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "post", `${base}/imports/bucket`, {
@@ -105,7 +105,7 @@ addRoute(app, "post", `${base}/imports/bucket`, {
   bodySchema: importBucketModelRequestSchema,
   responses: { 200: { description: "Imported version", schema: versionDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
-    importBucketModel(serviceContext, params.workspaceId, body),
+    importBucketModel(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "post", `${base}/uploads`, {
@@ -117,20 +117,20 @@ addRoute(app, "post", `${base}/uploads`, {
   bodySchema: createUploadRequestSchema,
   responses: { 200: { description: "Upload session", schema: uploadSessionSchema } },
   handler: ({ serviceContext, params, body }) =>
-    createUpload(serviceContext, params.workspaceId, body),
+    createUpload(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "get", `${base}/uploads/:uploadId`, {
+addRoute(app, "get", `${base}/uploads/:upload_id`, {
   auth: true,
   tags,
   summary: "Get an upload session",
   paramSchema: modelUploadParamsSchema,
   responses: { 200: { description: "Upload session", schema: uploadSessionSchema } },
   handler: ({ serviceContext, params }) =>
-    getUpload(serviceContext, params.workspaceId, params.uploadId),
+    getUpload(serviceContext, params.workspace_id, params.upload_id),
 });
 
-addRoute(app, "put", `${base}/uploads/:uploadId/files/:fileIndex/parts/:partNumber`, {
+addRoute(app, "patch", `${base}/uploads/:upload_id/files/:file_id/parts/:part_id`, {
   auth: true,
   tags,
   summary: "Upload one part of a file",
@@ -139,33 +139,33 @@ addRoute(app, "put", `${base}/uploads/:uploadId/files/:fileIndex/parts/:partNumb
   handler: ({ serviceContext, params, raw }) =>
     uploadPart(
       serviceContext,
-      params.workspaceId,
-      params.uploadId,
-      params.fileIndex,
-      params.partNumber,
+      params.workspace_id,
+      params.upload_id,
+      params.file_id,
+      params.part_id,
       raw.req.raw.body,
       Number(raw.req.header("content-length") ?? "0"),
     ),
 });
 
-addRoute(app, "post", `${base}/uploads/:uploadId/complete`, {
+addRoute(app, "post", `${base}/uploads/:upload_id/complete`, {
   auth: true,
   tags,
   summary: "Complete an upload and queue hashing and publishing",
   paramSchema: modelUploadParamsSchema,
   responses: { 200: { description: "Upload session", schema: uploadSessionSchema } },
   handler: ({ serviceContext, params }) =>
-    completeUpload(serviceContext, params.workspaceId, params.uploadId),
+    completeUpload(serviceContext, params.workspace_id, params.upload_id),
 });
 
-addRoute(app, "post", `${base}/uploads/:uploadId/abort`, {
+addRoute(app, "post", `${base}/uploads/:upload_id/abort`, {
   auth: true,
   tags,
   summary: "Abort an upload and discard its parts",
   paramSchema: modelUploadParamsSchema,
   responses: { 200: { description: "Upload session", schema: uploadSessionSchema } },
   handler: ({ serviceContext, params }) =>
-    abortUpload(serviceContext, params.workspaceId, params.uploadId),
+    abortUpload(serviceContext, params.workspace_id, params.upload_id),
 });
 
 addRoute(app, "post", `${base}/uploads/register`, {
@@ -176,10 +176,10 @@ addRoute(app, "post", `${base}/uploads/register`, {
   bodySchema: registerUploadedModelRequestSchema,
   responses: { 200: { description: "Registered version", schema: versionDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
-    registerUploadedModel(serviceContext, params.workspaceId, body),
+    registerUploadedModel(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "get", `${base}/versions/:versionId`, {
+addRoute(app, "get", `${base}/versions/:version_id`, {
   auth: true,
   tags,
   summary: "Get a version with its evidence, decisions, routes, lineage and evals",
@@ -187,17 +187,17 @@ addRoute(app, "get", `${base}/versions/:versionId`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Version detail", schema: versionDetailSchema } },
   handler: ({ serviceContext, params, query }) =>
-    getVersionDetail(serviceContext, params.workspaceId, params.versionId, query.projectId),
+    getVersionDetail(serviceContext, params.workspace_id, params.version_id, query.project_id),
 });
 
-addRoute(app, "post", `${base}/versions/:versionId/reinspect`, {
+addRoute(app, "post", `${base}/versions/:version_id/reinspect`, {
   auth: true,
   tags,
   summary: "Queue a fresh static inspection",
   paramSchema: registryVersionParamsSchema,
   responses: { 200: { description: "Version detail", schema: versionDetailSchema } },
   handler: ({ serviceContext, params }) =>
-    reinspectVersion(serviceContext, params.workspaceId, params.versionId),
+    reinspectVersion(serviceContext, params.workspace_id, params.version_id),
 });
 
 addRoute(app, "get", `${base}/policies`, {
@@ -206,10 +206,10 @@ addRoute(app, "get", `${base}/policies`, {
   summary: "Get the workspace policy and any project policies",
   paramSchema: registryWorkspaceParamsSchema,
   responses: { 200: { description: "Policies", schema: policiesResponseSchema } },
-  handler: ({ serviceContext, params }) => getPolicies(serviceContext, params.workspaceId),
+  handler: ({ serviceContext, params }) => getPolicies(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "put", `${base}/policies`, {
+addRoute(app, "patch", `${base}/policies`, {
   auth: true,
   tags,
   summary: "Save a new revision of the workspace or a project policy",
@@ -217,10 +217,10 @@ addRoute(app, "put", `${base}/policies`, {
   bodySchema: upsertPolicyRequestSchema,
   responses: { 200: { description: "Saved policy", schema: modelPolicySchema } },
   handler: ({ serviceContext, params, body }) =>
-    upsertPolicy(serviceContext, params.workspaceId, body),
+    upsertPolicy(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "post", `${base}/policies/dry-run`, {
+addRoute(app, "post", `${base}/policies/dry_run`, {
   auth: true,
   tags,
   summary: "Preview which verdicts change under proposed rules",
@@ -228,7 +228,7 @@ addRoute(app, "post", `${base}/policies/dry-run`, {
   bodySchema: policyDryRunRequestSchema,
   responses: { 200: { description: "Verdict changes", schema: policyDryRunResultSchema } },
   handler: ({ serviceContext, params, body }) =>
-    dryRunPolicy(serviceContext, params.workspaceId, body),
+    dryRunPolicy(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "get", `${base}/decisions`, {
@@ -239,7 +239,7 @@ addRoute(app, "get", `${base}/decisions`, {
   querySchema: decisionListQuerySchema,
   responses: { 200: { description: "Decisions", schema: decisionsResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listDecisions(serviceContext, params.workspaceId, query),
+    listDecisions(serviceContext, params.workspace_id, query),
 });
 
 addRoute(app, "post", `${base}/decisions`, {
@@ -250,10 +250,10 @@ addRoute(app, "post", `${base}/decisions`, {
   bodySchema: requestDecisionSchema,
   responses: { 200: { description: "Decision", schema: modelDecisionSchema } },
   handler: ({ serviceContext, params, body }) =>
-    requestDecision(serviceContext, params.workspaceId, body),
+    requestDecision(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "post", `${base}/decisions/:decisionId/resolve`, {
+addRoute(app, "post", `${base}/decisions/:decision_id/resolve`, {
   auth: true,
   tags,
   summary: "Approve, reject or revoke a decision",
@@ -261,7 +261,7 @@ addRoute(app, "post", `${base}/decisions/:decisionId/resolve`, {
   bodySchema: resolveDecisionSchema,
   responses: { 200: { description: "Decision", schema: modelDecisionSchema } },
   handler: ({ serviceContext, params, body }) =>
-    resolveDecision(serviceContext, params.workspaceId, params.decisionId, body),
+    resolveDecision(serviceContext, params.workspace_id, params.decision_id, body),
 });
 
 export default app;

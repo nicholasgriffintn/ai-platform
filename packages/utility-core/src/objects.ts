@@ -199,3 +199,13 @@ export function extendPreservingAccessors<T extends object, U extends object>(
     ...Object.getOwnPropertyDescriptors(extension),
   });
 }
+
+export function readRecordField(value: unknown, fieldName: string): unknown {
+  return isRecord(value) ? value[fieldName] : undefined;
+}
+
+export function readStringField(value: unknown, fieldName: string): string | undefined {
+  const field = readRecordField(value, fieldName);
+
+  return typeof field === "string" ? field : undefined;
+}

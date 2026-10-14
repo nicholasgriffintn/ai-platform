@@ -1,12 +1,11 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
-  createResponseEventProjector,
+  createResponseEventStamper,
   formatResponseStreamSseDone,
   formatResponseStreamSseEvent,
+  type ResponseEventInput,
   type ResponseStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
-
-import type { ChatStreamPreludeEvent, SSEEventPayload } from "~/types";
 
 const encoder = new TextEncoder();
 
@@ -16,14 +15,12 @@ const logger = getLogger({
   prefix: "CHAT:EMITTER",
 });
 
-export type { ChatStreamPreludeEvent };
-
 export interface ChatEventSink {
-  writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+  write: (event: ResponseEventInput) => Promise<void>;
 }
 
 export const DISCARDING_EVENT_SINK: ChatEventSink = {
-  writeEvent: async () => {},
+  write: async () => {},
 };
 
 export interface ChatSseStreamWriterOptions {
@@ -61,7 +58,7 @@ export function createChatSseStreamWriter(
   let detachedAtMs: number | undefined;
   let detachmentReason: ChatStreamDetachmentReason | undefined;
   let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
-  const projector = createResponseEventProjector({
+  const stamper = createResponseEventStamper({
     conversationId: options.conversationId,
     responseId: options.responseId,
   });
@@ -118,19 +115,17 @@ export function createChatSseStreamWriter(
     readable,
     isDetached: () => detached,
     getContinuitySnapshot: () => ({ detached, detachedAtMs, detachmentReason }),
-    writeEvent: async (type: string, payload: SSEEventPayload = {}) => {
-      let events: ResponseStreamEvent[];
+    write: async (event: ResponseEventInput) => {
+      let stamped: ResponseStreamEvent;
 
       try {
-        events = projector.project(type, payload);
+        stamped = stamper.stamp(event);
       } catch (error) {
-        logger.error("Error projecting stream event", { error, type });
+        logger.error("Error stamping stream event", { error, type: event.type });
         throw error;
       }
 
-      for (const event of events) {
-        await write(encodeResponseStreamEvent(event));
-      }
+      await write(encodeResponseStreamEvent(stamped));
     },
     writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
     writeDone: () => write(encoder.encode(formatResponseStreamSseDone())),

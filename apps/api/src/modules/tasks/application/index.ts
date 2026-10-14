@@ -1,8 +1,5 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type {
-  CreatePublicTaskRequest,
-  TriggerMemorySynthesisRequest,
-} from "@ngriffin_uk/polychat-schemas";
+import { listPageOf } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -16,7 +13,7 @@ export async function listUserTasks(context: ServiceContext, userId: number) {
     isAccountVisibleTask,
   );
 
-  return { tasks: tasks.map(presentPublicTask), total: tasks.length };
+  return listPageOf(tasks.map(presentPublicTask), (task) => task.id);
 }
 
 export async function getUserTask(context: ServiceContext, userId: number, taskId: string) {
@@ -29,49 +26,6 @@ export async function getUserTask(context: ServiceContext, userId: number, taskI
   const executions = await context.repositories.tasks.getTaskExecutions(taskId);
 
   return { task: presentPublicTask(task), executions };
-}
-
-export async function createMemorySynthesisTask(
-  context: ServiceContext,
-  userId: number,
-  input: TriggerMemorySynthesisRequest,
-) {
-  const taskService = new TaskService(context.env, context.repositories.tasks);
-  const taskId = await taskService.enqueueTask({
-    task_type: "memory_synthesis",
-    user_id: userId,
-    task_data: { namespace: input.namespace || "global" },
-    priority: 7,
-  });
-
-  return {
-    task_id: taskId,
-    status: "queued",
-    message: "Memory synthesis task queued successfully",
-  };
-}
-
-export async function createUserTask(
-  context: ServiceContext,
-  userId: number,
-  input: CreatePublicTaskRequest,
-) {
-  const taskService = new TaskService(context.env, context.repositories.tasks);
-  const taskId = await taskService.enqueueTask({
-    task_type: input.task_type,
-    user_id: userId,
-    task_data: input.task_data,
-    schedule_type: input.schedule_type,
-    scheduled_at: input.scheduled_at,
-    priority: input.priority,
-    metadata: input.metadata,
-  });
-
-  return {
-    task_id: taskId,
-    status: "queued",
-    message: "Task created successfully",
-  };
 }
 
 export async function cancelUserTask(context: ServiceContext, userId: number, taskId: string) {
@@ -89,31 +43,4 @@ export async function cancelUserTask(context: ServiceContext, userId: number, ta
   }
 
   return { message: "Task cancelled successfully" };
-}
-
-export async function getActiveMemorySynthesis(
-  context: ServiceContext,
-  userId: number,
-  namespace = "global",
-) {
-  const synthesis = await context.repositories.memorySyntheses.getActiveSynthesis(
-    userId,
-    namespace,
-  );
-
-  return { synthesis: synthesis || null };
-}
-
-export async function listMemorySyntheses(
-  context: ServiceContext,
-  userId: number,
-  filters: { namespace?: string; limit: number },
-) {
-  const syntheses = await context.repositories.memorySyntheses.getSynthesesByUserId(
-    userId,
-    filters.namespace,
-    filters.limit,
-  );
-
-  return { syntheses, total: syntheses.length };
 }

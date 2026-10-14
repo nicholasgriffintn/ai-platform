@@ -6,9 +6,8 @@ import {
   type Telemetry,
   type TelemetryEnv,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
-import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import type { ProviderEnv } from "./env.js";
 import {

@@ -125,7 +125,7 @@ export const research: ApiToolDefinition = {
           status: "in_progress",
           pollIntervalMs: DEFAULT_POLL_INTERVAL_MS,
           poll: {
-            url: `/apps/retrieval/research/${runId}`,
+            url: `/jobs?kind=research&external_id=${encodeURIComponent(runId)}`,
             method: "GET",
           },
           context: {

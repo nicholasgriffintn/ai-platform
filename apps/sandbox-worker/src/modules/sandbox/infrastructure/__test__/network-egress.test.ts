@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { forwardBrokeredGit, isBrokeredGitRequest } from "../brokered-git";
 import { buildSandboxEgressPolicy } from "../network-egress";
 
-const PATH_PREFIX = "/apps/sandbox/credential-broker/run-1/git/";
+const PATH_PREFIX = "/internal/sandbox/credential_broker/run-1/git/";
 const broker = { host: "api.polychat.app", pathPrefix: PATH_PREFIX, grant: "grant-1" };
 
 describe("brokered git", () => {
@@ -33,7 +33,9 @@ describe("brokered git", () => {
   it("refuses broker paths outside the run's git endpoint", () => {
     expect(
       isBrokeredGitRequest(
-        new Request("https://api.polychat.app/apps/sandbox/credential-broker/run-2/git/info/refs"),
+        new Request(
+          "https://api.polychat.app/internal/sandbox/credential_broker/run-2/git/info/refs",
+        ),
         broker,
       ),
     ).toBe(false);

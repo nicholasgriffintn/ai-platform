@@ -1,8 +1,8 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import { executeRecipeConnectorOperation } from "~/modules/apps/application/connectors/operations";
+import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
+import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 
 import type { TaskIntegrationAdapter } from "./types";
 

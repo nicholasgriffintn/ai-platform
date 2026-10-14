@@ -1,138 +1,137 @@
 import {
-  reviewPolicyInputSchema,
-  reviewPolicyResponseSchema,
   createPullRequestReviewResponseSchema,
-  preparedReviewPublicationSchema,
-  publishedReviewResponseSchema,
-  projectTaskReviewResponseSchema,
   importProjectIssueSchema,
   issueLocatorSchema,
   issuePreviewResponseSchema,
+  listPageOf,
+  preparedReviewPublicationSchema,
   projectIssueImportResponseSchema,
   projectReviewListResponseSchema,
   publishPullRequestReviewSchema,
+  publishedReviewResponseSchema,
   pullRequestLocatorSchema,
+  reviewPolicyInputSchema,
+  reviewPolicyResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import type { ResourceBuilder } from "~/infrastructure/http/resource";
 import {
   importProjectIssue,
   previewProjectIssue,
 } from "~/modules/project-tasks/application/issue-intake";
 import {
   listProjectReviews,
-  getProjectTaskReview,
   prepareReviewPublication,
   publishPullRequestReview,
   reconcileReviewPublication,
   startPullRequestReview,
 } from "~/modules/project-tasks/application/pull-request-review";
 import { setProjectReviewPolicy } from "~/modules/project-tasks/application/review-policy";
-import type { IEnv } from "~/types";
 
-const app = new Hono<{ Bindings: IEnv }>();
-const projectParams = z.object({ projectId: z.string().min(1) });
-const reviewParams = projectParams.extend({ reviewId: z.string().min(1) });
+const projectParamsSchema = z.object({ project_id: z.string().min(1) });
+const reviewParamsSchema = projectParamsSchema.extend({ review_id: z.string().min(1) });
 
-addRoute(app, "get", "/:projectId/tasks/:taskId/pr-review", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Read the review associated with a project task",
-  paramSchema: projectParams.extend({ taskId: z.string().min(1) }),
-  responses: { 200: { description: "Task review", schema: projectTaskReviewResponseSchema } },
-  handler: ({ serviceContext, params }) =>
-    getProjectTaskReview(serviceContext, params.projectId, params.taskId),
-});
+export function defineProjectReviews(projects: ResourceBuilder): void {
+  projects
+    .sub("reviews", "review_id")
+    .list({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "List pull request reviews",
+      description: "The project's reviews, with its automatic review policies alongside.",
+      paramSchema: projectParamsSchema,
+      responses: { 200: { description: "Reviews", schema: projectReviewListResponseSchema } },
+      handler: async ({ serviceContext, params }) => {
+        const { policies, reviews } = await listProjectReviews(serviceContext, params.project_id);
 
-addRoute(app, "post", "/:projectId/issue-imports/preview", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Read an external issue for task import",
-  paramSchema: projectParams,
-  bodySchema: issueLocatorSchema,
-  responses: {
-    200: { description: "Issue snapshot and existing import", schema: issuePreviewResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    previewProjectIssue(serviceContext, params.projectId, body),
-});
-addRoute(app, "post", "/:projectId/issue-imports", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Import an approved issue snapshot into Work",
-  paramSchema: projectParams,
-  bodySchema: importProjectIssueSchema,
-  responses: {
-    200: { description: "The imported task", schema: projectIssueImportResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    importProjectIssue(serviceContext, params.projectId, body),
-});
-addRoute(app, "get", "/:projectId/pr-reviews", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "List project PR reviews and automatic review policies",
-  paramSchema: projectParams,
-  responses: { 200: { description: "Project reviews", schema: projectReviewListResponseSchema } },
-  handler: ({ serviceContext, params }) => listProjectReviews(serviceContext, params.projectId),
-});
-addRoute(app, "put", "/:projectId/pr-reviews/policy", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Set automatic pull request review policy",
-  paramSchema: projectParams,
-  bodySchema: reviewPolicyInputSchema,
-  responses: {
-    200: { description: "Saved automatic review policy", schema: reviewPolicyResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    setProjectReviewPolicy(serviceContext, params.projectId, body),
-});
-addRoute(app, "post", "/:projectId/pr-reviews", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Start a review of the current pull request revision",
-  paramSchema: projectParams,
-  bodySchema: pullRequestLocatorSchema,
-  responses: {
-    200: { description: "Admitted PR review", schema: createPullRequestReviewResponseSchema },
-  },
-  handler: ({ serviceContext, params, body }) =>
-    startPullRequestReview(serviceContext, params.projectId, body),
-});
-addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/prepare-publication", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Prepare a governed review output for human publication",
-  paramSchema: reviewParams,
-  responses: {
-    200: { description: "Review publication preview", schema: preparedReviewPublicationSchema },
-  },
-  handler: ({ serviceContext, params }) =>
-    prepareReviewPublication(serviceContext, params.projectId, params.reviewId),
-});
-addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/publish", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Publish the explicitly approved review to its exact commit",
-  paramSchema: reviewParams,
-  bodySchema: publishPullRequestReviewSchema,
-  responses: { 200: { description: "Published review", schema: publishedReviewResponseSchema } },
-  handler: ({ serviceContext, params, body }) =>
-    publishPullRequestReview(serviceContext, params.projectId, params.reviewId, body),
-});
+        return { ...listPageOf(reviews, (review) => review.id), policies };
+      },
+    })
+    .create({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Review the current pull request revision",
+      paramSchema: projectParamsSchema,
+      bodySchema: pullRequestLocatorSchema,
+      responses: {
+        200: { description: "Admitted review", schema: createPullRequestReviewResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        startPullRequestReview(serviceContext, params.project_id, body),
+    })
+    .action("prepare_publication", {
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Prepare a governed review for human publication",
+      paramSchema: reviewParamsSchema,
+      responses: {
+        200: { description: "Publication preview", schema: preparedReviewPublicationSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        prepareReviewPublication(serviceContext, params.project_id, params.review_id),
+    })
+    .action("publish", {
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Publish the approved review to its exact commit",
+      paramSchema: reviewParamsSchema,
+      bodySchema: publishPullRequestReviewSchema,
+      responses: {
+        200: { description: "Published review", schema: publishedReviewResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        publishPullRequestReview(serviceContext, params.project_id, params.review_id, body),
+    })
+    .action("check_publication", {
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Reconcile an uncertain publication without external writes",
+      paramSchema: reviewParamsSchema,
+      responses: {
+        200: { description: "Publication state", schema: publishedReviewResponseSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        reconcileReviewPublication(serviceContext, params.project_id, params.review_id),
+    });
 
-addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/check-publication", {
-  auth: true,
-  tags: ["projects", "tasks"],
-  summary: "Reconcile an uncertain publication without external writes",
-  paramSchema: reviewParams,
-  responses: {
-    200: { description: "Current publication state", schema: publishedReviewResponseSchema },
-  },
-  handler: ({ serviceContext, params }) =>
-    reconcileReviewPublication(serviceContext, params.projectId, params.reviewId),
-});
-export default app;
+  projects.singleton("review_policy").update({
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Set the automatic pull request review policy",
+    paramSchema: projectParamsSchema,
+    bodySchema: reviewPolicyInputSchema,
+    responses: { 200: { description: "Saved policy", schema: reviewPolicyResponseSchema } },
+    handler: ({ serviceContext, params, body }) =>
+      setProjectReviewPolicy(serviceContext, params.project_id, body),
+  });
+}
+
+export function defineProjectImports(projects: ResourceBuilder): void {
+  projects
+    .sub("imports", "import_id")
+    .create({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Import an approved issue snapshot as a task",
+      paramSchema: projectParamsSchema,
+      bodySchema: importProjectIssueSchema,
+      responses: {
+        200: { description: "The imported task", schema: projectIssueImportResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        importProjectIssue(serviceContext, params.project_id, body),
+    })
+    .collectionAction("preview", {
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Read an external issue before importing it",
+      paramSchema: projectParamsSchema,
+      bodySchema: issueLocatorSchema,
+      responses: {
+        200: { description: "Issue snapshot and any import", schema: issuePreviewResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        previewProjectIssue(serviceContext, params.project_id, body),
+    });
+}

@@ -1,4 +1,4 @@
-import { captureScreenshot } from "~/modules/apps/application/retrieval/screenshot";
+import { captureScreenshot } from "~/modules/tools/application/retrieval/screenshot";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { capture_screenshot as capture_screenshotDescriptor } from "./definitions/screenshot";

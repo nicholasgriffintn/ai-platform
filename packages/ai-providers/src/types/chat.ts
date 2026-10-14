@@ -13,6 +13,7 @@ import type {
   InferenceImpact,
   ChatMessageSelection,
   DelegationContext,
+  DurableExecution,
   ChatRunTrigger,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -177,6 +178,7 @@ export type ProviderExecutionParams = {
   credentialAuthority?: CredentialAuthority;
   conversation_type?: ConversationType;
   trigger?: ChatRunTrigger;
+  delegation_context?: DelegationContext;
   teammate_context_id?: string;
   computer_id?: string;
   delegation_id?: string;
@@ -218,16 +220,7 @@ export type ProviderExecutionParams = {
   denied_tools?: string[];
   tool_policy_mode?: AgentMode;
   enforce_mode_tool_policy?: boolean;
-  durable_execution?:
-    | {
-        kind: "project_task";
-        dispatchTaskId: string;
-        executionOwnerToken: string;
-      }
-    | {
-        kind: "delegation";
-        maxCreditMicros: number;
-      };
+  durable_execution?: DurableExecution;
 };
 
 export type ChatRequestOptions = SchemaChatRequestOptions;

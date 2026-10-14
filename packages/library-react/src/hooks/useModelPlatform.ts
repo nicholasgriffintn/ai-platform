@@ -602,8 +602,8 @@ export function useModelAudit(workspaceId: string, params: Partial<ModelAuditQue
   return useQuery({
     queryKey: modelPlatformKeys.audit(
       workspaceId,
-      params.targetType ?? null,
-      params.targetId ?? null,
+      params.target_type ?? null,
+      params.target_id ?? null,
     ),
     queryFn: () => listModelAudit(workspaceId, params),
     enabled: Boolean(workspaceId),

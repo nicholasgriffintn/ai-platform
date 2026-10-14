@@ -2,7 +2,9 @@ import { taskService } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateTaskResponse,
   GetMemorySynthesisResponse,
+  ListPage,
   ListTasksResponse,
+  MemorySynthesis,
   TriggerMemorySynthesisRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,11 +16,6 @@ export const TASK_QUERY_KEYS = {
   task: (taskId: string) => ["tasks", taskId],
   synthesis: (namespace?: string) => ["memory-synthesis", namespace ?? "global"],
   synthesisHistory: (namespace?: string) => ["memory-synthesis-history", namespace ?? "global"],
-};
-
-type MemorySynthesisHistoryResponse = {
-  syntheses: NonNullable<GetMemorySynthesisResponse["synthesis"]>[];
-  total: number;
 };
 
 const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
@@ -48,7 +45,7 @@ export function useTasks({ shouldRefetch = true }) {
             return false;
           }
 
-          const hasActiveTasks = data.tasks.some((task) =>
+          const hasActiveTasks = data.data.some((task) =>
             ACTIVE_TASK_STATUSES.has(String(task.status)),
           );
 
@@ -81,8 +78,7 @@ export function useTasks({ shouldRefetch = true }) {
   });
 
   return {
-    tasks: tasksData?.tasks || [],
-    totalTasks: tasksData?.total || 0,
+    tasks: tasksData?.data ?? [],
     isLoadingTasks,
     tasksError,
 
@@ -106,20 +102,18 @@ export function useMemorySynthesis(namespace = "global") {
       refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
     });
 
-  const { data: historyData, isLoading: isLoadingHistory } =
-    useQuery<MemorySynthesisHistoryResponse>({
-      queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
-      queryFn: () => taskService.getSynthesisHistory(namespace, 10),
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
-    });
+  const { data: historyData, isLoading: isLoadingHistory } = useQuery<ListPage<MemorySynthesis>>({
+    queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
+    queryFn: () => taskService.getSynthesisHistory(namespace, 10),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
+  });
 
   return {
     synthesis: synthesisData?.synthesis,
     isLoadingSynthesis,
 
-    history: historyData?.syntheses || [],
-    historyTotal: historyData?.total || 0,
+    history: historyData?.data ?? [],
     isLoadingHistory,
 
     refresh: () => {

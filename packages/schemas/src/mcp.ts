@@ -1,6 +1,8 @@
 import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
+import { listSchema } from "./platform/list.js";
+
 export const HOSTED_MCP_APPROVAL_TOOL_NAME = "hosted_mcp_approval" as const;
 
 export const mcpHttpsUrlSchema = z
@@ -79,7 +81,7 @@ export const mcpConnectionSchema = z
   })
   .strict();
 
-export const mcpConnectionListSchema = z.object({ connections: z.array(mcpConnectionSchema) });
+export const mcpConnectionListSchema = listSchema(mcpConnectionSchema);
 export type McpConnectionInput = z.infer<typeof mcpConnectionInputSchema>;
 export type McpConnection = z.infer<typeof mcpConnectionSchema>;
 

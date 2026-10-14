@@ -11,6 +11,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   deriveProjectColour,
+  listPageOf,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-core";
@@ -18,8 +19,8 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { validateProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
+import { validateProjectConnectorGrant } from "~/modules/connectors/application/project-grants";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { deleteOutput } from "~/modules/outputs/application";
 import { forgetWorkspaceAudience } from "~/modules/sync/application/audience";
@@ -69,7 +70,7 @@ export async function listWorkspaces(context: ServiceContext) {
   const user = requireWorkAccess(context);
   const workspaces = await context.repositories.workspaces.listWorkspaces(user.id);
 
-  return { workspaces: workspaces.map(formatWorkspaceSummary) };
+  return listPageOf(workspaces.map(formatWorkspaceSummary), (workspace) => workspace.id);
 }
 
 export async function createWorkspace(context: ServiceContext, input: CreateWorkspaceInput) {

@@ -15,17 +15,37 @@ export function readWorkAttentionQuery(searchParams: URLSearchParams): WorkAtten
   );
   const parsed = workAttentionQuerySchema.safeParse(candidate);
 
-  return parsed.success ? parsed.data : { limit: DEFAULT_LIMIT, offset: 0 };
+  return parsed.success ? parsed.data : { limit: DEFAULT_LIMIT };
+}
+
+export function workAttentionFiltersOf(query: WorkAttentionQuery): WorkAttentionFilters {
+  return {
+    kind: query.kind,
+    workspaceId: query.workspace_id,
+    projectId: query.project_id,
+    ownerUserId: query.owner_user_id,
+    type: query.type,
+    from: query.from,
+    to: query.to,
+  };
 }
 
 export function writeWorkAttentionFilters(
   filters: WorkAttentionFilters,
   limit = DEFAULT_LIMIT,
-  offset = 0,
 ): URLSearchParams {
   const search = new URLSearchParams();
+  const entries: Array<[string, string | number | undefined]> = [
+    ["kind", filters.kind],
+    ["workspace_id", filters.workspaceId],
+    ["project_id", filters.projectId],
+    ["owner_user_id", filters.ownerUserId],
+    ["type", filters.type],
+    ["from", filters.from],
+    ["to", filters.to],
+  ];
 
-  for (const [key, value] of Object.entries(filters)) {
+  for (const [key, value] of entries) {
     if (value !== undefined && value !== "") {
       search.set(key, String(value));
     }
@@ -33,10 +53,6 @@ export function writeWorkAttentionFilters(
 
   if (limit !== DEFAULT_LIMIT) {
     search.set("limit", String(limit));
-  }
-
-  if (offset > 0) {
-    search.set("offset", String(offset));
   }
 
   return search;

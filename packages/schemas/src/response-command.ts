@@ -581,32 +581,10 @@ export const responseCommandFieldsSchema = z.object({
     .boolean()
     .optional()
     .describe("Whether the selected mode policy must be enforced for this run."),
-  durable_execution: z
-    .discriminatedUnion("kind", [
-      z
-        .object({
-          kind: z.literal("project_task"),
-          dispatchTaskId: z.string().min(1),
-          executionOwnerToken: z.string().min(1),
-        })
-        .strict(),
-      z
-        .object({
-          kind: z.literal("delegation"),
-          maxCreditMicros: z.number().int().positive(),
-        })
-        .strict(),
-    ])
-    .optional()
-    .describe("Durable execution metadata used to resume owned background work."),
   command_id: chatRunCommandIdSchema
     .optional()
     .describe("Idempotency key for accepting this user command."),
   run_id: chatRunIdSchema.optional().describe("Existing waiting run resumed by this command."),
-  trigger: chatRunTriggerSchema.optional(),
-  delegation_context: delegationContextSchema
-    .optional()
-    .describe("Trusted context for a run created by a delegation."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
   poly: polyRequestSchema
     .optional()
@@ -617,6 +595,38 @@ export const responseCommandFieldsSchema = z.object({
     .optional()
     .describe("Grouped feature settings that are not model generation controls."),
 });
+
+export const durableExecutionSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("project_task"),
+      dispatchTaskId: z.string().min(1),
+      executionOwnerToken: z.string().min(1),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("delegation"),
+      maxCreditMicros: z.number().int().positive(),
+    })
+    .strict(),
+]);
+
+export type DurableExecution = z.infer<typeof durableExecutionSchema>;
+
+export const responseAuthoritySchema = z
+  .object({
+    trigger: chatRunTriggerSchema.optional(),
+    delegationContext: delegationContextSchema
+      .optional()
+      .describe("Trusted context for a run created by a delegation."),
+    durableExecution: durableExecutionSchema
+      .optional()
+      .describe("Durable execution metadata used to resume owned background work."),
+  })
+  .strict();
+
+export type ResponseAuthority = z.infer<typeof responseAuthoritySchema>;
 
 export const responseCommandInputSchema = responseCommandFieldsSchema.omit({
   command_id: true,

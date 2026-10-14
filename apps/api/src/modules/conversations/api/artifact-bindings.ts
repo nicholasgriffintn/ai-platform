@@ -4,16 +4,14 @@ import {
   conversationParamsSchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import type { Hono } from "hono";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import type { ResourceBuilder } from "~/infrastructure/http/resource";
 
 import { readArtifactBinding } from "../application/artifact-bindings";
 
-export function registerArtifactBindingRoutes(app: Hono): void {
-  addRoute(app, "post", "/:conversation_id/artifact-bindings/read", {
+export function defineConversationArtifactBindings(conversations: ResourceBuilder): void {
+  conversations.sub("artifact_bindings", "binding_id").collectionAction("read", {
     auth: true,
-    tags: ["conversations"],
     cache: "no-store",
     summary: "Read an artifact's declared data source",
     description:

@@ -1,5 +1,4 @@
 import {
-  conversationItemParamsSchema,
   conversationItemResponseSchema,
   conversationItemsQuerySchema,
   conversationItemsResponseSchema,
@@ -8,10 +7,9 @@ import {
   errorResponseSchema,
   messageToItem,
 } from "@ngriffin_uk/polychat-schemas";
-import type { Hono } from "hono";
 import z from "zod/v4";
 
-import { addRoute } from "~/infrastructure/http/routeBuilder";
+import type { ResourceBuilder } from "~/infrastructure/http/resource";
 
 import { getConversationBranches } from "../application/conversationThreads";
 import { handleGetChatMessageById, handleGetChatMessages } from "../application/getChatMessages";
@@ -19,9 +17,9 @@ import { presentItems } from "../application/present";
 
 const itemLookupParamsSchema = z.object({ item_id: z.string().min(1) });
 
-export function registerConversationItemRoutes(app: Hono): void {
-  addRoute(app, "get", "/:conversation_id/items", {
-    tags: ["conversations"],
+export function defineConversationItems(conversations: ResourceBuilder): void {
+  conversations.sub("items", "item_id").list({
+    auth: "user-or-anonymous",
     summary: "List conversation items",
     description: "Pages through the stored items of a conversation.",
     paramSchema: conversationParamsSchema,
@@ -39,20 +37,20 @@ export function registerConversationItemRoutes(app: Hono): void {
         query.after,
         query.before,
       );
+      const data = presentItems(page.messages);
 
       return {
         object: "list" as const,
         conversation_id: page.conversation_id,
-        data: presentItems(page.messages),
+        data,
         has_more: page.has_more,
-        oldest_item_id: page.oldest_message_id,
+        last_id: page.oldest_message_id,
       };
     },
   });
 
-  addRoute(app, "get", "/:conversation_id/branches", {
+  conversations.sub("branches", "branch_id").list({
     auth: true,
-    tags: ["conversations"],
     summary: "List the conversation branch family",
     paramSchema: conversationParamsSchema,
     responses: {
@@ -62,8 +60,8 @@ export function registerConversationItemRoutes(app: Hono): void {
       getConversationBranches(serviceContext, params.conversation_id),
   });
 
-  addRoute(app, "get", "/items/:item_id", {
-    tags: ["conversations"],
+  conversations.collection("items", "item_id").read({
+    auth: "user-or-anonymous",
     summary: "Get an item",
     description: "Returns one stored item by ID with its conversation.",
     paramSchema: itemLookupParamsSchema,
@@ -81,6 +79,4 @@ export function registerConversationItemRoutes(app: Hono): void {
       return { ...messageToItem(message), conversation_id };
     },
   });
-
-  void conversationItemParamsSchema;
 }

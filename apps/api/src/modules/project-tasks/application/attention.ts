@@ -4,6 +4,7 @@ import {
   createTaskInboxItemId,
   parseTaskInboxItemId,
   projectTaskBlockedReasonLabels,
+  toListPage,
   type ProjectTask,
   type ProjectTaskAttentionItem,
   type ProjectTaskAttentionKind,
@@ -143,18 +144,14 @@ export async function listProjectTaskAttention(
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
   const [rows, unread] = await Promise.all([
-    context.repositories.taskNotifications.listInbox(user.id, limit),
+    context.repositories.taskNotifications.listInbox(user.id, limit + 1),
     context.repositories.taskNotifications.countUnreadInbox(user.id),
   ]);
   const items = rows
     .map(formatInboxItem)
     .filter((item): item is ProjectTaskAttentionItem => item !== null);
 
-  return {
-    items,
-    total: items.length,
-    unread,
-  };
+  return { ...toListPage(items, limit, (item) => item.id), unread };
 }
 
 export async function getTaskNotificationSettings(context: ServiceContext) {

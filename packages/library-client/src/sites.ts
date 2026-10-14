@@ -32,7 +32,7 @@ const SITES_BASE_PATH = "/sites";
 
 export const sitesService = {
   async data(id: string, request: SiteIntegrationScope): Promise<SiteDataResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/read`, {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: request,
@@ -41,7 +41,7 @@ export const sitesService = {
     return returnFetchedData<SiteDataResponse>(response);
   },
   async dataAction(id: string, request: SiteDataRequest): Promise<SiteDataResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/actions`, {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: request,
@@ -57,14 +57,14 @@ export const sitesService = {
     });
   },
   async disableStorage(id: string, request: SiteIntegrationScope): Promise<void> {
-    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime/disable`, {
-      method: "POST",
+    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime`, {
+      method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: request,
     });
   },
   async snapshotDataSource(id: string, request: SiteConnectorSnapshotRequest): Promise<SiteRecord> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/connectors`, {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/snapshot`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: request,
@@ -104,7 +104,7 @@ export const sitesService = {
     });
     const payload = await returnFetchedData<SiteListResponse>(response);
 
-    return payload.sites;
+    return payload.data;
   },
 
   async get(id: string, projectId?: string): Promise<SiteRecord> {
@@ -180,7 +180,7 @@ export const sitesService = {
   },
 
   async pullRequest(id: string, request: SitePullRequestRequest): Promise<SitePullRequestResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/pull-request`, {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/pull_request`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: request,

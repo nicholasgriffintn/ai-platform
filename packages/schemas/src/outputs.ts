@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { listQuerySchema, listSchema } from "./platform/list.js";
 import { outputProvenanceSchema } from "./provenance.js";
 
 export const outputKindSchema = z
@@ -84,19 +85,18 @@ export const updateOutputSchema = z
     { error: "At least one output field must be provided" },
   );
 
-export const outputListResponseSchema = z
-  .object({ outputs: z.array(outputSummarySchema) })
-  .strict();
+export const outputListResponseSchema = listSchema(outputSummarySchema);
 
-export const outputListQuerySchema = z
-  .object({
-    projectId: z.string().min(1).optional(),
-    capabilityId: z.string().trim().min(1).max(160).optional(),
+export const outputListQuerySchema = listQuerySchema
+  .extend({
+    project_id: z.string().min(1).optional(),
+    capability_id: z.string().trim().min(1).max(160).optional(),
     kind: outputKindSchema.optional(),
     limit: z.coerce.number().int().min(1).max(200).default(100),
-    offset: z.coerce.number().int().min(0).default(0),
   })
   .strict();
+
+export type OutputListQuery = z.infer<typeof outputListQuerySchema>;
 
 export const sharedOutputFileSchema = outputFileSchema.omit({ key: true });
 
@@ -139,13 +139,10 @@ export const outputRestoreCapabilitySchema = z
   })
   .strict();
 
-export const outputHistoryResponseSchema = z
-  .object({
-    current: outputRevisionSchema,
-    revisions: z.array(outputRevisionSchema),
-    restore: outputRestoreCapabilitySchema,
-  })
-  .strict();
+export const outputHistoryResponseSchema = listSchema(outputRevisionSchema).extend({
+  current: outputRevisionSchema,
+  restore: outputRestoreCapabilitySchema,
+});
 
 export const restoreOutputRevisionSchema = z
   .object({ expectedRevision: z.number().int().positive() })
@@ -170,9 +167,7 @@ export const outputShareDeliverySchema = z
   .object({ share: outputShareSchema, token: z.string().min(32) })
   .strict();
 
-export const outputShareListResponseSchema = z
-  .object({ shares: z.array(outputShareSchema) })
-  .strict();
+export const outputShareListResponseSchema = listSchema(outputShareSchema);
 
 export type OutputKind = z.infer<typeof outputKindSchema>;
 export type OutputStatus = z.infer<typeof outputStatusSchema>;

@@ -32,7 +32,7 @@ describe("Artificial Analysis ingest trigger", () => {
 
     const [url, init] = fetchMock.mock.calls[0];
 
-    expect(url).toBe("https://api.polychat.app/admin/model-analysis/sync-completed");
+    expect(url).toBe("https://api.polychat.app/admin/model_analysis/ingestions");
     expect(init.method).toBe("POST");
     expect(init.headers.authorization).toBe("Bearer key");
 

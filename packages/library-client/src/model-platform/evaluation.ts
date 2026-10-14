@@ -13,7 +13,7 @@ import { platformRequest, segment, workspacePath } from "./request.js";
 export async function listGraders(workspaceId: string, projectId?: string): Promise<Grader[]> {
   return (
     await platformRequest<{ graders: Grader[] }>(
-      workspacePath(workspaceId, `/graders${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/graders${toQueryString({ project_id: projectId })}`),
     )
   ).graders;
 }
@@ -28,7 +28,7 @@ export function updateGrader(
   input: CreateGraderRequest,
 ): Promise<Grader> {
   return platformRequest(workspacePath(workspaceId, `/graders/${segment(graderId)}`), {
-    method: "PUT",
+    method: "PATCH",
     body: input,
   });
 }
@@ -56,7 +56,7 @@ export async function listEvalSuites(
 ): Promise<EvalSuite[]> {
   return (
     await platformRequest<{ suites: EvalSuite[] }>(
-      workspacePath(workspaceId, `/eval-suites${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/eval_suites${toQueryString({ project_id: projectId })}`),
     )
   ).suites;
 }
@@ -65,14 +65,14 @@ export function createEvalSuite(
   workspaceId: string,
   input: CreateEvalSuiteRequest,
 ): Promise<EvalSuite> {
-  return platformRequest(workspacePath(workspaceId, "/eval-suites"), {
+  return platformRequest(workspacePath(workspaceId, "/eval_suites"), {
     method: "POST",
     body: input,
   });
 }
 
 export async function deleteEvalSuite(workspaceId: string, suiteId: string): Promise<void> {
-  await platformRequest(workspacePath(workspaceId, `/eval-suites/${segment(suiteId)}`), {
+  await platformRequest(workspacePath(workspaceId, `/eval_suites/${segment(suiteId)}`), {
     method: "DELETE",
   });
 }
@@ -85,7 +85,7 @@ export async function startEvalRuns(
 ): Promise<EvalRun[]> {
   return (
     await platformRequest<{ runs: EvalRun[] }>(
-      workspacePath(workspaceId, `/eval-suites/${segment(suiteId)}/runs`),
+      workspacePath(workspaceId, `/eval_suites/${segment(suiteId)}/runs`),
       {
         method: "POST",
         body: { routeIds, batch: options.batch === true },
@@ -97,7 +97,7 @@ export async function startEvalRuns(
 export async function listEvalRuns(workspaceId: string, suiteId: string): Promise<EvalRun[]> {
   return (
     await platformRequest<{ runs: EvalRun[] }>(
-      workspacePath(workspaceId, `/eval-suites/${segment(suiteId)}/runs`),
+      workspacePath(workspaceId, `/eval_suites/${segment(suiteId)}/runs`),
     )
   ).runs;
 }
@@ -108,7 +108,7 @@ export async function listEvalCaseResults(
 ): Promise<EvalCaseResult[]> {
   return (
     await platformRequest<{ results: EvalCaseResult[] }>(
-      workspacePath(workspaceId, `/eval-runs/${segment(runId)}/results`),
+      workspacePath(workspaceId, `/eval_runs/${segment(runId)}/results`),
     )
   ).results;
 }

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   resolveStoredMessagingProvider: vi.fn(),
-  handleCreateChatCompletions: vi.fn(),
+  startResponse: vi.fn(),
   conversationGetInstance: vi.fn(),
   conversationGet: vi.fn(),
   conversationArchiveMessages: vi.fn(),
@@ -27,8 +27,8 @@ vi.mock("~/infrastructure/providers/capabilities/messaging/delivery", async (imp
   };
 });
 
-vi.mock("~/modules/responses/application/createChatCompletions", () => ({
-  handleCreateChatCompletions: mocks.handleCreateChatCompletions,
+vi.mock("~/modules/responses/application/start", () => ({
+  startResponse: mocks.startResponse,
 }));
 
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -92,7 +92,7 @@ describe("inbound channel messages", () => {
       provider: { send: mocks.providerSend },
       allowedSenders: ["+15551234567"],
     });
-    mocks.handleCreateChatCompletions.mockResolvedValue({
+    mocks.startResponse.mockResolvedValue({
       choices: [{ message: { content: "chat reply" } }],
     });
     mocks.conversationGet.mockResolvedValue([]);
@@ -116,9 +116,9 @@ describe("inbound channel messages", () => {
       conversationId: expect.stringMatching(/^sms_[0-9a-f]{40}$/),
       body: "chat reply",
     });
-    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith(
+    expect(mocks.startResponse).toHaveBeenCalledWith(
       expect.objectContaining({
-        request: expect.objectContaining({
+        command: expect.objectContaining({
           mode: "agent",
           stream: false,
           max_steps: 3,
@@ -140,7 +140,7 @@ describe("inbound channel messages", () => {
   });
 
   it("surfaces a busy conversation so the queue redelivers instead of interleaving", async () => {
-    mocks.handleCreateChatCompletions.mockRejectedValueOnce(
+    mocks.startResponse.mockRejectedValueOnce(
       new AssistantError(
         "This conversation is already working on something.",
         ErrorType.CONFLICT_ERROR,
@@ -173,7 +173,7 @@ describe("inbound channel messages", () => {
     });
 
     expect(result).toEqual({ status: "unauthorised_sender" });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
+    expect(mocks.startResponse).not.toHaveBeenCalled();
     expect(mocks.providerSend).not.toHaveBeenCalled();
   });
 
@@ -198,10 +198,10 @@ describe("inbound channel messages", () => {
       }),
     });
 
-    const [first] = mocks.handleCreateChatCompletions.mock.calls[0];
-    const [second] = mocks.handleCreateChatCompletions.mock.calls[1];
+    const [first] = mocks.startResponse.mock.calls[0];
+    const [second] = mocks.startResponse.mock.calls[1];
 
-    expect(second.request.completion_id).not.toBe(first.request.completion_id);
+    expect(second.command.completion_id).not.toBe(first.command.completion_id);
   });
 
   it("bounds stored history to the channel window before running the turn", async () => {
@@ -228,10 +228,10 @@ describe("inbound channel messages", () => {
       "message-4",
     ]);
 
-    const [call] = mocks.handleCreateChatCompletions.mock.calls[0];
+    const [call] = mocks.startResponse.mock.calls[0];
 
-    expect(call.request.messages).toHaveLength(8);
-    expect(call.request.messages[0].id).toBe("message-5");
+    expect(call.command.messages).toHaveLength(8);
+    expect(call.command.messages[0].id).toBe("message-5");
   });
 
   it("passes inbound media into the turn", async () => {
@@ -250,9 +250,9 @@ describe("inbound channel messages", () => {
       }),
     });
 
-    const [call] = mocks.handleCreateChatCompletions.mock.calls[0];
+    const [call] = mocks.startResponse.mock.calls[0];
 
-    expect(call.request.messages[0].content).toEqual(
+    expect(call.command.messages[0].content).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           type: "image_url",
@@ -263,7 +263,7 @@ describe("inbound channel messages", () => {
   });
 
   it("sends reply media that the configured provider can deliver", async () => {
-    mocks.handleCreateChatCompletions.mockResolvedValue({
+    mocks.startResponse.mockResolvedValue({
       choices: [
         {
           message: {
@@ -302,7 +302,7 @@ describe("inbound channel messages", () => {
   });
 
   it("normalises AWS replies to the deliverable S3 media URL", async () => {
-    mocks.handleCreateChatCompletions.mockResolvedValue({
+    mocks.startResponse.mockResolvedValue({
       choices: [
         {
           message: {

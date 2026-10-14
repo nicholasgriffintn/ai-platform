@@ -1,0 +1,119 @@
+import { getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import type { AppTheme, ModelModalities, ReplicateModel } from "@ngriffin_uk/polychat-schemas";
+
+const signatureMetadata: Record<
+  string,
+  {
+    category: string;
+    icon: string;
+    theme: AppTheme;
+  }
+> = {
+  "text->image": {
+    category: "Image Generation",
+    icon: "image",
+    theme: "pink",
+  },
+  "image->image": {
+    category: "Image Editing",
+    icon: "sparkles",
+    theme: "violet",
+  },
+  "text->video": {
+    category: "Video Generation",
+    icon: "video",
+    theme: "rose",
+  },
+  "image->video": {
+    category: "Video Generation",
+    icon: "video",
+    theme: "rose",
+  },
+  "text->audio": {
+    category: "Audio Generation",
+    icon: "music",
+    theme: "indigo",
+  },
+  "audio->text": {
+    category: "Transcription",
+    icon: "mic",
+    theme: "emerald",
+  },
+};
+
+const replicateModelMetadata: Record<
+  string,
+  Partial<{
+    category: string;
+    icon: string;
+    theme: AppTheme;
+    tags: string[];
+    featured: boolean;
+  }>
+> = {
+  "replicate-google-nano-banana-pro": {
+    featured: true,
+    tags: ["image", "editing", "google"],
+  },
+  "replicate-bytedance-sdxl-lightning-4step": {
+    featured: true,
+    tags: ["image", "editing", "bytedance"],
+  },
+  "replicate-sora-2": {
+    featured: true,
+    tags: ["video"],
+  },
+  "replicate-veo-3-1": {
+    featured: true,
+    tags: ["video"],
+  },
+  "replicate-stable-audio": {
+    featured: true,
+    tags: ["audio", "composition"],
+  },
+};
+
+const DEFAULT_CATEGORY = "Creative Tools";
+const DEFAULT_ICON = "sparkles";
+const DEFAULT_THEME: AppTheme = "slate";
+
+function getModalitySignature(modalities?: ModelModalities) {
+  const input = modalities?.input ?? ["text"];
+  const output = modalities?.output ?? ["text"];
+  const signature = `${input.join("+")}->${output.join("+")}`;
+  const label = `${input.join(" & ")} \u2192 ${output.join(" & ")}`;
+
+  return { signature, label };
+}
+
+export function listReplicateModels(): ReplicateModel[] {
+  return Object.entries(getProviderModels("replicate")).map(([id, model]) => {
+    const metadata = replicateModelMetadata[id] || {};
+    const { signature, label } = getModalitySignature(model.modalities);
+    const signatureDefaults = signatureMetadata[signature] || null;
+
+    const category = metadata.category || signatureDefaults?.category || DEFAULT_CATEGORY;
+    const icon = metadata.icon || signatureDefaults?.icon || DEFAULT_ICON;
+    const theme = metadata.theme || signatureDefaults?.theme || DEFAULT_THEME;
+    const tags = Array.from(new Set([label, ...(model.strengths ?? []), ...(metadata.tags ?? [])]));
+
+    return {
+      id,
+      name: model.name,
+      description: model.description,
+      modalities: model.modalities,
+      modalitySignature: signature,
+      modalityLabel: label,
+      costPerRun: model.costPerRun,
+      inputSchema: model.inputSchema,
+      reference: model.inputSchema?.reference,
+      category,
+      icon,
+      theme,
+      tags,
+      featured: metadata.featured ?? false,
+      href: `/apps/replicate/${id}`,
+      kind: "frontend" as const,
+    };
+  });
+}

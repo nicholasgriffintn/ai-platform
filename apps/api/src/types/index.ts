@@ -41,8 +41,6 @@ export type {
   ResearchResult,
   ResearchResultError,
   ResearchTaskHandle,
-  SSEEventPayload,
-  SSEEventType,
   SearchOptions,
   SearchProvider,
   SearchProviderName,
@@ -52,6 +50,5 @@ export type {
   TavilySearchResult,
   ToolCall,
   ToolCallFunction,
-  ToolEventPayload,
 } from "@ngriffin_uk/polychat-ai-providers";
-export { StreamState, ToolCallType, ToolStage } from "@ngriffin_uk/polychat-ai-providers";
+export { ToolCallType } from "@ngriffin_uk/polychat-ai-providers";

@@ -25,7 +25,7 @@ vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
 
 vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
-  useWorkspaces: () => ({ data: { workspaces: workspaceList }, isLoading: false }),
+  useWorkspaces: () => ({ data: workspaceList, isLoading: false }),
   useAddProjectCapability: () => ({ isPending: false, error: null, mutateAsync: vi.fn() }),
   useRemoveProjectCapability: () => ({ isPending: false, error: null, mutate: vi.fn() }),
   TEAMMATES_QUERY_KEYS: { all: ["teammates"], detail: (id: string) => ["teammates", id] },

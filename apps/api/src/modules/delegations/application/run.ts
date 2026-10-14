@@ -255,12 +255,6 @@ export async function runDelegationTask(
       stream: false,
       store: true,
       enabled_tools: enabledTools,
-      delegation_context: {
-        delegationId: delegation.id,
-        depth: delegation.depth,
-        rootConversationId: delegation.parentConversationId,
-        memoryBindings,
-      },
       permission_mode: parentConversation.permission_mode,
       ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
       ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
@@ -274,15 +268,23 @@ export async function runDelegationTask(
       user,
       anonymousUser: undefined,
       conversationType: "delegate",
-      trigger: "delegation",
+      authority: {
+        trigger: "delegation",
+        delegationContext: {
+          delegationId: delegation.id,
+          depth: delegation.depth,
+          rootConversationId: delegation.parentConversationId,
+          memoryBindings,
+        },
+        durableExecution: {
+          kind: "delegation",
+          maxCreditMicros: payload.resume?.maxCreditMicros ?? delegation.budget.maxCreditMicros,
+        },
+      },
       signal: AbortSignal.timeout(
         Math.min(2_147_483_647, Math.max(1, Date.parse(delegation.budget.deadline) - Date.now())),
       ),
       maxStepsOverride: payload.resume?.maxSteps ?? delegation.budget.maxSteps,
-      durableExecution: {
-        kind: "delegation",
-        maxCreditMicros: payload.resume?.maxCreditMicros ?? delegation.budget.maxCreditMicros,
-      },
       invocation: { source: "delegation", delegationId: delegation.id },
     });
 

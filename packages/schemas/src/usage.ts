@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { computeSiteSchema } from "./compute-sites.js";
 import { delegationStateSchema, isLiveDelegationState } from "./delegation-state.js";
+import { listQuerySchema, listSchema } from "./platform/list.js";
 import { usageUnitSchema } from "./pricing/units.js";
 import { runProvenanceSchema } from "./run-provenance.js";
 
@@ -218,10 +219,8 @@ export const usageSummaryResponseSchema = z.object({
 
 export type UsageSummaryResponse = z.infer<typeof usageSummaryResponseSchema>;
 
-export const usageEventsQuerySchema = z.object({
+export const usageEventsQuerySchema = listQuerySchema.extend({
   period: usagePeriodSchema.optional(),
-  cursor: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(100).optional(),
   source: usageSourceSchema.optional(),
 });
 
@@ -260,10 +259,8 @@ export const usageEventSchema = z.object({
 
 export type UsageEventRecord = z.infer<typeof usageEventSchema>;
 
-export const usageEventsResponseSchema = z.object({
+export const usageEventsResponseSchema = listSchema(usageEventSchema).extend({
   period: usagePeriodSchema,
-  events: z.array(usageEventSchema),
-  next_cursor: z.string().nullable(),
 });
 
 export type UsageEventsResponse = z.infer<typeof usageEventsResponseSchema>;

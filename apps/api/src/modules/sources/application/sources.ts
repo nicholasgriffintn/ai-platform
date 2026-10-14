@@ -1,11 +1,13 @@
 import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type {
-  CreateSourceCollectionInput,
-  CreateSourceInput,
-  Source,
-  SourceCollection,
-  SourceSummary,
-  UpdateSourceInput,
+import {
+  listPageOf,
+  type CreateSourceCollectionInput,
+  type CreateSourceInput,
+  type ListPage,
+  type Source,
+  type SourceCollection,
+  type SourceSummary,
+  type UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
@@ -276,7 +278,7 @@ export async function listSources(
   context: ServiceContext,
   userId: number,
   filters: { projectId?: string; kind?: SourceRecord["kind"] },
-): Promise<{ sources: SourceSummary[] }> {
+): Promise<ListPage<SourceSummary>> {
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
       await context.repositories.sources.listProjectSourceSummaries(
@@ -285,7 +287,7 @@ export async function listSources(
       ))
     : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
 
-  return { sources: records.map(formatSourceSummary) };
+  return listPageOf(records.map(formatSourceSummary), (source) => source.id);
 }
 
 export async function updateSource(
@@ -438,53 +440,49 @@ export async function listSourceCollections(
   context: ServiceContext,
   userId: number,
   projectId?: string,
-): Promise<{ collections: SourceCollection[] }> {
+): Promise<ListPage<SourceCollection>> {
   const records = projectId
     ? (await requireProjectAccess(context, projectId),
       await context.repositories.sources.listProjectCollections(projectId))
     : await context.repositories.sources.listPersonalCollections(userId);
 
-  return { collections: records.map(formatCollection) };
+  return listPageOf(records.map(formatCollection), (collection) => collection.id);
 }
 
 export async function listCollectionSources(
   context: ServiceContext,
   userId: number,
   collectionId: string,
-): Promise<{ sources: SourceSummary[] }> {
+): Promise<ListPage<SourceSummary>> {
   await requireCollectionAccess(context, userId, collectionId);
 
-  return {
-    sources: (await context.repositories.sources.listCollectionSources(collectionId)).map(
+  return listPageOf(
+    (await context.repositories.sources.listCollectionSources(collectionId)).map(
       formatSourceSummary,
     ),
-  };
+    (source) => source.id,
+  );
 }
 
 export async function listProjectContextSources(
   context: ServiceContext,
   userId: number,
   projectId: string,
-): Promise<{ sources: SourceSummary[] }> {
+): Promise<ListPage<SourceSummary>> {
   await requireProjectAccess(context, projectId);
   const collection = await context.repositories.sources.getProjectContextCollection(projectId);
+  const records = collection
+    ? await context.repositories.sources.listCollectionSources(collection.id)
+    : [];
 
-  if (!collection) {
-    return { sources: [] };
-  }
-
-  return {
-    sources: (await context.repositories.sources.listCollectionSources(collection.id)).map(
-      formatSourceSummary,
-    ),
-  };
+  return listPageOf(records.map(formatSourceSummary), (source) => source.id);
 }
 
 export async function listProjectConversationSources(
   context: ServiceContext,
   userId: number,
   projectId: string,
-): Promise<{ sources: Source[] }> {
+): Promise<ListPage<Source>> {
   await requireProjectAccess(context, projectId);
   const collection = await context.repositories.sources.getProjectContextCollection(projectId);
   const contextSources = collection
@@ -498,7 +496,7 @@ export async function listProjectConversationSources(
     }
   }
 
-  return { sources: [...availableSources.values()].map(formatSource) };
+  return listPageOf([...availableSources.values()].map(formatSource), (source) => source.id);
 }
 
 export async function setProjectContextSources(
@@ -506,7 +504,7 @@ export async function setProjectContextSources(
   userId: number,
   projectId: string,
   sourceIds: string[],
-): Promise<{ sources: SourceSummary[] }> {
+): Promise<ListPage<SourceSummary>> {
   await requireProjectAccess(context, projectId, ["owner", "admin"]);
   if (new Set(sourceIds).size !== sourceIds.length) {
     throw new AssistantError("Project context sources must be unique", ErrorType.PARAMS_ERROR, 400);
