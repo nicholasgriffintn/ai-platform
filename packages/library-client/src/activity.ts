@@ -17,7 +17,7 @@ export async function listActivity(
   const query = new URLSearchParams();
 
   if (filters.projectId) {
-    query.set("projectId", filters.projectId);
+    query.set("project_id", filters.projectId);
   }
 
   if (filters.conversationId) {

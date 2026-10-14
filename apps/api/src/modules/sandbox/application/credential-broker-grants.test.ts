@@ -25,7 +25,9 @@ describe("sandbox credential broker grants", () => {
       runId: "run-123",
     });
 
-    expect(access.baseUrl).toBe("https://api.polychat.app/apps/sandbox/credential-broker/run-123");
+    expect(access.baseUrl).toBe(
+      "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
+    );
     expect(claims).toMatchObject({
       installation_id: 42,
       operations: ["repository_read", "repository_write", "pull_request_write"],

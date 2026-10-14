@@ -5,6 +5,7 @@ import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
+import { listSchema } from "./platform/list.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
 import { teammateSummarySchema } from "./teammates.js";
@@ -1442,8 +1443,30 @@ export const recipeWebhookTriggersResponseSchema = z.object({
   triggers: z.array(recipeWebhookTriggerSchema),
 });
 
+export const installationTriggerSchema = z.discriminatedUnion("broker", [
+  recipeComposioTriggerSchema.extend({ broker: z.literal("composio") }),
+  recipeWebhookTriggerSchema.extend({ broker: z.literal("webhook") }),
+]);
+
+export const installationTriggerListSchema = listSchema(installationTriggerSchema);
+
+export const createInstallationTriggerRequestSchema = z.discriminatedUnion("broker", [
+  recipeComposioTriggerCreateRequestSchema.extend({ broker: z.literal("composio") }),
+  recipeWebhookTriggerCreateRequestSchema.extend({ broker: z.literal("webhook") }),
+]);
+
+export const updateInstallationTriggerRequestSchema = z.object({
+  status: z.enum(["active", "paused"]),
+});
+
+export type InstallationTrigger = z.infer<typeof installationTriggerSchema>;
+export type CreateInstallationTriggerRequest = z.infer<
+  typeof createInstallationTriggerRequestSchema
+>;
+
 export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
+  queue: z.boolean().optional(),
   projectId: z.string().min(1).optional(),
   channel: z
     .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])

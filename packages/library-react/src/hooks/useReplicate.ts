@@ -29,7 +29,7 @@ const replicatePredictionQueryKey = (projectId?: string, predictionId?: string |
 export function useReplicateModels(projectId?: string) {
   return useQuery({
     queryKey: [REPLICATE_QUERY_KEY, projectId, "models"],
-    queryFn: () => fetchReplicateModels(projectId),
+    queryFn: () => fetchReplicateModels(),
     staleTime: REPLICATE_MODELS_STALE_TIME,
   });
 }

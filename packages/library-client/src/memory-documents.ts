@@ -51,7 +51,7 @@ export async function updateConversationBrief(
 }
 
 function scopeQuery(projectId?: string): string {
-  return projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+  return projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
 }
 
 export async function listMemoryDocuments(projectId?: string) {

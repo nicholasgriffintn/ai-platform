@@ -365,7 +365,7 @@ export async function startRecipeConnectorAuthorization(params: {
     }
 
     const callbackUrl = isComposioOAuthAuthConfig(authConfig)
-      ? `${getApiBaseUrl(params.context, params.requestUrl)}/apps/connectors/composio/verify`
+      ? `${getApiBaseUrl(params.context, params.requestUrl)}/connectors/composio_callback`
       : new URL(normaliseReturnTo(params.returnTo), getAppBaseUrl(params.context)).toString();
     const link = await createComposioConnectLink({
       env: params.context.env,

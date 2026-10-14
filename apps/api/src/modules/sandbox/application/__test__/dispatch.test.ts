@@ -23,7 +23,7 @@ vi.mock("~/infrastructure/providers/library", () => ({
 }));
 vi.mock("../credential-broker-grants", () => ({
   createSandboxCredentialBrokerAccess: vi.fn(async () => ({
-    baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+    baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
     expiresAt: "2026-09-12T12:00:00.000Z",
     grant: "test-broker-grant",
   })),
@@ -173,7 +173,7 @@ describe("sandbox dispatch", () => {
     expect(mockExecuteSandboxProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         credentialBroker: {
-          baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+          baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
           expiresAt: "2026-09-12T12:00:00.000Z",
           grant: "test-broker-grant",
         },

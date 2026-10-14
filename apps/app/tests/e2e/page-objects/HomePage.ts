@@ -472,7 +472,7 @@ export class HomePage extends BasePage {
     const guessResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/drawing/guess"),
+        new URL(response.url()).pathname.endsWith("/experiences/drawings/guess"),
     );
 
     await this.page.getByRole("button", { name: "Guess What I Drew" }).click();
@@ -487,7 +487,7 @@ export class HomePage extends BasePage {
     const transformResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/apps/drawing"),
+        new URL(response.url()).pathname.endsWith("/experiences/drawings"),
     );
 
     await this.page.getByRole("button", { name: "Transform Drawing" }).click();

@@ -28,7 +28,7 @@ export async function listOutputs(
   const query = new URLSearchParams();
 
   if (filters.projectId) {
-    query.set("projectId", filters.projectId);
+    query.set("project_id", filters.projectId);
   }
 
   if (filters.capabilityId) {

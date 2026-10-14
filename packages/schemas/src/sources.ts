@@ -122,7 +122,7 @@ export const sourceDetailListResponseSchema = z.object({ sources: z.array(source
 
 export const sourceListQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     kind: sourceKindSchema.optional(),
   })
   .strict();

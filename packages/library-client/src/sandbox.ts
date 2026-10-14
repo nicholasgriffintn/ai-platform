@@ -20,30 +20,15 @@ import { apiService } from "./api-service.js";
 import { actOnEnvironment, environmentPath, environments } from "./environments.js";
 import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
-import { requestJson } from "./resource.js";
+import { requestJson, resource } from "./resource.js";
 
-export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
-  const headers = await apiService.getHeaders();
-  const response = await fetchApi("/apps/sandbox/connections", {
-    method: "GET",
-    headers,
-  });
-
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(
-      response,
-      `Failed to fetch sandbox connections: ${response.statusText}`,
-    );
-  }
-
-  const data = await returnFetchedData<{ connections: SandboxConnection[] }>(response);
-
-  return data.connections ?? [];
+export function fetchSandboxConnections(): Promise<SandboxConnection[]> {
+  return resource<SandboxConnection>("/connections/github").listAll();
 }
 
 export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi("/apps/sandbox/github/install-config", {
+  const response = await fetchApi("/connections/github/install_config", {
     method: "GET",
     headers,
   });
@@ -60,7 +45,7 @@ export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig>
 
 export async function upsertSandboxConnection(input: CreateSandboxConnectionInput): Promise<void> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi("/apps/sandbox/connections", {
+  const response = await fetchApi("/connections/github", {
     method: "POST",
     headers,
     body: input,
@@ -78,7 +63,7 @@ export async function connectSandboxInstallation(
   input: ConnectSandboxInstallationInput,
 ): Promise<void> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi("/apps/sandbox/connections/auto", {
+  const response = await fetchApi("/connections/github/auto_connect", {
     method: "POST",
     headers,
     body: input,
@@ -96,7 +81,7 @@ export async function fetchSandboxConnectionRepositories(
   installationId: number,
 ): Promise<string[]> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi(`/apps/sandbox/connections/${installationId}/repositories`, {
+  const response = await fetchApi(`/connections/github/${installationId}/repositories`, {
     method: "GET",
     headers,
   });
@@ -118,8 +103,8 @@ export async function updateSandboxConnectionRepositories(
   input: SandboxConnectionRepositoriesPayload,
 ): Promise<void> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi(`/apps/sandbox/connections/${installationId}/repositories`, {
-    method: "PUT",
+  const response = await fetchApi(`/connections/github/${installationId}/repositories`, {
+    method: "PATCH",
     headers,
     body: input,
   });
@@ -134,7 +119,7 @@ export async function updateSandboxConnectionRepositories(
 
 export async function deleteSandboxConnection(installationId: number): Promise<void> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi(`/apps/sandbox/connections/${installationId}`, {
+  const response = await fetchApi(`/connections/github/${installationId}`, {
     method: "DELETE",
     headers,
   });

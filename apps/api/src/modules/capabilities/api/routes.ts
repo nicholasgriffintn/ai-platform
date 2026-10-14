@@ -31,14 +31,14 @@ addRoute(app, "get", "/", {
   description:
     "Returns the teammates, rich experiences, model tools and skills a project or person can enable. Function tools are published by /tools.",
   auth: "user-or-anonymous",
-  querySchema: z.object({ projectId: z.string().min(1).optional() }),
+  querySchema: z.object({ project_id: z.string().min(1).optional() }),
   responses: {
     200: { description: "Capability catalogue", schema: capabilityCatalogResponseSchema },
   },
   handler: async ({ query, serviceContext, user }) => {
     const [teammates, skills] = await Promise.all([
-      listScopedTeammateSummaries(serviceContext, user?.id, query.projectId),
-      listScopedSkillSummaries(serviceContext, user?.id, query.projectId),
+      listScopedTeammateSummaries(serviceContext, user?.id, query.project_id),
+      listScopedSkillSummaries(serviceContext, user?.id, query.project_id),
     ]);
 
     return {

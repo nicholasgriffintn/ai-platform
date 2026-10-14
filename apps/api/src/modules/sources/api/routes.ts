@@ -47,8 +47,8 @@ import {
 const app = new Hono();
 const sourceParams = z.object({ sourceId: z.string().min(1) });
 const collectionParams = z.object({ collectionId: z.string().min(1) });
-const projectQuery = z.object({ projectId: z.string().min(1).optional() });
-const requiredProjectQuery = z.object({ projectId: z.string().min(1) });
+const projectQuery = z.object({ project_id: z.string().min(1).optional() });
+const requiredProjectQuery = z.object({ project_id: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
 const syncParams = z.object({ syncId: z.string().min(1) });
 
@@ -57,7 +57,7 @@ addRoute(app, "get", "/knowledge-syncs", {
   auth: true,
   querySchema: requiredProjectQuery,
   responses: { 200: { description: "Knowledge sync freshness", schema: knowledgeSyncListSchema } },
-  handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.projectId),
+  handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.project_id),
 });
 
 addRoute(app, "post", "/knowledge-syncs", {
@@ -131,7 +131,7 @@ addRoute(app, "get", "/collections", {
     200: { description: "Source collections", schema: sourceCollectionListResponseSchema },
   },
   handler: ({ query, serviceContext, user }) =>
-    listSourceCollections(serviceContext, user.id, query.projectId),
+    listSourceCollections(serviceContext, user.id, query.project_id),
 });
 
 addRoute(app, "post", "/collections", {
@@ -173,7 +173,7 @@ addRoute(app, "get", "/project-context", {
   querySchema: requiredProjectQuery,
   responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
   handler: ({ query, serviceContext, user }) =>
-    listProjectContextSources(serviceContext, user.id, query.projectId),
+    listProjectContextSources(serviceContext, user.id, query.project_id),
 });
 
 addRoute(app, "get", "/project-conversation", {
@@ -184,7 +184,7 @@ addRoute(app, "get", "/project-conversation", {
     200: { description: "Project conversation sources", schema: sourceDetailListResponseSchema },
   },
   handler: ({ query, serviceContext, user }) =>
-    listProjectConversationSources(serviceContext, user.id, query.projectId),
+    listProjectConversationSources(serviceContext, user.id, query.project_id),
 });
 
 addRoute(app, "put", "/project-context", {
@@ -194,7 +194,7 @@ addRoute(app, "put", "/project-context", {
   bodySchema: setProjectContextSourcesSchema,
   responses: { 200: { description: "Project context sources", schema: sourceListResponseSchema } },
   handler: ({ body, query, serviceContext, user }) =>
-    setProjectContextSources(serviceContext, user.id, query.projectId, body.sourceIds),
+    setProjectContextSources(serviceContext, user.id, query.project_id, body.sourceIds),
 });
 
 addRoute(app, "delete", "/collections/:collectionId", {

@@ -176,7 +176,7 @@ addRoute(app, "delete", `${base}/budgets`, {
   querySchema: budgetScopeQuerySchema,
   responses: { 200: { description: "Deleted", schema: z.object({ deleted: z.literal(true) }) } },
   handler: ({ serviceContext, params, query }) =>
-    deleteBudget(serviceContext, params.workspaceId, query.projectId ?? null),
+    deleteBudget(serviceContext, params.workspaceId, query.project_id ?? null),
 });
 
 addRoute(app, "get", `${base}/spend-requests`, {

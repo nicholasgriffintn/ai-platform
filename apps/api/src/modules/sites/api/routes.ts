@@ -103,14 +103,14 @@ addRoute(app, "get", "/", {
   handler: async ({ query, serviceContext, user }) => {
     await requireOptionalProjectCapabilityAccess(
       serviceContext,
-      query.projectId,
+      query.project_id,
       "app",
       SITES_CAPABILITY_ID,
     );
 
     return {
       sites: await listSites(
-        { context: serviceContext, userId: user.id, projectId: query.projectId },
+        { context: serviceContext, userId: user.id, projectId: query.project_id },
         query.limit,
       ),
     };
@@ -130,14 +130,14 @@ addRoute(app, "get", "/:id", {
   handler: async ({ params, query, serviceContext, user }) => {
     await requireOptionalProjectCapabilityAccess(
       serviceContext,
-      query.projectId,
+      query.project_id,
       "app",
       SITES_CAPABILITY_ID,
     );
 
     return {
       site: await getSite(
-        { context: serviceContext, userId: user.id, projectId: query.projectId },
+        { context: serviceContext, userId: user.id, projectId: query.project_id },
         params.id,
       ),
     };
@@ -157,12 +157,12 @@ addRoute(app, "delete", "/:id", {
   handler: async ({ params, query, serviceContext, user }) => {
     await requireOptionalProjectCapabilityAccess(
       serviceContext,
-      query.projectId,
+      query.project_id,
       "app",
       SITES_CAPABILITY_ID,
     );
     await deleteSite(
-      { context: serviceContext, userId: user.id, projectId: query.projectId },
+      { context: serviceContext, userId: user.id, projectId: query.project_id },
       params.id,
     );
 
@@ -211,13 +211,13 @@ addRoute(app, "get", "/:id/files", {
   handler: async ({ params, query, serviceContext, user }) => {
     await requireOptionalProjectCapabilityAccess(
       serviceContext,
-      query.projectId,
+      query.project_id,
       "app",
       SITES_CAPABILITY_ID,
     );
 
     const site = await getSite(
-      { context: serviceContext, userId: user.id, projectId: query.projectId },
+      { context: serviceContext, userId: user.id, projectId: query.project_id },
       params.id,
     );
 

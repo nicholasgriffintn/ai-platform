@@ -1,9 +1,9 @@
 import {
   createRecipeComposioTrigger,
-  deleteRecipeComposioTrigger,
+  deleteInstallationTrigger,
   listRecipeComposioTriggers,
   listRecipeComposioTriggerTypes,
-  updateRecipeComposioTrigger,
+  updateInstallationTrigger,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   RecipeComposioTriggerCreateRequest,
@@ -44,11 +44,11 @@ export function useRecipeComposioTriggers(
   });
   const updateTrigger = useMutation({
     mutationFn: ({ triggerId, status }: { triggerId: string; status: "active" | "paused" }) =>
-      updateRecipeComposioTrigger(triggerId, status),
+      updateInstallationTrigger(installationId, triggerId, status),
     onSuccess: refreshTriggers,
   });
   const deleteTrigger = useMutation({
-    mutationFn: deleteRecipeComposioTrigger,
+    mutationFn: (triggerId: string) => deleteInstallationTrigger(installationId, triggerId),
     onSuccess: refreshTriggers,
   });
 

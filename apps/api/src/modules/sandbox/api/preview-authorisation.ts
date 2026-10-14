@@ -1,4 +1,7 @@
-import { sandboxPreviewAuthorisationRequestSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  SANDBOX_PREVIEW_AUTHORISATION_PATH,
+  sandboxPreviewAuthorisationRequestSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
@@ -6,7 +9,7 @@ import { authoriseSandboxPreview } from "~/modules/sandbox/application/previews"
 import type { IEnv } from "~/types";
 
 export function registerSandboxPreviewAuthorisationRoute(app: Hono<{ Bindings: IEnv }>): void {
-  addRoute(app, "post", "/apps/sandbox/previews/authorise", {
+  addRoute(app, "post", SANDBOX_PREVIEW_AUTHORISATION_PATH, {
     tags: ["internal"],
     auth: "service",
     serviceScope: "sandbox-preview:authorise",

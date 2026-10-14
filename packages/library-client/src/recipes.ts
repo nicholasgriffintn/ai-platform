@@ -7,28 +7,21 @@ import type {
   RecipeInstallationTrigger,
   RecipeInstallationUpdateRequest,
   RecipeInstallationsResponse,
+  ListPage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { requestJson, resource } from "./resource.js";
 
 export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> {
-  let headers = {};
+  const page = await requestJson<
+    ListPage<AssistantRecipesResponse["recipes"][number]> &
+      Pick<AssistantRecipesResponse, "categories" | "filters">
+  >("/recipes", "GET");
 
-  try {
-    headers = await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error preparing recipe headers:", error);
-  }
-
-  const response = await fetchApi("/apps/recipes", { method: "GET", headers });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch assistant recipes");
-  }
-
-  return returnFetchedData<AssistantRecipesResponse>(response);
+  return { recipes: page.data, categories: page.categories, filters: page.filters };
 }
 
 export async function installAssistantRecipe(
@@ -45,7 +38,7 @@ export async function installAssistantRecipe(
     console.error("Error preparing recipe install headers:", error);
   }
 
-  const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/install`, {
+  const response = await fetchApiOrThrow(`/recipes/${encodeURIComponent(recipeId)}/install`, {
     method: "POST",
     headers,
     body: { channel: "web", triggers, configuration, projectId },
@@ -67,7 +60,7 @@ export async function invokeAssistantRecipe(
     console.error("Error preparing recipe invocation headers:", error);
   }
 
-  const response = await fetchApiOrThrow(`/apps/recipes/${recipeId}/invoke`, {
+  const response = await fetchApiOrThrow(`/recipes/${encodeURIComponent(recipeId)}/invoke`, {
     method: "POST",
     headers,
     body: { channel: "web", input, projectId },
@@ -79,24 +72,11 @@ export async function invokeAssistantRecipe(
 export async function listRecipeInstallations(
   projectId?: string,
 ): Promise<RecipeInstallationsResponse> {
-  let headers = {};
-
-  try {
-    headers = await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error preparing recipe installation headers:", error);
-  }
-
-  const path = projectId
-    ? `/apps/recipes/installations?projectId=${encodeURIComponent(projectId)}`
-    : "/apps/recipes/installations";
-  const response = await fetchApi(path, { method: "GET", headers });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch installed assistant recipes");
-  }
-
-  return returnFetchedData<RecipeInstallationsResponse>(response);
+  return {
+    installations: await resource<RecipeInstallation>("/recipes/installations").listAll({
+      project_id: projectId,
+    }),
+  };
 }
 
 export async function updateRecipeInstallation(
@@ -111,8 +91,8 @@ export async function updateRecipeInstallation(
     console.error("Error preparing recipe installation update headers:", error);
   }
 
-  const response = await fetchApi(`/apps/recipes/installations/${installationId}`, {
-    method: "PUT",
+  const response = await fetchApi(`/recipes/installations/${encodeURIComponent(installationId)}`, {
+    method: "PATCH",
     headers,
     body: update,
   });
@@ -133,7 +113,7 @@ export async function deleteRecipeInstallation(installationId: string): Promise<
     console.error("Error preparing recipe installation delete headers:", error);
   }
 
-  const response = await fetchApi(`/apps/recipes/installations/${installationId}`, {
+  const response = await fetchApi(`/recipes/installations/${encodeURIComponent(installationId)}`, {
     method: "DELETE",
     headers,
   });

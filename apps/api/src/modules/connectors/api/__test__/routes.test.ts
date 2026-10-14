@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, IUser } from "~/types";
 
-import connectorRoutes from "../connectors";
+import connectorRoutes from "../routes";
 
 const verifyComposioConnectorAuthorizationMock = vi.hoisted(() => vi.fn());
 
@@ -40,7 +40,7 @@ function createApp() {
     context.set("user", user);
     await next();
   });
-  app.route("/apps/connectors", connectorRoutes);
+  app.route("/connectors", connectorRoutes);
 
   return app;
 }
@@ -56,7 +56,7 @@ describe("connector routes", () => {
     );
 
     const response = await createApp().request(
-      "http://localhost:8787/apps/connectors/composio/verify?status=success&connected_account_id=ca_1mUPT1Sxzu_4",
+      "http://localhost:8787/connectors/composio_callback?status=success&connected_account_id=ca_1mUPT1Sxzu_4",
     );
 
     expect(response.status).toBe(302);
@@ -76,7 +76,7 @@ describe("connector routes", () => {
     );
 
     const response = await createApp().request(
-      "https://api.polychat.test/apps/connectors/composio/verify?session_uri=single-use-verifier",
+      "https://api.polychat.test/connectors/composio_callback?session_uri=single-use-verifier",
     );
 
     expect(response.status).toBe(302);

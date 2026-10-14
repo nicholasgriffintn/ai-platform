@@ -226,7 +226,7 @@ addRoute(app, "post", "/:id/execute", {
       context: serviceContext,
     };
 
-    return runFunctionWithOutput(params.id, body, req, query.projectId);
+    return runFunctionWithOutput(params.id, body, req, query.project_id);
   },
 });
 

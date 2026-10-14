@@ -192,7 +192,7 @@ describe("Auth Middleware", () => {
     it("leaves sandbox credential broker authentication to the broker", async () => {
       const context = createMockContext();
 
-      context.req.path = "/apps/sandbox/credential-broker/run-123/git/info/refs";
+      context.req.path = "/internal/sandbox/credential_broker/run-123/git/info/refs";
 
       await authMiddleware(context, mockNext);
 

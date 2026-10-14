@@ -35,7 +35,7 @@ app.use("/*", async (ctx, next) => {
   return next();
 });
 
-const scopeQuerySchema = z.object({ projectId: z.string().min(1).optional() });
+const scopeQuerySchema = z.object({ project_id: z.string().min(1).optional() });
 const nameParamSchema = z.object({ name: memoryDocumentNameSchema });
 
 addRoute(app, "get", "/", {
@@ -46,7 +46,7 @@ addRoute(app, "get", "/", {
   querySchema: scopeQuerySchema,
   responses: { 200: { description: "Documents", schema: listMemoryDocumentsResponseSchema } },
   handler: async ({ serviceContext, query }) =>
-    listMemoryDocuments(serviceContext, query.projectId),
+    listMemoryDocuments(serviceContext, query.project_id),
 });
 
 addRoute(app, "post", "/", {
@@ -103,7 +103,7 @@ addRoute(app, "get", "/:name", {
   querySchema: scopeQuerySchema,
   responses: { 200: { description: "Document", schema: memoryDocumentSchema } },
   handler: async ({ serviceContext, params, query }) =>
-    getMemoryDocument(serviceContext, params.name, query.projectId),
+    getMemoryDocument(serviceContext, params.name, query.project_id),
 });
 
 addRoute(app, "put", "/:name", {
@@ -126,7 +126,7 @@ addRoute(app, "get", "/:name/revisions", {
   querySchema: scopeQuerySchema,
   responses: { 200: { description: "Revisions", schema: memoryDocumentHistoryResponseSchema } },
   handler: async ({ serviceContext, params, query }) =>
-    listMemoryDocumentRevisions(serviceContext, params.name, query.projectId),
+    listMemoryDocumentRevisions(serviceContext, params.name, query.project_id),
 });
 
 addRoute(app, "delete", "/:name", {
@@ -138,7 +138,7 @@ addRoute(app, "delete", "/:name", {
   querySchema: scopeQuerySchema,
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params, query }) => {
-    await deleteMemoryDocument(serviceContext, params.name, query.projectId);
+    await deleteMemoryDocument(serviceContext, params.name, query.project_id);
 
     return { success: true };
   },

@@ -23,7 +23,7 @@ export async function listSources(
   const query = new URLSearchParams();
 
   if (filters.projectId) {
-    query.set("projectId", filters.projectId);
+    query.set("project_id", filters.projectId);
   }
 
   if (filters.kind) {
@@ -42,7 +42,7 @@ export async function getSource(sourceId: string): Promise<Source> {
 export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {
   return (
     await request<{ syncs: KnowledgeSync[] }>(
-      `/sources/knowledge-syncs?projectId=${encodeURIComponent(projectId)}`,
+      `/sources/knowledge-syncs?project_id=${encodeURIComponent(projectId)}`,
     )
   ).syncs;
 }
@@ -90,7 +90,7 @@ export async function deleteSource(sourceId: string): Promise<void> {
 }
 
 export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {
-  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+  const suffix = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
 
   return (await request<{ collections: SourceCollection[] }>(`/sources/collections${suffix}`))
     .collections;
@@ -127,7 +127,7 @@ export async function addCollectionSources(
 export async function listProjectContextSources(projectId: string): Promise<SourceSummary[]> {
   return (
     await request<{ sources: SourceSummary[] }>(
-      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+      `/sources/project-context?project_id=${encodeURIComponent(projectId)}`,
     )
   ).sources;
 }
@@ -135,7 +135,7 @@ export async function listProjectContextSources(projectId: string): Promise<Sour
 export async function listProjectConversationSources(projectId: string): Promise<Source[]> {
   return (
     await request<{ sources: Source[] }>(
-      `/sources/project-conversation?projectId=${encodeURIComponent(projectId)}`,
+      `/sources/project-conversation?project_id=${encodeURIComponent(projectId)}`,
     )
   ).sources;
 }
@@ -146,7 +146,7 @@ export async function setProjectContextSources(
 ): Promise<SourceSummary[]> {
   return (
     await request<{ sources: SourceSummary[] }>(
-      `/sources/project-context?projectId=${encodeURIComponent(projectId)}`,
+      `/sources/project-context?project_id=${encodeURIComponent(projectId)}`,
       { method: "PUT", body: { sourceIds } },
     )
   ).sources;

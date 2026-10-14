@@ -550,8 +550,8 @@ export class WorkPage extends BasePage {
       const pathname = new URL(response.url()).pathname;
 
       return method === "POST"
-        ? pathname.endsWith("/apps/recipes/daily-weather/install")
-        : /\/apps\/recipes\/installations\/[^/]+$/.test(pathname);
+        ? pathname.endsWith("/recipes/daily-weather/install")
+        : /\/recipes\/installations\/[^/]+$/.test(pathname);
     });
   }
 
@@ -693,7 +693,7 @@ export class WorkPage extends BasePage {
     const editor = this.page.getByPlaceholder("Start typing...");
     const createResponse = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "POST" && response.url().includes("/apps/notes"),
+        response.request().method() === "POST" && response.url().includes("/experiences/notes"),
     );
 
     await editor.fill(`${title}\n${body}`);
@@ -708,7 +708,8 @@ export class WorkPage extends BasePage {
     await this.page.getByText("All changes saved", { exact: true }).waitFor();
 
     const updateResponse = this.page.waitForResponse(
-      (response) => response.request().method() === "PUT" && response.url().includes("/apps/notes"),
+      (response) =>
+        response.request().method() === "PATCH" && response.url().includes("/experiences/notes"),
     );
 
     await editor.fill(`${title}\n${body}\nUpdated through release validation.`);
@@ -754,7 +755,7 @@ export class WorkPage extends BasePage {
     await this.page.getByLabel("Description", { exact: true }).fill(`${description} Updated.`);
     const updateResponse = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "PUT" && response.url().includes("/apps/strudel/"),
+        response.request().method() === "PATCH" && response.url().includes("/experiences/strudel/"),
     );
 
     await this.page.getByRole("button", { name: "Save", exact: true }).click();
@@ -771,7 +772,8 @@ export class WorkPage extends BasePage {
 
     const deleteResponse = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "DELETE" && response.url().includes("/apps/strudel/"),
+        response.request().method() === "DELETE" &&
+        response.url().includes("/experiences/strudel/"),
     );
 
     await this.page.getByRole("button", { name: "Delete pattern" }).click();
@@ -793,17 +795,18 @@ export class WorkPage extends BasePage {
 
     const analysisResponse = this.page.waitForResponse(
       (response) =>
-        response.request().method() === "POST" && response.url().includes("/apps/articles/analyse"),
+        response.request().method() === "POST" &&
+        /\/experiences\/articles\/[^/]+\/analyse/.test(response.url()),
     );
     const summaryResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        response.url().includes("/apps/articles/summarise"),
+        /\/experiences\/articles\/[^/]+\/summarise/.test(response.url()),
     );
     const reportResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        response.url().includes("/apps/articles/generate-report"),
+        /\/experiences\/articles\/[^/]+\/report/.test(response.url()),
     );
 
     await this.page.getByRole("button", { name: "Process & Generate Report" }).click();
@@ -837,7 +840,7 @@ export class WorkPage extends BasePage {
     const uploadResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        response.url().includes("/apps/recordings/upload"),
+        new URL(response.url()).pathname.endsWith("/experiences/recordings"),
     );
 
     await this.page.getByRole("button", { name: "Upload & Continue" }).click();
@@ -891,7 +894,7 @@ export class WorkPage extends BasePage {
     const executionResponse = this.page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
-        response.url().includes("/tools/create_qr_code/execute?projectId="),
+        response.url().includes("/tools/create_qr_code/execute?project_id="),
     );
 
     await this.page.getByRole("button", { name: "Submit", exact: true }).click();

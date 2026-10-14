@@ -246,11 +246,17 @@ final class APIClient: ObservableObject {
     }
 
     func fetchMachines() async throws -> [MachineRecord] {
-        try await send(path: "/machines", method: "GET")
+        let response: EnvironmentListResponse<MachineRecord> = try await send(
+            path: "/environments",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "kind", value: "machine")]
+        )
+
+        return response.data.map(\.detail)
     }
 
     func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {
-        try await send(path: "/apps/recipes", method: "GET")
+        try await send(path: "/recipes", method: "GET")
     }
 
     func fetchWorkspaces() async throws -> [WorkspaceSummary] {
@@ -320,7 +326,13 @@ final class APIClient: ObservableObject {
     }
 
     func fetchSandboxRun(id: String) async throws -> SandboxRunDetail {
-        try await send(path: "/apps/sandbox/runs/\(id)", method: "GET")
+        let response: EnvironmentResponse<SandboxRunDetail> = try await send(
+            path: "/environments/\(id)",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "kind", value: "sandbox")]
+        )
+
+        return response.detail
     }
 
     func acceptProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskResponse {
@@ -332,15 +344,15 @@ final class APIClient: ObservableObject {
     }
 
     func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse {
-        try await send(path: "/apps/sandbox/runs/\(id)/events", method: "GET")
+        try await send(path: "/environments/\(id)/events", method: "GET")
     }
 
     func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse {
-        try await send(path: "/apps/sandbox/runs/\(id)/instructions", method: "GET")
+        try await send(path: "/environments/\(id)/instructions", method: "GET")
     }
 
     func fetchSandboxRunControl(id: String) async throws -> SandboxRunControl {
-        try await send(path: "/apps/sandbox/runs/\(id)/control", method: "GET")
+        try await send(path: "/environments/\(id)/control", method: "GET")
     }
 
     func sendSandboxRunInstruction(
@@ -351,7 +363,7 @@ final class APIClient: ObservableObject {
         approvalStatus: String? = nil
     ) async throws -> SandboxRunInstructionResponse {
         try await send(
-            path: "/apps/sandbox/runs/\(id)/instructions",
+            path: "/environments/\(id)/instructions",
             method: "POST",
             body: SubmitSandboxRunInstructionRequest(
                 kind: kind,
@@ -369,9 +381,10 @@ final class APIClient: ObservableObject {
         expectedUpdatedAt: String
     ) async throws -> SandboxRunControl {
         try await send(
-            path: "/apps/sandbox/runs/\(id)/control",
-            method: "PATCH",
-            body: UpdateSandboxRunControlRequest(
+            path: "/environments/\(id)/actions",
+            method: "POST",
+            queryItems: [URLQueryItem(name: "kind", value: "sandbox")],
+            body: EnvironmentActionRequest(
                 action: action,
                 expectedUpdatedAt: expectedUpdatedAt
             )
@@ -404,7 +417,7 @@ final class APIClient: ObservableObject {
         configuration: RecipeConfiguration? = nil
     ) async throws -> AssistantRecipeInstallResponse {
         try await send(
-            path: "/apps/recipes/\(id)/install",
+            path: "/recipes/\(id)/install",
             method: "POST",
             body: AssistantRecipeInstallRequest(
                 channel: "ios",

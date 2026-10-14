@@ -56,7 +56,7 @@ describe("loggerMiddleware", () => {
 
   it("redacts single-use callback secrets from request logs", async () => {
     const context = createMockContext(
-      "https://api.example.com/apps/connectors/composio/verify?session_uri=single-use-secret",
+      "https://api.example.com/connectors/composio_callback?session_uri=single-use-secret",
     );
 
     await loggerMiddleware(context, mockNext as Next);
@@ -69,7 +69,7 @@ describe("loggerMiddleware", () => {
 
   it("redacts single-use callback secrets from failure logs as well", async () => {
     const context = createMockContext(
-      "https://api.example.com/apps/connectors/composio/verify?session_uri=single-use-secret",
+      "https://api.example.com/connectors/composio_callback?session_uri=single-use-secret",
     );
 
     mockNext.mockRejectedValue(new Error("Test error"));

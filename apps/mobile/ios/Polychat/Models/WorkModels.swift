@@ -96,6 +96,10 @@ struct SandboxRunValidationCheck: Decodable, Identifiable {
 
 struct SandboxRunEventsResponse: Decodable {
     let events: [SandboxRunEventEnvelope]
+
+    enum CodingKeys: String, CodingKey {
+        case events = "data"
+    }
 }
 
 struct SandboxRunEventEnvelope: Decodable, Identifiable {
@@ -119,6 +123,10 @@ struct SandboxRunEvent: Decodable {
 
 struct SandboxRunInstructionsResponse: Decodable {
     let instructions: [SandboxRunInstructionEnvelope]
+
+    enum CodingKeys: String, CodingKey {
+        case instructions = "data"
+    }
 }
 
 struct SandboxRunInstructionEnvelope: Decodable, Identifiable {
@@ -154,6 +162,10 @@ struct SandboxRunControl: Decodable {
 
 struct SandboxRunInstructionResponse: Decodable {
     let instruction: SandboxRunInstruction
+
+    init(from decoder: Decoder) throws {
+        instruction = try SandboxRunInstruction(from: decoder)
+    }
 }
 
 struct RegisterMobilePushDeviceRequest: Encodable {
@@ -174,7 +186,22 @@ struct SubmitSandboxRunInstructionRequest: Encodable {
     let approvalStatus: String?
 }
 
-struct UpdateSandboxRunControlRequest: Encodable {
+struct EnvironmentActionRequest: Encodable {
     let action: String
     let expectedUpdatedAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case action
+        case expectedUpdatedAt = "expected_updated_at"
+    }
+}
+
+struct EnvironmentResponse<Detail: Decodable>: Decodable {
+    let id: String
+    let kind: String
+    let detail: Detail
+}
+
+struct EnvironmentListResponse<Detail: Decodable>: Decodable {
+    let data: [EnvironmentResponse<Detail>]
 }

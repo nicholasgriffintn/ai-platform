@@ -90,7 +90,7 @@ export const outputListResponseSchema = z
 
 export const outputListQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     capabilityId: z.string().trim().min(1).max(160).optional(),
     kind: outputKindSchema.optional(),
     limit: z.coerce.number().int().min(1).max(200).default(100),

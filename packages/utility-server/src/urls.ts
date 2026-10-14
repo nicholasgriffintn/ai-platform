@@ -67,3 +67,9 @@ export function appendQueryParams(baseUrl: URL, params: Record<string, unknown> 
     }
   }
 }
+
+export function requestAppUrl(requestUrl: string): string {
+  const url = new URL(requestUrl);
+
+  return `${url.protocol}//${url.hostname}`;
+}

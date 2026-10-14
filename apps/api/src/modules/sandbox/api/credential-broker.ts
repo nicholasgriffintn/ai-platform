@@ -1,3 +1,4 @@
+import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
 import type { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
@@ -19,7 +20,7 @@ import {
 import type { IEnv } from "~/types";
 
 export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv }>): void {
-  addRoute(app, "get", "/apps/sandbox/credential-broker/:runId/git/info/refs", {
+  addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/git/info/refs`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
@@ -30,7 +31,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "post", "/apps/sandbox/credential-broker/:runId/git/:operation", {
+  addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/git/:operation`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerGitOperationParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
@@ -41,7 +42,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "get", "/apps/sandbox/credential-broker/:runId/github/repository", {
+  addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/repository`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
@@ -52,7 +53,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "get", "/apps/sandbox/credential-broker/:runId/github/branches/:branch", {
+  addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/branches/:branch`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerBranchParamsSchema,
     handler: ({ raw, params, serviceContext }) =>
@@ -63,7 +64,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "post", "/apps/sandbox/credential-broker/:runId/github/deliveries", {
+  addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/deliveries`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerParamsSchema,
     bodySchema: sandboxBrokerDeliveryBodySchema,
@@ -76,7 +77,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "get", "/apps/sandbox/credential-broker/:runId/github/pulls", {
+  addRoute(app, "get", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/pulls`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerParamsSchema,
     querySchema: sandboxBrokerPullRequestQuerySchema,
@@ -89,7 +90,7 @@ export function registerSandboxCredentialBrokerRoutes(app: Hono<{ Bindings: IEnv
       }),
   });
 
-  addRoute(app, "post", "/apps/sandbox/credential-broker/:runId/github/pulls", {
+  addRoute(app, "post", `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/:runId/github/pulls`, {
     tags: ["internal"],
     paramSchema: sandboxBrokerParamsSchema,
     bodySchema: sandboxBrokerPullRequestBodySchema,

@@ -1408,7 +1408,7 @@ export const trainingStartResultSchema = z.object({
 });
 export type TrainingStartResult = z.infer<typeof trainingStartResultSchema>;
 
-export const budgetScopeQuerySchema = z.object({ projectId: z.string().min(1).optional() });
+export const budgetScopeQuerySchema = z.object({ project_id: z.string().min(1).optional() });
 
 export const PLATFORM_DEPLOYMENT_CHAT_PROVIDER = "polychat-deployment";
 

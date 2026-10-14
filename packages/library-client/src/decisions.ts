@@ -62,7 +62,7 @@ export const verbatimService = {
       form.append("context", context);
     }
 
-    const response = await fetchApi(withProjectScope("/apps/verbatim/segments", projectId), {
+    const response = await fetchApi(withProjectScope("/experiences/verbatim/segments", projectId), {
       method: "POST",
       headers: { Accept: "text/event-stream" },
       body: form,
@@ -77,11 +77,11 @@ export const verbatimService = {
   },
 };
 
-const TWENTY_QUESTIONS_PATH = "/apps/twenty-questions";
+const TWENTY_QUESTIONS_PATH = "/experiences/twenty_questions";
 
 export const twentyQuestionsService = {
   start(category: TwentyQuestionsCategory, projectId?: string): Promise<TwentyQuestionsGame> {
-    return postJson(withProjectScope(`${TWENTY_QUESTIONS_PATH}/games`, projectId), { category });
+    return postJson(withProjectScope(TWENTY_QUESTIONS_PATH, projectId), { category });
   },
   ask(request: TwentyQuestionsAskRequest, projectId?: string): Promise<TwentyQuestionsAnswer> {
     return postJson(withProjectScope(`${TWENTY_QUESTIONS_PATH}/ask`, projectId), request);

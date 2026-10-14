@@ -562,7 +562,7 @@ export type SiteFilesResponse = z.infer<typeof siteFilesResponseSchema>;
 
 export const siteFilesQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     target: siteExportTargetSchema.default(DEFAULT_SITE_EXPORT_TARGET),
   })
   .strict();
@@ -702,7 +702,7 @@ export type SiteEvaluationResponse = z.infer<typeof siteEvaluationResponseSchema
 
 export const listSitesQuerySchema = z
   .object({
-    projectId: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
   })
   .strict();

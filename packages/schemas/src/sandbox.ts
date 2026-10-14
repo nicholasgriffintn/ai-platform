@@ -35,7 +35,8 @@ import { sandboxExecutionProviderSchema } from "./sandbox-provider.js";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks.js";
 
 export const sandboxWebhookCommandSchema = z.enum(["implement", "review", "test", "fix"]);
-export const SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX = "/apps/sandbox/credential-broker" as const;
+export const SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX = "/internal/sandbox/credential_broker" as const;
+export const SANDBOX_PREVIEW_AUTHORISATION_PATH = "/internal/sandbox/previews/authorise" as const;
 export const sandboxRepoSchema = z
   .string()
   .trim()

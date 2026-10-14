@@ -7,32 +7,11 @@ import type {
 } from "@ngriffin_uk/polychat-schemas/experiences";
 import { readStringField } from "@ngriffin_uk/polychat-utility-core";
 
-import { apiService } from "./api-service.js";
-import { fetchApi } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
 import { listJobsOfKind, startJobs } from "./jobs.js";
+import { resource } from "./resource.js";
 
-export async function fetchCanvasModels(mode: CanvasMode): Promise<CanvasModel[]> {
-  let headers = {};
-
-  try {
-    headers = await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error getting headers for canvas models:", error);
-  }
-
-  const response = await fetchApi(`/apps/canvas/models?mode=${mode}`, {
-    method: "GET",
-    headers,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Canvas models: ${response.statusText}`);
-  }
-
-  const data = await returnFetchedData<{ models: CanvasModel[] }>(response);
-
-  return data.models || [];
+export function fetchCanvasModels(mode: CanvasMode): Promise<CanvasModel[]> {
+  return resource<CanvasModel>("/experiences/canvas/models").listAll({ mode });
 }
 
 export async function generateCanvasOutputs(

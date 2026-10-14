@@ -681,6 +681,11 @@ public struct AssistantRecipesResponse: Codable {
     public let recipes: [AssistantRecipe]
     public let categories: [String]
     public let filters: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case categories, filters
+        case recipes = "data"
+    }
 }
 
 public struct AssistantRecipe: Codable, Identifiable, Equatable {

@@ -111,7 +111,7 @@ describe("hosted sandbox results", () => {
         runId: "openai-run-123",
         deliveryPolicy: { mode: "review_branch", destination: "pull_request" },
         credentialBroker: {
-          baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/openai-run-123",
+          baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/openai-run-123",
           expiresAt: "2026-09-12T12:00:00.000Z",
           grant: "scoped-broker-grant",
         },
