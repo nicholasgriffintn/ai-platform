@@ -206,48 +206,11 @@
         "releaseDate": "August 11, 2026"
       }
     },
-    "nemotron-3-5-lightning-30b-free": {
-      "defaults": {
-        "name": "Nemotron 3.5 Lightning 30B (Free)",
-        "description": "Nemotron 3.5 Lightning 30B (Free) accepts text and produces text.",
-        "contextWindow": 1000000,
-        "maxTokens": 32768,
-        "releaseDate": "August 11, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "nemotron-3-5-lightning-free": {
       "defaults": {
-        "name": "Nemotron 3.5 Lightning (free)",
         "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
         "contextWindow": 1000000,
-        "maxTokens": 65536,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 12.9,
-          "codingIndex": 26.8,
-          "agenticIndex": 3.5,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "August 11, 2026"
       }
     },
     "nemotron-3-nano-30b": {

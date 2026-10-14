@@ -1,6 +1,7 @@
 {
   "defaults": {
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -238,7 +239,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-flash-latest": {
       "model": "gemini-flash/gemini-flash-latest",
@@ -336,7 +340,8 @@
         ],
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.03
+        "costPer1kOutputTokens": 0.03,
+        "supportsResponseFormat": false
       }
     },
     "gemini-nano-banana-2.1": {
@@ -378,6 +383,17 @@
           ],
           "defaultEffort": "minimal"
         }
+      }
+    },
+    "gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "gemini-4-argon",
+      "overrides": {
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
       }
     }
   }

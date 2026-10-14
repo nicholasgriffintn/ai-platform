@@ -1,6 +1,5 @@
 {
   "defaults": {
-    "openWeights": false,
     "contextWindow": 1000000,
     "supportsToolCalls": true,
     "supportsAttachments": true,
@@ -11,6 +10,7 @@
     "amazon-nova-2-lite": {
       "defaults": {
         "name": "Amazon: Nova 2 Lite",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "modalities": {
@@ -72,6 +72,7 @@
     "amazon-nova-premier-1-0": {
       "defaults": {
         "name": "Amazon: Nova Premier 1.0",
+        "openWeights": false,
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "maxTokens": 32000,
         "modalities": {
@@ -132,6 +133,7 @@
     "lucidnova-rf1-100b": {
       "defaults": {
         "name": "LucidNova RF1 100B",
+        "openWeights": false,
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 120000,
         "maxTokens": 8000,
@@ -158,6 +160,7 @@
     "nova-2-lite": {
       "defaults": {
         "name": "Nova 2 Lite",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "releaseDate": "December 2, 2025"
@@ -166,6 +169,7 @@
     "nova-2-lite-eu": {
       "defaults": {
         "name": "Nova 2 Lite (EU)",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "modalities": {
@@ -194,6 +198,7 @@
     "nova-2-lite-global": {
       "defaults": {
         "name": "Amazon Nova 2 Lite",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "modalities": {
@@ -229,6 +234,7 @@
     "nova-2-lite-jp": {
       "defaults": {
         "name": "Nova 2 Lite (JP)",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "modalities": {
@@ -257,6 +263,7 @@
     "nova-2-lite-us": {
       "defaults": {
         "name": "Nova 2 Lite (US)",
+        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
         "modalities": {
@@ -334,33 +341,6 @@
         }
       }
     },
-    "nova-lite-v1": {
-      "defaults": {
-        "name": "Nova Lite V1",
-        "description": "Nova Lite is a fast, low-cost multimodal foundation model capable of reasoning over text, images, and video in 200+ languages.",
-        "contextWindow": 300000,
-        "maxTokens": 10000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 14, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "nova-micro": {
       "defaults": {
         "name": "Nova Micro",
@@ -393,33 +373,6 @@
         }
       }
     },
-    "nova-micro-v1": {
-      "defaults": {
-        "name": "Nova Micro V1",
-        "description": "Nova Micro is a multilingual text-to-text foundation model with strong reasoning capabilities and broad language coverage across 200+ languages.",
-        "contextWindow": 128000,
-        "maxTokens": 10000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 14, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "nova-premier": {
       "defaults": {
         "name": "Nova Premier",
@@ -448,6 +401,7 @@
     "nova-premier-1-0": {
       "defaults": {
         "name": "Nova Premier 1.0",
+        "openWeights": false,
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "maxTokens": 32000,
         "modalities": {

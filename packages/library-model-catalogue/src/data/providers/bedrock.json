@@ -109,7 +109,6 @@
         "bedrockApiOperation": "invoke"
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
@@ -127,7 +126,6 @@
         "bedrockApiOperation": "async-invoke"
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
@@ -143,7 +141,6 @@
         }
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
@@ -487,10 +484,7 @@
         "costPer1kOutputTokens": 0.0125,
         "supportsDocuments": true,
         "supportsPromptCaching": true
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "llama-3-2-90b-bedrock": {
       "model": "llama/llama-3-2-90b-instruct",
@@ -1780,7 +1774,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1904,7 +1898,7 @@
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
         "contextComplexity": 5,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1943,7 +1937,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-global",
       "matchingModel": "global.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1985,7 +1979,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-jp",
       "matchingModel": "jp.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2173,7 +2167,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-us",
       "matchingModel": "us.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",

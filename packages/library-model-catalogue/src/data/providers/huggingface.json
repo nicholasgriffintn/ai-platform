@@ -493,7 +493,6 @@
       "matchingModel": "zai-org/GLM-5.1",
       "overrides": {
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 3, 2026",
         "lastUpdated": "April 3, 2026",

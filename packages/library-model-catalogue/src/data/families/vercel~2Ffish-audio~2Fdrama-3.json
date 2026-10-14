@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "releaseDate": "October 13, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/fish audio/drama 3 family includes models that produce audio.",
+  "models": {
+    "drama-3": {
+      "defaults": {
+        "name": "Drama 3",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

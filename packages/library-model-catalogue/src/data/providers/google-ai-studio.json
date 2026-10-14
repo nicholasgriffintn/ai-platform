@@ -98,7 +98,7 @@
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
-        "costPer1kInputTokens": 7.5e-05,
+        "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
       }
     },
@@ -112,7 +112,7 @@
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
-        "costPer1kInputTokens": 3.75e-05,
+        "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015
       }
     },
@@ -560,7 +560,6 @@
       "model": "gemini/gemini-3-8-live",
       "matchingModel": "gemini-3.8-live",
       "overrides": {
-        "lastUpdated": "September 15, 2026",
         "modalities": {
           "input": [
             "text",
@@ -573,13 +572,21 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio",
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "search"
+        ],
+        "lastUpdated": "September 15, 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
-        "supportsToolCalls": true,
         "supportsSearchGrounding": true,
         "supportsAudio": true,
         "supportsRealtimeSession": true
@@ -589,7 +596,6 @@
       "model": "gemini/gemini-3-8-live-extended-thinking",
       "matchingModel": "gemini-3.8-live-extended-thinking",
       "overrides": {
-        "lastUpdated": "September 15, 2026",
         "modalities": {
           "input": [
             "text",
@@ -602,13 +608,21 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio",
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "search"
+        ],
+        "lastUpdated": "September 15, 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
-        "supportsToolCalls": true,
         "supportsSearchGrounding": true,
         "supportsAudio": true,
         "supportsRealtimeSession": true
@@ -1264,8 +1278,8 @@
       "model": "gemini/gemini-3-5-transcribe-live",
       "matchingModel": "gemini-3.5-transcribe-live",
       "overrides": {
-        "lastUpdated": "August 26, 2026",
         "hiddenFromDefaultList": true,
+        "lastUpdated": "August 26, 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
@@ -1273,8 +1287,8 @@
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.021,
         "supportsToolCalls": false,
-        "supportsAttachments": false,
         "supportsStreaming": true,
+        "supportsAttachments": false,
         "supportsAudio": true
       }
     },
@@ -1475,6 +1489,17 @@
       "unset": [
         "knowledgeCutoffDate"
       ]
+    },
+    "gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "gemini-4-argon",
+      "overrides": {
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 32768,
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
     }
   }
 }

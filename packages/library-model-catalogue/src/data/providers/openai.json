@@ -405,7 +405,7 @@
           "zeroRetention": "on_request",
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
-        "costPer1kInputTokens": 5e-05,
+        "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
         "hostedToolCosts": {
           "web_search": 0.01,
@@ -1478,7 +1478,7 @@
           "zeroRetention": "on_request",
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
-        "costPer1kInputTokens": 2e-05,
+        "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -1622,7 +1622,7 @@
         },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
-        "costPer1kCachedInputTokens": 7.5e-05,
+        "costPer1kCachedInputTokens": 0.000075,
         "hostedToolCosts": {
           "web_search": 0.01,
           "file_search": 0.0025,
@@ -1686,7 +1686,7 @@
         },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
-        "costPer1kCachedInputTokens": 2e-05,
+        "costPer1kCachedInputTokens": 0.00002,
         "hostedToolCosts": {
           "web_search": 0.01,
           "file_search": 0.0025,
@@ -2147,16 +2147,16 @@
       "matchingModel": "gpt-4o-mini-transcribe",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4o Mini Transcribe shuts down on 26 February 2027. Use GPT Transcribe instead.",
+        "replacementModel": "gpt-transcribe",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4o Mini Transcribe shuts down on 26 February 2027. Use GPT Transcribe instead.",
-        "replacementModel": "gpt-transcribe"
+        "supportsAttachments": false
       },
       "unset": [
         "openWeights",
@@ -2172,16 +2172,16 @@
           "transcription"
         ],
         "hiddenFromDefaultList": true,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4o Transcribe shuts down on 26 February 2027. Use GPT Transcribe instead.",
+        "replacementModel": "gpt-transcribe",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4o Transcribe shuts down on 26 February 2027. Use GPT Transcribe instead.",
-        "replacementModel": "gpt-transcribe"
+        "supportsAttachments": false
       },
       "unset": [
         "openWeights",
@@ -2198,16 +2198,16 @@
           "transcription"
         ],
         "hiddenFromDefaultList": true,
+        "deprecated": true,
+        "deprecationMessage": "Whisper shuts down on 26 February 2027. Use GPT Transcribe instead.",
+        "replacementModel": "gpt-transcribe",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "deprecated": true,
-        "deprecationMessage": "Whisper shuts down on 26 February 2027. Use GPT Transcribe instead.",
-        "replacementModel": "gpt-transcribe"
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -2285,7 +2285,7 @@
         },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
-        "costPer1kCachedInputTokens": 2e-05,
+        "costPer1kCachedInputTokens": 0.00002,
         "costPer1kCacheWriteTokens": 0.00025,
         "hostedToolCosts": {
           "web_search": 0.01,
@@ -2603,17 +2603,6 @@
       "model": "gpt/gpt-live-1",
       "matchingModel": "gpt-live-1",
       "overrides": {
-        "name": "GPT-Live 1",
-        "modalities": {
-          "input": [
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
         "lastUpdated": "September 10, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2621,8 +2610,8 @@
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "costPerAudioSecond": 0.000833,
-        "supportsResponseFormat": false,
         "supportsToolCalls": false,
+        "supportsResponseFormat": false,
         "supportsAttachments": false,
         "supportsAudio": true,
         "supportsRealtimeSession": true

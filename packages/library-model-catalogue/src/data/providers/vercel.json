@@ -2900,7 +2900,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -6851,12 +6851,23 @@
       ]
     },
     "nvidia/nemotron-3.5-lightning-free": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-free",
+      "model": "nemotron/nemotron-3-5-lightning-free",
       "matchingModel": "nvidia/nemotron-3.5-lightning-free",
       "overrides": {
+        "name": "Nemotron 3.5 Lightning 30B (Free)",
+        "maxTokens": 65000,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "bytedance/seedance-2.0-mini": {
@@ -7211,17 +7222,7 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "supportsAttachments": true
       }
     },
     "meta/muse-spark-1.3-contributor": {
@@ -7242,7 +7243,18 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
       },
       "unset": [
         "supportsResponseFormat",
@@ -7482,6 +7494,19 @@
       "model": "gemini/gemini-3-8-live",
       "matchingModel": "google/gemini-3.8-live",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
@@ -7492,6 +7517,19 @@
       "model": "gemini/gemini-3-8-live-extended-thinking",
       "matchingModel": "google/gemini-3.8-live-extended-thinking",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
@@ -8035,8 +8073,8 @@
         "speed": 4,
         "releaseDate": "September 29, 2026",
         "lastUpdated": "September 29, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0009,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8381,17 +8419,86 @@
         "lastUpdated": "October 12, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
+        "supportsAttachments": true
+      }
+    },
+    "fish-audio/drama-3": {
+      "model": "vercel/fish-audio/drama-3/drama-3",
+      "matchingModel": "fish-audio/drama-3",
+      "overrides": {
+        "lastUpdated": "October 13, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "google/gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "google/gemini-4-argon",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "liquid/lfm2.5-24b-a2b": {
+      "model": "liquid/lfm2-5-24b-a2b",
+      "matchingModel": "liquid/lfm2.5-24b-a2b",
+      "overrides": {
+        "openWeights": false,
+        "maxTokens": 8200,
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0007,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "minimal",
             "low",
             "medium",
             "high",
-            "xhigh"
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "minimal"
         }
+      }
+    },
+    "microsoft/mai-image-2.6": {
+      "model": "mai/mai-image-2-6",
+      "matchingModel": "microsoft/mai-image-2.6",
+      "overrides": {
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.038,
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-image-2.6-flash": {
+      "model": "mai/mai-image-2-6-flash",
+      "matchingModel": "microsoft/mai-image-2.6-flash",
+      "overrides": {
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.00175,
+        "costPer1kOutputTokens": 0.019,
+        "supportsToolCalls": false
       }
     }
   }

@@ -45,7 +45,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest model in the DeepSeek Pro family.",
         "contextWindow": 1048576,
-        "maxTokens": 943718,
+        "maxTokens": 393216,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

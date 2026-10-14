@@ -109,7 +109,9 @@
           "output": [
             "text"
           ]
-        }
+        },
+        "knowledgeCutoffDate": "October 31, 2024",
+        "releaseDate": "December 5, 2024"
       }
     },
     "nova-pro-apac": {

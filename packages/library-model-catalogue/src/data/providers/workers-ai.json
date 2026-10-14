@@ -437,10 +437,7 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "smart-turn-v2": {
       "model": "workers-ai/@cf/pipecat-ai/smart-turn-v2/pipecat-smart-turn-v2",

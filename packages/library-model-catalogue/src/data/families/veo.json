@@ -41,7 +41,7 @@
               "value": 964,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 11
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -82,7 +82,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 969,
+              "value": 968,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -181,7 +181,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 955,
+              "value": 957,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

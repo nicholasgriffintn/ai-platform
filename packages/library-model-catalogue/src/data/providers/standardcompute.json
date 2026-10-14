@@ -11,7 +11,7 @@
       "matchingModel": "standardcompute",
       "overrides": {
         "isFeatured": true,
-        "lastUpdated": "August 24, 2026",
+        "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }

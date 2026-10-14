@@ -759,7 +759,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 1020,
+              "value": 1021,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8

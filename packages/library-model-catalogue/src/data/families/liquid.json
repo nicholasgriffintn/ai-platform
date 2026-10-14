@@ -1,8 +1,6 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 32768,
-    "maxTokens": 32768,
     "modalities": {
       "input": [
         "text"
@@ -24,6 +22,8 @@
       "defaults": {
         "name": "LFM2-24B-A2B",
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
         "releaseDate": "February 25, 2026",
         "supportsToolCalls": false,
         "artificialAnalysis": {
@@ -38,6 +38,8 @@
       "defaults": {
         "name": "LFM2.5-1.2B-Instruct (free)",
         "description": "LFM2.5-1.2B-Instruct (free) accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 20, 2026",
         "supportsToolCalls": false,
@@ -53,6 +55,8 @@
       "defaults": {
         "name": "LFM2.5-1.2B-Thinking (free)",
         "description": "LFM2.5-1.2B-Thinking (free) accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
         "strengths": [
           "tool_use"
         ],
@@ -98,6 +102,14 @@
         }
       }
     },
+    "lfm2-5-24b-a2b": {
+      "defaults": {
+        "name": "LFM2.5-24B-A2B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 128000,
+        "releaseDate": "October 13, 2026"
+      }
+    },
     "liquidai-lfm2-5-2-6b-free": {
       "defaults": {
         "name": "LiquidAI: LFM2.5-2.6B (free)",
@@ -106,6 +118,22 @@
         "contextWindow": 65536,
         "maxTokens": 8192,
         "releaseDate": "August 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "liquidai-lfm2-5-24b-a2b": {
+      "defaults": {
+        "name": "LiquidAI: LFM2.5-24B-A2B",
+        "openWeights": false,
+        "description": "LFM2.5-24B-A2B is a mixture-of-experts reasoning model from Liquid AI with 24B total and 2.45B active parameters. It always reasons before answering and is built for agents that call tools. Liquid...",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "releaseDate": "October 13, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"

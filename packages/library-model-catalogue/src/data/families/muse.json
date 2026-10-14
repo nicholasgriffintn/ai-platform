@@ -166,7 +166,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1114,
+              "value": 1115,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -316,17 +316,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 2, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "releaseDate": "September 2, 2026"
       }
     },
     "muse-wonder": {

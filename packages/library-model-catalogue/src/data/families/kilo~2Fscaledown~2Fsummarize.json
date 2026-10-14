@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 13, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The kilo/scaledown/summarize family includes models that produce text.",
+  "models": {
+    "scaledown-summarize": {
+      "defaults": {
+        "name": "ScaleDown: Summarize",
+        "description": "Summarize is an abstractive summarization model from ScaleDown. It condenses long text and documents into a fluent, faithful rewrite rather than lifting sentences from the source, and is suited for..."
+      }
+    }
+  }
+}

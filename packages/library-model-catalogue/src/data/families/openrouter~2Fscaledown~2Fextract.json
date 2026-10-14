@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 900000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 13, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The openrouter/scaledown/extract family includes models that produce text.",
+  "models": {
+    "extract": {
+      "defaults": {
+        "name": "Extract",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media"
+      }
+    }
+  }
+}
