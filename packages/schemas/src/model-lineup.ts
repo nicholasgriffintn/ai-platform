@@ -384,11 +384,11 @@ export interface SystemModelRoleDefinition {
 }
 
 const platformHousekeeping: readonly ModelLineupCandidate[] = [
-  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "minimal" },
+  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
+  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
   { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
   { model: "deepseek-flash", provider: "deepseek", effort: "low" },
-  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
-  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
+  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "minimal" },
 ];
 
 export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [

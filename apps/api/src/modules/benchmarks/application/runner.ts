@@ -94,6 +94,7 @@ async function judgeArtefact(
       model: judge.model,
       provider: judge.provider,
       reasoning_effort: judge.effort,
+      disable_functions: true,
       prompt: buildJudgePrompt({
         rubric: benchmark.judgeRubric,
         input: benchmark.prompt(itemId).user,
