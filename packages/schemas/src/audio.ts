@@ -1,11 +1,10 @@
 import z from "zod/v4";
 
+import { queryBooleanSchema } from "./platform/query.js";
+
 export const transcribeQuerySchema = z.object({
   provider: z.enum(["workers", "mistral", "replicate", "greenpt"]).optional(),
-  timestamps: z
-    .enum(["true", "false"])
-    .transform((value) => value === "true")
-    .optional(),
+  timestamps: queryBooleanSchema.optional(),
 });
 
 export const transcribeFormSchema = z.object({

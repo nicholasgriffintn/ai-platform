@@ -8,6 +8,7 @@ import {
   policyVerdictSchema,
   registryWorkspaceParamsSchema,
 } from "./model-registry.js";
+import { queryBooleanSchema } from "./platform/query.js";
 
 export const MODEL_PROVIDER_IDS = [
   "openai",
@@ -865,10 +866,7 @@ export const datasetRowsQuerySchema = z.object({
   split: datasetSplitSchema.default("train"),
   offset: z.coerce.number().int().nonnegative().default(0),
   limit: z.coerce.number().int().positive().max(100).default(25),
-  flagged_only: z
-    .enum(["true", "false"])
-    .transform((value) => value === "true")
-    .default(false),
+  flagged_only: queryBooleanSchema.default(false),
 });
 export type DatasetRowsQuery = z.infer<typeof datasetRowsQuerySchema>;
 

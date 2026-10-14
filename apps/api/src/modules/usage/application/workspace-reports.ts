@@ -7,8 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-
-import { requireWorkspaceAccess } from "./access";
+import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 
 export async function getWorkspaceUsageSummary(
   context: ServiceContext,

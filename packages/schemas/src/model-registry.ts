@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { queryBooleanSchema } from "./platform/query.js";
+
 export const MODEL_ASSET_KINDS = ["model", "adapter", "dataset"] as const;
 export const modelAssetKindSchema = z.enum(MODEL_ASSET_KINDS);
 export type ModelAssetKind = z.infer<typeof modelAssetKindSchema>;
@@ -416,10 +418,7 @@ export type SourceSearchQuery = z.infer<typeof sourceSearchQuerySchema>;
 export const libraryQuerySchema = z.object({
   kind: modelAssetKindSchema.optional(),
   project_id: z.string().min(1).optional(),
-  approved_only: z
-    .enum(["true", "false"])
-    .transform((value) => value === "true")
-    .optional(),
+  approved_only: queryBooleanSchema.optional(),
 });
 export type LibraryQuery = z.infer<typeof libraryQuerySchema>;
 

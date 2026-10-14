@@ -5,13 +5,11 @@ import {
   transferWorkspaceOwnershipSchema,
   updateWorkspaceMemberSchema,
   updateWorkspaceSchema,
-  usageSummaryQuerySchema,
   workspaceAuditListQuerySchema,
   workspaceAuditListResponseSchema,
   workspaceDetailSchema,
   workspaceInvitationDeliverySchema,
   workspaceListResponseSchema,
-  workspaceUsageSummaryResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -32,7 +30,6 @@ import {
   updateWorkspace,
   updateWorkspaceMember,
 } from "~/modules/workspaces/application";
-import { getWorkspaceUsageSummary } from "~/modules/workspaces/application/usage";
 
 const app = new Hono();
 const workspaceParamsSchema = z.object({ workspace_id: z.string().min(1) });
@@ -92,19 +89,6 @@ defineResource(app, { idParam: "workspace_id", tags: ["workspaces"] }, (workspac
       handler: ({ serviceContext, params, body }) =>
         transferWorkspaceOwnership(serviceContext, params.workspace_id, body.newOwnerUserId),
     });
-
-  workspaces.singleton("usage").read({
-    auth: true,
-    summary: "Summarise recorded workspace spend",
-    description: "Owners and administrators only.",
-    paramSchema: workspaceParamsSchema,
-    querySchema: usageSummaryQuerySchema,
-    responses: {
-      200: { description: "Workspace usage", schema: workspaceUsageSummaryResponseSchema },
-    },
-    handler: ({ serviceContext, params, query }) =>
-      getWorkspaceUsageSummary(serviceContext, params.workspace_id, query),
-  });
 
   workspaces.sub("audit", "record_id").list({
     auth: true,

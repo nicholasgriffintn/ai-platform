@@ -40,17 +40,35 @@ defineResource(
       .list({
         auth: true,
         summary: "List GitHub App connections",
-        handler: async ({ serviceContext, user }) =>
-          listPageOf(await listGitHubAppConnectionsForUser(serviceContext, user.id), (connection) =>
-            String(connection.installationId),
+        description:
+          "The page also carries install_config: the GitHub App install link and whether installations of the default app can be connected without credentials.",
+        handler: async ({ serviceContext, user }) => ({
+          ...listPageOf(
+            await listGitHubAppConnectionsForUser(serviceContext, user.id),
+            (connection) => String(connection.installationId),
           ),
+          install_config: {
+            installUrl: getGitHubAppInstallUrl(serviceContext.env),
+            canAutoConnect: canAutoConnectGitHubApp(serviceContext.env),
+            callbackUrl: getGitHubAppCallbackUrl(serviceContext.env),
+          },
+        }),
       })
       .create({
         auth: true,
         summary: "Add or update a GitHub App connection",
-        bodySchema: githubConnectionSchema,
+        description:
+          "Send appId and privateKey for your own GitHub App, or only installationId to connect an installation of the default app.",
+        bodySchema: z.union([githubConnectionSchema, autoConnectSchema]),
         handler: async ({ body, serviceContext, user }) => {
-          await upsertGitHubConnectionForUser(serviceContext, user.id, body);
+          if ("appId" in body) {
+            await upsertGitHubConnectionForUser(serviceContext, user.id, body);
+          } else {
+            await upsertGitHubConnectionFromDefaultAppForUser(serviceContext, user.id, {
+              installationId: body.installationId,
+              repositories: body.repositories,
+            });
+          }
 
           return { connected: true };
         },
@@ -63,28 +81,6 @@ defineResource(
           await deleteGitHubConnectionForUser(serviceContext, user.id, params.installation_id);
 
           return { deleted: true };
-        },
-      })
-      .view("install_config", {
-        auth: true,
-        summary: "Get the GitHub App install link and auto-connect capability",
-        handler: async ({ serviceContext }) => ({
-          installUrl: getGitHubAppInstallUrl(serviceContext.env),
-          canAutoConnect: canAutoConnectGitHubApp(serviceContext.env),
-          callbackUrl: getGitHubAppCallbackUrl(serviceContext.env),
-        }),
-      })
-      .collectionAction("auto_connect", {
-        auth: true,
-        summary: "Connect an installation of the default GitHub App",
-        bodySchema: autoConnectSchema,
-        handler: async ({ body, serviceContext, user }) => {
-          await upsertGitHubConnectionFromDefaultAppForUser(serviceContext, user.id, {
-            installationId: body.installationId,
-            repositories: body.repositories,
-          });
-
-          return { connected: true };
         },
       });
 

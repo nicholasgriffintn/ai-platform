@@ -123,14 +123,11 @@ export async function getWorkspaceUsageSummary(
   workspaceId: string,
   period: string,
 ): Promise<WorkspaceUsageSummaryResponse> {
-  const params = new URLSearchParams({ period });
-  const response = await fetchApiOrThrow(
-    `/workspaces/${encodeURIComponent(workspaceId)}/usage?${params}`,
-    {
-      method: "GET",
-      headers: await authHeaders(),
-    },
-  );
+  const params = new URLSearchParams({ period, workspace_id: workspaceId });
+  const response = await fetchApiOrThrow(`/usage/summary?${params}`, {
+    method: "GET",
+    headers: await authHeaders(),
+  });
 
   return returnFetchedData(response);
 }

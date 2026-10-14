@@ -6,8 +6,10 @@ import {
   usageEventsResponseSchema,
   usageSummaryQuerySchema,
   usageSummaryResponseSchema,
+  workspaceUsageSummaryResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
+import z from "zod/v4";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import {
@@ -16,6 +18,7 @@ import {
   listUsageEvents,
   recordOffPlatformUsage,
 } from "~/modules/usage/application/reports";
+import { getWorkspaceUsageSummary } from "~/modules/usage/application/workspace-reports";
 
 const app = new Hono();
 
@@ -39,10 +42,19 @@ defineSingleton(app, { path: "/summary", tags: ["usage"] }, (summary) => {
   summary.read({
     auth: true,
     summary: "Summarise usage for a period",
-    description: "Spend for a billing period grouped by source and vendor.",
-    querySchema: usageSummaryQuerySchema,
-    responses: { 200: { description: "Usage summary", schema: usageSummaryResponseSchema } },
-    handler: ({ query, serviceContext, user }) => getUsageSummary(serviceContext, user.id, query),
+    description:
+      "Spend for a billing period grouped by source and vendor. Pass workspace_id for a workspace's spend, also grouped by project; owners and administrators only.",
+    querySchema: usageSummaryQuerySchema.extend({ workspace_id: z.string().min(1).optional() }),
+    responses: {
+      200: {
+        description: "Usage summary",
+        schema: z.union([workspaceUsageSummaryResponseSchema, usageSummaryResponseSchema]),
+      },
+    },
+    handler: ({ query, serviceContext, user }) =>
+      query.workspace_id
+        ? getWorkspaceUsageSummary(serviceContext, query.workspace_id, query)
+        : getUsageSummary(serviceContext, user.id, query),
   });
 });
 

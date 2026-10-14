@@ -27,20 +27,12 @@ export function fetchSandboxConnections(): Promise<SandboxConnection[]> {
 }
 
 export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig> {
-  const headers = await apiService.getHeaders();
-  const response = await fetchApi("/connections/github/install_config", {
-    method: "GET",
-    headers,
-  });
+  const page = await requestJson<{ install_config: SandboxInstallConfig }>(
+    "/connections/github?limit=1",
+    "GET",
+  );
 
-  if (!response.ok) {
-    throw await createApiErrorFromResponse(
-      response,
-      `Failed to fetch sandbox install configuration: ${response.statusText}`,
-    );
-  }
-
-  return returnFetchedData<SandboxInstallConfig>(response);
+  return page.install_config;
 }
 
 export async function upsertSandboxConnection(input: CreateSandboxConnectionInput): Promise<void> {
@@ -63,7 +55,7 @@ export async function connectSandboxInstallation(
   input: ConnectSandboxInstallationInput,
 ): Promise<void> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi("/connections/github/auto_connect", {
+  const response = await fetchApi("/connections/github", {
     method: "POST",
     headers,
     body: input,

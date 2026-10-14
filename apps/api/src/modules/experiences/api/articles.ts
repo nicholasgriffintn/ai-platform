@@ -1,5 +1,4 @@
 import {
-  articleDetailResponseSchema,
   contentExtractSchema,
   listPageOf,
   sourceArticlesResponseSchema,
@@ -9,7 +8,6 @@ import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import type { HonoLike } from "~/infrastructure/http/routeBuilder";
-import { getArticleDetails } from "~/modules/experiences/application/articles/get-details";
 import { getSourceArticles } from "~/modules/experiences/application/articles/get-source-articles";
 import { listArticles } from "~/modules/experiences/application/articles/list";
 import { cleanupArticleSession } from "~/modules/experiences/application/articles/summarise";
@@ -19,7 +17,6 @@ import { projectScopeQuerySchema } from "~/modules/workspaces/application/access
 import { proExperience } from "./access";
 
 const articleParamsSchema = z.object({ article_id: z.string().min(1) });
-const reportParamsSchema = z.object({ report_id: z.string().min(1) });
 const sourcesQuerySchema = projectScopeQuerySchema.extend({
   ids: z.union([z.string().min(1), z.array(z.string().min(1))]),
 });
@@ -111,25 +108,6 @@ export function defineArticles(app: HonoLike): void {
             return { prepared: true };
           },
         });
-
-      articles.collection("reports", "report_id").read({
-        auth: true,
-        summary: "Get an article report",
-        middleware: access,
-        paramSchema: reportParamsSchema,
-        querySchema: projectScopeQuerySchema,
-        responses: { 200: { description: "The report", schema: articleDetailResponseSchema } },
-        handler: async ({ params, query, serviceContext, user }) => ({
-          article: (
-            await getArticleDetails({
-              context: serviceContext,
-              id: params.report_id,
-              userId: user.id,
-              projectId: query.project_id,
-            })
-          ).article,
-        }),
-      });
     },
   );
 }

@@ -2,19 +2,17 @@ import {
   billingPortalResponseSchema,
   billingPortalSchema,
   checkoutSchema,
-  overageStatusResponseSchema,
+  subscriptionUpdateResponseSchema,
   updateSubscriptionSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
 import { defineSingleton } from "~/infrastructure/http/resource";
 import {
-  cancelSubscription,
   createBillingPortalSession,
   createCheckoutSession,
   getSubscriptionStatus,
-  reactivateSubscription,
-  setOverageBilling,
+  updateSubscription,
 } from "~/modules/subscription/application";
 
 const app = new Hono();
@@ -29,23 +27,15 @@ defineSingleton(app, { path: "/subscription", tags: ["billing"] }, (subscription
     })
     .update({
       auth: true,
-      summary: "Enable or disable metered overage billing",
+      summary: "Update the subscription",
+      description:
+        "Turns metered overage billing on or off, or schedules (cancel_at_period_end: true) or withdraws (false) cancellation at period end.",
       bodySchema: updateSubscriptionSchema,
       responses: {
-        200: { description: "Overage billing updated", schema: overageStatusResponseSchema },
+        200: { description: "Subscription updated", schema: subscriptionUpdateResponseSchema },
       },
       handler: ({ body, serviceContext, user }) =>
-        setOverageBilling(serviceContext.env, user, body.overage_enabled),
-    })
-    .action("cancel", {
-      auth: true,
-      summary: "Cancel the subscription at period end",
-      handler: ({ serviceContext, user }) => cancelSubscription(serviceContext.env, user),
-    })
-    .action("reactivate", {
-      auth: true,
-      summary: "Reactivate a subscription scheduled for cancellation",
-      handler: ({ serviceContext, user }) => reactivateSubscription(serviceContext.env, user),
+        updateSubscription(serviceContext.env, user, body),
     });
 });
 

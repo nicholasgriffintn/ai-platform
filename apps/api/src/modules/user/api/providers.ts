@@ -22,17 +22,19 @@ defineResource(app, { idParam: "provider_id", tags: ["account"] }, (providers) =
     .list({
       auth: true,
       summary: "List the providers the user can configure",
-      handler: async ({ serviceContext, user }) =>
-        listPageOf(await getUserProviderSettings(serviceContext, user.id), (provider) =>
-          String(provider.provider_id),
-        ),
-    })
-    .view("sync_status", {
-      auth: true,
-      summary: "Check whether providers need syncing",
-      description: "Reports whether the user's provider catalogue is missing available providers.",
-      responses: { 200: { description: "Provider sync status", schema: providerSyncStatusSchema } },
-      handler: ({ serviceContext, user }) => getUserProviderSyncStatus(serviceContext, user.id),
+      description:
+        "The page also carries sync_status: whether the user's catalogue is missing configurable providers.",
+      handler: async ({ serviceContext, user }) => {
+        const [settings, syncStatus] = await Promise.all([
+          getUserProviderSettings(serviceContext, user.id),
+          getUserProviderSyncStatus(serviceContext, user.id),
+        ]);
+
+        return {
+          ...listPageOf(settings, (provider) => String(provider.provider_id)),
+          sync_status: providerSyncStatusSchema.parse(syncStatus),
+        };
+      },
     })
     .collectionAction("sync", {
       auth: true,

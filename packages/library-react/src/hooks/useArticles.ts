@@ -22,7 +22,7 @@ export const useFetchArticleReports = (projectId?: string, options?: { enabled?:
 export const useFetchArticleReport = (id: string | undefined, projectId?: string) => {
   return useQuery({
     queryKey: ["articleReport", projectId, id],
-    queryFn: () => fetchArticle(id!, projectId),
+    queryFn: () => fetchArticle(id!),
     enabled: !!id,
     select: (data) => data.article,
   });
