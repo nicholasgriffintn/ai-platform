@@ -1,3 +1,5 @@
+import type { SubscriptionUpdateResponse } from "@ngriffin_uk/polychat-schemas";
+
 import { fetchApi } from "../fetch-wrapper.js";
 import { returnFetchedData } from "../http.js";
 
@@ -36,33 +38,29 @@ export class SubscriptionService {
     return data;
   }
 
-  async cancelSubscription(): Promise<any> {
-    const response = await fetchApi("/billing/subscription/cancel", {
-      method: "POST",
-    });
-    const data = await returnFetchedData<{ error?: string }>(response);
-
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to cancel subscription");
-    }
-
-    return data;
+  async cancelSubscription(): Promise<SubscriptionUpdateResponse> {
+    return this.setCancelAtPeriodEnd(true, "Failed to cancel subscription");
   }
 
-  async reactivateSubscription(): Promise<any> {
-    const response = await fetchApi("/billing/subscription/reactivate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+  async reactivateSubscription(): Promise<SubscriptionUpdateResponse> {
+    return this.setCancelAtPeriodEnd(false, "Failed to reactivate subscription");
+  }
+
+  private async setCancelAtPeriodEnd(
+    cancelAtPeriodEnd: boolean,
+    failure: string,
+  ): Promise<SubscriptionUpdateResponse> {
+    const response = await fetchApi("/billing/subscription", {
+      method: "PATCH",
+      body: { cancel_at_period_end: cancelAtPeriodEnd },
     });
 
     if (!response.ok) {
-      const error = await returnFetchedData<{ message?: string }>(response);
+      const error = await returnFetchedData<{ error?: string; message?: string }>(response);
 
-      throw new Error(error.message || "Failed to reactivate subscription");
+      throw new Error(error.error || error.message || failure);
     }
 
-    return await returnFetchedData<any>(response);
+    return returnFetchedData<SubscriptionUpdateResponse>(response);
   }
 }

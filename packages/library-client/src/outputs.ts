@@ -129,7 +129,7 @@ export async function describeOutputDocument(
 }
 
 export async function exportOutputDocument(outputId: string): Promise<{ body: string }> {
-  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/export`, {
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/content`, {
     method: "GET",
     headers: await getHeaders(),
   });

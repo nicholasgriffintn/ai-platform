@@ -11,6 +11,7 @@ import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { sendEmail } from "~/modules/email/application";
 import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
+import { getWorkspaceUsageSummary } from "~/modules/usage/application/workspace-reports";
 import type {
   ProjectCapabilityRow,
   ProjectRow,
@@ -31,7 +32,6 @@ import {
   listWorkspaces,
   removeProjectCapability,
 } from "../index";
-import { getWorkspaceUsageSummary } from "../usage";
 
 const NOW = new Date("2026-08-10T12:00:00.000Z");
 const WORKSPACE_ID = "workspace-1";

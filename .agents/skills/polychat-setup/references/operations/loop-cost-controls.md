@@ -47,7 +47,7 @@ Nightly infrastructure reconciliation compares attributed spend with account tot
 
 ## Review workspace spend
 
-Open **Work → workspace → Governance → Workspace usage** as an owner or administrator. Choose a UTC month to inspect recorded credits and provider cost by source, vendor and project. The API is `GET /workspaces/<workspaceId>/usage?period=YYYY-MM`; ordinary members receive 403 and non-members 404.
+Open **Work → workspace → Governance → Workspace usage** as an owner or administrator. Choose a UTC month to inspect recorded credits and provider cost by source, vendor and project. The API is `GET /usage/summary?workspace_id=<workspaceId>&period=YYYY-MM`; ordinary members receive 403 and non-members 404.
 
 Historical attribution survives project removal. Missing names appear as **Project no longer listed**, and missing project attribution as **Unassigned workspace usage**. Each runner still pays from their own account; this report exposes neither their personal allowance nor unrelated work. Async and estimated usage make it a reporting view, not realtime budget enforcement.
 

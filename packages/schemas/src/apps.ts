@@ -830,10 +830,6 @@ export const sourceArticlesResponseSchema = z.object({
   articles: z.array(outputSchema),
 });
 
-export const articleDetailResponseSchema = z.object({
-  article: outputSchema,
-});
-
 export const recordingStatusSchema = z.enum([
   "processing",
   "transcribing",

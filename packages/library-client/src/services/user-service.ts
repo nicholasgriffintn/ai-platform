@@ -185,8 +185,13 @@ export class UserService {
     return providers.delete(providerId);
   }
 
-  getProviderSyncStatus(): Promise<ProviderSyncStatus> {
-    return providers.view<ProviderSyncStatus>("sync_status");
+  async getProviderSyncStatus(): Promise<ProviderSyncStatus> {
+    const page = await requestJson<{ sync_status: ProviderSyncStatus }>(
+      "/providers?limit=1",
+      "GET",
+    );
+
+    return page.sync_status;
   }
 
   async syncProviders(): Promise<void> {

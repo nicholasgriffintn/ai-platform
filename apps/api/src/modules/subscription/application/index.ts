@@ -10,7 +10,11 @@ import {
   type PlanId,
 } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
+import {
+  usagePeriodFromDate,
+  type SubscriptionUpdateResponse,
+  type UpdateSubscription,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { isUrlWithinOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 import { Stripe } from "stripe";
@@ -197,6 +201,25 @@ export async function getSubscriptionStatus(
 
     throw new AssistantError(`Stripe API error: ${error.message}`, ErrorType.INTERNAL_ERROR);
   }
+}
+
+export async function updateSubscription(
+  env: IEnv,
+  user: IUser,
+  update: UpdateSubscription,
+): Promise<SubscriptionUpdateResponse> {
+  const cancellation =
+    update.cancel_at_period_end === undefined
+      ? {}
+      : update.cancel_at_period_end
+        ? await cancelSubscription(env, user)
+        : await reactivateSubscription(env, user);
+  const overage =
+    update.overage_enabled === undefined
+      ? {}
+      : await setOverageBilling(env, user, update.overage_enabled);
+
+  return { ...cancellation, ...overage };
 }
 
 export async function cancelSubscription(

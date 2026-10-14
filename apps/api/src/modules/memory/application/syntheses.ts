@@ -23,24 +23,20 @@ export async function createMemorySynthesisTask(
   };
 }
 
-export async function getActiveMemorySynthesis(
-  context: ServiceContext,
-  userId: number,
-  namespace = "global",
-) {
-  const synthesis = await context.repositories.memorySyntheses.getActiveSynthesis(
-    userId,
-    namespace,
-  );
-
-  return { synthesis: synthesis || null };
-}
-
 export async function listMemorySyntheses(
   context: ServiceContext,
   userId: number,
-  filters: { namespace?: string; limit: number },
+  filters: { namespace?: string; active?: boolean; limit: number },
 ) {
+  if (filters.active) {
+    const active = await context.repositories.memorySyntheses.getActiveSynthesis(
+      userId,
+      filters.namespace || "global",
+    );
+
+    return listPageOf(active ? [active] : [], (synthesis) => synthesis.id);
+  }
+
   const syntheses = await context.repositories.memorySyntheses.getSynthesesByUserId(
     userId,
     filters.namespace,

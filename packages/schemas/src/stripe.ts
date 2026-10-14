@@ -14,10 +14,22 @@ export const billingPortalResponseSchema = z.object({
   url: z.string(),
 });
 
-export const updateSubscriptionSchema = z.object({
-  overage_enabled: z.boolean(),
+export const updateSubscriptionSchema = z
+  .object({
+    overage_enabled: z.boolean().optional(),
+    cancel_at_period_end: z.boolean().optional(),
+  })
+  .refine(
+    (update) => update.overage_enabled !== undefined || update.cancel_at_period_end !== undefined,
+    { error: "Set overage_enabled or cancel_at_period_end" },
+  );
+
+export const subscriptionUpdateResponseSchema = z.object({
+  overage_enabled: z.boolean().optional(),
+  status: z.string().optional(),
+  cancel_at_period_end: z.boolean().optional(),
+  days_until_due: z.number().optional(),
 });
 
-export const overageStatusResponseSchema = z.object({
-  overage_enabled: z.boolean(),
-});
+export type UpdateSubscription = z.infer<typeof updateSubscriptionSchema>;
+export type SubscriptionUpdateResponse = z.infer<typeof subscriptionUpdateResponseSchema>;

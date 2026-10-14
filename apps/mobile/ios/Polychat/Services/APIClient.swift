@@ -189,32 +189,6 @@ final class APIClient: ObservableObject {
         return responseStream(requestBody)
     }
 
-    func streamMachineModelRun(
-        id: String,
-        machineId: String,
-        modelId: String,
-        messages: [ChatMessage],
-        conversationId: String
-    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
-        MachineModelStream.make(
-            id: id, machineId: machineId, modelId: modelId,
-            messages: messages, conversationId: conversationId,
-            create: { request in
-                try await self.send(path: "/environments/\(machineId)/runs", method: "POST", body: request)
-            },
-            read: {
-                try await self.send(path: "/environments/\(machineId)/runs/\(id)", method: "GET")
-            },
-            cancel: { try await self.cancelMachineModelRun(id: id, machineId: machineId) }
-        )
-    }
-
-    func cancelMachineModelRun(id: String, machineId: String) async throws {
-        let _: MachineRunSnapshot = try await send(
-            path: "/environments/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
-        )
-    }
-
     private func responseStream(
         _ requestBody: CreateResponseRequest
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {

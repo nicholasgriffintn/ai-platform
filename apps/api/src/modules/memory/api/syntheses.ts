@@ -1,7 +1,7 @@
 import {
   createTaskResponseSchema,
-  getMemorySynthesisResponseSchema,
   memorySynthesisListSchema,
+  queryBooleanSchema,
   triggerMemorySynthesisRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -10,13 +10,13 @@ import z from "zod/v4";
 import { defineResource } from "~/infrastructure/http/resource";
 import {
   createMemorySynthesisTask,
-  getActiveMemorySynthesis,
   listMemorySyntheses,
 } from "~/modules/memory/application/syntheses";
 
 const app = new Hono();
-const namespaceQuerySchema = z.object({ namespace: z.string().optional() });
-const synthesesQuerySchema = namespaceQuerySchema.extend({
+const synthesesQuerySchema = z.object({
+  namespace: z.string().optional(),
+  active: queryBooleanSchema.optional(),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 
@@ -25,6 +25,7 @@ defineResource(app, { idParam: "synthesis_id", tags: ["memory"] }, (syntheses) =
     .list({
       auth: true,
       summary: "List memory syntheses",
+      description: "Pass active=true for the synthesis currently in use for the namespace.",
       querySchema: synthesesQuerySchema,
       responses: { 200: { description: "Syntheses", schema: memorySynthesisListSchema } },
       handler: ({ query, serviceContext, user }) =>
@@ -37,16 +38,6 @@ defineResource(app, { idParam: "synthesis_id", tags: ["memory"] }, (syntheses) =
       responses: { 200: { description: "Queued task", schema: createTaskResponseSchema } },
       handler: ({ body, serviceContext, user }) =>
         createMemorySynthesisTask(serviceContext, user.id, body),
-    })
-    .view("active", {
-      auth: true,
-      summary: "Read the active synthesis for a namespace",
-      querySchema: namespaceQuerySchema,
-      responses: {
-        200: { description: "Active synthesis", schema: getMemorySynthesisResponseSchema },
-      },
-      handler: ({ query, serviceContext, user }) =>
-        getActiveMemorySynthesis(serviceContext, user.id, query.namespace || "global"),
     });
 });
 

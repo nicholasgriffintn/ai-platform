@@ -1,7 +1,5 @@
 import { availableModalities } from "@ngriffin_uk/polychat-ai-models";
 import {
-  artificialAnalysisModelsQuerySchema,
-  artificialAnalysisModelsResponseSchema,
   errorResponseSchema,
   listPageOf,
   modelParamsSchema,
@@ -15,7 +13,6 @@ import z from "zod/v4";
 import { defineResource } from "~/infrastructure/http/resource";
 import {
   getModelDetails,
-  listArtificialAnalysisModels,
   listModalities,
   listModelCatalogue,
   listModels,
@@ -90,18 +87,6 @@ defineResource(app, { idParam: "model_id", tags: ["models"] }, (models) => {
           await getLineupModelsForUser(serviceContext.env, user, { shouldUseCache: false }),
           user,
         ),
-    })
-    .view("artificial_analysis", {
-      auth: false,
-      summary: "List cached Artificial Analysis model data",
-      description:
-        "Cached Artificial Analysis benchmark, arena, pricing and performance data with source attribution.",
-      querySchema: artificialAnalysisModelsQuerySchema,
-      responses: {
-        200: { description: "Model data", schema: artificialAnalysisModelsResponseSchema },
-      },
-      handler: ({ query, serviceContext }) =>
-        listArtificialAnalysisModels(serviceContext.env, query),
     })
     .read({
       auth: false,

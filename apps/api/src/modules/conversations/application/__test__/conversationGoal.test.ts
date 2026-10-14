@@ -2,12 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   handleGetConversationGoal,
-  handleGetRunGoal,
   handleRecordRunGoalIteration,
   handleSetConversationGoal,
-  handleSetRunGoal,
   handleUpdateConversationGoal,
-  handleUpdateRunGoal,
 } from "../conversationGoal";
 
 const getActiveGoal = vi.fn();
@@ -206,49 +203,6 @@ describe("conversation goal authorisation", () => {
   });
 
   describe("sandbox run goals", () => {
-    it("refuses to read a goal on someone else's run", async () => {
-      const context = createContext({
-        activity: {
-          created_by_user_id: 99,
-          project_id: null,
-          data: runPayload,
-        },
-      });
-
-      await expect(handleGetRunGoal(context, "run-1")).rejects.toThrow("Sandbox run not found");
-      expect(getActiveGoal).not.toHaveBeenCalled();
-    });
-
-    it("refuses to set a goal on someone else's run", async () => {
-      const context = createContext({
-        activity: {
-          created_by_user_id: 99,
-          project_id: null,
-          data: runPayload,
-        },
-      });
-
-      await expect(handleSetRunGoal(context, "run-1", "take over")).rejects.toThrow(
-        "Sandbox run not found",
-      );
-      expect(setGoal).not.toHaveBeenCalled();
-    });
-
-    it("refuses to pause someone else's run goal", async () => {
-      const context = createContext({
-        activity: {
-          created_by_user_id: 99,
-          project_id: null,
-          data: runPayload,
-        },
-      });
-
-      await expect(
-        handleUpdateRunGoal(context, "run-1", { status: "paused" } as never),
-      ).rejects.toThrow("Sandbox run not found");
-      expect(transition).not.toHaveBeenCalled();
-    });
-
     it("refuses to record an iteration against someone else's run goal", async () => {
       const context = createContext({
         activity: {
@@ -275,7 +229,7 @@ describe("conversation goal authorisation", () => {
         },
       });
 
-      await handleGetRunGoal(context, "run-1");
+      await handleRecordRunGoalIteration(context, "run-1", { summary: "done" } as never);
 
       expect(getActiveGoal).toHaveBeenCalledWith({ sandboxRunId: "run-1" });
     });

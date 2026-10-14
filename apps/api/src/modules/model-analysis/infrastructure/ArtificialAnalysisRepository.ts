@@ -2,7 +2,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord, parseJsonStringArray } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { PaginationHelper } from "~/infrastructure/database/PaginationHelper";
 import type {
   ArtificialAnalysisModelRecord,
   ArtificialAnalysisScoreResult,
@@ -124,34 +123,6 @@ export class ArtificialAnalysisRepository extends BaseRepository {
     );
 
     return rows.map(parseModelRow);
-  }
-
-  public async listPage({ page, limit }: { page: number; limit: number }): Promise<{
-    models: ArtificialAnalysisModelRecord[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
-    const { limit: safeLimit, offset } = PaginationHelper.calculate(page, limit);
-    const count = await this.runQuery<{ total: number }>(
-      `SELECT COUNT(*) as total FROM artificial_analysis_models`,
-      [],
-      true,
-    );
-    const total = count?.total ?? 0;
-    const rows = await this.runQuery<ArtificialAnalysisModelRow>(
-      `SELECT * FROM artificial_analysis_models ORDER BY name ASC LIMIT ? OFFSET ?`,
-      [safeLimit, offset],
-    );
-
-    return {
-      models: rows.map(parseModelRow),
-      total,
-      page: Math.max(1, page),
-      limit: safeLimit,
-      totalPages: Math.ceil(total / safeLimit),
-    };
   }
 
   public async updateDerivedScores(

@@ -102,7 +102,7 @@ class TaskService {
   public async getActiveSynthesis(namespace = "global"): Promise<GetMemorySynthesisResponse> {
     try {
       const response = await fetchApi(
-        `/memory/syntheses/active?namespace=${encodeURIComponent(namespace)}`,
+        `/memory/syntheses?active=true&namespace=${encodeURIComponent(namespace)}`,
         {
           method: "GET",
         },
@@ -112,7 +112,9 @@ class TaskService {
         throw new Error("Failed to fetch memory synthesis");
       }
 
-      return await returnFetchedData<GetMemorySynthesisResponse>(response);
+      const page = await returnFetchedData<ListPage<MemorySynthesis>>(response);
+
+      return { synthesis: page.data[0] };
     } catch (error) {
       console.error("Error fetching memory synthesis:", error);
       throw error;

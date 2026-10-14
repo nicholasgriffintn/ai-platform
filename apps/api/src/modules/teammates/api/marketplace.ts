@@ -1,5 +1,7 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   listPageOf,
+  queryBooleanSchema,
   moderateTeammateSchema,
   rateTeammateSchema,
   setTeammateFeaturedSchema,
@@ -38,6 +40,7 @@ import {
 const listingParamsSchema = z.object({ listing_id: z.string().min(1) });
 const listingsQuerySchema = sharedTeammateFiltersSchema.extend({
   teammate_id: z.string().min(1).optional(),
+  review: queryBooleanSchema.optional(),
 });
 
 function requireSucceeded<TData>(result: { success: boolean; error?: string; data?: TData }) {
@@ -62,9 +65,20 @@ export function defineMarketplace(app: HonoLike): void {
           auth: "user-or-anonymous",
           summary: "List shared teammates",
           description:
-            "Published teammates, newest first. Filter by category, tags, search, featured or the source teammate. Categories and popular tags come back with the page.",
+            "Published teammates, newest first. Filter by category, tags, search, featured or the source teammate. Categories and popular tags come back with the page. Admins pass review=true for every listing, public or not.",
           querySchema: listingsQuerySchema,
           handler: async ({ serviceContext, query, user }) => {
+            if (query.review) {
+              if (!authorise("platform.admin", { role: user?.role ?? "", strict: false }).allowed) {
+                throw new AssistantError("Admin access required", ErrorType.FORBIDDEN, 403);
+              }
+
+              return listPageOf(
+                await getAllSharedTeammatesForAdmin({ context: serviceContext }),
+                (listing) => (typeof listing.id === "string" ? listing.id : ""),
+              );
+            }
+
             const limit = query.limit ?? 20;
             const [listed, categories, tags] = await Promise.all([
               query.teammate_id
@@ -92,17 +106,6 @@ export function defineMarketplace(app: HonoLike): void {
               tags,
             };
           },
-        })
-        .view("review", {
-          auth: true,
-          summary: "List every listing for review",
-          description: "Includes listings that are not public. Admins only.",
-          middleware: [requireAdmin],
-          handler: async ({ serviceContext }) =>
-            listPageOf(
-              await getAllSharedTeammatesForAdmin({ context: serviceContext }),
-              (listing) => (typeof listing.id === "string" ? listing.id : ""),
-            ),
         })
         .create({
           auth: true,

@@ -56,7 +56,6 @@ import { useLoadingActions } from "../state/LoadingContext.js";
 import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
 import { useUsageStore } from "../state/usageStore.js";
 import { streamAgentRun } from "./agent-run.js";
-import { streamMachineModelRun } from "./machine-run.js";
 import { useMessageOperations } from "./useMessageOperations.js";
 import { useModels } from "./useModels.js";
 import { useWebLLMModels } from "./useWebLLMModels.js";
@@ -218,9 +217,6 @@ export function useStreamingResponse(
         toast.info(computeSiteResolution.reason);
       }
 
-      const runsOnAnotherMachine = Boolean(
-        effectiveComputeSite === "machine" && requestedModel?.machineId,
-      );
       const runsOnThisDevice = Boolean(
         effectiveComputeSite === "device" &&
         requestedModel &&
@@ -231,12 +227,11 @@ export function useStreamingResponse(
       const runsInBrowser =
         !runsOnThisDevice && effectiveComputeSite === "browser" && isBrowserModel(requestedModel);
       const localRunProvenance =
-        requestedModel && (runsOnThisDevice || runsOnAnotherMachine)
+        requestedModel && runsOnThisDevice
           ? createRunProvenance({
-              site: runsOnAnotherMachine ? "machine" : "device",
+              site: "device",
               model: requestedModel.matchingModel,
               vendor: requestedModel.provider,
-              ...(requestedModel.machineId ? { machineId: requestedModel.machineId } : {}),
             })
           : requestedModel && runsInBrowser
             ? createRunProvenance({
@@ -463,7 +458,7 @@ export function useStreamingResponse(
       const streamProgress = createStreamProgressCoalescer(handleMessageUpdate);
 
       try {
-        if ((runsOnAnotherMachine || runsOnThisDevice) && requestedModel) {
+        if (runsOnThisDevice && requestedModel) {
           try {
             const runOptions = {
               conversationId,
@@ -473,9 +468,7 @@ export function useStreamingResponse(
               signal: requestSignal,
             };
 
-            if (runsOnAnotherMachine) {
-              response = await streamMachineModelRun(runOptions);
-            } else if (deviceBackend) {
+            if (deviceBackend) {
               response =
                 requestedModel.kind === "agent"
                   ? await streamAgentRun({
@@ -733,10 +726,7 @@ export function useStreamingResponse(
             .catch(() => undefined);
         }
 
-        if (
-          (runsOnAnotherMachine || runsOnThisDevice || runsInBrowser) &&
-          storageMode.retention === "kept"
-        ) {
+        if ((runsOnThisDevice || runsInBrowser) && storageMode.retention === "kept") {
           const conversation = queryClient.getQueryData<Conversation>([
             CHATS_QUERY_KEY,
             conversationId,

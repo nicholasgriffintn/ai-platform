@@ -158,10 +158,32 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
 
   outputs.singleton("content").read({
     auth: "user-or-anonymous",
-    summary: "Download an output's file",
+    tags: ["outputs", "documents"],
+    summary: "Download an output's content",
+    description: "Returns the stored file, or a document output as Markdown.",
     paramSchema: outputParamsSchema,
-    responses: { 200: { description: "Output file" } },
+    responses: { 200: { description: "Output file or Markdown document" } },
     handler: async ({ params, serviceContext, user }) => {
+      const record = await serviceContext.repositories.outputs.getOutput(params.output_id);
+
+      if (record?.kind === DOCUMENT_OUTPUT_KIND && !record.storage_key) {
+        if (!user) {
+          throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR, 401);
+        }
+
+        const output = await getOutput(serviceContext, user.id, params.output_id);
+        const body = readDocumentBody(output.content);
+
+        if (body !== null) {
+          return new Response(body, {
+            headers: {
+              "content-type": "text/markdown; charset=utf-8",
+              "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
+            },
+          });
+        }
+      }
+
       const file = await readPrivateFile({
         context: serviceContext,
         kind: "output",
@@ -170,29 +192,6 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
       });
 
       return getPrivateFileResponse(file.record, file.object);
-    },
-  });
-
-  outputs.singleton("export").read({
-    auth: true,
-    tags: ["outputs", "documents"],
-    summary: "Download a document output as Markdown",
-    paramSchema: outputParamsSchema,
-    responses: { 200: { description: "Markdown document" } },
-    handler: async ({ params, serviceContext, user }) => {
-      const output = await getOutput(serviceContext, user.id, params.output_id);
-      const body = readDocumentBody(output.content);
-
-      if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {
-        throw new AssistantError("That result is not a document", ErrorType.PARAMS_ERROR, 400);
-      }
-
-      return new Response(body, {
-        headers: {
-          "content-type": "text/markdown; charset=utf-8",
-          "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
-        },
-      });
     },
   });
 

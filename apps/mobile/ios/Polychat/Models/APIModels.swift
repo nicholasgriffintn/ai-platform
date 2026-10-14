@@ -47,21 +47,6 @@ public struct MachineModel: Codable {
     public let loaded: Bool
 }
 
-struct MachineRunRequest: Encodable {
-    let id: String
-    let conversationId: String
-    let vendor: String
-    let nativeModelId: String
-    let messages: [ChatMessage]
-}
-
-struct MachineRunSnapshot: Decodable {
-    let id: String
-    let state: String
-    let text: String
-    let error: String?
-}
-
 public struct MachineModelCapabilities: Codable {
     public let tools: Bool
     public let vision: Bool

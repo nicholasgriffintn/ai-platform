@@ -110,11 +110,12 @@ export const fetchArticles = async (projectId?: string): Promise<ArticlesRespons
   articles: await listExperience<ArticleSessionSummary>("/articles", projectId),
 });
 
-export const fetchArticle = (id: string, projectId?: string): Promise<ArticleResponse> =>
-  requestJson<ArticleResponse>(
-    experiencePath(`/articles/reports/${encodeURIComponent(id)}`, projectId),
+export const fetchArticle = async (id: string): Promise<ArticleResponse> => ({
+  article: await requestJson<ArticleResponse["article"]>(
+    `/outputs/${encodeURIComponent(id)}`,
     "GET",
-  );
+  ),
+});
 
 export const analyseArticle = (params: AnalyseArticleParams, projectId?: string) =>
   startJobOfKind({ kind: "article_analysis", project_id: projectId, input: params });
