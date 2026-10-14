@@ -3,11 +3,12 @@ import {
   listPageOf,
   siteBrowserEvidenceSchema,
   siteBrowserVerificationRequestSchema,
-  siteConnectorSnapshotRequestSchema,
-  siteSourceRefreshRequestSchema,
+  siteBindingSyncRequestSchema,
+  siteDataQuerySchema,
   siteDataResponseSchema,
   siteDataRequestSchema,
   siteRuntimeStatusSchema,
+  siteDataIdentifierSchema,
   siteIntegrationScopeSchema,
   listSitesQuerySchema,
   siteBuildRequestSchema,
@@ -53,6 +54,7 @@ import {
 const app = new Hono();
 
 const siteParamsSchema = z.object({ site_id: z.string().min(1) });
+const siteBindingParamsSchema = siteParamsSchema.extend({ binding_id: siteDataIdentifierSchema });
 const sharedImageParamsSchema = z.object({
   token: z.string().min(32),
   image_id: z.string().min(1),
@@ -260,7 +262,20 @@ defineResource(app, { idParam: "site_id", tags: ["sites"] }, (sites) => {
 
   sites
     .singleton("data")
-    .create({
+    .read({
+      auth: true,
+      summary: "Read scoped site data",
+      description: "Reads against the revision the caller names, so stale editors see a conflict.",
+      paramSchema: siteParamsSchema,
+      querySchema: siteDataQuerySchema,
+      responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
+      handler: ({ params, query, serviceContext }) =>
+        readSiteData(serviceContext, params.site_id, {
+          projectId: query.project_id,
+          expectedRevision: query.expected_revision,
+        }),
+    })
+    .update({
       auth: true,
       summary: "Update saved site records",
       paramSchema: siteParamsSchema,
@@ -268,37 +283,33 @@ defineResource(app, { idParam: "site_id", tags: ["sites"] }, (sites) => {
       responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
       handler: ({ params, body, serviceContext }) =>
         executeSiteDataAction(serviceContext, params.site_id, body),
-    })
-    .action("query", {
-      auth: true,
-      summary: "Read scoped site data",
-      description: "Reads against the revision the caller names, so stale editors see a conflict.",
-      paramSchema: siteParamsSchema,
-      bodySchema: siteIntegrationScopeSchema,
-      responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
-      handler: ({ params, body, serviceContext }) =>
-        readSiteData(serviceContext, params.site_id, body),
-    })
-    .action("snapshot", {
-      auth: true,
-      summary: "Read site data from a selected connector account",
-      paramSchema: siteParamsSchema,
-      bodySchema: siteConnectorSnapshotRequestSchema,
-      responses: { 200: { description: "The site", schema: siteResponseSchema } },
-      handler: async ({ params, body, serviceContext }) => ({
-        site: await snapshotSiteConnector(serviceContext, params.site_id, body),
-      }),
-    })
-    .action("refresh", {
-      auth: true,
-      summary: "Refresh a saved connector Source",
-      paramSchema: siteParamsSchema,
-      bodySchema: siteSourceRefreshRequestSchema,
-      responses: { 200: { description: "The site", schema: siteResponseSchema } },
-      handler: async ({ params, body, serviceContext }) => ({
-        site: await refreshSiteConnectorSource(serviceContext, params.site_id, body),
-      }),
     });
+
+  sites.sub("bindings", "binding_id").update({
+    auth: true,
+    summary: "Sync a data binding from a connector",
+    description:
+      "With a source, reads data from that connector account into the binding and saves the source. Without one, refreshes the binding from its saved source.",
+    paramSchema: siteBindingParamsSchema,
+    bodySchema: siteBindingSyncRequestSchema,
+    responses: { 200: { description: "The site", schema: siteResponseSchema } },
+    handler: async ({ params, body, serviceContext }) => {
+      const { source, ...scope } = body;
+
+      return {
+        site: source
+          ? await snapshotSiteConnector(serviceContext, params.site_id, {
+              ...scope,
+              ...source,
+              bindingId: params.binding_id,
+            })
+          : await refreshSiteConnectorSource(serviceContext, params.site_id, {
+              ...scope,
+              bindingId: params.binding_id,
+            }),
+      };
+    },
+  });
 
   sites
     .singleton("runtime")

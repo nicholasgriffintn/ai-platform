@@ -51,6 +51,13 @@ export const importProjectIssueSchema = z
   })
   .strict();
 
+export const previewProjectIssueSchema = z.object({ locator: issueLocatorSchema }).strict();
+
+export const projectIssueImportRequestSchema = z.union([
+  importProjectIssueSchema,
+  previewProjectIssueSchema,
+]);
+
 export const projectIssueImportResponseSchema = z
   .object({
     task: projectTaskSchema,

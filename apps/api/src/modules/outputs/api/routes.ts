@@ -18,6 +18,7 @@ import {
   readDocumentBody,
   restoreOutputRevisionSchema,
   sharedOutputSchema,
+  applyDocumentEditSchema,
   updateOutputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -29,6 +30,7 @@ import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { defineDocumentCollaboration } from "~/modules/documents/api/collaboration";
 import { formatDocument, redescribeDocument } from "~/modules/documents/application";
+import { applyDocumentEdit } from "~/modules/documents/application/selection-edits";
 import {
   createOutput,
   createOutputShare,
@@ -83,10 +85,14 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
       auth: true,
       summary: "Save an output revision",
       paramSchema: outputParamsSchema,
-      bodySchema: updateOutputSchema,
+      description:
+        "Send fields to change, or edit with a proposal from POST /outputs/{output_id}/edits to apply it to the document.",
+      bodySchema: z.union([updateOutputSchema, applyDocumentEditSchema]),
       responses: { 200: { description: "The output", schema: outputSchema } },
       handler: ({ body, params, serviceContext, user }) =>
-        updateOutput(serviceContext, user.id, params.output_id, body),
+        "edit" in body
+          ? applyDocumentEdit(serviceContext, user.id, params.output_id, body.edit)
+          : updateOutput(serviceContext, user.id, params.output_id, body),
     })
     .delete({
       auth: true,

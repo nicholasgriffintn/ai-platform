@@ -70,6 +70,8 @@ export const documentEditProposalSchema = z
   })
   .strict();
 
+export const applyDocumentEditSchema = z.object({ edit: documentEditProposalSchema }).strict();
+
 export type DocumentAnchor = z.infer<typeof documentAnchorSchema>;
 export type CreateDocumentCommentInput = z.infer<typeof createDocumentCommentSchema>;
 export type DocumentComment = z.infer<typeof documentCommentSchema>;

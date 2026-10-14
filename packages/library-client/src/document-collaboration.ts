@@ -64,10 +64,10 @@ export async function proposeDocumentEdit(outputId: string, input: ProposeDocume
 }
 
 export async function applyDocumentEdit(outputId: string, proposal: DocumentEditProposal) {
-  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/edits/apply`, {
-    method: "POST",
+  const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}`, {
+    method: "PATCH",
     headers: await apiService.getHeaders(),
-    body: proposal,
+    body: { edit: proposal },
   });
 
   return outputSchema.parse(await returnFetchedData<unknown>(response));

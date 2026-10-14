@@ -4,7 +4,6 @@ import {
   documentCommentListSchema,
   documentCommentSchema,
   documentEditProposalSchema,
-  outputSchema,
   proposeDocumentEditSchema,
   resolveDocumentThreadSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -17,7 +16,7 @@ import {
   listDocumentComments,
   resolveDocumentThread,
 } from "../application/comments";
-import { applyDocumentEdit, proposeDocumentEdit } from "../application/selection-edits";
+import { proposeDocumentEdit } from "../application/selection-edits";
 
 const outputParamsSchema = z.object({ output_id: z.string().min(1) });
 
@@ -55,26 +54,14 @@ export function defineDocumentCollaboration(outputs: ResourceBuilder): void {
         resolveDocumentThread(serviceContext, user.id, params.output_id, params.comment_id, body),
     });
 
-  outputs
-    .sub("edits", "edit_id")
-    .create({
-      auth: true,
-      tags: ["documents"],
-      summary: "Propose an edit to a selection",
-      paramSchema: outputParamsSchema,
-      bodySchema: proposeDocumentEditSchema,
-      responses: { 200: { description: "Proposed edit", schema: documentEditProposalSchema } },
-      handler: ({ serviceContext, user, params, body }) =>
-        proposeDocumentEdit(serviceContext, user, params.output_id, body),
-    })
-    .collectionAction("apply", {
-      auth: true,
-      tags: ["documents"],
-      summary: "Apply a proposed edit",
-      paramSchema: outputParamsSchema,
-      bodySchema: documentEditProposalSchema,
-      responses: { 200: { description: "The document revision", schema: outputSchema } },
-      handler: ({ serviceContext, user, params, body }) =>
-        applyDocumentEdit(serviceContext, user.id, params.output_id, body),
-    });
+  outputs.sub("edits", "edit_id").create({
+    auth: true,
+    tags: ["documents"],
+    summary: "Propose an edit to a selection",
+    paramSchema: outputParamsSchema,
+    bodySchema: proposeDocumentEditSchema,
+    responses: { 200: { description: "Proposed edit", schema: documentEditProposalSchema } },
+    handler: ({ serviceContext, user, params, body }) =>
+      proposeDocumentEdit(serviceContext, user, params.output_id, body),
+  });
 }

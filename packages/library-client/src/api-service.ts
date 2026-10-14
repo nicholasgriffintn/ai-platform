@@ -9,9 +9,8 @@ import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/message
 import type {
   DeviceAuthorisation,
   DeviceAuthorisationDecision,
-  PolyAgenda,
+  PolyAgendaView,
   PolyHandoffDisagreement,
-  PolyHome,
   StandingApproval,
   TeammateAutonomyLevel,
   TeammateResponse,
@@ -243,9 +242,8 @@ class ApiService {
   ): Promise<{ status: "approved" | "denied" }> =>
     this.deviceAuthorisationService.decideDeviceAuthorisation(userCode, decision);
 
-  openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
-
-  readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
+  readPolyAgenda = (options?: { ownerPresent?: boolean }): Promise<PolyAgendaView> =>
+    this.polyService.readPolyAgenda(options);
 
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
     this.polyService.disagreeWithPolyHandoff(handoffId);

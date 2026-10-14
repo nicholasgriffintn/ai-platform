@@ -173,5 +173,10 @@ export const polyAgendaSchema = z.object({
   noted: z.array(polyAgendaItemSchema),
 });
 
+export const polyAgendaViewSchema = polyAgendaSchema.extend({
+  home: polyHomeSchema.nullable(),
+});
+
 export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;
 export type PolyAgenda = z.infer<typeof polyAgendaSchema>;
+export type PolyAgendaView = z.infer<typeof polyAgendaViewSchema>;
