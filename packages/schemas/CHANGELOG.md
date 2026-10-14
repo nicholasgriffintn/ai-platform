@@ -1,5 +1,30 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.4.0
+
+### Minor Changes
+
+- 82c133e: Eval suites can run as a provider batch on OpenAI and Anthropic routes, at about half the price, with results within 24 hours. A new `batch` provider category wraps the OpenAI Batch API and Anthropic Message Batches.
+- 005b9f3: Add Bedrock Managed Agents as a remote agent harness. Project chats run on the AgentCore Runtime and execution role from the workspace AWS connection, personal chats on the Runtime and role in user settings with the personal Bedrock key. It shares the OpenAI Agents session stream.
+- e820856: MCP tool results keep their PNG, JPEG and WebP images for models that read images, and tool-result images reach every provider as real image input instead of serialised base64 text. MCP server settings offer Inspo as a one-click server for design references.
+- 7bec25b: Add Polychat Benchmarks: GeoGuess, Countdown, Fermi Bets, Long Odds, Hamster Wheel and Strudel Groove, run on one engine for official, personal and workspace scopes. Results at `/benchmarks` show intervals, Artificial Analysis indexes with attribution, measured cost and a medal table, people can play the auto-scored benchmarks and vote on blind pairs, the Benchmarks app runs them against your own models and keys, and the model selector previews each model's standings.
+- 65fbf81: Add the newest live models. Gemini 3.5 Transcribe Live runs transcription sessions (so Notes dictation can use Gemini) and Gemini 3.5 Live Translate runs translation sessions, both through the existing Live API token flow. GPT-Live 1 joins the OpenAI realtime models as a server-brokered WebRTC call with Responses delegation, so the browser never holds a project key.
+- 65fbf81: Refresh the realtime providers and Note Taker. Notes dictation now runs on the shared live session with any ready transcription provider and commits OpenAI turns on silence. Gemini Live defaults to Gemini 3.8 Live, OpenAI transcription sends the `languages` field and drops the retired Whisper and GPT-4o models, translation sessions use the dedicated translations endpoints, and proxied transcription sessions settle billing on their measured audio instead of a flat reservation. The proxy audio cap now covers the full session length, Notes lists return excerpts with server-side search, metadata is only described once a note has enough text, and the unused video analysis options are gone.
+- b97c227: Recording summaries now come from the auxiliary model as structured notes: a summary, the decisions and the action items with owner and due date when the recording states them. In a project, each action item can be added to the task board.
+- c965c69: Sites can borrow colours and fonts from a public reference page. The computer sandbox reads the page's computed background, text, accent colours and font families, and the theme gains an optional custom palette and Google Fonts families that render over the named presets.
+- 06e4619: Add two deterministic graders for summaries: `fact_coverage` scores the share of required facts (one per line in the case's expected value) an answer keeps, and `grounded_numbers` scores the share of the answer's numbers that appear in the case input.
+- e41549c: Keep transcription timings. Providers return segments and words, `/audio/transcribe?timestamps=true` includes them, notes from media quote real `[m:ss]` markers instead of guessing, and recordings play captions and download them as SRT or VTT.
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [393652d]
+- Updated dependencies [7bec25b]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+
 ## 1.3.0
 
 ### Minor Changes

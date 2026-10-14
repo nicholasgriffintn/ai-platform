@@ -1,5 +1,16 @@
 # @ngriffin_uk/polychat-utility-core
 
+## 0.4.0
+
+### Minor Changes
+
+- 82c133e: Eval suites can run as a provider batch on OpenAI and Anthropic routes, at about half the price, with results within 24 hours. A new `batch` provider category wraps the OpenAI Batch API and Anthropic Message Batches.
+- 393652d: Image generation takes a `seed`, picks one when none is given, and reports it with the result, so the model can reuse it when the person asks to tweak an image and keep the composition.
+- 7bec25b: Add Polychat Benchmarks: GeoGuess, Countdown, Fermi Bets, Long Odds, Hamster Wheel and Strudel Groove, run on one engine for official, personal and workspace scopes. Results at `/benchmarks` show intervals, Artificial Analysis indexes with attribution, measured cost and a medal table, people can play the auto-scored benchmarks and vote on blind pairs, the Benchmarks app runs them against your own models and keys, and the model selector previews each model's standings.
+- c965c69: Sites can borrow colours and fonts from a public reference page. The computer sandbox reads the page's computed background, text, accent colours and font families, and the theme gains an optional custom palette and Google Fonts families that render over the named presets.
+- 06e4619: Add two deterministic graders for summaries: `fact_coverage` scores the share of required facts (one per line in the case's expected value) an answer keeps, and `grounded_numbers` scores the share of the answer's numbers that appear in the case input.
+- e41549c: Keep transcription timings. Providers return segments and words, `/audio/transcribe?timestamps=true` includes them, notes from media quote real `[m:ss]` markers instead of guessing, and recordings play captions and download them as SRT or VTT.
+
 ## 0.3.1
 
 ### Patch Changes

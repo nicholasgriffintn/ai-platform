@@ -1,5 +1,29 @@
 # @ngriffin_uk/polychat-component-capabilities
 
+## 0.4.0
+
+### Minor Changes
+
+- e820856: MCP tool results keep their PNG, JPEG and WebP images for models that read images, and tool-result images reach every provider as real image input instead of serialised base64 text. MCP server settings offer Inspo as a one-click server for design references.
+
+### Patch Changes
+
+- 7bec25b: Add Polychat Benchmarks: GeoGuess, Countdown, Fermi Bets, Long Odds, Hamster Wheel and Strudel Groove, run on one engine for official, personal and workspace scopes. Results at `/benchmarks` show intervals, Artificial Analysis indexes with attribution, measured cost and a medal table, people can play the auto-scored benchmarks and vote on blind pairs, the Benchmarks app runs them against your own models and keys, and the model selector previews each model's standings.
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+  - @ngriffin_uk/polychat-component-ui@0.4.1
+
 ## 0.3.0
 
 ### Minor Changes

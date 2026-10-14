@@ -1,5 +1,37 @@
 # @assistant/sandbox-worker
 
+## 0.2.0
+
+### Minor Changes
+
+- c965c69: Sites can borrow colours and fonts from a public reference page. The computer sandbox reads the page's computed background, text, accent colours and font families, and the theme gains an optional custom palette and Google Fonts families that render over the named presets.
+- 04c071a: Sites browser verification now fails a Hero that runs past the first desktop screen and copy that touches the screen edge on mobile, and the site prompt asks for a Hero that fits the first viewport.
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [7e757d4]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+  - @ngriffin_uk/polychat-library-client@0.4.0
+  - @ngriffin_uk/polychat-ai-agents@0.3.0
+  - @ngriffin_uk/polychat-library-policy@0.3.0
+  - @ngriffin_uk/polychat-ai-prompts@0.3.0
+  - @ngriffin_uk/polychat-library-interactions@0.1.2
+  - @ngriffin_uk/polychat-library-sandbox@0.3.1
+  - @ngriffin_uk/polychat-library-tools@0.3.1
+  - @ngriffin_uk/polychat-utility-server@0.2.1
+
 ## 0.1.0
 
 ### Minor Changes

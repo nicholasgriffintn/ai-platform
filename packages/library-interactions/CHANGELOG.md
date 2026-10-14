@@ -1,5 +1,23 @@
 # @ngriffin_uk/polychat-library-interactions
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+
 ## 0.1.1
 
 ### Patch Changes

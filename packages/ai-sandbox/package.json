@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-sandbox",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Sandboxed execution primitives for Polychat: evaluate untrusted code in a dynamic Worker isolate, expose host tools to it as code mode, and enforce network policy through an outbound gateway",
   "license": "Apache-2.0",
   "files": [

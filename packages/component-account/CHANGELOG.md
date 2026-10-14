@@ -1,5 +1,33 @@
 # @ngriffin_uk/polychat-component-account
 
+## 0.3.0
+
+### Minor Changes
+
+- 005b9f3: Add Bedrock Managed Agents as a remote agent harness. Project chats run on the AgentCore Runtime and execution role from the workspace AWS connection, personal chats on the Runtime and role in user settings with the personal Bedrock key. It shares the OpenAI Agents session stream.
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+  - @ngriffin_uk/polychat-library-client@0.4.0
+  - @ngriffin_uk/polychat-library-react@0.5.0
+  - @ngriffin_uk/polychat-component-models@1.2.0
+  - @ngriffin_uk/polychat-component-capabilities@0.4.0
+  - @ngriffin_uk/polychat-component-ui@0.4.1
+  - @ngriffin_uk/polychat-utility-react@0.3.1
+
 ## 0.2.2
 
 ### Patch Changes

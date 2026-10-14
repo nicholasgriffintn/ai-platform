@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-skills-catalogue",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The Polychat skills catalogue: built-in SKILL.md documents and their resources as data, the frontmatter schema that validates them, and the catalogue that resolves them into skill definitions and content",
   "license": "Apache-2.0",
   "files": [

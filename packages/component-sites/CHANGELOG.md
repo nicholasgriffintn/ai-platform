@@ -1,5 +1,26 @@
 # @ngriffin_uk/polychat-component-sites
 
+## 0.2.1
+
+### Patch Changes
+
+- c965c69: Sites can borrow colours and fonts from a public reference page. The computer sandbox reads the page's computed background, text, accent colours and font families, and the theme gains an optional custom palette and Google Fonts families that render over the named presets.
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+  - @ngriffin_uk/polychat-library-sites@0.3.0
+  - @ngriffin_uk/polychat-component-ui@0.4.1
+
 ## 0.2.0
 
 ### Minor Changes

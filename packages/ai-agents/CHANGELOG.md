@@ -1,5 +1,33 @@
 # @ngriffin_uk/polychat-ai-agents
 
+## 0.3.0
+
+### Minor Changes
+
+- 7e757d4: Attached documents that would take more than three quarters of the model's context window are replaced with a digest instead of failing the message. Each 50,000-character part is summarised in parallel with the auxiliary model, an overview is built from those summaries, failed parts are named rather than dropped, and complete digests are cached per user by content hash.
+
+### Patch Changes
+
+- Updated dependencies [82c133e]
+- Updated dependencies [005b9f3]
+- Updated dependencies [393652d]
+- Updated dependencies [e820856]
+- Updated dependencies [7bec25b]
+- Updated dependencies [65fbf81]
+- Updated dependencies [65fbf81]
+- Updated dependencies [b97c227]
+- Updated dependencies [c965c69]
+- Updated dependencies [06e4619]
+- Updated dependencies [e41549c]
+  - @ngriffin_uk/polychat-utility-core@0.4.0
+  - @ngriffin_uk/polychat-ai-providers@0.3.0
+  - @ngriffin_uk/polychat-schemas@1.4.0
+  - @ngriffin_uk/polychat-ai-prompts@0.3.0
+  - @ngriffin_uk/polychat-ai-functions@0.2.1
+  - @ngriffin_uk/polychat-library-agent-loop@0.3.1
+  - @ngriffin_uk/polychat-library-tools@0.3.1
+  - @ngriffin_uk/polychat-utility-server@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
