@@ -213,6 +213,18 @@ export const responseStreamEventSchema = z.union([
 
 export type ResponseStreamEvent = z.infer<typeof responseStreamEventSchema>;
 
+type ResponseEnvelopeKey = "sequence_number" | "response_id" | "conversation_id";
+
+type WithoutEnvelope<TEvent> = {
+  [TKey in keyof TEvent as TKey extends ResponseEnvelopeKey ? never : TKey]: TEvent[TKey];
+};
+
+export type ResponseEventInput = ResponseStreamEvent extends infer TEvent
+  ? TEvent extends ResponseStreamEvent
+    ? WithoutEnvelope<TEvent>
+    : never
+  : never;
+
 export const RESPONSE_STREAM_MAX_EVENT_BYTES = 4 * 1024 * 1024;
 export const RESPONSE_STREAM_PROGRESS_BATCH_EVENTS = 64;
 export const RESPONSE_STREAM_TOOL_PREVIEW_CHARACTERS = 32 * 1024;
@@ -996,6 +1008,7 @@ export interface ResponseEventProjectorOptions {
 
 export interface ResponseEventProjector {
   project(type: string, payload?: Record<string, unknown>): ResponseStreamEvent[];
+  stamp(event: ResponseEventInput): ResponseStreamEvent;
   readonly sequence: number;
 }
 
@@ -1199,20 +1212,6 @@ export function createResponseEventProjector(
     switch (type) {
       case "state":
         return projectState(payload);
-      case "turn_activity": {
-        const activity = responseActivityEventSchema.safeParse(payload);
-
-        return activity.success
-          ? [{ type: "response.activity", ...activity.data, ...envelope() }]
-          : [];
-      }
-
-      case "usage_limits":
-        return [
-          { type: "response.usage_limits", usage_limits: payload.usage_limits, ...envelope() },
-        ];
-      case "usage":
-        return [{ type: "response.usage", usage: payload.usage, ...envelope() }];
       case "message_start":
         return projectMessageStart(payload);
       case "message_delta":
@@ -1394,6 +1393,7 @@ export function createResponseEventProjector(
 
   return {
     project,
+    stamp: (event) => responseStreamEventSchema.parse({ ...event, ...envelope() }),
     get sequence() {
       return sequence;
     },

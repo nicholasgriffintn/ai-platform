@@ -136,7 +136,10 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
       const usageLimits = await params.conversationManager.getUsageLimits();
 
       if (usageLimits) {
-        await stream.writeEvent("usage_limits", { usage_limits: usageLimits });
+        await stream.writeResponseEvent({
+          type: "response.usage_limits",
+          usage_limits: usageLimits,
+        });
       }
 
       const result = await runAgentLoop({

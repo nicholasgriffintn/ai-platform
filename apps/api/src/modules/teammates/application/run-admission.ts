@@ -7,7 +7,7 @@ import {
   teammateRunConfigurationSchema,
   readToolIds,
   type ChatRun,
-  type ChatRunTrigger,
+  type ResponseAuthority,
   type ConversationType,
   type ParsedResponseCommand,
   type TeammateInvocation,
@@ -20,13 +20,13 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import {
   readToolInteractionId,
   readToolInteractionResolution,
 } from "~/modules/responses/application/runs/interactions";
+import { startResponse } from "~/modules/responses/application/start";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
-import type { CoreChatOptions, IEnv, IUser } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import { requireTeammateAccess } from "./access";
 import { prepareTeammateCompletionRequest } from "./completion-request";
@@ -47,9 +47,8 @@ export interface TeammateRunAdmissionInput {
   executionCtx?: ExecutionContext;
   signal?: AbortSignal;
   conversationType?: ConversationType;
-  trigger?: ChatRunTrigger;
+  authority?: ResponseAuthority;
   maxStepsOverride?: number;
-  durableExecution?: CoreChatOptions["durable_execution"];
   invocation?: TeammateInvocation;
   resumeConfiguration?: TeammateRunConfiguration;
   executionPolicy?: {
@@ -71,9 +70,8 @@ export async function enqueueTeammateRun({
   executionCtx,
   signal,
   conversationType,
-  trigger,
+  authority = {},
   maxStepsOverride,
-  durableExecution,
   invocation,
   resumeConfiguration,
   executionPolicy,
@@ -184,7 +182,7 @@ export async function enqueueTeammateRun({
         delegationId: delegation.id,
         depth: delegation.depth,
         rootConversationId: delegation.parentConversationId,
-        memoryBindings: delegation.memoryBindings,
+        memoryBindings: authority.delegationContext?.memoryBindings ?? delegation.memoryBindings,
         continuation: delegationContinuation,
       }
     : undefined;
@@ -215,7 +213,6 @@ export async function enqueueTeammateRun({
   const effectiveBody = {
     ...body,
     ...(effectiveEnabledTools ? { enabled_tools: effectiveEnabledTools } : {}),
-    ...(delegationContext ? { delegation_context: delegationContext } : {}),
   };
   const effectiveTeammate = {
     ...teammate,
@@ -278,17 +275,16 @@ export async function enqueueTeammateRun({
     modeOverride: resumeConfiguration?.mode ?? executionPolicy?.mode,
   });
 
-  const response = await handleCreateChatCompletions({
+  const response = await startResponse({
     env: serviceContext.env,
-    request: {
+    authority: { ...authority, ...(delegationContext ? { delegationContext } : {}) },
+    command: {
       ...requestParams,
       ...(conversationType ? { conversation_type: conversationType } : {}),
-      ...(trigger ? { trigger } : {}),
-      ...(durableExecution ? { durable_execution: durableExecution } : {}),
       ...(preparedInvocation?.resolution.context
         ? admitTeammateContextAuthority({
             context: preparedInvocation.resolution.context,
-            trigger,
+            trigger: authority.trigger,
             now: Date.now(),
           })
         : {}),
@@ -319,8 +315,8 @@ export async function enqueueTeammateRun({
         usedSteps: resumeConfiguration?.usedSteps ?? 0,
         ...(resumeConfiguration?.maxCreditMicros !== undefined
           ? { maxCreditMicros: resumeConfiguration.maxCreditMicros }
-          : durableExecution?.kind === "delegation"
-            ? { maxCreditMicros: durableExecution.maxCreditMicros }
+          : authority.durableExecution?.kind === "delegation"
+            ? { maxCreditMicros: authority.durableExecution.maxCreditMicros }
             : {}),
         ...(delegationDeadline ? { deadline: delegationDeadline } : {}),
       },
@@ -383,6 +379,9 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     invocation: resume.configuration.invocation,
     maxStepsOverride: resume.maxSteps,
     resumeConfiguration: resume.configuration,
-    ...(resume.durableExecution ? { durableExecution: resume.durableExecution } : {}),
+    authority: {
+      ...input.authority,
+      ...(resume.durableExecution ? { durableExecution: resume.durableExecution } : {}),
+    },
   });
 }

@@ -3,6 +3,7 @@ import {
   createResponseEventProjector,
   formatResponseStreamSseDone,
   formatResponseStreamSseEvent,
+  type ResponseEventInput,
   type ResponseStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -20,10 +21,12 @@ export type { ChatStreamPreludeEvent };
 
 export interface ChatEventSink {
   writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+  writeResponseEvent: (event: ResponseEventInput) => Promise<void>;
 }
 
 export const DISCARDING_EVENT_SINK: ChatEventSink = {
   writeEvent: async () => {},
+  writeResponseEvent: async () => {},
 };
 
 export interface ChatSseStreamWriterOptions {
@@ -132,6 +135,8 @@ export function createChatSseStreamWriter(
         await write(encodeResponseStreamEvent(event));
       }
     },
+    writeResponseEvent: (event: ResponseEventInput) =>
+      write(encodeResponseStreamEvent(projector.stamp(event))),
     writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
     writeDone: () => write(encoder.encode(formatResponseStreamSseDone())),
     close: () => settle(() => controller?.close()),

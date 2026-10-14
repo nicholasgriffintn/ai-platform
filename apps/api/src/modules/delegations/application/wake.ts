@@ -6,7 +6,7 @@ import {
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { deliverChannelFollowUp } from "~/modules/channels/application/follow-up";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { startResponse } from "~/modules/responses/application/start";
 import type { TaskMessage } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
@@ -50,7 +50,6 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   const body = responseCommandSchema.parse({
     completion_id: payload.parentConversationId,
     command_id: `delegation_wake_${payload.parentRunId}`,
-    trigger: "delegation",
     messages: [
       {
         role: "user",
@@ -79,11 +78,13 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
       teammateId: parentConfiguration.data.teammateId,
       user,
       anonymousUser: undefined,
-      trigger: "delegation",
+      authority: {
+        trigger: "delegation",
+        ...(resumed.durableExecution ? { durableExecution: resumed.durableExecution } : {}),
+      },
       maxStepsOverride: resumed.maxSteps,
       resumeConfiguration: resumed.configuration,
       continuationRun: parentRun,
-      ...(resumed.durableExecution ? { durableExecution: resumed.durableExecution } : {}),
     });
     const invocation = parentConfiguration.data.invocation;
 
@@ -99,9 +100,10 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     return { status: "success" as const, detail: "Teammate parent resumed" };
   }
 
-  await handleCreateChatCompletions({
+  await startResponse({
     env,
-    request: body,
+    command: body,
+    authority: { trigger: "delegation" },
     user,
     context,
   });

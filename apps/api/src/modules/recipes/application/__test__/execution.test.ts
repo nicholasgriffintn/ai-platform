@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUser } from "~/types";
 
 const mocks = vi.hoisted(() => ({
-  handleCreateChatCompletions: vi.fn(),
+  startResponse: vi.fn(),
   generateId: vi.fn(),
 }));
 
-vi.mock("~/modules/responses/application/createChatCompletions", () => ({
-  handleCreateChatCompletions: mocks.handleCreateChatCompletions,
+vi.mock("~/modules/responses/application/start", () => ({
+  startResponse: mocks.startResponse,
 }));
 
 vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
@@ -66,7 +66,7 @@ describe("executeRecipeInvocationChat", () => {
     vi.clearAllMocks();
     updateConversation.mockResolvedValue({});
     mocks.generateId.mockReturnValue("generated-id");
-    mocks.handleCreateChatCompletions.mockResolvedValue({
+    mocks.startResponse.mockResolvedValue({
       id: "recipe_generated-id",
       log_id: "log-1",
       object: "chat.completion",
@@ -112,11 +112,12 @@ describe("executeRecipeInvocationChat", () => {
 
     expect(result.conversationId).toBe("sms_conversation");
     expect(mocks.generateId).not.toHaveBeenCalled();
-    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
+    expect(mocks.startResponse).toHaveBeenCalledWith({
       env,
       context,
       user,
-      request: expect.objectContaining({
+      authority: { trigger: "schedule" },
+      command: expect.objectContaining({
         completion_id: "sms_conversation",
         messages: [
           {

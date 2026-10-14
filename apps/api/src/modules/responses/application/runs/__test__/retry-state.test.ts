@@ -59,7 +59,7 @@ describe("createChatRetryStatePublisher", () => {
     });
     const writeEvent = vi.fn(async () => undefined);
     const publish = createChatRetryStatePublisher({
-      sink: { writeEvent },
+      sink: { writeEvent, writeResponseEvent: vi.fn(async () => undefined) },
       runLifecycle: { receipt, recordRetry },
     });
 
@@ -75,7 +75,9 @@ describe("createChatRetryStatePublisher", () => {
 
   it("still emits stream state for an unstored run", async () => {
     const writeEvent = vi.fn(async () => undefined);
-    const publish = createChatRetryStatePublisher({ sink: { writeEvent } });
+    const publish = createChatRetryStatePublisher({
+      sink: { writeEvent, writeResponseEvent: vi.fn(async () => undefined) },
+    });
 
     await publish(retry);
 

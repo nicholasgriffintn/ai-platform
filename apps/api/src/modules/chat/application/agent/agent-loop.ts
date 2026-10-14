@@ -938,7 +938,7 @@ async function emitUsageLimits(sink: ChatEventSink, conversationManager: Convers
     const usageLimits = await conversationManager.getUsageLimits();
 
     if (usageLimits) {
-      await sink.writeEvent("usage_limits", { usage_limits: usageLimits });
+      await sink.writeResponseEvent({ type: "response.usage_limits", usage_limits: usageLimits });
     }
   } catch (error) {
     logger.error("Failed to read updated usage limits", {

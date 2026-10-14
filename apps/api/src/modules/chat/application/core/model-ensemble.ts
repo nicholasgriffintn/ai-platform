@@ -75,6 +75,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 
       await stream.writeEvent(type, payload);
     },
+    writeResponseEvent: (event) => stream.writeResponseEvent(event),
   };
 
   const run = async () => {
@@ -139,7 +140,10 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       const usageLimits = await params.conversationManager.getUsageLimits();
 
       if (usageLimits) {
-        await stream.writeEvent("usage_limits", { usage_limits: usageLimits });
+        await stream.writeResponseEvent({
+          type: "response.usage_limits",
+          usage_limits: usageLimits,
+        });
       }
 
       const header = `Using the following models: ${params.models

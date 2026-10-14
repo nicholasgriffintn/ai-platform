@@ -13,6 +13,7 @@ describe("applyAgentHarnessToolEvent", () => {
         writeEvent: async (type: string) => {
           events.push(type);
         },
+        writeResponseEvent: async () => {},
       },
       step: 1,
       parts,

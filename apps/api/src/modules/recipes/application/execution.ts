@@ -18,8 +18,8 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { getDefaultChatModel } from "~/modules/models/application/resolve";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
+import { startResponse } from "~/modules/responses/application/start";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
@@ -146,7 +146,6 @@ export async function executeRecipeInvocationChat(params: {
       },
     ],
     mode: "agent",
-    trigger: "schedule",
     stream: false,
     store: true,
     enabled_tools: params.invocation.enabledTools,
@@ -165,13 +164,14 @@ export async function executeRecipeInvocationChat(params: {
         user: params.user,
         anonymousUser: undefined,
         conversationType: "task",
-        trigger: "schedule",
+        authority: { trigger: "schedule" },
       })
-    : await handleCreateChatCompletions({
+    : await startResponse({
         env: params.env,
         context: params.context,
         user: params.user,
-        request: { ...request, conversation_type: "task" },
+        command: { ...request, conversation_type: "task" },
+        authority: { trigger: "schedule" },
       });
 
   let recoveredResponse: CreateChatCompletionsResponse | null = null;

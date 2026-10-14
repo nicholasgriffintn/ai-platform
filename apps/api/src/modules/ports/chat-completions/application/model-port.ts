@@ -226,6 +226,7 @@ export async function createModelCompletion(params: {
         await write({ reasoning: payload.thinking });
       }
     },
+    writeResponseEvent: async () => {},
   };
   const pump = async () => {
     try {

@@ -563,7 +563,7 @@ export async function consumeProviderStream(
       const mergedUsage = mergeStreamedTokenUsage(turn.usage, extractedUsage);
 
       if (hasTokenUsageChanged(turn.usage, mergedUsage)) {
-        await sink.writeEvent("usage", { usage: mergedUsage });
+        await sink.writeResponseEvent({ type: "response.usage", usage: mergedUsage });
       }
 
       turn.usage = mergedUsage;

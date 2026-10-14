@@ -77,7 +77,6 @@ class TeammateCompletionRequestPreparer {
       tool_options: this.resolveToolOptions(enabledTools),
       denied_tools: this.input.body.denied_tools,
       approved_tools: this.input.body.approved_tools,
-      delegation_context: this.input.body.delegation_context,
       use_multi_model: this.input.body.use_multi_model,
       models: this.input.body.models,
       reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,

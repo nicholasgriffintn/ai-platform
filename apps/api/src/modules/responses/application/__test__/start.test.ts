@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { handleCreateChatCompletions } from "../createChatCompletions";
+import { startResponse } from "../start";
 
 const { mockConversationManagerGetInstance, mockThreadLease } = vi.hoisted(() => ({
   mockConversationManagerGetInstance: vi.fn(() => ({
@@ -44,7 +44,7 @@ const mockUser = {
   email: "test@example.com",
 } as any;
 
-describe("handleCreateChatCompletions", () => {
+describe("startResponse", () => {
   let mockProcessChatRequest: any;
   let mockFormatAssistantMessage: any;
 
@@ -81,9 +81,9 @@ describe("handleCreateChatCompletions", () => {
       } as any;
 
       await expect(() =>
-        handleCreateChatCompletions({
+        startResponse({
           env: mockEnv,
-          request,
+          command: request,
           user: mockUser,
         }),
       ).rejects.toThrow("Missing required parameter: messages");
@@ -122,9 +122,9 @@ describe("handleCreateChatCompletions", () => {
         finish_reason: "stop",
       });
 
-      await handleCreateChatCompletions({
+      await startResponse({
         env: mockEnv,
-        request,
+        command: request,
         user: mockUser,
       });
 
@@ -146,9 +146,9 @@ describe("handleCreateChatCompletions", () => {
         finish_reason: "stop",
       });
 
-      await handleCreateChatCompletions({
+      await startResponse({
         env: mockEnv,
-        request: {
+        command: {
           messages: [{ role: "user", content: "Hello" }],
           model: "gpt-6-astra",
           service_tier: "fast",
@@ -165,9 +165,9 @@ describe("handleCreateChatCompletions", () => {
   describe("connector approval continuation", () => {
     it("rejects approval continuation without an authenticated user", async () => {
       await expect(
-        handleCreateChatCompletions({
+        startResponse({
           env: mockEnv,
-          request: {
+          command: {
             completion_id: "completion-with-approval",
             connector_approval_id: "coa_action",
             messages: [],
@@ -249,9 +249,9 @@ describe("handleCreateChatCompletions", () => {
         finish_reason: "stop",
       });
 
-      await handleCreateChatCompletions({
+      await startResponse({
         env: mockEnv,
-        request,
+        command: request,
         user: mockUser,
         context,
       });
@@ -327,9 +327,9 @@ describe("handleCreateChatCompletions", () => {
         finish_reason: "stop",
       });
 
-      const result = await handleCreateChatCompletions({
+      const result = await startResponse({
         env: mockEnv,
-        request,
+        command: request,
         user: mockUser,
       });
 
@@ -374,9 +374,9 @@ describe("handleCreateChatCompletions", () => {
         finish_reason: "stop",
       });
 
-      const result = await handleCreateChatCompletions({
+      const result = await startResponse({
         env: mockEnv,
-        request,
+        command: request,
         user: mockUser,
       });
 

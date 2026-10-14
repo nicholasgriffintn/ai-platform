@@ -2,7 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { ResponseCommand } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
+import { startResponse } from "~/modules/responses/application/start";
 import { resumeStoredTeammateInteraction } from "~/modules/teammates/application/interaction-resume";
 import type { AnonymousUser, IUser } from "~/types";
 
@@ -54,6 +54,6 @@ export async function prepareConversationCompletion({
 
   return (
     (await resumeStoredTeammateInteraction({ ...completionContext, body: request })) ??
-    handleCreateChatCompletions({ ...completionContext, request })
+    startResponse({ ...completionContext, command: request })
   );
 }

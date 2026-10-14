@@ -5,7 +5,10 @@ import { createPartialCheckpointSink } from "../partial-checkpoint";
 function createHarness() {
   let clock = 0;
   const writes: string[] = [];
-  const downstream = { writeEvent: vi.fn().mockResolvedValue(undefined) };
+  const downstream = {
+    writeEvent: vi.fn().mockResolvedValue(undefined),
+    writeResponseEvent: vi.fn().mockResolvedValue(undefined),
+  };
   const sink = createPartialCheckpointSink(
     downstream,
     async (content) => {
@@ -41,14 +44,21 @@ describe("createPartialCheckpointSink", () => {
     const { sink, writes } = createHarness();
 
     await sink.writeEvent("content_block_delta", { content: "Checking the docs" });
-    await sink.writeEvent("turn_activity", { kind: "model_step_started", step: 2 });
+    await sink.writeResponseEvent({
+      type: "response.activity",
+      kind: "model_step_started",
+      step: 2,
+    });
     await sink.flush();
 
     expect(writes).toEqual(["Checking the docs", ""]);
   });
 
   it("forwards every event and survives a failed checkpoint", async () => {
-    const downstream = { writeEvent: vi.fn().mockResolvedValue(undefined) };
+    const downstream = {
+      writeEvent: vi.fn().mockResolvedValue(undefined),
+      writeResponseEvent: vi.fn().mockResolvedValue(undefined),
+    };
     const sink = createPartialCheckpointSink(downstream, () =>
       Promise.reject(new Error("D1 unavailable")),
     );

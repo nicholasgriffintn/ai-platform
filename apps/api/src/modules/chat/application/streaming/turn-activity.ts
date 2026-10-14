@@ -5,5 +5,5 @@ import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter
 export type TurnActivity = ResponseActivityEvent;
 
 export function writeTurnActivity(sink: ChatEventSink, activity: TurnActivity): Promise<void> {
-  return sink.writeEvent("turn_activity", activity);
+  return sink.writeResponseEvent({ type: "response.activity", ...activity });
 }

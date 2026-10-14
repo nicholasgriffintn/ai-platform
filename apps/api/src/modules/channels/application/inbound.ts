@@ -31,9 +31,9 @@ import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
-import { handleCreateChatCompletions } from "~/modules/responses/application/createChatCompletions";
 import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
+import { startResponse } from "~/modules/responses/application/start";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   ensureActiveTeammateContext,
@@ -671,7 +671,6 @@ export async function handleInboundChannelMessage(params: {
         completion_id: conversationId,
         store: true,
         mode: "agent",
-        trigger: "channel",
         max_steps: profile.maxSteps,
         ...(delivery.poly ? {} : { enabled_tools: profile.tools }),
         tool_choice: "auto",
@@ -708,7 +707,7 @@ export async function handleInboundChannelMessage(params: {
           teammateId: delivery.teammateId,
           user: params.user,
           anonymousUser: undefined,
-          trigger: "channel",
+          authority: { trigger: "channel" },
           invocation: isInboundBindingTaskData(params.data)
             ? {
                 source: "channel",
@@ -723,11 +722,12 @@ export async function handleInboundChannelMessage(params: {
               }
             : undefined,
         })
-      : await handleCreateChatCompletions({
+      : await startResponse({
           env: params.env,
           context: params.context,
           user: params.user,
-          request,
+          command: request,
+          authority: { trigger: "channel" },
         });
   }
 

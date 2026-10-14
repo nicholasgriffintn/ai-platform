@@ -13,9 +13,6 @@ export const queuedChatRequestSchema = responseCommandFieldsSchema
     stream: true,
     store: true,
     completion_id: true,
-    trigger: true,
-    delegation_context: true,
-    durable_execution: true,
   })
   .strict();
 
