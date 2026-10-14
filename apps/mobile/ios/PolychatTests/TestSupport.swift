@@ -339,14 +339,6 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         throw TestFailure.unexpectedCall
     }
 
-    func streamMachineModelRun(id: String, machineId: String, modelId: String, messages: [ChatMessage], conversationId: String) -> AsyncThrowingStream<ChatStreamEvent, Error> {
-        AsyncThrowingStream { $0.finish(throwing: TestFailure.unexpectedCall) }
-    }
-
-    func cancelMachineModelRun(id: String, machineId: String) async throws {
-        throw TestFailure.unexpectedCall
-    }
-
     func fetchConversation(
         id: String,
         refreshPending: Bool
