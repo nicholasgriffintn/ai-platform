@@ -2,6 +2,7 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AssistantRecipe,
   type AssistantRecipeConnection,
+  type InstalledRecipe,
   type RecipeConfiguration,
   type RecipeConnectionStatus,
   type RecipeInstallation,
@@ -540,6 +541,27 @@ export async function listRecipeInstallations(params: {
       .map((record) => parseRecipeInstallationRecord(record))
       .filter((installation): installation is RecipeInstallation => Boolean(installation)),
   };
+}
+
+export async function listInstalledRecipes(params: {
+  context: ServiceContext;
+  userId: number;
+  projectId?: string;
+}): Promise<InstalledRecipe[]> {
+  const { installations } = await listRecipeInstallations(params);
+
+  return installations.flatMap((installation) => {
+    const recipe = getRecipeById(installation.recipeId);
+
+    return recipe
+      ? [
+          {
+            ...installation,
+            recipe: { ...recipe, capability: createRecipeCapabilityDescriptor(recipe) },
+          },
+        ]
+      : [];
+  });
 }
 
 export async function resolveInstalledAssistantRecipe(params: {

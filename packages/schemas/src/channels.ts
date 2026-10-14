@@ -85,9 +85,9 @@ export const channelPairingChallengeSchema = z.object({
   expiresAt: z.string(),
 });
 
-export const revokeChannelSenderSchema = z
-  .object({ expectedRevision: z.number().int().positive() })
-  .strict();
+export const revokeChannelSenderQuerySchema = z.object({
+  expected_revision: z.coerce.number().int().positive(),
+});
 
 export type ChannelBinding = z.infer<typeof channelBindingSchema>;
 export type ChannelBindingScope = z.infer<typeof channelBindingScopeSchema>;

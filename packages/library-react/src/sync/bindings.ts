@@ -1,5 +1,9 @@
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
-import type { DeviceSyncEvent, DeviceSyncEventType, PolyHome } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DeviceSyncEvent,
+  DeviceSyncEventType,
+  PolyAgenda,
+} from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -12,7 +16,6 @@ import {
 } from "../hooks/useDelegations.js";
 import { conversationBriefQueryKey } from "../hooks/useMemoryDocuments.js";
 import { POLY_AGENDA_QUERY_KEY } from "../hooks/usePolyAgenda.js";
-import { POLY_HOME_QUERY_KEY } from "../hooks/usePolyHome.js";
 import {
   projectTaskDetailQueryPrefix,
   projectTasksQueryKey,
@@ -46,9 +49,9 @@ const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
 
 const refreshPolyAgenda: SyncBinding["apply"] = (context, event) => {
   const conversationId = readOptionalString(event.data.conversationId);
-  const home = context.queryClient.getQueryData<PolyHome>(POLY_HOME_QUERY_KEY);
+  const agenda = context.queryClient.getQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY);
 
-  if (conversationId && conversationId === home?.conversation_id) {
+  if (conversationId && conversationId === agenda?.conversation_id) {
     context.invalidate(POLY_AGENDA_QUERY_KEY);
   }
 };

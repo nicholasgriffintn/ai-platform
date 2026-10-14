@@ -8,6 +8,7 @@ import {
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
+  AssistantRecipe,
   RecipeConfiguration,
   RecipeInstallation,
   RecipeInstallationsResponse,
@@ -33,15 +34,21 @@ function recipeInstallationsQueryKey(projectId?: string | null) {
 function upsertRecipeInstallation(
   queryClient: ReturnType<typeof useQueryClient>,
   installation: RecipeInstallation,
+  recipe?: AssistantRecipe,
 ) {
   queryClient.setQueryData<RecipeInstallationsResponse>(
     recipeInstallationsQueryKey(installation.projectId),
-    (current) => ({
-      installations: [
-        installation,
-        ...(current?.installations ?? []).filter((item) => item.id !== installation.id),
-      ],
-    }),
+    (current) => {
+      const others = (current?.installations ?? []).filter((item) => item.id !== installation.id);
+      const installedRecipe =
+        recipe ?? current?.installations.find((item) => item.id === installation.id)?.recipe;
+
+      return {
+        installations: installedRecipe
+          ? [{ ...installation, recipe: installedRecipe }, ...others]
+          : others,
+      };
+    },
   );
 }
 
@@ -75,7 +82,7 @@ export function useInstallAssistantRecipe() {
     }) => installAssistantRecipe(recipeId, triggers, configuration, projectId),
     onSuccess: (response) => {
       if (response.installation) {
-        upsertRecipeInstallation(queryClient, response.installation);
+        upsertRecipeInstallation(queryClient, response.installation, response.recipe);
       }
 
       void queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });

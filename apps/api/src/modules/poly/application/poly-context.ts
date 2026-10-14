@@ -1,6 +1,7 @@
 import {
   POLY_TEAMMATE_ID,
-  type PolyHome,
+  type PolyAgenda,
+  type PolyAgendaLists,
   type TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -18,7 +19,10 @@ export function requirePolyContext(context: ServiceContext): Promise<TeammateCon
   });
 }
 
-export function toPolyHome(polyContext: TeammateContext, now = Date.now()): PolyHome {
+export function describePolyContext(
+  polyContext: TeammateContext,
+  now = Date.now(),
+): Omit<PolyAgenda, keyof PolyAgendaLists> {
   return {
     teammate_id: POLY_TEAMMATE_ID,
     context_id: polyContext.id,

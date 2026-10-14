@@ -17,8 +17,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   apiService: {
     deleteProviderApiKey: mocks.deleteProviderApiKey,
-    getProviderSettings: vi.fn(async () => []),
-    getProviderSyncStatus: vi.fn(async () => ({ required: false })),
+    getProviders: vi.fn(async () => ({
+      settings: [],
+      syncStatus: { required: false, missingProviderIds: [] },
+    })),
     storeProviderApiKey: mocks.storeProviderApiKey,
     syncProviders: vi.fn(),
   },

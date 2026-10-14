@@ -961,6 +961,8 @@ export const uploadFileSchema = z.object({
 });
 export type UploadFile = z.infer<typeof uploadFileSchema>;
 
+export const completeUploadRequestSchema = z.object({ status: z.literal("completed") });
+
 export const uploadSessionSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),

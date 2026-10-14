@@ -71,7 +71,7 @@ export function importBucketModel(
   workspaceId: string,
   input: ImportBucketModelRequest,
 ): Promise<VersionDetail> {
-  return platformRequest(workspacePath(workspaceId, "/imports/bucket"), {
+  return platformRequest(workspacePath(workspaceId, "/imports"), {
     method: "POST",
     body: input,
   });
@@ -105,14 +105,15 @@ export function uploadModelPart(
 }
 
 export function completeModelUpload(workspaceId: string, uploadId: string): Promise<UploadSession> {
-  return platformRequest(workspacePath(workspaceId, `/uploads/${segment(uploadId)}/complete`), {
-    method: "POST",
+  return platformRequest(workspacePath(workspaceId, `/uploads/${segment(uploadId)}`), {
+    method: "PATCH",
+    body: { status: "completed" },
   });
 }
 
 export function abortModelUpload(workspaceId: string, uploadId: string): Promise<UploadSession> {
-  return platformRequest(workspacePath(workspaceId, `/uploads/${segment(uploadId)}/abort`), {
-    method: "POST",
+  return platformRequest(workspacePath(workspaceId, `/uploads/${segment(uploadId)}`), {
+    method: "DELETE",
   });
 }
 
@@ -120,7 +121,7 @@ export function registerUploadedModel(
   workspaceId: string,
   input: RegisterUploadedModelRequest,
 ): Promise<VersionDetail> {
-  return platformRequest(workspacePath(workspaceId, "/uploads/register"), {
+  return platformRequest(workspacePath(workspaceId, "/versions"), {
     method: "POST",
     body: input,
   });
@@ -192,8 +193,8 @@ export function resolveModelDecision(
   decisionId: string,
   input: ResolveDecisionInput,
 ): Promise<ModelDecision> {
-  return platformRequest(workspacePath(workspaceId, `/decisions/${segment(decisionId)}/resolve`), {
-    method: "POST",
+  return platformRequest(workspacePath(workspaceId, `/decisions/${segment(decisionId)}`), {
+    method: "PATCH",
     body: input,
   });
 }

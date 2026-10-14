@@ -261,7 +261,11 @@ export class TeammateService {
   }
 
   installSharedTeammate(sharedTeammateId: string): Promise<unknown> {
-    return marketplace.action<unknown>(sharedTeammateId, "install");
+    return requestJson<unknown>(
+      `/teammates/marketplace/${encodeURIComponent(sharedTeammateId)}/installation`,
+      "POST",
+      {},
+    );
   }
 
   async getSharedTeammateListingForTeammate(

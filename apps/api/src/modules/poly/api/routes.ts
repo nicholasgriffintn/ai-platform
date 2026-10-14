@@ -1,8 +1,7 @@
 import {
   errorResponseSchema,
-  polyAgendaViewSchema,
+  polyAgendaSchema,
   polyHandoffDisagreementSchema,
-  queryBooleanSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -17,15 +16,13 @@ addRoute(app, "get", "/agenda", {
   tags: ["poly"],
   summary: "Read Poly's agenda",
   description:
-    "List what needs the signed-in user, what Poly is working on and what it finished in the last week, with the user's Poly thread as home. Pass owner_present=true when the user opens Poly: it creates their Poly context the first time and records that they were there.",
+    "The signed-in user's Poly: its thread, autonomy and standing approvals, what needs the user, what Poly is working on and what it finished in the last week. Creates the user's Poly the first time.",
   auth: true,
-  querySchema: z.object({ owner_present: queryBooleanSchema.optional() }),
   responses: {
-    200: { description: "Poly's agenda and home", schema: polyAgendaViewSchema },
+    200: { description: "Poly's agenda", schema: polyAgendaSchema },
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
-  handler: async ({ serviceContext, query }) =>
-    readPolyAgenda(serviceContext, { ownerPresent: query.owner_present }),
+  handler: async ({ serviceContext }) => readPolyAgenda(serviceContext),
 });
 
 addRoute(app, "post", "/handoffs/:handoff_id/disagree", {

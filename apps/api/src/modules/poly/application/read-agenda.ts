@@ -2,7 +2,7 @@ import {
   POLY_HANDOFF_CAPABILITY_ID,
   POLY_TEAMMATE_ID,
   type PolyAgenda,
-  type PolyAgendaView,
+  type PolyAgendaLists,
   type TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -12,9 +12,9 @@ import { handoffOverrideRef, readHandoffJudgement } from "~/modules/poly/domain/
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
-import { markPolyOwnerSeen, requirePolyContext, toPolyHome } from "./home";
+import { describePolyContext, markPolyOwnerSeen, requirePolyContext } from "./poly-context";
 
-const EMPTY_AGENDA: PolyAgenda = { needs_you: [], working_on: [], done: [], noted: [] };
+const EMPTY_AGENDA: PolyAgendaLists = { needs_you: [], working_on: [], done: [], noted: [] };
 const NOTED_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
 const NOTED_SCAN_LIMIT = 50;
 
@@ -37,7 +37,7 @@ function findPolyContext(
 export async function loadPolyAgenda(
   repositories: AgendaRepositories,
   userId: number,
-): Promise<PolyAgenda> {
+): Promise<PolyAgendaLists> {
   return loadPolyAgendaForContext(
     repositories,
     userId,
@@ -49,7 +49,7 @@ async function loadPolyAgendaForContext(
   repositories: AgendaRepositories,
   userId: number,
   polyContext: TeammateContext | null,
-): Promise<PolyAgenda> {
+): Promise<PolyAgendaLists> {
   if (!polyContext) {
     return EMPTY_AGENDA;
   }
@@ -97,21 +97,17 @@ async function loadPolyAgendaForContext(
   });
 }
 
-export async function readPolyAgenda(
-  context: ServiceContext,
-  options: { ownerPresent?: boolean } = {},
-): Promise<PolyAgendaView> {
-  const userId = context.requireUser().id;
-  const polyContext = options.ownerPresent
-    ? await requirePolyContext(context)
-    : await findPolyContext(context.repositories, userId);
+export async function readPolyAgenda(context: ServiceContext): Promise<PolyAgenda> {
+  const polyContext = await requirePolyContext(context);
 
-  if (polyContext && options.ownerPresent) {
-    await markPolyOwnerSeen(context, polyContext);
-  }
+  await markPolyOwnerSeen(context, polyContext);
 
   return {
-    ...(await loadPolyAgendaForContext(context.repositories, userId, polyContext)),
-    home: polyContext ? toPolyHome(polyContext) : null,
+    ...describePolyContext(polyContext),
+    ...(await loadPolyAgendaForContext(
+      context.repositories,
+      context.requireUser().id,
+      polyContext,
+    )),
   };
 }

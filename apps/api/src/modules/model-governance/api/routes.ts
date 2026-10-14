@@ -188,7 +188,7 @@ addRoute(app, "get", `${base}/spend_requests`, {
   handler: ({ serviceContext, params }) => listSpendRequests(serviceContext, params.workspace_id),
 });
 
-addRoute(app, "post", `${base}/spend_requests/:request_id/resolve`, {
+addRoute(app, "patch", `${base}/spend_requests/:request_id`, {
   auth: true,
   tags,
   summary: "Approve and start, or reject, a spend request",

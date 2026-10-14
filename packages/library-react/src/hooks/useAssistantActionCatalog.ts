@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
 import { useRecipeConnectors } from "./useConnectors.js";
-import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes.js";
+import { useRecipeInstallations } from "./useRecipes.js";
 import { usePersonalSkills } from "./useSkills.js";
 
 export function useAssistantActionCatalog({
@@ -20,7 +20,6 @@ export function useAssistantActionCatalog({
   modelTools?: readonly ModelToolDefinition[];
   projectId?: string;
 } = {}): AssistantActionCatalog {
-  const { data: recipesData } = useAssistantRecipes();
   const { data: installationsData } = useRecipeInstallations(projectId);
   const { data: connectorsData } = useRecipeConnectors();
   const capabilityCatalog = useCapabilityCatalog(projectId);
@@ -61,16 +60,9 @@ export function useAssistantActionCatalog({
         connectors: connectorsData?.connectors ?? [],
         installations: installationsData?.installations ?? [],
         modelTools,
-        recipes: recipesData?.recipes ?? [],
+        recipes: installationsData?.installations.map((installation) => installation.recipe) ?? [],
         skills,
       }),
-    [
-      teammates,
-      connectorsData?.connectors,
-      installationsData?.installations,
-      modelTools,
-      recipesData?.recipes,
-      skills,
-    ],
+    [teammates, connectorsData?.connectors, installationsData?.installations, modelTools, skills],
   );
 }

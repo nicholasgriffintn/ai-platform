@@ -12,8 +12,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
-import { requirePolyContext } from "~/modules/poly/application/home";
 import { readPendingPolyCall } from "~/modules/poly/application/pending-call";
+import { requirePolyContext } from "~/modules/poly/application/poly-context";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

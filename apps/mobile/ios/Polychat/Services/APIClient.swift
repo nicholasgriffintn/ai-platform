@@ -255,8 +255,8 @@ final class APIClient: ObservableObject {
 
     func resolveModelDecision(workspaceId: String, decisionId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
-            method: "POST",
+            path: "/model_platform/workspaces/\(workspaceId)/decisions/\(decisionId)",
+            method: "PATCH",
             body: ResolveModelDecisionRequest(state: state)
         )
     }
@@ -271,8 +271,8 @@ final class APIClient: ObservableObject {
 
     func resolveSpendRequest(workspaceId: String, requestId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/spend_requests/\(requestId)/resolve",
-            method: "POST",
+            path: "/model_platform/workspaces/\(workspaceId)/spend_requests/\(requestId)",
+            method: "PATCH",
             body: ResolveSpendRequestBody(state: state)
         )
     }

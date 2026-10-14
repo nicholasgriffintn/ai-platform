@@ -120,13 +120,10 @@ export function resolveSpendRequest(
   requestId: string,
   input: ResolveSpendRequest,
 ): Promise<SpendRequest> {
-  return platformRequest(
-    workspacePath(workspaceId, `/spend_requests/${segment(requestId)}/resolve`),
-    {
-      method: "POST",
-      body: input,
-    },
-  );
+  return platformRequest(workspacePath(workspaceId, `/spend_requests/${segment(requestId)}`), {
+    method: "PATCH",
+    body: input,
+  });
 }
 
 export async function listModelAudit(

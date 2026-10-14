@@ -162,6 +162,19 @@ export const createProjectRequestSchema = createProjectSchema.extend({
   workspace_id: z.string().min(1),
 });
 
+const projectSeedFields = {
+  workspace_id: z.string().min(1),
+  name: z.string().trim().min(2).max(100).optional(),
+};
+
+export const createProjectFromTemplateRequestSchema = z
+  .object({ ...projectSeedFields, template_id: z.string().min(1) })
+  .strict();
+
+export const createProjectFromStarterRequestSchema = z
+  .object({ ...projectSeedFields, starter_id: z.string().min(1) })
+  .strict();
+
 export const updateProjectSchema = z
   .object({
     ...projectFields,

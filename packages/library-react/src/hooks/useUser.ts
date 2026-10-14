@@ -5,8 +5,7 @@ import { MODELS_QUERY_KEY } from "../chat/useModels.js";
 import { REALTIME_PROVIDERS_QUERY_KEY } from "./useRealtimeProviders.js";
 
 export const USER_QUERY_KEYS = {
-  providerSettings: ["user", "provider-settings"],
-  providerSyncStatus: ["user", "provider-sync-status"],
+  providers: ["user", "providers"],
 } as const;
 
 function invalidateProviderReadiness(queryClient: ReturnType<typeof useQueryClient>): void {
@@ -19,14 +18,9 @@ export function useUser(options?: { enabled?: boolean }) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const enabled = (options?.enabled ?? true) && isAuthenticated;
 
-  const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
-    queryKey: USER_QUERY_KEYS.providerSettings,
-    queryFn: () => apiService.getProviderSettings(),
-    enabled,
-  });
-  const { data: providerSyncStatus, isLoading: isLoadingProviderSyncStatus } = useQuery({
-    queryKey: USER_QUERY_KEYS.providerSyncStatus,
-    queryFn: () => apiService.getProviderSyncStatus(),
+  const { data: providers, isLoading: isLoadingProviders } = useQuery({
+    queryKey: USER_QUERY_KEYS.providers,
+    queryFn: () => apiService.getProviders(),
     enabled,
   });
 
@@ -46,7 +40,7 @@ export function useUser(options?: { enabled?: boolean }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: USER_QUERY_KEYS.providerSettings,
+        queryKey: USER_QUERY_KEYS.providers,
       });
       invalidateProviderReadiness(queryClient);
     },
@@ -58,12 +52,9 @@ export function useUser(options?: { enabled?: boolean }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: USER_QUERY_KEYS.providerSettings,
+        queryKey: USER_QUERY_KEYS.providers,
       });
       invalidateProviderReadiness(queryClient);
-      void queryClient.invalidateQueries({
-        queryKey: USER_QUERY_KEYS.providerSyncStatus,
-      });
     },
   });
 
@@ -73,17 +64,17 @@ export function useUser(options?: { enabled?: boolean }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: USER_QUERY_KEYS.providerSettings,
+        queryKey: USER_QUERY_KEYS.providers,
       });
       invalidateProviderReadiness(queryClient);
     },
   });
 
   return {
-    providerSettings: providerSettings ?? [],
-    isLoadingProviderSettings,
-    providerSyncRequired: providerSyncStatus?.required ?? false,
-    isLoadingProviderSyncStatus,
+    providerSettings: providers?.settings ?? [],
+    isLoadingProviderSettings: isLoadingProviders,
+    providerSyncRequired: providers?.syncStatus.required ?? false,
+    isLoadingProviderSyncStatus: isLoadingProviders,
     storeProviderApiKey: storeProviderApiKeyMutation.mutateAsync,
     isStoringProviderApiKey: storeProviderApiKeyMutation.isPending,
     syncProviders: syncProvidersMutation.mutate,

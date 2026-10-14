@@ -1,6 +1,5 @@
 import {
   connectSandboxInstallation,
-  fetchSandboxInstallConfig,
   deleteSandboxConnection,
   fetchSandboxConnectionRepositories,
   fetchSandboxConnections,
@@ -18,7 +17,6 @@ import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
 
 export const SANDBOX_QUERY_KEYS = {
   root: ["sandbox"] as const,
-  installConfig: () => [...SANDBOX_QUERY_KEYS.root, "install-config"] as const,
   connections: () => [...SANDBOX_QUERY_KEYS.root, "connections"] as const,
   connectionRepositories: (installationId: number) =>
     [...SANDBOX_QUERY_KEYS.root, "connections", installationId, "repositories"] as const,
@@ -26,10 +24,11 @@ export const SANDBOX_QUERY_KEYS = {
 
 export const useSandboxConnections = () => {
   const canAccessProFeatures = useCanAccessProFeatures();
-  const query = useQuery<SandboxConnection[]>({
+  const query = useQuery({
     queryKey: SANDBOX_QUERY_KEYS.connections(),
     queryFn: () => fetchSandboxConnections(),
     enabled: canAccessProFeatures,
+    select: (page): SandboxConnection[] => page.connections,
   });
 
   return {
@@ -43,10 +42,11 @@ export const useSandboxConnections = () => {
 
 export const useSandboxInstallConfig = () => {
   const canAccessProFeatures = useCanAccessProFeatures();
-  const query = useQuery<SandboxInstallConfig>({
-    queryKey: SANDBOX_QUERY_KEYS.installConfig(),
-    queryFn: () => fetchSandboxInstallConfig(),
+  const query = useQuery({
+    queryKey: SANDBOX_QUERY_KEYS.connections(),
+    queryFn: () => fetchSandboxConnections(),
     enabled: canAccessProFeatures,
+    select: (page): SandboxInstallConfig => page.installConfig,
   });
 
   return {

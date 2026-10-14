@@ -7,7 +7,7 @@ import {
   type OptionsMenuOption,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-  usePolyHome,
+  usePolyAgenda,
   usePolyStandingApprovals,
   useSetPolyAutonomy,
 } from "@ngriffin_uk/polychat-library-react";
@@ -27,11 +27,11 @@ const AUTONOMY_LABELS: Readonly<Record<TeammateAutonomyLevel, string>> = {
 };
 
 export function PolyAutonomyMenu() {
-  const home = usePolyHome(true);
-  const setAutonomy = useSetPolyAutonomy(home.data);
+  const agenda = usePolyAgenda(true);
+  const setAutonomy = useSetPolyAutonomy(agenda.data);
   const { revoke } = usePolyStandingApprovals();
 
-  if (!home.data) {
+  if (!agenda.data) {
     return null;
   }
 
@@ -46,21 +46,21 @@ export function PolyAutonomyMenu() {
           className="shrink-0"
           icon={<ShieldCheck size={15} />}
           disabled={setAutonomy.isPending}
-          aria-label={`What Poly may do on its own: ${AUTONOMY_LABELS[home.data.autonomy_level]}`}
+          aria-label={`What Poly may do on its own: ${AUTONOMY_LABELS[agenda.data.autonomy_level]}`}
         >
-          {AUTONOMY_LABELS[home.data.autonomy_level]}
+          {AUTONOMY_LABELS[agenda.data.autonomy_level]}
         </Button>
       }
     >
       <OptionsMenuRadioGroup
-        value={home.data.autonomy_level}
+        value={agenda.data.autonomy_level}
         options={AUTONOMY_OPTIONS}
         onChange={(level) => setAutonomy.mutate(level)}
       />
-      {home.data.standing_approvals.length > 0 ? (
+      {agenda.data.standing_approvals.length > 0 ? (
         <>
           <OptionsMenuSeparator />
-          {home.data.standing_approvals.map((approval) => (
+          {agenda.data.standing_approvals.map((approval) => (
             <OptionsMenuAction
               key={`${approval.toolName}:${approval.destination}`}
               keepOpen

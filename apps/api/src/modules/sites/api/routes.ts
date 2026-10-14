@@ -91,7 +91,7 @@ defineResource(app, { idParam: "site_id", tags: ["sites"] }, (sites) => {
         );
       },
     })
-    .collectionAction("generate", {
+    .create({
       auth: true,
       summary: "Generate or refine a site",
       description:

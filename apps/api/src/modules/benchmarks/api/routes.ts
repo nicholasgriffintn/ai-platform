@@ -2,13 +2,13 @@ import {
   benchmarkArenaResponseSchema,
   benchmarkBoardSchema,
   benchmarkEntrantParamsSchema,
-  benchmarkEstimateRequestSchema,
   benchmarkEstimateSchema,
   benchmarkIdParamsSchema,
   benchmarkIndexSchema,
   benchmarkPhotoParamsSchema,
   benchmarkPlayResultSchema,
   benchmarkPlayStartSchema,
+  benchmarkPlayRequestSchema,
   benchmarkPlaySubmitRequestSchema,
   benchmarkQueueResultSchema,
   benchmarkRunDetailSchema,
@@ -22,10 +22,13 @@ import {
   benchmarkVoteResultSchema,
   createBenchmarkRunsRequestSchema,
   listPageOf,
+  queryBooleanSchema,
   queueOfficialBenchmarkRunsRequestSchema,
   updateBenchmarkRunRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
+import z from "zod/v4";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { requireAdmin } from "~/middleware/adminMiddleware";
@@ -85,20 +88,32 @@ defineResource(app, { path: "/runs", idParam: "run_id", tags }, (runs) => {
       auth: true,
       summary: "Start benchmark runs",
       description:
-        "Runs a benchmark against up to five models you can use, including models on your own keys, or against active workspace routes when workspace_id is set. Personal runs stay private until you share them; workspace results also land as evidence on each model version.",
+        "Runs a benchmark against up to five models you can use, including models on your own keys, or against active workspace routes when workspace_id is set. Personal runs stay private until you share them; workspace results also land as evidence on each model version. Pass dry_run=true on a personal run to check eligibility and estimate the cost without starting anything.",
+      querySchema: z.object({ dry_run: queryBooleanSchema.optional() }),
       bodySchema: createBenchmarkRunsRequestSchema,
-      responses: { 200: { description: "Started runs", schema: benchmarkRunsResponseSchema } },
-      handler: ({ serviceContext, body }) =>
-        "workspace_id" in body
-          ? startWorkspaceBenchmarkRuns(serviceContext, body.workspace_id, body)
-          : startBenchmarkRuns(serviceContext, body),
-    })
-    .collectionAction("estimate", {
-      auth: true,
-      summary: "Check eligibility and estimate the cost of personal runs",
-      bodySchema: benchmarkEstimateRequestSchema,
-      responses: { 200: { description: "Estimates", schema: benchmarkEstimateSchema } },
-      handler: ({ serviceContext, body }) => estimateBenchmarkRuns(serviceContext, body),
+      responses: {
+        200: {
+          description: "Started runs, or estimates for a dry run",
+          schema: z.union([benchmarkRunsResponseSchema, benchmarkEstimateSchema]),
+        },
+      },
+      handler: ({ serviceContext, body, query }) => {
+        if ("workspace_id" in body) {
+          if (query.dry_run) {
+            throw new AssistantError(
+              "Dry runs estimate personal runs only",
+              ErrorType.PARAMS_ERROR,
+              400,
+            );
+          }
+
+          return startWorkspaceBenchmarkRuns(serviceContext, body.workspace_id, body);
+        }
+
+        return query.dry_run
+          ? estimateBenchmarkRuns(serviceContext, body)
+          : startBenchmarkRuns(serviceContext, body);
+      },
     })
     .collectionAction("queue", {
       auth: true,
@@ -156,36 +171,43 @@ defineResource(app, { path: "/votes", idParam: "vote_id", tags }, (votes) => {
   });
 });
 
-defineResource(app, { path: "/plays", idParam: "play_id", tags }, (plays) => {
-  plays.create({
-    auth: true,
-    summary: "Score a game you played",
-    bodySchema: benchmarkPlaySubmitRequestSchema,
-    responses: { 200: { description: "Your result", schema: benchmarkPlayResultSchema } },
-    handler: ({ serviceContext, body, user }) =>
-      submitBenchmarkPlay(serviceContext.env, serviceContext.repositories, user, body),
-  });
-});
-
 defineResource(app, { idParam: "benchmark_id", tags }, (benchmarks) => {
-  benchmarks
-    .read({
-      auth: false,
-      summary: "Read one benchmark board",
-      paramSchema: benchmarkIdParamsSchema,
-      responses: { 200: { description: "Benchmark board", schema: benchmarkBoardSchema } },
-      handler: ({ serviceContext, params }) =>
-        getBenchmarkBoard(serviceContext.repositories, params.benchmark_id),
-      cache: BOARD_CACHE,
-    })
-    .action("play", {
-      auth: true,
-      summary: "Start a game against the board",
-      paramSchema: benchmarkIdParamsSchema,
-      responses: { 200: { description: "A new game", schema: benchmarkPlayStartSchema } },
-      handler: ({ serviceContext, params }) =>
-        startBenchmarkPlay(serviceContext.env, params.benchmark_id),
-    });
+  benchmarks.read({
+    auth: false,
+    summary: "Read one benchmark board",
+    paramSchema: benchmarkIdParamsSchema,
+    responses: { 200: { description: "Benchmark board", schema: benchmarkBoardSchema } },
+    handler: ({ serviceContext, params }) =>
+      getBenchmarkBoard(serviceContext.repositories, params.benchmark_id),
+    cache: BOARD_CACHE,
+  });
+
+  benchmarks.sub("plays", "play_id").create({
+    auth: true,
+    summary: "Play against the board",
+    description:
+      "Send an empty body to deal a game. Send the game's token with your answers to score it.",
+    paramSchema: benchmarkIdParamsSchema,
+    bodySchema: benchmarkPlayRequestSchema,
+    responses: {
+      200: {
+        description: "A new game, or your result",
+        schema: z.union([benchmarkPlayStartSchema, benchmarkPlayResultSchema]),
+      },
+    },
+    handler: ({ serviceContext, params, body, user }) => {
+      const submission = benchmarkPlaySubmitRequestSchema.safeParse(body);
+
+      return submission.success
+        ? submitBenchmarkPlay(
+            serviceContext.env,
+            serviceContext.repositories,
+            user,
+            submission.data,
+          )
+        : startBenchmarkPlay(serviceContext.env, params.benchmark_id);
+    },
+  });
 
   benchmarks.singleton("arena").read({
     auth: true,

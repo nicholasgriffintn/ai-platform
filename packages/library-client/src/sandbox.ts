@@ -1,6 +1,7 @@
 import {
   sandboxRunInstructionSchema,
   type ConnectSandboxInstallationInput,
+  type ListPage,
   type CreateSandboxPreviewRequest,
   type CreateSandboxConnectionInput,
   type SandboxConnection,
@@ -20,19 +21,17 @@ import { apiService } from "./api-service.js";
 import { actOnEnvironment, environmentPath, environments } from "./environments.js";
 import { fetchApi } from "./fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
-import { requestJson, resource } from "./resource.js";
+import { requestJson } from "./resource.js";
 
-export function fetchSandboxConnections(): Promise<SandboxConnection[]> {
-  return resource<SandboxConnection>("/connections/github").listAll();
-}
+export async function fetchSandboxConnections(): Promise<{
+  connections: SandboxConnection[];
+  installConfig: SandboxInstallConfig;
+}> {
+  const page = await requestJson<
+    ListPage<SandboxConnection> & { install_config: SandboxInstallConfig }
+  >("/connections/github", "GET");
 
-export async function fetchSandboxInstallConfig(): Promise<SandboxInstallConfig> {
-  const page = await requestJson<{ install_config: SandboxInstallConfig }>(
-    "/connections/github?limit=1",
-    "GET",
-  );
-
-  return page.install_config;
+  return { connections: page.data, installConfig: page.install_config };
 }
 
 export async function upsertSandboxConnection(input: CreateSandboxConnectionInput): Promise<void> {

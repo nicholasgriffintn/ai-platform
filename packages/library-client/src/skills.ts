@@ -112,7 +112,7 @@ export async function importSkill(
   input: AuthoredSkillImportInput,
   projectId?: string,
 ): Promise<AuthoredSkillVersionedDocument> {
-  const path = withProjectScope("/skills/documents/import", projectId);
+  const path = withProjectScope("/skills/documents", projectId);
   const response = await fetchApi(path, {
     method: "POST",
     headers: await readHeaders(),
@@ -160,7 +160,7 @@ export async function createSkill(
 export async function createTeachingSkillDraft(
   input: TeachingSkillDraftInput,
 ): Promise<AuthoredSkillVersionedDocument> {
-  const response = await fetchApi("/skills/documents/teach", {
+  const response = await fetchApi("/skills/documents", {
     method: "POST",
     headers: await readHeaders(),
     body: input,

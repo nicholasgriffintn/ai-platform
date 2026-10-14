@@ -1378,8 +1378,12 @@ export const recipeInstallationSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const installedRecipeSchema = recipeInstallationSchema.extend({
+  recipe: assistantRecipeSchema,
+});
+
 export const recipeInstallationsResponseSchema = z.object({
-  installations: z.array(recipeInstallationSchema),
+  installations: z.array(installedRecipeSchema),
 });
 
 export const recipeInstallRequestSchema = assistantRecipeInstallRequestSchema;
@@ -1533,6 +1537,7 @@ export type RecipeWebhookTrigger = z.infer<typeof recipeWebhookTriggerSchema>;
 export type RecipeWebhookTriggerSecret = z.infer<typeof recipeWebhookTriggerSecretSchema>;
 export type RecipeWebhookTriggersResponse = z.infer<typeof recipeWebhookTriggersResponseSchema>;
 export type RecipeInstallation = z.infer<typeof recipeInstallationSchema>;
+export type InstalledRecipe = z.infer<typeof installedRecipeSchema>;
 export type RecipeInstallationsResponse = z.infer<typeof recipeInstallationsResponseSchema>;
 export type RecipeInstallRequest = z.infer<typeof recipeInstallRequestSchema>;
 export type RecipeInstallationUpdateRequest = z.infer<typeof recipeInstallationUpdateRequestSchema>;

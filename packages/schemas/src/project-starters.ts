@@ -55,10 +55,4 @@ export const projectStarterSummarySchema = z.object({
 
 export const projectStarterListResponseSchema = listSchema(projectStarterSummarySchema);
 
-export const instantiateProjectStarterSchema = z.object({
-  workspaceId: z.string().min(1),
-  name: z.string().trim().min(2).max(100).optional(),
-});
-
 export type ProjectStarterSummary = z.infer<typeof projectStarterSummarySchema>;
-export type InstantiateProjectStarterInput = z.infer<typeof instantiateProjectStarterSchema>;
