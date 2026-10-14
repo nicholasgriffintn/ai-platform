@@ -103,6 +103,7 @@ async function invokeChatModel(
       disable_functions: true,
       stream: false,
       store: false,
+      cache_ttl_seconds: 0,
       context,
     },
     model,

@@ -1,4 +1,4 @@
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../../../gateway.js";
+import { getAiGatewayMetadataHeaders, getAiGatewayCacheHeaders } from "../../../gateway.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
 import { BaseProvider } from "./base.js";
 
@@ -28,7 +28,7 @@ export class ParallelProvider extends BaseProvider {
       "x-api-key": apiKey,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...getAiGatewayCacheHeaders(params),
     };
   }
 }

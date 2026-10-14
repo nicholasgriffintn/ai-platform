@@ -11,7 +11,11 @@ import {
   type MultipartInputFile,
 } from "@ngriffin_uk/polychat-utility-server/multipart-input";
 
-import { resolveAiGatewayId, getAiGatewayMetadataHeaders } from "../../../gateway.js";
+import {
+  resolveAiGatewayId,
+  getAiGatewayMetadataHeaders,
+  shouldSkipAiGatewayCache,
+} from "../../../gateway.js";
 import { persistGeneratedOutput } from "../../../generated-media.js";
 import type { ProviderStorage } from "../../../host.js";
 import { buildInputSchemaInput } from "../../../input-schema.js";
@@ -399,7 +403,7 @@ export class WorkersProvider extends BaseProvider {
         const modelResponse = await ai.run(model, body, {
           gateway: {
             id: resolveAiGatewayId(),
-            skipCache: false,
+            skipCache: shouldSkipAiGatewayCache(params),
             cacheTtl: 7200,
             metadata: getAiGatewayMetadataHeaders(params),
           },

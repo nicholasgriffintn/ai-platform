@@ -1,7 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { omitUndefinedValues } from "@ngriffin_uk/polychat-utility-server/objects";
 
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../../../gateway.js";
+import { getAiGatewayMetadataHeaders, getAiGatewayCacheHeaders } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
 import { getToolsForProvider } from "../../../parameters.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
@@ -46,7 +46,7 @@ export class GoogleStudioProvider extends BaseProvider {
       "x-goog-api-key": apiKey,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...getAiGatewayCacheHeaders(params),
     };
   }
 

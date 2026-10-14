@@ -99,6 +99,8 @@ export {
   DEFAULT_AI_GATEWAY_ID,
   getAiGatewayMetadataHeaders,
   resolveAiGatewayCacheTtl,
+  getAiGatewayCacheHeaders,
+  shouldSkipAiGatewayCache,
   resolveAiGatewayId,
 } from "./gateway.js";
 export * from "./generated-media.js";

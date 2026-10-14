@@ -1,6 +1,6 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../../../gateway.js";
+import { getAiGatewayMetadataHeaders, getAiGatewayCacheHeaders } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
 import { buildInputSchemaInput } from "../../../input-schema.js";
 import type { ChatCompletionParameters, Message } from "../../../types/index.js";
@@ -47,7 +47,7 @@ export class FalAIProvider extends BaseProvider {
       Authorization: `Key ${apiKey}`,
       "Content-Type": "application/json",
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...getAiGatewayCacheHeaders(params),
     };
   }
 

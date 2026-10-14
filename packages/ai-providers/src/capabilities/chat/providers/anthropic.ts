@@ -11,7 +11,7 @@ import { mergeToolDefinitionsByName } from "@ngriffin_uk/polychat-utility-server
 import {
   resolveAiGatewayId,
   getAiGatewayMetadataHeaders,
-  resolveAiGatewayCacheTtl,
+  getAiGatewayCacheHeaders,
 } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
 import { trackProviderMetrics } from "../../../metrics.js";
@@ -227,7 +227,7 @@ export class AnthropicProvider extends BaseProvider {
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
           "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-          "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+          ...getAiGatewayCacheHeaders(params),
         };
 
         const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/anthropic/v1/messages/count_tokens`;

@@ -44,3 +44,13 @@ export function resolveAiGatewayCacheTtl(params?: AiGatewayCacheTtlSource): numb
 
   return DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS;
 }
+
+export function shouldSkipAiGatewayCache(params?: AiGatewayCacheTtlSource): boolean {
+  return resolveAiGatewayCacheTtl(params) === 0;
+}
+
+export function getAiGatewayCacheHeaders(params?: AiGatewayCacheTtlSource): Record<string, string> {
+  const ttl = resolveAiGatewayCacheTtl(params);
+
+  return ttl === 0 ? { "cf-aig-skip-cache": "true" } : { "cf-aig-cache-ttl": ttl.toString() };
+}

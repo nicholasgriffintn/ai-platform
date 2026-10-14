@@ -2,7 +2,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { detectStreaming } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { fetchAIResponse } from "../../../fetch.js";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../../../gateway.js";
+import { getAiGatewayMetadataHeaders, getAiGatewayCacheHeaders } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
@@ -90,7 +90,7 @@ export class AzureOpenAIProvider extends BaseProvider {
       "api-key": token,
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      ...getAiGatewayCacheHeaders(params),
     };
   }
 
