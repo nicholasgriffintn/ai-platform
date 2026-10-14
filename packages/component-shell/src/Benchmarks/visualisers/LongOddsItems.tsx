@@ -54,6 +54,25 @@ function Calibration({ items }: { items: readonly BenchmarkItemDetail[] }) {
   );
 }
 
+function Verdict({ detail }: { detail: BenchmarkItemDetail }) {
+  const probability = getNumberProperty(detail.result?.answer, "probability");
+  const correct = getBooleanProperty(detail.result?.detail, "correct");
+
+  if (probability === undefined) {
+    return <span className="shrink-0 text-xs text-failure">No usable answer</span>;
+  }
+
+  if (probability === 0.5) {
+    return <span className="shrink-0 text-xs text-attention">On the fence</span>;
+  }
+
+  return (
+    <span className={correct ? "shrink-0 text-xs text-success" : "shrink-0 text-xs text-failure"}>
+      Said {probability > 0.5 ? "yes" : "no"} · {correct ? "right" : "wrong"}
+    </span>
+  );
+}
+
 export function LongOddsItems({ items }: { items: readonly BenchmarkItemDetail[] }) {
   return (
     <div className="space-y-4">
@@ -67,25 +86,25 @@ export function LongOddsItems({ items }: { items: readonly BenchmarkItemDetail[]
             <li key={detail.item.id} className="space-y-2 p-3 text-sm">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-foreground">{getStringProperty(detail.item.data, "question")}</p>
-                <span
-                  className={
-                    answer
-                      ? "shrink-0 font-medium text-success"
-                      : "shrink-0 font-medium text-failure"
-                  }
-                >
-                  {answer ? "Yes" : "No"}
+                <span className="shrink-0 text-right">
+                  <span className="block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+                    Truth
+                  </span>
+                  <span
+                    className={answer ? "font-medium text-success" : "font-medium text-failure"}
+                  >
+                    {answer ? "Yes" : "No"}
+                  </span>
                 </span>
               </div>
-              {probability === undefined ? (
-                <p className="text-xs text-failure">No usable answer</p>
-              ) : (
+              {probability === undefined ? null : (
                 <ProbabilityBar
-                  label="Said yes"
+                  label="Chance of yes"
                   probability={probability}
                   detail={formatProbabilityPercent(probability)}
                 />
               )}
+              <Verdict detail={detail} />
               <p className="text-xs text-muted-foreground">
                 {getStringProperty(detail.reveal, "note")}
               </p>
