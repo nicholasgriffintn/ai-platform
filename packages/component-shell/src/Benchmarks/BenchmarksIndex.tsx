@@ -40,7 +40,7 @@ function CleverButCan({ boards }: { boards: readonly BenchmarkBoard[] }) {
         <div className="max-w-xl space-y-1">
           <h2 className="font-display text-2xl text-foreground">Does being clever help?</h2>
           <p className="text-sm text-muted-foreground">
-            Each dot is a model. Across, its{" "}
+            Each dot is a model, placed by its{" "}
             <a
               href={ARTIFICIAL_ANALYSIS_URL}
               target="_blank"
@@ -49,7 +49,7 @@ function CleverButCan({ boards }: { boards: readonly BenchmarkBoard[] }) {
             >
               Artificial Analysis
             </a>{" "}
-            Intelligence Index. Up, how it did here.
+            Intelligence Index (across) and how it scored here (up).
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Benchmark">
