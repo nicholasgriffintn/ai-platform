@@ -498,6 +498,7 @@ export class ChatOrchestrator {
       contextWindow: primaryModelConfig?.contextWindow,
       contextSkills: prepared.contextSkills,
       contextDocuments: prepared.contextDocuments,
+      contextSystemSections: prepared.systemPromptSections,
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
       onContextSnapshot: runLifecycle

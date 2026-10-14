@@ -1,3 +1,4 @@
+import type { ContextBudgetSystemSection } from "@ngriffin_uk/polychat-ai-agents";
 import { buildGoalContractSection, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -34,20 +35,38 @@ export interface BuildSystemPromptParams {
   activeGoal?: Goal | null;
 }
 
-function appendSection(prompt: string, section: string): string {
-  return prompt ? `${prompt}\n\n${section}` : section;
+export interface SystemPromptResult {
+  prompt: string;
+  sections: ContextBudgetSystemSection[];
 }
 
-export function appendProjectInstructions(
-  systemPrompt: string,
+function basePrompt(prompt: string): SystemPromptResult {
+  return { prompt, sections: [] };
+}
+
+function appendSection(
+  result: SystemPromptResult,
+  kind: ContextBudgetSystemSection["kind"],
+  text: string,
+  separator = "\n\n",
+): SystemPromptResult {
+  return {
+    prompt: result.prompt ? `${result.prompt}${separator}${text}` : text,
+    sections: [...result.sections, { kind, text }],
+  };
+}
+
+function appendProjectInstructions(
+  systemPrompt: SystemPromptResult,
   projectContext: ProjectChatContext | null,
   activeGoal?: Goal | null,
-): string {
-  let prompt = systemPrompt;
+): SystemPromptResult {
+  let result = systemPrompt;
 
   if (projectContext?.instructions) {
-    prompt = appendSection(
-      prompt,
+    result = appendSection(
+      result,
+      "project",
       renderPrompt("chat/context/project-instructions", {
         instructions: projectContext.instructions,
       }),
@@ -55,14 +74,14 @@ export function appendProjectInstructions(
   }
 
   if (activeGoal && activeGoal.status === "active") {
-    prompt = appendSection(prompt, buildGoalContractSection(activeGoal));
+    result = appendSection(result, "project", buildGoalContractSection(activeGoal));
   }
 
-  return prompt;
+  return result;
 }
 
 async function appendMemoryContext(
-  systemPrompt: string,
+  systemPrompt: SystemPromptResult,
   {
     repositories,
     finalMessage,
@@ -76,7 +95,7 @@ async function appendMemoryContext(
     memoriesEnabled: boolean;
     memoryScope: MemoryScope;
   },
-): Promise<string> {
+): Promise<SystemPromptResult> {
   const hasPersonalMemory =
     memoryScope.type === "personal" ||
     (memoryScope.type === "bound" && memoryScope.baseline?.type === "personal");
@@ -91,7 +110,9 @@ async function appendMemoryContext(
       synthesisText: synthesis?.synthesis_text,
     });
 
-    return memoryContext ? `${systemPrompt}\n${memoryContext}` : systemPrompt;
+    return memoryContext
+      ? appendSection(systemPrompt, "memory", memoryContext, "\n")
+      : systemPrompt;
   } catch (error) {
     logger.warn("Failed to read the memory synthesis", {
       error,
@@ -114,7 +135,7 @@ export async function buildSystemPrompt({
   memoryScope = { type: "personal" },
   skills,
   activeGoal,
-}: BuildSystemPromptParams): Promise<string> {
+}: BuildSystemPromptParams): Promise<SystemPromptResult> {
   const {
     system_prompt,
     mode = "normal",
@@ -127,7 +148,7 @@ export async function buildSystemPrompt({
   const user = options.context?.user;
 
   if (mode === "no_system") {
-    return appendProjectInstructions("", projectContext, activeGoal);
+    return appendProjectInstructions(basePrompt(""), projectContext, activeGoal);
   }
 
   const memoryContext = {
@@ -140,7 +161,7 @@ export async function buildSystemPrompt({
 
   const withMemory = async (prompt: string) =>
     appendProjectInstructions(
-      await appendMemoryContext(prompt, memoryContext),
+      await appendMemoryContext(basePrompt(prompt), memoryContext),
       projectContext,
       activeGoal,
     );

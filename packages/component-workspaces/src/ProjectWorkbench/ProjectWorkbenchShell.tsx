@@ -11,43 +11,47 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   PROJECT_WORKBENCH_PANES,
+  PROJECT_WORKBENCH_PANES_PER_COLUMN,
+  isProjectWorkbenchPaneFullHeight,
+  useElementWidth,
+  type ProjectWorkbenchLayout,
   type ProjectWorkbenchPane,
   type ProjectWorkbenchStatus,
 } from "@ngriffin_uk/polychat-utility-react";
-import {
-  Activity,
-  Bot,
-  FileDiff,
-  Files,
-  FileText,
-  MonitorPlay,
-  NotebookPen,
-  PanelRightClose,
-  PanelRightOpen,
-  ShieldCheck,
-} from "lucide-react";
-import type { KeyboardEvent, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, PanelRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 
-import { useWorkbenchDockResize } from "./useWorkbenchDockResize";
+import { ProjectWorkbenchPaneLauncher } from "./ProjectWorkbenchPaneLauncher";
+import { ProjectWorkbenchPanelFrame } from "./ProjectWorkbenchPanelFrame";
+import {
+  FLUSH_PANES,
+  PANE_PRESENTATION,
+  STATUS_PRESENTATION,
+} from "./projectWorkbenchPresentation";
+import { ProjectWorkbenchRunStatus } from "./ProjectWorkbenchRunStatus";
+import { ProjectWorkbenchToolbar } from "./ProjectWorkbenchToolbar";
+import {
+  useProjectWorkbenchAttention,
+  type ConversationWorkbenchAttention,
+} from "./useProjectWorkbenchAttention";
+import { WORKBENCH_RAIL_WIDTH, useProjectWorkbenchGeometry } from "./useProjectWorkbenchGeometry";
 
 const DOCK_MEDIA_QUERY = "(min-width: 1024px)";
 
 export { PROJECT_WORKBENCH_PANES, type ProjectWorkbenchPane, type ProjectWorkbenchStatus };
+export type { ConversationWorkbenchAttention };
 
 export interface ProjectWorkbenchHeaderSlots {
   actions?: ReactNode;
   status?: ReactNode;
 }
 
-export interface ConversationWorkbenchAttention {
-  key: string;
-  pane: ProjectWorkbenchPane;
-}
-
 export interface ProjectWorkbenchShellProps {
   conversation: ReactNode;
   header: (slots: ProjectWorkbenchHeaderSlots) => ReactNode;
+  context?: ReactNode;
+  contextLabel?: string;
   panels: Partial<Record<ProjectWorkbenchPane, ReactNode>>;
   availablePanes?: readonly ProjectWorkbenchPane[];
   attention?: ConversationWorkbenchAttention;
@@ -55,227 +59,16 @@ export interface ProjectWorkbenchShellProps {
   statusDetail?: string;
   showStatus?: boolean;
   title?: string;
-  selectedPane: ProjectWorkbenchPane;
-  onSelectedPaneChange: (pane: ProjectWorkbenchPane) => void;
-  dockCollapsed: boolean;
-  onDockCollapsedChange: (collapsed: boolean) => void;
-  dockWidth: number;
-  onDockWidthChange: (width: number) => void;
+  layout: ProjectWorkbenchLayout;
+  onPaneClose?: (pane: ProjectWorkbenchPane) => void;
   runControls?: ReactNode;
-}
-
-const MIN_DOCK_WIDTH = 320;
-const MAX_DOCK_WIDTH = 720;
-const MIN_CONVERSATION_WIDTH = 384;
-const COMPACT_PANE_TABS_WIDTH = 520;
-
-const PANE_PRESENTATION = {
-  context: { label: "Context", icon: NotebookPen },
-  artifact: { label: "Artifact", icon: FileText },
-  activity: { label: "Activity", icon: Activity },
-  preview: { label: "Preview", icon: MonitorPlay },
-  changes: { label: "Changes", icon: FileDiff },
-  files: { label: "Files", icon: Files },
-  proof: { label: "Proof", icon: ShieldCheck },
-  delegates: { label: "Delegates", icon: Bot },
-} as const;
-
-const STATUS_PRESENTATION: Record<
-  ProjectWorkbenchStatus,
-  {
-    label: string;
-    tone: string;
-    animated: boolean;
-    activeWork: boolean;
-    requiresAttention?: boolean;
-  }
-> = {
-  ready: {
-    label: "Ready",
-    tone: "bg-muted-foreground",
-    animated: false,
-    activeWork: false,
-  },
-  queued: { label: "Queued", tone: "bg-active-work", animated: false, activeWork: true },
-  preparing: { label: "Preparing", tone: "bg-creative", animated: true, activeWork: true },
-  running: { label: "Running", tone: "bg-active-work", animated: true, activeWork: true },
-  paused: { label: "Paused", tone: "bg-attention", animated: false, activeWork: true },
-  waiting_approval: {
-    label: "Waiting for approval",
-    tone: "bg-attention",
-    animated: false,
-    activeWork: true,
-    requiresAttention: true,
-  },
-  waiting_input: {
-    label: "Waiting for input",
-    tone: "bg-attention",
-    animated: false,
-    activeWork: true,
-    requiresAttention: true,
-  },
-  review: { label: "Ready for review", tone: "bg-creative", animated: false, activeWork: false },
-  completed: { label: "Completed", tone: "bg-success", animated: false, activeWork: false },
-  failed: { label: "Failed", tone: "bg-failure", animated: false, activeWork: false },
-  cancelled: {
-    label: "Cancelled",
-    tone: "bg-muted-foreground",
-    animated: false,
-    activeWork: false,
-  },
-};
-
-function PaneTabs({
-  panes,
-  selectedPane,
-  onSelectedPaneChange,
-  idPrefix,
-  compact = false,
-}: Pick<ProjectWorkbenchShellProps, "selectedPane" | "onSelectedPaneChange"> & {
-  panes: readonly ProjectWorkbenchPane[];
-  idPrefix: string;
-  compact?: boolean;
-}) {
-  const handleKeyDown = (pane: ProjectWorkbenchPane, event: KeyboardEvent<HTMLButtonElement>) => {
-    const currentIndex = panes.indexOf(pane);
-    let nextIndex = currentIndex;
-
-    if (event.key === "ArrowRight") {
-      nextIndex = (currentIndex + 1) % panes.length;
-    } else if (event.key === "ArrowLeft") {
-      nextIndex = (currentIndex - 1 + panes.length) % panes.length;
-    } else if (event.key === "Home") {
-      nextIndex = 0;
-    } else if (event.key === "End") {
-      nextIndex = panes.length - 1;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-    const nextPane = panes[nextIndex];
-
-    if (!nextPane) {
-      return;
-    }
-
-    onSelectedPaneChange(nextPane);
-    event.currentTarget.parentElement
-      ?.querySelector<HTMLButtonElement>(`#${idPrefix}-${nextPane}-tab`)
-      ?.focus();
-  };
-
-  return (
-    <div
-      role="tablist"
-      aria-label="Workbench panels"
-      className="flex min-w-0 gap-1 overflow-x-auto p-1"
-    >
-      {panes.map((pane) => {
-        const presentation = PANE_PRESENTATION[pane];
-        const Icon = presentation.icon;
-
-        return (
-          <button
-            key={pane}
-            id={`${idPrefix}-${pane}-tab`}
-            type="button"
-            role="tab"
-            aria-selected={selectedPane === pane}
-            aria-controls={`${idPrefix}-${pane}-panel`}
-            tabIndex={selectedPane === pane ? 0 : -1}
-            onClick={() => onSelectedPaneChange(pane)}
-            onKeyDown={(event) => handleKeyDown(pane, event)}
-            className={cn(
-              "polychat-motion-micro inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-              selectedPane === pane
-                ? "bg-selection text-active-work"
-                : "text-muted-foreground hover:bg-selection hover:text-foreground",
-            )}
-          >
-            <Icon className="size-4" aria-hidden="true" />
-            <span className={cn(compact && "sr-only")}>{presentation.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function SelectedPane({
-  selectedPane,
-  panels,
-  idPrefix,
-  flush = false,
-}: Pick<ProjectWorkbenchShellProps, "selectedPane" | "panels"> & {
-  idPrefix: string;
-  flush?: boolean;
-}) {
-  return (
-    <section
-      id={`${idPrefix}-${selectedPane}-panel`}
-      role="tabpanel"
-      aria-labelledby={`${idPrefix}-${selectedPane}-tab`}
-      tabIndex={0}
-      className={cn(
-        "polychat-motion-enter min-h-0 flex-1 overflow-auto outline-none",
-        flush ? "p-0" : "px-4 py-3",
-      )}
-    >
-      {panels[selectedPane] ?? null}
-    </section>
-  );
-}
-
-function RunStatusSummary({
-  status,
-  statusDetail,
-}: Pick<ProjectWorkbenchShellProps, "status" | "statusDetail">) {
-  const presentation = STATUS_PRESENTATION[status];
-
-  return (
-    <output
-      aria-live="polite"
-      className={cn(
-        "flex min-w-0 items-center gap-2",
-        presentation.requiresAttention && "rounded-md bg-attention/10 px-2 py-1",
-      )}
-      title={statusDetail ? `${presentation.label} · ${statusDetail}` : presentation.label}
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "size-2 shrink-0 rounded-full",
-          presentation.tone,
-          presentation.animated && "animate-pulse",
-        )}
-      />
-      <span
-        className={cn(
-          "shrink-0 text-xs font-medium sm:text-sm",
-          presentation.requiresAttention && "text-attention",
-        )}
-      >
-        {presentation.label}
-      </span>
-      {statusDetail ? (
-        <>
-          <span className="sr-only">: {statusDetail}</span>
-          <span
-            aria-hidden="true"
-            className="hidden min-w-0 truncate text-xs text-muted-foreground @min-[48rem]:block"
-          >
-            {statusDetail}
-          </span>
-        </>
-      ) : null}
-    </output>
-  );
 }
 
 export function ProjectWorkbenchShell({
   conversation,
   header,
+  context,
+  contextLabel,
   panels,
   availablePanes = PROJECT_WORKBENCH_PANES,
   attention,
@@ -283,155 +76,105 @@ export function ProjectWorkbenchShell({
   statusDetail,
   showStatus = true,
   title = "Project workbench",
-  selectedPane,
-  onSelectedPaneChange,
-  dockCollapsed,
-  onDockCollapsedChange,
-  dockWidth,
-  onDockWidthChange,
+  layout,
+  onPaneClose,
   runControls,
 }: ProjectWorkbenchShellProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const hasDock = useMediaQuery(DOCK_MEDIA_QUERY);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobilePane, setMobilePane] = useState<ProjectWorkbenchPane | null>(null);
+  const [expandedPane, setExpandedPane] = useState<ProjectWorkbenchPane | null>(null);
+  const hasContext = context !== undefined && context !== null;
   const panes = availablePanes.filter((pane) => panels[pane] !== undefined);
-  const activePane = panes.includes(selectedPane) ? selectedPane : (panes[0] ?? selectedPane);
-  const previousAttentionKey = useRef(attention?.key);
-  const attentionInitialised = useRef(false);
-  const autoOpenedKey = useRef<string | undefined>(undefined);
-  const [prevAttentionMobileKey, setPrevAttentionMobileKey] = useState<string | undefined>(
-    undefined,
-  );
-  const [prevWaitingKey, setPrevWaitingKey] = useState(
-    `${status}:${hasDock ? "desktop" : "mobile"}`,
-  );
-  const [prevAutoKey, setPrevAutoKey] = useState<string | undefined>(undefined);
+  const openPanes = layout.openPanes.filter((pane) => panes.includes(pane));
+  const { ref: containerRef, width: containerWidth } = useElementWidth<HTMLDivElement>();
+  const geometry = useProjectWorkbenchGeometry({
+    containerRef,
+    containerWidth,
+    layout,
+    hasContext,
+    openPanes,
+  });
+  const visibleExpandedPane =
+    expandedPane && geometry.visiblePanes.includes(expandedPane) ? expandedPane : null;
 
   if (hasDock && mobileOpen) {
     setMobileOpen(false);
   }
 
-  if (prevAttentionMobileKey !== attention?.key) {
-    setPrevAttentionMobileKey(attention?.key);
-
-    if (attention && !hasDock) {
+  const { hasUnseenContext } = useProjectWorkbenchAttention({
+    attention,
+    status,
+    hasDock,
+    layout,
+    contextIsVisible: hasDock ? geometry.showRail : mobileOpen && mobilePane === null,
+    panelsHiddenByRail: geometry.panelsHiddenByRail,
+    onMobilePane: (pane) => {
+      setMobilePane(pane);
       setMobileOpen(true);
+    },
+  });
+
+  const closePane = (pane: ProjectWorkbenchPane) => {
+    if (expandedPane === pane) {
+      setExpandedPane(null);
     }
-  }
 
-  const waitingKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
-
-  if (prevWaitingKey !== waitingKey) {
-    setPrevWaitingKey(waitingKey);
-
-    if ((status === "waiting_input" || status === "waiting_approval") && !hasDock) {
-      setMobileOpen(true);
+    if (mobilePane === pane) {
+      setMobilePane(null);
     }
-  }
 
-  const autoOpenKey =
-    status === "ready" ? undefined : `${status}:${hasDock ? "desktop" : "mobile"}`;
+    layout.closePane(pane);
+    onPaneClose?.(pane);
+  };
 
-  if (prevAutoKey !== autoOpenKey) {
-    setPrevAutoKey(autoOpenKey);
-
-    if (autoOpenKey && !hasDock) {
-      setMobileOpen(true);
-    }
-  }
-
-  useEffect(() => {
-    const previous = previousAttentionKey.current;
-
-    previousAttentionKey.current = attention?.key;
-
-    if (!attentionInitialised.current) {
-      attentionInitialised.current = true;
-
-      if (attention) {
-        onSelectedPaneChange(attention.pane);
-
-        if (hasDock) {
-          onDockCollapsedChange(false);
-        }
-      }
+  const togglePane = (pane: ProjectWorkbenchPane) => {
+    if (openPanes.includes(pane)) {
+      closePane(pane);
 
       return;
     }
 
-    if (!attention || previous === attention.key) {
-      return;
+    layout.openPane(pane);
+
+    if (geometry.panelsHiddenByRail) {
+      layout.setContextOpen(false);
     }
+  };
 
-    onSelectedPaneChange(attention.pane);
-
-    if (hasDock) {
-      onDockCollapsedChange(false);
-    }
-  }, [attention, hasDock, onDockCollapsedChange, onSelectedPaneChange]);
-
-  useEffect(() => {
-    if (status !== "waiting_input" && status !== "waiting_approval") {
-      return;
-    }
-
-    if (hasDock) {
-      onDockCollapsedChange(false);
-    }
-  }, [hasDock, onDockCollapsedChange, status]);
-
-  useEffect(() => {
-    if (status === "ready") {
-      autoOpenedKey.current = undefined;
-
-      return;
-    }
-
-    const nextAutoOpenKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
-
-    if (autoOpenedKey.current === nextAutoOpenKey) {
-      return;
-    }
-
-    autoOpenedKey.current = nextAutoOpenKey;
-
-    if (hasDock) {
-      onDockCollapsedChange(false);
-    }
-  }, [hasDock, onDockCollapsedChange, status]);
-
-  const { containerRef, effectiveMaxWidth, effectiveWidth, resizeHandleProps } =
-    useWorkbenchDockResize({
-      width: dockWidth,
-      minWidth: MIN_DOCK_WIDTH,
-      maxWidth: MAX_DOCK_WIDTH,
-      minConversationWidth: MIN_CONVERSATION_WIDTH,
-      onWidthChange: onDockWidthChange,
-    });
-  const statusRequiresAttention = status === "waiting_input" || status === "waiting_approval";
-  const panelIsOpen = hasDock ? !dockCollapsed || statusRequiresAttention : mobileOpen;
-  const panelButton =
-    panes.length > 0 ? (
-      <Button
-        type="button"
-        variant={panelIsOpen ? "iconActive" : "icon"}
-        size="icon"
-        title={panelIsOpen ? "Close workbench panels" : "Open workbench panels"}
-        aria-label={panelIsOpen ? "Close workbench panels" : "Open workbench panels"}
-        aria-expanded={panelIsOpen}
-        aria-controls={hasDock ? "project-workbench-desktop" : "project-workbench-mobile"}
-        onClick={hasDock ? () => onDockCollapsedChange(!dockCollapsed) : undefined}
-        icon={
-          panelIsOpen ? (
-            <PanelRightClose className="size-4" />
-          ) : (
-            <PanelRightOpen className="size-4" />
-          )
-        }
-      />
+  const mobileButton =
+    hasContext || panes.length > 0 ? (
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant={mobileOpen ? "iconActive" : "icon"}
+          size="icon"
+          title="Context and panels"
+          aria-label={contextLabel ? `Context and panels · ${contextLabel}` : "Context and panels"}
+          className="relative"
+          icon={<PanelRight className="size-4" />}
+        >
+          {hasUnseenContext ? (
+            <span
+              aria-hidden="true"
+              className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-creative"
+            />
+          ) : null}
+        </Button>
+      </DialogTrigger>
     ) : null;
 
   return (
-    <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+    <Dialog
+      open={mobileOpen}
+      onOpenChange={(open) => {
+        setMobileOpen(open);
+
+        if (!open) {
+          setMobilePane(null);
+        }
+      }}
+    >
       <div
         ref={containerRef}
         data-active-work={STATUS_PRESENTATION[status].activeWork}
@@ -439,66 +182,113 @@ export function ProjectWorkbenchShell({
       >
         {header({
           status: showStatus ? (
-            <RunStatusSummary status={status} statusDetail={statusDetail} />
+            <ProjectWorkbenchRunStatus status={status} statusDetail={statusDetail} />
           ) : undefined,
           actions: (
-            <div className="flex min-w-0 shrink-0 items-center gap-0.5">
+            <div className="flex min-w-0 shrink-0 items-center gap-1.5">
               {runControls}
-              {panelButton ? (
-                hasDock ? (
-                  panelButton
-                ) : (
-                  <DialogTrigger asChild>{panelButton}</DialogTrigger>
-                )
-              ) : null}
+              {hasDock ? (
+                <ProjectWorkbenchToolbar
+                  hasContext={hasContext}
+                  contextOpen={geometry.showRail}
+                  contextLabel={contextLabel}
+                  hasUnseenContext={hasUnseenContext}
+                  onToggleContext={() => layout.setContextOpen(!layout.contextOpen)}
+                  panes={panes}
+                  openPanes={geometry.visiblePanes}
+                  onTogglePane={togglePane}
+                />
+              ) : (
+                mobileButton
+              )}
             </div>
           ),
         })}
         <div className="flex min-h-0 flex-1">
-          <main aria-label="Conversation" className="min-w-0 flex-1 lg:min-w-96">
+          <main aria-label="Conversation" className="min-w-0 flex-1">
             {conversation}
           </main>
-          <div className="relative hidden min-h-0 lg:flex">
-            {panelIsOpen && panes.length > 0 ? (
-              <>
+          {hasDock && (geometry.showRail || geometry.columnCount > 0) ? (
+            <div className="flex min-h-0 shrink-0" style={{ width: geometry.workbenchWidth }}>
+              {geometry.columnCount > 0 ? (
                 <button
                   type="button"
                   // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- window splitter pattern requires focusable separator with arrow-key resizing and valuemin/max/now; native hr is non-interactive and cannot host resize activation
                   role="separator"
                   aria-label="Resize workbench panels"
                   aria-orientation="vertical"
-                  aria-valuemin={MIN_DOCK_WIDTH}
-                  aria-valuemax={effectiveMaxWidth}
-                  aria-valuenow={effectiveWidth}
+                  aria-valuemin={geometry.resize.min}
+                  aria-valuemax={geometry.resize.max}
+                  aria-valuenow={geometry.resize.now}
                   tabIndex={0}
-                  className="polychat-motion-micro m-0 w-1 cursor-col-resize touch-none border-0 bg-border hover:bg-active-work focus-visible:bg-active-work focus-visible:outline-2 focus-visible:outline-ring"
-                  {...resizeHandleProps}
-                />
-                <aside
-                  id="project-workbench-desktop"
-                  aria-label={title}
-                  className="polychat-motion-panel flex min-h-0 flex-col border-l border-border bg-surface"
-                  style={{ width: effectiveWidth }}
+                  className="group relative m-0 w-2 shrink-0 cursor-col-resize touch-none border-0 bg-transparent p-0 focus-visible:outline-none"
+                  {...geometry.resize.handleProps}
                 >
-                  <div className="min-w-0 border-b border-border">
-                    <PaneTabs
-                      panes={panes}
-                      selectedPane={activePane}
-                      onSelectedPaneChange={onSelectedPaneChange}
-                      idPrefix="project-workbench-desktop"
-                      compact={effectiveWidth < COMPACT_PANE_TABS_WIDTH}
-                    />
-                  </div>
-                  <SelectedPane
-                    selectedPane={activePane}
-                    panels={panels}
-                    idPrefix="project-workbench-desktop"
-                    flush={activePane === "artifact"}
+                  <span
+                    aria-hidden="true"
+                    className="polychat-motion-micro absolute inset-y-3 left-1/2 w-0.5 -translate-x-1/2 rounded-full group-hover:bg-active-work/60 group-focus-visible:bg-active-work"
                   />
-                </aside>
-              </>
-            ) : null}
-          </div>
+                </button>
+              ) : (
+                <span aria-hidden="true" className="w-2 shrink-0" />
+              )}
+              <div
+                id="project-workbench-desktop"
+                className="flex min-h-0 min-w-0 flex-1 gap-2 py-2 pr-2"
+              >
+                {geometry.showRail ? (
+                  <aside
+                    id="project-workbench-context"
+                    aria-label={`${title} context`}
+                    className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto"
+                    style={{ width: WORKBENCH_RAIL_WIDTH }}
+                  >
+                    {context}
+                  </aside>
+                ) : null}
+                {geometry.columnCount > 0 ? (
+                  <section
+                    aria-label={`${title} panels`}
+                    className="grid min-h-0 min-w-0 flex-1 gap-2"
+                    style={{
+                      gridAutoFlow: "column",
+                      gridTemplateColumns: visibleExpandedPane
+                        ? "minmax(0, 1fr)"
+                        : `repeat(${geometry.columnCount}, minmax(0, 1fr))`,
+                      gridTemplateRows: `repeat(${PROJECT_WORKBENCH_PANES_PER_COLUMN}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {geometry.visiblePanes.map((pane, index) => (
+                      <ProjectWorkbenchPanelFrame
+                        key={pane}
+                        pane={pane}
+                        idPrefix="project-workbench-desktop"
+                        className={cn(
+                          visibleExpandedPane && visibleExpandedPane !== pane && "hidden",
+                        )}
+                        style={
+                          visibleExpandedPane === pane
+                            ? { gridColumn: "1 / -1", gridRow: "1 / -1" }
+                            : isProjectWorkbenchPaneFullHeight(index, geometry.visiblePanes.length)
+                              ? { gridRow: `span ${PROJECT_WORKBENCH_PANES_PER_COLUMN}` }
+                              : undefined
+                        }
+                        isExpanded={visibleExpandedPane === pane}
+                        onToggleExpanded={
+                          geometry.visiblePanes.length > 1
+                            ? () => setExpandedPane(visibleExpandedPane === pane ? null : pane)
+                            : undefined
+                        }
+                        onClose={() => closePane(pane)}
+                      >
+                        {panels[pane]}
+                      </ProjectWorkbenchPanelFrame>
+                    ))}
+                  </section>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
       <DialogContent
@@ -507,24 +297,39 @@ export function ProjectWorkbenchShell({
         className="inset-y-0 top-0 right-0 left-auto flex h-[100dvh] max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 border-l p-0 sm:w-[min(88vw,32rem)] sm:max-w-lg lg:hidden"
       >
         <DialogHeader className="border-b border-border px-4 py-3 pr-14 text-left">
-          <DialogTitle>{title}</DialogTitle>
+          <div className="flex items-center gap-2">
+            {mobilePane ? (
+              <Button
+                type="button"
+                variant="icon"
+                size="icon"
+                title="Back to context"
+                aria-label="Back to context"
+                onClick={() => setMobilePane(null)}
+                icon={<ArrowLeft className="size-4" />}
+              />
+            ) : null}
+            <DialogTitle>
+              {mobilePane ? PANE_PRESENTATION[mobilePane].label : "Context"}
+            </DialogTitle>
+          </div>
           <DialogDescription>{STATUS_PRESENTATION[status].label}</DialogDescription>
         </DialogHeader>
-        <div className="border-b border-border px-2">
-          <PaneTabs
-            panes={panes}
-            selectedPane={activePane}
-            onSelectedPaneChange={onSelectedPaneChange}
-            idPrefix="project-workbench-mobile"
-            compact
-          />
-        </div>
-        <SelectedPane
-          selectedPane={activePane}
-          panels={panels}
-          idPrefix="project-workbench-mobile"
-          flush={activePane === "artifact"}
-        />
+        {mobilePane && panels[mobilePane] !== undefined ? (
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-auto",
+              FLUSH_PANES.includes(mobilePane) ? "p-0" : "px-4 py-3",
+            )}
+          >
+            {panels[mobilePane]}
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto bg-canvas p-2">
+            <ProjectWorkbenchPaneLauncher panes={panes} openPanes={[]} onToggle={setMobilePane} />
+            {context}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

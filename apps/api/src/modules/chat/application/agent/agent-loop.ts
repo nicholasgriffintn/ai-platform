@@ -5,6 +5,7 @@ import {
   fitMessagesToContextBudget,
   type AgentEvent,
   type ContextBudgetSkill,
+  type ContextBudgetSystemSection,
   type AgentFinishAssessment,
   type AgentLoopState,
   type AgentMessage,
@@ -57,6 +58,7 @@ import {
   ARTIFACT_MARKUP_FINAL_ANSWER_NOTICE,
   isArtifactMarkupToolName,
 } from "~/modules/chat/application/tools/artifact-markup";
+import { estimateToolDefinitionTokens } from "~/modules/chat/application/tools/available-functions";
 import {
   createToolCallLedger,
   type ToolCallLedger,
@@ -199,6 +201,7 @@ export interface AgentLoopExecutionParams {
   contextWindow?: number;
   contextSkills?: readonly ContextBudgetSkill[];
   contextDocuments?: readonly ChatContextDocument[];
+  contextSystemSections?: readonly ContextBudgetSystemSection[];
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
@@ -529,6 +532,11 @@ export async function runAgentLoop(
         provider: params.provider,
         skills: params.contextSkills,
         documents: params.contextDocuments,
+        systemSections: params.contextSystemSections,
+        toolDefinitionTokens: estimateToolDefinitionTokens({
+          ...params.requestParams,
+          enabled_tools: [...state.enabledToolNames],
+        }),
       });
 
       await params.onContextSnapshot?.(contextBudget.snapshot);

@@ -13,6 +13,7 @@ import {
   ProjectWorkbenchSection,
   ProjectWorkbenchServices,
   ProjectWorkbenchShell,
+  type ConversationWorkbenchAttention,
   type ProjectWorkbenchHeaderSlots,
   type ProjectWorkbenchPane,
 } from "@ngriffin_uk/polychat-component-workspaces";
@@ -22,12 +23,11 @@ import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-
 import { getComputerObservations } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getOutputArtifactContent, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  ARTIFACT_WORKBENCH_MIN_WIDTH,
   ArtifactWorkbenchProvider,
   useArtifactWorkbench,
   useProjectWorkbenchControls,
   useProjectWorkbenchDiff,
-  useProjectWorkbenchPreferences,
+  useProjectWorkbenchLayout,
   useProjectWorkbenchPreview,
   useProjectWorkbenchRuns,
   deriveProjectWorkbenchControlState,
@@ -41,13 +41,19 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import type { ProjectWorkbenchLayout } from "@ngriffin_uk/polychat-utility-react";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
 import { ConversationBriefPanel } from "../Conversations/ConversationBriefPanel.js";
+import { ConversationContextRail } from "../Conversations/ConversationContextRail.js";
 import { useConversationBriefAttention } from "../Conversations/useConversationBriefAttention.js";
+import { useConversationWorkbenchContext } from "../Conversations/useConversationWorkbenchContext.js";
 import { ProjectDelegatesPanel } from "../Delegations/ProjectDelegatesPanel.js";
+import { ProjectRunChangesCard } from "./ProjectRunChangesCard.js";
 import { WorkbenchComputerPreview } from "./WorkbenchComputerPreview.js";
+
+const PROJECT_WORKBENCH_LAYOUT_KEY = "polychat:work-workbench";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;
@@ -89,7 +95,8 @@ function ProjectWorkbenchConversationInner({
     conversationId: effectiveConversationId,
     conversationIsStreaming,
   });
-  const preferences = useProjectWorkbenchPreferences();
+  const layout = useProjectWorkbenchLayout(PROJECT_WORKBENCH_LAYOUT_KEY);
+  const workbench = useConversationWorkbenchContext(effectiveConversationId ?? undefined);
   const currentUserId = useChatStore((state) => state.user?.id);
   const diff = useProjectWorkbenchDiff(runsQuery.currentRun);
   const controls = useProjectWorkbenchControls({
@@ -133,10 +140,6 @@ function ProjectWorkbenchConversationInner({
   );
   const latestComputerObservation = computerObservations[computerObservations.length - 1];
   const attention = useMemo(() => {
-    if (briefAttention) {
-      return briefAttention;
-    }
-
     const blockedReason = task?.blockedReason;
 
     if (
@@ -151,8 +154,13 @@ function ProjectWorkbenchConversationInner({
       return { key: `computer:${latestComputerObservation.id}`, pane: "preview" as const };
     }
 
-    return undefined;
-  }, [briefAttention, task, latestComputerObservation]);
+    return briefAttention.attention;
+  }, [briefAttention.attention, task, latestComputerObservation]);
+
+  if (briefAttention.isUnseen && layout.openPanes.includes("brief")) {
+    briefAttention.markSeen();
+  }
+
   const presentation = deriveProjectWorkbenchPresentation({
     run: runsQuery.currentRun,
     task,
@@ -233,7 +241,7 @@ function ProjectWorkbenchConversationInner({
   const recordedFiles = runsQuery.currentRun?.manifest?.changes.files ?? [];
   const artifacts = runsQuery.currentRun?.manifest?.artifacts ?? [];
   const availablePanes = deriveProjectWorkbenchPanes({
-    hasContext: Boolean(effectiveConversationId),
+    hasBrief: Boolean(effectiveConversationId),
     hasArtifact: false,
     hasActivity: Boolean(runsQuery.currentRun || activityEntries.length > 0 || services.length > 0),
     hasPreview: previewServices.length > 0 || computerObservations.length > 0,
@@ -243,9 +251,9 @@ function ProjectWorkbenchConversationInner({
     hasDelegates: Boolean(delegationsQuery.data?.data.length),
   });
   const panels = {
-    context: effectiveConversationId ? (
+    brief: effectiveConversationId ? (
       <ConversationBriefPanel conversationId={effectiveConversationId} />
-    ) : null,
+    ) : undefined,
     activity: (
       <>
         <ProjectWorkbenchServices
@@ -343,17 +351,29 @@ function ProjectWorkbenchConversationInner({
     <ProjectWorkbenchArtifactShell
       renderHeader={renderHeader}
       conversation={children({ runSteering, composerBanner })}
+      context={
+        effectiveConversationId ? (
+          <ConversationContextRail
+            conversationId={effectiveConversationId}
+            workbench={workbench}
+            briefUpdated={briefAttention.isUnseen}
+            onOpenBrief={() => layout.openPane("brief")}
+          >
+            <ProjectRunChangesCard
+              diffContent={diff.content}
+              recordedFiles={recordedFiles}
+              onOpenChanges={() => layout.openPane("changes")}
+            />
+          </ConversationContextRail>
+        ) : null
+      }
+      contextLabel={workbench.usageLabel}
       panels={panels}
       availablePanes={availablePanes}
       attention={attention}
       status={presentation.status}
       statusDetail={presentation.detail}
-      selectedPane={preferences.selectedPane}
-      onSelectedPaneChange={preferences.setSelectedPane}
-      dockCollapsed={preferences.dockCollapsed}
-      onDockCollapsedChange={preferences.setDockCollapsed}
-      dockWidth={preferences.dockWidth}
-      onDockWidthChange={preferences.setDockWidth}
+      layout={layout}
       runControls={runControls}
     />
   );
@@ -362,32 +382,26 @@ function ProjectWorkbenchConversationInner({
 function ProjectWorkbenchArtifactShell({
   renderHeader,
   conversation,
+  context,
+  contextLabel,
   panels,
   availablePanes,
   attention,
   status,
   statusDetail,
-  selectedPane,
-  onSelectedPaneChange,
-  dockCollapsed,
-  onDockCollapsedChange,
-  dockWidth,
-  onDockWidthChange,
+  layout,
   runControls,
 }: {
   renderHeader: (slots: ProjectWorkbenchHeaderSlots) => ReactNode;
   conversation: ReactNode;
+  context: ReactNode;
+  contextLabel?: string;
   panels: Partial<Record<ProjectWorkbenchPane, ReactNode>>;
   availablePanes: readonly ProjectWorkbenchPane[];
-  attention?: { key: string; pane: ProjectWorkbenchPane };
+  attention?: ConversationWorkbenchAttention;
   status: Parameters<typeof ProjectWorkbenchShell>[0]["status"];
   statusDetail?: string;
-  selectedPane: ProjectWorkbenchPane;
-  onSelectedPaneChange: (pane: ProjectWorkbenchPane) => void;
-  dockCollapsed: boolean;
-  onDockCollapsedChange: (collapsed: boolean) => void;
-  dockWidth: number;
-  onDockWidthChange: (width: number) => void;
+  layout: ProjectWorkbenchLayout;
   runControls?: ReactNode;
 }) {
   const artifact = useArtifactWorkbench();
@@ -403,6 +417,8 @@ function ProjectWorkbenchArtifactShell({
     <ProjectWorkbenchShell
       header={renderHeader}
       conversation={conversation}
+      context={context}
+      contextLabel={contextLabel}
       panels={{
         ...panels,
         artifact: hasArtifact ? (
@@ -412,32 +428,24 @@ function ProjectWorkbenchArtifactShell({
             isCombined={artifact.isCombinedPanel}
             copied={artifact.copied}
             onCopy={artifact.copyArtifact}
-            onClose={artifact.closePanel}
             onAddSelectionToChat={artifact.addArtifactSelection}
           />
         ) : undefined,
       }}
-      availablePanes={(() => {
-        if (!hasArtifact || availablePanes.includes("artifact")) {
-          return availablePanes;
-        }
-
-        const merged = [...availablePanes];
-        const contextIndex = merged.indexOf("context");
-
-        merged.splice(contextIndex >= 0 ? contextIndex + 1 : 0, 0, "artifact");
-
-        return merged;
-      })()}
+      availablePanes={
+        hasArtifact && !availablePanes.includes("artifact")
+          ? ["artifact", ...availablePanes]
+          : availablePanes
+      }
       attention={mergedAttention}
       status={status}
       statusDetail={statusDetail}
-      selectedPane={selectedPane}
-      onSelectedPaneChange={onSelectedPaneChange}
-      dockCollapsed={dockCollapsed}
-      onDockCollapsedChange={onDockCollapsedChange}
-      dockWidth={hasArtifact ? Math.max(dockWidth, ARTIFACT_WORKBENCH_MIN_WIDTH) : dockWidth}
-      onDockWidthChange={onDockWidthChange}
+      layout={layout}
+      onPaneClose={(pane) => {
+        if (pane === "artifact") {
+          artifact.closePanel();
+        }
+      }}
       runControls={runControls}
     />
   );

@@ -7,6 +7,7 @@ export function useConversationBriefAttention(
 ) {
   const baseline = useRef<{ conversationId?: string; revision?: number } | undefined>(undefined);
   const [attentionKey, setAttentionKey] = useState<string>();
+  const [seenKey, setSeenKey] = useState<string>();
 
   useEffect(() => {
     if (!isFetched) {
@@ -28,5 +29,9 @@ export function useConversationBriefAttention(
     }
   }, [conversationId, isFetched, revision]);
 
-  return attentionKey ? { key: attentionKey, pane: "context" as const } : undefined;
+  return {
+    attention: attentionKey ? { key: `brief:${attentionKey}` } : undefined,
+    isUnseen: Boolean(attentionKey && attentionKey !== seenKey),
+    markSeen: () => setSeenKey(attentionKey),
+  };
 }

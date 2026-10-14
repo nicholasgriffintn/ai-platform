@@ -76,7 +76,7 @@ describe("buildSystemPrompt", () => {
         }),
       );
 
-      expect(result).toBe("generated prompt");
+      expect(result.prompt).toBe("generated prompt");
       expect(mocks.getSystemPrompt).toHaveBeenCalledWith(
         expect.objectContaining({
           request: expect.objectContaining({ poly: poly }),
@@ -93,7 +93,7 @@ describe("buildSystemPrompt", () => {
       }),
     );
 
-    expect(result).toBe("Project instructions:\nbe terse");
+    expect(result.prompt).toBe("Project instructions:\nbe terse");
     expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
   });
 
@@ -105,7 +105,13 @@ describe("buildSystemPrompt", () => {
       }),
     );
 
-    expect(result).toBe("generated prompt\n\nProject instructions:\nbe terse\n\nGOAL CONTRACT");
+    expect(result.prompt).toBe(
+      "generated prompt\n\nProject instructions:\nbe terse\n\nGOAL CONTRACT",
+    );
+    expect(result.sections).toEqual([
+      { kind: "project", text: "Project instructions:\nbe terse" },
+      { kind: "project", text: "GOAL CONTRACT" },
+    ]);
   });
 
   it("ignores a goal that is no longer active", async () => {
@@ -113,7 +119,7 @@ describe("buildSystemPrompt", () => {
       baseParams({ activeGoal: { status: "completed" } as any }),
     );
 
-    expect(result).toBe("generated prompt");
+    expect(result.prompt).toBe("generated prompt");
     expect(mocks.buildGoalContractSection).not.toHaveBeenCalled();
   });
 
@@ -142,14 +148,14 @@ describe("buildSystemPrompt", () => {
       baseParams({ repositories, memoryPolicy: { enabled: true } as any }),
     );
 
-    expect(result).toBe("generated prompt");
+    expect(result.prompt).toBe("generated prompt");
   });
   it("prefers an explicit request prompt over generating one", async () => {
     const result = await buildSystemPrompt(
       baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
     );
 
-    expect(result).toBe("explicit");
+    expect(result.prompt).toBe("explicit");
     expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
   });
 
@@ -160,7 +166,7 @@ describe("buildSystemPrompt", () => {
       }),
     );
 
-    expect(result).toBe("from history");
+    expect(result.prompt).toBe("from history");
     expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
   });
 });

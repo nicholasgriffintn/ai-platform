@@ -959,15 +959,6 @@ export class HomePage extends BasePage {
     await this.page.getByRole("region", { name: "Conversation messages" }).waitFor();
   }
 
-  async openRunContext() {
-    await this.clickElement(this.page.getByRole("button", { name: "Context and trace summary" }));
-    const panel = this.page.getByRole("dialog", { name: "Context and trace summary" });
-
-    await this.waitForElement(panel);
-
-    return panel;
-  }
-
   async watchForText(text: string) {
     const key = `polychatTextSighting${Math.random().toString(36).slice(2)}`;
 

@@ -1,3 +1,4 @@
+import type { ContextBudgetSystemSection } from "@ngriffin_uk/polychat-ai-agents";
 import { chatRunReservationExpiresAt } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
@@ -119,6 +120,7 @@ export interface PreparedRequest {
   conversationManager: ConversationManager;
   messages: Message[];
   systemPrompt: string;
+  systemPromptSections: ContextBudgetSystemSection[];
   messageWithContext: string;
   toolIntentRequest: string;
   userSettings: IUserSettings | null;
@@ -540,10 +542,15 @@ export class RequestPreparer {
     const memoryProjection = projectRunMemory(
       runMemoryDocuments,
       primaryModelConfig.contextWindow,
-      baseSystemPrompt,
+      baseSystemPrompt.prompt,
     );
     const contextDocuments = memoryProjection.documents;
-    const systemPrompt = [baseSystemPrompt, memoryProjection.section].filter(Boolean).join("\n\n");
+    const systemPrompt = [baseSystemPrompt.prompt, memoryProjection.section]
+      .filter(Boolean)
+      .join("\n\n");
+    const systemPromptSections: ContextBudgetSystemSection[] = memoryProjection.section
+      ? [...baseSystemPrompt.sections, { kind: "memory", text: memoryProjection.section }]
+      : baseSystemPrompt.sections;
     const skillTools = hasFixedToolScope
       ? enabledTools
       : mergeSkillLoadToolName({ enabledTools: enabledTools ?? [], skills });
@@ -603,6 +610,7 @@ export class RequestPreparer {
       conversationManager,
       messages,
       systemPrompt,
+      systemPromptSections,
       messageWithContext,
       toolIntentRequest,
       userSettings,

@@ -190,7 +190,50 @@ describe("mid-run context budgeting", () => {
     expect(applyReportedContextUsage(estimated, 321).usage).toEqual({
       inputTokens: 321,
       contextWindow: 32000,
+      reservedOutputTokens: 1000,
       source: "reported",
     });
+  });
+
+  it("splits the estimate into instructions, memory, tools and conversation", () => {
+    const memory = "Remember the user prefers metric units.";
+    const { snapshot } = fitMessagesToContextBudget({
+      messages: [
+        { role: "user", content: "Plan the week" },
+        { role: "tool", name: "search", content: "results", tool_call_id: "call-1" },
+      ],
+      contextWindow: 32000,
+      systemPrompt: `Base rules for the assistant.\n\n${memory}`,
+      systemSections: [{ kind: "memory", text: memory }],
+      toolDefinitionTokens: 400,
+      runId: "run-1",
+      conversationId: "conversation-1",
+      attempt: 1,
+      step: 1,
+      model: "model-1",
+      provider: "provider-1",
+    });
+    const tokensFor = (kind: string) =>
+      snapshot.breakdown?.find((entry) => entry.kind === kind)?.tokens ?? 0;
+
+    expect(tokensFor("memory")).toBe(Math.ceil(memory.length / 4));
+    expect(tokensFor("tools")).toBe(400);
+    expect(tokensFor("tool_results")).toBeGreaterThan(0);
+    expect(tokensFor("conversation")).toBeGreaterThan(0);
+    expect(snapshot.breakdown?.reduce((sum, entry) => sum + entry.tokens, 0)).toBe(
+      snapshot.usage.inputTokens,
+    );
+  });
+
+  it("rescales the breakdown so it adds up to the provider's reported input", () => {
+    const estimated = plan([
+      { role: "user", content: "Hello there, plan dinners for the week" },
+    ]).snapshot;
+    const reported = applyReportedContextUsage(estimated, 1003);
+
+    expect(reported.breakdown?.reduce((sum, entry) => sum + entry.tokens, 0)).toBe(1003);
+    expect(reported.breakdown?.map((entry) => entry.kind)).toEqual(
+      estimated.breakdown?.map((entry) => entry.kind),
+    );
   });
 });

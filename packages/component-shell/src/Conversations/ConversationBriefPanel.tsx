@@ -2,7 +2,6 @@ import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { useConversationBrief } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 
 import { MemoryDocumentEditor } from "../Files/MemoryDocumentEditor.js";
@@ -15,15 +14,6 @@ export function ConversationBriefPanel({ conversationId }: { conversationId: str
   if (brief.isAwaitingRemoteConversation) {
     return (
       <div className="h-full">
-        <div className="mb-4">
-          <div className="flex items-center gap-2">
-            <NotebookPen size={16} className="text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Conversation context</h2>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Context becomes available once this conversation has started.
-          </p>
-        </div>
         <div className="rounded-lg border border-dashed border-border p-4 text-center">
           <p className="text-sm text-muted-foreground">
             Send the first message to start this conversation. A brief can be created after that.
@@ -47,15 +37,9 @@ export function ConversationBriefPanel({ conversationId }: { conversationId: str
 
   return (
     <div className="h-full">
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <NotebookPen size={16} className="text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground">Conversation context</h2>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          The agent keeps this brief for continuity. Edit it only when something needs correction.
-        </p>
-      </div>
+      <p className="mb-3 text-xs text-muted-foreground">
+        The agent keeps this brief for continuity. Edit it only when something needs correction.
+      </p>
       {document ? (
         <MemoryDocumentEditor
           document={document}

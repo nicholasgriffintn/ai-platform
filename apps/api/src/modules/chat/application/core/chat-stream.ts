@@ -25,6 +25,7 @@ import {
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
+import { createChatContextPublisher } from "~/modules/responses/application/runs/context-state";
 import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
 import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
 import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
@@ -150,6 +151,8 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
           : stream,
         shouldStop: stopSignal.shouldStop,
         onRetryState: createChatRetryStatePublisher({ sink: stream, runLifecycle }),
+        onContextSnapshot:
+          createChatContextPublisher({ sink: stream, runLifecycle }) ?? params.onContextSnapshot,
         emit: tracesAgentEvents
           ? async (event: AgentEvent) => {
               await stream.write({ type: "response.agent_event", event: { ...event } });

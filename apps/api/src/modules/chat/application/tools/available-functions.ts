@@ -1,5 +1,5 @@
 import type { ToolDefinitionLike } from "@ngriffin_uk/polychat-ai-providers";
-import { resolveRequestUser } from "@ngriffin_uk/polychat-ai-providers";
+import { estimateTextTokens, resolveRequestUser } from "@ngriffin_uk/polychat-ai-providers";
 import {
   FINISH_TOOL_NAME,
   PermissionChecker,
@@ -95,4 +95,11 @@ export function withAvailableFunctions<T extends AvailableFunctionsSource>(
   params: T,
 ): T & ResolvedAvailableFunctions {
   return { ...params, ...resolveAvailableFunctions(params) };
+}
+
+export function estimateToolDefinitionTokens(params: AvailableFunctionsSource): number {
+  const { available_functions, tools } = resolveAvailableFunctions(params);
+  const definitions = [...available_functions, ...(tools ?? [])];
+
+  return definitions.length > 0 ? estimateTextTokens(JSON.stringify(definitions)) : 0;
 }

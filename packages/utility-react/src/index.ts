@@ -2,6 +2,7 @@ export * from "./dom.js";
 export * from "./link.js";
 export * from "./useCopyToClipboard.js";
 export * from "./useDebouncedValue.js";
+export * from "./useElementWidth.js";
 export * from "./useFileUpload.js";
 export * from "./useHeaderScrollEdge.js";
 export * from "./useLoadMoreOnIntersect.js";

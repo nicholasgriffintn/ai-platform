@@ -5,7 +5,23 @@ export const CHAT_CONTEXT_PROTOCOL_VERSION = 1 as const;
 export const chatContextUsageSchema = z.object({
   inputTokens: z.number().int().nonnegative(),
   contextWindow: z.number().int().positive(),
+  reservedOutputTokens: z.number().int().nonnegative().optional(),
   source: z.enum(["reported", "estimated"]),
+});
+
+export const CHAT_CONTEXT_BREAKDOWN_KINDS = [
+  "instructions",
+  "memory",
+  "project",
+  "tools",
+  "conversation",
+  "tool_results",
+  "summary",
+] as const;
+
+export const chatContextBreakdownEntrySchema = z.object({
+  kind: z.enum(CHAT_CONTEXT_BREAKDOWN_KINDS),
+  tokens: z.number().int().nonnegative(),
 });
 
 export const chatContextSourceSchema = z.object({
@@ -66,6 +82,7 @@ export const chatContextSnapshotSchema = z.object({
   provider: z.string().min(1).optional(),
   generatedAt: z.string(),
   usage: chatContextUsageSchema,
+  breakdown: z.array(chatContextBreakdownEntrySchema).optional(),
   messages: z.object({
     included: z.number().int().nonnegative(),
     omitted: z.number().int().nonnegative(),
@@ -79,6 +96,8 @@ export const chatContextSnapshotSchema = z.object({
 });
 
 export type ChatContextUsage = z.infer<typeof chatContextUsageSchema>;
+export type ChatContextBreakdownKind = (typeof CHAT_CONTEXT_BREAKDOWN_KINDS)[number];
+export type ChatContextBreakdownEntry = z.infer<typeof chatContextBreakdownEntrySchema>;
 export type ChatContextSource = z.infer<typeof chatContextSourceSchema>;
 export type ChatContextSkill = z.infer<typeof chatContextSkillSchema>;
 export type ChatContextDocument = z.infer<typeof chatContextDocumentSchema>;

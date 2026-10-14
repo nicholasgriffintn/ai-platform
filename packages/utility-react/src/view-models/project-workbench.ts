@@ -5,7 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 export const PROJECT_WORKBENCH_PANES = [
-  "context",
+  "brief",
   "artifact",
   "activity",
   "preview",
@@ -16,6 +16,51 @@ export const PROJECT_WORKBENCH_PANES = [
 ] as const;
 
 export type ProjectWorkbenchPane = (typeof PROJECT_WORKBENCH_PANES)[number];
+
+export const PROJECT_WORKBENCH_PANES_PER_COLUMN = 2;
+export const PROJECT_WORKBENCH_MAX_COLUMNS = 2;
+export const PROJECT_WORKBENCH_MAX_OPEN_PANES =
+  PROJECT_WORKBENCH_PANES_PER_COLUMN * PROJECT_WORKBENCH_MAX_COLUMNS;
+
+export interface ProjectWorkbenchLayout {
+  contextOpen: boolean;
+  openPanes: readonly ProjectWorkbenchPane[];
+  columnWidth: number;
+  setContextOpen: (open: boolean) => void;
+  openPane: (pane: ProjectWorkbenchPane) => void;
+  closePane: (pane: ProjectWorkbenchPane) => void;
+  setColumnWidth: (width: number) => void;
+}
+
+export function openProjectWorkbenchPane(
+  openPanes: readonly ProjectWorkbenchPane[],
+  pane: ProjectWorkbenchPane,
+): ProjectWorkbenchPane[] {
+  if (openPanes.includes(pane)) {
+    return [...openPanes];
+  }
+
+  return [...openPanes, pane].slice(-PROJECT_WORKBENCH_MAX_OPEN_PANES);
+}
+
+export function isProjectWorkbenchPaneFullHeight(index: number, visibleCount: number): boolean {
+  return index % PROJECT_WORKBENCH_PANES_PER_COLUMN === 0 && index === visibleCount - 1;
+}
+
+export function arrangeProjectWorkbenchColumns(
+  openPanes: readonly ProjectWorkbenchPane[],
+  maxColumns: number,
+): ProjectWorkbenchPane[][] {
+  const capacity = Math.max(1, maxColumns) * PROJECT_WORKBENCH_PANES_PER_COLUMN;
+  const visible = openPanes.slice(-capacity);
+  const columns: ProjectWorkbenchPane[][] = [];
+
+  for (let index = 0; index < visible.length; index += PROJECT_WORKBENCH_PANES_PER_COLUMN) {
+    columns.push(visible.slice(index, index + PROJECT_WORKBENCH_PANES_PER_COLUMN));
+  }
+
+  return columns;
+}
 
 export type ProjectWorkbenchStatus =
   | "ready"

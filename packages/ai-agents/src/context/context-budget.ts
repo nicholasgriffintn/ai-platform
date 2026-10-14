@@ -1,7 +1,10 @@
 import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-loop";
 import {
+  CHAT_CONTEXT_BREAKDOWN_KINDS,
   CHAT_CONTEXT_PROTOCOL_VERSION,
   type ChatContextApproval,
+  type ChatContextBreakdownEntry,
+  type ChatContextBreakdownKind,
   type ChatContextDocument,
   type ChatContextOmission,
   type ChatContextSkill,
@@ -20,6 +23,11 @@ const MESSAGE_OVERHEAD_TOKENS = 4;
 export interface ContextBudgetSkill {
   id: string;
   name: string;
+}
+
+export interface ContextBudgetSystemSection {
+  kind: "memory" | "project";
+  text: string;
 }
 
 export type ContextBudgetMessage = AgentMessage & {
@@ -43,6 +51,8 @@ export interface ContextBudgetInput {
   generatedAt?: string;
   skills?: readonly ContextBudgetSkill[];
   documents?: readonly ChatContextDocument[];
+  systemSections?: readonly ContextBudgetSystemSection[];
+  toolDefinitionTokens?: number;
 }
 
 export interface ContextBudgetResult {
@@ -86,6 +96,10 @@ function estimateTokens(message: AgentMessage): number {
   return (
     Math.ceil(contentText(message.content).length / charactersPerToken) + MESSAGE_OVERHEAD_TOKENS
   );
+}
+
+function estimateTextTokens(text: string): number {
+  return Math.ceil(text.length / 4);
 }
 
 function resolveContextWindow(value: number | undefined): number {
@@ -476,7 +490,8 @@ export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBu
   const conversation = indexed.filter(
     (entry) => entry.message.role !== "system" && entry.message.role !== "developer",
   );
-  const systemTokens = Math.ceil(input.systemPrompt.length / 4);
+  const systemTokens = estimateTextTokens(input.systemPrompt);
+  const toolTokens = Math.max(0, Math.floor(input.toolDefinitionTokens ?? 0));
   let availableTokens = maxInputTokens - systemTokens - unitTokens(fixed);
 
   if (availableTokens < 0) {
@@ -550,8 +565,13 @@ export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBu
       });
     });
 
-  const estimatedInputTokens =
-    systemTokens + selectedMessages.reduce((sum, message) => sum + estimateTokens(message), 0);
+  const breakdown = buildBreakdown({
+    systemTokens,
+    systemSections: input.systemSections ?? [],
+    toolTokens,
+    messages: selectedMessages,
+  });
+  const estimatedInputTokens = breakdown.reduce((sum, entry) => sum + entry.tokens, 0);
 
   return {
     messages: selectedMessages,
@@ -567,8 +587,10 @@ export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBu
       usage: {
         inputTokens: estimatedInputTokens,
         contextWindow,
+        reservedOutputTokens: contextWindow - maxInputTokens,
         source: "estimated",
       },
+      breakdown,
       messages: { included: selectedMessages.length, omitted: omitted.length },
       sources,
       documents: [...(input.documents ?? [])],
@@ -592,12 +614,92 @@ export function applyReportedContextUsage(
     return snapshot;
   }
 
+  const inputTokens = Math.floor(reportedInputTokens);
+
   return {
     ...snapshot,
     usage: {
       ...snapshot.usage,
-      inputTokens: Math.floor(reportedInputTokens),
+      inputTokens,
       source: "reported",
     },
+    ...(snapshot.breakdown
+      ? { breakdown: scaleContextBreakdown(snapshot.breakdown, inputTokens) }
+      : {}),
   };
+}
+
+function buildBreakdown({
+  systemTokens,
+  systemSections,
+  toolTokens,
+  messages,
+}: {
+  systemTokens: number;
+  systemSections: readonly ContextBudgetSystemSection[];
+  toolTokens: number;
+  messages: readonly ContextBudgetMessage[];
+}): ChatContextBreakdownEntry[] {
+  const totals = new Map<ChatContextBreakdownKind, number>();
+  const add = (kind: ChatContextBreakdownKind, tokens: number) =>
+    totals.set(kind, (totals.get(kind) ?? 0) + tokens);
+  let remainingSystemTokens = systemTokens;
+
+  for (const section of systemSections) {
+    const tokens = Math.min(estimateTextTokens(section.text), remainingSystemTokens);
+
+    add(section.kind, tokens);
+    remainingSystemTokens -= tokens;
+  }
+
+  add("instructions", remainingSystemTokens);
+  add("tools", toolTokens);
+
+  for (const message of messages) {
+    const tokens = estimateTokens(message);
+
+    if (message.role === "system" || message.role === "developer") {
+      add("instructions", tokens);
+    } else if (message.role === "tool") {
+      add("tool_results", tokens);
+    } else if (snapshotPart(message) !== null) {
+      add("summary", tokens);
+    } else {
+      add("conversation", tokens);
+    }
+  }
+
+  return CHAT_CONTEXT_BREAKDOWN_KINDS.map((kind) => ({
+    kind,
+    tokens: totals.get(kind) ?? 0,
+  })).filter((entry) => entry.tokens > 0);
+}
+
+export function scaleContextBreakdown(
+  breakdown: readonly ChatContextBreakdownEntry[],
+  total: number,
+): ChatContextBreakdownEntry[] {
+  const estimatedTotal = breakdown.reduce((sum, entry) => sum + entry.tokens, 0);
+
+  if (estimatedTotal === 0 || total <= 0) {
+    return breakdown.map((entry) => ({ ...entry }));
+  }
+
+  const scaled = breakdown.map((entry, index) => {
+    const exact = (entry.tokens / estimatedTotal) * total;
+
+    return { index, kind: entry.kind, tokens: Math.floor(exact), remainder: exact % 1 };
+  });
+  let unassigned = total - scaled.reduce((sum, entry) => sum + entry.tokens, 0);
+
+  for (const entry of [...scaled].sort((left, right) => right.remainder - left.remainder)) {
+    if (unassigned <= 0) {
+      break;
+    }
+
+    entry.tokens += 1;
+    unassigned -= 1;
+  }
+
+  return scaled.map(({ kind, tokens }) => ({ kind, tokens }));
 }

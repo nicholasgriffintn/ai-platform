@@ -57,7 +57,7 @@ export * from "./hooks/useProjectTasks.js";
 export * from "./hooks/useProjectTaskIntegrations.js";
 export * from "./hooks/useProjectWorkbenchControls.js";
 export * from "./hooks/useProjectWorkbenchEvidence.js";
-export * from "./hooks/useProjectWorkbenchPreferences.js";
+export * from "./hooks/useProjectWorkbenchLayout.js";
 export * from "./hooks/useProjectWorkbenchPreview.js";
 export * from "./hooks/useProjectWorkbenchRuns.js";
 export * from "./hooks/useRealtimeLiveSession.js";

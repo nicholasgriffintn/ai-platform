@@ -1,10 +1,6 @@
-import {
-  ConversationContextSummaryButton,
-  ConversationTitleContext,
-} from "@ngriffin_uk/polychat-component-conversation";
-import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
+import { ConversationTitleContext } from "@ngriffin_uk/polychat-component-conversation";
 import type { ChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/conversation-types";
-import { API_BASE_URL, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useChat } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, type ReactNode } from "react";
 
@@ -38,10 +34,6 @@ export function ConversationProductHeader({
   const storageModeOptions = requestOptions?.metadata?.project_id
     ? requestOptions
     : storageRequestOptions;
-  const traceEntries = useMemo(
-    () => buildAgentTraceEntries(conversation?.messages ?? []),
-    [conversation?.messages],
-  );
   const title =
     currentConversationId && isLoading
       ? "Loading conversation…"
@@ -69,13 +61,6 @@ export function ConversationProductHeader({
       actions={
         <div className="flex shrink-0 items-center gap-0.5">
           <ConversationThreadNavigation />
-          <ConversationContextSummaryButton
-            context={conversation?.latest_response?.context}
-            usage={conversation?.latest_response?.usage}
-            entries={traceEntries}
-            compactOnMobile
-            resolveReferenceHref={(path) => `${API_BASE_URL}${path}`}
-          />
           {!conversation?.project_id && !isLoading && (
             <ConversationRetentionControl
               conversationId={currentConversationId}

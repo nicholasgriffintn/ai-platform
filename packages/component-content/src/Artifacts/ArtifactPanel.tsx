@@ -108,7 +108,7 @@ const ContentViewer = ({
 export interface ArtifactWorkbenchPanelProps {
   artifact: ArtifactProps | null;
   artifacts?: ArtifactProps[];
-  onClose: () => void;
+  onClose?: () => void;
   onAddSelectionToChat?: (attachment: AttachmentData) => void;
   isCombined?: boolean;
   copied: boolean;
@@ -246,15 +246,17 @@ const ArtifactPanelContent = ({
               <Copy size={14} className={copied ? "text-success" : ""} />
             </Button>
           )}
-          <Button
-            variant="icon"
-            size="sm"
-            onClick={onClose}
-            title="Close artifact"
-            aria-label="Close artifact"
-          >
-            <X size={14} />
-          </Button>
+          {onClose ? (
+            <Button
+              variant="icon"
+              size="sm"
+              onClick={onClose}
+              title="Close artifact"
+              aria-label="Close artifact"
+            >
+              <X size={14} />
+            </Button>
+          ) : null}
         </div>
       </div>
 

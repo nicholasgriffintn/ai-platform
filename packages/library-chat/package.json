@@ -142,6 +142,11 @@
       "types": "./dist/provider-messages.d.ts",
       "import": "./dist/provider-messages.js"
     },
+    "./conversation-insights": {
+      "polychat-source": "./src/conversation-insights.ts",
+      "types": "./dist/conversation-insights.d.ts",
+      "import": "./dist/conversation-insights.js"
+    },
     "./response-stats": {
       "polychat-source": "./src/response-stats.ts",
       "types": "./dist/response-stats.d.ts",

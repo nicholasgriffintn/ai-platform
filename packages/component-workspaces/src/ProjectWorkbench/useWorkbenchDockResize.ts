@@ -1,9 +1,11 @@
-import type { KeyboardEvent, PointerEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent, PointerEvent, RefObject } from "react";
+import { useRef } from "react";
 
 const WIDTH_STEP = 24;
 
 interface WorkbenchDockResizeOptions {
+  containerRef: RefObject<HTMLElement | null>;
+  containerWidth?: number;
   width: number;
   minWidth: number;
   maxWidth: number;
@@ -16,35 +18,19 @@ function clampWidth(width: number, minWidth: number, maxWidth: number): number {
 }
 
 export function useWorkbenchDockResize({
+  containerRef,
+  containerWidth,
   width,
   minWidth,
   maxWidth,
   minConversationWidth,
   onWidthChange,
 }: WorkbenchDockResizeOptions) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const [containerWidth, setContainerWidth] = useState<number>();
   const effectiveMaxWidth = containerWidth
     ? Math.min(maxWidth, Math.max(minWidth, containerWidth - minConversationWidth))
     : maxWidth;
   const effectiveWidth = clampWidth(width, minWidth, effectiveMaxWidth);
-
-  useEffect(() => {
-    const container = containerRef.current;
-
-    if (!container || typeof ResizeObserver === "undefined") {
-      return undefined;
-    }
-
-    const updateWidth = () => setContainerWidth(container.getBoundingClientRect().width);
-    const observer = new ResizeObserver(updateWidth);
-
-    updateWidth();
-    observer.observe(container);
-
-    return () => observer.disconnect();
-  }, []);
 
   const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
     isDraggingRef.current = true;
@@ -98,7 +84,6 @@ export function useWorkbenchDockResize({
   };
 
   return {
-    containerRef,
     effectiveMaxWidth,
     effectiveWidth,
     resizeHandleProps: {

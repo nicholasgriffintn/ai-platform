@@ -33,6 +33,7 @@ import {
 import { getAIResponse } from "~/modules/chat/application/streaming/responses";
 import { writeTurnActivity } from "~/modules/chat/application/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
+import { createChatContextPublisher } from "~/modules/responses/application/runs/context-state";
 import type { ChatRunLifecycle } from "~/modules/responses/application/runs/lifecycle";
 import { createChatRetryStatePublisher } from "~/modules/responses/application/runs/retry-state";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
@@ -175,6 +176,9 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
           sink: primarySink,
           runLifecycle,
         }),
+        onContextSnapshot:
+          createChatContextPublisher({ sink: primarySink, runLifecycle }) ??
+          params.onContextSnapshot,
       });
 
       postTurn = primary.postTurn;

@@ -6,19 +6,10 @@ import type {
   SandboxRunManifest,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import {
-  Activity,
-  Bot,
-  FileDiff,
-  Files,
-  FileText,
-  MonitorPlay,
-  NotebookPen,
-  ShieldCheck,
-} from "lucide-react";
+import type { ProjectWorkbenchPane } from "@ngriffin_uk/polychat-utility-react";
 import type { ReactNode } from "react";
 
-import type { ProjectWorkbenchPane } from "./ProjectWorkbenchShell";
+import { PANE_PRESENTATION } from "./projectWorkbenchPresentation";
 
 export interface ProjectWorkbenchRunPanelProps {
   pane: ProjectWorkbenchPane;
@@ -62,16 +53,7 @@ function PanelMessage({
   title: string;
   message: string;
 }) {
-  const Icon = {
-    context: NotebookPen,
-    artifact: FileText,
-    activity: Activity,
-    preview: MonitorPlay,
-    changes: FileDiff,
-    files: Files,
-    proof: ShieldCheck,
-    delegates: Bot,
-  }[pane];
+  const Icon = PANE_PRESENTATION[pane].icon;
 
   return (
     <EmptyState
