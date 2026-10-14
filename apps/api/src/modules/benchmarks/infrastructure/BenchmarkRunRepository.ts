@@ -6,7 +6,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { benchmarkEntrantKey } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { and, desc, eq, gte, inArray, isNotNull, notInArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, notInArray, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { benchmarkRun, type BenchmarkRunRecord } from "~/infrastructure/database/schema";
@@ -125,14 +125,34 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
     await this.database.update(benchmarkRun).set(changes).where(eq(benchmarkRun.id, id));
   }
 
-  async claim(id: string): Promise<boolean> {
+  private staleRunning(minutes: number) {
+    return and(
+      eq(benchmarkRun.status, "running"),
+      sql`${benchmarkRun.updated_at} < datetime('now', ${`-${Math.round(minutes)} minutes`})`,
+    );
+  }
+
+  async claim(id: string, staleAfterMinutes: number): Promise<boolean> {
     const claimed = await this.database
       .update(benchmarkRun)
-      .set({ status: "running" })
-      .where(and(eq(benchmarkRun.id, id), eq(benchmarkRun.status, "queued")))
+      .set({ status: "running", updated_at: sql`(CURRENT_TIMESTAMP)` })
+      .where(
+        and(
+          eq(benchmarkRun.id, id),
+          or(eq(benchmarkRun.status, "queued"), this.staleRunning(staleAfterMinutes)),
+        ),
+      )
       .returning({ id: benchmarkRun.id });
 
     return claimed.length > 0;
+  }
+
+  async listStaleRunning(staleAfterMinutes: number): Promise<BenchmarkRunRecord[]> {
+    return this.database
+      .select()
+      .from(benchmarkRun)
+      .where(this.staleRunning(staleAfterMinutes))
+      .limit(OWNER_LIST_LIMIT);
   }
 
   async release(id: string): Promise<void> {

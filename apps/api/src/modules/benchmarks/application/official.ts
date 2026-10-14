@@ -182,6 +182,21 @@ export async function queueOfficialRuns(
   };
 }
 
+export async function recoverStaleBenchmarkRuns(
+  env: IEnv,
+  repositories: RepositoryManager,
+): Promise<number> {
+  const stale = await repositories.benchmarkRuns.listStaleRunning(
+    BENCHMARKS_CONFIG.staleRunMinutes,
+  );
+
+  for (const run of stale) {
+    await enqueueBenchmarkRunTask(env, repositories, run.id);
+  }
+
+  return stale.length;
+}
+
 function latestOfficialRuns(
   records: readonly BenchmarkRunRecord[],
 ): Map<string, BenchmarkRunRecord> {

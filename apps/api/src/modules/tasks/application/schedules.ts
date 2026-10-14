@@ -1,7 +1,10 @@
 import { SCHEDULES } from "~/config/schedules";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
-import { queueOfficialRuns } from "~/modules/benchmarks/application/official";
+import {
+  queueOfficialRuns,
+  recoverStaleBenchmarkRuns,
+} from "~/modules/benchmarks/application/official";
 import { reapComposioConnectorSessions } from "~/modules/connectors/application/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/connectors/application/connector-approval-cleanup";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
@@ -196,6 +199,16 @@ workflows.every(
     name: "benchmark-ratings",
     run: async ({ env }) => {
       await refreshBenchmarkRatings(RepositoryManager.getInstance(env));
+    },
+  }),
+);
+
+workflows.every(
+  SCHEDULES.RECIPE_EXECUTION,
+  defineSchedule({
+    name: "benchmark-stale-runs",
+    run: async ({ env }) => {
+      await recoverStaleBenchmarkRuns(env, RepositoryManager.getInstance(env));
     },
   }),
 );

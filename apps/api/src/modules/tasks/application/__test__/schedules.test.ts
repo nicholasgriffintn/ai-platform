@@ -67,6 +67,7 @@ vi.mock("~/modules/benchmarks/application/arena", () => ({
 
 vi.mock("~/modules/benchmarks/application/official", () => ({
   queueOfficialRuns: vi.fn(),
+  recoverStaleBenchmarkRuns: vi.fn().mockResolvedValue(0),
 }));
 
 import { SCHEDULES } from "~/config/schedules";

@@ -509,7 +509,7 @@ export async function executeBenchmarkRun(
     return { status: "success" as const, message: `Benchmark run ${run.id} cancelled: ${refusal}` };
   }
 
-  if (!(await repositories.benchmarkRuns.claim(run.id))) {
+  if (!(await repositories.benchmarkRuns.claim(run.id, BENCHMARKS_CONFIG.staleRunMinutes))) {
     return {
       status: "success" as const,
       message: `Benchmark run ${run.id} is already held by another worker`,
