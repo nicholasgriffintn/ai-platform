@@ -38,7 +38,34 @@ export const STRUDEL_FUNCTIONS = [
   "wchoose",
 ] as const;
 
-const ALLOWED_GLOBALS = new Set<string>(STRUDEL_FUNCTIONS);
+export const STRUDEL_TRANSFORMS = [
+  "add",
+  "chop",
+  "degrade",
+  "div",
+  "early",
+  "euclid",
+  "fast",
+  "hurry",
+  "iter",
+  "jux",
+  "late",
+  "linger",
+  "mul",
+  "palindrome",
+  "ply",
+  "press",
+  "range",
+  "rev",
+  "segment",
+  "slow",
+  "striate",
+  "struct",
+  "sub",
+  "superimpose",
+] as const;
+
+const ALLOWED_GLOBALS = new Set<string>([...STRUDEL_FUNCTIONS, ...STRUDEL_TRANSFORMS]);
 const BLOCKED_PROPERTIES = new Set([
   "__defineGetter__",
   "__defineSetter__",

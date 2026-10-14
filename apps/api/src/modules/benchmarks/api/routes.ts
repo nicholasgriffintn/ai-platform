@@ -25,6 +25,7 @@ import {
   listPageOf,
   queryBooleanSchema,
   queueOfficialBenchmarkRunsRequestSchema,
+  retryBenchmarkRunRequestSchema,
   updateBenchmarkRunRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -183,12 +184,14 @@ defineResource(app, { path: "/runs", idParam: "run_id", tags }, (runs) => {
     })
     .action("retry", {
       auth: true,
-      summary: "Retry a failed or cancelled benchmark run",
+      summary: "Retry a benchmark run",
       description:
-        "Keeps the answers it already has and asks again only for the items that got none. Admins retrying an official run take it over, so their keys apply.",
+        "Keeps the answers it already has and asks again only for the items that got none. Pass failedChecks=true on a finished creative run to also ask again for items whose artefact failed the checks. Admins retrying an official run take it over, so their keys apply.",
       paramSchema: benchmarkRunParamsSchema,
+      bodySchema: retryBenchmarkRunRequestSchema,
       responses: { 200: { description: "The requeued run", schema: benchmarkRunSchema } },
-      handler: ({ serviceContext, params }) => retryBenchmarkRun(serviceContext, params.run_id),
+      handler: ({ serviceContext, params, body }) =>
+        retryBenchmarkRun(serviceContext, params.run_id, body),
     })
     .delete({
       auth: true,

@@ -333,6 +333,11 @@ export const benchmarkPhotoParamsSchema = benchmarkIdParamsSchema.extend({
 
 export const benchmarkRunTaskDataSchema = z.object({
   runId: z.string(),
+  retryChecks: z.boolean().optional(),
+});
+
+export const retryBenchmarkRunRequestSchema = z.object({
+  failedChecks: z.boolean().optional(),
 });
 
 export const modelBenchmarkStandingSchema = z.object({
@@ -384,6 +389,7 @@ export type BenchmarkPlayStart = z.infer<typeof benchmarkPlayStartSchema>;
 export type BenchmarkPlaySubmitRequest = z.infer<typeof benchmarkPlaySubmitRequestSchema>;
 export type BenchmarkPlayResult = z.infer<typeof benchmarkPlayResultSchema>;
 export type BenchmarkRunTaskData = z.infer<typeof benchmarkRunTaskDataSchema>;
+export type RetryBenchmarkRunRequest = z.infer<typeof retryBenchmarkRunRequestSchema>;
 export type ModelBenchmarkStanding = z.infer<typeof modelBenchmarkStandingSchema>;
 
 export function benchmarkEntrantKey(entrant: BenchmarkEntrant): string {

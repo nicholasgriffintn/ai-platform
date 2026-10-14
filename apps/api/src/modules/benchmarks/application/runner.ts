@@ -65,11 +65,14 @@ export async function enqueueBenchmarkRunTask(
   env: IEnv,
   repositories: RepositoryManager,
   runId: string,
+  options: { retryChecks?: boolean } = {},
 ): Promise<void> {
+  const data: BenchmarkRunTaskData = options.retryChecks ? { runId, retryChecks: true } : { runId };
+
   await new TaskService(env, repositories.tasks).enqueueTask({
     id: `${BENCHMARK_RUN_TASK_TYPE}:${runId}:${Date.now()}`,
     task_type: BENCHMARK_RUN_TASK_TYPE,
-    task_data: { runId },
+    task_data: data,
     priority: RUN_TASK_PRIORITY,
   });
 }
@@ -294,8 +297,16 @@ class RunProgress {
     }
   }
 
-  pendingItemIds(): string[] {
-    return this.itemIds.filter((itemId) => this.results.get(itemId)?.error !== null);
+  pendingItemIds(options: { includeFailedChecks: boolean }): string[] {
+    return this.itemIds.filter((itemId) => {
+      const result = this.results.get(itemId);
+
+      return (
+        !result ||
+        result.error !== null ||
+        (options.includeFailedChecks && result.artefact === null && result.score === 0)
+      );
+    });
   }
 
   answeredCount(): number {
@@ -349,11 +360,15 @@ async function answerItems(
   context: RunContext,
   progress: RunProgress,
   startedAt: number,
+  options: { retryChecks: boolean },
 ): Promise<RunOutcome> {
   const limiter = createConcurrencyLimiter(BENCHMARKS_CONFIG.itemConcurrency);
 
   for (const pass of PASSES) {
-    const pending = progress.pendingItemIds();
+    const pending = progress.pendingItemIds({
+      includeFailedChecks:
+        options.retryChecks && pass === "first" && context.benchmark.summary.scoring === "votes",
+    });
 
     if (pending.length === 0) {
       return { kind: "done" };
@@ -507,6 +522,7 @@ export async function executeBenchmarkRun(
       { env, repositories, run, benchmark, target, user, billingUser },
       progress,
       Date.now(),
+      { retryChecks: data.retryChecks === true },
     );
 
     if (outcome.kind === "cancelled") {
@@ -514,7 +530,9 @@ export async function executeBenchmarkRun(
     }
 
     if (outcome.kind === "out_of_time") {
-      await enqueueBenchmarkRunTask(env, repositories, run.id);
+      await enqueueBenchmarkRunTask(env, repositories, run.id, {
+        retryChecks: data.retryChecks === true,
+      });
 
       return {
         status: "success" as const,

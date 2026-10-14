@@ -13,6 +13,24 @@ export interface StrudelRuntime {
 
 let runtimePromise: Promise<StrudelRuntime> | null = null;
 
+const THEME_VARS_ID = "strudel-theme-vars";
+const THEME_SCOPE_CLASS = "strudel-theme-scope";
+
+export function snapshotDocumentTheme(): { dark: boolean } {
+  return { dark: document.documentElement.classList.contains("dark") };
+}
+
+export function confineStrudelTheme(root: HTMLElement, before: { dark: boolean }): void {
+  const style = document.getElementById(THEME_VARS_ID);
+
+  if (style?.textContent?.includes(":root")) {
+    style.textContent = style.textContent.replaceAll(":root", `.${THEME_SCOPE_CLASS}`);
+  }
+
+  root.classList.add(THEME_SCOPE_CLASS);
+  document.documentElement.classList.toggle("dark", before.dark);
+}
+
 export function sanitizeStrudelCode(code: string): string {
   return code
     .replace(/"([^"]*)"/g, (_, content: string) => {

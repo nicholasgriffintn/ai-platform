@@ -16,6 +16,7 @@ import type {
   BenchmarkVoteResult,
   ListPage,
   QueueOfficialBenchmarkRunsRequest,
+  RetryBenchmarkRunRequest,
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -72,10 +73,10 @@ export const benchmarksService = {
       body: {},
     });
   },
-  retry(runId: string): Promise<BenchmarkRun> {
+  retry(runId: string, request: RetryBenchmarkRunRequest = {}): Promise<BenchmarkRun> {
     return fetchApiData(`${BENCHMARKS_PATH}/runs/${encodeURIComponent(runId)}/retry`, {
       method: "POST",
-      body: {},
+      body: request,
     });
   },
   official(): Promise<BenchmarkOfficialOverview> {

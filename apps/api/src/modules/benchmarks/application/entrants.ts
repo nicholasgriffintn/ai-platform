@@ -36,7 +36,7 @@ const FATAL_ERROR_TYPES = new Set<string>([
 const FATAL_STATUS_CODES = new Set([401, 403, 404]);
 
 export function isDecisionModel(config: ModelConfigItem): boolean {
-  return modelHasOutputModality(config, "decision");
+  return modelHasOutputModality(config, "decision") && !modelHasOutputModality(config, "text");
 }
 
 export function modelIneligibility(benchmark: Benchmark, config: ModelConfigItem): string | null {

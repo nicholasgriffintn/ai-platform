@@ -8,6 +8,7 @@ import type {
   BenchmarkRunDetail,
   BenchmarkVisibility,
   ModelConfigItem,
+  RetryBenchmarkRunRequest,
   StartBenchmarkRunsRequest,
   StartWorkspaceBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
@@ -109,7 +110,7 @@ export async function estimateBenchmarkRuns(
           name: modelEntrant(modelId, model.config).name,
           eligible: reason === null,
           reason,
-          estimatedCostUsd: byok ? null : estimateRunCostUsd(benchmark, model.config),
+          estimatedCostUsd: estimateRunCostUsd(benchmark, model.config),
           byok,
         };
       }),
@@ -289,6 +290,7 @@ export async function cancelBenchmarkRun(
 export async function retryBenchmarkRun(
   context: ServiceContext,
   runId: string,
+  request: RetryBenchmarkRunRequest = {},
 ): Promise<BenchmarkRun> {
   const user = context.requireUser();
   const record = await requireManagedRun(context, runId);
@@ -302,18 +304,24 @@ export async function retryBenchmarkRun(
     );
   }
 
+  const retryChecks = request.failedChecks === true && benchmark.summary.scoring === "votes";
   const ownerUserId = record.scope === "official" && isPlatformAdmin(user) ? user.id : undefined;
-  const requeued = await context.repositories.benchmarkRuns.requeue(record.id, ownerUserId);
+  const requeued = await context.repositories.benchmarkRuns.requeue(record.id, {
+    ownerUserId,
+    fromCompleted: retryChecks,
+  });
 
   if (!requeued) {
     throw new AssistantError(
-      "Only failed or cancelled runs can be retried",
+      retryChecks
+        ? "Only finished runs can retry their failed checks"
+        : "Only failed or cancelled runs can be retried",
       ErrorType.CONFLICT_ERROR,
       409,
     );
   }
 
-  await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
+  await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, { retryChecks });
 
   return toBenchmarkRun(
     {
@@ -321,6 +329,7 @@ export async function retryBenchmarkRun(
       status: "queued",
       failure_reason: null,
       completed_at: null,
+      score: null,
       owner_user_id: ownerUserId ?? record.owner_user_id,
     },
     { includeShareToken: true },

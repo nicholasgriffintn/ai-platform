@@ -148,9 +148,7 @@ function Cell({
           <span className="font-display text-base text-foreground tabular-nums">
             {formatBenchmarkScore(benchmark, run.score.mean)}
           </span>
-          <span className="text-muted-foreground tabular-nums">
-            {run.usage.costUsd === null ? "Own key" : formatUsd(run.usage.costUsd)}
-          </span>
+          <span className="text-muted-foreground tabular-nums">{formatUsd(run.usage.costUsd)}</span>
         </span>
       </Link>
     );
@@ -451,7 +449,7 @@ export function OfficialRuns({ runHref }: { runHref: (runId: string) => string }
                   onQueue={(benchmarkIds, modelId) =>
                     runQueue({ benchmarkIds, modelIds: [modelId] })
                   }
-                  onRetry={(runId) => retry.mutate(runId)}
+                  onRetry={(runId) => retry.mutate({ runId })}
                   onCancel={(runId) => cancel.mutate(runId)}
                   busy={busy}
                 />

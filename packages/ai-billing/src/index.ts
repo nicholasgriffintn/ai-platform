@@ -21,4 +21,5 @@ export * from "./usage/container-usage.js";
 export * from "./usage/request-meter.js";
 export * from "./usage/infra-usage.js";
 export * from "./usage/model-usage.js";
+export * from "./usage/model-turn-cost.js";
 export * from "./usage/capability-usage.js";

@@ -29,6 +29,7 @@ import {
   credentialSourceFor,
   findOfficialModel,
   isDecisionModel,
+  isOfficialProvider,
   listOfficialModels,
   modelEntrant,
   modelIneligibility,
@@ -52,8 +53,7 @@ function startOfMonth(now: Date): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 }
 
-export function officialCandidateModelIds(models: OfficialModels): string[] {
-  const catalogue = getModels();
+export function officialCandidateModelIds(catalogue = getModels()): string[] {
   const lineup = Object.values(MODEL_TIER_LINEUP.hosted).flatMap((roles) =>
     Object.values(roles).flatMap((candidates) => [...candidates]),
   );
@@ -62,12 +62,12 @@ export function officialCandidateModelIds(models: OfficialModels): string[] {
 
     return resolved ? [resolved.id] : [];
   });
-  const decisionModels = Object.entries(models)
+  const decisionModels = Object.entries(catalogue)
     .filter(([, config]) => isActiveModel(config) && isDecisionModel(config))
     .map(([id]) => id);
 
   return [...new Set([...fromLineup, ...decisionModels])].filter((id) =>
-    Boolean(findOfficialModel(models, id)),
+    isOfficialProvider(catalogue[id]?.provider ?? ""),
   );
 }
 
@@ -116,7 +116,7 @@ export async function queueOfficialRuns(
   const benchmarks = request.benchmarkIds?.length
     ? request.benchmarkIds.map(getBenchmark)
     : listBenchmarks();
-  const modelIds = explicit ? (request.modelIds ?? []) : officialCandidateModelIds(models);
+  const modelIds = explicit ? (request.modelIds ?? []) : officialCandidateModelIds();
   const limit = explicit ? Number.POSITIVE_INFINITY : BENCHMARKS_CONFIG.officialRunsPerQueuePass;
   const wanted: { benchmark: Benchmark; entrant: BenchmarkEntrant }[] = [];
 
@@ -238,7 +238,7 @@ export async function getOfficialOverview(
   const ranModelIds = [...latest.values()].flatMap((record) =>
     record.entrant.kind === "model" ? [record.entrant.modelId] : [],
   );
-  const modelIds = [...new Set([...officialCandidateModelIds(models), ...ranModelIds])];
+  const modelIds = [...new Set([...officialCandidateModelIds(catalogue), ...ranModelIds])];
   const now = new Date();
   const boards: BenchmarkOfficialBoard[] = listBenchmarks().map((benchmark) => ({
     benchmark: benchmark.summary,

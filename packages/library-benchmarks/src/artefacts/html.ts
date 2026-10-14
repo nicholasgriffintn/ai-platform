@@ -14,7 +14,8 @@ const NETWORK = [
   /\bfetch\s*\(/i,
   /XMLHttpRequest|WebSocket|EventSource|sendBeacon/i,
   /\bimport\s*\(/i,
-  /<(?:iframe|object|embed|base|link|meta)[\s>]/i,
+  /<(?:iframe|object|embed|base)[\s>]/i,
+  /http-equiv/i,
 ];
 
 export interface HtmlArtefactCheck {

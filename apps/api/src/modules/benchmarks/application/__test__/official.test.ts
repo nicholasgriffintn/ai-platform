@@ -23,7 +23,7 @@ vi.mock("~/modules/chat/application/policy/model-access", () => ({
 
 vi.mock("../runner", () => ({ enqueueBenchmarkRunTask: vi.fn() }));
 
-import { officialRunRefusal, type OfficialModels } from "../entrants";
+import { isDecisionModel, officialRunRefusal, type OfficialModels } from "../entrants";
 import { officialCandidateModelIds, officialEntrantsFor } from "../official";
 
 function model(provider: string, matchingModel: string, name: string): ModelConfigItem {
@@ -57,8 +57,8 @@ beforeEach(() => {
 });
 
 describe("officialCandidateModelIds", () => {
-  it("keeps lineup models the caller can run from approved labs and drops aggregators", () => {
-    const ids = officialCandidateModelIds(officialModels());
+  it("keeps lineup models from approved labs and drops aggregators", () => {
+    const ids = officialCandidateModelIds(mocks.models);
 
     expect(ids).toContain("claude-opus-5-5");
     expect(ids).toContain("gpt-6-astra");
@@ -66,17 +66,36 @@ describe("officialCandidateModelIds", () => {
     expect(ids).not.toContain("anthropic/claude-opus-5.5");
     expect(ids).not.toContain("@cf/zai-org/glm-5.3");
   });
+});
 
+describe("isDecisionModel", () => {
+  it("only counts models that answer in decisions and never in text", () => {
+    expect(
+      isDecisionModel({
+        ...model("openai", "gpt-6-luna", "GPT-6 Luna"),
+        modalities: { input: ["text"], output: ["text", "decision"] },
+      }),
+    ).toBe(false);
+    expect(
+      isDecisionModel({
+        ...model("cloudflare", "clef", "Clef"),
+        modalities: { input: ["text"], output: ["decision"] },
+      }),
+    ).toBe(true);
+  });
+});
+
+describe("officialEntrantsFor", () => {
   it("leaves out lineup models the caller has no key for", () => {
     const models = officialModels();
 
     delete models["gpt-6-astra"];
 
-    expect(officialCandidateModelIds(models)).not.toContain("gpt-6-astra");
+    expect(
+      officialEntrantsFor(models, getBenchmark("countdown"), ["gpt-6-astra"], new Set()),
+    ).toEqual([]);
   });
-});
 
-describe("officialEntrantsFor", () => {
   it("refuses explicitly requested models outside the approved providers", () => {
     const entrants = officialEntrantsFor(
       officialModels(),

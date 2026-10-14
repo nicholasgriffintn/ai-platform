@@ -25,6 +25,20 @@ describe("hamster HTML gate", () => {
     expect(checkHtmlArtefact("<svg><circle r='4'/></svg>").reasons).toContain("nothing animates");
   });
 
+  it("allows the usual head metadata but not a meta refresh", () => {
+    const withMeta = HAMSTER.replace(
+      "<head>",
+      '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width">',
+    );
+
+    expect(checkHtmlArtefact(withMeta).ok).toBe(true);
+    expect(
+      checkHtmlArtefact(
+        HAMSTER.replace("<head>", '<head><meta http-equiv="refresh" content="0;url=/x">'),
+      ).reasons,
+    ).toContain("reaches for the network");
+  });
+
   it("never hands out an artefact that failed the gate", () => {
     const hamster = getBenchmark("hamster-wheel");
 
@@ -57,6 +71,13 @@ $: s("bd*2 [~ sd] hh*4").bank("RolandTR909").gain(0.8) // drums
 
     expect(code).not.toBeNull();
     expect(checkStrudelCode(code ?? "")).toEqual({ ok: true, reasons: [] });
+  });
+
+  it("accepts named transforms passed as arguments", () => {
+    expect(checkStrudelCode('note("c3 e3").jux(rev).every(4, fast).sometimes(slow)')).toEqual({
+      ok: true,
+      reasons: [],
+    });
   });
 
   it.each([

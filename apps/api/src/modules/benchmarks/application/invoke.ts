@@ -1,7 +1,10 @@
-import { recordModelTurnUsage, userCreditActor } from "@ngriffin_uk/polychat-ai-billing";
+import {
+  priceModelTurnUsage,
+  recordModelTurnUsage,
+  userCreditActor,
+} from "@ngriffin_uk/polychat-ai-billing";
 import { extractUsagePayload, normaliseTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { Benchmark } from "@ngriffin_uk/polychat-library-benchmarks";
-import { estimateUsageCost } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import {
   hasProviderReasoningOptions,
   readDecisionNoul,
@@ -142,10 +145,7 @@ async function invokeChatModel(
     answer: scope.benchmark.parseOutput(output),
     inputTokens,
     outputTokens,
-    costUsd:
-      model.credentialAuthority === "byok"
-        ? null
-        : (estimateUsageCost({ inputTokens, outputTokens }, model.config) ?? null),
+    costUsd: priceModelTurnUsage(model.config, { usage, rawUsage }),
     latencyMs,
   };
 }

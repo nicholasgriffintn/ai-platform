@@ -2,7 +2,12 @@ import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { Play, Pause } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-import { loadStrudelRuntime, sanitizeStrudelCode } from "./strudel";
+import {
+  confineStrudelTheme,
+  loadStrudelRuntime,
+  sanitizeStrudelCode,
+  snapshotDocumentTheme,
+} from "./strudel";
 
 interface StrudelMirrorInstance {
   code: string;
@@ -70,6 +75,7 @@ export function StrudelPlayer({
           return editorRef.current;
         }
 
+        const documentTheme = snapshotDocumentTheme();
         const editor = new StrudelMirror({
           theme: "teletext",
           defaultOutput: webaudioOutput,
@@ -90,6 +96,7 @@ export function StrudelPlayer({
         });
 
         editor.setTheme?.("tokyoNight");
+        confineStrudelTheme(root, documentTheme);
         editorRef.current = editor;
         setError(null);
 

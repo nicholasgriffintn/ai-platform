@@ -35,10 +35,14 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
     return <EmptyState title="Run not found" message="It may have been deleted." />;
   }
 
-  const { run } = query.data;
+  const { run, benchmark, items } = query.data;
   const isShared = run.visibility !== "private" && run.shareToken;
   const isActive = isActiveBenchmarkRunStatus(run.status);
   const canRetry = run.status === "failed" || run.status === "cancelled";
+  const failedChecks =
+    run.status === "completed" &&
+    benchmark.scoring === "votes" &&
+    items.filter((item) => item.result && !item.result.error && !item.result.artefact).length;
   const error = cancel.error ?? retry.error ?? share.error ?? remove.error;
 
   const copy = async () => {
@@ -72,9 +76,22 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
             icon={<RotateCcw size={14} />}
             disabled={retry.isPending}
             isLoading={retry.isPending}
-            onClick={() => retry.mutate(runId)}
+            onClick={() => retry.mutate({ runId })}
           >
             Retry missing items
+          </Button>
+        ) : null}
+        {failedChecks ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            icon={<RotateCcw size={14} />}
+            disabled={retry.isPending}
+            isLoading={retry.isPending}
+            onClick={() => retry.mutate({ runId, failedChecks: true })}
+          >
+            Retry {failedChecks} failed {failedChecks === 1 ? "check" : "checks"}
           </Button>
         ) : null}
         {run.scope === "official" ? null : isShared ? (

@@ -6,6 +6,7 @@ import type {
   BenchmarkVisibility,
   BenchmarkVoteRequest,
   QueueOfficialBenchmarkRunsRequest,
+  RetryBenchmarkRunRequest,
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { isActiveBenchmarkRunStatus } from "@ngriffin_uk/polychat-schemas";
@@ -130,7 +131,8 @@ export function useRetryBenchmarkRun() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (runId: string) => benchmarksService.retry(runId),
+    mutationFn: ({ runId, ...request }: RetryBenchmarkRunRequest & { runId: string }) =>
+      benchmarksService.retry(runId, request),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [BENCHMARKS_QUERY_KEY] }),
   });
 }

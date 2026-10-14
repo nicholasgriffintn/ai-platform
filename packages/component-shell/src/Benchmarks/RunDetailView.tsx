@@ -202,7 +202,7 @@ export function RunDetailView({
         ))}
         <Stat
           label="Cost"
-          value={run.usage.costUsd === null ? "Your keys" : formatUsd(run.usage.costUsd)}
+          value={run.usage.costUsd === null ? "–" : formatUsd(run.usage.costUsd)}
           hint={`${run.usage.inputTokens.toLocaleString("en-GB")} in · ${run.usage.outputTokens.toLocaleString("en-GB")} out`}
         />
         <Stat label="Median time" value={formatLatency(run.usage.latencyP50Ms)} />

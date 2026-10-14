@@ -144,16 +144,23 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return cancelled.length > 0;
   }
 
-  async requeue(id: string, ownerUserId?: number): Promise<boolean> {
+  async requeue(
+    id: string,
+    options: { ownerUserId?: number; fromCompleted?: boolean } = {},
+  ): Promise<boolean> {
+    const statuses: BenchmarkRunStatus[] = options.fromCompleted
+      ? ["failed", "cancelled", "completed"]
+      : ["failed", "cancelled"];
     const requeued = await this.database
       .update(benchmarkRun)
       .set({
         status: "queued",
         failure_reason: null,
         completed_at: null,
-        ...(ownerUserId === undefined ? {} : { owner_user_id: ownerUserId }),
+        score: null,
+        ...(options.ownerUserId === undefined ? {} : { owner_user_id: options.ownerUserId }),
       })
-      .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, ["failed", "cancelled"])))
+      .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, statuses)))
       .returning({ id: benchmarkRun.id });
 
     return requeued.length > 0;

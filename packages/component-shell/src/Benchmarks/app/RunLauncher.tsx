@@ -248,12 +248,15 @@ export function RunLauncher({ onStarted }: { onStarted: (runs: BenchmarkRun[]) =
                 <span className="text-foreground">{entry.name}</span>
                 {entry.eligible ? (
                   <span className="text-muted-foreground tabular-nums">
+                    {entry.estimatedCostUsd === null
+                      ? "Cost unknown"
+                      : `About ${formatUsd(entry.estimatedCostUsd)}`}
                     {entry.byok ? (
-                      <Badge variant="success">On your keys</Badge>
-                    ) : entry.estimatedCostUsd === null ? (
-                      "Cost unknown"
+                      <Badge variant="success" className="ml-2">
+                        On your keys
+                      </Badge>
                     ) : (
-                      `About ${formatUsd(entry.estimatedCostUsd)} of credit`
+                      " of credit"
                     )}
                   </span>
                 ) : (

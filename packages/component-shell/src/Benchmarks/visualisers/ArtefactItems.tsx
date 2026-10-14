@@ -29,9 +29,9 @@ export function ArtefactItems({
                 title={`${entrantName}: ${heading}`}
               />
             ) : (
-              <div className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                {emptyLabel}
-                {reason ? <span className="mt-1 block text-xs">({reason})</span> : null}
+              <div className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                <span>{emptyLabel}</span>
+                {reason ? <span className="max-w-full text-xs break-words">{reason}</span> : null}
               </div>
             )}
             {judge !== undefined ? (
