@@ -22,6 +22,21 @@ export async function startJobs(request: CreateJobRequest): Promise<StartedJobLi
   );
 }
 
+export async function startJobOfKind<TKind extends JobKind>(
+  request: Extract<CreateJobRequest, { kind: TKind }>,
+): Promise<JobOf<TKind>> {
+  const started = await startJobs(request);
+  const job = started.data.find((candidate): candidate is JobOf<TKind> =>
+    isJobOf(request.kind, candidate),
+  );
+
+  if (!job) {
+    throw new Error(started.rejected[0]?.error ?? `The ${request.kind} job was not started`);
+  }
+
+  return job;
+}
+
 export async function listJobsOfKind<TKind extends JobKind>(
   kind: TKind,
   query: { project_id?: string; external_id?: string } = {},

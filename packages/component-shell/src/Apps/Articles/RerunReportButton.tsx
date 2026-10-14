@@ -142,11 +142,7 @@ export function RerunReportButton({
         completed: totalSteps,
       }));
 
-      if (reportResult.outputId) {
-        void navigate(`${basePath}/${reportResult.outputId}`);
-      } else {
-        throw new Error("Failed to generate report");
-      }
+      void navigate(`${basePath}/${reportResult.id}`);
     } catch (rerunError: unknown) {
       setError(
         `Error: ${rerunError instanceof Error ? rerunError.message : "Failed to rerun analysis"}`,

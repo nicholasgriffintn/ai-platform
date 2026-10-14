@@ -1,27 +1,18 @@
 import {
-  articleAnalyzeSchema,
   articleDetailResponseSchema,
-  articleSummariseSchema,
   contentExtractSchema,
   listPageOf,
   sourceArticlesResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { requestAppUrl } from "@ngriffin_uk/polychat-utility-server/urls";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import type { HonoLike } from "~/infrastructure/http/routeBuilder";
-import { analyseArticle } from "~/modules/experiences/application/articles/analyse";
-import { generateArticlesReport } from "~/modules/experiences/application/articles/generate-report";
 import { getArticleDetails } from "~/modules/experiences/application/articles/get-details";
 import { getSourceArticles } from "~/modules/experiences/application/articles/get-source-articles";
 import { listArticles } from "~/modules/experiences/application/articles/list";
-import {
-  cleanupArticleSession,
-  summariseArticle,
-} from "~/modules/experiences/application/articles/summarise";
+import { cleanupArticleSession } from "~/modules/experiences/application/articles/summarise";
 import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
 
@@ -101,56 +92,6 @@ export function defineArticles(app: HonoLike): void {
               failedUrls: extracted.data?.extracted.failed_results ?? [],
             };
           },
-        })
-        .action("analyse", {
-          auth: true,
-          summary: "Analyse an article in the session",
-          middleware: access,
-          paramSchema: articleParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          bodySchema: articleAnalyzeSchema.omit({ itemId: true }),
-          handler: ({ body, params, query, raw, serviceContext, user }) =>
-            analyseArticle({
-              completion_id: generateId(),
-              context: serviceContext,
-              args: { article: body.article, itemId: params.article_id },
-              app_url: requestAppUrl(raw.req.url),
-              user,
-              projectId: query.project_id,
-            }),
-        })
-        .action("summarise", {
-          auth: true,
-          summary: "Summarise an article in the session",
-          middleware: access,
-          paramSchema: articleParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          bodySchema: articleSummariseSchema.omit({ itemId: true }),
-          handler: ({ body, params, query, raw, serviceContext, user }) =>
-            summariseArticle({
-              completion_id: generateId(),
-              context: serviceContext,
-              args: { article: body.article, itemId: params.article_id },
-              app_url: requestAppUrl(raw.req.url),
-              user,
-              projectId: query.project_id,
-            }),
-        })
-        .action("report", {
-          auth: true,
-          summary: "Compare the session's articles in a report",
-          middleware: access,
-          paramSchema: articleParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          handler: ({ params, query, raw, serviceContext, user }) =>
-            generateArticlesReport({
-              completion_id: generateId(),
-              context: serviceContext,
-              args: { itemId: params.article_id },
-              app_url: requestAppUrl(raw.req.url),
-              user,
-              projectId: query.project_id,
-            }),
         })
         .action("rerun", {
           auth: true,

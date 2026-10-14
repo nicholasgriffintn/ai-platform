@@ -1,6 +1,5 @@
 import type {
   AnalyseArticleParams,
-  AnalyseArticleResponse,
   ArticleResponse,
   ArticleSessionSummary,
   ArticlesResponse,
@@ -8,9 +7,8 @@ import type {
   ExtractArticleContentResponse,
   FetchMultipleArticlesResponse,
   GenerateReportParams,
-  GenerateReportResponse,
+  Job,
   SummariseArticleParams,
-  SummariseArticleResponse,
   Note,
   NoteSummary,
   NoteCreateRequest,
@@ -27,6 +25,7 @@ import type {
   UploadResponse,
 } from "@ngriffin_uk/polychat-schemas/experiences";
 
+import { startJobOfKind } from "./jobs.js";
 import { withProjectScope } from "./project-scope.js";
 import { requestJson, resource } from "./resource.js";
 
@@ -74,34 +73,37 @@ export const uploadRecording = async (
   return requestJson<UploadResponse>(experiencePath("/recordings", projectId), "POST", formData);
 };
 
-const RECORDING_ACTIONS: Record<ProcessRecordingParams["action"], string> = {
-  transcribe: "transcribe",
-  summarise: "summarise",
-  "generate-image": "generate_image",
-};
-
-export const processRecording = async (params: ProcessRecordingParams, projectId?: string) => {
-  const body: Record<string, unknown> = {};
-
+export const processRecording = (
+  params: ProcessRecordingParams,
+  projectId?: string,
+): Promise<Job> => {
   if (params.action === "transcribe") {
-    body.numberOfSpeakers = params.numberOfSpeakers || 2;
-    body.prompt =
-      params.prompt ||
-      `Transcribe this recording with the following speakers: ${params.speakers ? JSON.stringify(params.speakers) : "Person 1, 2, etc"}`;
-  } else if (params.action === "summarise") {
-    body.speakers = params.speakers || {};
-  } else if (params.action === "generate-image" && params.prompt) {
-    body.prompt = params.prompt;
+    return startJobOfKind({
+      kind: "recording_transcription",
+      project_id: projectId,
+      input: {
+        recordingId: params.recordingId,
+        numberOfSpeakers: params.numberOfSpeakers || 2,
+        prompt:
+          params.prompt ||
+          `Transcribe this recording with the following speakers: ${params.speakers ? JSON.stringify(params.speakers) : "Person 1, 2, etc"}`,
+      },
+    });
   }
 
-  return requestJson<Record<string, unknown>>(
-    experiencePath(
-      `/recordings/${encodeURIComponent(params.recordingId)}/${RECORDING_ACTIONS[params.action]}`,
-      projectId,
-    ),
-    "POST",
-    body,
-  );
+  if (params.action === "summarise") {
+    return startJobOfKind({
+      kind: "recording_summary",
+      project_id: projectId,
+      input: { recordingId: params.recordingId, speakers: params.speakers || {} },
+    });
+  }
+
+  return startJobOfKind({
+    kind: "recording_image",
+    project_id: projectId,
+    input: { recordingId: params.recordingId, prompt: params.prompt },
+  });
 };
 
 export const fetchArticles = async (projectId?: string): Promise<ArticlesResponse> => ({
@@ -114,35 +116,14 @@ export const fetchArticle = (id: string, projectId?: string): Promise<ArticleRes
     "GET",
   );
 
-export const analyseArticle = (
-  params: AnalyseArticleParams,
-  projectId?: string,
-): Promise<AnalyseArticleResponse> =>
-  requestJson<AnalyseArticleResponse>(
-    experiencePath(`/articles/${encodeURIComponent(params.itemId)}/analyse`, projectId),
-    "POST",
-    { article: params.article },
-  );
+export const analyseArticle = (params: AnalyseArticleParams, projectId?: string) =>
+  startJobOfKind({ kind: "article_analysis", project_id: projectId, input: params });
 
-export const summariseArticle = (
-  params: SummariseArticleParams,
-  projectId?: string,
-): Promise<SummariseArticleResponse> =>
-  requestJson<SummariseArticleResponse>(
-    experiencePath(`/articles/${encodeURIComponent(params.itemId)}/summarise`, projectId),
-    "POST",
-    { article: params.article },
-  );
+export const summariseArticle = (params: SummariseArticleParams, projectId?: string) =>
+  startJobOfKind({ kind: "article_summary", project_id: projectId, input: params });
 
-export const generateReport = (
-  params: GenerateReportParams,
-  projectId?: string,
-): Promise<GenerateReportResponse> =>
-  requestJson<GenerateReportResponse>(
-    experiencePath(`/articles/${encodeURIComponent(params.itemId)}/report`, projectId),
-    "POST",
-    {},
-  );
+export const generateReport = (params: GenerateReportParams, projectId?: string) =>
+  startJobOfKind({ kind: "article_report", project_id: projectId, input: params });
 
 export const fetchSourceArticlesByIds = async (
   ids: string[],

@@ -37,10 +37,26 @@ export function listScopedOutputGroup(
   scope: JobScope,
   capabilityId: string,
   groupId: string,
+  kind?: string,
 ): Promise<OutputRecord[]> {
   const outputs = scope.context.repositories.outputs;
 
   return scope.projectId
-    ? outputs.listProjectOutputGroup(scope.projectId, capabilityId, groupId)
-    : outputs.listPersonalOutputGroup(scope.user.id, capabilityId, groupId);
+    ? outputs.listProjectOutputGroup(scope.projectId, capabilityId, groupId, kind)
+    : outputs.listPersonalOutputGroup(scope.user.id, capabilityId, groupId, kind);
+}
+
+export async function requireLatestScopedOutput(
+  scope: JobScope,
+  capabilityId: string,
+  groupId: string,
+  kind: string,
+): Promise<OutputRecord> {
+  const [latest] = await listScopedOutputGroup(scope, capabilityId, groupId, kind);
+
+  if (!latest) {
+    throw new AssistantError("The job produced no output", ErrorType.NOT_FOUND, 404);
+  }
+
+  return latest;
 }

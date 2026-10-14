@@ -11,6 +11,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { assertPlanEntitlement } from "~/middleware/requirePlan";
 import {
   requireOptionalProjectCapabilityAccess,
   requireProjectAccess,
@@ -57,6 +58,10 @@ async function startKind<TKind extends JobKind>(
   projectId: string | undefined,
   input: JobInput<TKind>,
 ): Promise<StartedJobs> {
+  if (definition.requiredPlan) {
+    assertPlanEntitlement(user, definition.requiredPlan);
+  }
+
   return definition.start(await scopeFor(context, user, projectId, definition), input);
 }
 
@@ -103,6 +108,54 @@ function startRequest(
         context,
         user,
         JOB_KIND_DEFINITIONS.site_evaluation,
+        request.project_id,
+        request.input,
+      );
+    case "recording_transcription":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.recording_transcription,
+        request.project_id,
+        request.input,
+      );
+    case "recording_summary":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.recording_summary,
+        request.project_id,
+        request.input,
+      );
+    case "recording_image":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.recording_image,
+        request.project_id,
+        request.input,
+      );
+    case "article_analysis":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.article_analysis,
+        request.project_id,
+        request.input,
+      );
+    case "article_summary":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.article_summary,
+        request.project_id,
+        request.input,
+      );
+    case "article_report":
+      return startKind(
+        context,
+        user,
+        JOB_KIND_DEFINITIONS.article_report,
         request.project_id,
         request.input,
       );

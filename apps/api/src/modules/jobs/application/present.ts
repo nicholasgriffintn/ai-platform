@@ -17,6 +17,25 @@ export function jobFields(record: OutputRecord) {
   };
 }
 
+export function outputJobFields(record: OutputRecord) {
+  const content = readJobContent(record);
+
+  return {
+    ...jobFields(record),
+    status: jobStatusFromOutput(record),
+    result: { ...content, title: record.title },
+    error: typeof content.error === "string" ? content.error : null,
+  };
+}
+
+export function jobStatusFromOutput(record: OutputRecord): JobStatus {
+  if (record.status === "ready") {
+    return "succeeded";
+  }
+
+  return record.status === "failed" ? "failed" : "in_progress";
+}
+
 export function jobStatusFromProvider(value: unknown): JobStatus {
   switch (typeof value === "string" ? value.toLowerCase() : "") {
     case "queued":

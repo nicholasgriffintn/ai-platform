@@ -1,21 +1,11 @@
-import {
-  listPageOf,
-  recordingDetailResponseSchema,
-  recordingGenerateImageSchema,
-  recordingSummariseSchema,
-  recordingTranscribeSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { listPageOf, recordingDetailResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { requestAppUrl } from "@ngriffin_uk/polychat-utility-server/urls";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import type { HonoLike } from "~/infrastructure/http/routeBuilder";
-import { handleRecordingGenerateImage } from "~/modules/experiences/application/recordings/generate-image";
 import { handleRecordingDetail } from "~/modules/experiences/application/recordings/get-details";
 import { handleRecordingList } from "~/modules/experiences/application/recordings/list";
-import { handleRecordingSummarise } from "~/modules/experiences/application/recordings/summarise";
-import { handleRecordingTranscribe } from "~/modules/experiences/application/recordings/transcribe";
 import { handleRecordingUpload } from "~/modules/experiences/application/recordings/upload";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
 
@@ -97,55 +87,6 @@ export function defineRecordings(app: HonoLike): void {
             recording: await handleRecordingDetail({
               context: serviceContext,
               recordingId: params.recording_id,
-              user,
-              projectId: query.project_id,
-            }),
-          }),
-        })
-        .action("transcribe", {
-          auth: true,
-          summary: "Transcribe a recording",
-          middleware: access,
-          paramSchema: recordingParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          bodySchema: recordingTranscribeSchema.omit({ recordingId: true }),
-          handler: async ({ body, params, query, raw, serviceContext, user }) => ({
-            response: await handleRecordingTranscribe({
-              context: serviceContext,
-              request: { ...body, recordingId: params.recording_id },
-              user,
-              app_url: requestAppUrl(raw.req.url),
-              projectId: query.project_id,
-            }),
-          }),
-        })
-        .action("summarise", {
-          auth: true,
-          summary: "Summarise a recording",
-          middleware: access,
-          paramSchema: recordingParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          bodySchema: recordingSummariseSchema.omit({ recordingId: true }),
-          handler: async ({ body, params, query, serviceContext, user }) => ({
-            response: await handleRecordingSummarise({
-              context: serviceContext,
-              request: { ...body, recordingId: params.recording_id },
-              user,
-              projectId: query.project_id,
-            }),
-          }),
-        })
-        .action("generate_image", {
-          auth: true,
-          summary: "Generate an image for a recording",
-          middleware: access,
-          paramSchema: recordingParamsSchema,
-          querySchema: projectScopeQuerySchema,
-          bodySchema: recordingGenerateImageSchema.omit({ recordingId: true }),
-          handler: async ({ body, params, query, serviceContext, user }) => ({
-            response: await handleRecordingGenerateImage({
-              context: serviceContext,
-              request: { ...body, recordingId: params.recording_id },
               user,
               projectId: query.project_id,
             }),

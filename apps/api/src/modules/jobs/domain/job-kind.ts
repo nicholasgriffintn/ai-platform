@@ -1,3 +1,4 @@
+import type { PlanId } from "@ngriffin_uk/polychat-ai-billing";
 import type { CreateJobRequest, Job, JobKind } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -26,6 +27,7 @@ export interface JobKindDefinition<TKind extends JobKind = JobKind> {
   kind: TKind;
   outputCapability: string;
   projectCapability?: string;
+  requiredPlan?: PlanId;
   start(scope: JobScope, input: JobInput<TKind>): Promise<StartedJobs>;
   present(record: OutputRecord): Job | null;
   refresh?(scope: JobScope, record: OutputRecord): Promise<OutputRecord>;

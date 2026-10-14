@@ -1,6 +1,14 @@
 import z from "zod/v4";
 
-import { deepResearchSchema } from "./apps.js";
+import {
+  articleAnalyzeSchema,
+  articleSummariseSchema,
+  deepResearchSchema,
+  generateArticlesReportSchema,
+  recordingGenerateImageSchema,
+  recordingSummariseSchema,
+  recordingTranscribeSchema,
+} from "./apps.js";
 import { canvasGenerationSchema, generateCanvasSchema } from "./experiences/canvas.js";
 import { ocrBatchStartRequestSchema } from "./ocr-batch.js";
 import { listQuerySchema, listSchema } from "./platform/list.js";
@@ -14,6 +22,12 @@ export const JOB_KINDS = [
   "ocr_batch",
   "research",
   "site_evaluation",
+  "recording_transcription",
+  "recording_summary",
+  "recording_image",
+  "article_analysis",
+  "article_summary",
+  "article_report",
 ] as const;
 
 export const jobKindSchema = z.enum(JOB_KINDS);
@@ -38,7 +52,7 @@ const jobFieldsSchema = z.object({
   error: z.string().nullable(),
 });
 
-export const ocrBatchJobResultSchema = z.object({ title: z.string() }).passthrough();
+export const outputJobResultSchema = z.object({ title: z.string() }).passthrough();
 
 export const jobSchema = z.discriminatedUnion("kind", [
   jobFieldsSchema.extend({
@@ -49,7 +63,7 @@ export const jobSchema = z.discriminatedUnion("kind", [
     kind: z.literal("replicate_prediction"),
     result: replicatePredictionSchema,
   }),
-  jobFieldsSchema.extend({ kind: z.literal("ocr_batch"), result: ocrBatchJobResultSchema }),
+  jobFieldsSchema.extend({ kind: z.literal("ocr_batch"), result: outputJobResultSchema }),
   jobFieldsSchema.extend({
     kind: z.literal("research"),
     result: researchStatusSchema.partial(),
@@ -58,6 +72,15 @@ export const jobSchema = z.discriminatedUnion("kind", [
     kind: z.literal("site_evaluation"),
     result: siteEvaluationResponseSchema.nullable(),
   }),
+  jobFieldsSchema.extend({
+    kind: z.literal("recording_transcription"),
+    result: outputJobResultSchema,
+  }),
+  jobFieldsSchema.extend({ kind: z.literal("recording_summary"), result: outputJobResultSchema }),
+  jobFieldsSchema.extend({ kind: z.literal("recording_image"), result: outputJobResultSchema }),
+  jobFieldsSchema.extend({ kind: z.literal("article_analysis"), result: outputJobResultSchema }),
+  jobFieldsSchema.extend({ kind: z.literal("article_summary"), result: outputJobResultSchema }),
+  jobFieldsSchema.extend({ kind: z.literal("article_report"), result: outputJobResultSchema }),
 ]);
 
 const jobScopeSchema = z.object({ project_id: z.string().min(1).optional() });
@@ -71,6 +94,18 @@ export const createJobRequestSchema = z.discriminatedUnion("kind", [
   jobScopeSchema.extend({ kind: z.literal("ocr_batch"), input: ocrBatchStartRequestSchema }),
   jobScopeSchema.extend({ kind: z.literal("research"), input: deepResearchSchema }),
   jobScopeSchema.extend({ kind: z.literal("site_evaluation"), input: siteEvaluationRequestSchema }),
+  jobScopeSchema.extend({
+    kind: z.literal("recording_transcription"),
+    input: recordingTranscribeSchema,
+  }),
+  jobScopeSchema.extend({ kind: z.literal("recording_summary"), input: recordingSummariseSchema }),
+  jobScopeSchema.extend({
+    kind: z.literal("recording_image"),
+    input: recordingGenerateImageSchema,
+  }),
+  jobScopeSchema.extend({ kind: z.literal("article_analysis"), input: articleAnalyzeSchema }),
+  jobScopeSchema.extend({ kind: z.literal("article_summary"), input: articleSummariseSchema }),
+  jobScopeSchema.extend({ kind: z.literal("article_report"), input: generateArticlesReportSchema }),
 ]);
 
 export const listJobsQuerySchema = listQuerySchema.extend({

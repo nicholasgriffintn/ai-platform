@@ -7,7 +7,7 @@ import { evaluateSitePrompts } from "~/modules/sites/application/evaluate";
 
 import type { JobKindDefinition } from "../../domain/job-kind";
 import { requireScopedOutput } from "../outputs";
-import { jobFields, readJobContent } from "../present";
+import { jobFields, jobStatusFromOutput, readJobContent } from "../present";
 import { publishJobChanged } from "../publish";
 
 const SITE_EVALUATION_CAPABILITY = "site_evaluation";
@@ -62,19 +62,13 @@ export const siteEvaluationJobs: JobKindDefinition<"site_evaluation"> = {
     }
 
     const content = readJobContent(record);
-    const status =
-      record.status === "ready"
-        ? "succeeded"
-        : record.status === "failed"
-          ? "failed"
-          : "in_progress";
 
     const summary = siteEvaluationResponseSchema.safeParse(content.summary);
 
     return {
       ...jobFields(record),
       kind: "site_evaluation",
-      status,
+      status: jobStatusFromOutput(record),
       result: summary.success ? summary.data : null,
       error: typeof content.error === "string" ? content.error : null,
     };

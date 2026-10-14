@@ -6,6 +6,15 @@ import type { IUser } from "~/types";
 
 export type PlanType = PlanId;
 
+export function assertPlanEntitlement(user: IUser, requiredPlan: PlanType): void {
+  if (!hasPlanEntitlement(user.plan_id, requiredPlan)) {
+    throw new AssistantError(
+      `This feature requires a ${requiredPlan} plan. Your current plan is ${resolvePlanId(user.plan_id)}.`,
+      ErrorType.AUTHORISATION_ERROR,
+    );
+  }
+}
+
 export function requirePlan(requiredPlan: PlanType) {
   return async (context: Context, next: Next) => {
     const user = context.get("user") as IUser | undefined;
@@ -14,13 +23,7 @@ export function requirePlan(requiredPlan: PlanType) {
       throw new AssistantError("User not authenticated", ErrorType.AUTHENTICATION_ERROR);
     }
 
-    if (!hasPlanEntitlement(user.plan_id, requiredPlan)) {
-      throw new AssistantError(
-        `This feature requires a ${requiredPlan} plan. Your current plan is ${resolvePlanId(user.plan_id)}.`,
-        ErrorType.AUTHORISATION_ERROR,
-      );
-    }
-
+    assertPlanEntitlement(user, requiredPlan);
     await next();
   };
 }
