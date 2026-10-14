@@ -97,17 +97,23 @@ export function extractStrudelCode(output: string): string | null {
   return code.length > 0 ? code : null;
 }
 
-function readString(code: string, start: number): number | null {
+type StringRead = { end: number } | { reason: string };
+
+function readString(code: string, start: number): StringRead {
   const quote = code[start];
   const end = code.indexOf(quote, start + 1);
 
   if (end === -1) {
-    return null;
+    return { reason: "unterminated string" };
   }
 
   const content = code.slice(start + 1, end);
 
-  return STRING_CONTENT.test(content) && !content.includes(quote) ? end + 1 : null;
+  if (content.includes("\\")) {
+    return { reason: "quotes nested inside mini-notation: group with [ ] instead" };
+  }
+
+  return STRING_CONTENT.test(content) ? { end: end + 1 } : { reason: "unsupported string" };
 }
 
 export function checkStrudelCode(code: string): StrudelCheck {
@@ -136,14 +142,14 @@ export function checkStrudelCode(code: string): StrudelCheck {
     }
 
     if (character === '"' || character === "'") {
-      const end = readString(code, index);
+      const read = readString(code, index);
 
-      if (end === null) {
-        reasons.add("unsupported string");
+      if ("reason" in read) {
+        reasons.add(read.reason);
         break;
       }
 
-      index = end;
+      index = read.end;
       previous = "string";
       continue;
     }

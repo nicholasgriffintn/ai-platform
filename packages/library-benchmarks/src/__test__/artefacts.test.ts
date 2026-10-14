@@ -88,6 +88,10 @@ $: s("bd*2 [~ sd] hh*4").bank("RolandTR909").gain(0.8) // drums
     ['note("c3").every(4, x => x.fast(2))', "unknown function x"],
     ['s("bd")["constructor"]', "unsupported character ["],
     ['note("c3"); alert(1)', "unsupported character ;"],
+    [
+      'note("<\\"c5 a4\\" \\"d5 f5\\">")',
+      "quotes nested inside mini-notation: group with [ ] instead",
+    ],
   ])("rejects %s", (code, reason) => {
     const check = checkStrudelCode(code);
 

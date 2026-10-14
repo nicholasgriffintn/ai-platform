@@ -28,7 +28,7 @@ const SYSTEM = [
   `Start chains only with these functions: ${STRUDEL_FUNCTIONS.join(", ")}.`,
   "Chain methods freely, for example .s(), .bank(), .gain(), .lpf(), .room(), .fast(), .slow(), .every(), .scale().",
   `When a method takes a transform, pass one of these by name, for example .jux(rev) or .every(4, fast): ${STRUDEL_TRANSFORMS.join(", ")}.`,
-  'Use double-quoted mini-notation strings such as "c3 [e3 g3] <a3 b3>". Use $: at the start of a line for each extra layer.',
+  'Use double-quoted mini-notation strings such as "c3 [e3 g3] <a3 b3>". Never put quotes inside a string: group alternatives with [ ] inside < > instead. Use $: at the start of a line for each extra layer.',
   "Do not use variables, assignments, arrow functions, template strings, square brackets outside strings, semicolons or samples().",
   "Keep it under 4,000 characters and make it loop well for about 16 bars.",
 ].join(" ");
