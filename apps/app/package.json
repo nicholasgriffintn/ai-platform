@@ -95,8 +95,8 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
-    "@babel/core": "8.0.6",
-    "@babel/preset-typescript": "8.0.1",
+    "@babel/core": "8.0.7",
+    "@babel/preset-typescript": "8.0.7",
     "@cloudflare/vite-plugin": "1.63.0",
     "@cloudflare/workers-types": "catalog:",
     "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
