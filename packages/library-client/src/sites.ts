@@ -1,8 +1,7 @@
 import type {
   SiteBrowserEvidence,
   SiteBrowserVerificationRequest,
-  SiteConnectorSnapshotRequest,
-  SiteSourceRefreshRequest,
+  SiteBindingSyncRequest,
   SiteDataResponse,
   SiteDataRequest,
   SiteIntegrationScope,
@@ -32,17 +31,21 @@ const SITES_BASE_PATH = "/sites";
 
 export const sitesService = {
   async data(id: string, request: SiteIntegrationScope): Promise<SiteDataResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/query`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
+    const query = new URLSearchParams({ expected_revision: String(request.expectedRevision) });
+
+    if (request.projectId) {
+      query.set("project_id", request.projectId);
+    }
+
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data?${query}`, {
+      method: "GET",
     });
 
     return returnFetchedData<SiteDataResponse>(response);
   },
   async dataAction(id: string, request: SiteDataRequest): Promise<SiteDataResponse> {
     const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data`, {
-      method: "POST",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: request,
     });
@@ -63,22 +66,19 @@ export const sitesService = {
       body: request,
     });
   },
-  async snapshotDataSource(id: string, request: SiteConnectorSnapshotRequest): Promise<SiteRecord> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/snapshot`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
-    });
-
-    return (await returnFetchedData<SiteResponse>(response)).site;
-  },
-
-  async refreshDataSource(id: string, request: SiteSourceRefreshRequest): Promise<SiteRecord> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
-    });
+  async syncDataBinding(
+    id: string,
+    bindingId: string,
+    request: SiteBindingSyncRequest,
+  ): Promise<SiteRecord> {
+    const response = await fetchApiOrThrow(
+      `${SITES_BASE_PATH}/${id}/bindings/${encodeURIComponent(bindingId)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: request,
+      },
+    );
 
     return (await returnFetchedData<SiteResponse>(response)).site;
   },

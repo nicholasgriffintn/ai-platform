@@ -19,10 +19,10 @@ import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
 export async function previewProjectIssue(projectId: string, locator: IssueLocator) {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/imports/preview`, {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/imports`, {
     method: "POST",
     headers: await apiService.getHeaders(),
-    body: locator,
+    body: { locator },
   });
 
   return issuePreviewResponseSchema.parse(await returnFetchedData(response));

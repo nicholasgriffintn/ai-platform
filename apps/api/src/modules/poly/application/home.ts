@@ -41,11 +41,3 @@ export async function markPolyOwnerSeen(
     new Date(now - OWNER_SEEN_RESOLUTION_MS).toISOString(),
   );
 }
-
-export async function openPolyHome(context: ServiceContext): Promise<PolyHome> {
-  const polyContext = await requirePolyContext(context);
-
-  await markPolyOwnerSeen(context, polyContext);
-
-  return toPolyHome(polyContext);
-}

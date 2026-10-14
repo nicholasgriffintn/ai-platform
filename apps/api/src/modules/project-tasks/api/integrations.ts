@@ -1,8 +1,7 @@
 import {
   createPullRequestReviewResponseSchema,
-  importProjectIssueSchema,
-  issueLocatorSchema,
   issuePreviewResponseSchema,
+  projectIssueImportRequestSchema,
   listPageOf,
   preparedReviewPublicationSchema,
   projectIssueImportResponseSchema,
@@ -108,30 +107,23 @@ export function defineProjectReviews(projects: ResourceBuilder): void {
 }
 
 export function defineProjectImports(projects: ResourceBuilder): void {
-  projects
-    .sub("imports", "import_id")
-    .create({
-      auth: true,
-      tags: ["projects", "tasks"],
-      summary: "Import an approved issue snapshot as a task",
-      paramSchema: projectParamsSchema,
-      bodySchema: importProjectIssueSchema,
-      responses: {
-        200: { description: "The imported task", schema: projectIssueImportResponseSchema },
+  projects.sub("imports", "import_id").create({
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Import an external issue as a task",
+    description:
+      "Send only the locator to read the issue and any existing import. Send the locator with the snapshot's expectedRevision and the task to import that approved snapshot.",
+    paramSchema: projectParamsSchema,
+    bodySchema: projectIssueImportRequestSchema,
+    responses: {
+      200: {
+        description: "The issue snapshot, or the imported task",
+        schema: z.union([projectIssueImportResponseSchema, issuePreviewResponseSchema]),
       },
-      handler: ({ serviceContext, params, body }) =>
-        importProjectIssue(serviceContext, params.project_id, body),
-    })
-    .collectionAction("preview", {
-      auth: true,
-      tags: ["projects", "tasks"],
-      summary: "Read an external issue before importing it",
-      paramSchema: projectParamsSchema,
-      bodySchema: issueLocatorSchema,
-      responses: {
-        200: { description: "Issue snapshot and any import", schema: issuePreviewResponseSchema },
-      },
-      handler: ({ serviceContext, params, body }) =>
-        previewProjectIssue(serviceContext, params.project_id, body),
-    });
+    },
+    handler: ({ serviceContext, params, body }) =>
+      "expectedRevision" in body
+        ? importProjectIssue(serviceContext, params.project_id, body)
+        : previewProjectIssue(serviceContext, params.project_id, body.locator),
+  });
 }

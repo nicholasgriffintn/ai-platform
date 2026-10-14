@@ -87,10 +87,9 @@ export function useSiteComposerSources({
         throw new Error("Build the site before refreshing a saved source");
       }
 
-      return sitesService.refreshDataSource(site.id, {
+      return sitesService.syncDataBinding(site.id, bindingId, {
         projectId,
         expectedRevision: site.revision,
-        bindingId,
       });
     },
     onSuccess: handleSaved,

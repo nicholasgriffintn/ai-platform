@@ -2,6 +2,8 @@ import {
   POLY_HANDOFF_CAPABILITY_ID,
   POLY_TEAMMATE_ID,
   type PolyAgenda,
+  type PolyAgendaView,
+  type TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -10,24 +12,44 @@ import { handoffOverrideRef, readHandoffJudgement } from "~/modules/poly/domain/
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
+import { markPolyOwnerSeen, requirePolyContext, toPolyHome } from "./home";
 
 const EMPTY_AGENDA: PolyAgenda = { needs_you: [], working_on: [], done: [], noted: [] };
 const NOTED_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
 const NOTED_SCAN_LIMIT = 50;
 
-export async function loadPolyAgenda(
-  repositories: Pick<
-    RepositoryManager,
-    "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "activities" | "corrections"
-  >,
+type AgendaRepositories = Pick<
+  RepositoryManager,
+  "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "activities" | "corrections"
+>;
+
+function findPolyContext(
+  repositories: Pick<RepositoryManager, "teammateContexts">,
   userId: number,
-): Promise<PolyAgenda> {
-  const polyContext = await repositories.teammateContexts.getByIdentity({
+): Promise<TeammateContext | null> {
+  return repositories.teammateContexts.getByIdentity({
     teammateId: POLY_TEAMMATE_ID,
     actorUserId: userId,
     scope: { type: "personal", id: String(userId) },
   });
+}
 
+export async function loadPolyAgenda(
+  repositories: AgendaRepositories,
+  userId: number,
+): Promise<PolyAgenda> {
+  return loadPolyAgendaForContext(
+    repositories,
+    userId,
+    await findPolyContext(repositories, userId),
+  );
+}
+
+async function loadPolyAgendaForContext(
+  repositories: AgendaRepositories,
+  userId: number,
+  polyContext: TeammateContext | null,
+): Promise<PolyAgenda> {
   if (!polyContext) {
     return EMPTY_AGENDA;
   }
@@ -75,6 +97,21 @@ export async function loadPolyAgenda(
   });
 }
 
-export function readPolyAgenda(context: ServiceContext): Promise<PolyAgenda> {
-  return loadPolyAgenda(context.repositories, context.requireUser().id);
+export async function readPolyAgenda(
+  context: ServiceContext,
+  options: { ownerPresent?: boolean } = {},
+): Promise<PolyAgendaView> {
+  const userId = context.requireUser().id;
+  const polyContext = options.ownerPresent
+    ? await requirePolyContext(context)
+    : await findPolyContext(context.repositories, userId);
+
+  if (polyContext && options.ownerPresent) {
+    await markPolyOwnerSeen(context, polyContext);
+  }
+
+  return {
+    ...(await loadPolyAgendaForContext(context.repositories, userId, polyContext)),
+    home: polyContext ? toPolyHome(polyContext) : null,
+  };
 }

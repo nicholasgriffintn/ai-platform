@@ -2,12 +2,26 @@ import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { PolyHome, TeammateAutonomyLevel } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { POLY_AGENDA_QUERY_KEY } from "./usePolyAgenda.js";
+
 export const POLY_HOME_QUERY_KEY = ["poly-home"] as const;
 
 export function usePolyHome(enabled: boolean) {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: POLY_HOME_QUERY_KEY,
-    queryFn: () => apiService.openPolyHome(),
+    queryFn: async () => {
+      const agenda = await apiService.readPolyAgenda({ ownerPresent: true });
+
+      queryClient.setQueryData(POLY_AGENDA_QUERY_KEY, agenda);
+
+      if (!agenda.home) {
+        throw new Error("Poly could not be opened");
+      }
+
+      return agenda.home;
+    },
     enabled,
     staleTime: Number.POSITIVE_INFINITY,
   });

@@ -155,6 +155,24 @@ export type SiteSourceRefreshRequest = z.infer<typeof siteSourceRefreshRequestSc
 
 export type SiteConnectorSnapshotRequest = z.infer<typeof siteConnectorSnapshotRequestSchema>;
 
+export const siteBindingSourceSchema = siteConnectorSnapshotRequestSchema.omit({
+  bindingId: true,
+  projectId: true,
+  expectedRevision: true,
+});
+
+export const siteBindingSyncRequestSchema = siteIntegrationScopeSchema
+  .extend({ source: siteBindingSourceSchema.optional() })
+  .strict();
+
+export const siteDataQuerySchema = z.object({
+  project_id: z.string().min(1).optional(),
+  expected_revision: z.coerce.number().int().positive(),
+});
+
+export type SiteBindingSource = z.input<typeof siteBindingSourceSchema>;
+export type SiteBindingSyncRequest = z.input<typeof siteBindingSyncRequestSchema>;
+
 export const siteRuntimeActorSchema = z
   .object({
     userId: z.number().int().positive(),
