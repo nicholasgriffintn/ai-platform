@@ -17,6 +17,7 @@ export type { BenchmarkRunRecord } from "~/infrastructure/database/schema";
 const ACTIVE_STATUSES: BenchmarkRunStatus[] = ["queued", "running"];
 const HUMAN_BOARD_LIMIT = 500;
 const OWNER_LIST_LIMIT = 100;
+const OFFICIAL_LIST_LIMIT = 3000;
 
 export interface CreateBenchmarkRunInput {
   id?: string;
@@ -90,6 +91,16 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return record ?? null;
   }
 
+  async getStatus(id: string): Promise<BenchmarkRunStatus | null> {
+    const [row] = await this.database
+      .select({ status: benchmarkRun.status })
+      .from(benchmarkRun)
+      .where(eq(benchmarkRun.id, id))
+      .limit(1);
+
+    return row?.status ?? null;
+  }
+
   async getByShareToken(token: string): Promise<BenchmarkRunRecord | null> {
     const [record] = await this.database
       .select()
@@ -123,6 +134,31 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return claimed.length > 0;
   }
 
+  async cancel(id: string, reason: string): Promise<boolean> {
+    const cancelled = await this.database
+      .update(benchmarkRun)
+      .set({ status: "cancelled", failure_reason: reason })
+      .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, ACTIVE_STATUSES)))
+      .returning({ id: benchmarkRun.id });
+
+    return cancelled.length > 0;
+  }
+
+  async requeue(id: string, ownerUserId?: number): Promise<boolean> {
+    const requeued = await this.database
+      .update(benchmarkRun)
+      .set({
+        status: "queued",
+        failure_reason: null,
+        completed_at: null,
+        ...(ownerUserId === undefined ? {} : { owner_user_id: ownerUserId }),
+      })
+      .where(and(eq(benchmarkRun.id, id), inArray(benchmarkRun.status, ["failed", "cancelled"])))
+      .returning({ id: benchmarkRun.id });
+
+    return requeued.length > 0;
+  }
+
   async delete(id: string): Promise<void> {
     await this.database.delete(benchmarkRun).where(eq(benchmarkRun.id, id));
   }
@@ -140,6 +176,15 @@ export class BenchmarkRunRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .orderBy(desc(benchmarkRun.completed_at))
       .limit(scope === "human" ? HUMAN_BOARD_LIMIT * 6 : 2000);
+  }
+
+  async listOfficial(): Promise<BenchmarkRunRecord[]> {
+    return this.database
+      .select()
+      .from(benchmarkRun)
+      .where(eq(benchmarkRun.scope, "official"))
+      .orderBy(desc(benchmarkRun.created_at))
+      .limit(OFFICIAL_LIST_LIMIT);
   }
 
   async listOfficialEntrantKeys(

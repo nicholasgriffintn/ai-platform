@@ -212,12 +212,50 @@ export const createBenchmarkRunsRequestSchema = z.union([
 export const queueOfficialBenchmarkRunsRequestSchema = z.object({
   benchmarkIds: z.array(benchmarkIdSchema).optional(),
   modelIds: z.array(z.string().min(1)).max(50).optional(),
+  retryFailed: z.boolean().optional(),
 });
 
 export const benchmarkQueueResultSchema = z.object({
   queued: z.array(benchmarkRunSchema),
   skippedForBudget: z.boolean(),
   spentThisMonthUsd: z.number(),
+  remaining: z.number().int().nonnegative(),
+});
+
+export const benchmarkCredentialSourceSchema = z.enum(["platform", "byok"]);
+
+export const benchmarkOfficialEntrantStatusSchema = z.enum([
+  "missing",
+  "unavailable",
+  "ineligible",
+  "queued",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
+export const benchmarkOfficialEntrantSchema = z.object({
+  modelId: z.string(),
+  name: z.string(),
+  provider: z.string(),
+  status: benchmarkOfficialEntrantStatusSchema,
+  reason: z.string().nullable(),
+  credential: benchmarkCredentialSourceSchema.nullable(),
+  run: benchmarkRunSchema.nullable(),
+});
+
+export const benchmarkOfficialBoardSchema = z.object({
+  benchmark: benchmarkSummarySchema,
+  entrants: z.array(benchmarkOfficialEntrantSchema),
+});
+
+export const benchmarkOfficialOverviewSchema = z.object({
+  budget: z.object({
+    monthlyUsd: z.number().nonnegative(),
+    spentThisMonthUsd: z.number().nonnegative(),
+  }),
+  boards: z.array(benchmarkOfficialBoardSchema),
 });
 
 export const benchmarkEstimateSchema = z.object({
@@ -295,7 +333,6 @@ export const benchmarkPhotoParamsSchema = benchmarkIdParamsSchema.extend({
 
 export const benchmarkRunTaskDataSchema = z.object({
   runId: z.string(),
-  offset: z.number().int().nonnegative(),
 });
 
 export const modelBenchmarkStandingSchema = z.object({
@@ -386,3 +423,12 @@ export function formatBenchmarkStanding(
 }
 
 export type BenchmarkQueueResult = z.infer<typeof benchmarkQueueResultSchema>;
+export type BenchmarkCredentialSource = z.infer<typeof benchmarkCredentialSourceSchema>;
+export type BenchmarkOfficialEntrantStatus = z.infer<typeof benchmarkOfficialEntrantStatusSchema>;
+export type BenchmarkOfficialEntrant = z.infer<typeof benchmarkOfficialEntrantSchema>;
+export type BenchmarkOfficialBoard = z.infer<typeof benchmarkOfficialBoardSchema>;
+export type BenchmarkOfficialOverview = z.infer<typeof benchmarkOfficialOverviewSchema>;
+
+export function isActiveBenchmarkRunStatus(status: BenchmarkRunStatus): boolean {
+  return status === "queued" || status === "running";
+}

@@ -1,11 +1,14 @@
 import { benchmarksService } from "@ngriffin_uk/polychat-library-client";
 import type {
   BenchmarkId,
+  BenchmarkOfficialOverview,
   BenchmarkRun,
   BenchmarkVisibility,
   BenchmarkVoteRequest,
+  QueueOfficialBenchmarkRunsRequest,
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { isActiveBenchmarkRunStatus } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const BENCHMARKS_QUERY_KEY = "benchmarks";
@@ -14,7 +17,17 @@ const BOARD_STALE_TIME = 2 * 60 * 1000;
 const ACTIVE_RUN_POLL_MS = 5000;
 
 function hasActiveRun(runs: readonly BenchmarkRun[] | undefined): boolean {
-  return Boolean(runs?.some((run) => run.status === "queued" || run.status === "running"));
+  return Boolean(runs?.some((run) => isActiveBenchmarkRunStatus(run.status)));
+}
+
+function hasActiveOfficialRun(overview: BenchmarkOfficialOverview | undefined): boolean {
+  return Boolean(
+    overview?.boards.some((board) =>
+      board.entrants.some(
+        (entrant) => entrant.run && isActiveBenchmarkRunStatus(entrant.run.status),
+      ),
+    ),
+  );
 }
 
 export function useBenchmarkIndex() {
@@ -101,6 +114,44 @@ export function useDeleteBenchmarkRun() {
   return useMutation({
     mutationFn: (runId: string) => benchmarksService.remove(runId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [BENCHMARKS_QUERY_KEY, "mine"] }),
+  });
+}
+
+export function useCancelBenchmarkRun() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (runId: string) => benchmarksService.cancel(runId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [BENCHMARKS_QUERY_KEY] }),
+  });
+}
+
+export function useRetryBenchmarkRun() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (runId: string) => benchmarksService.retry(runId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [BENCHMARKS_QUERY_KEY] }),
+  });
+}
+
+export function useOfficialBenchmarkOverview(enabled = true) {
+  return useQuery({
+    queryKey: [BENCHMARKS_QUERY_KEY, "official"],
+    queryFn: () => benchmarksService.official(),
+    enabled,
+    refetchInterval: (query) =>
+      hasActiveOfficialRun(query.state.data) ? ACTIVE_RUN_POLL_MS : false,
+  });
+}
+
+export function useQueueOfficialBenchmarkRuns() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: QueueOfficialBenchmarkRunsRequest) =>
+      benchmarksService.queueOfficial(request),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [BENCHMARKS_QUERY_KEY] }),
   });
 }
 

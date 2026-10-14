@@ -15,6 +15,7 @@ import {
   benchmarkPaths,
   formatLatency,
   formatMetric,
+  groupUnansweredItems,
 } from "./benchmark-display.js";
 import { BenchmarkItems } from "./visualisers/BenchmarkItems.js";
 
@@ -27,6 +28,38 @@ function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: 
       <p className="text-lg text-foreground tabular-nums">{value}</p>
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
     </div>
+  );
+}
+
+function UnansweredItems({ detail }: { detail: BenchmarkRunDetail }) {
+  const groups = groupUnansweredItems(detail.items);
+  const unanswered = groups.reduce((total, group) => total + group.count, 0);
+
+  if (unanswered === 0) {
+    return null;
+  }
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-failure/30 bg-failure/5 p-5">
+      <div className="space-y-1">
+        <h2 className="font-display text-xl text-foreground">
+          {unanswered} {unanswered === 1 ? "item" : "items"} without an answer
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          These do not count towards the score. Retry the run to ask for them again.
+        </p>
+      </div>
+      <ul className="space-y-1.5 text-sm">
+        {groups.map((group) => (
+          <li key={group.message} className="flex items-start gap-3">
+            <span className="shrink-0 font-mono text-xs text-failure tabular-nums">
+              ×{group.count}
+            </span>
+            <span className="min-w-0 break-words text-foreground">{group.message}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -174,6 +207,8 @@ export function RunDetailView({
         />
         <Stat label="Median time" value={formatLatency(run.usage.latencyP50Ms)} />
       </section>
+
+      <UnansweredItems detail={detail} />
 
       <section className="space-y-4">
         <div className="space-y-1">

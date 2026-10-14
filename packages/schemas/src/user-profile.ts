@@ -20,6 +20,7 @@ export interface User {
   bio: string;
   message_count?: number;
   last_active_at?: string | null;
+  role?: "user" | "admin" | "moderator" | null;
 }
 
 export interface AnonymousUser {

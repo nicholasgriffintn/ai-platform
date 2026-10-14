@@ -1,10 +1,13 @@
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   useBenchmarkRun,
+  useCancelBenchmarkRun,
   useDeleteBenchmarkRun,
+  useRetryBenchmarkRun,
   useShareBenchmarkRun,
 } from "@ngriffin_uk/polychat-library-react";
-import { Link2, Link2Off, Trash2 } from "lucide-react";
+import { isActiveBenchmarkRunStatus } from "@ngriffin_uk/polychat-schemas";
+import { Link2, Link2Off, RotateCcw, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import { benchmarkPaths } from "../benchmark-display.js";
@@ -20,6 +23,8 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
   const query = useBenchmarkRun(runId);
   const share = useShareBenchmarkRun();
   const remove = useDeleteBenchmarkRun();
+  const cancel = useCancelBenchmarkRun();
+  const retry = useRetryBenchmarkRun();
   const [copied, setCopied] = useState(false);
 
   if (query.isLoading) {
@@ -32,6 +37,9 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
 
   const { run } = query.data;
   const isShared = run.visibility !== "private" && run.shareToken;
+  const isActive = isActiveBenchmarkRunStatus(run.status);
+  const canRetry = run.status === "failed" || run.status === "cancelled";
+  const error = cancel.error ?? retry.error ?? share.error ?? remove.error;
 
   const copy = async () => {
     if (run.shareToken) {
@@ -40,10 +48,36 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
     }
   };
 
-  const actions =
-    run.scope === "official" ? null : (
-      <div className="flex flex-wrap gap-2">
-        {isShared ? (
+  const actions = (
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
+        {isActive ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={<X size={14} />}
+            disabled={cancel.isPending}
+            isLoading={cancel.isPending}
+            onClick={() => cancel.mutate(runId)}
+          >
+            Cancel run
+          </Button>
+        ) : null}
+        {canRetry ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            icon={<RotateCcw size={14} />}
+            disabled={retry.isPending}
+            isLoading={retry.isPending}
+            onClick={() => retry.mutate(runId)}
+          >
+            Retry missing items
+          </Button>
+        ) : null}
+        {run.scope === "official" ? null : isShared ? (
           <>
             <Button
               type="button"
@@ -77,18 +111,22 @@ export function ManagedRunView({ runId, onDeleted }: { runId: string; onDeleted:
             Share by link
           </Button>
         )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          icon={<Trash2 size={14} />}
-          disabled={remove.isPending}
-          onClick={() => remove.mutate(runId, { onSuccess: onDeleted })}
-        >
-          Delete
-        </Button>
+        {isActive ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            icon={<Trash2 size={14} />}
+            disabled={remove.isPending}
+            onClick={() => remove.mutate(runId, { onSuccess: onDeleted })}
+          >
+            Delete
+          </Button>
+        )}
       </div>
-    );
+      {error ? <p className="text-xs text-failure">{error.message}</p> : null}
+    </div>
+  );
 
   return <RunDetailView detail={query.data} actions={actions} embedded />;
 }

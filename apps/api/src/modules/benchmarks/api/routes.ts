@@ -5,6 +5,7 @@ import {
   benchmarkEstimateSchema,
   benchmarkIdParamsSchema,
   benchmarkIndexSchema,
+  benchmarkOfficialOverviewSchema,
   benchmarkPhotoParamsSchema,
   benchmarkPlayResultSchema,
   benchmarkPlayStartSchema,
@@ -35,16 +36,18 @@ import { requireAdmin } from "~/middleware/adminMiddleware";
 
 import { getArenaPair, submitArenaVote } from "../application/arena";
 import { getBenchmarkBoard, getBenchmarkIndex, getEntrantDetail } from "../application/boards";
-import { queueOfficialRuns } from "../application/official";
+import { getOfficialOverview, queueOfficialRuns } from "../application/official";
 import { loadBenchmarkPhoto } from "../application/photos";
 import { startBenchmarkPlay, submitBenchmarkPlay } from "../application/play";
 import {
+  cancelBenchmarkRun,
   deleteBenchmarkRun,
   estimateBenchmarkRuns,
   getManagedRunDetail,
   getSharedRunDetail,
   listMyBenchmarkRuns,
   listWorkspaceBenchmarkRuns,
+  retryBenchmarkRun,
   startBenchmarkRuns,
   startWorkspaceBenchmarkRuns,
   updateBenchmarkRunVisibility,
@@ -115,16 +118,35 @@ defineResource(app, { path: "/runs", idParam: "run_id", tags }, (runs) => {
           : startBenchmarkRuns(serviceContext, body);
       },
     })
+    .view("official", {
+      auth: true,
+      summary: "See which models have official runs",
+      description:
+        "Every benchmark against every candidate model: not run yet, queued, running, finished or failed, and whether it would run on the platform key or your own. Admins only.",
+      middleware: [requireAdmin],
+      responses: {
+        200: { description: "Official run overview", schema: benchmarkOfficialOverviewSchema },
+      },
+      handler: ({ serviceContext }) =>
+        getOfficialOverview(
+          serviceContext.env,
+          serviceContext.repositories,
+          serviceContext.requireUser(),
+        ),
+      cache: "no-store",
+    })
     .collectionAction("queue", {
       auth: true,
       summary: "Queue official runs for models without one",
       description:
-        "Queues official runs for lineup and decision models from approved labs that have not run the current version, within the monthly budget. Admins only; the daily schedule calls the same queue.",
+        "Queues official runs for lineup and decision models from approved labs that have not run the current version, within the monthly budget. Runs you queue use your own keys where the platform has none. Admins only; the daily schedule calls the same queue on platform keys.",
       middleware: [requireAdmin],
       bodySchema: queueOfficialBenchmarkRunsRequestSchema,
       responses: { 200: { description: "Queued runs", schema: benchmarkQueueResultSchema } },
       handler: ({ serviceContext, body }) =>
-        queueOfficialRuns(serviceContext.env, serviceContext.repositories, body),
+        queueOfficialRuns(serviceContext.env, serviceContext.repositories, body, {
+          ownerUserId: serviceContext.requireUser().id,
+        }),
     })
     .shared({
       auth: false,
@@ -151,6 +173,22 @@ defineResource(app, { path: "/runs", idParam: "run_id", tags }, (runs) => {
       responses: { 200: { description: "The run", schema: benchmarkRunSchema } },
       handler: ({ serviceContext, params, body }) =>
         updateBenchmarkRunVisibility(serviceContext, params.run_id, body.visibility),
+    })
+    .action("cancel", {
+      auth: true,
+      summary: "Cancel a queued or running benchmark run",
+      paramSchema: benchmarkRunParamsSchema,
+      responses: { 200: { description: "The cancelled run", schema: benchmarkRunSchema } },
+      handler: ({ serviceContext, params }) => cancelBenchmarkRun(serviceContext, params.run_id),
+    })
+    .action("retry", {
+      auth: true,
+      summary: "Retry a failed or cancelled benchmark run",
+      description:
+        "Keeps the answers it already has and asks again only for the items that got none. Admins retrying an official run take it over, so their keys apply.",
+      paramSchema: benchmarkRunParamsSchema,
+      responses: { 200: { description: "The requeued run", schema: benchmarkRunSchema } },
+      handler: ({ serviceContext, params }) => retryBenchmarkRun(serviceContext, params.run_id),
     })
     .delete({
       auth: true,

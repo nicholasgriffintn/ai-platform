@@ -13,21 +13,30 @@ vi.mock("@ngriffin_uk/polychat-ai-models", async (importOriginal) => ({
   getModels: () => mocks.models,
 }));
 
-vi.mock("@ngriffin_uk/polychat-ai-providers", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-providers")>()),
-  isProviderPlatformEnabled: () => true,
+vi.mock("~/modules/models/application/resolve", () => ({
+  filterModelsForUserAccess: vi.fn(),
 }));
 
-import type { IEnv } from "~/types";
+vi.mock("~/modules/chat/application/policy/model-access", () => ({
+  resolveExecutableModelForRequest: vi.fn(),
+}));
 
-import { officialRunRefusal } from "../entrants";
+vi.mock("../runner", () => ({ enqueueBenchmarkRunTask: vi.fn() }));
+
+import { officialRunRefusal, type OfficialModels } from "../entrants";
 import { officialCandidateModelIds, officialEntrantsFor } from "../official";
 
 function model(provider: string, matchingModel: string, name: string): ModelConfigItem {
   return { provider, matchingModel, name, modalities: { input: ["text"], output: ["text"] } };
 }
 
-const env: IEnv = Object.create(null);
+function officialModels(): OfficialModels {
+  return Object.fromEntries(
+    Object.entries(mocks.models)
+      .filter(([, config]) => ["anthropic", "openai", "deepseek"].includes(config.provider))
+      .map(([id, config]) => [id, { ...config, id }]),
+  );
+}
 
 beforeEach(() => {
   for (const key of Object.keys(mocks.models)) {
@@ -48,8 +57,8 @@ beforeEach(() => {
 });
 
 describe("officialCandidateModelIds", () => {
-  it("keeps lineup models from approved labs and drops aggregators", () => {
-    const ids = officialCandidateModelIds(env);
+  it("keeps lineup models the caller can run from approved labs and drops aggregators", () => {
+    const ids = officialCandidateModelIds(officialModels());
 
     expect(ids).toContain("claude-opus-5-5");
     expect(ids).toContain("gpt-6-astra");
@@ -57,12 +66,20 @@ describe("officialCandidateModelIds", () => {
     expect(ids).not.toContain("anthropic/claude-opus-5.5");
     expect(ids).not.toContain("@cf/zai-org/glm-5.3");
   });
+
+  it("leaves out lineup models the caller has no key for", () => {
+    const models = officialModels();
+
+    delete models["gpt-6-astra"];
+
+    expect(officialCandidateModelIds(models)).not.toContain("gpt-6-astra");
+  });
 });
 
 describe("officialEntrantsFor", () => {
   it("refuses explicitly requested models outside the approved providers", () => {
     const entrants = officialEntrantsFor(
-      env,
+      officialModels(),
       getBenchmark("countdown"),
       ["claude-opus-5-5", "anthropic/claude-opus-5.5", "@cf/zai-org/glm-5.3"],
       new Set(),

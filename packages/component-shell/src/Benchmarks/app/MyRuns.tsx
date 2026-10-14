@@ -87,13 +87,21 @@ function RunCard({
             </p>
           </div>
         ) : (
-          <p className="font-display text-2xl text-foreground tabular-nums">
-            {run.status === "completed" && run.score && benchmark
-              ? formatBenchmarkScore(benchmark, run.score.mean)
-              : run.status === "failed"
-                ? "No score"
-                : "–"}
-          </p>
+          <div className="space-y-1">
+            <p className="font-display text-2xl text-foreground tabular-nums">
+              {run.status === "completed" && run.score && benchmark
+                ? formatBenchmarkScore(benchmark, run.score.mean)
+                : "No score"}
+            </p>
+            {run.status === "completed" ? null : (
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {run.itemsCompleted} of {run.itemsTotal} answered
+              </p>
+            )}
+            {run.failureReason ? (
+              <p className="line-clamp-2 text-xs text-failure">{run.failureReason}</p>
+            ) : null}
+          </div>
         )}
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">

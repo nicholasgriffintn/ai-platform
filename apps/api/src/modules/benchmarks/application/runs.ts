@@ -3,6 +3,7 @@ import { estimateUsageCost } from "@ngriffin_uk/polychat-library-chat/response-s
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   BenchmarkEstimate,
+  BenchmarkId,
   BenchmarkRun,
   BenchmarkRunDetail,
   BenchmarkVisibility,
@@ -22,7 +23,7 @@ import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
-import { requireManagedRun } from "./access";
+import { isPlatformAdmin, requireManagedRun } from "./access";
 import { buildRunDetail } from "./boards";
 import { modelEntrant, modelIneligibility } from "./entrants";
 import { toBenchmarkRun } from "./mappers";
@@ -190,7 +191,7 @@ export async function startBenchmarkRuns(
       itemsTotal: benchmark.summary.itemCount,
     });
 
-    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, 0);
+    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
     runs.push(toBenchmarkRun(record, { includeShareToken: true }));
   }
 
@@ -267,6 +268,65 @@ export async function updateBenchmarkRunVisibility(
   );
 }
 
+export async function cancelBenchmarkRun(
+  context: ServiceContext,
+  runId: string,
+): Promise<BenchmarkRun> {
+  const record = await requireManagedRun(context, runId);
+  const reason = "Cancelled before it finished";
+  const cancelled = await context.repositories.benchmarkRuns.cancel(record.id, reason);
+
+  if (!cancelled) {
+    throw new AssistantError("This run is not active", ErrorType.CONFLICT_ERROR, 409);
+  }
+
+  return toBenchmarkRun(
+    { ...record, status: "cancelled", failure_reason: reason },
+    { includeShareToken: true },
+  );
+}
+
+export async function retryBenchmarkRun(
+  context: ServiceContext,
+  runId: string,
+): Promise<BenchmarkRun> {
+  const user = context.requireUser();
+  const record = await requireManagedRun(context, runId);
+  const benchmark = getBenchmark(record.benchmark_id as BenchmarkId);
+
+  if (benchmark.summary.version !== record.version) {
+    throw new AssistantError(
+      "This benchmark has a new season, so start a fresh run instead",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const ownerUserId = record.scope === "official" && isPlatformAdmin(user) ? user.id : undefined;
+  const requeued = await context.repositories.benchmarkRuns.requeue(record.id, ownerUserId);
+
+  if (!requeued) {
+    throw new AssistantError(
+      "Only failed or cancelled runs can be retried",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
+
+  return toBenchmarkRun(
+    {
+      ...record,
+      status: "queued",
+      failure_reason: null,
+      completed_at: null,
+      owner_user_id: ownerUserId ?? record.owner_user_id,
+    },
+    { includeShareToken: true },
+  );
+}
+
 export async function deleteBenchmarkRun(
   context: ServiceContext,
   runId: string,
@@ -331,7 +391,7 @@ export async function startWorkspaceBenchmarkRuns(
       itemsTotal: benchmark.summary.itemCount,
     });
 
-    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, 0);
+    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
     runs.push(toBenchmarkRun(record, { includeShareToken: true }));
   }
 

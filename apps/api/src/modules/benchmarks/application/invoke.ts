@@ -8,6 +8,7 @@ import {
   type BenchmarkId,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/infrastructure/ai";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
@@ -39,6 +40,7 @@ interface InvocationScope {
   env: IEnv;
   repositories: RepositoryManager;
   user: IUser | null;
+  billingUser: IUser | null;
   runId: string;
   benchmarkId: BenchmarkId;
   benchmark: Benchmark;
@@ -109,11 +111,11 @@ async function invokeChatModel(
   const outputTokens = usage?.output_tokens ?? 0;
   const output = readText(response);
 
-  if (scope.user) {
+  if (scope.billingUser) {
     await recordModelTurnUsage(
       createUsageRuntime({ env: scope.env, repositories: scope.repositories }),
       {
-        actor: userCreditActor(scope.user.id),
+        actor: userCreditActor(scope.billingUser.id),
         usage,
         rawUsage,
         model: model.config.id ?? model.config.matchingModel,
@@ -124,6 +126,14 @@ async function invokeChatModel(
         runId: null,
         runAttempt: null,
       },
+    );
+  }
+
+  if (output.trim().length === 0) {
+    throw new AssistantError(
+      `${model.config.provider} returned an empty answer`,
+      ErrorType.PROVIDER_ERROR,
+      502,
     );
   }
 
@@ -147,14 +157,10 @@ async function invokeDecisionModel(
   const decision = scope.benchmark.decision(scope.itemId);
 
   if (!decision) {
-    return {
-      output: "",
-      answer: null,
-      inputTokens: 0,
-      outputTokens: 0,
-      costUsd: null,
-      latencyMs: 0,
-    };
+    throw new AssistantError(
+      `${scope.benchmark.summary.name} has no decision form for ${scope.itemId}`,
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
 
   const started = Date.now();

@@ -2,6 +2,7 @@ import type {
   BenchmarkCategory,
   BenchmarkEntrant,
   BenchmarkId,
+  BenchmarkItemDetail,
   BenchmarkMetricDefinition,
   BenchmarkRunStatus,
   BenchmarkStanding,
@@ -63,6 +64,27 @@ export const RUN_STATUS_LABEL: Record<BenchmarkRunStatus, string> = {
   failed: "Failed",
   cancelled: "Cancelled",
 };
+
+export interface UnansweredGroup {
+  message: string;
+  count: number;
+}
+
+export function groupUnansweredItems(items: readonly BenchmarkItemDetail[]): UnansweredGroup[] {
+  const counts = new Map<string, number>();
+
+  for (const detail of items) {
+    const message = detail.result?.error;
+
+    if (message) {
+      counts.set(message, (counts.get(message) ?? 0) + 1);
+    }
+  }
+
+  return [...counts.entries()]
+    .map(([message, count]) => ({ message, count }))
+    .sort((left, right) => right.count - left.count);
+}
 
 export function formatMetric(definition: BenchmarkMetricDefinition, value: number): string {
   switch (definition.format) {

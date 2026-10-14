@@ -9,10 +9,12 @@ import {
   BENCHMARK_RUN_TASK_TYPE,
   benchmarkIdSchema,
   formatBenchmarkScore,
+  isActiveBenchmarkRunStatus,
   type BenchmarkItemResult,
   type BenchmarkRunTaskData,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  createConcurrencyLimiter,
   getErrorMessage,
   percentile,
   sleep,
@@ -23,6 +25,7 @@ import {
   getProviderRetryAfterMs,
 } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
+import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import { ai } from "~/infrastructure/ai";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
@@ -32,30 +35,41 @@ import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
-import { officialRunRefusal, resolveEntrantTarget, type EntrantTarget } from "./entrants";
+import {
+  isFatalEntrantError,
+  officialRunRefusal,
+  resolveEntrantTarget,
+  type EntrantTarget,
+} from "./entrants";
 import { invokeEntrant } from "./invoke";
 
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
-const ITEMS_PER_TASK = 5;
 const TASK_TIME_BUDGET_MS = 6 * 60 * 1000;
 const TRANSIENT_ATTEMPTS = 4;
 const TRANSIENT_DELAY_MS = 3_000;
 const MAX_RETRY_DELAY_MS = 90_000;
 const RETRY_HINT_PATTERN = /retry in ([\d.]+)\s*s/i;
 const MAX_STORED_OUTPUT = 20_000;
+const MAX_STORED_ERROR = 500;
 const RUN_TASK_PRIORITY = 7;
+const PASSES = ["first", "sweep"] as const;
+
+type RunOutcome =
+  | { kind: "done" }
+  | { kind: "cancelled" }
+  | { kind: "out_of_time" }
+  | { kind: "fatal"; reason: string };
 
 export async function enqueueBenchmarkRunTask(
   env: IEnv,
   repositories: RepositoryManager,
   runId: string,
-  offset: number,
 ): Promise<void> {
   await new TaskService(env, repositories.tasks).enqueueTask({
-    id: `${BENCHMARK_RUN_TASK_TYPE}:${runId}:${offset}`,
+    id: `${BENCHMARK_RUN_TASK_TYPE}:${runId}:${Date.now()}`,
     task_type: BENCHMARK_RUN_TASK_TYPE,
-    task_data: { runId, offset },
+    task_data: { runId },
     priority: RUN_TASK_PRIORITY,
   });
 }
@@ -70,20 +84,30 @@ async function judgeArtefact(
     return null;
   }
 
-  const judge = await getAuxiliaryModel(env);
-  const verdict = await ai.complete({
-    env,
-    model: judge.model,
-    provider: judge.provider,
-    reasoning_effort: judge.effort,
-    prompt: buildJudgePrompt({
-      rubric: benchmark.judgeRubric,
-      input: benchmark.prompt(itemId).user,
-      output: content,
-    }),
-  });
+  try {
+    const judge = await getAuxiliaryModel(env);
+    const verdict = await ai.complete({
+      env,
+      model: judge.model,
+      provider: judge.provider,
+      reasoning_effort: judge.effort,
+      prompt: buildJudgePrompt({
+        rubric: benchmark.judgeRubric,
+        input: benchmark.prompt(itemId).user,
+        output: content,
+      }),
+    });
 
-  return parseJudgeScore(verdict.text);
+    return parseJudgeScore(verdict.text);
+  } catch (error) {
+    logger.warn("Benchmark judge failed, keeping the gate score", {
+      benchmarkId: benchmark.summary.id,
+      itemId,
+      error: getErrorMessage(error, "Unknown error"),
+    });
+
+    return null;
+  }
 }
 
 function hintedRetryMs(error: unknown): number | undefined {
@@ -130,15 +154,37 @@ async function invokeWithRetries(
   }
 }
 
+interface RunContext {
+  env: IEnv;
+  repositories: RepositoryManager;
+  run: BenchmarkRunRecord;
+  benchmark: Benchmark;
+  target: EntrantTarget;
+  user: IUser | null;
+  billingUser: IUser | null;
+}
+
+function errorResult(itemId: string, error: unknown, latencyMs: number): BenchmarkItemResult {
+  return {
+    itemId,
+    score: null,
+    answer: null,
+    output: "",
+    artefact: null,
+    detail: { failed: true },
+    error: truncateText(getErrorMessage(error, "The entrant did not answer"), MAX_STORED_ERROR),
+    latencyMs,
+    inputTokens: 0,
+    outputTokens: 0,
+    costUsd: null,
+  };
+}
+
 async function runItem(
-  env: IEnv,
-  repositories: RepositoryManager,
-  run: BenchmarkRunRecord,
-  benchmark: Benchmark,
-  target: EntrantTarget,
-  user: IUser | null,
+  context: RunContext,
   itemId: string,
-): Promise<BenchmarkItemResult> {
+): Promise<{ result: BenchmarkItemResult; cause: unknown }> {
+  const { env, repositories, run, benchmark, target, user, billingUser } = context;
   const started = Date.now();
 
   try {
@@ -147,6 +193,7 @@ async function runItem(
         env,
         repositories,
         user,
+        billingUser,
         runId: run.id,
         benchmarkId: benchmarkIdSchema.parse(run.benchmark_id),
         benchmark,
@@ -162,32 +209,23 @@ async function runItem(
         : null;
 
     return {
-      itemId,
-      score: judged ?? scored.score,
-      answer: response.answer,
-      output: truncateText(response.output, MAX_STORED_OUTPUT),
-      artefact,
-      detail: judged === null ? scored.detail : { ...scored.detail, judge: judged },
-      error: null,
-      latencyMs: response.latencyMs,
-      inputTokens: response.inputTokens,
-      outputTokens: response.outputTokens,
-      costUsd: response.costUsd,
+      result: {
+        itemId,
+        score: judged ?? scored.score,
+        answer: response.answer,
+        output: truncateText(response.output, MAX_STORED_OUTPUT),
+        artefact,
+        detail: judged === null ? scored.detail : { ...scored.detail, judge: judged },
+        error: null,
+        latencyMs: response.latencyMs,
+        inputTokens: response.inputTokens,
+        outputTokens: response.outputTokens,
+        costUsd: response.costUsd,
+      },
+      cause: null,
     };
   } catch (error) {
-    return {
-      itemId,
-      score: 0,
-      answer: null,
-      output: "",
-      artefact: null,
-      detail: { failed: true },
-      error: truncateText(getErrorMessage(error, "The entrant did not answer"), 500),
-      latencyMs: Date.now() - started,
-      inputTokens: 0,
-      outputTokens: 0,
-      costUsd: null,
-    };
+    return { result: errorResult(itemId, error, Date.now() - started), cause: error };
   }
 }
 
@@ -219,6 +257,154 @@ export function summariseRunResults(benchmark: Benchmark, results: readonly Benc
       })),
     ),
   };
+}
+
+export function describeUnanswered(
+  results: readonly BenchmarkItemResult[],
+  itemsTotal: number,
+): string | null {
+  const unanswered = results.filter((result) => result.error !== null);
+  const missing = itemsTotal - results.length;
+  const count = unanswered.length + missing;
+
+  if (count === 0) {
+    return null;
+  }
+
+  const first = unanswered[0]?.error ?? "The run stopped before every item was tried";
+
+  return `${count} of ${itemsTotal} items got no answer. ${first}`;
+}
+
+class RunProgress {
+  private readonly results = new Map<string, BenchmarkItemResult>();
+  private flush: Promise<void> = Promise.resolve();
+  private sinceCheckpoint = 0;
+  private cancelled = false;
+
+  constructor(
+    private readonly store: BenchmarkResultStore,
+    private readonly repositories: RepositoryManager,
+    private readonly runId: string,
+    private readonly itemIds: readonly string[],
+    stored: readonly BenchmarkItemResult[],
+  ) {
+    for (const result of stored) {
+      this.results.set(result.itemId, result);
+    }
+  }
+
+  pendingItemIds(): string[] {
+    return this.itemIds.filter((itemId) => this.results.get(itemId)?.error !== null);
+  }
+
+  answeredCount(): number {
+    return this.ordered().filter((result) => result.error === null).length;
+  }
+
+  ordered(): BenchmarkItemResult[] {
+    return this.itemIds.flatMap((itemId) => {
+      const result = this.results.get(itemId);
+
+      return result ? [result] : [];
+    });
+  }
+
+  isCancelled(): boolean {
+    return this.cancelled;
+  }
+
+  record(result: BenchmarkItemResult): void {
+    this.results.set(result.itemId, result);
+    this.sinceCheckpoint += 1;
+  }
+
+  checkpointIfDue(): Promise<void> {
+    return this.sinceCheckpoint >= BENCHMARKS_CONFIG.itemConcurrency
+      ? this.checkpoint()
+      : Promise.resolve();
+  }
+
+  checkpoint(): Promise<void> {
+    this.sinceCheckpoint = 0;
+    this.flush = this.flush.then(() => this.write());
+
+    return this.flush;
+  }
+
+  private async write(): Promise<void> {
+    const results = this.ordered();
+
+    await this.store.writeResults(this.runId, results);
+    await this.repositories.benchmarkRuns.update(this.runId, {
+      items_completed: this.answeredCount(),
+      ...totals(results),
+    });
+
+    this.cancelled = (await this.repositories.benchmarkRuns.getStatus(this.runId)) === "cancelled";
+  }
+}
+
+async function answerItems(
+  context: RunContext,
+  progress: RunProgress,
+  startedAt: number,
+): Promise<RunOutcome> {
+  const limiter = createConcurrencyLimiter(BENCHMARKS_CONFIG.itemConcurrency);
+
+  for (const pass of PASSES) {
+    const pending = progress.pendingItemIds();
+
+    if (pending.length === 0) {
+      return { kind: "done" };
+    }
+
+    const halt: { outcome: RunOutcome | null } = { outcome: null };
+
+    logger.info("Benchmark pass starting", { runId: context.run.id, pass, items: pending.length });
+
+    await Promise.all(
+      pending.map((itemId) =>
+        limiter(async () => {
+          if (halt.outcome) {
+            return;
+          }
+
+          if (Date.now() - startedAt >= TASK_TIME_BUDGET_MS) {
+            halt.outcome ??= { kind: "out_of_time" };
+
+            return;
+          }
+
+          const { result, cause } = await runItem(context, itemId);
+
+          progress.record(result);
+
+          if (result.error !== null && isFatalEntrantError(cause)) {
+            halt.outcome ??= { kind: "fatal", reason: result.error };
+          }
+
+          await progress.checkpointIfDue();
+
+          if (progress.isCancelled()) {
+            halt.outcome ??= { kind: "cancelled" };
+          }
+        }),
+      ),
+    );
+
+    await progress.checkpoint();
+
+    if (progress.isCancelled()) {
+      return { kind: "cancelled" };
+    }
+
+    if (halt.outcome) {
+      return halt.outcome;
+    }
+  }
+
+  return { kind: "done" };
 }
 
 async function recordWorkspaceEvidence(
@@ -267,7 +453,7 @@ export async function executeBenchmarkRun(
 ) {
   const run = await repositories.benchmarkRuns.get(data.runId);
 
-  if (!run || (run.status !== "queued" && run.status !== "running")) {
+  if (!run || !isActiveBenchmarkRunStatus(run.status)) {
     return { status: "success" as const, message: `Benchmark run ${data.runId} needs no work` };
   }
 
@@ -297,49 +483,54 @@ export async function executeBenchmarkRun(
       return failRun(repositories, run.id, "The person who started this run is gone");
     }
 
-    const target = await resolveEntrantTarget(env, repositories, user, run.entrant);
+    const target = await resolveEntrantTarget(env, repositories, user, run.entrant, run.scope);
+    const billingUser = run.scope === "official" ? null : user;
 
     if (
-      user &&
+      billingUser &&
       target.kind !== "route" &&
       target.model.credentialAuthority === "platform" &&
-      (await isOutOfCredit(repositories, user))
+      (await isOutOfCredit(repositories, billingUser))
     ) {
       return failRun(repositories, run.id, "Usage limit reached before the run finished");
     }
 
     const store = BenchmarkResultStore.forEnv(env);
-    const started = Date.now();
-    const results = data.offset > 0 ? await store.readResults(run.id) : [];
-    let offset = data.offset;
+    const progress = new RunProgress(
+      store,
+      repositories,
+      run.id,
+      benchmark.itemIds,
+      await store.readResults(run.id),
+    );
+    const outcome = await answerItems(
+      { env, repositories, run, benchmark, target, user, billingUser },
+      progress,
+      Date.now(),
+    );
 
-    while (offset < benchmark.itemIds.length) {
-      const batch = benchmark.itemIds.slice(offset, offset + ITEMS_PER_TASK);
-      const fresh = await Promise.all(
-        batch.map((itemId) => runItem(env, repositories, run, benchmark, target, user, itemId)),
-      );
-
-      results.push(...fresh);
-      offset += batch.length;
-
-      await store.writeResults(run.id, results);
-      await repositories.benchmarkRuns.update(run.id, {
-        items_completed: results.length,
-        ...totals(results),
-      });
-
-      if (offset < benchmark.itemIds.length && Date.now() - started >= TASK_TIME_BUDGET_MS) {
-        await enqueueBenchmarkRunTask(env, repositories, run.id, offset);
-
-        return {
-          status: "success" as const,
-          message: `${offset}/${benchmark.itemIds.length} items`,
-        };
-      }
+    if (outcome.kind === "cancelled") {
+      return { status: "success" as const, message: `Benchmark run ${run.id} was cancelled` };
     }
 
-    if (results.every((result) => result.error !== null)) {
-      return failRun(repositories, run.id, results[0]?.error ?? "Every item failed");
+    if (outcome.kind === "out_of_time") {
+      await enqueueBenchmarkRunTask(env, repositories, run.id);
+
+      return {
+        status: "success" as const,
+        message: `${progress.answeredCount()}/${benchmark.itemIds.length} items answered so far`,
+      };
+    }
+
+    if (outcome.kind === "fatal") {
+      return failRun(repositories, run.id, outcome.reason);
+    }
+
+    const results = progress.ordered();
+    const unanswered = describeUnanswered(results, benchmark.itemIds.length);
+
+    if (unanswered) {
+      return failRun(repositories, run.id, unanswered);
     }
 
     const summary = summariseRunResults(benchmark, results);

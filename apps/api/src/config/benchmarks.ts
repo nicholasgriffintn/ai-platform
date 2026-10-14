@@ -15,6 +15,7 @@ export const BENCHMARKS_CONFIG = {
   officialProviders: OFFICIAL_BENCHMARK_PROVIDERS,
   officialMonthlyBudgetUsd: 50,
   officialRunsPerQueuePass: 12,
+  itemConcurrency: 6,
   personalActiveRuns: 5,
   personalRunsPerDay: 20,
   arenaTokenTtlMs: 2 * 60 * 60 * 1000,

@@ -6,7 +6,51 @@ vi.mock("~/modules/models/application/resolve", () => ({ getAuxiliaryModel: vi.f
 vi.mock("~/modules/tasks/application/TaskService", () => ({ TaskService: vi.fn() }));
 vi.mock("~/modules/usage/application/usageManager", () => ({ UsageManager: vi.fn() }));
 
-import { benchmarkRetryDelayMs } from "../runner";
+import { getBenchmark } from "@ngriffin_uk/polychat-library-benchmarks";
+import type { BenchmarkItemResult } from "@ngriffin_uk/polychat-schemas";
+
+import { benchmarkRetryDelayMs, describeUnanswered, summariseRunResults } from "../runner";
+
+function item(itemId: string, score: number | null, error: string | null): BenchmarkItemResult {
+  return {
+    itemId,
+    score,
+    answer: score === null ? null : { expression: "1+1" },
+    output: "",
+    artefact: null,
+    detail: {},
+    error,
+    latencyMs: 10,
+    inputTokens: 0,
+    outputTokens: 0,
+    costUsd: null,
+  };
+}
+
+describe("describeUnanswered", () => {
+  it("is quiet when every item answered", () => {
+    expect(describeUnanswered([item("a", 1, null), item("b", 0, null)], 2)).toBeNull();
+  });
+
+  it("counts errored and never-tried items and leads with the first error", () => {
+    const results = [item("a", 1, null), item("b", null, "anthropic error: overloaded")];
+
+    expect(describeUnanswered(results, 4)).toBe(
+      "3 of 4 items got no answer. anthropic error: overloaded",
+    );
+  });
+});
+
+describe("summariseRunResults", () => {
+  it("leaves unanswered items out of the score instead of counting them as zero", () => {
+    const summary = summariseRunResults(getBenchmark("countdown"), [
+      item("round-01", 1, null),
+      item("round-02", null, "timed out"),
+    ]);
+
+    expect(summary.score.mean).toBe(1);
+  });
+});
 
 describe("benchmarkRetryDelayMs", () => {
   it("waits out the provider's retry-after hint", () => {

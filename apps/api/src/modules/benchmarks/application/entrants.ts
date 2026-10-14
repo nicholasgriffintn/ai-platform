@@ -1,11 +1,11 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
-import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
 import type { Benchmark } from "@ngriffin_uk/polychat-library-benchmarks";
 import {
   getModelDisplayName,
   isActiveModel,
   modelHasInputModalities,
   modelHasOutputModality,
+  type BenchmarkCredentialSource,
   type BenchmarkEntrant,
   type BenchmarkScope,
   type ModelConfigItem,
@@ -17,12 +17,23 @@ import type { RepositoryManager } from "~/infrastructure/database/repositoryMana
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { filterModelsForUserAccess } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 export type EntrantTarget =
   | { kind: "chat"; model: AuthorisedModelTarget }
   | { kind: "decision"; model: AuthorisedModelTarget }
   | { kind: "route"; route: ModelRouteRecord };
+
+export type OfficialModels = Record<string, ModelConfigItem>;
+
+const FATAL_ERROR_TYPES = new Set<string>([
+  ErrorType.AUTHENTICATION_ERROR,
+  ErrorType.AUTHORISATION_ERROR,
+  ErrorType.CONFIGURATION_ERROR,
+  ErrorType.NOT_FOUND,
+]);
+const FATAL_STATUS_CODES = new Set([401, 403, 404]);
 
 export function isDecisionModel(config: ModelConfigItem): boolean {
   return modelHasOutputModality(config, "decision");
@@ -58,16 +69,31 @@ export function modelEntrant(modelId: string, config: ModelConfigItem): Benchmar
   return { kind: "model", modelId, provider: config.provider, name: getModelDisplayName(config) };
 }
 
-export function findPlatformModel(env: IEnv, modelId: string): ModelConfigItem | null {
-  const config = getModels()[modelId];
-
-  return config && isProviderPlatformEnabled(config.provider, env)
-    ? { ...config, id: modelId }
-    : null;
-}
-
 export function isOfficialProvider(provider: string): boolean {
   return BENCHMARKS_CONFIG.officialProviders.includes(provider);
+}
+
+export function credentialSourceFor(config: ModelConfigItem): BenchmarkCredentialSource {
+  return config.isPlatformEnabled === false ? "byok" : "platform";
+}
+
+export async function listOfficialModels(env: IEnv, user: IUser | null): Promise<OfficialModels> {
+  const accessible = await filterModelsForUserAccess(getModels(), env, user?.id, {
+    shouldUseCache: false,
+  });
+
+  return Object.fromEntries(
+    Object.entries(accessible).flatMap(([id, config]) =>
+      isOfficialProvider(config.provider) &&
+      (config.isPlatformEnabled !== false || config.isByokEnabled === true)
+        ? [[id, { ...config, id }]]
+        : [],
+    ),
+  );
+}
+
+export function findOfficialModel(models: OfficialModels, modelId: string): ModelConfigItem | null {
+  return models[modelId] ?? null;
 }
 
 export function officialRunRefusal(run: {
@@ -81,41 +107,55 @@ export function officialRunRefusal(run: {
     : null;
 }
 
-export function findOfficialModel(env: IEnv, modelId: string): ModelConfigItem | null {
-  const config = findPlatformModel(env, modelId);
+export function isFatalEntrantError(error: unknown): boolean {
+  if (!(error instanceof AssistantError)) {
+    return false;
+  }
 
-  return config && isOfficialProvider(config.provider) ? config : null;
+  return (
+    FATAL_ERROR_TYPES.has(error.type) ||
+    (error.statusCode !== undefined && FATAL_STATUS_CODES.has(error.statusCode))
+  );
 }
 
 export async function resolveModelTarget(
   env: IEnv,
   user: IUser | null,
   entrant: Extract<BenchmarkEntrant, { kind: "model" }>,
+  scope: BenchmarkScope,
 ): Promise<AuthorisedModelTarget> {
-  if (user) {
-    const resolved = await resolveExecutableModelForRequest({
-      env,
-      user,
-      model: entrant.modelId,
-      provider: entrant.provider,
-    });
+  if (scope === "official") {
+    const config = findOfficialModel(await listOfficialModels(env, user), entrant.modelId);
 
-    return {
-      config: { ...resolved.config, id: resolved.id },
-      credentialAuthority: resolved.credentialAuthority,
-    };
+    if (!config) {
+      throw new AssistantError(
+        `${entrant.name} has no key to run on: add a ${entrant.provider} key or set the platform key`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    return { config, credentialAuthority: credentialSourceFor(config) };
   }
 
-  const config = findPlatformModel(env, entrant.modelId);
-
-  if (!config) {
+  if (!user) {
     throw new AssistantError(
-      `${entrant.name} is not available on the platform`,
-      ErrorType.CONFIGURATION_ERROR,
+      "Personal runs need the person who started them",
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
     );
   }
 
-  return { config, credentialAuthority: "platform" };
+  const resolved = await resolveExecutableModelForRequest({
+    env,
+    user,
+    model: entrant.modelId,
+    provider: entrant.provider,
+  });
+
+  return {
+    config: { ...resolved.config, id: resolved.id },
+    credentialAuthority: resolved.credentialAuthority,
+  };
 }
 
 export async function resolveEntrantTarget(
@@ -123,6 +163,7 @@ export async function resolveEntrantTarget(
   repositories: RepositoryManager,
   user: IUser | null,
   entrant: BenchmarkEntrant,
+  scope: BenchmarkScope,
 ): Promise<EntrantTarget> {
   if (entrant.kind === "route") {
     const route = await repositories.modelRoutes.getRoute(entrant.workspaceId, entrant.routeId);
@@ -138,7 +179,7 @@ export async function resolveEntrantTarget(
     throw new AssistantError("People play through the play endpoint", ErrorType.PARAMS_ERROR);
   }
 
-  const model = await resolveModelTarget(env, user, entrant);
+  const model = await resolveModelTarget(env, user, entrant, scope);
 
   return isDecisionModel(model.config) ? { kind: "decision", model } : { kind: "chat", model };
 }

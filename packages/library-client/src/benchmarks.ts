@@ -4,15 +4,18 @@ import type {
   BenchmarkEstimate,
   BenchmarkId,
   BenchmarkIndex,
+  BenchmarkOfficialOverview,
   BenchmarkPlayResult,
   BenchmarkPlayStart,
   BenchmarkPlaySubmitRequest,
+  BenchmarkQueueResult,
   BenchmarkRun,
   BenchmarkRunDetail,
   BenchmarkVisibility,
   BenchmarkVoteRequest,
   BenchmarkVoteResult,
   ListPage,
+  QueueOfficialBenchmarkRunsRequest,
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -62,6 +65,24 @@ export const benchmarksService = {
     return fetchApiData(`${BENCHMARKS_PATH}/runs/${encodeURIComponent(runId)}`, {
       method: "DELETE",
     });
+  },
+  cancel(runId: string): Promise<BenchmarkRun> {
+    return fetchApiData(`${BENCHMARKS_PATH}/runs/${encodeURIComponent(runId)}/cancel`, {
+      method: "POST",
+      body: {},
+    });
+  },
+  retry(runId: string): Promise<BenchmarkRun> {
+    return fetchApiData(`${BENCHMARKS_PATH}/runs/${encodeURIComponent(runId)}/retry`, {
+      method: "POST",
+      body: {},
+    });
+  },
+  official(): Promise<BenchmarkOfficialOverview> {
+    return fetchApiData(`${BENCHMARKS_PATH}/runs/official`);
+  },
+  queueOfficial(request: QueueOfficialBenchmarkRunsRequest): Promise<BenchmarkQueueResult> {
+    return fetchApiData(`${BENCHMARKS_PATH}/runs/queue`, { method: "POST", body: request });
   },
   arena(benchmarkId: BenchmarkId): Promise<{ pair: BenchmarkArenaPair | null }> {
     return fetchApiData(`${BENCHMARKS_PATH}/${encodeURIComponent(benchmarkId)}/arena`);
