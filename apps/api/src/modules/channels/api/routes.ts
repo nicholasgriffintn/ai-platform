@@ -4,7 +4,7 @@ import {
   createChannelBindingSchema,
   listChannelBindingsResponseSchema,
   listChannelSendersResponseSchema,
-  revokeChannelSenderSchema,
+  revokeChannelSenderQuerySchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -77,17 +77,17 @@ defineResource(
         handler: ({ serviceContext, params }) =>
           listChannelSenders(serviceContext, params.binding_id),
       })
-      .action("revoke", {
+      .delete({
         auth: true,
         summary: "Revoke a linked sender",
         paramSchema: senderParamsSchema,
-        bodySchema: revokeChannelSenderSchema,
-        handler: async ({ serviceContext, params, body }) => {
+        querySchema: revokeChannelSenderQuerySchema,
+        handler: async ({ serviceContext, params, query }) => {
           await revokeChannelSender(
             serviceContext,
             params.binding_id,
             params.sender_id,
-            body.expectedRevision,
+            query.expected_revision,
           );
 
           return { revoked: true };

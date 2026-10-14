@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import type {
+  AssistantRecipe,
   AssistantRecipeInstallResponse,
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
@@ -45,6 +46,22 @@ const installation = {
   updatedAt: "2026-08-11T00:00:00.000Z",
 } satisfies RecipeInstallation;
 
+const recipe = {
+  id: "daily-weather",
+  title: "Daily weather",
+  summary: "A morning forecast",
+  description: "Sends the forecast each morning.",
+  kind: "automate",
+  category: "Calendar",
+  featured: false,
+  integrations: [],
+  triggers: [],
+  actions: [],
+  setupPrompt: "Set up the daily weather.",
+  enabledTools: [],
+  configurationFields: [],
+} satisfies AssistantRecipe;
+
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
@@ -61,6 +78,7 @@ describe("recipe installation mutations", () => {
 
     mocks.installAssistantRecipe.mockResolvedValue({
       installation,
+      recipe,
     } satisfies Partial<AssistantRecipeInstallResponse>);
     const { result } = renderHook(() => useInstallAssistantRecipe(), {
       wrapper: createWrapper(queryClient),
@@ -75,7 +93,7 @@ describe("recipe installation mutations", () => {
     });
 
     expect(queryClient.getQueryData([...RECIPE_INSTALLATIONS_QUERY_KEY, "project-1"])).toEqual({
-      installations: [installation],
+      installations: [{ ...installation, recipe }],
     });
   });
 
@@ -86,7 +104,7 @@ describe("recipe installation mutations", () => {
     const updated = { ...installation, configuration: { location: "Edinburgh" } };
 
     queryClient.setQueryData([...RECIPE_INSTALLATIONS_QUERY_KEY, "project-1"], {
-      installations: [installation],
+      installations: [{ ...installation, recipe }],
     });
     mocks.updateRecipeInstallation.mockResolvedValue(updated);
     const { result } = renderHook(() => useUpdateRecipeInstallation(), {
@@ -101,7 +119,7 @@ describe("recipe installation mutations", () => {
     });
 
     expect(queryClient.getQueryData([...RECIPE_INSTALLATIONS_QUERY_KEY, "project-1"])).toEqual({
-      installations: [updated],
+      installations: [{ ...updated, recipe }],
     });
   });
 });

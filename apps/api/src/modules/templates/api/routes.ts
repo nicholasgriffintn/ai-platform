@@ -1,8 +1,5 @@
 import {
   createTemplateSchema,
-  instantiateProjectStarterSchema,
-  instantiateProjectTemplateSchema,
-  projectDetailSchema,
   projectStarterListResponseSchema,
   templateListQuerySchema,
   templateListResponseSchema,
@@ -17,18 +14,13 @@ import {
   createTemplate,
   deleteTemplate,
   getTemplate,
-  instantiateProjectTemplate,
   listTemplates,
   updateTemplate,
 } from "~/modules/templates/application";
-import {
-  instantiateProjectStarter,
-  listProjectStarters,
-} from "~/modules/templates/application/starters";
+import { listProjectStarters } from "~/modules/templates/application/starters";
 
 const app = new Hono();
 const templateParamsSchema = z.object({ template_id: z.string().min(1) });
-const starterParamsSchema = z.object({ starter_id: z.string().min(1) });
 
 defineResource(app, { idParam: "template_id", tags: ["templates"] }, (templates) => {
   templates
@@ -77,46 +69,15 @@ defineResource(app, { idParam: "template_id", tags: ["templates"] }, (templates)
 
         return { deleted: true };
       },
-    })
-    .action("instantiate", {
-      auth: true,
-      summary: "Create a project from a template",
-      paramSchema: templateParamsSchema,
-      bodySchema: instantiateProjectTemplateSchema,
-      responses: { 200: { description: "The project", schema: projectDetailSchema } },
-      handler: ({ body, params, serviceContext, user }) =>
-        instantiateProjectTemplate(
-          serviceContext,
-          user.id,
-          params.template_id,
-          body.workspaceId,
-          body.name,
-        ),
     });
 
-  templates
-    .collection("starters", "starter_id")
-    .list({
-      auth: true,
-      summary: "List project starters",
-      responses: { 200: { description: "Starters", schema: projectStarterListResponseSchema } },
-      handler: async () => listProjectStarters(),
-    })
-    .action("instantiate", {
-      auth: true,
-      summary: "Create a project from a starter",
-      paramSchema: starterParamsSchema,
-      bodySchema: instantiateProjectStarterSchema,
-      responses: { 200: { description: "The project", schema: projectDetailSchema } },
-      handler: ({ body, params, serviceContext, user }) =>
-        instantiateProjectStarter(
-          serviceContext,
-          user.id,
-          params.starter_id,
-          body.workspaceId,
-          body.name,
-        ),
-    });
+  templates.collection("starters", "starter_id").list({
+    auth: true,
+    summary: "List project starters",
+    description: "Built-in starters. Create a project from one with POST /projects and starter_id.",
+    responses: { 200: { description: "Starters", schema: projectStarterListResponseSchema } },
+    handler: async () => listProjectStarters(),
+  });
 });
 
 export default app;

@@ -3,7 +3,7 @@ import type {
   ChatRun,
   Delegation,
   Goal,
-  PolyAgenda,
+  PolyAgendaLists,
   PolyAgendaItem,
   PolyHandoffJudgement,
 } from "@ngriffin_uk/polychat-schemas";
@@ -65,7 +65,7 @@ function isRecent(timestamp: string | null, now: number): boolean {
   return Number.isFinite(parsed) && now - parsed <= DONE_HORIZON_MS;
 }
 
-export function buildPolyAgenda(input: PolyAgendaInput): PolyAgenda {
+export function buildPolyAgenda(input: PolyAgendaInput): PolyAgendaLists {
   const needsYou: PolyAgendaItem[] = [];
   const workingOn: PolyAgendaItem[] = [];
   const done: PolyAgendaItem[] = [];
@@ -137,7 +137,7 @@ function describeItem(item: PolyAgendaItem): string {
   return `${item.kind}: ${item.title} (${item.status.replaceAll("_", " ")})`;
 }
 
-export function toPolyAgendaPrompt(agenda: PolyAgenda): PolyAgendaPromptInput {
+export function toPolyAgendaPrompt(agenda: PolyAgendaLists): PolyAgendaPromptInput {
   return {
     needsYou: agenda.needs_you.map(describeItem),
     workingOn: agenda.working_on.map(describeItem),

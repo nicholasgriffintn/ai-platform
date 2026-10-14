@@ -51,7 +51,6 @@ export * from "./hooks/usePetSwapTransition.js";
 export * from "./hooks/usePetTravel.js";
 export * from "./hooks/usePets.js";
 export * from "./hooks/usePolyAgenda.js";
-export * from "./hooks/usePolyHome.js";
 export * from "./hooks/useProjectCapabilityCatalog.js";
 export * from "./hooks/useProjectConversationSources.js";
 export * from "./hooks/useProjectTasks.js";

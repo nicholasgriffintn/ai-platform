@@ -9,7 +9,7 @@ import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/message
 import type {
   DeviceAuthorisation,
   DeviceAuthorisationDecision,
-  PolyAgendaView,
+  PolyAgenda,
   PolyHandoffDisagreement,
   StandingApproval,
   TeammateAutonomyLevel,
@@ -53,7 +53,6 @@ import { ResponsesService, type CreateResponseParams } from "./services/response
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
 import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
-import type { ProviderSetting } from "./services/user-service.js";
 import { UserService } from "./services/user-service.js";
 import type { ConversationShare } from "./shared-conversation.js";
 import { useToolsStore } from "./toolsStore.js";
@@ -242,8 +241,7 @@ class ApiService {
   ): Promise<{ status: "approved" | "denied" }> =>
     this.deviceAuthorisationService.decideDeviceAuthorisation(userCode, decision);
 
-  readPolyAgenda = (options?: { ownerPresent?: boolean }): Promise<PolyAgendaView> =>
-    this.polyService.readPolyAgenda(options);
+  readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
 
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
     this.polyService.disagreeWithPolyHandoff(handoffId);
@@ -441,12 +439,8 @@ class ApiService {
     return this.userService.storeProviderApiKey(providerId, apiKey, secretKey, configuration);
   };
 
-  getProviderSettings = (): Promise<ProviderSetting[]> => {
-    return this.userService.getProviderSettings();
-  };
-
-  getProviderSyncStatus = () => {
-    return this.userService.getProviderSyncStatus();
+  getProviders = () => {
+    return this.userService.getProviders();
   };
 
   deleteProviderApiKey = (providerId: string): Promise<void> => {

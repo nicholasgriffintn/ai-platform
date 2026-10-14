@@ -70,13 +70,10 @@ export function scaleDeployment(
   deploymentId: string,
   input: ScaleDeploymentRequest,
 ): Promise<ModelDeployment> {
-  return platformRequest(
-    workspacePath(workspaceId, `/deployments/${segment(deploymentId)}/scale`),
-    {
-      method: "POST",
-      body: input,
-    },
-  );
+  return platformRequest(workspacePath(workspaceId, `/deployments/${segment(deploymentId)}`), {
+    method: "PATCH",
+    body: input,
+  });
 }
 
 export function changeDeploymentState(
@@ -179,8 +176,8 @@ export function createModelRoute(
 }
 
 export function retireModelRoute(workspaceId: string, routeId: string): Promise<ModelRoute> {
-  return platformRequest(workspacePath(workspaceId, `/routes/${segment(routeId)}/retire`), {
-    method: "POST",
+  return platformRequest(workspacePath(workspaceId, `/routes/${segment(routeId)}`), {
+    method: "DELETE",
   });
 }
 

@@ -1,7 +1,7 @@
 import {
   standingApprovalId,
   standingApprovalSchema,
-  type PolyAgendaView,
+  type PolyAgenda,
   type PolyHandoffDisagreement,
   type StandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
@@ -13,9 +13,8 @@ import { requestJson } from "../resource.js";
 export class PolyService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async readPolyAgenda(options: { ownerPresent?: boolean } = {}): Promise<PolyAgendaView> {
-    const path = options.ownerPresent ? "/poly/agenda?owner_present=true" : "/poly/agenda";
-    const response = await fetchApi(path, {
+  async readPolyAgenda(): Promise<PolyAgenda> {
+    const response = await fetchApi("/poly/agenda", {
       method: "GET",
       headers: await this.getHeaders(),
     });
@@ -24,7 +23,7 @@ export class PolyService {
       throw await createApiErrorFromResponse(response, "Failed to load what Poly is doing");
     }
 
-    return returnFetchedData<PolyAgendaView>(response);
+    return returnFetchedData<PolyAgenda>(response);
   }
 
   async disagreeWithPolyHandoff(handoffId: string): Promise<PolyHandoffDisagreement> {

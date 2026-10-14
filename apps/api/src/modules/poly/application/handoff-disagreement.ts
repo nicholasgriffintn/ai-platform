@@ -7,7 +7,7 @@ import { recordPolicyCorrection } from "~/modules/corrections/application/correc
 import { handoffOverrideRef } from "~/modules/poly/domain/handoff-overrides";
 
 import { readPolyHandoff } from "./handoffs";
-import { requirePolyContext } from "./home";
+import { requirePolyContext } from "./poly-context";
 
 const TITLE_LIMIT = 120;
 

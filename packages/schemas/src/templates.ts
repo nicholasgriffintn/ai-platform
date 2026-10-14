@@ -51,11 +51,6 @@ export const projectTemplateConfigurationSchema = z.object({
   capabilities: z.array(addProjectCapabilitySchema).max(100).default([]),
 });
 
-export const instantiateProjectTemplateSchema = z.object({
-  workspaceId: z.string().min(1),
-  name: z.string().trim().min(2).max(100).optional(),
-});
-
 export type Template = z.infer<typeof templateSchema>;
 export type TemplateKind = z.infer<typeof templateKindSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;

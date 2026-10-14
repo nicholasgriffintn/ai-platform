@@ -41,7 +41,7 @@ export const benchmarksService = {
     return fetchApiData(`${BENCHMARKS_PATH}/runs/shared/${encodeURIComponent(token)}`);
   },
   estimate(request: StartBenchmarkRunsRequest): Promise<BenchmarkEstimate> {
-    return fetchApiData(`${BENCHMARKS_PATH}/runs/estimate`, { method: "POST", body: request });
+    return fetchApiData(`${BENCHMARKS_PATH}/runs?dry_run=true`, { method: "POST", body: request });
   },
   start(request: StartBenchmarkRunsRequest): Promise<{ runs: BenchmarkRun[] }> {
     return fetchApiData(`${BENCHMARKS_PATH}/runs`, { method: "POST", body: request });
@@ -70,11 +70,18 @@ export const benchmarksService = {
     return fetchApiData(`${BENCHMARKS_PATH}/votes`, { method: "POST", body: request });
   },
   play(benchmarkId: BenchmarkId): Promise<BenchmarkPlayStart> {
-    return fetchApiData(`${BENCHMARKS_PATH}/${encodeURIComponent(benchmarkId)}/play`, {
+    return fetchApiData(`${BENCHMARKS_PATH}/${encodeURIComponent(benchmarkId)}/plays`, {
       method: "POST",
+      body: {},
     });
   },
-  submitPlay(request: BenchmarkPlaySubmitRequest): Promise<BenchmarkPlayResult> {
-    return fetchApiData(`${BENCHMARKS_PATH}/plays`, { method: "POST", body: request });
+  submitPlay(
+    benchmarkId: BenchmarkId,
+    request: BenchmarkPlaySubmitRequest,
+  ): Promise<BenchmarkPlayResult> {
+    return fetchApiData(`${BENCHMARKS_PATH}/${encodeURIComponent(benchmarkId)}/plays`, {
+      method: "POST",
+      body: request,
+    });
   },
 };

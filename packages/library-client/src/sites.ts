@@ -195,7 +195,7 @@ export const sitesService = {
     onEvent: (event: SiteStreamEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const response = await fetchApi(`${SITES_BASE_PATH}/generate`, {
+    const response = await fetchApi(SITES_BASE_PATH, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
       body: request,

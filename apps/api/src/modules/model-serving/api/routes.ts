@@ -106,7 +106,7 @@ addRoute(app, "get", `${base}/deployments/:deployment_id`, {
     getDeploymentDetail(serviceContext, params.workspace_id, params.deployment_id),
 });
 
-addRoute(app, "post", `${base}/deployments/:deployment_id/scale`, {
+addRoute(app, "patch", `${base}/deployments/:deployment_id`, {
   auth: true,
   tags,
   summary: "Change replica bounds and scale-to-zero",
@@ -235,7 +235,7 @@ addRoute(app, "post", `${base}/routes`, {
     createRoute(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "post", `${base}/routes/:route_id/retire`, {
+addRoute(app, "delete", `${base}/routes/:route_id`, {
   auth: true,
   tags,
   summary: "Retire a serving route",

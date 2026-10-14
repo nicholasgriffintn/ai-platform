@@ -61,6 +61,26 @@ export function defineMarketplace(app: HonoLike): void {
     { path: "/marketplace", idParam: "listing_id", tags: ["teammates"] },
     (listings) => {
       listings
+        .singleton("installation")
+        .create({
+          auth: true,
+          summary: "Install a shared teammate",
+          paramSchema: listingParamsSchema,
+          handler: ({ serviceContext, params, user }) =>
+            installSharedTeammate(serviceContext, params.listing_id, user.id),
+        })
+        .delete({
+          auth: true,
+          summary: "Uninstall a shared teammate",
+          paramSchema: listingParamsSchema,
+          handler: async ({ serviceContext, params, user }) => {
+            await uninstallSharedTeammate(serviceContext, params.listing_id, user.id);
+
+            return { uninstalled: true };
+          },
+        });
+
+      listings
         .list({
           auth: "user-or-anonymous",
           summary: "List shared teammates",
@@ -156,23 +176,6 @@ export function defineMarketplace(app: HonoLike): void {
             await deleteSharedTeammate(serviceContext, params.listing_id, user.id);
 
             return { deleted: true };
-          },
-        })
-        .action("install", {
-          auth: true,
-          summary: "Install a shared teammate",
-          paramSchema: listingParamsSchema,
-          handler: ({ serviceContext, params, user }) =>
-            installSharedTeammate(serviceContext, params.listing_id, user.id),
-        })
-        .action("uninstall", {
-          auth: true,
-          summary: "Uninstall a shared teammate",
-          paramSchema: listingParamsSchema,
-          handler: async ({ serviceContext, params, user }) => {
-            await uninstallSharedTeammate(serviceContext, params.listing_id, user.id);
-
-            return { uninstalled: true };
           },
         })
         .action("rate", {

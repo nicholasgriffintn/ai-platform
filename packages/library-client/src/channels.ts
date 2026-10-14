@@ -56,11 +56,10 @@ export async function revokeChannelSender(
   expectedRevision: number,
 ): Promise<void> {
   await fetchApiOrThrow(
-    `/channels/bindings/${encodeURIComponent(bindingId)}/senders/${encodeURIComponent(senderId)}/revoke`,
+    `/channels/bindings/${encodeURIComponent(bindingId)}/senders/${encodeURIComponent(senderId)}?expected_revision=${expectedRevision}`,
     {
-      method: "POST",
+      method: "DELETE",
       headers: await apiService.getHeaders(),
-      body: { expectedRevision },
     },
   );
 }

@@ -5,8 +5,8 @@ import { isStandingApprovalEligible } from "~/modules/chat/application/tools/eff
 import { recordApprovalOutcome } from "~/modules/poly/domain/earned-trust";
 import { readToolInteractionResolution } from "~/modules/responses/application/runs/interactions";
 
-import { markPolyOwnerSeen } from "./home";
 import { readPendingPolyCall } from "./pending-call";
+import { markPolyOwnerSeen } from "./poly-context";
 
 export async function recordPolyApprovalOutcome(params: {
   context: ServiceContext;

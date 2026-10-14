@@ -1,5 +1,7 @@
 import {
   addProjectCapabilitySchema,
+  createProjectFromStarterRequestSchema,
+  createProjectFromTemplateRequestSchema,
   createProjectRequestSchema,
   listPageOf,
   projectDetailSchema,
@@ -21,6 +23,8 @@ import {
 } from "~/modules/project-tasks/api/integrations";
 import { defineProjectTasks } from "~/modules/project-tasks/api/tasks";
 import { getProjectFlow, setProjectFlow } from "~/modules/project-tasks/application";
+import { instantiateProjectTemplate } from "~/modules/templates/application";
+import { instantiateProjectStarter } from "~/modules/templates/application/starters";
 import {
   addProjectCapability,
   archiveProject,
@@ -42,10 +46,39 @@ defineResource(app, { idParam: "project_id", tags: ["projects"] }, (projects) =>
     .create({
       auth: true,
       summary: "Create a project in a workspace",
-      bodySchema: createProjectRequestSchema,
+      description:
+        "Send the project's fields, or template_id or starter_id to create it from a saved template or a built-in starter.",
+      bodySchema: z.union([
+        createProjectFromTemplateRequestSchema,
+        createProjectFromStarterRequestSchema,
+        createProjectRequestSchema,
+      ]),
       responses: { 200: { description: "The project", schema: projectDetailSchema } },
-      handler: ({ serviceContext, body: { workspace_id, ...input } }) =>
-        createProject(serviceContext, workspace_id, input),
+      handler: ({ serviceContext, user, body }) => {
+        if ("template_id" in body) {
+          return instantiateProjectTemplate(
+            serviceContext,
+            user.id,
+            body.template_id,
+            body.workspace_id,
+            body.name,
+          );
+        }
+
+        if ("starter_id" in body) {
+          return instantiateProjectStarter(
+            serviceContext,
+            user.id,
+            body.starter_id,
+            body.workspace_id,
+            body.name,
+          );
+        }
+
+        const { workspace_id, ...input } = body;
+
+        return createProject(serviceContext, workspace_id, input);
+      },
     })
     .read({
       auth: true,

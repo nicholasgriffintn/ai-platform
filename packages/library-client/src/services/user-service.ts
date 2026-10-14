@@ -177,21 +177,20 @@ export class UserService {
     );
   }
 
-  getProviderSettings(): Promise<ProviderSetting[]> {
-    return providers.listAll();
+  async getProviders(): Promise<{
+    settings: ProviderSetting[];
+    syncStatus: ProviderSyncStatus;
+  }> {
+    const page = await requestJson<ListPage<ProviderSetting> & { sync_status: ProviderSyncStatus }>(
+      "/providers",
+      "GET",
+    );
+
+    return { settings: page.data, syncStatus: page.sync_status };
   }
 
   deleteProviderApiKey(providerId: string): Promise<void> {
     return providers.delete(providerId);
-  }
-
-  async getProviderSyncStatus(): Promise<ProviderSyncStatus> {
-    const page = await requestJson<{ sync_status: ProviderSyncStatus }>(
-      "/providers?limit=1",
-      "GET",
-    );
-
-    return page.sync_status;
   }
 
   async syncProviders(): Promise<void> {

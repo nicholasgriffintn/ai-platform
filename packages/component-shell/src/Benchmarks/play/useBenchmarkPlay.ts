@@ -58,7 +58,7 @@ export function useBenchmarkPlay(benchmarkId: BenchmarkId) {
         }
 
         setResult(
-          await benchmarksService.submitPlay({
+          await benchmarksService.submitPlay(benchmarkId, {
             token: game.token,
             answers: game.items.map((item) => ({
               itemId: item.id,
@@ -67,7 +67,7 @@ export function useBenchmarkPlay(benchmarkId: BenchmarkId) {
           }),
         );
       }),
-    [answers, game, run],
+    [answers, benchmarkId, game, run],
   );
 
   const reset = useCallback(() => {

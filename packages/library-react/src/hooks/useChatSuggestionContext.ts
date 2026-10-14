@@ -12,7 +12,7 @@ import { isSelectableHomeChatModeId } from "../lib/chatModes.js";
 import type { SelectableHomeChatModeId } from "../lib/chatModes.js";
 import { resolveFocusRole } from "../lib/focus-role.js";
 import { useRecipeConnectors } from "./useConnectors.js";
-import { useAssistantRecipes, useRecipeInstallations } from "./useRecipes.js";
+import { useRecipeInstallations } from "./useRecipes.js";
 import { useTools } from "./useTools.js";
 
 const MAX_CONNECTOR_SIGNALS = 3;
@@ -54,9 +54,6 @@ export function useChatSuggestionContext({
     undefined,
     { enabled: wantsCapabilities },
   );
-  const { data: recipesData, isLoading: isLoadingRecipes } = useAssistantRecipes({
-    enabled: wantsCapabilities,
-  });
 
   const availableToolIds = useMemo(() => {
     if (!wantsCapabilities || modelConfig?.supportsToolCalls === false) {
@@ -82,17 +79,11 @@ export function useChatSuggestionContext({
       return [];
     }
 
-    const titles = new Map((recipesData?.recipes ?? []).map((recipe) => [recipe.id, recipe.title]));
-
     return (installationsData?.installations ?? [])
       .filter((installation) => installation.status === "active" && !installation.projectId)
-      .map((installation) => ({
-        id: installation.recipeId,
-        title: titles.get(installation.recipeId),
-      }))
-      .filter((recipe): recipe is ChatSuggestionRecipe => Boolean(recipe.title))
+      .map((installation) => ({ id: installation.recipeId, title: installation.recipe.title }))
       .slice(0, MAX_RECIPE_SIGNALS);
-  }, [installationsData, recipesData, wantsCapabilities]);
+  }, [installationsData, wantsCapabilities]);
 
   const context = useMemo<ChatSuggestionContext>(
     () => ({
@@ -116,7 +107,6 @@ export function useChatSuggestionContext({
   return {
     context,
     isLoading:
-      wantsCapabilities &&
-      (isLoadingTools || isLoadingConnectors || isLoadingInstallations || isLoadingRecipes),
+      wantsCapabilities && (isLoadingTools || isLoadingConnectors || isLoadingInstallations),
   };
 }

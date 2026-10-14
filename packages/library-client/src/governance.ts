@@ -48,9 +48,9 @@ export async function instantiateTemplate(
   templateId: string,
   workspaceId: string,
 ): Promise<ProjectDetail> {
-  return request(`/templates/${encodeURIComponent(templateId)}/instantiate`, {
+  return request("/projects", {
     method: "POST",
-    body: { workspaceId },
+    body: { workspace_id: workspaceId, template_id: templateId },
   });
 }
 
@@ -62,9 +62,9 @@ export async function instantiateProjectStarter(
   starterSlug: string,
   workspaceId: string,
 ): Promise<ProjectDetail> {
-  return request(`/templates/starters/${encodeURIComponent(starterSlug)}/instantiate`, {
+  return request("/projects", {
     method: "POST",
-    body: { workspaceId },
+    body: { workspace_id: workspaceId, starter_id: starterSlug },
   });
 }
 

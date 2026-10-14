@@ -18,7 +18,7 @@ import {
   useConversationAgentApprovals,
   useLocalComposerDraft,
   useLocalConversationScope,
-  usePolyHome,
+  usePolyAgenda,
   usePolyStandingApprovals,
   useTrackEvent,
 } from "@ngriffin_uk/polychat-library-react";
@@ -132,10 +132,10 @@ function PolyThread({
   );
 }
 
-function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) {
-  const home = usePolyHome(true);
+function PolyAgendaThread({ onNavigate }: { onNavigate: (href: string) => void }) {
+  const agenda = usePolyAgenda(true);
 
-  if (home.isError) {
+  if (agenda.isError) {
     return (
       <div className="p-6">
         <EmptyState
@@ -146,7 +146,7 @@ function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) 
     );
   }
 
-  if (!home.data) {
+  if (!agenda.data) {
     return (
       <div className="flex flex-1 items-center justify-center" role="status">
         <Loader2 size={20} aria-hidden="true" className="animate-spin text-muted-foreground" />
@@ -159,8 +159,8 @@ function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) 
     <>
       <PolyAgendaStrip />
       <PolyThread
-        key={home.data.conversation_id}
-        conversationId={home.data.conversation_id}
+        key={agenda.data.conversation_id}
+        conversationId={agenda.data.conversation_id}
         onNavigate={onNavigate}
       />
     </>
@@ -221,7 +221,7 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          <PolyHomeThread onNavigate={handleNavigate} />
+          <PolyAgendaThread onNavigate={handleNavigate} />
         )}
       </DialogContent>
     </Dialog>

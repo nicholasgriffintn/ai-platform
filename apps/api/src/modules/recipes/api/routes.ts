@@ -27,7 +27,7 @@ import {
   installAssistantRecipe,
   invokeAssistantRecipe,
   listAssistantRecipes,
-  listRecipeInstallations,
+  listInstalledRecipes,
   updateRecipeInstallation,
 } from "../application";
 import { listRecipeComposioTriggerTypes } from "../application/composio-triggers";
@@ -136,16 +136,15 @@ defineResource(app, { idParam: "recipe_id", tags: ["recipes"] }, (recipes) => {
     .list({
       auth: true,
       summary: "List installed recipes",
+      description: "Each installation carries its recipe, so callers need not load the catalogue.",
       querySchema: projectScopeQuerySchema,
       handler: async ({ query, serviceContext, user }) =>
         listPageOf(
-          (
-            await listRecipeInstallations({
-              context: serviceContext,
-              userId: user.id,
-              projectId: query.project_id,
-            })
-          ).installations,
+          await listInstalledRecipes({
+            context: serviceContext,
+            userId: user.id,
+            projectId: query.project_id,
+          }),
           (installation) => installation.id,
         ),
     })

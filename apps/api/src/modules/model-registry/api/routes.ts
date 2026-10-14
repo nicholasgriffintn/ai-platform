@@ -1,4 +1,5 @@
 import {
+  completeUploadRequestSchema,
   createUploadRequestSchema,
   decisionListQuerySchema,
   decisionsResponseSchema,
@@ -28,6 +29,7 @@ import {
   versionDetailSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
+import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
@@ -87,25 +89,16 @@ addRoute(app, "get", `${base}/library`, {
 addRoute(app, "post", `${base}/imports`, {
   auth: true,
   tags,
-  summary: "Import a pinned model or dataset version from Hugging Face",
+  summary: "Import a model or dataset version",
   description:
-    "Resolves the revision to a commit, records file hashes and queues static inspection.",
+    "With source huggingface, pins a Hugging Face revision to a commit, records file hashes and queues static inspection. With provider aws, registers weights that already live in a connected bucket.",
   paramSchema: registryWorkspaceParamsSchema,
-  bodySchema: importAssetRequestSchema,
+  bodySchema: z.union([importAssetRequestSchema, importBucketModelRequestSchema]),
   responses: { 200: { description: "Imported version", schema: versionDetailSchema } },
   handler: ({ serviceContext, params, body }) =>
-    importAsset(serviceContext, params.workspace_id, body),
-});
-
-addRoute(app, "post", `${base}/imports/bucket`, {
-  auth: true,
-  tags,
-  summary: "Register weights that already live in a connected bucket",
-  paramSchema: registryWorkspaceParamsSchema,
-  bodySchema: importBucketModelRequestSchema,
-  responses: { 200: { description: "Imported version", schema: versionDetailSchema } },
-  handler: ({ serviceContext, params, body }) =>
-    importBucketModel(serviceContext, params.workspace_id, body),
+    "source" in body
+      ? importAsset(serviceContext, params.workspace_id, body)
+      : importBucketModel(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "post", `${base}/uploads`, {
@@ -148,17 +141,19 @@ addRoute(app, "patch", `${base}/uploads/:upload_id/files/:file_id/parts/:part_id
     ),
 });
 
-addRoute(app, "post", `${base}/uploads/:upload_id/complete`, {
+addRoute(app, "patch", `${base}/uploads/:upload_id`, {
   auth: true,
   tags,
   summary: "Complete an upload and queue hashing and publishing",
+  description: "Set status to completed once every part is stored.",
   paramSchema: modelUploadParamsSchema,
+  bodySchema: completeUploadRequestSchema,
   responses: { 200: { description: "Upload session", schema: uploadSessionSchema } },
   handler: ({ serviceContext, params }) =>
     completeUpload(serviceContext, params.workspace_id, params.upload_id),
 });
 
-addRoute(app, "post", `${base}/uploads/:upload_id/abort`, {
+addRoute(app, "delete", `${base}/uploads/:upload_id`, {
   auth: true,
   tags,
   summary: "Abort an upload and discard its parts",
@@ -168,7 +163,7 @@ addRoute(app, "post", `${base}/uploads/:upload_id/abort`, {
     abortUpload(serviceContext, params.workspace_id, params.upload_id),
 });
 
-addRoute(app, "post", `${base}/uploads/register`, {
+addRoute(app, "post", `${base}/versions`, {
   auth: true,
   tags,
   summary: "Register uploaded weights as a governed model or adapter",
@@ -253,7 +248,7 @@ addRoute(app, "post", `${base}/decisions`, {
     requestDecision(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "post", `${base}/decisions/:decision_id/resolve`, {
+addRoute(app, "patch", `${base}/decisions/:decision_id`, {
   auth: true,
   tags,
   summary: "Approve, reject or revoke a decision",

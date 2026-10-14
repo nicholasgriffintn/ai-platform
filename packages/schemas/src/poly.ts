@@ -106,16 +106,6 @@ export type PolyMode = z.infer<typeof polyModeSchema>;
 export type PolyNavigationTarget = z.infer<typeof polyNavigationTargetSchema>;
 export type PolyFoundConversation = z.infer<typeof polyFoundConversationSchema>;
 
-export const polyHomeSchema = z.object({
-  teammate_id: z.string().min(1),
-  context_id: z.string().min(1),
-  conversation_id: z.string().min(1),
-  autonomy_level: teammateAutonomyLevelSchema,
-  standing_approvals: z.array(teammateStandingApprovalSchema),
-});
-
-export type PolyHome = z.infer<typeof polyHomeSchema>;
-
 export const polyHandoffDisagreementSchema = z.object({
   correction_id: z.string().min(1),
   result_conversation_id: z.string().min(1).nullable(),
@@ -166,17 +156,21 @@ export const polyAgendaItemSchema = z.object({
   judgement: polyHandoffJudgementSchema.nullable().optional(),
 });
 
-export const polyAgendaSchema = z.object({
+export const polyAgendaListsSchema = z.object({
   needs_you: z.array(polyAgendaItemSchema),
   working_on: z.array(polyAgendaItemSchema),
   done: z.array(polyAgendaItemSchema),
   noted: z.array(polyAgendaItemSchema),
 });
 
-export const polyAgendaViewSchema = polyAgendaSchema.extend({
-  home: polyHomeSchema.nullable(),
+export const polyAgendaSchema = polyAgendaListsSchema.extend({
+  teammate_id: z.string().min(1),
+  context_id: z.string().min(1),
+  conversation_id: z.string().min(1),
+  autonomy_level: teammateAutonomyLevelSchema,
+  standing_approvals: z.array(teammateStandingApprovalSchema),
 });
 
 export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;
+export type PolyAgendaLists = z.infer<typeof polyAgendaListsSchema>;
 export type PolyAgenda = z.infer<typeof polyAgendaSchema>;
-export type PolyAgendaView = z.infer<typeof polyAgendaViewSchema>;

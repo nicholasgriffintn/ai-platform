@@ -15,6 +15,7 @@ import {
   skillIdSchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
@@ -90,27 +91,38 @@ defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
     .create({
       auth: true,
       summary: "Create an authored skill",
+      description:
+        "Send content to write a skill, source to import an authorised revision from another scope, or recordingId to draft a disabled personal skill from a supervised teaching session.",
       querySchema: projectScopeQuerySchema,
-      bodySchema: authoredSkillInputSchema,
-      responses: { 200: { description: "The skill", schema: authoredSkillDocumentSchema } },
-      handler: ({ body, query, serviceContext, user }) =>
-        createScopedSkill({ context: serviceContext, user, projectId: query.project_id }, body),
-    })
-    .collectionAction("import", {
-      auth: true,
-      summary: "Import an authorised skill revision",
-      querySchema: projectScopeQuerySchema,
-      bodySchema: authoredSkillImportInputSchema,
-      handler: ({ body, query, serviceContext, user }) =>
-        importScopedSkill({ context: serviceContext, user, projectId: query.project_id }, body),
-    })
-    .collectionAction("teach", {
-      auth: true,
-      summary: "Draft a personal skill from supervised teaching",
-      description: "Creates a disabled personal skill draft from a recorded teaching session.",
-      bodySchema: teachingSkillDraftInputSchema,
-      handler: ({ body, serviceContext, user }) =>
-        createTeachingSkillDraft(serviceContext, user.id, body),
+      bodySchema: z.union([
+        authoredSkillInputSchema,
+        authoredSkillImportInputSchema,
+        teachingSkillDraftInputSchema,
+      ]),
+      responses: {
+        200: {
+          description: "The skill",
+          schema: z.union([authoredSkillDocumentSchema, authoredSkillVersionedDocumentSchema]),
+        },
+        400: { description: "Teaching drafts are personal", schema: errorResponseSchema },
+      },
+      handler: ({ body, query, serviceContext, user }) => {
+        const scope = { context: serviceContext, user, projectId: query.project_id };
+
+        if ("recordingId" in body) {
+          if (query.project_id) {
+            throw new AssistantError(
+              "Teaching drafts are personal skills",
+              ErrorType.PARAMS_ERROR,
+              400,
+            );
+          }
+
+          return createTeachingSkillDraft(serviceContext, user.id, body);
+        }
+
+        return "source" in body ? importScopedSkill(scope, body) : createScopedSkill(scope, body);
+      },
     })
     .read({
       auth: true,

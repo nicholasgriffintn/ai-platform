@@ -220,8 +220,6 @@ export const benchmarkQueueResultSchema = z.object({
   spentThisMonthUsd: z.number(),
 });
 
-export const benchmarkEstimateRequestSchema = startBenchmarkRunsRequestSchema;
-
 export const benchmarkEstimateSchema = z.object({
   estimates: z.array(
     z.object({
@@ -272,6 +270,11 @@ export const benchmarkPlaySubmitRequestSchema = z.object({
   token: z.string().min(1),
   answers: z.array(z.object({ itemId: z.string(), answer: z.unknown() })).max(20),
 });
+
+export const benchmarkPlayRequestSchema = z.union([
+  benchmarkPlaySubmitRequestSchema,
+  z.object({}).strict(),
+]);
 
 export const benchmarkPlayResultSchema = z.object({
   run: benchmarkRunSchema,

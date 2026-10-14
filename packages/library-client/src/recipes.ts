@@ -3,6 +3,7 @@ import type {
   AssistantRecipesResponse,
   RecipeConfiguration,
   RecipeInvocationResponse,
+  InstalledRecipe,
   RecipeInstallation,
   RecipeInstallationTrigger,
   RecipeInstallationUpdateRequest,
@@ -73,7 +74,7 @@ export async function listRecipeInstallations(
   projectId?: string,
 ): Promise<RecipeInstallationsResponse> {
   return {
-    installations: await resource<RecipeInstallation>("/recipes/installations").listAll({
+    installations: await resource<InstalledRecipe>("/recipes/installations").listAll({
       project_id: projectId,
     }),
   };
