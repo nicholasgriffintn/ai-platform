@@ -36,7 +36,6 @@ import {
   deriveProjectWorkbenchServices,
   formatProjectWorkbenchPreviewFeedback,
   useCancelDelegations,
-  useConversationBrief,
   useDelegations,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -45,9 +44,7 @@ import type { ProjectWorkbenchLayout } from "@ngriffin_uk/polychat-utility-react
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
-import { ConversationBriefPanel } from "../Conversations/ConversationBriefPanel.js";
 import { ConversationContextRail } from "../Conversations/ConversationContextRail.js";
-import { useConversationBriefAttention } from "../Conversations/useConversationBriefAttention.js";
 import { useConversationWorkbenchContext } from "../Conversations/useConversationWorkbenchContext.js";
 import { ProjectDelegatesPanel } from "../Delegations/ProjectDelegatesPanel.js";
 import { ProjectRunChangesCard } from "./ProjectRunChangesCard.js";
@@ -128,12 +125,6 @@ function ProjectWorkbenchConversationInner({
   });
   const delegationsQuery = useDelegations(effectiveConversationId ?? "");
   const cancelDelegations = useCancelDelegations();
-  const brief = useConversationBrief(effectiveConversationId ?? undefined);
-  const briefAttention = useConversationBriefAttention(
-    effectiveConversationId ?? undefined,
-    brief.data?.document?.revision,
-    brief.isFetched,
-  );
   const computerObservations = useMemo(
     () => getComputerObservations(conversationMessages),
     [conversationMessages],
@@ -154,12 +145,8 @@ function ProjectWorkbenchConversationInner({
       return { key: `computer:${latestComputerObservation.id}`, pane: "preview" as const };
     }
 
-    return briefAttention.attention;
-  }, [briefAttention.attention, task, latestComputerObservation]);
-
-  if (briefAttention.isUnseen && layout.openPanes.includes("brief")) {
-    briefAttention.markSeen();
-  }
+    return undefined;
+  }, [task, latestComputerObservation]);
 
   const presentation = deriveProjectWorkbenchPresentation({
     run: runsQuery.currentRun,
@@ -241,7 +228,6 @@ function ProjectWorkbenchConversationInner({
   const recordedFiles = runsQuery.currentRun?.manifest?.changes.files ?? [];
   const artifacts = runsQuery.currentRun?.manifest?.artifacts ?? [];
   const availablePanes = deriveProjectWorkbenchPanes({
-    hasBrief: Boolean(effectiveConversationId),
     hasArtifact: false,
     hasActivity: Boolean(runsQuery.currentRun || activityEntries.length > 0 || services.length > 0),
     hasPreview: previewServices.length > 0 || computerObservations.length > 0,
@@ -251,9 +237,6 @@ function ProjectWorkbenchConversationInner({
     hasDelegates: Boolean(delegationsQuery.data?.data.length),
   });
   const panels = {
-    brief: effectiveConversationId ? (
-      <ConversationBriefPanel conversationId={effectiveConversationId} />
-    ) : undefined,
     activity: (
       <>
         <ProjectWorkbenchServices
@@ -353,12 +336,7 @@ function ProjectWorkbenchConversationInner({
       conversation={children({ runSteering, composerBanner })}
       context={
         effectiveConversationId ? (
-          <ConversationContextRail
-            conversationId={effectiveConversationId}
-            workbench={workbench}
-            briefUpdated={briefAttention.isUnseen}
-            onOpenBrief={() => layout.openPane("brief")}
-          >
+          <ConversationContextRail conversationId={effectiveConversationId} workbench={workbench}>
             <ProjectRunChangesCard
               diffContent={diff.content}
               recordedFiles={recordedFiles}

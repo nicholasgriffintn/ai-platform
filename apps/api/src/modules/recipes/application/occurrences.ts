@@ -9,7 +9,6 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { ensureConversationBrief } from "~/modules/memory-documents/application/memory-documents";
 import { sendPolyNotificationToChannels } from "~/modules/poly/application/channel-delivery";
 import { admitRoutineHandoff } from "~/modules/poly/application/handoffs";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -44,8 +43,6 @@ export async function ensureRecipeOccurrenceConversation(params: {
   ) {
     throw new Error("Recipe occurrence conversation identity is already in use");
   }
-
-  await ensureConversationBrief(params.context, params.conversationId);
 }
 
 export async function deliverRecipeOccurrenceToTeammateHome(params: {

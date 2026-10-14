@@ -19,7 +19,6 @@ export interface ProjectWorkbenchPresentation {
 export const ARTIFACT_WORKBENCH_MIN_WIDTH = 560;
 
 export function deriveProjectWorkbenchPanes(input: {
-  hasBrief: boolean;
   hasArtifact: boolean;
   hasActivity: boolean;
   hasPreview: boolean;
@@ -30,8 +29,6 @@ export function deriveProjectWorkbenchPanes(input: {
 }): ProjectWorkbenchPane[] {
   return PROJECT_WORKBENCH_PANES.filter((pane) => {
     switch (pane) {
-      case "brief":
-        return input.hasBrief;
       case "artifact":
         return input.hasArtifact;
       case "activity":

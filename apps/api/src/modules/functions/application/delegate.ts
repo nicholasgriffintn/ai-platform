@@ -292,14 +292,14 @@ export const delegate: ApiToolDefinition = {
             childConversationId,
           );
 
-          childBriefDocumentId = copied.document?.id ?? null;
+          childBriefDocumentId = copied?.id ?? null;
         }
       }
 
       if (!childBriefDocumentId) {
         const childBrief = await ensureConversationBrief(context, childConversationId);
 
-        childBriefDocumentId = childBrief.document?.id ?? null;
+        childBriefDocumentId = childBrief?.id ?? null;
       }
 
       if (!childBriefDocumentId) {

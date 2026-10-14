@@ -9,13 +9,13 @@ import {
 
 describe("openProjectWorkbenchPane", () => {
   it("keeps an already open pane in place", () => {
-    expect(openProjectWorkbenchPane(["brief", "artifact"], "brief")).toEqual(["brief", "artifact"]);
+    expect(openProjectWorkbenchPane(["files", "artifact"], "files")).toEqual(["files", "artifact"]);
   });
 
   it("drops the oldest pane once the workbench is full", () => {
     const full = openProjectWorkbenchPane(
       openProjectWorkbenchPane(
-        openProjectWorkbenchPane(openProjectWorkbenchPane([], "brief"), "artifact"),
+        openProjectWorkbenchPane(openProjectWorkbenchPane([], "files"), "artifact"),
         "activity",
       ),
       "preview",
@@ -33,9 +33,9 @@ describe("openProjectWorkbenchPane", () => {
 
 describe("arrangeProjectWorkbenchColumns", () => {
   it("gives the first pane a full column and halves it when a second arrives", () => {
-    expect(arrangeProjectWorkbenchColumns(["brief"], 2)).toEqual([["brief"]]);
-    expect(arrangeProjectWorkbenchColumns(["brief", "artifact"], 2)).toEqual([
-      ["brief", "artifact"],
+    expect(arrangeProjectWorkbenchColumns(["files"], 2)).toEqual([["files"]]);
+    expect(arrangeProjectWorkbenchColumns(["files", "artifact"], 2)).toEqual([
+      ["files", "artifact"],
     ]);
   });
 
@@ -53,14 +53,14 @@ describe("arrangeProjectWorkbenchColumns", () => {
   });
 
   it("starts a new column for the third pane", () => {
-    expect(arrangeProjectWorkbenchColumns(["brief", "artifact", "activity"], 2)).toEqual([
-      ["brief", "artifact"],
+    expect(arrangeProjectWorkbenchColumns(["files", "artifact", "activity"], 2)).toEqual([
+      ["files", "artifact"],
       ["activity"],
     ]);
   });
 
   it("shows only the newest panes that fit the available columns", () => {
-    expect(arrangeProjectWorkbenchColumns(["brief", "artifact", "activity"], 1)).toEqual([
+    expect(arrangeProjectWorkbenchColumns(["files", "artifact", "activity"], 1)).toEqual([
       ["artifact", "activity"],
     ]);
   });

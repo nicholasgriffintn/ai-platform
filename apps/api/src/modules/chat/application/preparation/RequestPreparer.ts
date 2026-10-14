@@ -24,7 +24,6 @@ import type { RepositoryManager } from "~/infrastructure/database/repositoryMana
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
-  bindRunMemoryDocument,
   loadRunMemoryDocuments,
   resolveRunMemoryScope,
 } from "~/modules/chat/application/preparation/memory-scope";
@@ -56,7 +55,6 @@ import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
-import { getConversationBrief } from "~/modules/memory-documents/application/memory-documents";
 import { isRecipeExecutionRequest } from "~/modules/recipes/application/toolContext";
 import { isBuiltInToolApprovalResolution } from "~/modules/responses/application/runs/interactions";
 import {
@@ -243,37 +241,6 @@ export class RequestPreparer {
     });
   }
 
-  private async resolveBriefMemoryScope(scope: RequestScope) {
-    const { options, repositories, memoryScope } = scope;
-
-    if (!options.context || options.store === false) {
-      return memoryScope;
-    }
-
-    const storedConversation = await repositories.conversations.getConversation(
-      options.completion_id,
-    );
-
-    if (!storedConversation) {
-      return memoryScope;
-    }
-
-    const { document: briefDocument } = await getConversationBrief(
-      options.context,
-      options.completion_id,
-    );
-
-    return briefDocument
-      ? bindRunMemoryDocument(memoryScope, {
-          documentId: briefDocument.id,
-          access: "read-write",
-          scopeType: briefDocument.scopeType,
-          scopeId: briefDocument.scopeId,
-          conversationId: options.completion_id,
-        })
-      : memoryScope;
-  }
-
   private resolveConnectedConnectorProviders(scope: RequestScope) {
     const { options, user, projectContext } = scope;
     const enabledFunctionTools = resolveEnabledFunctionToolNames(
@@ -383,7 +350,6 @@ export class RequestPreparer {
     );
     const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
     const activeGoalPromise = loadActiveGoal(scope.options);
-    const effectiveMemoryScopePromise = this.resolveBriefMemoryScope(scope);
 
     const [modelConfigs, userSettings, savedToolConfigurations, connectedConnectorProviders] =
       await Promise.all([
@@ -514,7 +480,6 @@ export class RequestPreparer {
           candidates: listPerMessageSkillCandidates(skills, scopedSkillCatalog),
         });
     const activeGoal = await activeGoalPromise;
-    const effectiveMemoryScope = await effectiveMemoryScopePromise;
 
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,
@@ -525,7 +490,7 @@ export class RequestPreparer {
       userSettings,
       memoryPolicy,
       projectContext,
-      memoryScope: effectiveMemoryScope,
+      memoryScope: scope.memoryScope,
       skills,
       activeGoal,
     });
@@ -536,7 +501,7 @@ export class RequestPreparer {
 
     const baseSystemPrompt = await systemPromptTask;
     const runMemoryDocuments = await loadRunMemoryDocuments(
-      effectiveMemoryScope,
+      scope.memoryScope,
       scope.options.context,
     );
     const memoryProjection = projectRunMemory(
@@ -622,7 +587,7 @@ export class RequestPreparer {
       activeGoal,
       toolOptions,
       requestOptions: scope.options.options,
-      memoryScope: effectiveMemoryScope,
+      memoryScope: scope.memoryScope,
       connectedConnectorProviders,
       contextSkills: skills
         .filter((skill) => skill.state === "ready")

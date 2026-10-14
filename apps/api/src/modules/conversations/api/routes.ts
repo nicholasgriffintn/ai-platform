@@ -5,7 +5,6 @@ import { allowRestrictedPaths } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 
 import { defineConversationArtifactBindings } from "./artifact-bindings";
-import { defineConversationBrief } from "./brief";
 import { defineConversationGoalAndDelegations } from "./goals-and-delegations";
 import { defineConversationHandles } from "./handles";
 import { defineConversationItems } from "./items";
@@ -34,7 +33,6 @@ defineResource(app, { idParam: "conversation_id", tags: ["conversations"] }, (co
   defineConversationGoalAndDelegations(conversations);
   defineSavedItems(conversations);
   defineConversationHandles(conversations);
-  defineConversationBrief(conversations);
 });
 
 export default app;

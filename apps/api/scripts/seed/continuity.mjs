@@ -66,7 +66,7 @@ function resolvedConfiguration({
   };
 }
 
-export function continuityStatements({ teammates, chat, work }) {
+export function continuityStatements({ teammates, chat }) {
   const statements = [];
   const researcherHome = buildThread(
     {
@@ -198,14 +198,6 @@ export function continuityStatements({ teammates, chat, work }) {
 
   const briefTargets = [
     {
-      key: "delegation-parent",
-      conversationId: chat.conversationIds.delegation,
-      scopeType: "personal",
-      scopeId: String(OWNER.id),
-      content:
-        "# Objective\n\nCoordinate a sourced article on WebSocket back-pressure.\n\n# Constraints\n\nWait for both delegated pieces before synthesising.\n\n# Decisions\n\nResearcher gathers sources; Editor drafts the opening.\n\n# Sources and outputs\n\nResearch output is attached to the completed delegation.\n\n# Unfinished work\n\nEditor introduction is still running.",
-    },
-    {
       key: "delegate-researcher",
       conversationId: seedId("chat", "delegate-researcher"),
       scopeType: "personal",
@@ -220,22 +212,6 @@ export function continuityStatements({ teammates, chat, work }) {
       scopeId: String(OWNER.id),
       content:
         "# Objective\n\nDraft a 120-word introduction on WebSocket back-pressure.\n\n# Constraints\n\nLead with the operational problem and avoid generic claims.\n\n# Decisions\n\nOpen with the promise implicit in every socket.\n\n# Sources and outputs\n\nResearcher output is available from the parent thread.\n\n# Unfinished work\n\nComplete and return the draft.",
-    },
-    {
-      key: "editor-home",
-      conversationId: homes.editor,
-      scopeType: "personal",
-      scopeId: String(OWNER.id),
-      content:
-        "# Objective\n\nImprove product prose without losing the author's voice.\n\n# Constraints\n\nBritish English; no filler.\n\n# Decisions\n\nStart with the shipped change and the problem it removes.\n\n# Sources and outputs\n\nNo external sources required.\n\n# Unfinished work\n\nNone.",
-    },
-    {
-      key: "work-running",
-      conversationId: work.conversationIds.running,
-      scopeType: "project",
-      scopeId: LAUNCH_PROJECT_ID,
-      content:
-        "# Objective\n\nAdd bounded exponential backoff to the shared fetch helper.\n\n# Constraints\n\nReuse the shared helper and run the project quality gate.\n\n# Decisions\n\nRetry transient network failures only.\n\n# Sources and outputs\n\nSandbox plan and current branch are attached.\n\n# Unfinished work\n\nFinish implementation and validation.",
     },
   ];
   const briefIds = {};
@@ -268,10 +244,7 @@ export function continuityStatements({ teammates, chat, work }) {
       enabledTools: ["web_search", "research"],
       maxSteps: 12,
       usedSteps: 5,
-      memoryBindings: [
-        { documentId: briefIds["delegation-parent"], access: "read" },
-        { documentId: briefIds["delegate-researcher"], access: "read-write" },
-      ],
+      memoryBindings: [{ documentId: briefIds["delegate-researcher"], access: "read-write" }],
     },
     {
       kind: "editor",
@@ -282,10 +255,7 @@ export function continuityStatements({ teammates, chat, work }) {
       enabledTools: ["web_search"],
       maxSteps: 6,
       usedSteps: 1,
-      memoryBindings: [
-        { documentId: briefIds["delegation-parent"], access: "read" },
-        { documentId: briefIds["delegate-editor"], access: "read-write" },
-      ],
+      memoryBindings: [{ documentId: briefIds["delegate-editor"], access: "read-write" }],
     },
   ];
 

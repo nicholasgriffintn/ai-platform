@@ -5,7 +5,6 @@ import {
   type MemoryDocumentRevision,
   type MemoryDocumentSummary,
   type UpdateMemoryDocumentInput,
-  type ConversationBriefResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -15,7 +14,6 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
-import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const CONVERSATION_BRIEF_TEMPLATE = `# Objective
@@ -67,16 +65,16 @@ function documentMatchesScope(document: MemoryDocumentRow, scope: MemoryDocument
   return document.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
 }
 
-export async function getConversationBrief(
+async function getConversationBrief(
   context: ServiceContext,
   conversationId: string,
-): Promise<ConversationBriefResponse> {
+): Promise<MemoryDocument | null> {
   context.ensureDatabase();
   const conversation = await requireConversationAccess(context, conversationId);
   const documentId = conversation.brief_document_id;
 
   if (typeof documentId !== "string") {
-    return { conversationId, document: null };
+    return null;
   }
 
   const document = await context.repositories.memoryDocuments.getDocumentById(documentId);
@@ -85,24 +83,23 @@ export async function getConversationBrief(
     throw new AssistantError("Conversation brief is unavailable", ErrorType.FORBIDDEN, 403);
   }
 
-  return { conversationId, document: formatMemoryDocument(document) };
+  return formatMemoryDocument(document);
 }
 
 export async function ensureConversationBrief(
   context: ServiceContext,
   conversationId: string,
-): Promise<ConversationBriefResponse> {
+): Promise<MemoryDocument | null> {
   const existing = await getConversationBrief(context, conversationId);
 
-  if (existing.document) {
+  if (existing) {
     return existing;
   }
 
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
-  const scope = conversationScope(conversation);
   const created = await context.repositories.memoryDocuments.createDocument({
-    ...scope,
+    ...conversationScope(conversation),
     kind: "conversation_brief",
     name: `conversation-brief-${generateId().replaceAll("-", "").toLowerCase()}`,
     content: CONVERSATION_BRIEF_TEMPLATE,
@@ -110,11 +107,7 @@ export async function ensureConversationBrief(
   });
 
   if (await context.repositories.conversations.assignBriefDocument(conversationId, created.id)) {
-    await publishConversationChanged(context, conversationId, {
-      briefRevision: created.revision,
-    });
-
-    return { conversationId, document: formatMemoryDocument(created) };
+    return formatMemoryDocument(created);
   }
 
   await context.repositories.memoryDocuments.softDeleteDocument(created.id);
@@ -126,11 +119,11 @@ export async function copyConversationBrief(
   context: ServiceContext,
   sourceConversationId: string,
   targetConversationId: string,
-): Promise<ConversationBriefResponse> {
+): Promise<MemoryDocument | null> {
   const source = await getConversationBrief(context, sourceConversationId);
 
-  if (!source.document) {
-    return { conversationId: targetConversationId, document: null };
+  if (!source) {
+    return null;
   }
 
   const user = context.requireUser();
@@ -139,18 +132,14 @@ export async function copyConversationBrief(
     ...conversationScope(target),
     kind: "conversation_brief",
     name: `conversation-brief-${generateId().replaceAll("-", "").toLowerCase()}`,
-    content: source.document.content,
+    content: source.content,
     createdByUserId: user.id,
   });
 
   if (
     await context.repositories.conversations.assignBriefDocument(targetConversationId, created.id)
   ) {
-    await publishConversationChanged(context, targetConversationId, {
-      briefRevision: created.revision,
-    });
-
-    return { conversationId: targetConversationId, document: formatMemoryDocument(created) };
+    return formatMemoryDocument(created);
   }
 
   await context.repositories.memoryDocuments.softDeleteDocument(created.id);
@@ -159,41 +148,6 @@ export async function copyConversationBrief(
     ErrorType.CONFLICT_ERROR,
     409,
   );
-}
-
-export async function updateConversationBrief(
-  context: ServiceContext,
-  conversationId: string,
-  input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
-): Promise<MemoryDocument> {
-  const user = context.requireUser();
-  const brief = await getConversationBrief(context, conversationId);
-
-  if (!brief.document) {
-    throw new AssistantError("Conversation brief not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  const updated = await context.repositories.memoryDocuments.appendRevision({
-    documentId: brief.document.id,
-    content: input.content,
-    changeNote: input.changeNote ?? null,
-    createdByUserId: user.id,
-    expectedRevision: input.expectedRevision,
-  });
-
-  if (!updated) {
-    throw new AssistantError(
-      "This conversation brief changed while you were editing it. Reload and try again.",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
-  }
-
-  await publishConversationChanged(context, conversationId, {
-    briefRevision: updated.revision,
-  });
-
-  return formatMemoryDocument(updated);
 }
 
 function toSummary(row: MemoryDocumentRow): MemoryDocumentSummary {

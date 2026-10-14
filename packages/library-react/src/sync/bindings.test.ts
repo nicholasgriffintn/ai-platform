@@ -208,10 +208,7 @@ describe("sync bindings", () => {
 
     applySyncEvent(context, buildEvent("message.changed", { conversationId: "abc" }));
 
-    expect(invalidatedKeys).toEqual([
-      ["chats", "abc"],
-      ["conversation-brief", "abc"],
-    ]);
+    expect(invalidatedKeys).toEqual([["chats", "abc"]]);
   });
 
   it("drops a deleted conversation from the caches rather than refetching it", () => {

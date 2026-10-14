@@ -9,14 +9,12 @@ import {
   Files,
   FileText,
   MonitorPlay,
-  NotebookPen,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
 export const PANE_PRESENTATION: Record<ProjectWorkbenchPane, { label: string; icon: LucideIcon }> =
   {
-    brief: { label: "Brief", icon: NotebookPen },
     artifact: { label: "Artifact", icon: FileText },
     activity: { label: "Activity", icon: Activity },
     preview: { label: "Preview", icon: MonitorPlay },

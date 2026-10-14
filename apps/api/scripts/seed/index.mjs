@@ -20,7 +20,7 @@ export async function buildSeed({ serverKey }) {
     ...chat.statements,
     ...guideStatements(),
     ...work.statements,
-    ...continuityStatements({ teammates, chat, work }),
+    ...continuityStatements({ teammates, chat }),
     ...usageStatements(),
   ];
 

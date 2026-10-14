@@ -12,14 +12,10 @@ import type { ConversationWorkbenchContext } from "./useConversationWorkbenchCon
 export function ConversationContextRail({
   conversationId,
   workbench,
-  briefUpdated,
-  onOpenBrief,
   children,
 }: {
   conversationId: string;
   workbench: ConversationWorkbenchContext;
-  briefUpdated: boolean;
-  onOpenBrief: () => void;
   children?: ReactNode;
 }) {
   return (
@@ -30,12 +26,7 @@ export function ConversationContextRail({
         fallback={workbench.fallback}
         resolveReferenceHref={(path) => `${API_BASE_URL}${path}`}
       />
-      <ConversationOutputsCard
-        conversationId={conversationId}
-        artifacts={workbench.artifacts}
-        briefUpdated={briefUpdated}
-        onOpenBrief={onOpenBrief}
-      />
+      <ConversationOutputsCard conversationId={conversationId} artifacts={workbench.artifacts} />
       {children}
       <ConversationUsageCard summary={workbench.usage} runUsage={workbench.runUsage} />
     </>

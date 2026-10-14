@@ -14,7 +14,6 @@ import {
   conversationDelegationsQueryKey,
   conversationHandlesQueryKey,
 } from "../hooks/useDelegations.js";
-import { conversationBriefQueryKey } from "../hooks/useMemoryDocuments.js";
 import { POLY_AGENDA_QUERY_KEY } from "../hooks/usePolyAgenda.js";
 import {
   projectTaskDetailQueryPrefix,
@@ -43,7 +42,6 @@ const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
 
   if (conversationId) {
     context.invalidate([CHATS_QUERY_KEY, conversationId]);
-    context.invalidate(conversationBriefQueryKey(conversationId));
   }
 };
 
@@ -244,7 +242,6 @@ export function applySyncEvent(context: SyncBindingContext, event: DeviceSyncEve
 export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["invalidate"]): void {
   for (const queryKey of [
     [CHATS_QUERY_KEY],
-    ["conversation-brief"],
     ["conversation-delegations"],
     conversationHandlesQueryKey,
     TASK_QUERY_KEYS.tasks,

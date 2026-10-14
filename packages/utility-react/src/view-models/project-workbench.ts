@@ -5,7 +5,6 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 export const PROJECT_WORKBENCH_PANES = [
-  "brief",
   "artifact",
   "activity",
   "preview",

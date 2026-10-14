@@ -13,15 +13,12 @@ import { getComputerObservations } from "@ngriffin_uk/polychat-library-chat/tool
 import {
   ArtifactWorkbenchProvider,
   useArtifactWorkbench,
-  useConversationBrief,
   useProjectWorkbenchLayout,
 } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, type ReactNode } from "react";
 
 import { WorkbenchComputerPreview } from "../Work/WorkbenchComputerPreview.js";
-import { ConversationBriefPanel } from "./ConversationBriefPanel.js";
 import { ConversationContextRail } from "./ConversationContextRail.js";
-import { useConversationBriefAttention } from "./useConversationBriefAttention.js";
 import { useConversationWorkbenchContext } from "./useConversationWorkbenchContext.js";
 
 const CHAT_WORKBENCH_LAYOUT_KEY = "polychat:chat-workbench";
@@ -62,12 +59,6 @@ function ConversationWorkbenchLayoutInner({
   children: ReactNode;
 }) {
   const layout = useProjectWorkbenchLayout(CHAT_WORKBENCH_LAYOUT_KEY);
-  const brief = useConversationBrief(conversationId ?? undefined);
-  const briefAttention = useConversationBriefAttention(
-    conversationId ?? undefined,
-    brief.data?.document?.revision,
-    brief.isFetched,
-  );
   const workbench = useConversationWorkbenchContext(conversationId ?? undefined);
   const artifact = useArtifactWorkbench();
   const hasArtifact = artifact.isPanelVisible && artifact.currentArtifact !== null;
@@ -88,12 +79,8 @@ function ConversationWorkbenchLayoutInner({
       }
     : latestComputerObservation
       ? { key: `computer:${latestComputerObservation.id}`, pane: "preview" }
-      : briefAttention.attention;
+      : undefined;
   const header = ({ actions }: ProjectWorkbenchHeaderSlots) => renderHeader(actions);
-
-  if (briefAttention.isUnseen && layout.openPanes.includes("brief")) {
-    briefAttention.markSeen();
-  }
 
   const handlePaneClose = (pane: ProjectWorkbenchPane) => {
     if (pane === "artifact") {
@@ -107,19 +94,11 @@ function ConversationWorkbenchLayoutInner({
       conversation={children}
       context={
         conversationId ? (
-          <ConversationContextRail
-            conversationId={conversationId}
-            workbench={workbench}
-            briefUpdated={briefAttention.isUnseen}
-            onOpenBrief={() => layout.openPane("brief")}
-          />
+          <ConversationContextRail conversationId={conversationId} workbench={workbench} />
         ) : null
       }
       contextLabel={workbench.usageLabel}
       panels={{
-        brief: conversationId ? (
-          <ConversationBriefPanel conversationId={conversationId} />
-        ) : undefined,
         activity:
           activityEntries.length > 0 ? <RunActivityPanel entries={activityEntries} /> : undefined,
         preview:
@@ -137,7 +116,7 @@ function ConversationWorkbenchLayoutInner({
           />
         ) : undefined,
       }}
-      availablePanes={["brief", "artifact", "activity", "preview"]}
+      availablePanes={["artifact", "activity", "preview"]}
       attention={attention}
       status="ready"
       showStatus={false}

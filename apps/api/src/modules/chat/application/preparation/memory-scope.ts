@@ -27,48 +27,6 @@ function mergeBindings(bindings: readonly DelegationMemoryBinding[]): Delegation
   return [...merged.values()];
 }
 
-export function bindRunMemoryDocument(
-  scope: MemoryScope,
-  binding: DelegationMemoryBinding & {
-    scopeType: "personal" | "project";
-    scopeId: string;
-    conversationId: string;
-  },
-): MemoryScope {
-  if (scope.type === "bound") {
-    if (scope.scopeType !== binding.scopeType || scope.scopeId !== binding.scopeId) {
-      throw new AssistantError(
-        "The conversation document is outside this run's memory scope",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-
-    return {
-      ...scope,
-      conversationId: binding.conversationId,
-      documents: mergeBindings([...scope.documents, binding]),
-    };
-  }
-
-  if (scope.type === "project" && binding.scopeId !== scope.projectId) {
-    throw new AssistantError(
-      "The conversation document is outside this project",
-      ErrorType.FORBIDDEN,
-      403,
-    );
-  }
-
-  return {
-    type: "bound",
-    scopeType: binding.scopeType,
-    scopeId: binding.scopeId,
-    conversationId: binding.conversationId,
-    baseline: scope,
-    documents: [binding],
-  };
-}
-
 export async function resolveRunMemoryScope(params: {
   options: CoreChatOptions;
   repositories: RepositoryManager;

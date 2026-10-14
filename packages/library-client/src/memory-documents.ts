@@ -4,37 +4,13 @@ import type {
   MemoryDocument,
   MemoryDocumentSummary,
   UpdateMemoryDocumentInput,
-  ConversationBriefResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { requestJson, resource, singleton, withQuery } from "./resource.js";
+import { requestJson, resource, withQuery } from "./resource.js";
 
 const documents = resource<MemoryDocument, CreateMemoryDocumentInput, UpdateMemoryDocumentInput>(
   "/memory/documents",
 );
-
-function briefOf(conversationId: string) {
-  return singleton<ConversationBriefResponse>(
-    `/conversations/${encodeURIComponent(conversationId)}/brief`,
-  );
-}
-
-export function fetchConversationBrief(conversationId: string): Promise<ConversationBriefResponse> {
-  return briefOf(conversationId).get();
-}
-
-export function ensureConversationBrief(
-  conversationId: string,
-): Promise<ConversationBriefResponse> {
-  return briefOf(conversationId).create();
-}
-
-export function updateConversationBrief(
-  conversationId: string,
-  input: UpdateMemoryDocumentInput,
-): Promise<MemoryDocument> {
-  return requestJson<MemoryDocument>(briefOf(conversationId).path, "PATCH", input);
-}
 
 export async function listMemoryDocuments(projectId?: string): Promise<MemoryDocumentSummary[]> {
   const page = await requestJson<ListPage<MemoryDocumentSummary>>(

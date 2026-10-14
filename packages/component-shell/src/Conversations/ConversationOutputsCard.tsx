@@ -1,11 +1,9 @@
 import { isCodeArtifact } from "@ngriffin_uk/polychat-component-content";
 import { WorkbenchCard, cn } from "@ngriffin_uk/polychat-component-ui";
 import type { ConversationArtifactSummary } from "@ngriffin_uk/polychat-library-chat/conversation-insights";
-import { useArtifactWorkbench, useConversationBrief } from "@ngriffin_uk/polychat-library-react";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { FileCode2, FileText, NotebookPen, Package, type LucideIcon } from "lucide-react";
+import { useArtifactWorkbench } from "@ngriffin_uk/polychat-library-react";
+import { FileCode2, FileText, Package, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 function OutputRow({
   icon: Icon,
@@ -45,22 +43,14 @@ function OutputRow({
 export function ConversationOutputsCard({
   conversationId,
   artifacts,
-  briefUpdated,
-  onOpenBrief,
 }: {
   conversationId: string;
   artifacts: readonly ConversationArtifactSummary[];
-  briefUpdated: boolean;
-  onOpenBrief: () => void;
 }) {
-  const brief = useConversationBrief(conversationId);
   const workbench = useArtifactWorkbench();
-  const document = brief.data?.document ?? undefined;
   const openIdentifier = workbench.isPanelVisible
     ? workbench.currentArtifact?.identifier
     : undefined;
-  const hasBriefRow = !brief.isAwaitingRemoteConversation && !brief.isLoading;
-  const isEmpty = artifacts.length === 0 && !document;
 
   return (
     <WorkbenchCard
@@ -73,36 +63,6 @@ export function ConversationOutputsCard({
       }
     >
       <ul className="space-y-0.5">
-        {hasBriefRow ? (
-          <OutputRow
-            icon={NotebookPen}
-            label={document ? "Conversation brief" : "Start a brief"}
-            meta={
-              document ? (
-                <span className="flex items-center gap-1.5">
-                  {briefUpdated ? (
-                    <span className="rounded bg-creative/12 px-1 text-creative">new</span>
-                  ) : null}
-                  r{document.revision}
-                </span>
-              ) : undefined
-            }
-            onClick={() => {
-              if (document) {
-                onOpenBrief();
-
-                return;
-              }
-
-              void brief.ensure
-                .mutateAsync()
-                .then(onOpenBrief)
-                .catch((error: unknown) => {
-                  toast.error(getErrorMessage(error, "Unable to start this conversation brief"));
-                });
-            }}
-          />
-        ) : null}
         {artifacts.map((artifact) => (
           <OutputRow
             key={artifact.identifier}
@@ -123,7 +83,7 @@ export function ConversationOutputsCard({
           />
         ))}
       </ul>
-      {isEmpty ? (
+      {artifacts.length === 0 ? (
         <p className="mt-1">
           Nothing made yet. Ask for a document, some code or a plan and it lands here.
         </p>
