@@ -895,8 +895,8 @@ importers:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@5.0.3)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       webdriverio:
-        specifier: 10.0.0
-        version: 10.0.0(supports-color@10.2.2)
+        specifier: 10.0.1
+        version: 10.0.1(supports-color@10.2.2)
 
   apps/mobile: {}
 
@@ -7768,8 +7768,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@wdio/config@10.0.0':
-    resolution: {integrity: sha512-g0xaQxKJM5hIhZBW05Ivs7vZi/txB+UcWeoiuzNl0/fS5rvQYvofnYlROvCBKeEdf72ooIRtfkRnW8nKQ97P+A==}
+  '@wdio/config@10.0.1':
+    resolution: {integrity: sha512-n6elHE4ItKAtr4lwAaWIh/sAFuEFhyesLM27i5l9IWBJEK6VECdt0Pigj/4vUD2tliOoBtsWxphSW4oiNFXotg==}
     engines: {node: '>=22.19.0'}
 
   '@wdio/logger@10.0.0':
@@ -7788,12 +7788,12 @@ packages:
     resolution: {integrity: sha512-wAC9ksdWWv2E3Sj86eNKxB3IUt0gEyw9rgDGAWjk/GWgi6K3e+/n3erGNweI9JMJyC/+RNe0qHgVPQpRJMRVpg==}
     engines: {node: '>=22.19.0'}
 
-  '@wdio/types@10.0.0':
-    resolution: {integrity: sha512-qUJbKEHjsN0PuC3S2r7Gy9wYtbChmX+PYghKGHYQhjyH9P9t+sWhSPQWUBk3S+IUTYT1f+Z4VbF+5FmvlHL6Lg==}
+  '@wdio/types@10.0.1':
+    resolution: {integrity: sha512-HGP9lAYXCsLAXzugfT4khCh7tYByWOMIxZHCG+tUvgmpwNzi6lfIsxyIlWownXK1wYJUpk6tkDBX/iXwN+q0lg==}
     engines: {node: '>=22.19.0'}
 
-  '@wdio/utils@10.0.0':
-    resolution: {integrity: sha512-Ta3wq+u83DT0Vnz1QcuqkagBSwWBnTg8LCIQmDO6DGkMIiHXJrhUMfz6ibrlMJPslt4g0P/Ri5wm7WkJXo9HXw==}
+  '@wdio/utils@10.0.1':
+    resolution: {integrity: sha512-aYvTtF+7IYsvkFdXdu32Q2vexEaXYK79R1wLTnAXrT2Q7fp0oCDL0UgBx8Jgo5Tn98ZLWx4JlUeZsDRAIkV4Zw==}
     engines: {node: '>=22.19.0'}
 
   '@yuku-codegen/binding-android-arm64@0.9.5':
@@ -12031,12 +12031,12 @@ packages:
   web-vitals@6.2.3:
     resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
 
-  webdriver@10.0.0:
-    resolution: {integrity: sha512-EyMSQjY+Nq9mAUTCzzW1hjarwHNJWtCBRtGSZkiTcdJdFZ6siKF0Z01hHJFVkF1Xm+aCkFxD1atm1S2cNxCQxA==}
+  webdriver@10.0.1:
+    resolution: {integrity: sha512-EFggYPwYTyP2o/NsZsoHsARo4x/YNmbpIp7HsS7bUF7suQgScD7OO0px4KeZmACb+t1q2Yqthxne8Y2hLMmQfw==}
     engines: {node: '>=22.19.0'}
 
-  webdriverio@10.0.0:
-    resolution: {integrity: sha512-DiDflg731z/b+qg4EmVAGihMJSWhHJYhlwrS6Q1uSFqL4c48+xHDj9VjhQr7sFzZ/MBJySjGZfMBGyjP7p547Q==}
+  webdriverio@10.0.1:
+    resolution: {integrity: sha512-nITIsmcooGy50RLrol4BDhnzEn04uZ5WJWVlebIQOnErhw2A0ZwR6XClX7v1z+qHtvDZVVEQs5i3Yfz9LR5XPA==}
     engines: {node: '>=22.19.0'}
     peerDependencies:
       puppeteer-core: '>=24 <26'
@@ -17190,11 +17190,11 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@1.1.0':
     optional: true
 
-  '@wdio/config@10.0.0(supports-color@10.2.2)':
+  '@wdio/config@10.0.1(supports-color@10.2.2)':
     dependencies:
       '@wdio/logger': 10.0.0
-      '@wdio/types': 10.0.0
-      '@wdio/utils': 10.0.0(supports-color@10.2.2)
+      '@wdio/types': 10.0.1
+      '@wdio/utils': 10.0.1(supports-color@10.2.2)
       deepmerge-ts: 8.0.2
       glob: 10.5.0
       import-meta-resolve: 4.2.0
@@ -17226,16 +17226,16 @@ snapshots:
     dependencies:
       '@types/node': 22.20.5
 
-  '@wdio/types@10.0.0':
+  '@wdio/types@10.0.1':
     dependencies:
       '@types/node': 22.20.5
 
-  '@wdio/utils@10.0.0(supports-color@10.2.2)':
+  '@wdio/utils@10.0.1(supports-color@10.2.2)':
     dependencies:
       '@puppeteer/browsers': 3.2.4
       '@types/split2': 4.2.3
       '@wdio/logger': 10.0.0
-      '@wdio/types': 10.0.0
+      '@wdio/types': 10.0.1
       aria-query: 5.3.2
       decamelize: 6.0.1
       deepmerge-ts: 8.0.2
@@ -21646,15 +21646,15 @@ snapshots:
 
   web-vitals@6.2.3: {}
 
-  webdriver@10.0.0(supports-color@10.2.2):
+  webdriver@10.0.1(supports-color@10.2.2):
     dependencies:
       '@types/node': 22.20.5
       '@types/ws': 8.18.2
-      '@wdio/config': 10.0.0(supports-color@10.2.2)
+      '@wdio/config': 10.0.1(supports-color@10.2.2)
       '@wdio/logger': 10.0.0
       '@wdio/protocols': 10.0.0
-      '@wdio/types': 10.0.0
-      '@wdio/utils': 10.0.0(supports-color@10.2.2)
+      '@wdio/types': 10.0.1
+      '@wdio/utils': 10.0.1(supports-color@10.2.2)
       deepmerge-ts: 8.0.2
       https-proxy-agent: 7.0.6(supports-color@10.2.2)
       undici: 8.11.2
@@ -21666,16 +21666,16 @@ snapshots:
       - utf-8-validate
       - yauzl
 
-  webdriverio@10.0.0(supports-color@10.2.2):
+  webdriverio@10.0.1(supports-color@10.2.2):
     dependencies:
       '@types/node': 22.20.5
       '@types/sinonjs__fake-timers': 8.1.5
-      '@wdio/config': 10.0.0(supports-color@10.2.2)
+      '@wdio/config': 10.0.1(supports-color@10.2.2)
       '@wdio/logger': 10.0.0
       '@wdio/protocols': 10.0.0
       '@wdio/repl': 10.0.0
-      '@wdio/types': 10.0.0
-      '@wdio/utils': 10.0.0(supports-color@10.2.2)
+      '@wdio/types': 10.0.1
+      '@wdio/utils': 10.0.1(supports-color@10.2.2)
       archiver: 8.0.0
       aria-query: 5.3.2
       cheerio: 1.2.0
@@ -21690,7 +21690,7 @@ snapshots:
       rgb2hex: 0.2.5
       serialize-error: 12.0.0
       urlpattern-polyfill: 10.1.0
-      webdriver: 10.0.0(supports-color@10.2.2)
+      webdriver: 10.0.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
