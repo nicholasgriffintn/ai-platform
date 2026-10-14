@@ -119,12 +119,12 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
   app.route("/webhook_endpoints", webhookEndpoints);
-  app.route("/model-platform", modelRegistry);
-  app.route("/model-platform", modelDatasets);
-  app.route("/model-platform", modelTraining);
-  app.route("/model-platform", modelServing);
-  app.route("/model-platform", modelEvaluation);
-  app.route("/model-platform", modelGovernance);
+  app.route("/model_platform", modelRegistry);
+  app.route("/model_platform", modelDatasets);
+  app.route("/model_platform", modelTraining);
+  app.route("/model_platform", modelServing);
+  app.route("/model_platform", modelEvaluation);
+  app.route("/model_platform", modelGovernance);
   app.route("/workspaces", workspaces);
   app.route("/projects", projects);
 }

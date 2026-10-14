@@ -267,12 +267,12 @@ final class APIClient: ObservableObject {
     }
 
     func fetchMyModelPermissions(workspaceId: String) async throws -> MyModelPermissions {
-        try await send(path: "/model-platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
+        try await send(path: "/model_platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
     }
 
     func fetchPendingModelDecisions(workspaceId: String) async throws -> [ModelDecisionItem] {
         let response: ModelDecisionsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/decisions",
+            path: "/model_platform/workspaces/\(workspaceId)/decisions",
             method: "GET",
             queryItems: [URLQueryItem(name: "state", value: "pending")]
         )
@@ -281,7 +281,7 @@ final class APIClient: ObservableObject {
 
     func resolveModelDecision(workspaceId: String, decisionId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
+            path: "/model_platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
             method: "POST",
             body: ResolveModelDecisionRequest(state: state)
         )
@@ -289,7 +289,7 @@ final class APIClient: ObservableObject {
 
     func fetchSpendRequests(workspaceId: String) async throws -> [SpendRequestItem] {
         let response: SpendRequestsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/spend-requests",
+            path: "/model_platform/workspaces/\(workspaceId)/spend_requests",
             method: "GET"
         )
         return response.requests
@@ -297,7 +297,7 @@ final class APIClient: ObservableObject {
 
     func resolveSpendRequest(workspaceId: String, requestId: String, state: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/spend-requests/\(requestId)/resolve",
+            path: "/model_platform/workspaces/\(workspaceId)/spend_requests/\(requestId)/resolve",
             method: "POST",
             body: ResolveSpendRequestBody(state: state)
         )
@@ -305,7 +305,7 @@ final class APIClient: ObservableObject {
 
     func fetchModelDeployments(workspaceId: String) async throws -> [ModelDeploymentItem] {
         let response: ModelDeploymentsResponse = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/deployments",
+            path: "/model_platform/workspaces/\(workspaceId)/deployments",
             method: "GET"
         )
         return response.deployments
@@ -313,9 +313,9 @@ final class APIClient: ObservableObject {
 
     func changeModelDeployment(workspaceId: String, deploymentId: String, action: String) async throws {
         let _: ModelActionResult = try await send(
-            path: "/model-platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/\(action)",
+            path: "/model_platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/actions",
             method: "POST",
-            emptyBody: true
+            body: DeploymentActionRequest(action: action)
         )
     }
 

@@ -80,6 +80,10 @@ struct ResolveModelDecisionRequest: Encodable {
     let state: String
 }
 
+struct DeploymentActionRequest: Encodable {
+    let action: String
+}
+
 struct ResolveSpendRequestBody: Encodable {
     let state: String
 }

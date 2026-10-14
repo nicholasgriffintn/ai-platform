@@ -29,7 +29,7 @@ import {
 
 const app = new Hono();
 const tags = ["model-datasets"];
-const base = "/workspaces/:workspaceId";
+const base = "/workspaces/:workspace_id";
 
 addRoute(app, "get", `${base}/datasets`, {
   auth: true,
@@ -39,7 +39,7 @@ addRoute(app, "get", `${base}/datasets`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Datasets", schema: datasetsResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listDatasets(serviceContext, params.workspaceId, query.projectId),
+    listDatasets(serviceContext, params.workspace_id, query.project_id),
 });
 
 addRoute(app, "post", `${base}/datasets`, {
@@ -52,30 +52,30 @@ addRoute(app, "post", `${base}/datasets`, {
   bodySchema: createDatasetRequestSchema,
   responses: { 200: { description: "Dataset", schema: datasetSummarySchema } },
   handler: ({ serviceContext, params, body }) =>
-    createDataset(serviceContext, params.workspaceId, body),
+    createDataset(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "get", `${base}/uploads/:uploadId/preview`, {
+addRoute(app, "get", `${base}/uploads/:upload_id/preview`, {
   auth: true,
   tags,
   summary: "Preview columns and a suggested mapping for an uploaded dataset file",
   paramSchema: modelUploadParamsSchema,
   responses: { 200: { description: "Preview", schema: uploadPreviewSchema } },
   handler: ({ serviceContext, params }) =>
-    previewUploadColumns(serviceContext, params.workspaceId, params.uploadId),
+    previewUploadColumns(serviceContext, params.workspace_id, params.upload_id),
 });
 
-addRoute(app, "get", `${base}/datasets/:versionId`, {
+addRoute(app, "get", `${base}/datasets/:version_id`, {
   auth: true,
   tags,
   summary: "Get a dataset with its profile, governance and lineage",
   paramSchema: modelDatasetParamsSchema,
   responses: { 200: { description: "Dataset", schema: datasetDetailSchema } },
   handler: ({ serviceContext, params }) =>
-    getDatasetDetail(serviceContext, params.workspaceId, params.versionId),
+    getDatasetDetail(serviceContext, params.workspace_id, params.version_id),
 });
 
-addRoute(app, "get", `${base}/datasets/:versionId/rows`, {
+addRoute(app, "get", `${base}/datasets/:version_id/rows`, {
   auth: true,
   tags,
   summary: "Page through processed rows",
@@ -83,10 +83,10 @@ addRoute(app, "get", `${base}/datasets/:versionId/rows`, {
   querySchema: datasetRowsQuerySchema,
   responses: { 200: { description: "Rows", schema: datasetRowsResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    readDatasetRows(serviceContext, params.workspaceId, params.versionId, query),
+    readDatasetRows(serviceContext, params.workspace_id, params.version_id, query),
 });
 
-addRoute(app, "post", `${base}/datasets/:versionId/exclusions`, {
+addRoute(app, "post", `${base}/datasets/:version_id/exclusions`, {
   auth: true,
   tags,
   summary: "Exclude rows and cut a new revision",
@@ -94,10 +94,10 @@ addRoute(app, "post", `${base}/datasets/:versionId/exclusions`, {
   bodySchema: excludeDatasetRowsRequestSchema,
   responses: { 200: { description: "Dataset", schema: datasetSummarySchema } },
   handler: ({ serviceContext, params, body }) =>
-    excludeDatasetRows(serviceContext, params.workspaceId, params.versionId, body),
+    excludeDatasetRows(serviceContext, params.workspace_id, params.version_id, body),
 });
 
-addRoute(app, "post", `${base}/datasets/:versionId/erasure`, {
+addRoute(app, "post", `${base}/datasets/:version_id/erasure`, {
   auth: true,
   tags,
   summary: "Record an erasure request and flag models trained on the affected rows",
@@ -105,7 +105,7 @@ addRoute(app, "post", `${base}/datasets/:versionId/erasure`, {
   bodySchema: erasureRequestSchema,
   responses: { 200: { description: "Erasure result", schema: erasureResultSchema } },
   handler: ({ serviceContext, params, body }) =>
-    requestErasure(serviceContext, params.workspaceId, params.versionId, body),
+    requestErasure(serviceContext, params.workspace_id, params.version_id, body),
 });
 
 export default app;

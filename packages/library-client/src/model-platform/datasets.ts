@@ -19,7 +19,7 @@ export async function listDatasets(
 ): Promise<DatasetSummary[]> {
   return (
     await platformRequest<{ datasets: DatasetSummary[] }>(
-      workspacePath(workspaceId, `/datasets${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/datasets${toQueryString({ project_id: projectId })}`),
     )
   ).datasets;
 }
@@ -44,8 +44,10 @@ export function listDatasetRows(
     workspacePath(
       workspaceId,
       `/datasets/${segment(versionId)}/rows${toQueryString({
-        ...params,
-        flaggedOnly: params.flaggedOnly ? "true" : "false",
+        split: params.split,
+        offset: params.offset,
+        limit: params.limit,
+        flagged_only: params.flaggedOnly ? "true" : "false",
       })}`,
     ),
   );

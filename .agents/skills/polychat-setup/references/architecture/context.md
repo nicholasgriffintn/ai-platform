@@ -28,7 +28,7 @@ Use this map to find the owning app or package. Read only the relevant [architec
 
 ## Model platform
 
-Work › Models is implemented by API modules for registry, datasets, training, serving, evaluation and governance under `/model-platform`. Provider calls run through `ai-model-providers`; reusable governance mechanisms live in `library-model-registry`.
+Work › Models is implemented by API modules for registry, datasets, training, serving, evaluation and governance under `/model_platform`. Provider calls run through `ai-model-providers`; reusable governance mechanisms live in `library-model-registry`.
 
 Workspaces own provider connections and related secrets. Model versions are identified by pinned source revisions and file hashes; approvals, evidence and routes attach to versions rather than mutable names. Queue tasks handle processing and provider synchronisation; scheduled reconciliation enforces budgets and repairs stale state.
 

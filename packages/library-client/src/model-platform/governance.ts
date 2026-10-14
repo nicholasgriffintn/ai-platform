@@ -29,7 +29,9 @@ export function getModelsOverview(
   workspaceId: string,
   projectId?: string,
 ): Promise<ModelsOverview> {
-  return platformRequest(workspacePath(workspaceId, `/overview${toQueryString({ projectId })}`));
+  return platformRequest(
+    workspacePath(workspaceId, `/overview${toQueryString({ project_id: projectId })}`),
+  );
 }
 
 export function listModelProviders(workspaceId: string): Promise<ProviderCatalogueResponse> {
@@ -53,7 +55,7 @@ export function saveModelProvider(
   input: SaveModelConnectionRequest,
 ): Promise<ModelConnection> {
   return platformRequest(workspacePath(workspaceId, `/providers/${segment(provider)}`), {
-    method: "PUT",
+    method: "PATCH",
     body: input,
   });
 }
@@ -80,7 +82,7 @@ export function saveModelPermissions(
   input: SaveModelPermissionsRequest,
 ): Promise<ModelPermissions> {
   return platformRequest(workspacePath(workspaceId, "/permissions"), {
-    method: "PUT",
+    method: "PATCH",
     body: input,
   });
 }
@@ -93,19 +95,22 @@ export function saveModelBudget(
   workspaceId: string,
   input: SaveBudgetRequest,
 ): Promise<ModelBudget> {
-  return platformRequest(workspacePath(workspaceId, "/budgets"), { method: "PUT", body: input });
+  return platformRequest(workspacePath(workspaceId, "/budgets"), { method: "PATCH", body: input });
 }
 
 export async function deleteModelBudget(workspaceId: string, projectId?: string): Promise<void> {
-  await platformRequest(workspacePath(workspaceId, `/budgets${toQueryString({ projectId })}`), {
-    method: "DELETE",
-  });
+  await platformRequest(
+    workspacePath(workspaceId, `/budgets${toQueryString({ project_id: projectId })}`),
+    {
+      method: "DELETE",
+    },
+  );
 }
 
 export async function listSpendRequests(workspaceId: string): Promise<SpendRequest[]> {
   return (
     await platformRequest<{ requests: SpendRequest[] }>(
-      workspacePath(workspaceId, "/spend-requests"),
+      workspacePath(workspaceId, "/spend_requests"),
     )
   ).requests;
 }
@@ -116,7 +121,7 @@ export function resolveSpendRequest(
   input: ResolveSpendRequest,
 ): Promise<SpendRequest> {
   return platformRequest(
-    workspacePath(workspaceId, `/spend-requests/${segment(requestId)}/resolve`),
+    workspacePath(workspaceId, `/spend_requests/${segment(requestId)}/resolve`),
     {
       method: "POST",
       body: input,
@@ -158,7 +163,13 @@ export function exportModelBom(
   params: { format: BomFormat; routeId?: string },
 ): Promise<Record<string, unknown>> {
   return platformRequest(
-    workspacePath(workspaceId, `/versions/${segment(versionId)}/bom${toQueryString(params)}`),
+    workspacePath(
+      workspaceId,
+      `/versions/${segment(versionId)}/bom${toQueryString({
+        format: params.format,
+        route_id: params.routeId,
+      })}`,
+    ),
   );
 }
 
@@ -174,6 +185,6 @@ export function exportTrainingContentSummary(
   versionId: string,
 ): Promise<TrainingContentSummary> {
   return platformRequest(
-    workspacePath(workspaceId, `/versions/${segment(versionId)}/training-content`),
+    workspacePath(workspaceId, `/versions/${segment(versionId)}/training_content`),
   );
 }

@@ -400,23 +400,23 @@ export const sourceSearchResultSchema = z.object({
 });
 export type SourceSearchResult = z.infer<typeof sourceSearchResultSchema>;
 
-export const registryWorkspaceParamsSchema = z.object({ workspaceId: z.string().min(1) });
+export const registryWorkspaceParamsSchema = z.object({ workspace_id: z.string().min(1) });
 export const registryVersionParamsSchema = registryWorkspaceParamsSchema.extend({
-  versionId: z.string().min(1),
+  version_id: z.string().min(1),
 });
 
 export const sourceSearchQuerySchema = z.object({
   q: z.string().max(200).default(""),
   kind: modelAssetKindSchema.default("model"),
-  projectId: z.string().min(1).optional(),
+  project_id: z.string().min(1).optional(),
   limit: z.coerce.number().int().positive().max(50).default(20),
 });
 export type SourceSearchQuery = z.infer<typeof sourceSearchQuerySchema>;
 
 export const libraryQuerySchema = z.object({
   kind: modelAssetKindSchema.optional(),
-  projectId: z.string().min(1).optional(),
-  approvedOnly: z
+  project_id: z.string().min(1).optional(),
+  approved_only: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
     .optional(),
@@ -483,12 +483,12 @@ export const resolveDecisionSchema = z.object({
 export type ResolveDecisionInput = z.infer<typeof resolveDecisionSchema>;
 
 export const registryDecisionParamsSchema = registryWorkspaceParamsSchema.extend({
-  decisionId: z.string().min(1),
+  decision_id: z.string().min(1),
 });
 
 export const decisionListQuerySchema = z.object({
   state: modelDecisionStateSchema.optional(),
-  projectId: z.string().min(1).optional(),
+  project_id: z.string().min(1).optional(),
 });
 
 export const createRouteRequestSchema = z.object({
@@ -501,7 +501,7 @@ export const createRouteRequestSchema = z.object({
 export type CreateRouteRequest = z.infer<typeof createRouteRequestSchema>;
 
 export const registryRouteParamsSchema = registryWorkspaceParamsSchema.extend({
-  routeId: z.string().min(1),
+  route_id: z.string().min(1),
 });
 
 export const createEvalSuiteRequestSchema = z.object({
@@ -516,7 +516,7 @@ export const createEvalSuiteRequestSchema = z.object({
 export type CreateEvalSuiteRequest = z.infer<typeof createEvalSuiteRequestSchema>;
 
 export const registrySuiteParamsSchema = registryWorkspaceParamsSchema.extend({
-  suiteId: z.string().min(1),
+  suite_id: z.string().min(1),
 });
 
 export const MODEL_BATCH_PROVIDERS = ["openai", "anthropic"] as const;
@@ -640,16 +640,16 @@ export type EvalCaseResult = z.infer<typeof evalCaseResultSchema>;
 export const evalCaseResultsResponseSchema = z.object({ results: z.array(evalCaseResultSchema) });
 
 export const registryRunParamsSchema = registryWorkspaceParamsSchema.extend({
-  runId: z.string().min(1),
+  run_id: z.string().min(1),
 });
 export const bomFormatSchema = z.enum(["cyclonedx", "spdx"]);
 export type BomFormat = z.infer<typeof bomFormatSchema>;
 export const bomQuerySchema = z.object({
-  routeId: z.string().min(1).optional(),
+  route_id: z.string().min(1).optional(),
   format: bomFormatSchema.default("cyclonedx"),
 });
 export const registryProjectScopeQuerySchema = z.object({
-  projectId: z.string().min(1).optional(),
+  project_id: z.string().min(1).optional(),
 });
 
 export const modificationComputeSchema = z.object({

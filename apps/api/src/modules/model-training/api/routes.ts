@@ -24,7 +24,7 @@ import {
 
 const app = new Hono();
 const tags = ["model-training"];
-const base = "/workspaces/:workspaceId";
+const base = "/workspaces/:workspace_id";
 
 addRoute(app, "post", `${base}/training/recommend`, {
   auth: true,
@@ -34,7 +34,7 @@ addRoute(app, "post", `${base}/training/recommend`, {
   bodySchema: trainingRecommendationRequestSchema,
   responses: { 200: { description: "Recommendation", schema: trainingRecommendationSchema } },
   handler: ({ serviceContext, params, body }) =>
-    recommendTrainingPlan(serviceContext, params.workspaceId, body),
+    recommendTrainingPlan(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "post", `${base}/training/plan`, {
@@ -45,7 +45,7 @@ addRoute(app, "post", `${base}/training/plan`, {
   bodySchema: trainingPlanRequestSchema,
   responses: { 200: { description: "Plan", schema: trainingPlanSchema } },
   handler: ({ serviceContext, params, body }) =>
-    planTraining(serviceContext, params.workspaceId, body),
+    planTraining(serviceContext, params.workspace_id, body),
 });
 
 addRoute(app, "get", `${base}/training/runs`, {
@@ -56,7 +56,7 @@ addRoute(app, "get", `${base}/training/runs`, {
   querySchema: registryProjectScopeQuerySchema,
   responses: { 200: { description: "Runs", schema: trainingRunsResponseSchema } },
   handler: ({ serviceContext, params, query }) =>
-    listTrainingRuns(serviceContext, params.workspaceId, query.projectId),
+    listTrainingRuns(serviceContext, params.workspace_id, query.project_id),
 });
 
 addRoute(app, "post", `${base}/training/runs`, {
@@ -67,27 +67,27 @@ addRoute(app, "post", `${base}/training/runs`, {
   bodySchema: startTrainingRunRequestSchema,
   responses: { 200: { description: "Start result", schema: trainingStartResultSchema } },
   handler: ({ serviceContext, params, body }) =>
-    startTrainingRun(serviceContext, params.workspaceId, body),
+    startTrainingRun(serviceContext, params.workspace_id, body),
 });
 
-addRoute(app, "get", `${base}/training/runs/:runId`, {
+addRoute(app, "get", `${base}/training/runs/:run_id`, {
   auth: true,
   tags,
   summary: "Get a run with metrics and checkpoints",
   paramSchema: modelTrainingRunParamsSchema,
   responses: { 200: { description: "Run", schema: trainingRunSchema } },
   handler: ({ serviceContext, params }) =>
-    getTrainingRun(serviceContext, params.workspaceId, params.runId),
+    getTrainingRun(serviceContext, params.workspace_id, params.run_id),
 });
 
-addRoute(app, "post", `${base}/training/runs/:runId/cancel`, {
+addRoute(app, "post", `${base}/training/runs/:run_id/cancel`, {
   auth: true,
   tags,
   summary: "Cancel a run with its provider",
   paramSchema: modelTrainingRunParamsSchema,
   responses: { 200: { description: "Run", schema: trainingRunSchema } },
   handler: ({ serviceContext, params }) =>
-    cancelTrainingRun(serviceContext, params.workspaceId, params.runId),
+    cancelTrainingRun(serviceContext, params.workspace_id, params.run_id),
 });
 
 export default app;

@@ -38,7 +38,7 @@ export async function listTrainingRuns(
 ): Promise<TrainingRunSummary[]> {
   return (
     await platformRequest<{ runs: TrainingRunSummary[] }>(
-      workspacePath(workspaceId, `/training/runs${toQueryString({ projectId })}`),
+      workspacePath(workspaceId, `/training/runs${toQueryString({ project_id: projectId })}`),
     )
   ).runs;
 }
