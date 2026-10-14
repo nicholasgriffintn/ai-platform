@@ -1,21 +1,22 @@
-import type {
-  TeammateResponse,
-  CreateTeammateInput,
-  HireTeammateInput,
-  SharedTeammateSummary,
-  UpdateTeammateInput,
-  TeammateConnectionGrant,
-  TeammateConnectionGrantListResponse,
-  UpsertTeammateConnectionGrant,
-  TeammateAutonomyLevel,
-  TeammateContext,
-  TeammateContextScope,
-  TeammateContextStatus,
-  TeammateComputer,
-  TeammateComputerAction,
-  MemoryDocument,
-  UpdateMemoryDocumentInput,
-  RecordTeammateFeedbackInput,
+import {
+  environmentSchema,
+  type TeammateResponse,
+  type CreateTeammateInput,
+  type HireTeammateInput,
+  type SharedTeammateSummary,
+  type UpdateTeammateInput,
+  type TeammateConnectionGrant,
+  type TeammateConnectionGrantListResponse,
+  type UpsertTeammateConnectionGrant,
+  type TeammateAutonomyLevel,
+  type TeammateContext,
+  type TeammateContextScope,
+  type TeammateContextStatus,
+  type TeammateComputer,
+  type TeammateComputerAction,
+  type MemoryDocument,
+  type UpdateMemoryDocumentInput,
+  type RecordTeammateFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
@@ -206,21 +207,34 @@ export class TeammateService {
     return returnFetchedData<TeammateConnectionGrant>(response);
   }
 
+  private computerActionsPath(contextId: string): string {
+    return `/environments/${encodeURIComponent(contextId)}/actions?kind=teammate_computer`;
+  }
+
   async getTeammateComputer(contextId: string): Promise<TeammateComputer> {
-    const response = await fetchApi(`/teammates/contexts/${contextId}/computer`, {
-      method: "GET",
-      headers: await this.authHeaders("getTeammateComputer"),
-    });
+    const response = await fetchApi(
+      `/environments/${encodeURIComponent(contextId)}?kind=teammate_computer`,
+      {
+        method: "GET",
+        headers: await this.authHeaders("getTeammateComputer"),
+      },
+    );
 
     if (!response.ok) {
       throw await createApiErrorFromResponse(response, "Failed to load teammate computer");
     }
 
-    return returnFetchedData<TeammateComputer>(response);
+    const environment = environmentSchema.parse(await returnFetchedData<unknown>(response));
+
+    if (environment.kind !== "teammate_computer") {
+      throw new Error("Failed to load teammate computer");
+    }
+
+    return environment.detail;
   }
 
   async performTeammateComputerAction(contextId: string, action: TeammateComputerAction) {
-    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/actions`, {
+    const response = await fetchApi(this.computerActionsPath(contextId), {
       method: "POST",
       headers: await this.authHeaders("performTeammateComputerAction"),
       body: action,
@@ -237,10 +251,10 @@ export class TeammateService {
   }
 
   async takeOverTeammateComputer(contextId: string, recordTeaching = false) {
-    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/takeover`, {
+    const response = await fetchApi(this.computerActionsPath(contextId), {
       method: "POST",
       headers: await this.authHeaders("takeOverTeammateComputer"),
-      body: { recordTeaching },
+      body: { action: "takeover", record_teaching: recordTeaching },
     });
 
     if (!response.ok) {
@@ -256,9 +270,10 @@ export class TeammateService {
   }
 
   async viewTeammateComputer(contextId: string) {
-    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/view`, {
+    const response = await fetchApi(this.computerActionsPath(contextId), {
       method: "POST",
       headers: await this.authHeaders("viewTeammateComputer"),
+      body: { action: "view" },
     });
 
     if (!response.ok) {
@@ -274,10 +289,10 @@ export class TeammateService {
   }
 
   async releaseTeammateComputer(contextId: string, fence: number): Promise<TeammateComputer> {
-    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/release`, {
+    const response = await fetchApi(this.computerActionsPath(contextId), {
       method: "POST",
       headers: await this.authHeaders("releaseTeammateComputer"),
-      body: { fence },
+      body: { action: "release", fence },
     });
 
     if (!response.ok) {

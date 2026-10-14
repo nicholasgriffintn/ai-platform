@@ -110,6 +110,7 @@ export * from "./poly.js";
 export * from "./thread-operations.js";
 export * from "./edit.js";
 export * from "./embeddings.js";
+export * from "./environments.js";
 export * from "./fim.js";
 export * from "./impact.js";
 export * from "./magicLink.js";

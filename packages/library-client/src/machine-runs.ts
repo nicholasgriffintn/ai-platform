@@ -12,11 +12,8 @@ import { returnFetchedData, type FetchApiOptions } from "./http.js";
 export class MachineRunClient {
   constructor(private fetch: (path: string, options?: FetchApiOptions) => Promise<Response>) {}
 
-  private async request(machineId: string, path: string, options: FetchApiOptions = {}) {
-    const response = await this.fetch(
-      `/machines/${encodeURIComponent(machineId)}/runs${path}`,
-      options,
-    );
+  private async request(path: string, options: FetchApiOptions = {}) {
+    const response = await this.fetch(path, options);
 
     if (!response.ok) {
       throw new Error(`Machine request failed (${response.status}).`);
@@ -25,9 +22,17 @@ export class MachineRunClient {
     return returnFetchedData<unknown>(response);
   }
 
+  private environmentRuns(machineId: string, suffix = ""): string {
+    return `/environments/${encodeURIComponent(machineId)}/runs${suffix}`;
+  }
+
+  private deviceRuns(machineId: string, action: "claim" | "update"): string {
+    return `/machines/${encodeURIComponent(machineId)}/runs/${action}`;
+  }
+
   async start(machineId: string, request: MachineRunRequest, signal?: AbortSignal) {
     return machineRunSnapshotSchema.parse(
-      await this.request(machineId, "", {
+      await this.request(this.environmentRuns(machineId), {
         method: "POST",
         body: machineRunRequestSchema.parse(request),
         signal,
@@ -37,25 +42,27 @@ export class MachineRunClient {
 
   async read(machineId: string, id: string, signal?: AbortSignal) {
     return machineRunSnapshotSchema.parse(
-      await this.request(machineId, `/${encodeURIComponent(id)}`, { signal }),
+      await this.request(this.environmentRuns(machineId, `/${encodeURIComponent(id)}`), { signal }),
     );
   }
 
   async cancel(machineId: string, id: string) {
     return machineRunSnapshotSchema.parse(
-      await this.request(machineId, `/${encodeURIComponent(id)}/cancel`, { method: "POST" }),
+      await this.request(this.environmentRuns(machineId, `/${encodeURIComponent(id)}/cancel`), {
+        method: "POST",
+      }),
     );
   }
 
   async claim(machineId: string, signal?: AbortSignal) {
     return machineRunClaimSchema.parse(
-      await this.request(machineId, "/claim", { method: "POST", signal }),
+      await this.request(this.deviceRuns(machineId, "claim"), { method: "POST", signal }),
     );
   }
 
   async update(machineId: string, update: MachineRunUpdate, signal?: AbortSignal) {
     return machineRunSnapshotSchema.parse(
-      await this.request(machineId, "/update", {
+      await this.request(this.deviceRuns(machineId, "update"), {
         method: "POST",
         body: machineRunUpdateSchema.parse(update),
         signal,

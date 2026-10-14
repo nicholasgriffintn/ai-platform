@@ -1,10 +1,12 @@
 import {
   sandboxRunControlSchema,
   sandboxRunInstructionEnvelopeSchema,
+  sandboxRunInstructionSchema,
   type SandboxRunControl,
   type SandboxRunInstruction,
   type SandboxRunInstructionEnvelope,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { createPolychatRequest, fetchWithTimeout } from "./polychat-request";
 
@@ -92,7 +94,7 @@ export class RunControlClient {
       return null;
     }
 
-    const controlPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/control`;
+    const controlPath = `/environments/${encodeURIComponent(this.runId)}/control`;
 
     let response: Response;
 
@@ -166,7 +168,7 @@ export class RunControlClient {
       return null;
     }
 
-    const instructionsPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
+    const instructionsPath = `/environments/${encodeURIComponent(this.runId)}/instructions`;
     const requestBody: Record<string, unknown> = {
       kind: "approval_request",
       command,
@@ -218,9 +220,9 @@ export class RunControlClient {
       return null;
     }
 
-    const instruction = (payload as { instruction?: SandboxRunInstruction }).instruction;
+    const instruction = sandboxRunInstructionSchema.safeParse(payload);
 
-    return mapApprovalInstructionToApproval(instruction ?? null, command);
+    return mapApprovalInstructionToApproval(instruction.success ? instruction.data : null, command);
   }
 
   public async fetchApproval(
@@ -261,7 +263,7 @@ export class RunControlClient {
       const response = await fetchWithTimeout(
         (timeoutSignal) =>
           this.fetchApi(
-            `/apps/sandbox/runs/${encodeURIComponent(this.runId as string)}/goal/iteration`,
+            `/environments/${encodeURIComponent(this.runId as string)}/goal/iterate`,
             {
               method: "POST",
               headers: {
@@ -303,7 +305,7 @@ export class RunControlClient {
       return [];
     }
 
-    const instructionsPath = `/apps/sandbox/runs/${encodeURIComponent(this.runId)}/instructions`;
+    const instructionsPath = `/environments/${encodeURIComponent(this.runId)}/instructions`;
     const searchParams = new URLSearchParams();
 
     if (Number.isFinite(after) && after > 0) {
@@ -349,7 +351,7 @@ export class RunControlClient {
       return [];
     }
 
-    const rawInstructions = (payload as { instructions?: unknown[] | undefined }).instructions;
+    const rawInstructions = isRecord(payload) ? payload.data : undefined;
 
     if (!Array.isArray(rawInstructions)) {
       return [];

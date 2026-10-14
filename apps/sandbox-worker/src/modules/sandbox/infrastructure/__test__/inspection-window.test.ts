@@ -20,7 +20,10 @@ it("limits execution to the inspection deadline and refuses the remaining queued
     )
     .mockResolvedValueOnce(
       Response.json({
-        instructions: [1, 2].map((index) => ({
+        object: "list",
+        has_more: false,
+        last_id: "2",
+        data: [1, 2].map((index) => ({
           index,
           recordedAt: "2026-09-08T00:00:00Z",
           instruction: {

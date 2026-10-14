@@ -1,23 +1,26 @@
-import type {
-  ConnectSandboxInstallationInput,
-  CreateSandboxPreviewRequest,
-  CreateSandboxConnectionInput,
-  SandboxConnection,
-  SandboxConnectionRepositoriesPayload,
-  SandboxInstallConfig,
-  SandboxPreviewAccess,
-  SandboxRunControl,
-  SandboxRunEventEnvelope,
-  SandboxRunInstruction,
-  SandboxRunInstructionEnvelope,
-  SandboxRunInstructionKind,
-  SandboxServiceAction,
-  UpdateSandboxRunControl,
+import {
+  sandboxRunInstructionSchema,
+  type ConnectSandboxInstallationInput,
+  type CreateSandboxPreviewRequest,
+  type CreateSandboxConnectionInput,
+  type SandboxConnection,
+  type SandboxConnectionRepositoriesPayload,
+  type SandboxInstallConfig,
+  type SandboxPreviewAccess,
+  type SandboxRunControl,
+  type SandboxRunEventEnvelope,
+  type SandboxRunInstruction,
+  type SandboxRunInstructionEnvelope,
+  type SandboxRunInstructionKind,
+  type SandboxServiceAction,
+  type UpdateSandboxRunControl,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
+import { actOnEnvironment, environmentPath, environments } from "./environments.js";
 import { fetchApi, fetchApiOrThrow } from "./fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
+import { requestJson } from "./resource.js";
 
 export async function fetchSandboxConnections(): Promise<SandboxConnection[]> {
   const headers = await apiService.getHeaders();
@@ -158,7 +161,7 @@ export async function submitSandboxRunInstruction(params: {
   escalateAfterSeconds?: number;
 }): Promise<SandboxRunInstruction> {
   const headers = await apiService.getHeaders();
-  const response = await fetchApi(`/apps/sandbox/runs/${params.runId}/instructions`, {
+  const response = await fetchApi(environmentPath(params.runId, "/instructions"), {
     method: "POST",
     headers,
     body: {
@@ -182,89 +185,58 @@ export async function submitSandboxRunInstruction(params: {
     );
   }
 
-  const data = await returnFetchedData<{ instruction?: SandboxRunInstruction }>(response);
-
-  if (!data.instruction) {
-    throw new Error("Submitted instruction was not returned");
-  }
-
-  return data.instruction;
+  return sandboxRunInstructionSchema.parse(await returnFetchedData<unknown>(response));
 }
 
 export async function fetchSandboxRunEvents(runId: string): Promise<SandboxRunEventEnvelope[]> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/events`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-  const data = await returnFetchedData<{ events?: SandboxRunEventEnvelope[] }>(response);
-
-  return data.events ?? [];
+  return environments.sub<SandboxRunEventEnvelope>(runId, "events").listAll();
 }
 
 export async function fetchSandboxRunInstructions(
   runId: string,
 ): Promise<SandboxRunInstructionEnvelope[]> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/instructions`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-  const data = await returnFetchedData<{ instructions?: SandboxRunInstructionEnvelope[] }>(
-    response,
-  );
-
-  return data.instructions ?? [];
+  return environments.sub<SandboxRunInstructionEnvelope>(runId, "instructions").listAll();
 }
 
 export async function fetchSandboxRunControl(runId: string): Promise<SandboxRunControl> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/control`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-
-  return returnFetchedData<SandboxRunControl>(response);
+  return environments.singleton<SandboxRunControl>(runId, "control").get();
 }
 
 export async function updateSandboxRunControl(
   runId: string,
   input: UpdateSandboxRunControl,
 ): Promise<SandboxRunControl> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/control`, {
-    method: "PATCH",
-    headers: await apiService.getHeaders(),
-    body: input,
-  });
+  const { action, reason, extensionSeconds, expectedUpdatedAt } = input;
 
-  return returnFetchedData<SandboxRunControl>(response);
+  return actOnEnvironment<SandboxRunControl>(
+    runId,
+    action === "extend_inspection"
+      ? { action, extension_seconds: extensionSeconds, expected_updated_at: expectedUpdatedAt }
+      : { action, reason, expected_updated_at: expectedUpdatedAt },
+    "sandbox",
+  );
 }
 
 export async function createSandboxPreview(
   runId: string,
   input: CreateSandboxPreviewRequest,
 ): Promise<SandboxPreviewAccess> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/previews`, {
-    method: "POST",
-    headers: await apiService.getHeaders(),
-    body: input,
-  });
-
-  return returnFetchedData<SandboxPreviewAccess>(response);
+  return requestJson<SandboxPreviewAccess>(environmentPath(runId, "/previews"), "POST", input);
 }
 
 export async function fetchSandboxPreview(
   runId: string,
   previewId: string,
 ): Promise<SandboxPreviewAccess> {
-  const response = await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/previews/${previewId}`, {
-    method: "GET",
-    headers: await apiService.getHeaders(),
-  });
-
-  return returnFetchedData<SandboxPreviewAccess>(response);
+  return requestJson<SandboxPreviewAccess>(
+    environmentPath(runId, `/previews/${encodeURIComponent(previewId)}`),
+    "GET",
+  );
 }
 
 export async function revokeSandboxPreview(runId: string, previewId: string): Promise<void> {
-  await fetchApiOrThrow(`/apps/sandbox/runs/${runId}/previews/${previewId}`, {
-    method: "DELETE",
-    headers: await apiService.getHeaders(),
-  });
+  await requestJson<unknown>(
+    environmentPath(runId, `/previews/${encodeURIComponent(previewId)}`),
+    "DELETE",
+  );
 }

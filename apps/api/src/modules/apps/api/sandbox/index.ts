@@ -4,7 +4,6 @@ import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { requirePlan } from "~/middleware/requirePlan";
 
 import { registerSandboxConnectionRoutes } from "./connections";
-import { registerSandboxRunRoutes } from "./runs";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("apps/sandbox");
@@ -18,6 +17,5 @@ app.use("/*", (c, next) => {
 app.use("/*", requirePlan("pro"));
 
 registerSandboxConnectionRoutes(app);
-registerSandboxRunRoutes(app);
 
 export default app;

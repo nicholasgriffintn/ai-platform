@@ -1,15 +1,16 @@
 import {
-  browserSessionSchema,
+  environmentSchema,
   type BrowserSession,
   type SubmitBrowserApproval,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
+import { environmentPath } from "./environments.js";
 import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
 export async function fetchBrowserSession(id: string): Promise<BrowserSession> {
-  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}`, {
+  const response = await fetchApi(`${environmentPath(id)}?kind=browser`, {
     headers: await apiService.getHeaders(),
     cache: "no-store",
   });
@@ -22,17 +23,23 @@ export async function fetchBrowserSession(id: string): Promise<BrowserSession> {
     );
   }
 
-  return browserSessionSchema.parse(await returnFetchedData<unknown>(response));
+  const environment = environmentSchema.parse(await returnFetchedData<unknown>(response));
+
+  if (environment.kind !== "browser") {
+    throw new Error("This browser session is no longer available.");
+  }
+
+  return environment.detail;
 }
 
 export async function submitBrowserApproval(
   id: string,
   input: SubmitBrowserApproval,
 ): Promise<void> {
-  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}/approvals`, {
+  const response = await fetchApi(`${environmentPath(id, "/actions")}?kind=browser`, {
     method: "POST",
-    headers: { ...(await apiService.getHeaders()), "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    headers: await apiService.getHeaders(),
+    body: { action: "approve", request_id: input.requestId, response: input.response },
   });
 
   if (!response.ok) {
@@ -43,9 +50,10 @@ export async function submitBrowserApproval(
 }
 
 export async function stopBrowserSession(id: string): Promise<void> {
-  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}/stop`, {
+  const response = await fetchApi(`${environmentPath(id, "/actions")}?kind=browser`, {
     method: "POST",
     headers: await apiService.getHeaders(),
+    body: { action: "stop" },
   });
 
   if (!response.ok) {
@@ -54,7 +62,7 @@ export async function stopBrowserSession(id: string): Promise<void> {
 }
 
 export async function destroyBrowserSession(id: string): Promise<void> {
-  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}`, {
+  const response = await fetchApi(`${environmentPath(id)}?kind=browser`, {
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });

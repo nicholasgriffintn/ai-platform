@@ -33,7 +33,7 @@ function jsonResponse(payload: unknown): Response {
 function createApprovalClient(status: NonNullable<SandboxRunInstruction["approvalStatus"]>) {
   const fetch = vi
     .fn()
-    .mockResolvedValueOnce(jsonResponse({ instruction: approvalInstruction("pending") }))
+    .mockResolvedValueOnce(jsonResponse(approvalInstruction("pending")))
     .mockResolvedValueOnce(
       jsonResponse({
         runId: "run-1",
@@ -43,7 +43,10 @@ function createApprovalClient(status: NonNullable<SandboxRunInstruction["approva
     )
     .mockResolvedValueOnce(
       jsonResponse({
-        instructions: [
+        object: "list",
+        has_more: false,
+        last_id: "1",
+        data: [
           {
             index: 1,
             recordedAt: createdAt,

@@ -200,10 +200,10 @@ final class APIClient: ObservableObject {
             id: id, machineId: machineId, modelId: modelId,
             messages: messages, conversationId: conversationId,
             create: { request in
-                try await self.send(path: "/machines/\(machineId)/runs", method: "POST", body: request)
+                try await self.send(path: "/environments/\(machineId)/runs", method: "POST", body: request)
             },
             read: {
-                try await self.send(path: "/machines/\(machineId)/runs/\(id)", method: "GET")
+                try await self.send(path: "/environments/\(machineId)/runs/\(id)", method: "GET")
             },
             cancel: { try await self.cancelMachineModelRun(id: id, machineId: machineId) }
         )
@@ -211,7 +211,7 @@ final class APIClient: ObservableObject {
 
     func cancelMachineModelRun(id: String, machineId: String) async throws {
         let _: MachineRunSnapshot = try await send(
-            path: "/machines/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
+            path: "/environments/\(machineId)/runs/\(id)/cancel", method: "POST", emptyBody: true
         )
     }
 

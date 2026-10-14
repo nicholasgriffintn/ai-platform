@@ -15,11 +15,6 @@ import {
   updateTeammateContextAutonomySchema,
   updateTeammateContextStatusSchema,
   upsertTeammateConnectionGrantSchema,
-  teammateComputerActionResponseSchema,
-  teammateComputerActionSchema,
-  teammateComputerSchema,
-  teammateComputerTakeoverInputSchema,
-  teammateComputerTakeoverResponseSchema,
   memoryDocumentSchema,
   updateMemoryDocumentSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -43,11 +38,6 @@ import {
   listTeammateConnectionGrants,
   listTeammateContexts,
   upsertTeammateConnectionGrant,
-  getTeammateComputer,
-  performTeammateComputerAction,
-  releaseTeammateComputer,
-  takeOverTeammateComputer,
-  getTeammateComputerViewScreen,
   getTeammateContextMemory,
   updateTeammateContextMemory,
   updateTeammateContextAutonomy,
@@ -263,78 +253,6 @@ addRoute(app, "put", "/contexts/:contextId/memory", {
   },
   handler: async ({ serviceContext, params, body }) =>
     updateTeammateContextMemory(serviceContext, params.contextId, body),
-});
-
-addRoute(app, "get", "/contexts/:contextId/computer", {
-  tags: ["teammates"],
-  summary: "Get a teammate context's hosted computer",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  responses: {
-    200: { description: "Computer", schema: teammateComputerSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    getTeammateComputer(serviceContext, params.contextId),
-});
-
-addRoute(app, "post", "/contexts/:contextId/computer/actions", {
-  tags: ["teammates"],
-  summary: "Manage a teammate context's hosted computer",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  bodySchema: teammateComputerActionSchema,
-  responses: {
-    200: {
-      description: "Computer action result",
-      schema: teammateComputerActionResponseSchema,
-    },
-  },
-  handler: async ({ serviceContext, params, body }) =>
-    performTeammateComputerAction(serviceContext, params.contextId, body),
-});
-
-addRoute(app, "post", "/contexts/:contextId/computer/takeover", {
-  tags: ["teammates"],
-  summary: "Take temporary control of a teammate computer",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  bodySchema: teammateComputerTakeoverInputSchema,
-  responses: {
-    200: {
-      description: "Screen connection",
-      schema: teammateComputerTakeoverResponseSchema,
-    },
-  },
-  handler: async ({ serviceContext, params, body }) =>
-    takeOverTeammateComputer(serviceContext, params.contextId, body.recordTeaching),
-});
-
-addRoute(app, "post", "/contexts/:contextId/computer/view", {
-  tags: ["teammates"],
-  summary: "Watch a teammate computer without taking control",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  responses: {
-    200: {
-      description: "View-only screen connection",
-      schema: teammateComputerTakeoverResponseSchema,
-    },
-  },
-  handler: async ({ serviceContext, params }) =>
-    getTeammateComputerViewScreen(serviceContext, params.contextId),
-});
-
-addRoute(app, "post", "/contexts/:contextId/computer/release", {
-  tags: ["teammates"],
-  summary: "Release control of a teammate computer",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  bodySchema: z.object({ fence: z.number().int().positive() }),
-  responses: {
-    200: { description: "Computer", schema: teammateComputerSchema },
-  },
-  handler: async ({ serviceContext, params, body }) =>
-    releaseTeammateComputer(serviceContext, params.contextId, body.fence),
 });
 
 addRoute(app, "get", "/:teammateId", {

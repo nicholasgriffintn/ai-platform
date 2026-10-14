@@ -11,11 +11,11 @@ import benchmarks from "~/modules/benchmarks/api/routes";
 import capabilities from "~/modules/capabilities/api/routes";
 import channels from "~/modules/channels/api/routes";
 import code from "~/modules/code/api/routes";
-import computerUse from "~/modules/computer-use/api/routes";
 import conversations from "~/modules/conversations/api/routes";
 import corrections from "~/modules/corrections/api/routes";
 import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
+import environments from "~/modules/environments/api/routes";
 import flags from "~/modules/experiments/api/routes";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
@@ -66,6 +66,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/jobs", jobs);
   app.route("/apps", apps);
   app.route("/desktop", desktop);
+  app.route("/environments", environments);
   app.route("/machines", machines);
   app.route("/models", models);
   app.route("/notifications", notifications);
@@ -75,7 +76,6 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/tools", tools);
   app.route("/audio", audio);
   app.route("/capabilities", capabilities);
-  app.route("/computer-use", computerUse);
   app.route("/uploads", uploads);
   app.route("/user", user);
   app.route("/plans", plans);
