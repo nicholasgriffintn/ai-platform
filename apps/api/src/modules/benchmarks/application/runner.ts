@@ -219,7 +219,11 @@ async function runItem(
         answer: response.answer,
         output: truncateText(response.output, MAX_STORED_OUTPUT),
         artefact,
-        detail: judged === null ? scored.detail : { ...scored.detail, judge: judged },
+        detail: {
+          ...scored.detail,
+          ...(judged === null ? {} : { judge: judged }),
+          ...(response.blocked === null ? {} : { blocked: response.blocked }),
+        },
         error: null,
         latencyMs: response.latencyMs,
         inputTokens: response.inputTokens,

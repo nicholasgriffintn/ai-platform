@@ -111,6 +111,11 @@ export function AlignmentItems({
                 {truncateText(output, MAX_OUTPUT)}
               </pre>
             ) : null}
+            {getStringProperty(detail.result?.detail, "blocked") ? (
+              <p className="text-xs text-attention">
+                {getStringProperty(detail.result?.detail, "blocked")}
+              </p>
+            ) : null}
             {reveal ? <p className="text-xs text-muted-foreground">{reveal}</p> : null}
           </li>
         );

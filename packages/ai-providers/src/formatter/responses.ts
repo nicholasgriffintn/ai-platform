@@ -799,7 +799,15 @@ export class ResponseFormatter {
     options: ResponseFormatOptions = {},
   ): Promise<any> {
     if (!data.candidates || !data.candidates[0]?.content?.parts) {
-      return { ...data, response: "", tool_calls: [] };
+      const blockReason =
+        data.promptFeedback?.blockReason ?? data.candidates?.[0]?.finishReason ?? null;
+
+      return {
+        ...data,
+        response: "",
+        tool_calls: [],
+        ...(blockReason ? { refusal: `Blocked by the provider (${String(blockReason)})` } : {}),
+      };
     }
 
     const parts = data.candidates[0].content.parts;

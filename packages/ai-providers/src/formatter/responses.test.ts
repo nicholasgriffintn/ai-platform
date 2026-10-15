@@ -94,6 +94,18 @@ describe("ResponseFormatter Google AI Studio tool calls", () => {
   });
 });
 
+describe("ResponseFormatter Google AI Studio prompt blocks", () => {
+  it("reports a blocked prompt as a refusal with an empty response", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      { promptFeedback: { blockReason: "OTHER" }, usageMetadata: {} },
+      "google-ai-studio",
+    );
+
+    expect(response.response).toBe("");
+    expect(response.refusal).toBe("Blocked by the provider (OTHER)");
+  });
+});
+
 describe("StreamingFormatter Google AI Studio tool calls", () => {
   it("preserves Google's function call id", () => {
     const toolCall = StreamingFormatter.extractToolCall({

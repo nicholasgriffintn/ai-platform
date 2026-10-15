@@ -33,6 +33,7 @@ export const BENCHMARK_REASONING_EFFORT = "medium";
 export interface EntrantResponse {
   output: string;
   answer: unknown;
+  blocked: string | null;
   inputTokens: number;
   outputTokens: number;
   costUsd: number | null;
@@ -48,6 +49,12 @@ interface InvocationScope {
   benchmarkId: BenchmarkId;
   benchmark: Benchmark;
   itemId: string;
+}
+
+function readRefusal(response: unknown): string | null {
+  return isRecord(response) && typeof response.refusal === "string" && response.refusal.length > 0
+    ? response.refusal
+    : null;
 }
 
 function readText(response: unknown): string {
@@ -133,7 +140,9 @@ async function invokeChatModel(
     );
   }
 
-  if (output.trim().length === 0) {
+  const blocked = output.trim().length === 0 ? readRefusal(response) : null;
+
+  if (output.trim().length === 0 && blocked === null) {
     throw new AssistantError(
       `${model.config.provider} returned an empty answer`,
       ErrorType.PROVIDER_ERROR,
@@ -144,6 +153,7 @@ async function invokeChatModel(
   return {
     output,
     answer: scope.benchmark.parseOutput(output),
+    blocked,
     inputTokens,
     outputTokens,
     costUsd: priceModelTurnUsage(model.config, { usage, rawUsage }),
@@ -178,6 +188,7 @@ async function invokeDecisionModel(
   return {
     output: JSON.stringify({ probability }),
     answer: scope.benchmark.fromDecision(probability),
+    blocked: null,
     inputTokens: 0,
     outputTokens: 0,
     costUsd: null,
@@ -202,6 +213,7 @@ async function invokeRoute(
   return {
     output,
     answer: scope.benchmark.parseOutput(output),
+    blocked: null,
     inputTokens: 0,
     outputTokens: 0,
     costUsd: null,
