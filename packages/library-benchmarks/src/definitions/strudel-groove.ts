@@ -29,7 +29,8 @@ const SYSTEM = [
   "Chain methods freely, for example .s(), .bank(), .gain(), .lpf(), .room(), .fast(), .slow(), .every(), .scale().",
   `When a method takes a transform, pass one of these by name, for example .jux(rev) or .every(4, fast): ${STRUDEL_TRANSFORMS.join(", ")}.`,
   'Use double-quoted mini-notation strings such as "c3 [e3 g3] <a3 b3>". Never put quotes inside a string: group alternatives with [ ] inside < > instead. Use $: at the start of a line for each extra layer.',
-  "Do not use variables, assignments, arrow functions, template strings, square brackets outside strings, semicolons or samples().",
+  "Write each layer as its own top-level statement: $: at the start of a line, or one stack(...) call. Never put $: inside stack() or any other call, and call setcps() or setcpm() on their own line rather than as a method.",
+  "Arrow functions are fine as arguments, for example .every(4, x => x.fast(2)). Do not use variables, assignments, template strings, square brackets outside strings or samples().",
   "Keep it under 4,000 characters and make it loop well for about 16 bars.",
 ].join(" ");
 

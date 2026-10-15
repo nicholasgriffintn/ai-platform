@@ -85,6 +85,12 @@ export function StrudelPlayer({
           initialCode: sanitizeStrudelCode(latestCodeRef.current),
           drawTime: [-2, 2],
           prebake,
+          onEvalError: (evalError: unknown) => {
+            if (isMountedRef.current) {
+              setError(evalError instanceof Error ? evalError.message : String(evalError));
+              setIsPlaying(false);
+            }
+          },
           onChange: (update: {
             docChanged: boolean;
             state: { doc: { toString: () => string } };

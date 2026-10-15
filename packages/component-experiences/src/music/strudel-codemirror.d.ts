@@ -17,6 +17,7 @@ declare module "@strudel/codemirror" {
     transpiler?: unknown;
     drawTime?: [number, number];
     prebake?: () => Promise<void>;
+    onEvalError?: (error: unknown) => void;
     onChange?: (update: StrudelMirrorChange) => void;
   }
 
