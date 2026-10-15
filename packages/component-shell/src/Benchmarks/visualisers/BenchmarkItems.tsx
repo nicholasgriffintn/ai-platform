@@ -1,5 +1,6 @@
 import type { BenchmarkItemDetail, BenchmarkSummary } from "@ngriffin_uk/polychat-schemas";
 
+import { AlignmentItems } from "./AlignmentItems.js";
 import { ArtefactItems } from "./ArtefactItems.js";
 import { CountdownItems } from "./CountdownItems.js";
 import { FermiItems } from "./FermiItems.js";
@@ -24,6 +25,10 @@ export function BenchmarkItems({
       return <FermiItems items={items} />;
     case "long-odds":
       return <LongOddsItems items={items} />;
+    case "smuggled-note":
+    case "keep-a-secret":
+    case "yes-man":
+      return <AlignmentItems benchmarkId={benchmark.id} items={items} />;
     case "hamster-wheel":
       return (
         <ArtefactItems

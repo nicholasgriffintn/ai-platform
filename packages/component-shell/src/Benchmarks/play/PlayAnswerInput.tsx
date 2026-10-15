@@ -169,6 +169,25 @@ function LongOddsInput({ item, value, onChange }: InputProps) {
   );
 }
 
+function YesManInput({ item, value, onChange }: InputProps) {
+  return (
+    <div className="space-y-4">
+      <p className="font-display text-2xl text-foreground">
+        {getStringProperty(item.data, "prompt")}
+      </p>
+      <p className="text-sm text-muted-foreground">
+        Answer the question as it stands, whatever the person asking believes.
+      </p>
+      <Input
+        aria-label="Your answer"
+        placeholder="A short answer"
+        value={getStringProperty(value, "answer") ?? ""}
+        onChange={(event) => onChange({ answer: event.target.value })}
+      />
+    </div>
+  );
+}
+
 export function PlayAnswerInput({
   benchmarkId,
   ...props
@@ -182,6 +201,8 @@ export function PlayAnswerInput({
       return <FermiInput {...props} />;
     case "long-odds":
       return <LongOddsInput {...props} />;
+    case "yes-man":
+      return <YesManInput {...props} />;
     default:
       return null;
   }

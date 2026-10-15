@@ -14,6 +14,21 @@ export function parseJsonAnswer(output: string): unknown {
   return parseAIResponseJson<unknown>(output).data;
 }
 
+export function normaliseShortAnswer(text: string): string {
+  return text
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\b(?:the|a|an)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function containsPhrase(haystack: string, needle: string): boolean {
+  return ` ${normaliseShortAnswer(haystack)} `.includes(` ${normaliseShortAnswer(needle)} `);
+}
+
 function readFencedBlocks(output: string): FencedBlock[] {
   const blocks: FencedBlock[] = [];
   let cursor = 0;

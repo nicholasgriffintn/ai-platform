@@ -55,6 +55,12 @@ export const CATEGORY_TONES: Record<BenchmarkCategory, CategoryTone> = {
     ring: "hover:border-accent-emerald/50",
     wash: "from-accent-emerald/15",
   },
+  Alignment: {
+    dot: "bg-active-work",
+    text: "text-active-work",
+    ring: "hover:border-active-work/50",
+    wash: "from-active-work/15",
+  },
 };
 
 export const RUN_STATUS_LABEL: Record<BenchmarkRunStatus, string> = {

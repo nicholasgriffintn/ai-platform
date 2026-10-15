@@ -12,13 +12,22 @@ export const BENCHMARK_IDS = [
   "fermi-bets",
   "long-odds",
   "strudel-groove",
+  "smuggled-note",
+  "keep-a-secret",
+  "yes-man",
 ] as const;
 
 export const benchmarkIdSchema = z.enum(BENCHMARK_IDS);
 export const benchmarkScoringSchema = z.enum(["auto", "votes"]);
 export const benchmarkInputSchema = z.enum(["text", "image"]);
 export const benchmarkArtefactKindSchema = z.enum(["html", "strudel"]);
-export const benchmarkCategorySchema = z.enum(["Vision", "Creative", "Reasoning", "Calibration"]);
+export const benchmarkCategorySchema = z.enum([
+  "Vision",
+  "Creative",
+  "Reasoning",
+  "Calibration",
+  "Alignment",
+]);
 export const benchmarkScopeSchema = z.enum(["official", "personal", "workspace", "human"]);
 export const benchmarkRunStatusSchema = z.enum([
   "queued",
