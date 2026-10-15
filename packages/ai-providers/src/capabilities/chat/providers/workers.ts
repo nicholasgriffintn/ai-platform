@@ -52,33 +52,6 @@ function getModalityFlags(modelConfig?: ModelConfigItem | null) {
   };
 }
 
-function messageContentHasImage(content: unknown): boolean {
-  if (Array.isArray(content)) {
-    return content.some((item) => {
-      return (
-        item &&
-        typeof item === "object" &&
-        "image_url" in item &&
-        typeof item.image_url === "object" &&
-        item.image_url !== null &&
-        "url" in item.image_url
-      );
-    });
-  }
-
-  return (
-    content !== null &&
-    typeof content === "object" &&
-    "image" in content &&
-    typeof content.image === "string" &&
-    content.image.length > 0
-  );
-}
-
-function requestHasImageInput(params: ChatCompletionParameters): boolean {
-  return params.messages?.some((message) => messageContentHasImage(message.content)) ?? false;
-}
-
 function getContentImage(content: Message["content"]) {
   if (Array.isArray(content)) {
     const imageItem = content.find((item) => item.type === "image_url" && item.image_url?.url);
@@ -222,7 +195,7 @@ export class WorkersProvider extends BaseProvider {
       flags.isTextToImage ||
       flags.isTextToSpeech ||
       flags.isImageToImage ||
-      (flags.isImageToText && (!flags.supportsTextInput || requestHasImageInput(params)));
+      (flags.isImageToText && !flags.supportsTextInput);
 
     let imageData: WorkersMediaPayload["image"];
 

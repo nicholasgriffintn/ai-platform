@@ -534,6 +534,12 @@ export class MessageFormatter {
               : item;
           });
       case "workers-ai":
+        return content.filter(
+          (item) =>
+            typeof item === "object" &&
+            "type" in item &&
+            (item.type === "text" || item.type === "image_url"),
+        );
       case "ollama":
       case "github-models": {
         const imageItem = content.find(

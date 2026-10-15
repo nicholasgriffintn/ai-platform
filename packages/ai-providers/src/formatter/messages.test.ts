@@ -230,6 +230,20 @@ describe("Google Vertex history formatting", () => {
   });
 });
 
+describe("Workers AI history formatting", () => {
+  it("keeps image parts as chat content so vision chat models get messages, not a caption prompt", () => {
+    const image = { type: "image_url" as const, image_url: { url: "data:image/jpeg;base64,aGk=" } };
+    const formatted = MessageFormatter.formatMessages(
+      [{ role: "user", content: [{ type: "text", text: "Where is this?" }, image] }],
+      { provider: "workers-ai" },
+    );
+
+    expect(formatted).toEqual([
+      { role: "user", content: [{ type: "text", text: "Where is this?" }, image] },
+    ]);
+  });
+});
+
 describe("tool result images", () => {
   const image = { type: "image_url" as const, image_url: { url: "data:image/png;base64,aGk=" } };
   const toolMessage: Message = {
