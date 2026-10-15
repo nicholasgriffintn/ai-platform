@@ -328,6 +328,10 @@ export async function retryBenchmarkRun(
     );
   }
 
+  const store = BenchmarkResultStore.forEnv(context.env);
+  const kept = (await store.readResults(record.id)).filter((result) => result.error === null);
+
+  await store.writeResults(record.id, kept);
   await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, { retryChecks });
 
   return toBenchmarkRun(

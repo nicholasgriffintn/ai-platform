@@ -146,6 +146,7 @@ export const benchmarkItemResultSchema = z.object({
   artefact: benchmarkArtefactSchema.nullable(),
   detail: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
   error: z.string().nullable(),
+  attempts: z.number().int().nonnegative().optional(),
   latencyMs: z.number().nonnegative(),
   inputTokens: z.number().int().nonnegative(),
   outputTokens: z.number().int().nonnegative(),

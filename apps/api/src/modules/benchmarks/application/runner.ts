@@ -47,6 +47,7 @@ const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
 const TASK_TIME_BUDGET_MS = 6 * 60 * 1000;
 const TRANSIENT_ATTEMPTS = 4;
+const MAX_ITEM_ATTEMPTS = 2;
 const TRANSIENT_DELAY_MS = 3_000;
 const MAX_RETRY_DELAY_MS = 90_000;
 const RETRY_HINT_PATTERN = /retry in ([\d.]+)\s*s/i;
@@ -140,7 +141,13 @@ async function invokeWithRetries(
     try {
       return await invokeEntrant(scope, target);
     } catch (error) {
-      if (attempt >= TRANSIENT_ATTEMPTS || !classifyProviderRetryError(error).retryable) {
+      const classification = classifyProviderRetryError(error);
+
+      if (
+        attempt >= TRANSIENT_ATTEMPTS ||
+        !classification.retryable ||
+        classification.classification === "timeout"
+      ) {
         throw error;
       }
 
@@ -168,7 +175,12 @@ interface RunContext {
   billingUser: IUser | null;
 }
 
-function errorResult(itemId: string, error: unknown, latencyMs: number): BenchmarkItemResult {
+function errorResult(
+  itemId: string,
+  error: unknown,
+  latencyMs: number,
+  attempts: number,
+): BenchmarkItemResult {
   return {
     itemId,
     score: null,
@@ -177,6 +189,7 @@ function errorResult(itemId: string, error: unknown, latencyMs: number): Benchma
     artefact: null,
     detail: { failed: true },
     error: truncateText(getErrorMessage(error, "The entrant did not answer"), MAX_STORED_ERROR),
+    attempts,
     latencyMs,
     inputTokens: 0,
     outputTokens: 0,
@@ -187,6 +200,7 @@ function errorResult(itemId: string, error: unknown, latencyMs: number): Benchma
 async function runItem(
   context: RunContext,
   itemId: string,
+  attempts: number,
 ): Promise<{ result: BenchmarkItemResult; cause: unknown }> {
   const { env, repositories, run, benchmark, target, user, billingUser } = context;
   const started = Date.now();
@@ -225,6 +239,7 @@ async function runItem(
           ...(response.blocked === null ? {} : { blocked: response.blocked }),
         },
         error: null,
+        attempts,
         latencyMs: response.latencyMs,
         inputTokens: response.inputTokens,
         outputTokens: response.outputTokens,
@@ -233,7 +248,7 @@ async function runItem(
       cause: null,
     };
   } catch (error) {
-    return { result: errorResult(itemId, error, Date.now() - started), cause: error };
+    return { result: errorResult(itemId, error, Date.now() - started, attempts), cause: error };
   }
 }
 
@@ -321,16 +336,29 @@ class RunProgress {
     }
   }
 
-  pendingItemIds(options: { includeFailedChecks: boolean }): string[] {
+  pendingItemIds(options: { pass: "first" | "sweep"; includeFailedChecks: boolean }): string[] {
     return this.itemIds.filter((itemId) => {
       const result = this.results.get(itemId);
 
+      if (!result) {
+        return options.pass === "first";
+      }
+
+      if (result.error !== null) {
+        return options.pass === "sweep" && this.attemptsFor(itemId) < MAX_ITEM_ATTEMPTS;
+      }
+
       return (
-        !result ||
-        result.error !== null ||
-        (options.includeFailedChecks && result.artefact === null && result.score === 0)
+        options.pass === "first" &&
+        options.includeFailedChecks &&
+        result.artefact === null &&
+        result.score === 0
       );
     });
+  }
+
+  attemptsFor(itemId: string): number {
+    return this.results.get(itemId)?.attempts ?? (this.results.has(itemId) ? 1 : 0);
   }
 
   answeredCount(): number {
@@ -390,8 +418,8 @@ async function answerItems(
 
   for (const pass of PASSES) {
     const pending = progress.pendingItemIds({
-      includeFailedChecks:
-        options.retryChecks && pass === "first" && context.benchmark.summary.scoring === "votes",
+      pass,
+      includeFailedChecks: options.retryChecks && context.benchmark.summary.scoring === "votes",
     });
 
     if (pending.length === 0) {
@@ -415,7 +443,11 @@ async function answerItems(
             return;
           }
 
-          const { result, cause } = await runItem(context, itemId);
+          const { result, cause } = await runItem(
+            context,
+            itemId,
+            progress.attemptsFor(itemId) + 1,
+          );
 
           progress.record(result);
 

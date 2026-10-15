@@ -29,6 +29,7 @@ import { loadBenchmarkPhotoDataUrl } from "./photos";
 
 export const BENCHMARK_MAX_OUTPUT_TOKENS = 16_384;
 export const BENCHMARK_REASONING_EFFORT = "medium";
+export const BENCHMARK_REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 
 export interface EntrantResponse {
   output: string;
@@ -113,7 +114,7 @@ async function invokeChatModel(
       cache_ttl_seconds: 0,
       context,
     },
-    model,
+    { ...model, config: { ...model.config, timeout: BENCHMARK_REQUEST_TIMEOUT_MS } },
   );
   const latencyMs = Date.now() - started;
   const rawUsage = extractUsagePayload(response);
