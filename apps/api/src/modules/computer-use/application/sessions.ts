@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";
+import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { requireProjectCapabilityAccess } from "~/modules/workspaces/application/access";
@@ -62,7 +63,7 @@ export async function startBrowserSession(
   }
 
   const inputHash = await sha256Hex(JSON.stringify(input));
-  const record = await context.repositories.browserSessions.reserve({
+  const record = await context.repositories.get(BrowserSessionRepository).reserve({
     id: generatePrefixedId("browser_"),
     user_id: user.id,
     conversation_id: conversationId,
@@ -90,7 +91,7 @@ export async function startBrowserSession(
 
   if (
     record.provider_session_id ||
-    !(await context.repositories.browserSessions.claimCreation(record.id))
+    !(await context.repositories.get(BrowserSessionRepository).claimCreation(record.id))
   ) {
     return record.id;
   }
@@ -103,9 +104,9 @@ export async function startBrowserSession(
       task: input.task,
     });
 
-    await context.repositories.browserSessions.bind(record.id, providerSessionId);
+    await context.repositories.get(BrowserSessionRepository).bind(record.id, providerSessionId);
   } catch {
-    await context.repositories.browserSessions.setStartupError(record.id);
+    await context.repositories.get(BrowserSessionRepository).setStartupError(record.id);
   }
 
   return record.id;
@@ -124,7 +125,7 @@ export async function inspectBrowserSession(
     (record.last_error || startupExpired ? await provider.recover(record.id) : null);
 
   if (providerSessionId && !record.provider_session_id) {
-    await context.repositories.browserSessions.bind(id, providerSessionId);
+    await context.repositories.get(BrowserSessionRepository).bind(id, providerSessionId);
   }
 
   const snapshot = providerSessionId
@@ -234,7 +235,7 @@ export async function destroyBrowserSession(
     }
   }
 
-  await context.repositories.browserSessions.markDestroyed(id);
+  await context.repositories.get(BrowserSessionRepository).markDestroyed(id);
 
   return { destroyed: true };
 }

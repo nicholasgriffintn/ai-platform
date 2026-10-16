@@ -10,11 +10,13 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import { hireTeammate } from "~/modules/teammates/application/hire";
 import { getProject } from "~/modules/workspaces/application";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 import { validateProjectToolConfiguration } from "~/modules/workspaces/application/projectTools";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export function listProjectStarters(): ListPage<ProjectStarterSummary> {
   return listPageOf(
@@ -89,7 +91,7 @@ export async function instantiateProjectStarter(
   const projectId = generateId();
   const projectName = name ?? starter.name;
 
-  await context.repositories.workspaces.createProjectWithCapabilities(
+  await context.repositories.get(WorkspaceRepository).createProjectWithCapabilities(
     {
       id: projectId,
       workspaceId,
@@ -101,7 +103,7 @@ export async function instantiateProjectStarter(
     },
     capabilities,
   );
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "starter.instantiated",

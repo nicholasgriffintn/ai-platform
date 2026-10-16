@@ -5,6 +5,7 @@ import {
   resolveToolCallDestination,
   resolveToolCallEffectClass,
 } from "~/modules/chat/application/tools/effects";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { resolveFunctionTool } from "~/modules/functions/application";
 
 export async function readPendingPolyCall(
@@ -12,9 +13,9 @@ export async function readPendingPolyCall(
   polyContext: TeammateContext,
   interactionId: string,
 ) {
-  const pending = await context.repositories.messages.getLatestPendingToolMessage(
-    polyContext.homeConversationId,
-  );
+  const pending = await context.repositories
+    .get(MessageRepository)
+    .getLatestPendingToolMessage(polyContext.homeConversationId);
 
   if (!pending || pending.tool_call_id !== interactionId || typeof pending.name !== "string") {
     return null;

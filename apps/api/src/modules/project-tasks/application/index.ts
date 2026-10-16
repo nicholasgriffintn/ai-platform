@@ -24,15 +24,22 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import type { ListProjectTaskFilters } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   listProjectDefaultTeammateIds,
   resolveProjectTeammateIds,
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { parseProjectFlow } from "~/modules/workspaces/application/format";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { getProjectTaskActivity } from "./activity";
 import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";
@@ -54,14 +61,18 @@ async function settleCancelledTaskResources(
   task: ProjectTask,
 ): Promise<void> {
   const settlements: Promise<unknown>[] = [
-    context.repositories.activities.cancelActiveActivitiesByGroup("project_task", task.id),
+    context.repositories
+      .get(ActivityRepository)
+      .cancelActiveActivitiesByGroup("project_task", task.id),
   ];
 
   const dispatchTaskId = task.dispatchTaskId;
 
   if (dispatchTaskId) {
     settlements.push(
-      new TaskService(context.env, context.repositories.tasks).cancelTask(dispatchTaskId),
+      new TaskService(context.env, context.repositories.get(TaskRepository)).cancelTask(
+        dispatchTaskId,
+      ),
     );
   }
 
@@ -101,7 +112,7 @@ async function requireTask(
   projectId: string,
   taskId: string,
 ): Promise<ProjectTask> {
-  const task = await context.repositories.projectTasks.getTaskById(taskId);
+  const task = await context.repositories.get(ProjectTaskRepository).getTaskById(taskId);
 
   if (!task || task.projectId !== projectId) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
@@ -119,10 +130,9 @@ async function assertAssigneeIsMember(
     return;
   }
 
-  const membership = await context.repositories.workspaces.getMembership(
-    workspaceId,
-    assigneeUserId,
-  );
+  const membership = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, assigneeUserId);
 
   if (!membership) {
     throw new AssistantError(
@@ -185,7 +195,7 @@ async function assertDependenciesExist(
     throw new AssistantError("A task cannot depend on itself", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const tasks = await context.repositories.projectTasks.listProjectTasks(projectId, {
+  const tasks = await context.repositories.get(ProjectTaskRepository).listProjectTasks(projectId, {
     includeDone: true,
   });
   const known = new Set(tasks.map((task) => task.id));
@@ -208,9 +218,11 @@ export async function resolveUnmetDependencies(
     return [];
   }
 
-  const tasks = await context.repositories.projectTasks.listProjectTasks(task.projectId, {
-    includeDone: true,
-  });
+  const tasks = await context.repositories
+    .get(ProjectTaskRepository)
+    .listProjectTasks(task.projectId, {
+      includeDone: true,
+    });
   const byId = new Map(tasks.map((candidate) => [candidate.id, candidate]));
 
   return task.dependsOnTaskIds
@@ -226,7 +238,9 @@ export async function listProjectTasks(
   filters: ListProjectTaskFilters = {},
 ) {
   const { project } = await requireProjectAccess(context, projectId);
-  const tasks = await context.repositories.projectTasks.listProjectTasks(projectId, filters);
+  const tasks = await context.repositories
+    .get(ProjectTaskRepository)
+    .listProjectTasks(projectId, filters);
 
   return { tasks, flow: parseProjectFlow(project.flow) };
 }
@@ -235,7 +249,7 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
   const [goal, pendingQuestions, pendingApproval, interaction] = await Promise.all([
-    task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
+    task.goalId ? context.repositories.get(GoalRepository).getGoalById(task.goalId) : null,
     getPendingProjectTaskQuestions(context, task),
     getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
@@ -265,7 +279,7 @@ export async function respondToProjectTaskQuestions(
       },
     });
   } catch (error) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
       status: "blocked",
       blockedReason: "dispatch_failed",
       blockedDetail:
@@ -307,7 +321,7 @@ export async function respondToProjectTaskToolApproval(
       },
     });
 
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId: project.workspace_id,
       actorUserId: user.id,
       action: "project.task.tool_approval_resolved",
@@ -322,7 +336,7 @@ export async function respondToProjectTaskToolApproval(
 
     return resumed;
   } catch (error) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
       status: "blocked",
       blockedReason: "dispatch_failed",
       blockedDetail:
@@ -358,7 +372,7 @@ export async function createProjectTask(
   const input = createProjectTaskSchema.parse(unvalidatedInput);
 
   if (options.id) {
-    const existing = await context.repositories.projectTasks.getTaskById(options.id);
+    const existing = await context.repositories.get(ProjectTaskRepository).getTaskById(options.id);
 
     if (existing) {
       if (existing.projectId !== projectId || existing.createdByUserId !== user.id) {
@@ -379,8 +393,10 @@ export async function createProjectTask(
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
 
-  const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
-  const { task, created } = await context.repositories.projectTasks.createTask({
+  const maxPosition = await context.repositories
+    .get(ProjectTaskRepository)
+    .getMaxPosition(projectId);
+  const { task, created } = await context.repositories.get(ProjectTaskRepository).createTask({
     id: options.id,
     executionProfile: options.executionProfile,
     projectId,
@@ -409,7 +425,7 @@ export async function createProjectTask(
     return { task };
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.task.created",
@@ -502,7 +518,7 @@ export async function updateProjectTask(
 
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
-  const updated = await context.repositories.projectTasks.updateTask(taskId, {
+  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
     ...input,
     acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
     assumptions: input.assumptions ? withGeneratedIds(input.assumptions) : undefined,
@@ -518,7 +534,7 @@ export async function updateProjectTask(
   }
 
   if (input.status !== undefined && input.status !== task.status) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId: project.workspace_id,
       actorUserId: user.id,
       action: "project.task.status_changed",
@@ -574,9 +590,9 @@ export async function startProjectTask(
   }
 
   if (task.status === "blocked" && task.blockedReason === "run_failed") {
-    const unsafeRunIds = await context.repositories.connectorOperationApprovals.listConsumedRunIds(
-      task.runId ? [task.runId] : [],
-    );
+    const unsafeRunIds = await context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .listConsumedRunIds(task.runId ? [task.runId] : []);
     const resume = getProjectTaskResumeCapability(task, unsafeRunIds);
 
     if (!resume.supported) {
@@ -599,7 +615,7 @@ export async function startProjectTask(
   const unmet = await resolveUnmetDependencies(context, task);
 
   if (unmet.length > 0) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
+    const blocked = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
       status: "blocked",
       blockedReason: "dependencies_unmet",
       blockedDetail:
@@ -623,7 +639,7 @@ export async function startProjectTask(
     );
   }
 
-  const active = await context.repositories.projectTasks.countActiveTasks(projectId);
+  const active = await context.repositories.get(ProjectTaskRepository).countActiveTasks(projectId);
 
   if (active >= PROJECT_TASK_DEFAULT_CONCURRENCY) {
     throw new AssistantError(
@@ -643,7 +659,7 @@ export async function startProjectTask(
     interaction: options.interaction,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.task.started",
@@ -674,7 +690,9 @@ export async function acceptProjectTask(
 
   if (nextStage) {
     const completions = approveLatestProjectTaskCompletion(task.completions, user.id);
-    const reviewed = await context.repositories.projectTasks.updateTask(taskId, { completions });
+    const reviewed = await context.repositories
+      .get(ProjectTaskRepository)
+      .updateTask(taskId, { completions });
 
     if (!reviewed) {
       throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
@@ -687,7 +705,7 @@ export async function acceptProjectTask(
       stageId: nextStage,
     });
   } else {
-    updated = await context.repositories.projectTasks.updateTask(taskId, {
+    updated = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
       status: "done",
       blockedReason: null,
       blockedDetail: null,
@@ -700,7 +718,7 @@ export async function acceptProjectTask(
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: nextStage ? "project.task.stage_started" : "project.task.accepted",
@@ -740,8 +758,8 @@ export async function deleteProjectTask(
     );
   }
 
-  await context.repositories.projectTasks.deleteTask(taskId);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ProjectTaskRepository).deleteTask(taskId);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.task.deleted",
@@ -769,7 +787,7 @@ export async function setProjectFlow(
 
   if (flow) {
     const [capabilities, defaultTeammateIds] = await Promise.all([
-      context.repositories.workspaces.listProjectCapabilities(projectId),
+      context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId),
       listProjectDefaultTeammateIds(context, project.workspace_id),
     ]);
     const availableTeammates = new Set(
@@ -812,10 +830,10 @@ export async function setProjectFlow(
     }
   }
 
-  await context.repositories.workspaces.updateProject(projectId, {
+  await context.repositories.get(WorkspaceRepository).updateProject(projectId, {
     flow: flow ? JSON.stringify(flow) : null,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: flow ? "project.flow.updated" : "project.flow.cleared",

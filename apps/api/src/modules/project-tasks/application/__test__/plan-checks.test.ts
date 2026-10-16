@@ -2,6 +2,8 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 
 import { findMetKillCondition, recordProjectTaskRetrospective } from "../plan-checks";
 
@@ -26,7 +28,7 @@ function setup() {
   const context = {
     env: {},
     user: { id: 7 },
-    repositories: { projectTasks: { updateTask } },
+    repositories: fakeRepositories([[ProjectTaskRepository, { updateTask }]]),
   } as unknown as ServiceContext;
 
   return { context, updateTask };

@@ -2,6 +2,10 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { notifyMobileProjectTask } from ".";
 
@@ -51,35 +55,41 @@ function context(decisions: boolean): ServiceContext {
       APNS_PRIVATE_KEY: "AA==",
       APNS_TOPIC: "app.polychat",
     },
-    repositories: {
-      workspaces: { getMembership: vi.fn().mockResolvedValue({ role: "member" }) },
-      taskNotifications: {
-        getPreferences: vi.fn().mockResolvedValue({
-          enabled: true,
-          decisions,
-          failures: true,
-          completions: true,
-          assignments: true,
-        }),
-      },
-      mobilePush: {
-        listActiveForUser: vi.fn().mockResolvedValue([
-          {
-            id: "device-1",
-            user_id: 8,
-            token: "a".repeat(64),
-            environment: "sandbox",
-            app_bundle_id: "app.polychat",
-            last_registered_at: "2026-09-05T12:00:00.000Z",
-            invalidated_at: null,
-            created_at: "2026-09-05T12:00:00.000Z",
-          },
-        ]),
-        claimDelivery: vi.fn().mockResolvedValue(true),
-        finishDelivery: vi.fn().mockResolvedValue(undefined),
-        invalidateDevice: vi.fn().mockResolvedValue(undefined),
-      },
-    },
+    repositories: fakeRepositories([
+      [WorkspaceRepository, { getMembership: vi.fn().mockResolvedValue({ role: "member" }) }],
+      [
+        TaskNotificationRepository,
+        {
+          getPreferences: vi.fn().mockResolvedValue({
+            enabled: true,
+            decisions,
+            failures: true,
+            completions: true,
+            assignments: true,
+          }),
+        },
+      ],
+      [
+        MobilePushRepository,
+        {
+          listActiveForUser: vi.fn().mockResolvedValue([
+            {
+              id: "device-1",
+              user_id: 8,
+              token: "a".repeat(64),
+              environment: "sandbox",
+              app_bundle_id: "app.polychat",
+              last_registered_at: "2026-09-05T12:00:00.000Z",
+              invalidated_at: null,
+              created_at: "2026-09-05T12:00:00.000Z",
+            },
+          ]),
+          claimDelivery: vi.fn().mockResolvedValue(true),
+          finishDelivery: vi.fn().mockResolvedValue(undefined),
+          invalidateDevice: vi.fn().mockResolvedValue(undefined),
+        },
+      ],
+    ]),
   });
 
   return serviceContext;
@@ -110,7 +120,9 @@ describe("mobile task notification preferences", () => {
       kind: "review",
     });
 
-    expect(disabled.repositories.mobilePush.listActiveForUser).not.toHaveBeenCalled();
+    expect(
+      disabled.repositories.get(MobilePushRepository).listActiveForUser,
+    ).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
 
     const enabled = context(true);
@@ -122,7 +134,9 @@ describe("mobile task notification preferences", () => {
       kind: "review",
     });
 
-    expect(enabled.repositories.mobilePush.listActiveForUser).toHaveBeenCalledWith(8);
+    expect(enabled.repositories.get(MobilePushRepository).listActiveForUser).toHaveBeenCalledWith(
+      8,
+    );
     expect(send).toHaveBeenCalledTimes(1);
   });
 });

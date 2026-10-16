@@ -4,6 +4,7 @@ import { PROJECT_TASK_INTERACTION_TTL_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";
@@ -41,10 +42,12 @@ export async function recoverPendingProjectTaskInteraction(params: {
   writeFence: ConversationWriteFence;
   now?: number;
 }): Promise<{ recovered: true } | { recovered: false; reason: string }> {
-  const message = await params.context.repositories.messages.getLatestPendingToolMessage(
-    params.conversationId,
-    params.kind === "input" ? ["ask_user"] : undefined,
-  );
+  const message = await params.context.repositories
+    .get(MessageRepository)
+    .getLatestPendingToolMessage(
+      params.conversationId,
+      params.kind === "input" ? ["ask_user"] : undefined,
+    );
 
   if (!message || typeof message.id !== "string") {
     return {
@@ -76,12 +79,14 @@ export async function recoverPendingProjectTaskInteraction(params: {
   };
 
   await params.writeFence.assertOwned();
-  await params.context.repositories.messages.updateMessage(params.conversationId, message.id, {
-    content: expiredMessage.content,
-    status: expiredMessage.status,
-    data: expiredData,
-    parts: buildMessageParts(expiredMessage),
-  });
+  await params.context.repositories
+    .get(MessageRepository)
+    .updateMessage(params.conversationId, message.id, {
+      content: expiredMessage.content,
+      status: expiredMessage.status,
+      data: expiredData,
+      parts: buildMessageParts(expiredMessage),
+    });
 
   return {
     recovered: false,

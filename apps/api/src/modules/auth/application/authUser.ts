@@ -1,6 +1,7 @@
 import type { AuthUserWithEmail, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { User } from "~/types";
 
 import { ensureUserProvisioned } from "./user";
@@ -23,7 +24,7 @@ export function createAssistantUserStore(context: ServiceContext): UserStore<Ass
         return null;
       }
 
-      const user = await context.repositories.users.getUserById(id);
+      const user = await context.repositories.get(UserRepository).getUserById(id);
 
       return user ? toAssistantAuthUser(user) : null;
     },
@@ -34,7 +35,7 @@ export async function resolveAssistantEmailUser(
   context: ServiceContext,
   email: string,
 ): Promise<AssistantAuthUser | null> {
-  const existing = await context.repositories.users.getUserByEmail(email);
+  const existing = await context.repositories.get(UserRepository).getUserByEmail(email);
 
   if (existing) {
     await initialiseAssistantUser(context, existing.id);
@@ -42,7 +43,7 @@ export async function resolveAssistantEmailUser(
     return toAssistantAuthUser(existing);
   }
 
-  const created = await context.repositories.users.createUser({ email });
+  const created = await context.repositories.get(UserRepository).createUser({ email });
 
   if (!created) {
     return null;

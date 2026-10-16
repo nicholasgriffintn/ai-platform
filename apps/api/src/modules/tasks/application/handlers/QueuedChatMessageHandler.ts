@@ -8,8 +8,11 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
 import { startResponse } from "~/modules/responses/application/start";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -24,16 +27,18 @@ export class QueuedChatMessageHandler implements TaskHandler {
 
     const { conversationId, message: userMessage, request } = parsed.data;
     const baseContext = createServiceContext({ env });
-    const latest =
-      await baseContext.repositories.conversationRuns.getLatestForConversation(conversationId);
+    const latest = await baseContext.repositories
+      .get(ConversationRunRepository)
+      .getLatestForConversation(conversationId);
 
     if (latest && !isTerminalChatRunStatus(latest.status)) {
       return { status: "suspended", message: "Waiting for the current reply to finish" };
     }
 
-    const user = await baseContext.repositories.users.getUserById(message.user_id);
-    const conversation =
-      await baseContext.repositories.conversations.getConversation(conversationId);
+    const user = await baseContext.repositories.get(UserRepository).getUserById(message.user_id);
+    const conversation = await baseContext.repositories
+      .get(ConversationRepository)
+      .getConversation(conversationId);
 
     if (
       !user ||

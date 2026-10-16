@@ -2,7 +2,9 @@ import type { DocumentComment } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { reconcileTaskNotifications } from "~/modules/project-tasks/application/attention";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -27,10 +29,10 @@ export async function prepareCommentMention(
   const { project } = await requireProjectAccess(context, projectId);
 
   await requireProjectTeammate(context, projectId, comment.mentionedTeammateId);
-  const position = await context.repositories.projectTasks.getMaxPosition(projectId);
+  const position = await context.repositories.get(ProjectTaskRepository).getMaxPosition(projectId);
 
   return [
-    context.repositories.projectTasks.prepareTaskCreation({
+    context.repositories.get(ProjectTaskRepository).prepareTaskCreation({
       id: comment.taskId,
       projectId,
       workspaceId: project.workspace_id,
@@ -69,7 +71,7 @@ export async function prepareCommentMention(
       },
       position: position + 1000,
     }),
-    context.repositories.audit.prepareRecord({
+    context.repositories.get(AuditRepository).prepareRecord({
       workspaceId: project.workspace_id,
       actorUserId: comment.authorUserId,
       action: "project.task.created",
@@ -93,7 +95,7 @@ export async function notifyCommentMention(
     return;
   }
 
-  const task = await context.repositories.projectTasks.getTaskById(comment.taskId);
+  const task = await context.repositories.get(ProjectTaskRepository).getTaskById(comment.taskId);
 
   if (task) {
     await reconcileTaskNotifications(context, task);

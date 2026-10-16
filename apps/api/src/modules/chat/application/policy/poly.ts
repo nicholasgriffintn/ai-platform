@@ -8,7 +8,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import type { CoreChatOptions } from "~/types";
 
 export interface PolyTurn {
@@ -35,12 +36,12 @@ export function filterToolsForPolyTurn<T extends { name: string }>(
 
 export async function isAdmittedPolyRun(
   options: Pick<CoreChatOptions, "completion_id" | "poly" | "context" | "resolved_configuration">,
-  repositories: Pick<RepositoryManager, "conversations">,
+  repositories: Repositories,
 ): Promise<boolean> {
   const requested = options.poly;
   const user = options.context?.user;
   const stored = options.completion_id
-    ? await repositories.conversations.getConversation(options.completion_id)
+    ? await repositories.get(ConversationRepository).getConversation(options.completion_id)
     : null;
   const storedIsPoly = stored?.type === POLY_CONVERSATION_TYPE;
 

@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 
 const logger = getLogger({ prefix: "services/training/metadata-enhancer" });
 
@@ -93,8 +94,9 @@ export class TrainingMetadataEnhancer {
     previousMessages: Array<{ role: "user" | "assistant"; content: string }>,
   ): Promise<ConversationContext> {
     try {
-      const conversation =
-        await this.context.repositories.conversations.getConversation(conversationId);
+      const conversation = await this.context.repositories
+        .get(ConversationRepository)
+        .getConversation(conversationId);
 
       return {
         previousMessages: previousMessages.map((msg) => ({

@@ -2,6 +2,7 @@ import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integration
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
 
 import type { ComposioConnectorSessionRecord } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
 
@@ -56,9 +57,9 @@ export const resolveComposioApprovalAuthority: ResolveConnectorApprovalAuthority
     approval: params.approval,
     call: params.call,
     userId: params.userId,
-    session: await params.context.repositories.composioConnectorSessions.getById(
-      params.call.sessionId ?? "",
-    ),
+    session: await params.context.repositories
+      .get(ComposioConnectorSessionRepository)
+      .getById(params.call.sessionId ?? ""),
   });
   const provider = getConnectorProviderConfig(params.approval.provider);
 

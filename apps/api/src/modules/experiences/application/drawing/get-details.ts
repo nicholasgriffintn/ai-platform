@@ -5,6 +5,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv } from "~/types";
 
 import type { Drawing } from "./list";
@@ -29,7 +30,7 @@ export async function getDrawingDetails({
   const serviceContext = resolveServiceContext({ context, env });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const entry = projectId
     ? await repo.getProjectOutput(projectId, drawingId)
     : await repo.getPersonalOutput(userId, drawingId);

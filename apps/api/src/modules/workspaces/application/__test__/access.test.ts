@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   requireOptionalProjectCapabilityAccess,
@@ -13,16 +15,19 @@ import {
 function createContext(capabilityId: string) {
   return {
     requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-    repositories: {
-      workspaces: {
-        getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
-        getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-        getMembership: vi.fn().mockResolvedValue({ role: "member" }),
-        listProjectCapabilities: vi
-          .fn()
-          .mockResolvedValue([{ kind: "app", capability_id: capabilityId }]),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        WorkspaceRepository,
+        {
+          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+          getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+          listProjectCapabilities: vi
+            .fn()
+            .mockResolvedValue([{ kind: "app", capability_id: capabilityId }]),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -37,13 +42,16 @@ function createWorkspaceContext({
 } = {}) {
   return {
     requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-    repositories: {
-      workspaces: {
-        getProject: vi.fn().mockResolvedValue(project),
-        getWorkspace: vi.fn().mockResolvedValue(workspace),
-        getMembership: vi.fn().mockResolvedValue(membership),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        WorkspaceRepository,
+        {
+          getProject: vi.fn().mockResolvedValue(project),
+          getWorkspace: vi.fn().mockResolvedValue(workspace),
+          getMembership: vi.fn().mockResolvedValue(membership),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -92,8 +100,8 @@ describe("requireProjectAccess", () => {
       message: "Project not found",
       statusCode: 404,
     });
-    expect(context.repositories.workspaces.getWorkspace).not.toHaveBeenCalled();
-    expect(context.repositories.workspaces.getMembership).not.toHaveBeenCalled();
+    expect(context.repositories.get(WorkspaceRepository).getWorkspace).not.toHaveBeenCalled();
+    expect(context.repositories.get(WorkspaceRepository).getMembership).not.toHaveBeenCalled();
   });
 });
 
@@ -124,7 +132,9 @@ describe("requireProjectCapabilityAccess", () => {
     const context = createContext("featured-recording-processor");
 
     (
-      context.repositories.workspaces.getMembership as unknown as { mockResolvedValue: Function }
+      context.repositories.get(WorkspaceRepository).getMembership as unknown as {
+        mockResolvedValue: Function;
+      }
     ).mockResolvedValue(null);
 
     await expect(
@@ -145,7 +155,7 @@ describe("requireOptionalProjectCapabilityAccess", () => {
         "featured-recording-processor",
       ),
     ).resolves.toBeUndefined();
-    expect(context.repositories.workspaces.getMembership).not.toHaveBeenCalled();
+    expect(context.repositories.get(WorkspaceRepository).getMembership).not.toHaveBeenCalled();
   });
 
   it("applies the project rules as soon as a project is named", async () => {

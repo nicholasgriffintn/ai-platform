@@ -22,7 +22,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
@@ -114,20 +116,22 @@ export function officialEntrantsFor(
 }
 
 async function loadOwner(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   ownerUserId: number | null | undefined,
 ): Promise<IUser | null> {
-  return ownerUserId ? repositories.users.getUserById(ownerUserId) : null;
+  return ownerUserId ? repositories.get(UserRepository).getUserById(ownerUserId) : null;
 }
 
 export async function queueOfficialRuns(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   request: QueueOfficialBenchmarkRunsRequest = {},
   options: OfficialQueueOptions = {},
   now = new Date(),
 ): Promise<OfficialQueueResult> {
-  const spentThisMonthUsd = await repositories.benchmarkRuns.officialSpendSince(startOfMonth(now));
+  const spentThisMonthUsd = await repositories
+    .get(BenchmarkRunRepository)
+    .officialSpendSince(startOfMonth(now));
 
   if (spentThisMonthUsd >= BENCHMARKS_CONFIG.officialMonthlyBudgetUsd) {
     return { queued: [], skippedForBudget: true, spentThisMonthUsd, remaining: 0 };
@@ -144,11 +148,11 @@ export async function queueOfficialRuns(
   const wanted: { benchmark: Benchmark; entrant: BenchmarkEntrant }[] = [];
 
   for (const benchmark of benchmarks) {
-    const existing = await repositories.benchmarkRuns.listOfficialEntrantKeys(
-      benchmark.summary.id,
-      benchmark.summary.version,
-      { retryFailed: request.retryFailed ?? explicit },
-    );
+    const existing = await repositories
+      .get(BenchmarkRunRepository)
+      .listOfficialEntrantKeys(benchmark.summary.id, benchmark.summary.version, {
+        retryFailed: request.retryFailed ?? explicit,
+      });
 
     for (const entrant of officialEntrantsFor(models, benchmark, modelIds, existing)) {
       wanted.push({ benchmark, entrant });
@@ -158,7 +162,7 @@ export async function queueOfficialRuns(
   const queued: BenchmarkRun[] = [];
 
   for (const { benchmark, entrant } of wanted.slice(0, limit)) {
-    const record = await repositories.benchmarkRuns.create({
+    const record = await repositories.get(BenchmarkRunRepository).create({
       benchmarkId: benchmark.summary.id,
       version: benchmark.summary.version,
       scope: "official",
@@ -184,11 +188,11 @@ export async function queueOfficialRuns(
 
 export async function recoverStaleBenchmarkRuns(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
 ): Promise<number> {
-  const stale = await repositories.benchmarkRuns.listStaleRunning(
-    BENCHMARKS_CONFIG.staleRunMinutes,
-  );
+  const stale = await repositories
+    .get(BenchmarkRunRepository)
+    .listStaleRunning(BENCHMARKS_CONFIG.staleRunMinutes);
 
   let recovered = 0;
 
@@ -276,12 +280,12 @@ function compareEntrants(left: BenchmarkOfficialEntrant, right: BenchmarkOfficia
 
 export async function getOfficialOverview(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   user: IUser,
 ): Promise<BenchmarkOfficialOverview> {
   const models = await listOfficialModels(env, user);
   const catalogue = getModels();
-  const latest = latestOfficialRuns(await repositories.benchmarkRuns.listOfficial());
+  const latest = latestOfficialRuns(await repositories.get(BenchmarkRunRepository).listOfficial());
   const ranModelIds = [...latest.values()].flatMap((record) =>
     record.entrant.kind === "model" ? [record.entrant.modelId] : [],
   );
@@ -305,7 +309,9 @@ export async function getOfficialOverview(
   return {
     budget: {
       monthlyUsd: BENCHMARKS_CONFIG.officialMonthlyBudgetUsd,
-      spentThisMonthUsd: await repositories.benchmarkRuns.officialSpendSince(startOfMonth(now)),
+      spentThisMonthUsd: await repositories
+        .get(BenchmarkRunRepository)
+        .officialSpendSince(startOfMonth(now)),
     },
     boards,
   };

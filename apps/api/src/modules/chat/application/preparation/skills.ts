@@ -1,6 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import {
   createProjectSkillScope,
   resolvePersonalSkillScope,
@@ -15,7 +16,7 @@ const logger = getLogger({ prefix: "services/chat/preparation/skills" });
 
 export async function resolveSkillScope(
   projectContext: ProjectChatContext | null,
-  repositories: RepositoryManager | null,
+  repositories: Repositories | null,
   userId?: number,
 ): Promise<RequestSkillScope> {
   if (projectContext) {
@@ -27,7 +28,10 @@ export async function resolveSkillScope(
   }
 
   try {
-    return await resolvePersonalSkillScope(repositories.capabilityConfigurations, userId);
+    return await resolvePersonalSkillScope(
+      repositories.get(CapabilityConfigurationRepository),
+      userId,
+    );
   } catch (error) {
     logger.warn("Failed to load personal skill configuration", { error, userId });
 

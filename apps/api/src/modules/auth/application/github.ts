@@ -4,6 +4,7 @@ import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objec
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { type AssistantAuthUser, toAssistantAuthUser } from "~/modules/auth/application/authUser";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 export async function resolveGitHubIdentity(
   tokens: OAuthTokenSet,
@@ -69,7 +70,7 @@ export async function resolveGitHubUser(
   identity: ExternalIdentity,
 ): Promise<AssistantAuthUser> {
   const profile = readGitHubProfile(identity);
-  const user = await context.repositories.users.createOrUpdateGithubUser({
+  const user = await context.repositories.get(UserRepository).createOrUpdateGithubUser({
     githubId: identity.providerSubject,
     username: profile.login,
     email: profile.email,

@@ -19,7 +19,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { isUrlWithinOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 import { Stripe } from "stripe";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
 import {
   sendPaymentFailedEmail,
   sendSubscriptionCancellationNoticeEmail,
@@ -27,6 +27,9 @@ import {
   sendTrialEndingEmail,
   sendUnsubscriptionEmail,
 } from "~/modules/notifications/application";
+import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/subscription" });
@@ -88,8 +91,6 @@ export async function createCheckoutSession(
   assertRedirectUrlAllowed(env, successUrl, "success_url");
   assertRedirectUrlAllowed(env, cancelUrl, "cancel_url");
 
-  const repositories = new RepositoryManager(env);
-
   if (user.stripe_subscription_id) {
     const stripe = getStripeClient(env);
     const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
@@ -99,7 +100,7 @@ export async function createCheckoutSession(
     }
   }
 
-  const plan = await repositories.plans.getPlanById(planId);
+  const plan = await new PlanRepository(env).getPlanById(planId);
 
   if (!plan) {
     throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
@@ -119,7 +120,7 @@ export async function createCheckoutSession(
     });
 
     customerId = customer.id;
-    await repositories.users.updateUser(user.id, {
+    await new UserRepository(env).updateUser(user.id, {
       stripe_customer_id: customerId,
     });
   }
@@ -174,7 +175,7 @@ export async function getSubscriptionStatus(
         return inactiveSubscriptionStatus();
       }
 
-      const repositories = new RepositoryManager(env);
+      const repositories = createRepositories(env);
 
       await applySubscriptionState(repositories, user, {
         planId: "pro",
@@ -189,9 +190,7 @@ export async function getSubscriptionStatus(
     return subscriptionStatus(subscription);
   } catch (error: any) {
     if (error.code === "resource_missing") {
-      const repositories = new RepositoryManager(env);
-
-      await repositories.users.updateUser(user.id, {
+      await new UserRepository(env).updateUser(user.id, {
         stripe_subscription_id: null,
         plan_id: "free",
       });
@@ -268,9 +267,7 @@ export async function cancelSubscription(
     };
   } catch (error: any) {
     if (error.code === "resource_missing") {
-      const repositories = new RepositoryManager(env);
-
-      await repositories.users.updateUser(user.id, {
+      await new UserRepository(env).updateUser(user.id, {
         stripe_subscription_id: null,
         plan_id: "free",
       });
@@ -307,9 +304,7 @@ export async function reactivateSubscription(
     return { status: updated.status, cancel_at_period_end: false };
   } catch (error: any) {
     if (error.code === "resource_missing") {
-      const repositories = new RepositoryManager(env);
-
-      await repositories.users.updateUser(user.id, {
+      await new UserRepository(env).updateUser(user.id, {
         stripe_subscription_id: null,
         plan_id: "free",
       });
@@ -375,6 +370,7 @@ export async function setOverageBilling(
     throw new AssistantError("No active subscription", ErrorType.NOT_FOUND);
   }
 
+  const usageBalances = new UsageBalanceRepository(env);
   const stripe = getStripeClient(env);
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
@@ -385,14 +381,13 @@ export async function setOverageBilling(
     );
   }
 
-  const repositories = new RepositoryManager(env);
   const planId = resolvePlanId(user.plan_id);
 
   if (!planId) {
     throw new AssistantError("No plan found for this user", ErrorType.NOT_FOUND);
   }
 
-  const plan = await repositories.plans.getPlanById(planId);
+  const plan = await new PlanRepository(env).getPlanById(planId);
   const overagePriceId = typeof plan?.overage_price_id === "string" ? plan.overage_price_id : null;
 
   if (!overagePriceId) {
@@ -428,12 +423,12 @@ export async function setOverageBilling(
 
   const period = usagePeriodFromDate();
 
-  await repositories.usageBalances.ensureBalance({
+  await usageBalances.ensureBalance({
     userId: user.id,
     period,
     planId,
   });
-  await repositories.usageBalances.setOverageEnabled(user.id, period, enabled);
+  await usageBalances.setOverageEnabled(user.id, period, enabled);
 
   return { overage_enabled: enabled };
 }
@@ -444,7 +439,7 @@ interface SubscriptionStateChange {
 }
 
 async function applySubscriptionState(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   user: IUser,
   change: SubscriptionStateChange,
 ): Promise<{ planChanged: boolean }> {
@@ -470,7 +465,7 @@ async function applySubscriptionState(
     return { planChanged: false };
   }
 
-  await repositories.users.updateUser(user.id, updates);
+  await repositories.get(UserRepository).updateUser(user.id, updates);
 
   if (planChanged && change.planId) {
     await reflectPlanChangeIntoBalance(repositories, user.id, change.planId);
@@ -480,17 +475,17 @@ async function applySubscriptionState(
 }
 
 async function reflectPlanChangeIntoBalance(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId: number,
   planId: PlanId,
 ): Promise<void> {
   try {
     const period = usagePeriodFromDate();
-    const plan = await repositories.plans.getPlanById(planId);
+    const plan = await repositories.get(PlanRepository).getPlanById(planId);
     const entitlement = resolvePlanEntitlementMicros(plan);
 
     if (entitlement) {
-      await repositories.usageBalances.setPlanEntitlement({
+      await repositories.get(UsageBalanceRepository).setPlanEntitlement({
         userId,
         period,
         planId,
@@ -500,7 +495,7 @@ async function reflectPlanChangeIntoBalance(
     }
 
     if (planId === "free") {
-      await repositories.usageBalances.setOverageEnabled(userId, period, false);
+      await repositories.get(UsageBalanceRepository).setOverageEnabled(userId, period, false);
     }
   } catch (error) {
     logger.error("Failed to reflect plan change into the usage balance", {
@@ -539,7 +534,7 @@ export async function handleStripeWebhook(
     throw new AssistantError("Invalid webhook signature", ErrorType.AUTHENTICATION_ERROR);
   }
 
-  const repositories = new RepositoryManager(env);
+  const repositories = createRepositories(env);
 
   try {
     switch (event.type) {
@@ -549,7 +544,7 @@ export async function handleStripeWebhook(
         const subscriptionId = session.subscription as string;
 
         if (customerId && subscriptionId) {
-          const user = await repositories.users.getUserByStripeCustomerId(customerId);
+          const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
           if (user?.id) {
             const { planChanged } = await applySubscriptionState(repositories, user, {
@@ -573,7 +568,7 @@ export async function handleStripeWebhook(
       case "customer.subscription.updated": {
         const subscription = event.data.object;
         const customerId = subscription.customer as string;
-        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+        const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
           const planId = resolvePlanForSubscriptionStatus(subscription.status);
@@ -603,7 +598,7 @@ export async function handleStripeWebhook(
       case "customer.subscription.deleted": {
         const subscription = event.data.object;
         const customerId = subscription.customer as string;
-        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+        const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
           await applySubscriptionState(repositories, user, {
@@ -625,7 +620,7 @@ export async function handleStripeWebhook(
       case "invoice.payment_failed": {
         const invoice = event.data.object;
         const customerId = invoice.customer as string;
-        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+        const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
           const { planChanged } = await applySubscriptionState(repositories, user, {
@@ -647,7 +642,7 @@ export async function handleStripeWebhook(
       case "invoice.paid": {
         const invoice = event.data.object;
         const customerId = invoice.customer as string;
-        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+        const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id && user.stripe_subscription_id) {
           const { planChanged } = await applySubscriptionState(repositories, user, {
@@ -665,7 +660,7 @@ export async function handleStripeWebhook(
       case "customer.subscription.trial_will_end": {
         const subscription = event.data.object;
         const customerId = subscription.customer as string;
-        const user = await repositories.users.getUserByStripeCustomerId(customerId);
+        const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id && user.email) {
           try {

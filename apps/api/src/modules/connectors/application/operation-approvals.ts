@@ -7,6 +7,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { publishConnectorApprovalChanged } from "~/modules/sync/application/conversation-events";
 
 import type { ConnectorRunScope } from "./connector-run-scope";
@@ -133,25 +135,27 @@ export async function authoriseConnectorOperation(params: {
       operation: params.operation,
       arguments: params.arguments,
     });
-    const approval = await params.context.repositories.connectorOperationApprovals.consume({
-      id: params.approvalId,
-      userId: params.userId,
-      runId: params.context.connectorRunId,
-      completionId: params.scope.completionId,
-      provider: params.provider,
-      operation: params.operation,
-      connectedAccountId: params.connectedAccountId,
-      channel: params.channel,
-      argumentDigest,
-      authorityRevision: params.authorityRevision ?? 0,
-      recipeId: params.scope.recipeId,
-      installationId: params.scope.installationId,
-      projectId: params.scope.projectId,
-      teammateContextId: params.scope.teammateContextId,
-      consumedAt: now,
-      executionToken: params.context.connectorApprovalExecutionToken,
-      executionLeaseExpiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-    });
+    const approval = await params.context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .consume({
+        id: params.approvalId,
+        userId: params.userId,
+        runId: params.context.connectorRunId,
+        completionId: params.scope.completionId,
+        provider: params.provider,
+        operation: params.operation,
+        connectedAccountId: params.connectedAccountId,
+        channel: params.channel,
+        argumentDigest,
+        authorityRevision: params.authorityRevision ?? 0,
+        recipeId: params.scope.recipeId,
+        installationId: params.scope.installationId,
+        projectId: params.scope.projectId,
+        teammateContextId: params.scope.teammateContextId,
+        consumedAt: now,
+        executionToken: params.context.connectorApprovalExecutionToken,
+        executionLeaseExpiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      });
 
     if (!approval) {
       throw new AssistantError(
@@ -177,9 +181,9 @@ export async function authoriseConnectorOperation(params: {
     operation: params.operation,
     arguments: params.arguments,
   });
-  const run = await params.context.repositories.conversationRuns.getById(
-    params.context.connectorRunId,
-  );
+  const run = await params.context.repositories
+    .get(ConversationRunRepository)
+    .getById(params.context.connectorRunId);
 
   if (
     !run ||
@@ -194,25 +198,27 @@ export async function authoriseConnectorOperation(params: {
     );
   }
 
-  const approval = await params.context.repositories.connectorOperationApprovals.create({
-    userId: params.userId,
-    runId: params.context.connectorRunId,
-    runAttempt: run.attempt,
-    completionId: params.scope.completionId,
-    provider: params.provider,
-    operation: params.operation,
-    connectedAccountId: params.connectedAccountId,
-    channel: params.channel,
-    argumentDigest,
-    arguments: params.arguments,
-    authorityRevision: params.authorityRevision ?? 0,
-    recipeId: params.scope.recipeId,
-    installationId: params.scope.installationId,
-    projectId: params.scope.projectId,
-    teammateContextId: params.scope.teammateContextId,
-    createdAt: now,
-    expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
-  });
+  const approval = await params.context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .create({
+      userId: params.userId,
+      runId: params.context.connectorRunId,
+      runAttempt: run.attempt,
+      completionId: params.scope.completionId,
+      provider: params.provider,
+      operation: params.operation,
+      connectedAccountId: params.connectedAccountId,
+      channel: params.channel,
+      argumentDigest,
+      arguments: params.arguments,
+      authorityRevision: params.authorityRevision ?? 0,
+      recipeId: params.scope.recipeId,
+      installationId: params.scope.installationId,
+      projectId: params.scope.projectId,
+      teammateContextId: params.scope.teammateContextId,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
+    });
 
   await publishConnectorApprovalChanged(params.context, approval.completionId, approval.id);
 
@@ -231,12 +237,14 @@ export async function resolveConnectorOperationApproval(params: {
   resolution: "approved" | "rejected";
 }): Promise<ConnectorOperationApprovalView> {
   const resolvedAt = new Date().toISOString();
-  const approval = await params.context.repositories.connectorOperationApprovals.resolve({
-    id: params.approvalId,
-    userId: params.userId,
-    resolution: params.resolution,
-    resolvedAt,
-  });
+  const approval = await params.context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .resolve({
+      id: params.approvalId,
+      userId: params.userId,
+      resolution: params.resolution,
+      resolvedAt,
+    });
 
   if (approval) {
     await publishConnectorApprovalChanged(params.context, approval.completionId, approval.id);
@@ -244,10 +252,9 @@ export async function resolveConnectorOperationApproval(params: {
     return toConnectorOperationApprovalView(approval);
   }
 
-  const existing = await params.context.repositories.connectorOperationApprovals.getByIdForUser(
-    params.approvalId,
-    params.userId,
-  );
+  const existing = await params.context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .getByIdForUser(params.approvalId, params.userId);
 
   if (
     existing?.state === params.resolution &&
@@ -266,10 +273,9 @@ export async function getConnectorOperationApproval(params: {
   approvalId: string;
   now?: string;
 }): Promise<ConnectorOperationApprovalStatusView> {
-  const approval = await params.context.repositories.connectorOperationApprovals.getByIdForUser(
-    params.approvalId,
-    params.userId,
-  );
+  const approval = await params.context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .getByIdForUser(params.approvalId, params.userId);
 
   if (!approval) {
     throw new AssistantError("Connector approval not found", ErrorType.NOT_FOUND, 404);

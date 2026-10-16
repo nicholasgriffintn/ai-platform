@@ -1,12 +1,15 @@
 import { PENDING, type PollOutcome } from "@ngriffin_uk/polychat-ai-workflows";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
 import { applyHostState, hostFor } from "./invocation";
 
 export async function deleteProviderDeployment(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
 ): Promise<PollOutcome> {
   if (deployment.provider_ref) {
@@ -25,7 +28,9 @@ export async function deleteProviderDeployment(
       state.status === "provisioning" ||
       state.status === "updating"
     ) {
-      await repositories.modelDeployments.update(deployment.id, { status: "deleting" });
+      await repositories
+        .get(ModelDeploymentRepository)
+        .update(deployment.id, { status: "deleting" });
 
       return PENDING;
     }
@@ -42,14 +47,16 @@ export async function deleteProviderDeployment(
       await applyHostState(repositories, deployment, confirmed);
 
       if (confirmed.status !== "deleted") {
-        await repositories.modelDeployments.update(deployment.id, { status: "deleting" });
+        await repositories
+          .get(ModelDeploymentRepository)
+          .update(deployment.id, { status: "deleting" });
 
         return PENDING;
       }
     }
   }
 
-  await repositories.modelDeployments.update(deployment.id, {
+  await repositories.get(ModelDeploymentRepository).update(deployment.id, {
     status: "deleted",
     hourly_usd: 0,
     failure_reason: null,
@@ -57,10 +64,10 @@ export async function deleteProviderDeployment(
   });
 
   if (deployment.route_id) {
-    await repositories.modelRoutes.setStatus(deployment.route_id, "retired");
+    await repositories.get(ModelRouteRepository).setStatus(deployment.route_id, "retired");
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId: deployment.workspace_id,
     actorUserId: null,
     action: "model_deployment.removed_from_provider",

@@ -2,7 +2,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import type { PrivateFileResourceKind } from "./resource-urls";
@@ -60,9 +63,9 @@ async function assertFileAccess(
   }
 
   if (scope === "public-conversation") {
-    const conversation = await context.repositories.conversations.getConversation(
-      record.conversation_id,
-    );
+    const conversation = await context.repositories
+      .get(ConversationRepository)
+      .getConversation(record.conversation_id);
 
     if (conversation && isPublicConversation(conversation.is_public)) {
       return;
@@ -88,8 +91,8 @@ export async function readPrivateFile(params: {
 }) {
   const record =
     params.kind === "source"
-      ? await params.context.repositories.sources.getSource(params.resourceId)
-      : await params.context.repositories.outputs.getOutput(params.resourceId);
+      ? await params.context.repositories.get(SourceRepository).getSource(params.resourceId)
+      : await params.context.repositories.get(OutputRepository).getOutput(params.resourceId);
 
   if (
     !record ||

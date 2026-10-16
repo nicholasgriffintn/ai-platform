@@ -8,17 +8,18 @@ import {
   type ModelHandle,
 } from "@ngriffin_uk/polychat-ai-model-providers";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { resolveProviderContext } from "~/modules/model-governance/application/connections";
 import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
 import { conflict } from "~/modules/model-registry/application/access";
 import { buildModelHandle } from "~/modules/model-registry/application/handles";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
 import { isDeploymentInvocable } from "./deployment-state";
 
 export async function hostFor(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
 ): Promise<{
   host: Host;
@@ -36,10 +37,9 @@ export async function hostFor(
     claimProvisioningContinuation: async () => {
       if (
         !deployment.provider_ref ||
-        !(await repositories.modelDeployments.claimProvisioningContinuation(
-          deployment.id,
-          deployment.provider_ref,
-        ))
+        !(await repositories
+          .get(ModelDeploymentRepository)
+          .claimProvisioningContinuation(deployment.id, deployment.provider_ref))
       ) {
         throw conflict(
           "Provisioning continuation is already claimed. Reconcile the provider endpoint before retrying an interrupted request.",
@@ -75,7 +75,7 @@ export async function hostFor(
 }
 
 export async function applyHostState(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   state: HostDeploymentState,
 ): Promise<ModelDeploymentRecord> {
@@ -88,11 +88,9 @@ export async function applyHostState(
     last_checked_at: new Date().toISOString(),
   };
 
-  const updated = await repositories.modelDeployments.recordProviderState(
-    deployment.id,
-    deployment.provider_ref,
-    changes,
-  );
+  const updated = await repositories
+    .get(ModelDeploymentRepository)
+    .recordProviderState(deployment.id, deployment.provider_ref, changes);
 
   if (!updated) {
     throw conflict("The deployment was removed while its provider state was being updated");
@@ -102,7 +100,7 @@ export async function applyHostState(
 }
 
 export async function runHostAction(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   action: (host: Host, hosted: HostedDeployment) => Promise<HostDeploymentState>,
 ): Promise<ModelDeploymentRecord> {
@@ -122,7 +120,7 @@ export async function runHostAction(
 }
 
 export async function invokeDeployment(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   request: ChatInvocation,
 ): Promise<ChatInvocationResult> {

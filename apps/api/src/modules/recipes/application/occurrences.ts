@@ -9,9 +9,14 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { sendPolyNotificationToChannels } from "~/modules/poly/application/channel-delivery";
 import { admitRoutineHandoff } from "~/modules/poly/application/handoffs";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CreateChatCompletionsResponse, IUser } from "~/types";
 
 import { parseRecipeInstallationRecord } from "./index";
@@ -23,20 +28,17 @@ export async function ensureRecipeOccurrenceConversation(params: {
   title: string;
   projectId?: string;
 }): Promise<void> {
-  const existing = await params.context.repositories.conversations.getConversation(
-    params.conversationId,
-  );
+  const existing = await params.context.repositories
+    .get(ConversationRepository)
+    .getConversation(params.conversationId);
 
   if (!existing) {
-    await params.context.repositories.conversations.createConversation(
-      params.conversationId,
-      params.user.id,
-      params.title,
-      {
+    await params.context.repositories
+      .get(ConversationRepository)
+      .createConversation(params.conversationId, params.user.id, params.title, {
         type: "task",
         ...(params.projectId ? { project_id: params.projectId } : {}),
-      },
-    );
+      });
   } else if (
     !ownsResource(params.user.id, existing.user_id) ||
     (typeof existing.project_id === "string" ? existing.project_id : undefined) !== params.projectId
@@ -58,9 +60,9 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
   summary?: string;
   failure?: string;
 }): Promise<"delivered" | "noted" | "skipped"> {
-  const currentContext = await params.context.repositories.teammateContexts.getById(
-    params.teammateContext.id,
-  );
+  const currentContext = await params.context.repositories
+    .get(TeammateContextRepository)
+    .getById(params.teammateContext.id);
 
   if (
     !currentContext ||
@@ -72,9 +74,9 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     return "skipped";
   }
 
-  const installationRecord = await params.context.repositories.templates.getTemplateById(
-    params.installationId,
-  );
+  const installationRecord = await params.context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(params.installationId);
   const installation = installationRecord
     ? parseRecipeInstallationRecord(installationRecord)
     : null;
@@ -101,7 +103,9 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
       throw error;
     }
 
-    project = await params.context.repositories.workspaces.getProject(currentContext.scope.id);
+    project = await params.context.repositories
+      .get(WorkspaceRepository)
+      .getProject(currentContext.scope.id);
 
     if (!project) {
       return "skipped";
@@ -155,9 +159,9 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     ? `/work/${encodeURIComponent(project.workspace_id)}/projects/${encodeURIComponent(project.id)}/chat/${encodeURIComponent(params.conversationId)}`
     : `/chat/${encodeURIComponent(params.conversationId)}`;
 
-  await params.context.repositories.messages.createProjectedMessage(
-    currentContext.homeConversationId,
-    {
+  await params.context.repositories
+    .get(MessageRepository)
+    .createProjectedMessage(currentContext.homeConversationId, {
       id: messageId,
       role: "assistant",
       content: `**${heading}: ${params.recipeTitle}**\n\n${summary.slice(0, 1600)}\n\n[Open result](${resultPath})`,
@@ -174,12 +178,10 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
           },
         },
       },
-    },
-  );
-  await params.context.repositories.conversations.markUnreadForUser(
-    currentContext.homeConversationId,
-    params.user.id,
-  );
+    });
+  await params.context.repositories
+    .get(ConversationRepository)
+    .markUnreadForUser(currentContext.homeConversationId, params.user.id);
 
   if (isPolyTeammateId(currentContext.teammateId)) {
     await sendPolyNotificationToChannels({

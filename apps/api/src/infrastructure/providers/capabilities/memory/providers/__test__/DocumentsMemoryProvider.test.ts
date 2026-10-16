@@ -2,6 +2,8 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
 import { DocumentsMemoryProvider, MEMORY_JOURNAL_DOCUMENT } from "../DocumentsMemoryProvider";
 
@@ -26,7 +28,7 @@ function createContext(existing: { id: string; content: string; revision: number
   return {
     context: {
       requireUser: () => ({ id: 7 }),
-      repositories: { memoryDocuments },
+      repositories: fakeRepositories([[MemoryDocumentRepository, memoryDocuments]]),
     } as unknown as ServiceContext,
     memoryDocuments,
   };

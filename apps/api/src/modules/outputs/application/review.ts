@@ -10,6 +10,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { runCouncilReview } from "~/modules/chat/application/council-review";
 import type { PanelCompletionScope } from "~/modules/chat/application/panel";
 import { councilReviewSubject } from "~/modules/outputs/domain/council-review";
+import { OutputReviewRepository } from "~/modules/outputs/infrastructure/OutputReviewRepository";
 
 import { requireOutputAccess } from "./access";
 import { formatOutput } from "./index";
@@ -33,13 +34,15 @@ export async function reviewOutput(
     );
   }
 
-  const priorBriefs = await context.repositories.outputReviews.listRecentBriefsForKind({
-    userId: user.id,
-    projectId: output.projectId,
-    outputKind: output.kind,
-    excludeOutputId: output.id,
-    limit: PRIOR_BRIEFS,
-  });
+  const priorBriefs = await context.repositories
+    .get(OutputReviewRepository)
+    .listRecentBriefsForKind({
+      userId: user.id,
+      projectId: output.projectId,
+      outputKind: output.kind,
+      excludeOutputId: output.id,
+      limit: PRIOR_BRIEFS,
+    });
   const result = await runCouncilReview(
     { ...scope, env: context.env, user },
     {
@@ -51,7 +54,7 @@ export async function reviewOutput(
   );
   const id = generateId();
 
-  await context.repositories.outputReviews.create({
+  await context.repositories.get(OutputReviewRepository).create({
     id,
     outputId: output.id,
     outputRevision: output.revision,
@@ -64,7 +67,7 @@ export async function reviewOutput(
     seats: result.seats,
   });
 
-  const stored = await context.repositories.outputReviews.getById(id);
+  const stored = await context.repositories.get(OutputReviewRepository).getById(id);
 
   if (!stored) {
     throw new AssistantError("The review was not saved", ErrorType.DATABASE_ERROR);
@@ -82,7 +85,7 @@ export async function listOutputReviews(
   await requireOutputAccess(context, user.id, outputId);
 
   return listPageOf(
-    await context.repositories.outputReviews.listForOutput(outputId, LIST_LIMIT),
+    await context.repositories.get(OutputReviewRepository).listForOutput(outputId, LIST_LIMIT),
     (review) => review.id,
   );
 }

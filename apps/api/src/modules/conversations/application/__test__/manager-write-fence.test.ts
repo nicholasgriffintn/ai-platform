@@ -1,22 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 function createManager(assertOwned: () => Promise<void>) {
   const createCompactionAndArchiveMessages = vi.fn().mockResolvedValue(undefined);
   const database = {
-    repositories: {
-      conversations: {
-        getConversation: vi.fn().mockResolvedValue({
-          id: "conversation-1",
-          user_id: 123,
-          project_id: null,
-        }),
-      },
-      messages: {
-        createCompactionAndArchiveMessages,
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRepository,
+        {
+          getConversation: vi.fn().mockResolvedValue({
+            id: "conversation-1",
+            user_id: 123,
+            project_id: null,
+          }),
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          createCompactionAndArchiveMessages,
+        },
+      ],
+    ]),
   } as any;
   const manager = ConversationManager.getInstance({
     database,

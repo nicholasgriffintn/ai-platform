@@ -1,5 +1,5 @@
 import { SCHEDULES } from "~/config/schedules";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
 import {
   queueOfficialRuns,
@@ -116,7 +116,7 @@ workflows.every(
   defineSchedule({
     name: "model-platform-reconcile",
     run: async ({ env }) => {
-      await scheduleModelPlatformReconciles(env, RepositoryManager.getInstance(env));
+      await scheduleModelPlatformReconciles(env, createRepositories(env));
     },
   }),
 );
@@ -126,7 +126,7 @@ workflows.every(
   defineSchedule({
     name: "model-governance",
     run: async ({ env }) => {
-      await runModelGovernanceMaintenance(env, RepositoryManager.getInstance(env));
+      await runModelGovernanceMaintenance(env, createRepositories(env));
     },
   }),
 );
@@ -188,7 +188,7 @@ workflows.every(
   defineSchedule({
     name: "benchmark-official-queue",
     run: async ({ env }) => {
-      await queueOfficialRuns(env, RepositoryManager.getInstance(env));
+      await queueOfficialRuns(env, createRepositories(env));
     },
   }),
 );
@@ -198,7 +198,7 @@ workflows.every(
   defineSchedule({
     name: "benchmark-ratings",
     run: async ({ env }) => {
-      await refreshBenchmarkRatings(RepositoryManager.getInstance(env));
+      await refreshBenchmarkRatings(createRepositories(env));
     },
   }),
 );
@@ -208,7 +208,7 @@ workflows.every(
   defineSchedule({
     name: "benchmark-stale-runs",
     run: async ({ env }) => {
-      await recoverStaleBenchmarkRuns(env, RepositoryManager.getInstance(env));
+      await recoverStaleBenchmarkRuns(env, createRepositories(env));
     },
   }),
 );

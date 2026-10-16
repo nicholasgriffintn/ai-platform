@@ -5,6 +5,7 @@ import {
   type GoalMarkerEvent,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { recordGoalMarker } from "~/modules/goals/application/goalMarker";
 import type { GoalService } from "~/modules/goals/application/GoalService";
@@ -18,7 +19,7 @@ import {
 function resolveGoalService(context: any): GoalService | null {
   const serviceContext = context?.request?.context;
 
-  return serviceContext?.repositories?.goals ? createGoalService(serviceContext) : null;
+  return serviceContext?.repositories ? createGoalService(serviceContext) : null;
 }
 
 function resolveCompletionId(context: any): string | undefined {
@@ -49,8 +50,9 @@ async function hasAnsweredSince(
   completionId: string,
   goalCreatedAt: string,
 ): Promise<boolean> {
-  const messages =
-    await context?.request?.context?.repositories?.messages?.getConversationMessages(completionId);
+  const messages = await context?.request?.context?.repositories
+    ?.get(MessageRepository)
+    .getConversationMessages(completionId);
 
   if (!Array.isArray(messages)) {
     return true;
@@ -80,8 +82,9 @@ async function hasUnresolvedToolFailureSince(
   completionId: string,
   goalCreatedAt: string,
 ): Promise<boolean> {
-  const messages =
-    await context?.request?.context?.repositories?.messages?.getConversationMessages(completionId);
+  const messages = await context?.request?.context?.repositories
+    ?.get(MessageRepository)
+    .getConversationMessages(completionId);
 
   if (!Array.isArray(messages)) {
     return false;

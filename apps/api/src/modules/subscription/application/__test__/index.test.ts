@@ -66,10 +66,26 @@ vi.mock("stripe", () => {
   return { default: MockStripe, Stripe: MockStripe };
 });
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: class {
+vi.mock("~/modules/plans/infrastructure/PlanRepository", () => ({
+  PlanRepository: class {
     constructor() {
-      return mockRepositories;
+      return mockRepositories.plans;
+    }
+  },
+}));
+
+vi.mock("~/modules/user/infrastructure/UserRepository", () => ({
+  UserRepository: class {
+    constructor() {
+      return mockRepositories.users;
+    }
+  },
+}));
+
+vi.mock("~/modules/usage/infrastructure/UsageBalanceRepository", () => ({
+  UsageBalanceRepository: class {
+    constructor() {
+      return mockRepositories.usageBalances;
     }
   },
 }));

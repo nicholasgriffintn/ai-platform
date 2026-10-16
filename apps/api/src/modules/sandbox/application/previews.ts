@@ -22,6 +22,7 @@ import {
   revokeRunCoordinatorPreviewSession,
 } from "~/modules/sandbox/infrastructure/run-coordinator/client";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import { createSandboxPreviewGrant, verifySandboxPreviewGrant } from "./preview-grants";
@@ -128,7 +129,7 @@ async function currentAuthorisedPreview(params: {
 }> {
   const userId = Number(params.claims.sub);
   const baseContext = createServiceContext({ env: params.env });
-  const user = await baseContext.repositories.users.getUserById(userId);
+  const user = await baseContext.repositories.get(UserRepository).getUserById(userId);
 
   if (!user) {
     throw new AssistantError("Sandbox preview is unavailable", ErrorType.NOT_FOUND, 404);

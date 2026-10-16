@@ -2,6 +2,8 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 export async function requireChannelBindingAccess(
@@ -10,7 +12,7 @@ export async function requireChannelBindingAccess(
   manage = false,
 ) {
   const user = context.requireUser();
-  const binding = await context.repositories.channelBindings.getById(bindingId);
+  const binding = await context.repositories.get(ChannelBindingRepository).getById(bindingId);
 
   if (!binding) {
     throw new AssistantError("Channel not found", ErrorType.NOT_FOUND, 404);
@@ -42,12 +44,9 @@ export async function requireChannelSenderMapping(
   },
 ) {
   const { binding } = await requireChannelBindingAccess(context, input.bindingId);
-  const sender = await context.repositories.channelSenders.validateMapping(
-    input.bindingId,
-    input.mappingId,
-    input.revision,
-    context.requireUser().id,
-  );
+  const sender = await context.repositories
+    .get(ChannelSenderRepository)
+    .validateMapping(input.bindingId, input.mappingId, input.revision, context.requireUser().id);
 
   if (!sender || !binding.enabled) {
     throw new AssistantError("Channel sender is no longer verified", ErrorType.FORBIDDEN, 403);

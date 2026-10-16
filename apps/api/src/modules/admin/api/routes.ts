@@ -6,6 +6,7 @@ import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 const app = new Hono<{ Bindings: IEnv }>();
@@ -35,7 +36,10 @@ addRoute(app, "post", "/model_analysis/ingestions", {
     "200": { description: "Task queued", schema: createTaskResponseSchema },
   },
   handler: async ({ body, serviceContext }) => {
-    const taskService = new TaskService(serviceContext.env, serviceContext.repositories.tasks);
+    const taskService = new TaskService(
+      serviceContext.env,
+      serviceContext.repositories.get(TaskRepository),
+    );
     const taskId = await taskService.enqueueTask({
       task_type: "artificial_analysis_ingest",
       task_data: {

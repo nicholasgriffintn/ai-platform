@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { decryptGitHubConnectionPayload } from "../connection-crypto";
 import { GITHUB_CONNECTION_KIND } from "../connections";
@@ -33,7 +35,10 @@ function context(
   providerConnections: Record<string, unknown>,
   env: Record<string, string> = { JWT_SECRET },
 ): ServiceContext {
-  return { env, repositories: { providerConnections } } as unknown as ServiceContext;
+  return {
+    env,
+    repositories: fakeRepositories([[ProviderConnectionRepository, providerConnections]]),
+  } as unknown as ServiceContext;
 }
 
 describe("GitHub provider connections", () => {

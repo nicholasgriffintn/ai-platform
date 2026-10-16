@@ -8,11 +8,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { percentile, sampleDeterministic } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import {
   openRouteReview,
   syncVersionReviews,
 } from "~/modules/model-registry/application/decisions";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { IEnv } from "~/types";
@@ -85,7 +87,7 @@ export function failedCaseResult(
 
 export async function gradeCaseOutput(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   suite: ModelEvalSuiteRecord,
   graders: readonly ModelGraderRecord[],
   item: EvalCase,
@@ -133,7 +135,7 @@ function summarise(
 }
 
 async function recordRunEvidence(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   suite: ModelEvalSuiteRecord,
   graders: readonly ModelGraderRecord[],
   run: ModelEvalRunRecord,
@@ -159,7 +161,7 @@ async function recordRunEvidence(
 
   if (run.trigger === "replay" && primaryMetric && primary) {
     const baseline = (
-      await repositories.modelEvals.listRuns({
+      await repositories.get(ModelEvalRepository).listRuns({
         suiteIds: [suite.id],
         routeIds: [route.id],
         limit: 50,
@@ -194,7 +196,7 @@ async function recordRunEvidence(
     }
   }
 
-  await repositories.modelGovernance.addEvidence(evidence);
+  await repositories.get(ModelGovernanceRepository).addEvidence(evidence);
 
   const drift = evidence.find((item) => item.kind === "drift" && item.status === "fail");
 
@@ -204,7 +206,7 @@ async function recordRunEvidence(
 }
 
 export async function completeEvalRun(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   input: {
     suite: ModelEvalSuiteRecord;
     graders: readonly ModelGraderRecord[];
@@ -218,7 +220,7 @@ export async function completeEvalRun(
   const { scores, latencyP95Ms } = summarise(graders, results, measureLatency);
   const errors = results.filter((result) => result.error).length;
 
-  await repositories.modelEvals.updateRunScores(run.id, scores, latencyP95Ms);
+  await repositories.get(ModelEvalRepository).updateRunScores(run.id, scores, latencyP95Ms);
   await recordRunEvidence(repositories, suite, graders, run, route, scores, errors);
   await syncVersionReviews(repositories, route.workspace_id, run.version_id);
 }

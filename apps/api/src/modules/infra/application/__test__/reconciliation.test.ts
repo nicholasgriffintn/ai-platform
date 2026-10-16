@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
+
 import { previousUtcDay, runInfraReconciliation } from "../reconciliation";
 
 function createRepositories(
@@ -11,10 +15,10 @@ function createRepositories(
   return {
     summariseInfrastructureDay,
     upsertDay,
-    repositories: {
-      usageEvents: { summariseInfrastructureDay },
-      infraCostDaily: { upsertDay },
-    } as any,
+    repositories: fakeRepositories([
+      [UsageEventRepository, { summariseInfrastructureDay }],
+      [InfraCostDailyRepository, { upsertDay }],
+    ]),
   };
 }
 

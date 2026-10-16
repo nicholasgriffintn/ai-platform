@@ -11,6 +11,7 @@ import { generateJwtToken } from "~/modules/auth/application/jwt";
 import { resolveProjectDefaultModelTier } from "~/modules/chat/application/policy/project-model-tier";
 import { filterModelsForUserAccess } from "~/modules/models/application/resolve";
 import { resolveSandboxApiBaseUrl } from "~/modules/sandbox/application/urls";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
@@ -67,7 +68,7 @@ export async function resolveSandboxModel(params: {
   executionProvider?: SandboxExecutionProvider;
 }): Promise<string> {
   const { context, user, model, projectId, executionProvider = "polychat" } = params;
-  const settings = await context.repositories.userSettings.getUserSettings(user.id);
+  const settings = await context.repositories.get(UserSettingsRepository).getUserSettings(user.id);
   const explicitModel = model?.trim();
   const requestedModel = explicitModel || settings?.sandbox_model?.trim();
   const visibleModels = await filterModelsForUserAccess(getModels(), context.env, user.id, {

@@ -2,12 +2,12 @@ import { anonymousCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { PLATFORM_HOSTED_SPEECH_PROVIDERS } from "~/config/providers";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { createUsageStore } from "~/modules/usage/application/runtime";
 import type { AnonymousUser, IUser } from "~/types";
 
 export interface SpeechAccessOptions {
-  repositories: RepositoryManager;
+  repositories: Repositories;
   user?: IUser | null;
   anonymousUser?: AnonymousUser | null;
   provider?: string | null;

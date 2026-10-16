@@ -8,11 +8,12 @@ import type {
   TeammateInstall,
   TeammateRating,
 } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
+import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
 
 const ensureDb = (context: ServiceContext) => {
   context.ensureDatabase();
 
-  return context.repositories.sharedTeammates;
+  return context.repositories.get(SharedTeammateRepository);
 };
 
 export const getSharedTeammates = async (

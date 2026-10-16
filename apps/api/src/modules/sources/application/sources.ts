@@ -15,12 +15,15 @@ import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-se
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
 import { recordProjectAudit } from "~/modules/audit/application";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type {
   SourceCollectionRecord,
   SourceRecord,
   SourceSummaryRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 function formatFile(record: SourceRecord): Source["file"] {
@@ -89,7 +92,7 @@ export async function requireSourceAccess(
   sourceId: string,
   mutate = false,
 ): Promise<SourceRecord> {
-  const source = await context.repositories.sources.getSource(sourceId);
+  const source = await context.repositories.get(SourceRepository).getSource(sourceId);
 
   if (!source) {
     throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
@@ -134,7 +137,7 @@ export async function requireSourcesAccess(
     return [];
   }
 
-  const records = await context.repositories.sources.getSourcesByIds(sourceIds);
+  const records = await context.repositories.get(SourceRepository).getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
   const verifiedProjects = new Set<string>();
   const sources: SourceRecord[] = [];
@@ -168,7 +171,7 @@ async function requireCollectionAccess(
   collectionId: string,
   mutate = false,
 ): Promise<SourceCollectionRecord> {
-  const collection = await context.repositories.sources.getCollection(collectionId);
+  const collection = await context.repositories.get(SourceRepository).getCollection(collectionId);
 
   if (!collection) {
     throw new AssistantError("Source collection not found", ErrorType.NOT_FOUND, 404);
@@ -214,9 +217,9 @@ export async function createSource(
   }
 
   if (input.conversationId) {
-    const conversation = await context.repositories.conversations.getConversation(
-      input.conversationId,
-    );
+    const conversation = await context.repositories
+      .get(ConversationRepository)
+      .getConversation(input.conversationId);
 
     if (
       !conversation ||
@@ -228,34 +231,36 @@ export async function createSource(
   }
 
   if (input.connectionId) {
-    const connection = await context.repositories.providerConnections.getConnectionById(
-      input.connectionId,
-    );
+    const connection = await context.repositories
+      .get(ProviderConnectionRepository)
+      .getConnectionById(input.connectionId);
 
     if (!connection || !ownsResource(userId, connection.user_id)) {
       throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
     }
   }
 
-  const { source, created } = await context.repositories.sources.createSourceWithOutcome({
-    id: options.id,
-    createdByUserId: userId,
-    projectId: input.projectId,
-    conversationId: input.conversationId,
-    connectionId: input.connectionId,
-    kind: input.kind,
-    title: input.title,
-    status: input.status,
-    content: input.content,
-    provider: input.provider,
-    externalUri: input.externalUri,
-    vectorId: input.vectorId,
-    metadata: input.metadata,
-    storageKey: input.file?.key,
-    mimeType: input.file?.mimeType,
-    filename: input.file?.filename,
-    byteSize: input.file?.byteSize,
-  });
+  const { source, created } = await context.repositories
+    .get(SourceRepository)
+    .createSourceWithOutcome({
+      id: options.id,
+      createdByUserId: userId,
+      projectId: input.projectId,
+      conversationId: input.conversationId,
+      connectionId: input.connectionId,
+      kind: input.kind,
+      title: input.title,
+      status: input.status,
+      content: input.content,
+      provider: input.provider,
+      externalUri: input.externalUri,
+      vectorId: input.vectorId,
+      metadata: input.metadata,
+      storageKey: input.file?.key,
+      mimeType: input.file?.mimeType,
+      filename: input.file?.filename,
+      byteSize: input.file?.byteSize,
+    });
 
   if (created && source.project_id) {
     await recordProjectAudit(context, source.project_id, {
@@ -281,11 +286,12 @@ export async function listSources(
 ): Promise<ListPage<SourceSummary>> {
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
-      await context.repositories.sources.listProjectSourceSummaries(
-        filters.projectId,
-        filters.kind,
-      ))
-    : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
+      await context.repositories
+        .get(SourceRepository)
+        .listProjectSourceSummaries(filters.projectId, filters.kind))
+    : await context.repositories
+        .get(SourceRepository)
+        .listPersonalSourceSummaries(userId, filters.kind);
 
   return listPageOf(records.map(formatSourceSummary), (source) => source.id);
 }
@@ -328,8 +334,8 @@ export async function updateSource(
     );
   }
 
-  await context.repositories.sources.updateSource(sourceId, input);
-  const updated = await context.repositories.sources.getSource(sourceId);
+  await context.repositories.get(SourceRepository).updateSource(sourceId, input);
+  const updated = await context.repositories.get(SourceRepository).getSource(sourceId);
 
   if (!updated) {
     throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
@@ -405,7 +411,7 @@ export async function deleteSource(
     return;
   }
 
-  await context.repositories.sources.deleteSource(sourceId);
+  await context.repositories.get(SourceRepository).deleteSource(sourceId);
   if (source.project_id) {
     await recordProjectAudit(context, source.project_id, {
       actorUserId: userId,
@@ -426,7 +432,7 @@ export async function createSourceCollection(
   }
 
   return formatCollection(
-    await context.repositories.sources.createCollection({
+    await context.repositories.get(SourceRepository).createCollection({
       createdByUserId: userId,
       projectId: input.projectId,
       title: input.title,
@@ -443,8 +449,8 @@ export async function listSourceCollections(
 ): Promise<ListPage<SourceCollection>> {
   const records = projectId
     ? (await requireProjectAccess(context, projectId),
-      await context.repositories.sources.listProjectCollections(projectId))
-    : await context.repositories.sources.listPersonalCollections(userId);
+      await context.repositories.get(SourceRepository).listProjectCollections(projectId))
+    : await context.repositories.get(SourceRepository).listPersonalCollections(userId);
 
   return listPageOf(records.map(formatCollection), (collection) => collection.id);
 }
@@ -457,7 +463,7 @@ export async function listCollectionSources(
   await requireCollectionAccess(context, userId, collectionId);
 
   return listPageOf(
-    (await context.repositories.sources.listCollectionSources(collectionId)).map(
+    (await context.repositories.get(SourceRepository).listCollectionSources(collectionId)).map(
       formatSourceSummary,
     ),
     (source) => source.id,
@@ -470,9 +476,11 @@ export async function listProjectContextSources(
   projectId: string,
 ): Promise<ListPage<SourceSummary>> {
   await requireProjectAccess(context, projectId);
-  const collection = await context.repositories.sources.getProjectContextCollection(projectId);
+  const collection = await context.repositories
+    .get(SourceRepository)
+    .getProjectContextCollection(projectId);
   const records = collection
-    ? await context.repositories.sources.listCollectionSources(collection.id)
+    ? await context.repositories.get(SourceRepository).listCollectionSources(collection.id)
     : [];
 
   return listPageOf(records.map(formatSourceSummary), (source) => source.id);
@@ -484,9 +492,11 @@ export async function listProjectConversationSources(
   projectId: string,
 ): Promise<ListPage<Source>> {
   await requireProjectAccess(context, projectId);
-  const collection = await context.repositories.sources.getProjectContextCollection(projectId);
+  const collection = await context.repositories
+    .get(SourceRepository)
+    .getProjectContextCollection(projectId);
   const contextSources = collection
-    ? await context.repositories.sources.listCollectionSources(collection.id)
+    ? await context.repositories.get(SourceRepository).listCollectionSources(collection.id)
     : [];
   const availableSources = new Map<string, SourceRecord>();
 
@@ -520,12 +530,16 @@ export async function setProjectContextSources(
     }
   });
 
-  const collection = await context.repositories.sources.ensureProjectContextCollection({
-    projectId,
-    createdByUserId: userId,
-  });
+  const collection = await context.repositories
+    .get(SourceRepository)
+    .ensureProjectContextCollection({
+      projectId,
+      createdByUserId: userId,
+    });
 
-  await context.repositories.sources.replaceCollectionSources(collection.id, sourceIds);
+  await context.repositories
+    .get(SourceRepository)
+    .replaceCollectionSources(collection.id, sourceIds);
   await recordProjectAudit(context, projectId, {
     actorUserId: userId,
     action: "project.context.updated",
@@ -556,7 +570,9 @@ export async function addCollectionSources(
   });
 
   return {
-    added: await context.repositories.sources.addCollectionSources(collectionId, sourceIds),
+    added: await context.repositories
+      .get(SourceRepository)
+      .addCollectionSources(collectionId, sourceIds),
   };
 }
 
@@ -575,5 +591,5 @@ export async function deleteSourceCollection(
     );
   }
 
-  await context.repositories.sources.deleteCollection(collectionId);
+  await context.repositories.get(SourceRepository).deleteCollection(collectionId);
 }

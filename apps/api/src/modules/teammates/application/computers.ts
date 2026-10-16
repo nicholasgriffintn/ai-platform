@@ -11,7 +11,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";
 import { STALE_COMPUTER_LEASE_ERROR_CODE } from "~/infrastructure/providers/capabilities/computer/types";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import type { TeammateComputerRecord } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
+import { TeammateComputerRepository } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
 
 import { requireTeammateContext } from "./contexts";
 
@@ -29,7 +32,9 @@ async function requireRunningComputerRun(params: {
   runAttempt: number;
 }): Promise<void> {
   const user = params.context.requireUser();
-  const run = await params.context.repositories.conversationRuns.getById(params.runId);
+  const run = await params.context.repositories
+    .get(ConversationRunRepository)
+    .getById(params.runId);
 
   if (
     !run ||
@@ -58,7 +63,7 @@ async function requireComputer(
 ): Promise<TeammateComputerRecord> {
   await requireTeammateContext(context, contextId);
 
-  return context.repositories.teammateComputers.ensure(contextId, "hosted");
+  return context.repositories.get(TeammateComputerRepository).ensure(contextId, "hosted");
 }
 
 async function provisionComputer(
@@ -69,10 +74,14 @@ async function provisionComputer(
     return computer;
   }
 
-  const claimed = await context.repositories.teammateComputers.claimProvisioning(computer.id);
+  const claimed = await context.repositories
+    .get(TeammateComputerRepository)
+    .claimProvisioning(computer.id);
 
   if (!claimed) {
-    const current = await context.repositories.teammateComputers.getByContextId(computer.contextId);
+    const current = await context.repositories
+      .get(TeammateComputerRepository)
+      .getByContextId(computer.contextId);
 
     if (current?.providerHandle && ["ready", "takeover"].includes(current.status)) {
       return current;
@@ -93,7 +102,7 @@ async function provisionComputer(
       resourceId: claimed.id,
       checkpointReference: claimed.checkpointReference,
     });
-    const updated = await context.repositories.teammateComputers.updateState({
+    const updated = await context.repositories.get(TeammateComputerRepository).updateState({
       id: claimed.id,
       status: "ready",
       providerHandle: resource.handle,
@@ -110,7 +119,7 @@ async function provisionComputer(
 
     return updated;
   } catch (error) {
-    await context.repositories.teammateComputers.updateState({
+    await context.repositories.get(TeammateComputerRepository).updateState({
       id: claimed.id,
       status: "error",
       lastError: error instanceof Error ? error.message.slice(0, 500) : "Provisioning failed",
@@ -162,7 +171,7 @@ async function revokeAndReleaseComputerLease(params: {
     handle,
     fence,
   });
-  const released = await params.context.repositories.teammateComputers.releaseLease({
+  const released = await params.context.repositories.get(TeammateComputerRepository).releaseLease({
     id: params.computer.id,
     ownerId: params.ownerId,
     fence,
@@ -187,7 +196,7 @@ async function acquireComputerLease(params: {
     lease: NonNullable<TeammateComputerRecord["lease"]>;
   }
 > {
-  const leased = await params.context.repositories.teammateComputers.acquireLease({
+  const leased = await params.context.repositories.get(TeammateComputerRepository).acquireLease({
     id: params.computer.id,
     kind: params.kind,
     ownerId: params.ownerId,
@@ -230,7 +239,7 @@ export async function performTeammateComputerAction(
   if (action.action !== "destroy") {
     computer = await provisionComputer(context, computer);
   } else if (!computer.providerHandle) {
-    const destroyed = await context.repositories.teammateComputers.updateState({
+    const destroyed = await context.repositories.get(TeammateComputerRepository).updateState({
       id: computer.id,
       status: "destroyed",
       providerHandle: null,
@@ -265,7 +274,7 @@ export async function performTeammateComputerAction(
         });
         break;
       case "checkpoint": {
-        await context.repositories.teammateComputers.updateState({
+        await context.repositories.get(TeammateComputerRepository).updateState({
           id: leased.id,
           status: "checkpointing",
           expectedFence: fence,
@@ -278,7 +287,7 @@ export async function performTeammateComputerAction(
             fence,
           });
 
-          await context.repositories.teammateComputers.updateState({
+          await context.repositories.get(TeammateComputerRepository).updateState({
             id: leased.id,
             status: "ready",
             checkpointReference: checkpoint.checkpointReference,
@@ -286,7 +295,7 @@ export async function performTeammateComputerAction(
             expectedFence: fence,
           });
         } catch (error) {
-          await context.repositories.teammateComputers.updateState({
+          await context.repositories.get(TeammateComputerRepository).updateState({
             id: leased.id,
             status: "error",
             lastError: error instanceof Error ? error.message.slice(0, 500) : "Checkpoint failed",
@@ -316,7 +325,7 @@ export async function performTeammateComputerAction(
         break;
       case "stop":
         await provider.stop({ resourceId: leased.id, handle, fence });
-        await context.repositories.teammateComputers.updateState({
+        await context.repositories.get(TeammateComputerRepository).updateState({
           id: leased.id,
           status: "stopped",
           expectedFence: fence,
@@ -324,7 +333,7 @@ export async function performTeammateComputerAction(
         break;
       case "destroy":
         await provider.destroy({ resourceId: leased.id, handle, fence });
-        await context.repositories.teammateComputers.updateState({
+        await context.repositories.get(TeammateComputerRepository).updateState({
           id: leased.id,
           status: "destroyed",
           providerHandle: null,
@@ -333,14 +342,16 @@ export async function performTeammateComputerAction(
         break;
     }
   } finally {
-    await context.repositories.teammateComputers.releaseLease({
+    await context.repositories.get(TeammateComputerRepository).releaseLease({
       id: leased.id,
       ownerId,
       fence,
     });
   }
 
-  const updated = await context.repositories.teammateComputers.getByContextId(contextId);
+  const updated = await context.repositories
+    .get(TeammateComputerRepository)
+    .getByContextId(contextId);
 
   return {
     computer: toComputer(updated ?? leased),
@@ -567,16 +578,16 @@ export async function destroyTeammateContextComputerResources(
   teammateContexts: readonly TeammateContext[],
 ): Promise<void> {
   for (const teammateContext of teammateContexts) {
-    const computer = await context.repositories.teammateComputers.getByContextId(
-      teammateContext.id,
-    );
+    const computer = await context.repositories
+      .get(TeammateComputerRepository)
+      .getByContextId(teammateContext.id);
 
     if (!computer || computer.status === "destroyed") {
       continue;
     }
 
     if (!computer.providerHandle) {
-      await context.repositories.teammateComputers.updateState({
+      await context.repositories.get(TeammateComputerRepository).updateState({
         id: computer.id,
         status: "destroyed",
         providerHandle: null,
@@ -585,7 +596,7 @@ export async function destroyTeammateContextComputerResources(
     }
 
     const ownerId = `teardown:${teammateContext.teammateId}`;
-    const leased = await context.repositories.teammateComputers.forceAcquireLease({
+    const leased = await context.repositories.get(TeammateComputerRepository).forceAcquireLease({
       id: computer.id,
       ownerId,
       expiresAt: new Date(Date.now() + AGENT_LEASE_MS).toISOString(),
@@ -605,7 +616,7 @@ export async function destroyTeammateContextComputerResources(
       handle: requireProviderHandle(leased),
       fence: leased.lease.fence,
     });
-    await context.repositories.teammateComputers.updateState({
+    await context.repositories.get(TeammateComputerRepository).updateState({
       id: leased.id,
       status: "destroyed",
       providerHandle: null,
@@ -622,7 +633,7 @@ export async function revokeTeammateContextResources(
     return;
   }
 
-  await context.repositories.composioConnectorSessions.markContextsCleanupPending(
+  await context.repositories.get(ComposioConnectorSessionRepository).markContextsCleanupPending(
     teammateContexts.map((teammateContext) => teammateContext.id),
     new Date().toISOString(),
   );

@@ -6,8 +6,11 @@ import {
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/tasks/application/types";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
@@ -19,12 +22,10 @@ export async function enqueueProjectReviewIntake(
   context: ServiceContext,
   target: Omit<PullRequestReviewTarget, "connectionId">,
 ): Promise<void> {
-  const policies = await context.repositories.projectTaskIntegrations.listPolicies(
-    target.provider,
-    target.accountId,
-    target.repository,
-  );
-  const tasks = new TaskService(context.env, context.repositories.tasks);
+  const policies = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .listPolicies(target.provider, target.accountId, target.repository);
+  const tasks = new TaskService(context.env, context.repositories.get(TaskRepository));
 
   for (const policy of policies) {
     const boundTarget = { ...target, connectionId: policy.connectionId };
@@ -52,7 +53,7 @@ export class ProjectReviewIntakeHandler implements TaskHandler {
     const data = projectReviewIntakeSchema.parse(message.task_data);
     const base = createServiceContext({ env });
     const user = message.user_id
-      ? await base.repositories.users.getUserById(message.user_id)
+      ? await base.repositories.get(UserRepository).getUserById(message.user_id)
       : null;
 
     if (!user || message.project_id !== data.projectId) {
@@ -60,10 +61,9 @@ export class ProjectReviewIntakeHandler implements TaskHandler {
     }
 
     const context = createServiceContext({ env, user });
-    const policy = await context.repositories.projectTaskIntegrations.getPolicy(
-      data.policyId,
-      data.projectId,
-    );
+    const policy = await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getPolicy(data.policyId, data.projectId);
 
     if (!policy || !matchesReviewPolicy(policy, { ...data, ownerUserId: user.id })) {
       return { status: "skipped", message: "Automatic review policy changed" };

@@ -9,6 +9,7 @@ import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
 import { findComposioAccountProvider } from "./connector-adapters";
@@ -85,7 +86,7 @@ function isLive(state: SyncState, now: number): boolean {
 }
 
 async function writeSyncState(context: ServiceContext, userId: number, state: SyncState) {
-  await context.repositories.providerConnections.upsertConnection({
+  await context.repositories.get(ProviderConnectionRepository).upsertConnection({
     userId,
     provider: ACCOUNT_SYNC_PROVIDER,
     kind: ACCOUNT_SYNC_KIND,
@@ -101,7 +102,8 @@ export async function syncComposioAccountMirror(
 ): Promise<ComposioConnectedAccount[]> {
   const [accounts, connections] = await Promise.all([
     listComposioConnectedAccounts({ env: context.env, userId }),
-    knownConnections ?? context.repositories.providerConnections.listConnections(userId),
+    knownConnections ??
+      context.repositories.get(ProviderConnectionRepository).listConnections(userId),
   ]);
   const references = new Map(
     connections
@@ -139,7 +141,7 @@ export async function syncComposioAccountMirror(
 
     if (!listed.has(key) && mirrored && mirrored.status !== "REVOKED") {
       writes.push(
-        context.repositories.providerConnections.upsertConnection({
+        context.repositories.get(ProviderConnectionRepository).upsertConnection({
           userId,
           provider: connection.provider,
           kind: CONNECTOR_ACCOUNT_REFERENCE_KIND,
@@ -196,15 +198,17 @@ export async function beginLiveComposioAccountWindow(context: ServiceContext, us
   const now = Date.now();
 
   await writeSyncState(context, userId, {
-    ...readSyncState(await context.repositories.providerConnections.listConnections(userId)),
+    ...readSyncState(
+      await context.repositories.get(ProviderConnectionRepository).listConnections(userId),
+    ),
     liveUntil: new Date(now + COMPOSIO_LIVE_ACCOUNT_WINDOW_MS).toISOString(),
   });
 }
 
 export async function markComposioAccountExpired(context: ServiceContext, accountId: string) {
-  await context.repositories.providerConnections.markExternalConnectionInvalid(
-    CONNECTOR_ACCOUNT_REFERENCE_KIND,
-    accountId,
-    { status: "EXPIRED" },
-  );
+  await context.repositories
+    .get(ProviderConnectionRepository)
+    .markExternalConnectionInvalid(CONNECTOR_ACCOUNT_REFERENCE_KIND, accountId, {
+      status: "EXPIRED",
+    });
 }

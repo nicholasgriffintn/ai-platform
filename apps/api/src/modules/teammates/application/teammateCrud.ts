@@ -2,7 +2,11 @@ import type { CreateTeammateInput, UpdateTeammateInput } from "@ngriffin_uk/poly
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IUser } from "~/types";
 
 import { teammateOwnerScopeForUser, requireTeammateAccess } from "./access";
@@ -16,10 +20,10 @@ export async function getUserTeammates(context: ServiceContext, userId?: number)
 
   await ensurePlatformTeammates(context);
 
-  const workspaces = await context.repositories.workspaces.listWorkspaces(id);
+  const workspaces = await context.repositories.get(WorkspaceRepository).listWorkspaces(id);
 
   return (
-    await context.repositories.teammates.getTeammatesForScopes(
+    await context.repositories.get(TeammateRepository).getTeammatesForScopes(
       id,
       workspaces.map((workspace) => workspace.id),
     )
@@ -60,7 +64,7 @@ export async function createTeammate(
   context.ensureDatabase();
   const currentUser = user ?? context.requireUser();
 
-  const teammate = await context.repositories.teammates.createTeammate({
+  const teammate = await context.repositories.get(TeammateRepository).createTeammate({
     userId: currentUser.id,
     ...(await resolveNewTeammateOwnerScope(context, currentUser.id, params.workspace_id)),
     kind: params.kind ?? "colleague",
@@ -93,7 +97,7 @@ export async function updateTeammate(
 
   await requireTeammateAccess(context, teammateId, "write", id);
 
-  await context.repositories.teammates.updateTeammate(teammateId, {
+  await context.repositories.get(TeammateRepository).updateTeammate(teammateId, {
     ...updates,
     ...(updates.enabled_tools !== undefined ? { enabled_tools: updates.enabled_tools } : {}),
   });
@@ -103,8 +107,10 @@ export async function updateTeammate(
 
 async function findProjectsUsingTeammate(context: ServiceContext, teammateId: string) {
   const [attached, inFlows] = await Promise.all([
-    context.repositories.workspaces.listProjectsWithCapability("teammate", teammateId),
-    context.repositories.workspaces.listProjectsWithFlowStageTeammate(teammateId),
+    context.repositories
+      .get(WorkspaceRepository)
+      .listProjectsWithCapability("teammate", teammateId),
+    context.repositories.get(WorkspaceRepository).listProjectsWithFlowStageTeammate(teammateId),
   ]);
 
   return [...new Map([...attached, ...inFlows].map((project) => [project.id, project])).values()];
@@ -115,20 +121,22 @@ async function unpublishSharedTeammate(
   teammateId: string,
   userId: number,
 ) {
-  const listing =
-    await context.repositories.sharedTeammates.getSharedTeammateByTeammateId(teammateId);
+  const listing = await context.repositories
+    .get(SharedTeammateRepository)
+    .getSharedTeammateByTeammateId(teammateId);
 
   if (listing) {
-    await context.repositories.sharedTeammates.deleteSharedTeammate(userId, listing.id);
+    await context.repositories
+      .get(SharedTeammateRepository)
+      .deleteSharedTeammate(userId, listing.id);
   }
 
-  const install = await context.repositories.sharedTeammates.getInstallByTeammateId(
-    userId,
-    teammateId,
-  );
+  const install = await context.repositories
+    .get(SharedTeammateRepository)
+    .getInstallByTeammateId(userId, teammateId);
 
   if (install) {
-    await context.repositories.sharedTeammates.uninstallTeammate(userId, teammateId);
+    await context.repositories.get(SharedTeammateRepository).uninstallTeammate(userId, teammateId);
   }
 }
 
@@ -154,14 +162,14 @@ export async function deleteTeammate(context: ServiceContext, teammateId: string
 
   await unpublishSharedTeammate(context, teammateId, id);
 
-  const teammateContexts = await context.repositories.teammateContexts.listAllForTeammates([
-    teammateId,
-  ]);
+  const teammateContexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listAllForTeammates([teammateId]);
 
   await mutateTeammateContextsWithCleanup(
     context,
     teammateContexts,
-    () => context.repositories.teammates.deleteTeammate(teammateId),
+    () => context.repositories.get(TeammateRepository).deleteTeammate(teammateId),
     { cleanupBeforeMutation: true },
   );
 

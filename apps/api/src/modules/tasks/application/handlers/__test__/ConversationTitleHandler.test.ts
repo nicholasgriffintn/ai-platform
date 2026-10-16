@@ -21,6 +21,11 @@ vi.mock("~/modules/sync/application/conversation-events", () => ({
   publishConversationChanged: mocks.publishConversationChanged,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+
 import { ConversationTitleHandler } from "../ConversationTitleHandler";
 
 const getUserById = vi.fn();
@@ -56,11 +61,11 @@ describe("ConversationTitleHandler", () => {
     ]);
     mocks.createServiceContext.mockReturnValue({
       env: {},
-      repositories: {
-        users: { getUserById },
-        conversations: { getConversation, updateConversation },
-        messages: { getConversationMessages },
-      },
+      repositories: fakeRepositories([
+        [UserRepository, { getUserById }],
+        [ConversationRepository, { getConversation, updateConversation }],
+        [MessageRepository, { getConversationMessages }],
+      ]),
     });
     mocks.generateConversationTitle.mockResolvedValue("Fixing a flaky test");
     mocks.publishConversationChanged.mockImplementation(async (publisher: any) => {

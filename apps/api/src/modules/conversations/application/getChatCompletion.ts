@@ -3,7 +3,10 @@ import { settleWithin } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateConnectorApprovalMessageState } from "~/modules/connectors/application/approval-message-state";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import {
   getActiveThreadOperation,
   withThreadLockIfFree,
@@ -88,7 +91,7 @@ async function loadConversationMessages(
     messages: await hydrateConnectorApprovalMessageState({
       messages,
       userId: user.id,
-      approvals: context.repositories.connectorOperationApprovals,
+      approvals: context.repositories.get(ConnectorOperationApprovalRepository),
     }),
   };
 }
@@ -102,8 +105,9 @@ async function loadActiveOperation(context: ServiceContext, completionId: string
 }
 
 async function loadLatestRun(context: ServiceContext, completionId: string) {
-  const latestRunRecord =
-    await context.repositories.conversationRuns.getLatestForConversation(completionId);
+  const latestRunRecord = await context.repositories
+    .get(ConversationRunRepository)
+    .getLatestForConversation(completionId);
 
   if (!latestRunRecord) {
     return null;
@@ -134,12 +138,14 @@ export const handleGetChatCompletion = async (
     loadConversationMessages(context, conversationManager, conversation, user, options),
     loadActiveOperation(context, completion_id),
     loadLatestRun(context, completion_id),
-    context.repositories.conversations.listConversationThreads(
-      completion_id,
-      user.id,
-      typeof conversation.project_id === "string" ? conversation.project_id : null,
-      2,
-    ),
+    context.repositories
+      .get(ConversationRepository)
+      .listConversationThreads(
+        completion_id,
+        user.id,
+        typeof conversation.project_id === "string" ? conversation.project_id : null,
+        2,
+      ),
   ]);
 
   return {

@@ -8,6 +8,7 @@ import {
   requireWorkspaceAccess,
   type WorkspaceAccess,
 } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export interface RegistryAccess extends WorkspaceAccess {
   userId: number;
@@ -70,7 +71,7 @@ export async function requireWorkspaceProject(
     return null;
   }
 
-  const project = await context.repositories.workspaces.getProject(projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
 
   if (!project || project.workspace_id !== workspaceId) {
     throw new AssistantError("Project not found in this workspace", ErrorType.NOT_FOUND, 404);

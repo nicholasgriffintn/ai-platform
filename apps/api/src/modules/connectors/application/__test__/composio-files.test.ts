@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import {
   assertComposioFileBridgeAvailable,
@@ -53,13 +56,16 @@ function createContext(overrides: Record<string, unknown> = {}) {
       },
       API_BASE_URL: "https://api.example.com",
     },
-    repositories: {
-      sources: { getSource: vi.fn().mockResolvedValue(sourceRecord) },
-      outputs: {
-        getOutput: vi.fn().mockResolvedValue(null),
-        createOutput,
-      },
-    },
+    repositories: fakeRepositories([
+      [SourceRepository, { getSource: vi.fn().mockResolvedValue(sourceRecord) }],
+      [
+        OutputRepository,
+        {
+          getOutput: vi.fn().mockResolvedValue(null),
+          createOutput,
+        },
+      ],
+    ]),
     requireUser: () => ({ id: 42, plan_id: "free" }),
     ...overrides,
   } as unknown as ServiceContext;
@@ -124,7 +130,7 @@ describe("Composio file bridge", () => {
   it("rejects resources owned by another user before reading private storage", async () => {
     const { context } = createContext();
 
-    context.repositories.sources.getSource = vi
+    context.repositories.get(SourceRepository).getSource = vi
       .fn()
       .mockResolvedValue({ ...sourceRecord, created_by_user_id: 99 });
 

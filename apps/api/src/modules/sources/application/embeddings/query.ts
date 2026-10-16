@@ -15,6 +15,7 @@ import type {
   ActiveEmbeddingChunk,
   EmbeddingDocumentProviderTarget,
 } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { queryEmbeddingRuntime } from "./provider-query";
@@ -76,10 +77,9 @@ const queryStoredTargets = async (
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const storedTargets = await serviceContext.repositories.embeddings.getActiveProviderTargets(
-    authenticatedUser.id,
-    MAX_PROVIDER_TARGETS + 1,
-  );
+  const storedTargets = await serviceContext.repositories
+    .get(EmbeddingRepository)
+    .getActiveProviderTargets(authenticatedUser.id, MAX_PROVIDER_TARGETS + 1);
 
   if (storedTargets.length === 0) {
     return { status: "success", data: [] };
@@ -159,11 +159,13 @@ const queryStoredTargets = async (
     return { status: "success", data: [] };
   }
 
-  const records = await serviceContext.repositories.embeddings.getActiveChunksByVectorIds(
-    authenticatedUser.id,
-    matches.map((match) => match.id),
-    input.type,
-  );
+  const records = await serviceContext.repositories
+    .get(EmbeddingRepository)
+    .getActiveChunksByVectorIds(
+      authenticatedUser.id,
+      matches.map((match) => match.id),
+      input.type,
+    );
 
   const recordsByVectorId = new Map(records.map((record) => [record.vectorId, record]));
 

@@ -12,8 +12,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import z from "zod/v4";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { openSealedJson, sealJson } from "~/infrastructure/secret-envelope";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
@@ -64,7 +65,7 @@ export async function startBenchmarkPlay(
 
 export async function submitBenchmarkPlay(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   user: IUser,
   request: BenchmarkPlaySubmitRequest,
 ): Promise<BenchmarkPlayResult> {
@@ -103,7 +104,7 @@ export async function submitBenchmarkPlay(
       costUsd: null,
     };
   });
-  const record = await repositories.benchmarkRuns.createOnce({
+  const record = await repositories.get(BenchmarkRunRepository).createOnce({
     id: (await sha256Hex(request.token)).slice(0, RUN_ID_LENGTH),
     benchmarkId: benchmark.summary.id,
     version: benchmark.summary.version,
@@ -124,7 +125,7 @@ export async function submitBenchmarkPlay(
   const completedAt = new Date().toISOString();
 
   await BenchmarkResultStore.forEnv(env).writeResults(record.id, results);
-  await repositories.benchmarkRuns.update(record.id, {
+  await repositories.get(BenchmarkRunRepository).update(record.id, {
     items_completed: results.length,
     score: summary.score,
     metrics: summary.metrics,

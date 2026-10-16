@@ -32,11 +32,12 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { KVCache } from "~/infrastructure/cache";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import {
   findPlatformChatModel,
   listPlatformChatModels,
 } from "~/modules/model-serving/application/chat-models";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 
 const logger = getLogger({ prefix: "services/models/resolve" });
@@ -79,7 +80,7 @@ async function findMachineModelConfig(
     return null;
   }
 
-  const machine = (await new RepositoryManager(env).machines.listForUser(userId)).find(
+  const machine = (await new MachineRepository(env).listForUser(userId)).find(
     (candidate) => candidate.machineId === machineId && isMachineOnline(candidate),
   );
 
@@ -391,12 +392,10 @@ export async function filterModelsForUserAccess(
   }
 
   try {
-    const repositories = new RepositoryManager(env);
-
     const userProviderSettings = !options.shouldUseCache
-      ? await repositories.userSettings.getUserProviderSettings(userId)
+      ? await new UserSettingsRepository(env).getUserProviderSettings(userId)
       : await withCache(env, "user-provider-settings", [userId.toString()], () =>
-          repositories.userSettings.getUserProviderSettings(userId),
+          new UserSettingsRepository(env).getUserProviderSettings(userId),
         );
 
     const enabledProviders = new Map(
@@ -682,10 +681,9 @@ export const getAuxiliarySearchProvider = async (
       requestedProvider !== "cloudflare" &&
       requestedProvider !== "cloudflare-ai-search"
     ) {
-      const repositories = new RepositoryManager(env);
       const providerKeyId =
         requestedProvider === "perplexity" ? "perplexity-ai" : requestedProvider;
-      const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
+      const hasProviderKey = await new UserSettingsRepository(env).hasProviderApiKey(
         user.id,
         providerKeyId,
       );
@@ -702,9 +700,8 @@ export const getAuxiliarySearchProvider = async (
   }
 
   if (user?.id) {
-    const repositories = new RepositoryManager(env);
     const userSettings = await withCache(env, "user-settings", [user.id.toString()], () =>
-      repositories.userSettings.getUserSettings(user.id),
+      new UserSettingsRepository(env).getUserSettings(user.id),
     );
 
     const preferred = searchProviderSchema.safeParse(userSettings?.search_provider);
@@ -746,13 +743,11 @@ export const getAuxiliaryResearchProvider = async (
     );
   }
 
-  const repositories = new RepositoryManager(env);
-
   const providerSettings = await withCache(
     env,
     "user-provider-settings",
     [user.id.toString()],
-    () => repositories.userSettings.getUserProviderSettings(user.id),
+    () => new UserSettingsRepository(env).getUserProviderSettings(user.id),
   );
 
   const hasProvider = Array.isArray(providerSettings)

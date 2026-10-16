@@ -43,6 +43,10 @@ vi.mock("../composio-files", () => ({
 
 import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integrations";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+
 import {
   closeComposioConnectorRun,
   discoverComposioRunTools,
@@ -90,15 +94,18 @@ function context() {
     env: testEnv,
     connectorRunId: "connector_run_1",
     requestCache: new Map(),
-    repositories: {
-      composioConnectorSessions: {
-        create: mocks.create,
-        claimForExecution: mocks.claimForExecution,
-        markCleanupPending: mocks.markCleanupPending,
-        delete: mocks.deleteRecord,
-      },
-      activities: { createActivity: mocks.createActivity },
-    },
+    repositories: fakeRepositories([
+      [
+        ComposioConnectorSessionRepository,
+        {
+          create: mocks.create,
+          claimForExecution: mocks.claimForExecution,
+          markCleanupPending: mocks.markCleanupPending,
+          delete: mocks.deleteRecord,
+        },
+      ],
+      [ActivityRepository, { createActivity: mocks.createActivity }],
+    ]),
   } as never;
 }
 

@@ -20,7 +20,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
 import type { IEnv } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
@@ -125,23 +126,25 @@ function humanStanding(records: readonly BenchmarkRunRecord[]): BenchmarkStandin
 }
 
 export async function listOfficialRuns(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   benchmarkId?: BenchmarkId,
 ): Promise<BenchmarkRunRecord[]> {
   return latestPerEntrant(
-    (await repositories.benchmarkRuns.listCompletedBoardRuns("official")).filter(
+    (await repositories.get(BenchmarkRunRepository).listCompletedBoardRuns("official")).filter(
       (record) => isCurrent(record) && (!benchmarkId || record.benchmark_id === benchmarkId),
     ),
   );
 }
 
 export async function buildBoards(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   options: { includeHuman: boolean },
 ): Promise<BenchmarkBoard[]> {
   const official = await listOfficialRuns(repositories);
   const human = options.includeHuman
-    ? (await repositories.benchmarkRuns.listCompletedBoardRuns("human")).filter(isCurrent)
+    ? (await repositories.get(BenchmarkRunRepository).listCompletedBoardRuns("human")).filter(
+        isCurrent,
+      )
     : [];
 
   return listBenchmarks().map((benchmark) => ({
@@ -189,14 +192,14 @@ function medalTable(boards: readonly BenchmarkBoard[]): BenchmarkMedal[] {
   );
 }
 
-export async function getBenchmarkIndex(repositories: RepositoryManager): Promise<BenchmarkIndex> {
+export async function getBenchmarkIndex(repositories: Repositories): Promise<BenchmarkIndex> {
   const boards = await buildBoards(repositories, { includeHuman: true });
 
   return { boards, medals: medalTable(boards) };
 }
 
 export async function getBenchmarkBoard(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   benchmarkId: BenchmarkId,
 ): Promise<BenchmarkBoard> {
   const boards = await buildBoards(repositories, { includeHuman: true });
@@ -226,7 +229,7 @@ function officialPosition(board: BenchmarkBoard, record: BenchmarkRunRecord) {
 
 export async function buildRunDetail(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   record: BenchmarkRunRecord,
   options: { includeShareToken?: boolean } = {},
 ): Promise<BenchmarkRunDetail> {
@@ -255,7 +258,7 @@ export async function buildRunDetail(
 
 export async function getEntrantDetail(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   benchmarkId: BenchmarkId,
   modelId: string,
 ): Promise<BenchmarkRunDetail> {
@@ -275,7 +278,7 @@ function standingRatio(standing: BenchmarkStanding): number {
 }
 
 export async function listModelBenchmarkStandings(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId?: number,
 ): Promise<Map<string, ModelBenchmarkStanding[]>> {
   const boards = await buildBoards(repositories, { includeHuman: false });
@@ -305,7 +308,9 @@ export async function listModelBenchmarkStandings(
   }
 
   for (const record of latestPerEntrant(
-    (await repositories.benchmarkRuns.listCompletedPersonal(userId)).filter(isCurrent),
+    (await repositories.get(BenchmarkRunRepository).listCompletedPersonal(userId)).filter(
+      isCurrent,
+    ),
   )) {
     const board = boards.find((candidate) => candidate.benchmark.id === record.benchmark_id);
 

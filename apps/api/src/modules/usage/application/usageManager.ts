@@ -8,8 +8,9 @@ import {
 import { usagePeriodFromDate, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { createUsageStore } from "~/modules/usage/application/runtime";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { AnonymousUser, User } from "~/types";
 
 export interface UsageLimits {
@@ -20,7 +21,7 @@ export class UsageManager {
   private recordedAssistantResponse = false;
 
   constructor(
-    private readonly repositories: RepositoryManager,
+    private readonly repositories: Repositories,
     private user: User | null,
     private readonly anonymousUser: AnonymousUser | null,
   ) {}
@@ -45,9 +46,11 @@ export class UsageManager {
       return;
     }
 
-    const updatedUser = await this.repositories.users.incrementUsageCounters(this.user.id, {
-      message_count: 1,
-    });
+    const updatedUser = await this.repositories
+      .get(UserRepository)
+      .incrementUsageCounters(this.user.id, {
+        message_count: 1,
+      });
 
     if (updatedUser) {
       this.user = updatedUser;

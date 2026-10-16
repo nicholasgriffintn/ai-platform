@@ -4,6 +4,7 @@ import {
   type DelegationContext,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import type { IRequest } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
 
@@ -45,10 +46,9 @@ export async function checkDelegationSpawn(
     return { allowed: false, reason: UNRESOLVED_PARENT_REFUSAL, depth, liveDelegations: 0 };
   }
 
-  const liveDelegations = await context.request.context.repositories.delegations.countLiveForParent(
-    parentConversationId,
-    parentRunId,
-  );
+  const liveDelegations = await context.request.context.repositories
+    .get(DelegationRepository)
+    .countLiveForParent(parentConversationId, parentRunId);
 
   if (liveDelegations >= DELEGATION_MAX_FAN_OUT) {
     return { allowed: false, reason: FAN_OUT_REFUSAL, depth, liveDelegations };

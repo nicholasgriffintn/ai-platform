@@ -2,20 +2,18 @@ import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { GlobalSearchQuery, GlobalSearchResponse } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
-import type { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
-import type {
-  GlobalProjectSearchRow,
-  GlobalWorkspaceSearchRow,
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import {
+  type GlobalProjectSearchRow,
+  type GlobalWorkspaceSearchRow,
   WorkspaceRepository,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export interface GlobalSearchContext {
   requireUser(): { id: number; plan_id: string | null };
-  repositories: {
-    conversations: Pick<ConversationRepository, "searchAccessibleConversations">;
-    workspaces: Pick<WorkspaceRepository, "searchProjects" | "searchWorkspaces">;
-  };
+  repositories: Repositories;
 }
 
 export async function searchPolychat(
@@ -25,16 +23,18 @@ export async function searchPolychat(
   const user = context.requireUser();
   const canSearchWork = hasProEntitlement(user);
   const [conversations, workspaces, projects] = await Promise.all([
-    context.repositories.conversations.searchAccessibleConversations(
-      user.id,
-      input.query,
-      input.limit,
-    ),
+    context.repositories
+      .get(ConversationRepository)
+      .searchAccessibleConversations(user.id, input.query, input.limit),
     canSearchWork
-      ? context.repositories.workspaces.searchWorkspaces(user.id, input.query, input.limit)
+      ? context.repositories
+          .get(WorkspaceRepository)
+          .searchWorkspaces(user.id, input.query, input.limit)
       : Promise.resolve<GlobalWorkspaceSearchRow[]>([]),
     canSearchWork
-      ? context.repositories.workspaces.searchProjects(user.id, input.query, input.limit)
+      ? context.repositories
+          .get(WorkspaceRepository)
+          .searchProjects(user.id, input.query, input.limit)
       : Promise.resolve<GlobalProjectSearchRow[]>([]),
   ]);
 

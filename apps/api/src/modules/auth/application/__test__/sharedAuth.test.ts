@@ -15,7 +15,12 @@ vi.mock("@ngriffin_uk/auth-core", () => ({
 
 vi.mock("@ngriffin_uk/auth-provider-github", () => ({ createGitHubAuth }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { createAssistantGitHubAuth } from "~/modules/auth/application/sharedAuth";
+import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
+import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
+import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 describe("Assistant GitHub authentication", () => {
   beforeEach(() => {
@@ -29,12 +34,12 @@ describe("Assistant GitHub authentication", () => {
         GITHUB_CLIENT_ID: "client-id",
         GITHUB_CLIENT_SECRET: "client-secret",
       },
-      repositories: {
-        authChallenges: {},
-        oauthStates: {},
-        sessions: {},
-        users: {},
-      },
+      repositories: fakeRepositories([
+        [AuthChallengeRepository, {}],
+        [OAuthStateRepository, {}],
+        [SessionRepository, {}],
+        [UserRepository, {}],
+      ]),
     } as ServiceContext);
 
     expect(createGitHubAuth).toHaveBeenCalledWith(

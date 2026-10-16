@@ -9,13 +9,18 @@ import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionContext } from "~/modules/tasks/application/types";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   getTeammateContextMemory,
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { MemoryScope } from "~/types";
 
 import { generateMemoryReflection, prepareMemoryReflection } from "./reflection-generation";
@@ -30,8 +35,8 @@ import { requireRunMemoryDocument } from "./run-access";
 export async function requireMemoryReflectionConsent(context: ServiceContext) {
   const actor = context.requireUser();
   const [user, userSettings] = await Promise.all([
-    context.repositories.users.getUserById(actor.id),
-    context.repositories.userSettings.getUserSettings(actor.id),
+    context.repositories.get(UserRepository).getUserById(actor.id),
+    context.repositories.get(UserSettingsRepository).getUserSettings(actor.id),
   ]);
 
   if (!resolveMemoryPolicy({ user, userSettings, store: true }).canStore) {
@@ -68,7 +73,7 @@ export async function enqueueMemoryReflection(
 
   await requireMemoryReflectionConsent(context);
 
-  const repository = context.repositories.memoryDocuments;
+  const repository = context.repositories.get(MemoryDocumentRepository);
   const afterMessageId = await repository.reflectionCheckpoint(
     input.contextId,
     input.conversationId,
@@ -85,7 +90,7 @@ export async function enqueueMemoryReflection(
     afterMessageId,
   };
   const id = `memory_reflection_${await sha256Hex(JSON.stringify(data))}`;
-  const service = new TaskService(context.env, context.repositories.tasks);
+  const service = new TaskService(context.env, context.repositories.get(TaskRepository));
 
   await service.enqueueTask({
     id,
@@ -106,7 +111,7 @@ export async function reflectTeammateMemory(
 ) {
   const user = context.requireUser();
   const teammate = await requireReflectionScope(context, input.contextId, input.conversationId);
-  const repository = context.repositories.memoryDocuments;
+  const repository = context.repositories.get(MemoryDocumentRepository);
   const previous = await repository.reflectionOutcome(taskId);
 
   await requireMemoryReflectionConsent(context);
@@ -123,7 +128,7 @@ export async function reflectTeammateMemory(
     input.contextId,
     input.conversationId,
   );
-  const rows = await context.repositories.messages.getMemoryReflectionMessages({
+  const rows = await context.repositories.get(MessageRepository).getMemoryReflectionMessages({
     ...input,
     afterMessageId,
     userId: user.id,
@@ -133,9 +138,9 @@ export async function reflectTeammateMemory(
     return "no_change";
   }
 
-  const base = await context.repositories.memoryDocuments.getDocumentById(
-    teammate.memoryDocumentId,
-  );
+  const base = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentById(teammate.memoryDocumentId);
 
   if (!base) {
     throw new AssistantError("Teammate memory is unavailable", ErrorType.FORBIDDEN, 403);
@@ -170,7 +175,7 @@ export async function reflectTeammateMemory(
 
   assertMemoryReflectionSourcesUnchanged(
     sources,
-    await context.repositories.messages.getMemoryReflectionMessages({
+    await context.repositories.get(MessageRepository).getMemoryReflectionMessages({
       ...input,
       afterMessageId,
       throughMessageId,
@@ -233,7 +238,7 @@ export async function queueTeammateMemoryCorrection(input: {
   );
   await requireMemoryReflectionConsent(context);
 
-  const row = await context.repositories.messages.getMemoryReflectionInput({
+  const row = await context.repositories.get(MessageRepository).getMemoryReflectionInput({
     conversationId,
     runId,
     contextId: scope.teammateContext.id,

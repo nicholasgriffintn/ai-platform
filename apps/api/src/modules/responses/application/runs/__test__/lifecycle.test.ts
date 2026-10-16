@@ -3,7 +3,13 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CoreChatOptions } from "~/types";
 
 import { acceptChatRun, ChatRunLifecycle } from "../lifecycle";
@@ -86,26 +92,38 @@ describe("ChatRunLifecycle", () => {
     const context = {
       user: { id: 7 },
       ensureDatabase: vi.fn(),
-      repositories: {
-        conversations: {
-          getConversation: vi.fn().mockResolvedValue({
-            id: "conversation-1",
-            project_id: null,
-            user_id: 7,
-          }),
-        },
-        projectTasks: {
-          getTaskByConversation: vi.fn().mockResolvedValue(null),
-        },
-        delegations: {
-          getByChildConversationId: vi.fn().mockResolvedValue(null),
-        },
-        conversationRuns: {
-          acceptCommand,
-          getForInteraction: vi.fn(),
-          transition,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ConversationRepository,
+          {
+            getConversation: vi.fn().mockResolvedValue({
+              id: "conversation-1",
+              project_id: null,
+              user_id: 7,
+            }),
+          },
+        ],
+        [
+          ProjectTaskRepository,
+          {
+            getTaskByConversation: vi.fn().mockResolvedValue(null),
+          },
+        ],
+        [
+          DelegationRepository,
+          {
+            getByChildConversationId: vi.fn().mockResolvedValue(null),
+          },
+        ],
+        [
+          ConversationRunRepository,
+          {
+            acceptCommand,
+            getForInteraction: vi.fn(),
+            transition,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
     const options = {
       completion_id: "conversation-1",
@@ -188,39 +206,54 @@ describe("ChatRunLifecycle", () => {
       user: { id: 7 },
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       ensureDatabase: vi.fn(),
-      repositories: {
-        conversations: {
-          getConversation: vi.fn().mockResolvedValue({
-            id: "conversation-1",
-            project_id: "project-1",
-            user_id: 7,
-          }),
-        },
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({
-            id: "project-1",
-            workspace_id: "workspace-1",
-          }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockResolvedValue({ role: "owner" }),
-        },
-        projectTasks: {
-          getTaskByConversation: vi.fn().mockResolvedValue({
-            id: "task-1",
-            stageId: "plan",
-            runId: null,
-          }),
-          updateTask: vi.fn().mockResolvedValue({ id: "task-1" }),
-        },
-        delegations: {
-          getByChildConversationId: vi.fn().mockResolvedValue(null),
-        },
-        conversationRuns: {
-          acceptCommand,
-          getForInteraction: vi.fn(),
-          transition: vi.fn().mockResolvedValue({ ...acceptedRun, status: "running" }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ConversationRepository,
+          {
+            getConversation: vi.fn().mockResolvedValue({
+              id: "conversation-1",
+              project_id: "project-1",
+              user_id: 7,
+            }),
+          },
+        ],
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({
+              id: "project-1",
+              workspace_id: "workspace-1",
+            }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockResolvedValue({ role: "owner" }),
+          },
+        ],
+        [
+          ProjectTaskRepository,
+          {
+            getTaskByConversation: vi.fn().mockResolvedValue({
+              id: "task-1",
+              stageId: "plan",
+              runId: null,
+            }),
+            updateTask: vi.fn().mockResolvedValue({ id: "task-1" }),
+          },
+        ],
+        [
+          DelegationRepository,
+          {
+            getByChildConversationId: vi.fn().mockResolvedValue(null),
+          },
+        ],
+        [
+          ConversationRunRepository,
+          {
+            acceptCommand,
+            getForInteraction: vi.fn(),
+            transition: vi.fn().mockResolvedValue({ ...acceptedRun, status: "running" }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await acceptChatRun({

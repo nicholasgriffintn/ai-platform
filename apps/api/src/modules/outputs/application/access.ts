@@ -2,8 +2,10 @@ import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const HIDDEN_OUTPUT_ERRORS = new Set([
@@ -42,7 +44,9 @@ export async function requireConversationScope(
   conversationId: string,
   projectId?: string | null,
 ): Promise<void> {
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
 
   if (!conversation) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
@@ -67,7 +71,7 @@ export async function requireOutputAccess(
   outputId: string,
   mutate = false,
 ): Promise<OutputRecord> {
-  const output = await context.repositories.outputs.getOutput(outputId);
+  const output = await context.repositories.get(OutputRepository).getOutput(outputId);
 
   if (!output || isOutputDeletionPending(output)) {
     throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);

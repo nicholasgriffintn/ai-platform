@@ -2,7 +2,9 @@ import { SPEND_REQUEST_STATES, type SpendRequest } from "@ngriffin_uk/polychat-s
 import { readNonEmptyString, readRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import { requireModelAction } from "~/modules/model-registry/application/access";
 
 import type { ModelSpendRequestRecord } from "../infrastructure/ModelSpendRepository";
@@ -43,7 +45,7 @@ export function toSpendRequest(record: ModelSpendRequestRecord): SpendRequest {
 }
 
 export async function recordSpendRequest(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   input: {
     workspaceId: string;
     projectId: string | null;
@@ -54,9 +56,9 @@ export async function recordSpendRequest(
     requestedBy: number;
   },
 ): Promise<SpendRequest> {
-  const record = await repositories.modelSpend.createSpendRequest(input);
+  const record = await repositories.get(ModelSpendRepository).createSpendRequest(input);
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId: input.workspaceId,
     actorUserId: input.requestedBy,
     action: "model_spend.requested",
@@ -80,9 +82,9 @@ export async function listSpendRequests(
 
   return {
     requests: (
-      await context.repositories.modelSpend.listSpendRequests(workspaceId, [
-        ...SPEND_REQUEST_STATES,
-      ])
+      await context.repositories
+        .get(ModelSpendRepository)
+        .listSpendRequests(workspaceId, [...SPEND_REQUEST_STATES])
     ).map(toSpendRequest),
   };
 }

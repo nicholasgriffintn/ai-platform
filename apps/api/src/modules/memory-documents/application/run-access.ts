@@ -1,6 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { requireTeammateContext } from "~/modules/teammates/application/contexts";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { MemoryScope } from "~/types";
@@ -18,7 +19,9 @@ export async function requireRunMemoryDocument(
       await requireProjectAccess(context, scope.projectId);
     }
 
-    const document = await context.repositories.memoryDocuments.getDocumentById(documentId);
+    const document = await context.repositories
+      .get(MemoryDocumentRepository)
+      .getDocumentById(documentId);
     const scopeType = scope.type === "project" ? "project" : "personal";
     const scopeId = scope.type === "project" ? scope.projectId : String(user.id);
 
@@ -64,7 +67,9 @@ export async function requireRunMemoryDocument(
     throw new AssistantError("The teammate memory grant changed", ErrorType.FORBIDDEN, 403);
   }
 
-  const document = await context.repositories.memoryDocuments.getDocumentById(documentId);
+  const document = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentById(documentId);
   const inScope = document?.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
   const privateMemory =
     teammate &&

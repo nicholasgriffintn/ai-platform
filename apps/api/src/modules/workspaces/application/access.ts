@@ -8,6 +8,7 @@ import type {
   ProjectRow,
   WorkspaceRow,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export interface WorkspaceAccess {
   workspace: WorkspaceRow;
@@ -35,8 +36,8 @@ export async function requireWorkspaceAccess(
 ): Promise<WorkspaceAccess> {
   const user = requireWorkAccess(context);
   const [workspace, membership] = await Promise.all([
-    context.repositories.workspaces.getWorkspace(workspaceId),
-    context.repositories.workspaces.getMembership(workspaceId, user.id),
+    context.repositories.get(WorkspaceRepository).getWorkspace(workspaceId),
+    context.repositories.get(WorkspaceRepository).getMembership(workspaceId, user.id),
   ]);
 
   if (!workspace || !membership) {
@@ -63,7 +64,7 @@ export async function requireProjectAccess(
   allowedRoles: readonly WorkspaceRole[] = ["owner", "admin", "member"],
 ): Promise<{ project: ProjectRow; role: WorkspaceRole }> {
   requireWorkAccess(context);
-  const project = await context.repositories.workspaces.getProject(projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
 
   if (!project) {
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
@@ -81,7 +82,9 @@ export async function requireProjectCapabilityAccess(
   capabilityId: string,
 ): Promise<void> {
   await requireProjectAccess(context, projectId);
-  const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+  const capabilities = await context.repositories
+    .get(WorkspaceRepository)
+    .listProjectCapabilities(projectId);
   const capability = capabilities.find(
     (item) => item.kind === kind && item.capability_id === capabilityId,
   );

@@ -3,7 +3,8 @@ import type { WeightsPlacement } from "@ngriffin_uk/polychat-library-model-regis
 import { MODEL_PROVIDER_IDS, type ModelProviderId } from "@ngriffin_uk/polychat-schemas";
 import { isGitCommitSha } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
 
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import { conflict, notFound } from "./access";
@@ -70,11 +71,11 @@ export function weightsPlacement(location: WeightsLocation | null): WeightsPlace
 }
 
 async function adapterBase(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
 ): Promise<string | null> {
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
 
   return (
     edges.find((edge) => edge.toVersionId === versionId && edge.relation === "adapter_of")
@@ -83,14 +84,14 @@ async function adapterBase(
 }
 
 export async function buildModelHandle(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
   depth = 0,
 ): Promise<ModelHandle> {
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
 
   if (!version || !asset) {

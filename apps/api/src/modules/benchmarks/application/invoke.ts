@@ -15,7 +15,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { ai } from "~/infrastructure/ai";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import {
   getAIResponseForTarget,
   type AuthorisedModelTarget,
@@ -43,7 +43,7 @@ export interface EntrantResponse {
 
 interface InvocationScope {
   env: IEnv;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   user: IUser | null;
   billingUser: IUser | null;
   runId: string;

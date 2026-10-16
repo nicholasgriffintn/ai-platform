@@ -18,6 +18,8 @@ vi.mock("~/infrastructure/storage/read-resource", () => ({
   getPrivateFileResponse: mocks.getPrivateFileResponse,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { readSharedSiteImage } from "~/modules/sites/application/shared-images";
 
 const project = {
@@ -53,7 +55,7 @@ const project = {
 function contextWith(image: Record<string, unknown> | null) {
   return {
     env: { API_BASE_URL: "https://api.polychat.test", PRIVATE_ASSETS_BUCKET: {} },
-    repositories: { outputs: { getOutput: vi.fn(async () => image) } },
+    repositories: fakeRepositories([[OutputRepository, { getOutput: vi.fn(async () => image) }]]),
   } as never;
 }
 

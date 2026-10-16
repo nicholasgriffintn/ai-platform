@@ -7,6 +7,7 @@ import { getExperienceCatalog } from "~/modules/experiences/application/config";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
 import { getSkillDefinition } from "~/modules/skills/application";
 import { canAccessTeammate } from "~/modules/teammates/application/access";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 
 export async function validateCapabilityReference(
   kind: ProjectCapabilityKind,
@@ -24,7 +25,9 @@ export async function validateCapabilityReference(
   if (kind === "teammate") {
     const userId = context?.user?.id;
     const teammate =
-      context && userId ? await context.repositories.teammates.getTeammateById(capabilityId) : null;
+      context && userId
+        ? await context.repositories.get(TeammateRepository).getTeammateById(capabilityId)
+        : null;
 
     if (!context || !userId || !teammate) {
       throw new AssistantError("Unknown teammate", ErrorType.NOT_FOUND, 404);

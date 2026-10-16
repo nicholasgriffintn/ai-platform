@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IRequest } from "~/types";
 
 import { runFunctionWithOutput } from "../run-with-output";
@@ -37,9 +39,7 @@ function createRequest(overrides: Partial<IRequest> = {}): IRequest {
     context: {
       database: {},
       env,
-      repositories: {
-        outputs: outputRepository,
-      },
+      repositories: fakeRepositories([[OutputRepository, outputRepository]]),
       requestCache: new Map(),
     } as any,
     env,

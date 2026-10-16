@@ -4,11 +4,11 @@ const mocks = vi.hoisted(() => ({
   enqueueTask: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: {
-    getInstance: vi.fn(() => ({
-      tasks: {},
-    })),
+vi.mock("~/modules/tasks/infrastructure/TaskRepository", () => ({
+  TaskRepository: class {
+    constructor() {
+      return {};
+    }
   },
 }));
 

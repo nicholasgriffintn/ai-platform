@@ -4,6 +4,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
 import { recordApprovalOutcome } from "~/modules/poly/domain/earned-trust";
 import { readToolInteractionResolution } from "~/modules/responses/application/runs/interactions";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { readPendingPolyCall } from "./pending-call";
 import { markPolyOwnerSeen } from "./poly-context";
@@ -22,11 +23,13 @@ export async function recordPolyApprovalOutcome(params: {
     return;
   }
 
-  const polyContext = await params.context.repositories.teammateContexts.getByIdentity({
-    teammateId: POLY_TEAMMATE_ID,
-    actorUserId: user.id,
-    scope: { type: "personal", id: String(user.id) },
-  });
+  const polyContext = await params.context.repositories
+    .get(TeammateContextRepository)
+    .getByIdentity({
+      teammateId: POLY_TEAMMATE_ID,
+      actorUserId: user.id,
+      scope: { type: "personal", id: String(user.id) },
+    });
 
   if (!polyContext || polyContext.homeConversationId !== params.conversationId) {
     return;
@@ -49,7 +52,7 @@ export async function recordPolyApprovalOutcome(params: {
     return;
   }
 
-  await params.context.repositories.teammateContexts.updateApprovalStreaks(
+  await params.context.repositories.get(TeammateContextRepository).updateApprovalStreaks(
     polyContext.id,
     recordApprovalOutcome({
       streaks: polyContext.approvalStreaks,

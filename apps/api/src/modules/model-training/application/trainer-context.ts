@@ -5,13 +5,13 @@ import {
 } from "@ngriffin_uk/polychat-ai-model-providers";
 import { ACTIVE_TRAINING_RUN_STATUSES } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { resolveProviderContext } from "~/modules/model-governance/application/connections";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
 
 export async function trainerFor(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: Pick<ModelTrainingRunRecord, "workspace_id" | "provider" | "trainer">,
 ): Promise<Trainer> {
   return createTrainer(

@@ -11,8 +11,9 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   notFound,
   requireModelAction,
@@ -21,6 +22,7 @@ import {
 import { weightsLocation, weightsPlacement } from "~/modules/model-registry/application/handles";
 import { evaluateCandidateRoute } from "~/modules/model-registry/application/policies";
 import { loadRegistryScope } from "~/modules/model-registry/application/scope";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
 
 const INFERENCE_PROVIDER_IDS: Record<string, ModelProviderId> = {
   together: "together",
@@ -34,14 +36,14 @@ export interface NormalisedTarget {
 }
 
 export async function normaliseTarget(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
   adapterVersionIds: readonly string[],
 ): Promise<NormalisedTarget> {
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
 
   if (!version || !asset) {
@@ -52,7 +54,7 @@ export async function normaliseTarget(
     return { baseVersionId: versionId, adapterVersionIds: [...adapterVersionIds] };
   }
 
-  const base = (await repositories.modelAssets.listLineage(workspaceId)).find(
+  const base = (await repositories.get(ModelAssetRepository).listLineage(workspaceId)).find(
     (edge) => edge.toVersionId === versionId && edge.relation === "adapter_of",
   );
 
@@ -67,7 +69,7 @@ export async function normaliseTarget(
 }
 
 async function servedCatalogue(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   repo: string,
   revision: string,
@@ -139,7 +141,9 @@ export async function planDeployment(
   };
 
   const model = toResolverModel(base.id);
-  const connections = await repositories.modelConnections.listConnections(workspaceId);
+  const connections = await repositories
+    .get(ModelConnectionRepository)
+    .listConnections(workspaceId);
   const location = weightsLocation(baseAsset, base);
   const catalogue =
     location?.kind === "hub"

@@ -48,6 +48,9 @@ vi.mock("~/infrastructure/context/serviceContext", () => ({
   resolveServiceContext: vi.fn(({ context }) => context),
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
+
 import { deleteEmbedding } from "../delete";
 import { insertEmbedding } from "../insert";
 import { generateEmbeddingVectors } from "../lifecycle";
@@ -56,25 +59,28 @@ import { queryEmbeddings } from "../query";
 const createContext = (userId: number, embeddings: Record<string, ReturnType<typeof vi.fn>>) =>
   ({
     env: { EMBEDDING_SCOPE_SECRET: "test-embedding-scope-secret-32-characters" },
-    repositories: {
-      embeddings: {
-        getActiveProviderTargets: vi.fn().mockResolvedValue([
-          {
-            provider: "vectorize",
-            providerTarget: "vectorize-binding",
-            embeddingModel: "@cf/baai/bge-large-en-v1.5",
-            embeddingDimensions: 1024,
-            distanceMetric: "provider-configured",
-            taskMode: "symmetric",
-            vectorSpace: "default",
-            vectorSpaceVersion: "v1",
-          },
-        ]),
-        getDocumentLifecycleStatus: vi.fn().mockResolvedValue("pending"),
-        getPendingDocumentForRetry: vi.fn().mockResolvedValue(null),
-        ...embeddings,
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        EmbeddingRepository,
+        {
+          getActiveProviderTargets: vi.fn().mockResolvedValue([
+            {
+              provider: "vectorize",
+              providerTarget: "vectorize-binding",
+              embeddingModel: "@cf/baai/bge-large-en-v1.5",
+              embeddingDimensions: 1024,
+              distanceMetric: "provider-configured",
+              taskMode: "symmetric",
+              vectorSpace: "default",
+              vectorSpaceVersion: "v1",
+            },
+          ]),
+          getDocumentLifecycleStatus: vi.fn().mockResolvedValue("pending"),
+          getPendingDocumentForRetry: vi.fn().mockResolvedValue(null),
+          ...embeddings,
+        },
+      ],
+    ]),
     requireUser: () => ({ id: userId }),
     getUserSettings: vi.fn().mockResolvedValue({ embedding_provider: "vectorize" }),
     getLogger: vi.fn(() => ({ error: vi.fn(), warn: vi.fn() })),

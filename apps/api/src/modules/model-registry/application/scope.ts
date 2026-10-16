@@ -7,7 +7,11 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import type { ModelDecisionRecord } from "../infrastructure/ModelGovernanceRepository";
@@ -35,22 +39,22 @@ export interface Standing {
 }
 
 export async function loadRegistryScope(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
   { versionIds }: { versionIds?: string[] } = {},
 ): Promise<RegistryScope> {
   const [stack, assets, versions] = await Promise.all([
     loadPolicyStack(repositories, workspaceId, projectId),
-    repositories.modelAssets.listAssets(workspaceId),
-    repositories.modelAssets.listVersions(workspaceId, versionIds),
+    repositories.get(ModelAssetRepository).listAssets(workspaceId),
+    repositories.get(ModelAssetRepository).listVersions(workspaceId, versionIds),
   ]);
   const ids = versions.map((version) => version.id);
   const [evidence, decisions, routes, datasets] = await Promise.all([
-    repositories.modelGovernance.listEvidence(ids),
-    repositories.modelGovernance.listDecisions(workspaceId, { versionIds: ids }),
-    repositories.modelRoutes.listRoutes(workspaceId, { versionIds: ids }),
-    repositories.modelDatasets.list(workspaceId, versionIds ? ids : undefined),
+    repositories.get(ModelGovernanceRepository).listEvidence(ids),
+    repositories.get(ModelGovernanceRepository).listDecisions(workspaceId, { versionIds: ids }),
+    repositories.get(ModelRouteRepository).listRoutes(workspaceId, { versionIds: ids }),
+    repositories.get(ModelDatasetRepository).list(workspaceId, versionIds ? ids : undefined),
   ]);
 
   return {
@@ -186,7 +190,7 @@ export function usableRoutes(scope: RegistryScope, now = new Date()): ModelRoute
 }
 
 export async function requireUsableVersion(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
   versionId: string,

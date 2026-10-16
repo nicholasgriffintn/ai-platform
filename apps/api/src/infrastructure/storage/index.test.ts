@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { StorageService } from ".";
 
@@ -10,17 +13,20 @@ describe("StorageService output persistence", () => {
     const deleteObject = vi.fn().mockResolvedValue(undefined);
     const context = {
       env: {},
-      repositories: {
-        workspaces: { getProject: vi.fn() },
-        outputs: {
-          createOutput: vi.fn().mockRejectedValue(new Error("follow-up read failed")),
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue({
-            id: "output-1",
-            created_by_user_id: 42,
-            storage_key: "private/users/42/output-1.json",
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [WorkspaceRepository, { getProject: vi.fn() }],
+        [
+          OutputRepository,
+          {
+            createOutput: vi.fn().mockRejectedValue(new Error("follow-up read failed")),
+            getOutputIncludingDeleting: vi.fn().mockResolvedValue({
+              id: "output-1",
+              created_by_user_id: 42,
+              storage_key: "private/users/42/output-1.json",
+            }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
     const storage = new StorageService(
       { put, delete: deleteObject } as never,

@@ -18,10 +18,12 @@ import {
 import { canonicalJson, readRecord, sha256Hex, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { requireHubAccess } from "~/modules/model-governance/application/connections";
 import { preflightWorkspaceSpend } from "~/modules/model-governance/application/spend";
 import { recordSpendRequest } from "~/modules/model-governance/application/spend-requests";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   badRequest,
   conflict,
@@ -31,7 +33,10 @@ import {
 } from "~/modules/model-registry/application/access";
 import { requireUsableVersion } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
@@ -65,12 +70,8 @@ export function toTrainingRun(
   };
 }
 
-export async function enqueueTrainingSync(
-  env: IEnv,
-  repositories: RepositoryManager,
-  runId: string,
-) {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+export async function enqueueTrainingSync(env: IEnv, repositories: Repositories, runId: string) {
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_TRAINING_SYNC_TASK_TYPE}:${runId}:${Date.now()}`,
     task_type: MODEL_TRAINING_SYNC_TASK_TYPE,
     task_data: { runId },
@@ -106,10 +107,9 @@ async function prepareRun(
     throw badRequest(`${trainer.name} does not offer ${spec.adaptation} training`);
   }
 
-  const connection = await repositories.modelConnections.getConnection(
-    workspaceId,
-    spec.target.provider,
-  );
+  const connection = await repositories
+    .get(ModelConnectionRepository)
+    .getConnection(workspaceId, spec.target.provider);
 
   if (!connection?.capabilities.train) {
     throw conflict("Connect this provider with training rights under Models › Governance first");
@@ -217,13 +217,13 @@ async function prepareRun(
 
 async function startPreparedRun(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   userId: number,
   prepared: PreparedRun,
 ): Promise<TrainingRun> {
   const { spec } = prepared.request;
-  const run = await repositories.modelTraining.create({
+  const run = await repositories.get(ModelTrainingRepository).create({
     workspaceId,
     projectId: prepared.projectId,
     spec,
@@ -237,7 +237,7 @@ async function startPreparedRun(
     createdBy: userId,
   });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_training.started",
@@ -337,13 +337,13 @@ export async function listTrainingRuns(
   await requireModelAction(context, workspaceId, "view");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
-  const runs = await context.repositories.modelTraining.list(workspaceId, projectId);
-  const versions = await context.repositories.modelAssets.listVersions(
+  const runs = await context.repositories.get(ModelTrainingRepository).list(workspaceId, projectId);
+  const versions = await context.repositories.get(ModelAssetRepository).listVersions(
     workspaceId,
     runs.map((run) => run.spec.baseVersionId),
   );
   const assets = new Map(
-    (await context.repositories.modelAssets.listAssets(workspaceId)).map((asset) => [
+    (await context.repositories.get(ModelAssetRepository).listAssets(workspaceId)).map((asset) => [
       asset.id,
       asset,
     ]),
@@ -400,13 +400,15 @@ export async function getTrainingRun(
 ): Promise<TrainingRun> {
   await requireModelAction(context, workspaceId, "view");
 
-  const run = await context.repositories.modelTraining.get(workspaceId, runId);
+  const run = await context.repositories.get(ModelTrainingRepository).get(workspaceId, runId);
 
   if (!run) {
     throw notFound("Training run");
   }
 
-  const checkpoints = await context.repositories.modelTraining.listCheckpoints(run.id);
+  const checkpoints = await context.repositories
+    .get(ModelTrainingRepository)
+    .listCheckpoints(run.id);
 
   return toTrainingRun(
     run,
@@ -429,7 +431,7 @@ export async function cancelTrainingRun(
 ): Promise<TrainingRun> {
   const { userId } = await requireModelAction(context, workspaceId, "train");
   const repositories = context.repositories;
-  const run = await repositories.modelTraining.get(workspaceId, runId);
+  const run = await repositories.get(ModelTrainingRepository).get(workspaceId, runId);
 
   if (!run) {
     throw notFound("Training run");
@@ -439,7 +441,9 @@ export async function cancelTrainingRun(
     throw conflict(`The run is already ${run.status}`);
   }
 
-  const cancelled = await repositories.modelTraining.requestCancellation(workspaceId, run.id);
+  const cancelled = await repositories
+    .get(ModelTrainingRepository)
+    .requestCancellation(workspaceId, run.id);
 
   if (!cancelled) {
     throw conflict("The run finished before cancellation could be requested");
@@ -448,10 +452,12 @@ export async function cancelTrainingRun(
   if (cancelled.status === "cancelling") {
     await enqueueTrainingSync(context.env, repositories, run.id);
   } else {
-    await repositories.modelTraining.update(run.id, { completed_at: new Date().toISOString() });
+    await repositories
+      .get(ModelTrainingRepository)
+      .update(run.id, { completed_at: new Date().toISOString() });
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_training.cancelled",

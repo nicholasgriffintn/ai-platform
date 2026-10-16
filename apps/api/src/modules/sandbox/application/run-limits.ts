@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 
 import { resolveSandboxExecutionQuotaConfig } from "./config";
 import { parseSandboxRunData } from "./run-data";
@@ -28,10 +29,9 @@ export async function assertSandboxRunCanStart(params: {
   const nowMs = (params.now ?? new Date()).getTime();
   const config = resolveSandboxExecutionQuotaConfig(context.env);
 
-  const records = await context.repositories.activities.listRecentUserActivities(
-    userId,
-    SANDBOX_RUNS_CAPABILITY_ID,
-  );
+  const records = await context.repositories
+    .get(ActivityRepository)
+    .listRecentUserActivities(userId, SANDBOX_RUNS_CAPABILITY_ID);
 
   const oneMinuteAgoMs = nowMs - 60_000;
   const oneDayAgoMs = nowMs - 24 * 60 * 60 * 1000;

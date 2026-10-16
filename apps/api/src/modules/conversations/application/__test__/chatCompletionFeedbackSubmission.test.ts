@@ -1,7 +1,9 @@
 import type { AiFeedbackSignal } from "@ngriffin_uk/polychat-ai-telemetry";
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { resolveFeedbackTarget } from "~/modules/conversations/application/feedback-target";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 
 import {
   handleChatCompletionFeedbackSubmission,
@@ -21,9 +23,7 @@ function createContext(
       { id: "message-1", role: "user" },
       { id: "message-2", role: "assistant", log_id: "log-2", run_id: "run-2" },
     ],
-    repositories: {
-      trainingExamples: { findMany, updateById },
-    },
+    repositories: fakeRepositories([[TrainingExampleRepository, { findMany, updateById }]]),
     updateById,
     ...overrides,
   };

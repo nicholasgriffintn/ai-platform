@@ -3,6 +3,7 @@ import type { ConversationThread, ListPage } from "@ngriffin_uk/polychat-schemas
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const MAX_BRANCHES = 200;
@@ -12,7 +13,9 @@ export async function getConversationBranches(
   conversationId: string,
 ): Promise<ListPage<ConversationThread>> {
   const user = context.requireUser();
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
 
   if (!conversation || (!conversation.project_id && !ownsResource(user.id, conversation.user_id))) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
@@ -24,12 +27,9 @@ export async function getConversationBranches(
     await requireProjectAccess(context, projectId);
   }
 
-  const rows = await context.repositories.conversations.listConversationThreads(
-    conversationId,
-    user.id,
-    projectId,
-    MAX_BRANCHES + 1,
-  );
+  const rows = await context.repositories
+    .get(ConversationRepository)
+    .listConversationThreads(conversationId, user.id, projectId, MAX_BRANCHES + 1);
   const selected = rows.find((row) => row.id === conversationId);
   const page = rows.slice(0, MAX_BRANCHES);
 

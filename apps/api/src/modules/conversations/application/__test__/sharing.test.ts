@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import {
   getPublicConversation,
@@ -23,24 +26,30 @@ function createRepositories(conversation: Record<string, unknown>) {
 
   return {
     updateConversation,
-    repositories: {
-      conversations: {
-        getConversation: vi.fn(async () => conversation),
-        getConversationByShareId: vi.fn(async (shareId: string) =>
-          conversation.share_id === shareId ? conversation : null,
-        ),
-        updateConversation,
-      },
-      messages: {
-        getMessages: vi.fn(async (_id: string, _limit: number, after?: string) =>
-          after ? [] : rows,
-        ),
-      },
-    } as unknown as RepositoryManager,
+    repositories: fakeRepositories([
+      [
+        ConversationRepository,
+        {
+          getConversation: vi.fn(async () => conversation),
+          getConversationByShareId: vi.fn(async (shareId: string) =>
+            conversation.share_id === shareId ? conversation : null,
+          ),
+          updateConversation,
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          getMessages: vi.fn(async (_id: string, _limit: number, after?: string) =>
+            after ? [] : rows,
+          ),
+        },
+      ],
+    ]),
   };
 }
 
-function createScope(repositories: RepositoryManager): ConversationSharingScope {
+function createScope(repositories: Repositories): ConversationSharingScope {
   return {
     repositories,
     user: { id: 7 } as ConversationSharingScope["user"],

@@ -2,7 +2,7 @@ import { deleteComposioToolSession } from "@ngriffin_uk/polychat-ai-integrations
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import type { IEnv } from "~/types";
 
 const CLEANUP_BATCH_SIZE = 50;
@@ -14,9 +14,9 @@ export async function reapComposioConnectorSessions(
   env: IEnv,
   now = new Date(),
 ): Promise<{ deleted: number; failed: number }> {
-  const repositories = RepositoryManager.getInstance(env);
+  const composioConnectorSessions = new ComposioConnectorSessionRepository(env);
   const nowIso = now.toISOString();
-  const due = await repositories.composioConnectorSessions.listCleanupDue({
+  const due = await composioConnectorSessions.listCleanupDue({
     now: nowIso,
     limit: CLEANUP_BATCH_SIZE,
   });
@@ -24,7 +24,7 @@ export async function reapComposioConnectorSessions(
   let failed = 0;
 
   for (const candidate of due) {
-    const claimed = await repositories.composioConnectorSessions.claimCleanup({
+    const claimed = await composioConnectorSessions.claimCleanup({
       id: candidate.id,
       now: nowIso,
       leaseUntil: new Date(now.getTime() + CLEANUP_LEASE_MS).toISOString(),
@@ -36,11 +36,11 @@ export async function reapComposioConnectorSessions(
 
     try {
       await deleteComposioToolSession({ env, sessionId: claimed.remoteSessionId });
-      await repositories.composioConnectorSessions.delete(claimed.id);
+      await composioConnectorSessions.delete(claimed.id);
       deleted += 1;
     } catch (error) {
       failed += 1;
-      await repositories.composioConnectorSessions.markCleanupPending({
+      await composioConnectorSessions.markCleanupPending({
         id: claimed.id,
         cleanupAfter: new Date(now.getTime() + CLEANUP_RETRY_MS).toISOString(),
       });

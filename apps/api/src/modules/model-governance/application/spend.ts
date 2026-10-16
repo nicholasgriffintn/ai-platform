@@ -10,13 +10,17 @@ import type {
 import { hoursBetween } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import {
   conflict,
   notFound,
   requireModelAction,
   requireWorkspaceProject,
 } from "~/modules/model-registry/application/access";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
+import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 
 import {
   type ModelBudgetRecord,
@@ -52,17 +56,17 @@ interface SpendLedger {
 }
 
 async function loadLedger(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   now: Date,
 ): Promise<SpendLedger> {
   const since = monthStart(now);
   const end = monthEnd(now);
   const [budgets, costs, runs, deployments] = await Promise.all([
-    repositories.modelSpend.listBudgets(workspaceId),
-    repositories.modelSpend.listCosts(workspaceId, since),
-    repositories.modelTraining.list(workspaceId, null, true),
-    repositories.modelDeployments.list(workspaceId, { liveOnly: true }),
+    repositories.get(ModelSpendRepository).listBudgets(workspaceId),
+    repositories.get(ModelSpendRepository).listCosts(workspaceId, since),
+    repositories.get(ModelTrainingRepository).list(workspaceId, null, true),
+    repositories.get(ModelDeploymentRepository).list(workspaceId, { liveOnly: true }),
   ]);
   const spentBySubject = new Map<string, number>();
 
@@ -103,7 +107,7 @@ function sum(values: number[]): number {
 }
 
 export async function getWorkspaceSpendLines(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   now = new Date(),
   projectId?: string | null,
@@ -132,7 +136,7 @@ export async function getWorkspaceSpendLines(
 }
 
 export async function preflightWorkspaceSpend(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
   estimateUsd: number | null,
@@ -154,8 +158,8 @@ export async function getSpendSummary(
   const repositories = context.repositories;
   const ledger = await loadLedger(repositories, workspaceId, now);
   const [runs, deployments] = await Promise.all([
-    repositories.modelTraining.list(workspaceId),
-    repositories.modelDeployments.list(workspaceId),
+    repositories.get(ModelTrainingRepository).list(workspaceId),
+    repositories.get(ModelDeploymentRepository).list(workspaceId),
   ]);
   const names = new Map<string, string>([
     ...runs.map((run) => [`training_run:${run.id}`, run.spec.outputName] as const),
@@ -216,10 +220,12 @@ export async function saveBudget(
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
 
   if ((request.hardStop ?? true) || request.idlePauseMinutes != null) {
-    const deployments = await context.repositories.modelDeployments.list(workspaceId, {
-      liveOnly: true,
-      projectId,
-    });
+    const deployments = await context.repositories
+      .get(ModelDeploymentRepository)
+      .list(workspaceId, {
+        liveOnly: true,
+        projectId,
+      });
     const unsupported = deployments.find(
       (deployment) => hostManifest(deployment.provider, deployment.host).pauseSupported === false,
     );
@@ -231,7 +237,7 @@ export async function saveBudget(
     }
   }
 
-  const saved = await context.repositories.modelSpend.saveBudget({
+  const saved = await context.repositories.get(ModelSpendRepository).saveBudget({
     workspaceId,
     projectId,
     monthlyLimitUsd: request.monthlyLimitUsd,
@@ -242,7 +248,7 @@ export async function saveBudget(
     updatedBy: userId,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_budget.saved",
@@ -262,16 +268,16 @@ export async function deleteBudget(
   const { userId } = await requireModelAction(context, workspaceId, "manage_budgets");
   const scopeKey =
     (await requireWorkspaceProject(context, workspaceId, projectId)) ?? WORKSPACE_BUDGET_SCOPE_KEY;
-  const existing = (await context.repositories.modelSpend.listBudgets(workspaceId)).find(
-    (budget) => budget.scope_key === scopeKey,
-  );
+  const existing = (
+    await context.repositories.get(ModelSpendRepository).listBudgets(workspaceId)
+  ).find((budget) => budget.scope_key === scopeKey);
 
   if (!existing) {
     throw notFound("Budget");
   }
 
-  await context.repositories.modelSpend.deleteBudget(workspaceId, scopeKey);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ModelSpendRepository).deleteBudget(workspaceId, scopeKey);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_budget.deleted",
@@ -283,7 +289,7 @@ export async function deleteBudget(
 }
 
 export async function accrueDeploymentCost(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: {
     id: string;
     workspace_id: string;
@@ -299,7 +305,7 @@ export async function accrueDeploymentCost(
   const from = deployment.billed_until ?? deployment.created_at;
   const to = now.toISOString();
 
-  await repositories.modelSpend.accrueDeployment({
+  await repositories.get(ModelSpendRepository).accrueDeployment({
     workspaceId: deployment.workspace_id,
     deploymentId: deployment.id,
     expectedBilledUntil: deployment.billed_until,

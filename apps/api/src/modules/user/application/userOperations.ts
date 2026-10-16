@@ -8,7 +8,9 @@ import {
   listConfigurableUserProviderIds,
 } from "~/infrastructure/providers/userConfigurableProviders";
 import { createUserSettings } from "~/modules/auth/application/user";
+import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { validatePetSettingsUpdate } from "~/modules/pets/application/settings";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 const logger = getLogger({ prefix: "services/user/operations" });
 
@@ -29,7 +31,7 @@ function getUserCache(env: any): KVCache | null {
 const ensureRepo = (context: ServiceContext) => {
   context.ensureDatabase();
 
-  return context.repositories.userSettings;
+  return context.repositories.get(UserSettingsRepository);
 };
 
 async function invalidateUserModelCache(
@@ -77,7 +79,7 @@ export async function updateUserSettings(
   await repo.updateUserSettings(id, validatedSettings);
 
   if (validatedSettings.advertise_machines === false) {
-    await context.repositories.machines.deleteAllForUser(id);
+    await context.repositories.get(MachineRepository).deleteAllForUser(id);
   }
 
   await invalidateUserModelCache(context, id, "update-user-settings");

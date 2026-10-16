@@ -18,6 +18,8 @@ import type {
   KnowledgeScope,
   SourceSearchPassage,
 } from "~/modules/sources/infrastructure/SourceSearchRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 export async function requireKnowledgeScope(
@@ -39,7 +41,7 @@ async function semanticTargetPassages(
   { target, userId }: { target: string; userId: number },
 ): Promise<SourceSearchPassage[]> {
   try {
-    const owner = await context.repositories.users.getUserById(userId);
+    const owner = await context.repositories.get(UserRepository).getUserById(userId);
 
     if (!owner) {
       return [];
@@ -69,7 +71,9 @@ async function semanticTargetPassages(
       ids.push(match.id);
     }
 
-    const hydrated = await context.repositories.sourceSearch.hydrate(scope, ids, input.type, true);
+    const hydrated = await context.repositories
+      .get(SourceSearchRepository)
+      .hydrate(scope, ids, input.type, true);
     const byId = new Map<string, SourceSearchPassage>();
 
     for (const passage of hydrated) {
@@ -99,7 +103,7 @@ async function semanticPassages(
   input: ProjectKnowledgeSearchQuery,
   scope: KnowledgeScope,
 ) {
-  const targets = await context.repositories.sourceSearch.getTargets(scope);
+  const targets = await context.repositories.get(SourceSearchRepository).getTargets(scope);
 
   if (targets.length > 8 || targets.length === 0) {
     return [];
@@ -128,7 +132,7 @@ export async function searchProjectKnowledge(
   const fts = toFtsQuery(input.query);
   const [lexical, semantic] = await Promise.all([
     fts
-      ? context.repositories.sourceSearch.lexical(scope, fts, input.type)
+      ? context.repositories.get(SourceSearchRepository).lexical(scope, fts, input.type)
       : Promise.resolve<SourceSearchPassage[]>([]),
     semanticPassages(context, input, scope),
   ]);
@@ -136,7 +140,7 @@ export async function searchProjectKnowledge(
   await requireKnowledgeScope(context, input.projectId);
   const hasSemantic = semantic.some((ranking) => ranking.length > 0);
   const candidates = fuseRankedResults([lexical, ...semantic], 30);
-  const current = await context.repositories.sourceSearch.hydrate(
+  const current = await context.repositories.get(SourceSearchRepository).hydrate(
     scope,
     candidates.map((passage) => passage.id),
     input.type,
@@ -179,7 +183,7 @@ export async function searchProjectKnowledge(
   });
 
   await requireKnowledgeScope(context, input.projectId);
-  const authorised = await context.repositories.sourceSearch.hydrate(
+  const authorised = await context.repositories.get(SourceSearchRepository).hydrate(
     scope,
     candidates.map((passage) => passage.id),
     input.type,

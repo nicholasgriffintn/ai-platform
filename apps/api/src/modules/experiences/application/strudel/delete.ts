@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireOutputRecordAccess } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { PATTERN_OUTPUT_KIND, STRUDEL_APP_ID } from "./utils";
 
@@ -24,8 +25,8 @@ export async function deletePattern({
     const { repositories } = context;
 
     const existing = projectId
-      ? await repositories.outputs.getProjectOutput(projectId, patternId)
-      : await repositories.outputs.getPersonalOutput(userId, patternId);
+      ? await repositories.get(OutputRepository).getProjectOutput(projectId, patternId)
+      : await repositories.get(OutputRepository).getPersonalOutput(userId, patternId);
 
     if (
       !existing ||
@@ -37,7 +38,7 @@ export async function deletePattern({
 
     await requireOutputRecordAccess(context, userId, existing, true);
 
-    await repositories.outputs.deleteOutput(patternId);
+    await repositories.get(OutputRepository).deleteOutput(patternId);
 
     logger.info("Deleted Strudel pattern", {
       userId,

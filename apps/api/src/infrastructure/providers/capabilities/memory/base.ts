@@ -277,7 +277,8 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
 
   protected getSourceRepository(): SourceRepository {
     return (
-      this.config.serviceContext?.repositories.sources ?? new SourceRepository(this.config.env)
+      this.config.serviceContext?.repositories.get(SourceRepository) ??
+      new SourceRepository(this.config.env)
     );
   }
 

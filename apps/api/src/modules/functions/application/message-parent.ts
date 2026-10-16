@@ -3,7 +3,9 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { deliverDelegationMessage } from "~/modules/delegations/application/message";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -24,9 +26,9 @@ export const messageParent: ApiToolDefinition = {
       );
     }
 
-    const delegation = await context.repositories.delegations.getById(
-      delegationContext.delegationId,
-    );
+    const delegation = await context.repositories
+      .get(DelegationRepository)
+      .getById(delegationContext.delegationId);
 
     if (!delegation || delegation.childConversationId !== toolContext.completionId) {
       throw new AssistantError(
@@ -44,7 +46,7 @@ export const messageParent: ApiToolDefinition = {
     );
 
     if (!delivered) {
-      await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+      await new TaskService(context.env, context.repositories.get(TaskRepository)).enqueueTask({
         id: `delegation_message_${delegation.id}_${generateId()}`,
         task_type: DELEGATION_MESSAGE_TASK_TYPE,
         user_id: user.id,

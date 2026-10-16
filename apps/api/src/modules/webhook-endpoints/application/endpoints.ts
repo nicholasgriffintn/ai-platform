@@ -17,6 +17,7 @@ import { parsePublicHttpUrl } from "@ngriffin_uk/polychat-utility-server/http";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { WebhookEndpointRecord } from "~/infrastructure/database/schema";
 import { openSecret, sealSecret } from "~/infrastructure/secret-envelope";
+import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 
 import { deliverWebhookEvent } from "./signing";
 
@@ -62,10 +63,9 @@ async function requireEndpoint(
   context: ServiceContext,
   endpointId: string,
 ): Promise<WebhookEndpointRecord> {
-  const endpoint = await context.repositories.webhookEndpoints.get(
-    context.requireUser().id,
-    endpointId,
-  );
+  const endpoint = await context.repositories
+    .get(WebhookEndpointRepository)
+    .get(context.requireUser().id, endpointId);
 
   if (!endpoint) {
     throw new AssistantError("Webhook endpoint not found", ErrorType.NOT_FOUND, 404);
@@ -78,11 +78,9 @@ export async function listWebhookEndpoints(
   context: ServiceContext,
   query: ListQuery,
 ): Promise<ListPage<WebhookEndpoint>> {
-  const records = await context.repositories.webhookEndpoints.list(
-    context.requireUser().id,
-    query.limit + 1,
-    query.after,
-  );
+  const records = await context.repositories
+    .get(WebhookEndpointRepository)
+    .list(context.requireUser().id, query.limit + 1, query.after);
 
   return toListPage(records.map(presentWebhookEndpoint), query.limit, (endpoint) => endpoint.id);
 }
@@ -92,7 +90,7 @@ export async function createWebhookEndpoint(
   input: CreateWebhookEndpointInput,
 ): Promise<WebhookEndpointWithSecret> {
   const secret = newSecret();
-  const record = await context.repositories.webhookEndpoints.create({
+  const record = await context.repositories.get(WebhookEndpointRepository).create({
     userId: context.requireUser().id,
     url: requirePublicHttpsUrl(input.url),
     description: input.description,
@@ -117,16 +115,14 @@ export async function updateWebhookEndpoint(
 ): Promise<WebhookEndpoint> {
   await requireEndpoint(context, endpointId);
 
-  const record = await context.repositories.webhookEndpoints.update(
-    context.requireUser().id,
-    endpointId,
-    {
+  const record = await context.repositories
+    .get(WebhookEndpointRepository)
+    .update(context.requireUser().id, endpointId, {
       ...(input.url === undefined ? {} : { url: requirePublicHttpsUrl(input.url) }),
       ...(input.description === undefined ? {} : { description: input.description }),
       ...(input.events === undefined ? {} : { events: input.events }),
       ...(input.enabled === undefined ? {} : { enabled: input.enabled }),
-    },
-  );
+    });
 
   if (!record) {
     throw new AssistantError("Webhook endpoint not found", ErrorType.NOT_FOUND, 404);
@@ -139,10 +135,9 @@ export async function deleteWebhookEndpoint(
   context: ServiceContext,
   endpointId: string,
 ): Promise<void> {
-  const deleted = await context.repositories.webhookEndpoints.delete(
-    context.requireUser().id,
-    endpointId,
-  );
+  const deleted = await context.repositories
+    .get(WebhookEndpointRepository)
+    .delete(context.requireUser().id, endpointId);
 
   if (!deleted) {
     throw new AssistantError("Webhook endpoint not found", ErrorType.NOT_FOUND, 404);
@@ -156,11 +151,11 @@ export async function rotateWebhookEndpointSecret(
   await requireEndpoint(context, endpointId);
 
   const secret = newSecret();
-  const record = await context.repositories.webhookEndpoints.update(
-    context.requireUser().id,
-    endpointId,
-    { encrypted_secret: await sealSecret(context.env, secret) },
-  );
+  const record = await context.repositories
+    .get(WebhookEndpointRepository)
+    .update(context.requireUser().id, endpointId, {
+      encrypted_secret: await sealSecret(context.env, secret),
+    });
 
   if (!record) {
     throw new AssistantError("Webhook endpoint not found", ErrorType.NOT_FOUND, 404);

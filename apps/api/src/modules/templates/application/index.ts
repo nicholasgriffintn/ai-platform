@@ -17,11 +17,14 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { getProject } from "~/modules/workspaces/application";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 import { validateProjectToolConfiguration } from "~/modules/workspaces/application/projectTools";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 function parseProjectTemplateConfiguration(value: unknown, message: string) {
   const parsed = projectTemplateConfigurationSchema.safeParse(value);
@@ -60,7 +63,7 @@ async function requireTemplateAccess(
   templateId: string,
   mutate = false,
 ): Promise<TemplateRecord> {
-  const template = await context.repositories.templates.getTemplateById(templateId);
+  const template = await context.repositories.get(TemplateRepository).getTemplateById(templateId);
 
   if (!template) {
     throw new AssistantError("Template not found", ErrorType.NOT_FOUND, 404);
@@ -102,11 +105,12 @@ export async function listTemplates(
 ): Promise<ListPage<Template>> {
   const records = filters.workspaceId
     ? (await requireWorkspaceAccess(context, filters.workspaceId),
-      await context.repositories.templates.listWorkspaceTemplates(
-        filters.workspaceId,
-        filters.kind,
-      ))
-    : await context.repositories.templates.listPersonalTemplates(userId, filters.kind);
+      await context.repositories
+        .get(TemplateRepository)
+        .listWorkspaceTemplates(filters.workspaceId, filters.kind))
+    : await context.repositories
+        .get(TemplateRepository)
+        .listPersonalTemplates(userId, filters.kind);
 
   return listPageOf(records.map(formatTemplate), (template) => template.id);
 }
@@ -135,7 +139,7 @@ export async function createTemplate(
           "Project template configuration is invalid",
         )
       : input.configuration;
-  const created = await context.repositories.templates.createTemplate({
+  const created = await context.repositories.get(TemplateRepository).createTemplate({
     createdByUserId: userId,
     workspaceId: input.workspaceId,
     kind: input.kind,
@@ -147,7 +151,7 @@ export async function createTemplate(
   });
 
   if (created.workspace_id) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId: created.workspace_id,
       actorUserId: userId,
       action: "template.created",
@@ -196,7 +200,7 @@ export async function instantiateProjectTemplate(
   const projectId = generateId();
   const projectName = name ?? configuration.project.name;
 
-  await context.repositories.workspaces.createProjectWithCapabilities(
+  await context.repositories.get(WorkspaceRepository).createProjectWithCapabilities(
     {
       id: projectId,
       workspaceId,
@@ -212,7 +216,7 @@ export async function instantiateProjectTemplate(
     },
     capabilities,
   );
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "template.instantiated",
@@ -251,14 +255,16 @@ export async function updateTemplate(
     );
   }
 
-  const updated = await context.repositories.templates.updateTemplate(templateId, input);
+  const updated = await context.repositories
+    .get(TemplateRepository)
+    .updateTemplate(templateId, input);
 
   if (!updated) {
     throw new AssistantError("Template not found", ErrorType.NOT_FOUND, 404);
   }
 
   if (existing.workspace_id) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId: existing.workspace_id,
       actorUserId: userId,
       action: "template.updated",
@@ -277,9 +283,9 @@ export async function deleteTemplate(
 ): Promise<void> {
   const existing = await requireTemplateAccess(context, userId, templateId, true);
 
-  await context.repositories.templates.deleteTemplate(templateId);
+  await context.repositories.get(TemplateRepository).deleteTemplate(templateId);
   if (existing.workspace_id) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId: existing.workspace_id,
       actorUserId: userId,
       action: "template.deleted",

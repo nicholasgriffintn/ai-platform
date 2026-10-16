@@ -1,6 +1,7 @@
 import { isLiveDelegationState, type Delegation } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 
 import { canControlDelegation } from "./authority";
 import { cancelDelegationChildRun } from "./cancel-child-run";
@@ -43,14 +44,16 @@ export async function cancelDelegationTree(
       );
 
       await cancelChildren(
-        await context.repositories.delegations.listByParentConversationId(
-          delegation.childConversationId,
-        ),
+        await context.repositories
+          .get(DelegationRepository)
+          .listByParentConversationId(delegation.childConversationId),
       );
     }
   };
 
-  await cancelChildren(await context.repositories.delegations.listByParentRunId(parentRunId));
+  await cancelChildren(
+    await context.repositories.get(DelegationRepository).listByParentRunId(parentRunId),
+  );
 }
 
 export async function cancelDelegationsForConversation(
@@ -58,8 +61,9 @@ export async function cancelDelegationsForConversation(
   parentConversationId: string,
   userId: number,
 ): Promise<boolean> {
-  const delegations =
-    await context.repositories.delegations.listByParentConversationId(parentConversationId);
+  const delegations = await context.repositories
+    .get(DelegationRepository)
+    .listByParentConversationId(parentConversationId);
   const controllable = await Promise.all(
     delegations.map(async (delegation) => ({
       delegation,

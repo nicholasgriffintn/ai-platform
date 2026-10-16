@@ -3,6 +3,8 @@ import { SYNCED_PLATFORM_TEAMMATES, type PlatformTeammate } from "@ngriffin_uk/p
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 
 import { ensurePlatformTeammates } from "../platform-teammates";
 
@@ -42,12 +44,15 @@ function createContext(existing: ReturnType<typeof catalogueRow>[]) {
   return {
     context: {
       ensureDatabase: vi.fn(),
-      repositories: {
-        teammates: {
-          listPlatformTeammates: vi.fn(async () => existing),
-          upsertPlatformTeammates,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          TeammateRepository,
+          {
+            listPlatformTeammates: vi.fn(async () => existing),
+            upsertPlatformTeammates,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext,
     upsertPlatformTeammates,
   };

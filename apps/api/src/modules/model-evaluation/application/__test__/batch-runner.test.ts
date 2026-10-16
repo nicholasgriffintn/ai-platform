@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { IEnv } from "~/types";
 
@@ -27,6 +27,11 @@ vi.mock("~/modules/model-registry/application/decisions", () => ({
   openRouteReview: vi.fn(),
   syncVersionReviews: vi.fn(),
 }));
+
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 import { BATCH_MAX_POLL_ATTEMPTS, executeBatchedEvalRun } from "../batch-runner";
 
@@ -74,16 +79,20 @@ const route = {
 } as unknown as ModelRouteRecord;
 
 function repositories() {
-  return {
-    tasks: {},
-    modelEvals: { updateRun: vi.fn(), updateRunScores: vi.fn(), listRuns: vi.fn(async () => []) },
-    modelGraders: {
-      listByIds: vi.fn(async () => [{ metric: "correct", config: { kind: "contains" } }]),
-    },
-    modelGovernance: { addEvidence: vi.fn() },
-  } as unknown as RepositoryManager & {
-    modelEvals: { updateRun: ReturnType<typeof vi.fn>; updateRunScores: ReturnType<typeof vi.fn> };
-  };
+  return fakeRepositories([
+    [TaskRepository, {}],
+    [
+      ModelEvalRepository,
+      { updateRun: vi.fn(), updateRunScores: vi.fn(), listRuns: vi.fn(async () => []) },
+    ],
+    [
+      ModelGraderRepository,
+      {
+        listByIds: vi.fn(async () => [{ metric: "correct", config: { kind: "contains" } }]),
+      },
+    ],
+    [ModelGovernanceRepository, { addEvidence: vi.fn() }],
+  ]);
 }
 
 describe("executeBatchedEvalRun", () => {
@@ -153,7 +162,7 @@ describe("executeBatchedEvalRun", () => {
       expect.objectContaining({ caseId: "france", scores: { correct: 1 } }),
       expect.objectContaining({ caseId: "spain", scores: { correct: 0 }, error: "rate limited" }),
     ]);
-    expect(repos.modelEvals.updateRunScores).toHaveBeenCalledWith(
+    expect(repos.get(ModelEvalRepository).updateRunScores).toHaveBeenCalledWith(
       "run-1",
       expect.objectContaining({ correct: expect.objectContaining({ mean: 0.5, n: 2 }) }),
       null,
@@ -178,7 +187,7 @@ describe("executeBatchedEvalRun", () => {
       pollAttempt: BATCH_MAX_POLL_ATTEMPTS,
     });
 
-    expect(repos.modelEvals.updateRun).toHaveBeenCalledWith("run-1", {
+    expect(repos.get(ModelEvalRepository).updateRun).toHaveBeenCalledWith("run-1", {
       status: "failed",
       failure_reason: "The batch did not finish within its 24-hour window",
     });

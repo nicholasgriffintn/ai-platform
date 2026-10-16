@@ -18,6 +18,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import type { ChatCompletionParameters } from "~/types";
 
 import { callMachineRun } from "./runs";
@@ -53,7 +54,9 @@ async function parseMachineSnapshot(response: Response) {
 
 async function machineRunDeadline(params: ChatCompletionParameters): Promise<number> {
   const runId = params.context?.executionRunId;
-  const run = runId ? await params.context?.repositories.conversationRuns.getById(runId) : null;
+  const run = runId
+    ? await params.context?.repositories.get(ConversationRunRepository).getById(runId)
+    : null;
   const configuration = teammateRunConfigurationSchema.safeParse(run?.resolvedConfiguration);
   const configuredDeadline = configuration.success
     ? Date.parse(configuration.data.deadline ?? "")
@@ -180,7 +183,9 @@ async function pollMachineRun(
     }
 
     const runId = context.executionRunId;
-    const run = runId ? await context.repositories.conversationRuns.getById(runId) : null;
+    const run = runId
+      ? await context.repositories.get(ConversationRunRepository).getById(runId)
+      : null;
 
     if (run?.cancellationRequestedAt || run?.status === "cancelled") {
       await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);

@@ -3,6 +3,8 @@ import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { CreateChatCompletionsResponse } from "~/types";
 
 import { reconcileInactiveChatRun } from "./recovery";
@@ -26,7 +28,9 @@ export async function recoverChatCompletionResponse(
   const authoritativeReceipt = run === receipt.run ? receipt : { ...receipt, run };
   const inProgress =
     run.status === "accepted" || run.status === "running" || run.status === "cancelling";
-  const rows = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const rows = await context.repositories
+    .get(MessageRepository)
+    .getRunMessages(run.conversationId, run.id);
   const selected =
     rows.find((row) => row.id === run.lastMessageId && row.role === "assistant") ??
     [...rows].reverse().find((row) => row.role === "assistant");
@@ -74,10 +78,9 @@ export async function recoverAcceptedChatCompletionResponse(
   context: ServiceContext,
   params: { userId: number; commandId: string; conversationId: string },
 ): Promise<Awaited<ReturnType<typeof recoverChatCompletionResponse>> | null> {
-  const receipt = await context.repositories.conversationRuns.getCommandReceipt(
-    params.userId,
-    params.commandId,
-  );
+  const receipt = await context.repositories
+    .get(ConversationRunRepository)
+    .getCommandReceipt(params.userId, params.commandId);
 
   if (receipt?.run.conversationId !== params.conversationId) {
     return null;

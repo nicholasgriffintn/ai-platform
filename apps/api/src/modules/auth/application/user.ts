@@ -1,14 +1,16 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { listConfigurableUserProviderIds } from "~/infrastructure/providers/userConfigurableProviders";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IUserSettings, User } from "~/types";
 
 const logger = getLogger({ prefix: "services/auth/user" });
 
 export async function getUserSettings(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId: number,
 ): Promise<IUserSettings | null> {
   try {
@@ -16,7 +18,7 @@ export async function getUserSettings(
       return null;
     }
 
-    return await repositories.userSettings.getUserSettings(userId);
+    return await repositories.get(UserSettingsRepository).getUserSettings(userId);
   } catch (cause) {
     logger.error("Error getting user settings:", { error: cause });
     throw new AssistantError("Failed to retrieve user settings", ErrorType.UNKNOWN_ERROR, 500, {
@@ -26,11 +28,11 @@ export async function getUserSettings(
 }
 
 export async function getUserById(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId: number,
 ): Promise<User | null> {
   try {
-    return await repositories.users.getUserById(userId);
+    return await repositories.get(UserRepository).getUserById(userId);
   } catch (cause) {
     logger.error("Error getting user by ID:", { error: cause });
     throw new AssistantError("Failed to retrieve user by ID", ErrorType.UNKNOWN_ERROR, 500, {
@@ -39,22 +41,21 @@ export async function getUserById(
   }
 }
 
-export function createUserSettings(repositories: RepositoryManager, userId: number): Promise<void> {
-  return repositories.userSettings.createUserSettings(userId);
+export function createUserSettings(repositories: Repositories, userId: number): Promise<void> {
+  return repositories.get(UserSettingsRepository).createUserSettings(userId);
 }
 
 export function createUserProviderSettings(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId: number,
 ): Promise<void> {
-  return repositories.userSettings.createUserProviderSettings(
-    userId,
-    listConfigurableUserProviderIds(),
-  );
+  return repositories
+    .get(UserSettingsRepository)
+    .createUserProviderSettings(userId, listConfigurableUserProviderIds());
 }
 
 export async function ensureUserProvisioned(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   userId: number,
 ): Promise<void> {
   await createUserSettings(repositories, userId);

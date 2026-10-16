@@ -2,6 +2,7 @@ import { delegationMessageTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { deliverDelegationMessage } from "~/modules/delegations/application/message";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -14,9 +15,9 @@ export class DelegationMessageHandler implements TaskHandler {
       return { status: "error", message: "Invalid delegation message payload" };
     }
 
-    const user = await createServiceContext({ env }).repositories.users.getUserById(
-      message.user_id,
-    );
+    const user = await createServiceContext({ env })
+      .repositories.get(UserRepository)
+      .getUserById(message.user_id);
 
     if (!user) {
       return { status: "error", message: "Delegating user not found" };

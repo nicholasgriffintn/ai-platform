@@ -2,8 +2,8 @@ import { ANONYMOUS_PLAN_ID, resolvePlanAllowanceCredits } from "@ngriffin_uk/pol
 import type { PlanCreditsUpdate } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { PlanRecord } from "~/infrastructure/database/schema";
+import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import type { IEnv } from "~/types";
 
 function toPublicPlan(plan: PlanRecord) {
@@ -23,15 +23,13 @@ function toPublicPlan(plan: PlanRecord) {
 }
 
 export async function listPlans(env: IEnv) {
-  const repositories = new RepositoryManager(env);
-  const plans = await repositories.plans.getAllPlans();
+  const plans = await new PlanRepository(env).getAllPlans();
 
   return plans.filter((plan) => plan.id !== ANONYMOUS_PLAN_ID).map(toPublicPlan);
 }
 
 export async function getPlanDetails(env: IEnv, id: string) {
-  const repositories = new RepositoryManager(env);
-  const plan = await repositories.plans.getPlanById(id);
+  const plan = await new PlanRepository(env).getPlanById(id);
 
   if (!plan) {
     throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
@@ -41,14 +39,14 @@ export async function getPlanDetails(env: IEnv, id: string) {
 }
 
 export async function updatePlanCredits(env: IEnv, planId: string, update: PlanCreditsUpdate) {
-  const repositories = new RepositoryManager(env);
-  const plan = await repositories.plans.getPlanById(planId);
+  const planRepository = new PlanRepository(env);
+  const plan = await planRepository.getPlanById(planId);
 
   if (!plan) {
     throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
   }
 
-  await repositories.plans.updatePlanCredits(planId, update);
+  await planRepository.updatePlanCredits(planId, update);
 
-  return await repositories.plans.getPlanById(planId);
+  return await planRepository.getPlanById(planId);
 }

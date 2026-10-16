@@ -12,7 +12,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { AnonymousUser, IEnv, Message, User } from "~/types";
 
@@ -33,7 +33,7 @@ export interface DurableTurnReservation {
 
 export interface TurnAdmissionScope {
   env?: IEnv;
-  repositories?: RepositoryManager;
+  repositories?: Repositories;
   user?: User | null;
   anonymousUser?: AnonymousUser | null;
   provider?: string;

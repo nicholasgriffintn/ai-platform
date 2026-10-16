@@ -2,6 +2,9 @@ import type { Correction } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 
 import { proposeCorrection } from "../propose";
 
@@ -31,14 +34,17 @@ function setup(active: Correction[] = []) {
     env: {},
     user: { id: 7 },
     requireUser: () => ({ id: 7 }),
-    repositories: {
-      corrections,
-      messages: {
-        getRecentUserMessageContents: async () => [
-          "No, use British spelling in client emails. Colour, not color!",
-        ],
-      },
-    },
+    repositories: fakeRepositories([
+      [CorrectionRepository, corrections],
+      [
+        MessageRepository,
+        {
+          getRecentUserMessageContents: async () => [
+            "No, use British spelling in client emails. Colour, not color!",
+          ],
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 
   return { context, corrections };

@@ -6,6 +6,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { guessDrawingPrompt } from "./prompts";
@@ -74,7 +75,7 @@ export async function guessDrawingFromImage({
 
   const guessId = generateId();
 
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
 
   await repo.createOutput({
     createdByUserId: user.id,

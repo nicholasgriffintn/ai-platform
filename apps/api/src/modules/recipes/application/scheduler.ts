@@ -6,9 +6,11 @@ import {
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
 import { parseStoredRecipeInstallationData } from "./installation-persistence";
@@ -134,9 +136,9 @@ function getMissedOccurrenceBoundary(params: {
 }
 
 export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
-  const taskService = new TaskService(env, repositories.tasks);
-  const records = await repositories.templates.listTemplatesByKind("recipe");
+  const templateRepository = new TemplateRepository(env);
+  const taskService = new TaskService(env, new TaskRepository(env));
+  const records = await templateRepository.listTemplatesByKind("recipe");
   const evaluationWindow = getScheduleEvaluationWindow(now);
   const enabledProjectRecipes = new Map<string, Set<string>>();
   let scheduledCount = 0;
@@ -171,7 +173,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
           existingState: installation.scheduleState,
           activatedAt: record.created_at,
         });
-        const persisted = await repositories.templates.updateTemplate(record.id, {
+        const persisted = await templateRepository.updateTemplate(record.id, {
           configuration: installation,
           status: record.status,
         });
@@ -185,7 +187,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
         let enabledRecipes = enabledProjectRecipes.get(record.project_id);
 
         if (!enabledRecipes) {
-          const capabilities = await repositories.workspaces.listProjectCapabilities(
+          const capabilities = await new WorkspaceRepository(env).listProjectCapabilities(
             record.project_id,
           );
 
@@ -349,7 +351,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
       }
 
       if (changed) {
-        await repositories.templates.updateTemplate(record.id, {
+        await templateRepository.updateTemplate(record.id, {
           configuration: { ...installation, scheduleState },
           status: record.status,
         });

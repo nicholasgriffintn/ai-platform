@@ -8,10 +8,14 @@ import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { listSkillSummaries } from "~/modules/skills/application";
 import { resolveProjectSkillGrants } from "~/modules/skills/application/scope";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { TeammateFeedbackRepository } from "~/modules/teammates/infrastructure/TeammateFeedbackRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { getAvailableTools } from "~/modules/tools/application/toolsOperations";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
 import type { ProjectCapabilityRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   isTeammateAvailableToWorkspace,
@@ -63,7 +67,7 @@ async function resolvePersonalScopeAvailability(
 ): Promise<TeammateScopeAvailability> {
   const [builtInIds, authoredSkills] = await Promise.all([
     builtInSkillIds(),
-    context.repositories.authoredSkills.listByScope({ type: "personal", id: userId }),
+    context.repositories.get(AuthoredSkillRepository).listByScope({ type: "personal", id: userId }),
   ]);
 
   return {
@@ -129,7 +133,9 @@ async function summarise(
 ): Promise<TeammateSummary[]> {
   const [executableModels, scorecards] = await Promise.all([
     resolveExecutableModels(context, teammates),
-    context.repositories.teammateFeedback.scorecardsFor(teammates.map((teammate) => teammate.id)),
+    context.repositories
+      .get(TeammateFeedbackRepository)
+      .scorecardsFor(teammates.map((teammate) => teammate.id)),
   ]);
 
   return teammates.map((teammate) =>
@@ -142,7 +148,7 @@ async function listProjectTeammates(
   workspaceId: string,
   teammateIds: string[],
 ): Promise<TeammateResponse[]> {
-  const rows = await context.repositories.teammates.getTeammatesByIds(teammateIds);
+  const rows = await context.repositories.get(TeammateRepository).getTeammatesByIds(teammateIds);
   const availableRows = await Promise.all(
     rows.map(async (row) =>
       (await isTeammateAvailableToWorkspace(context, row, workspaceId)) ? row : undefined,
@@ -164,7 +170,9 @@ export async function listScopedTeammateSummaries(
 
     await ensurePlatformTeammates(context);
 
-    const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+    const capabilities = await context.repositories
+      .get(WorkspaceRepository)
+      .listProjectCapabilities(projectId);
     const defaultTeammateIds = await listProjectDefaultTeammateIds(context, project.workspace_id);
     const grantedTeammateIds = resolveProjectTeammateIds({ capabilities, defaultTeammateIds });
 

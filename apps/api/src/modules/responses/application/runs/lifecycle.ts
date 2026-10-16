@@ -20,8 +20,11 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
-import type { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
 import {
   publishConversationChanged,
@@ -108,7 +111,9 @@ async function authoriseRunScope(options: CoreChatOptions) {
   }
 
   context.ensureDatabase();
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
   const projectAccess = await resolveChatProjectAccess(context, options);
 
   if (conversation && !conversation.project_id && !ownsResource(user.id, conversation.user_id)) {
@@ -119,9 +124,12 @@ async function authoriseRunScope(options: CoreChatOptions) {
     );
   }
 
-  const projectTask = await context.repositories.projectTasks.getTaskByConversation(conversationId);
-  const childDelegation =
-    await context.repositories.delegations.getByChildConversationId(conversationId);
+  const projectTask = await context.repositories
+    .get(ProjectTaskRepository)
+    .getTaskByConversation(conversationId);
+  const childDelegation = await context.repositories
+    .get(DelegationRepository)
+    .getByChildConversationId(conversationId);
 
   if (
     childDelegation &&
@@ -153,10 +161,9 @@ async function buildRunCommand(
 ) {
   const interactionId = readToolInteractionId(options.options);
   const interactionRun = interactionId
-    ? await scope.context.repositories.conversationRuns.getForInteraction(
-        scope.conversationId,
-        interactionId,
-      )
+    ? await scope.context.repositories
+        .get(ConversationRunRepository)
+        .getForInteraction(scope.conversationId, interactionId)
     : null;
   const requestedRunId = options.run_id ?? interactionRun?.id;
 
@@ -437,7 +444,9 @@ export async function findAcceptedChatRunCommand(
   }
 
   const command = await buildRunCommand(scope, options, options.command_id);
-  const receipt = await scope.context.repositories.conversationRuns.findCommandReceipt(command);
+  const receipt = await scope.context.repositories
+    .get(ConversationRunRepository)
+    .findCommandReceipt(command);
 
   if (receipt) {
     recordChatRunOperationalMetric(scope.context.env, {
@@ -452,7 +461,7 @@ export async function findAcceptedChatRunCommand(
 
   return receipt
     ? new ChatRunLifecycle(
-        scope.context.repositories.conversationRuns,
+        scope.context.repositories.get(ConversationRunRepository),
         receipt,
         scope.context.env,
         scope.context,
@@ -468,9 +477,9 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   const commandId = options.command_id ?? generateId();
-  const receipt = await scope.context.repositories.conversationRuns.acceptCommand(
-    await buildRunCommand(scope, options, commandId),
-  );
+  const receipt = await scope.context.repositories
+    .get(ConversationRunRepository)
+    .acceptCommand(await buildRunCommand(scope, options, commandId));
 
   if (receipt.duplicate) {
     recordChatRunOperationalMetric(scope.context.env, {
@@ -484,7 +493,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   if (!receipt.duplicate && receipt.run.status === "accepted") {
-    const running = await scope.context.repositories.conversationRuns.transition({
+    const running = await scope.context.repositories.get(ConversationRunRepository).transition({
       runId: receipt.run.id,
       attempt: receipt.run.attempt,
       status: "running",
@@ -512,7 +521,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
 
   if (!receipt.duplicate && scope.projectTask && scope.projectTask.runId !== receipt.run.id) {
     const durableExecution = options.durable_execution;
-    const updated = await scope.context.repositories.projectTasks.updateTask(
+    const updated = await scope.context.repositories.get(ProjectTaskRepository).updateTask(
       scope.projectTask.id,
       { runId: receipt.run.id },
       durableExecution?.kind === "project_task"
@@ -529,7 +538,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   return new ChatRunLifecycle(
-    scope.context.repositories.conversationRuns,
+    scope.context.repositories.get(ConversationRunRepository),
     receipt,
     scope.context.env,
     scope.context,

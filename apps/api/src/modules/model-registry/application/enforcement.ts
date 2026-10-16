@@ -1,6 +1,10 @@
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import {
+  ModelGovernanceRepository,
+  WORKSPACE_POLICY_SCOPE_KEY,
+} from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 
-import { WORKSPACE_POLICY_SCOPE_KEY } from "../infrastructure/ModelGovernanceRepository";
 import { loadRegistryScope, usableRoutes } from "./scope";
 
 export interface GovernedModel {
@@ -24,12 +28,14 @@ function routeKey(model: GovernedModel): string {
 }
 
 export async function resolveProjectModelGovernance(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   project: { id: string; workspace_id: string },
 ): Promise<ProjectModelGovernance> {
   const [policy, routes] = await Promise.all([
-    repositories.modelGovernance.getPolicy(project.workspace_id, WORKSPACE_POLICY_SCOPE_KEY),
-    repositories.modelRoutes.listRoutes(project.workspace_id, { activeOnly: true }),
+    repositories
+      .get(ModelGovernanceRepository)
+      .getPolicy(project.workspace_id, WORKSPACE_POLICY_SCOPE_KEY),
+    repositories.get(ModelRouteRepository).listRoutes(project.workspace_id, { activeOnly: true }),
   ]);
   const enforced = policy?.enforcement === "enforced";
 

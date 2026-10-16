@@ -20,6 +20,7 @@ import { formatFunctionName } from "~/modules/tools/application/functions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IRequest } from "~/types";
 
 interface ProjectCapabilityReference {
@@ -136,7 +137,9 @@ export async function loadCapabilityDiscoverySources(
     );
 
     if (projectId) {
-      const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+      const capabilities = await context.repositories
+        .get(WorkspaceRepository)
+        .listProjectCapabilities(projectId);
       const projectSources = scopeCapabilityDiscoverySourcesToProject({
         connectors,
         enabledToolIds: new Set(resolveProjectTools(capabilities).enabledTools),

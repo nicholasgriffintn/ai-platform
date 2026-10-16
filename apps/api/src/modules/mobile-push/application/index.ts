@@ -14,10 +14,13 @@ import {
   sendApnsAlert,
 } from "~/modules/mobile-push/infrastructure/apns-client";
 import type { MobilePushDeviceRecord } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
+import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import {
   isTaskNotificationPreferenceEnabled,
   notificationCategoryForMobileKind,
 } from "~/modules/notifications/application/preferences";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 const logger = getLogger({ prefix: "services/mobile-push" });
 
@@ -61,7 +64,11 @@ async function sendToDevice(params: {
 }): Promise<void> {
   const id = await deliveryId(params.notification.id, params.device.id);
 
-  if (!(await params.context.repositories.mobilePush.claimDelivery(id, params.device.id))) {
+  if (
+    !(await params.context.repositories
+      .get(MobilePushRepository)
+      .claimDelivery(id, params.device.id))
+  ) {
     return;
   }
 
@@ -74,15 +81,17 @@ async function sendToDevice(params: {
   });
 
   if (result.status === "sent") {
-    await params.context.repositories.mobilePush.finishDelivery(id, "sent");
+    await params.context.repositories.get(MobilePushRepository).finishDelivery(id, "sent");
 
     return;
   }
 
-  await params.context.repositories.mobilePush.finishDelivery(id, "failed", result.reason);
+  await params.context.repositories
+    .get(MobilePushRepository)
+    .finishDelivery(id, "failed", result.reason);
 
   if (result.invalidateDevice) {
-    await params.context.repositories.mobilePush.invalidateDevice(params.device.id);
+    await params.context.repositories.get(MobilePushRepository).invalidateDevice(params.device.id);
   }
 
   logger.warn("Mobile push delivery failed", {
@@ -107,7 +116,9 @@ export async function sendMobileWorkNotification(params: {
     return;
   }
 
-  const devices = await params.context.repositories.mobilePush.listActiveForUser(params.userId);
+  const devices = await params.context.repositories
+    .get(MobilePushRepository)
+    .listActiveForUser(params.userId);
   const matchingDevices = devices.filter(
     (device) => device.app_bundle_id === params.context.env.APNS_TOPIC,
   );
@@ -167,16 +178,17 @@ export async function notifyMobileProjectRun(params: {
       return;
     }
 
-    const project = await params.context.repositories.workspaces.getProject(params.projectId);
+    const project = await params.context.repositories
+      .get(WorkspaceRepository)
+      .getProject(params.projectId);
 
     if (!project) {
       return;
     }
 
-    const membership = await params.context.repositories.workspaces.getMembership(
-      project.workspace_id,
-      params.userId,
-    );
+    const membership = await params.context.repositories
+      .get(WorkspaceRepository)
+      .getMembership(project.workspace_id, params.userId);
 
     if (!membership) {
       return;
@@ -215,11 +227,10 @@ export async function notifyMobileProjectTask(params: {
   try {
     const recipientUserId = params.task.assigneeUserId ?? params.task.createdByUserId;
     const [membership, preferences] = await Promise.all([
-      params.context.repositories.workspaces.getMembership(
-        params.task.workspaceId,
-        recipientUserId,
-      ),
-      params.context.repositories.taskNotifications.getPreferences(recipientUserId),
+      params.context.repositories
+        .get(WorkspaceRepository)
+        .getMembership(params.task.workspaceId, recipientUserId),
+      params.context.repositories.get(TaskNotificationRepository).getPreferences(recipientUserId),
     ]);
 
     if (

@@ -8,6 +8,7 @@ import { canonicalJson, locateTextAnchor } from "@ngriffin_uk/polychat-utility-c
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { requireDocument } from "./access";
@@ -53,7 +54,7 @@ export async function listDocumentComments(
   };
 
   return {
-    ...(await context.repositories.documentComments.list(outputId, userId, after)),
+    ...(await context.repositories.get(DocumentCommentRepository).list(outputId, userId, after)),
     permissions: {
       actorUserId: userId,
       canEditDocument: authorise("resource.write", {
@@ -73,11 +74,9 @@ export async function createDocumentComment(
   input: CreateDocumentCommentInput,
 ): Promise<DocumentComment> {
   const { output, body } = await requireDocument(context, userId, outputId);
-  const existing = await context.repositories.documentComments.get(
-    outputId,
-    input.requestId,
-    userId,
-  );
+  const existing = await context.repositories
+    .get(DocumentCommentRepository)
+    .get(outputId, input.requestId, userId);
 
   if (existing) {
     assertCommentRetry(existing, input, userId);
@@ -112,11 +111,9 @@ export async function createDocumentComment(
   }
 
   if (input.parentId) {
-    const parent = await context.repositories.documentComments.get(
-      outputId,
-      input.parentId,
-      userId,
-    );
+    const parent = await context.repositories
+      .get(DocumentCommentRepository)
+      .get(outputId, input.parentId, userId);
 
     if (!parent || parent.parentId !== null) {
       throw new AssistantError("Thread not found", ErrorType.NOT_FOUND, 404);
@@ -142,13 +139,11 @@ export async function createDocumentComment(
   let saved: DocumentComment;
 
   try {
-    saved = await context.repositories.documentComments.create(comment, effects);
+    saved = await context.repositories.get(DocumentCommentRepository).create(comment, effects);
   } catch (error) {
-    const retry = await context.repositories.documentComments.get(
-      outputId,
-      input.requestId,
-      userId,
-    );
+    const retry = await context.repositories
+      .get(DocumentCommentRepository)
+      .get(outputId, input.requestId, userId);
 
     if (!retry) {
       throw error;
@@ -172,7 +167,9 @@ export async function resolveDocumentThread(
   input: ResolveDocumentThreadInput,
 ): Promise<DocumentComment> {
   const { output } = await requireDocument(context, userId, outputId);
-  const comment = await context.repositories.documentComments.get(outputId, commentId, userId);
+  const comment = await context.repositories
+    .get(DocumentCommentRepository)
+    .get(outputId, commentId, userId);
 
   if (!comment || comment.parentId !== null) {
     throw new AssistantError("Thread not found", ErrorType.NOT_FOUND, 404);
@@ -197,13 +194,9 @@ export async function resolveDocumentThread(
     );
   }
 
-  const resolved = await context.repositories.documentComments.resolve(
-    outputId,
-    commentId,
-    input.expectedRevision,
-    input.resolved,
-    userId,
-  );
+  const resolved = await context.repositories
+    .get(DocumentCommentRepository)
+    .resolve(outputId, commentId, input.expectedRevision, input.resolved, userId);
 
   await publishDocumentCommentsChanged(context, output);
 

@@ -4,10 +4,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import {
   requireProjectAccess,
   requireWorkspaceAccess,
 } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { ensurePlatformTeammates } from "./platform-teammates";
 
@@ -43,7 +45,9 @@ export async function listProjectDefaultTeammateIds(
   context: ServiceContext,
   workspaceId: string,
 ): Promise<string[]> {
-  const workspaceDefaults = await context.repositories.teammates.listWorkspaceDefaults(workspaceId);
+  const workspaceDefaults = await context.repositories
+    .get(TeammateRepository)
+    .listWorkspaceDefaults(workspaceId);
 
   return [...workspaceDefaults.map((teammate) => teammate.id), ...listPlatformTeammateIds()];
 }
@@ -107,7 +111,7 @@ async function loadTeammate(context: ServiceContext, teammateId: string): Promis
     await ensurePlatformTeammates(context);
   }
 
-  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
+  const teammate = await context.repositories.get(TeammateRepository).getTeammateById(teammateId);
 
   if (!teammate) {
     throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);
@@ -137,7 +141,7 @@ export async function requireProjectTeammate(
 ): Promise<Teammate> {
   const { project } = await requireProjectAccess(context, projectId);
   const [capabilities, defaultTeammateIds, teammate] = await Promise.all([
-    context.repositories.workspaces.listProjectCapabilities(projectId),
+    context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId),
     listProjectDefaultTeammateIds(context, project.workspace_id),
     loadTeammate(context, teammateId),
   ]);
@@ -209,10 +213,9 @@ export async function assertTeammateAvailableToWorkspace(
     return;
   }
 
-  const membership = await context.repositories.workspaces.getMembership(
-    workspaceId,
-    teammate.user_id,
-  );
+  const membership = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, teammate.user_id);
 
   if (!membership) {
     throw new AssistantError(

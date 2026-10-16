@@ -2,6 +2,7 @@ import type { TeammateResponse } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 
 import { isPlatformTeammate, isWorkspaceTeammate, requireTeammateAccess } from "./access";
@@ -38,7 +39,7 @@ export async function publishTeammateToWorkspace(
     );
   }
 
-  const published = await context.repositories.teammates.createTeammate({
+  const published = await context.repositories.get(TeammateRepository).createTeammate({
     userId: id,
     ownerScopeType: "workspace",
     ownerScopeId: workspaceId,

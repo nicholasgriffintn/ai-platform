@@ -5,6 +5,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { STRUDEL_APP_ID, buildPatternPayload, mapResponseToPattern } from "./utils";
@@ -46,7 +47,7 @@ export async function savePattern({
     const payload = buildPatternPayload(request);
 
     const record = user.id
-      ? await repositories.outputs.createOutput({
+      ? await repositories.get(OutputRepository).createOutput({
           createdByUserId: user.id,
           projectId,
           conversationId,

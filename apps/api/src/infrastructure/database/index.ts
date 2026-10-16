@@ -1,7 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
 import type { IEnv } from "~/types";
 
 export * as schema from "./schema";
@@ -12,7 +12,7 @@ export interface Env {
 }
 
 export class Database {
-  private _repositories: RepositoryManager;
+  private _repositories: Repositories;
   private env: IEnv;
 
   constructor(env: IEnv) {
@@ -21,14 +21,14 @@ export class Database {
     }
 
     this.env = env;
-    this._repositories = new RepositoryManager(env);
+    this._repositories = createRepositories(env);
   }
 
   public static getInstance(env: IEnv): Database {
     return new Database(env);
   }
 
-  public get repositories(): RepositoryManager {
+  public get repositories(): Repositories {
     return this._repositories;
   }
 

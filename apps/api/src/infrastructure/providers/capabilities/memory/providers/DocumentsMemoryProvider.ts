@@ -5,6 +5,7 @@ import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { memorySearchPassage } from "~/modules/memory-documents/application/pages";
 import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
@@ -90,7 +91,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     }
 
     const { scope } = await this.requireScope();
-    const repository = context.repositories.memoryDocuments;
+    const repository = context.repositories.get(MemoryDocumentRepository);
     const existing = await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT);
 
     if (!existing) {
@@ -125,7 +126,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     scope?: MemoryDocumentScopeKey,
     operationId?: string,
   ): Promise<MemoryStoreResult> {
-    const repository = this.requireContext().context.repositories.memoryDocuments;
+    const repository = this.requireContext().context.repositories.get(MemoryDocumentRepository);
     let existing = initial;
 
     for (let attempt = 0; attempt < MAX_APPEND_ATTEMPTS; attempt += 1) {
@@ -205,11 +206,9 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     }
 
     const { scope } = await this.requireScope();
-    const documents = await context.repositories.memoryDocuments.searchDocuments(
-      scope,
-      trimmed,
-      limit,
-    );
+    const documents = await context.repositories
+      .get(MemoryDocumentRepository)
+      .searchDocuments(scope, trimmed, limit);
 
     return documents.map((document) => memorySearchPassage(document, trimmed));
   }
@@ -229,7 +228,9 @@ export class DocumentsMemoryProvider implements MemoryProvider {
 
       await requireRunMemoryDocument(context, memoryScope, memoryId, "read-write");
     } else {
-      const document = await context.repositories.memoryDocuments.getDocumentById(memoryId);
+      const document = await context.repositories
+        .get(MemoryDocumentRepository)
+        .getDocumentById(memoryId);
 
       if (
         !document ||
@@ -241,7 +242,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
       }
     }
 
-    await context.repositories.memoryDocuments.softDeleteDocument(memoryId);
+    await context.repositories.get(MemoryDocumentRepository).softDeleteDocument(memoryId);
 
     return true;
   }

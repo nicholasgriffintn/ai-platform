@@ -7,8 +7,14 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { handoffOverrideRef, readHandoffJudgement } from "~/modules/poly/domain/handoff-overrides";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
@@ -18,16 +24,13 @@ const EMPTY_AGENDA: PolyAgendaLists = { needs_you: [], working_on: [], done: [],
 const NOTED_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
 const NOTED_SCAN_LIMIT = 50;
 
-type AgendaRepositories = Pick<
-  RepositoryManager,
-  "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "activities" | "corrections"
->;
+type AgendaRepositories = Repositories;
 
 function findPolyContext(
-  repositories: Pick<RepositoryManager, "teammateContexts">,
+  repositories: Repositories,
   userId: number,
 ): Promise<TeammateContext | null> {
-  return repositories.teammateContexts.getByIdentity({
+  return repositories.get(TeammateContextRepository).getByIdentity({
     teammateId: POLY_TEAMMATE_ID,
     actorUserId: userId,
     scope: { type: "personal", id: String(userId) },
@@ -57,10 +60,10 @@ async function loadPolyAgendaForContext(
   const now = Date.now();
   const conversationId = polyContext.homeConversationId;
   const [delegations, goals, latestRun, handoffs] = await Promise.all([
-    repositories.delegations.listByParentConversationId(conversationId),
-    repositories.goals.listGoals({ conversationId }, 1),
-    repositories.conversationRuns.getLatestForConversation(conversationId),
-    repositories.activities.listConversationActivitiesSince({
+    repositories.get(DelegationRepository).listByParentConversationId(conversationId),
+    repositories.get(GoalRepository).listGoals({ conversationId }, 1),
+    repositories.get(ConversationRunRepository).getLatestForConversation(conversationId),
+    repositories.get(ActivityRepository).listConversationActivitiesSince({
       conversationId,
       capabilityId: POLY_HANDOFF_CAPABILITY_ID,
       since: new Date(now - NOTED_HORIZON_MS).toISOString(),
@@ -73,9 +76,11 @@ async function loadPolyAgendaForContext(
 
     return handoff?.data.decision === "noted" ? [handoff] : [];
   });
-  const overrides = await repositories.corrections.listActiveByPlacementRefs(userId, [
-    ...new Set(notedHandoffs.map((handoff) => handoffOverrideRef(handoff.data.sourceId))),
-  ]);
+  const overrides = await repositories
+    .get(CorrectionRepository)
+    .listActiveByPlacementRefs(userId, [
+      ...new Set(notedHandoffs.map((handoff) => handoffOverrideRef(handoff.data.sourceId))),
+    ]);
   const overruled = new Set(overrides.map((override) => override.placementRef));
 
   return buildPolyAgenda({

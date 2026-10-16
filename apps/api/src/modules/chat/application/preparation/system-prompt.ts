@@ -9,9 +9,10 @@ import {
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { getSystemPrompt } from "~/modules/chat/application/prompts";
 import { buildMemoryPromptContext, type resolveMemoryPolicy } from "~/modules/chat/domain/memory";
+import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope, Message } from "~/types";
 
@@ -21,7 +22,7 @@ const logger = getLogger({ prefix: "services/chat/preparation/system-prompt" });
 
 export interface BuildSystemPromptParams {
   options: CoreChatOptions;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   sanitisedMessages: Message[];
   finalMessage: string;
   primaryModel: string;
@@ -87,7 +88,7 @@ async function appendMemoryContext(
     memoriesEnabled,
     memoryScope,
   }: {
-    repositories: RepositoryManager;
+    repositories: Repositories;
     finalMessage: string;
     user: any;
     memoriesEnabled: boolean;
@@ -103,7 +104,9 @@ async function appendMemoryContext(
   }
 
   try {
-    const synthesis = await repositories.memorySyntheses.getActiveSynthesis(user.id, "global");
+    const synthesis = await repositories
+      .get(MemorySynthesisRepository)
+      .getActiveSynthesis(user.id, "global");
     const memoryContext = buildMemoryPromptContext({
       synthesisText: synthesis?.synthesis_text,
     });

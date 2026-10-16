@@ -21,6 +21,7 @@ import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
 } from "~/modules/connectors/application/operations";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
 import {
   requireRecipeConnectorAccess,
@@ -40,6 +41,7 @@ import {
   resolveProjectRecipeConnectorScope,
   type ProjectRecipeConnectorScope,
 } from "~/modules/workspaces/application/projectRecipeConnectorScope";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { use_recipe_connector as use_recipe_connectorDescriptor } from "../definitions/recipes/use_recipe_connector";
@@ -116,8 +118,9 @@ export const use_recipe_connector: ApiToolDefinition = {
 
     if (projectId) {
       await requireProjectAccess(request.context, projectId);
-      const capabilities =
-        await request.context.repositories.workspaces.listProjectCapabilities(projectId);
+      const capabilities = await request.context.repositories
+        .get(WorkspaceRepository)
+        .listProjectCapabilities(projectId);
 
       projectConnectorScope = resolveProjectRecipeConnectorScope(capabilities);
     }
@@ -267,11 +270,9 @@ export const use_recipe_connector: ApiToolDefinition = {
       const localConnection =
         providerConfig?.auth.authType === "api_key"
           ? (teammateAuthority?.connection ??
-            (await request.context.repositories.providerConnections.getConnection(
-              request.user.id,
-              provider,
-              RECIPE_CONNECTOR_CONNECTION_KIND,
-            )))
+            (await request.context.repositories
+              .get(ProviderConnectionRepository)
+              .getConnection(request.user.id, provider, RECIPE_CONNECTOR_CONNECTION_KIND)))
           : undefined;
 
       if (localConnection && localConnection.status !== "connected") {

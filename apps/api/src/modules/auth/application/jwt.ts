@@ -2,7 +2,7 @@ import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { getUserById } from "~/modules/auth/application/user";
 import type { IEnv, User } from "~/types";
 
@@ -85,7 +85,7 @@ export async function getUserByJwtToken(
       );
     }
 
-    return getUserById(new RepositoryManager(env), userId);
+    return getUserById(createRepositories(env), userId);
   } catch (cause) {
     if (cause instanceof AssistantError) {
       throw cause;

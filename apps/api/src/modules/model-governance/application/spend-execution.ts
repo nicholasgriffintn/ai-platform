@@ -7,6 +7,8 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import {
   conflict,
   notFound,
@@ -26,7 +28,9 @@ export async function resolveSpendRequest(
   const { userId, separationOfDuties } = await requireModelAction(context, workspaceId, "approve");
   const { state } = resolveSpendRequestSchema.parse(input);
   const repositories = context.repositories;
-  const request = await repositories.modelSpend.getSpendRequest(workspaceId, requestId);
+  const request = await repositories
+    .get(ModelSpendRepository)
+    .getSpendRequest(workspaceId, requestId);
 
   if (!request) {
     throw notFound("Spend request");
@@ -50,7 +54,7 @@ export async function resolveSpendRequest(
     );
   }
 
-  let resolved = await repositories.modelSpend.claimSpendRequest({
+  let resolved = await repositories.get(ModelSpendRepository).claimSpendRequest({
     id: request.id,
     workspaceId,
     state: state === "approved" ? "executing" : "rejected",
@@ -69,20 +73,20 @@ export async function resolveSpendRequest(
           ? await startApprovedRun(context, workspaceId, requestedBy, request.payload)
           : await startApprovedDeployment(context, workspaceId, requestedBy, request.payload);
 
-      resolved = await repositories.modelSpend.finishSpendRequest({
+      resolved = await repositories.get(ModelSpendRepository).finishSpendRequest({
         id: request.id,
         workspaceId,
         state: "approved",
         subjectId: subject.id,
       });
     } catch (error) {
-      await repositories.modelSpend.finishSpendRequest({
+      await repositories.get(ModelSpendRepository).finishSpendRequest({
         id: request.id,
         workspaceId,
         state: "failed",
         subjectId: null,
       });
-      await repositories.audit.createRecord({
+      await repositories.get(AuditRepository).createRecord({
         workspaceId,
         actorUserId: userId,
         action: "model_spend.failed",
@@ -98,7 +102,7 @@ export async function resolveSpendRequest(
     throw conflict("The spend request changed while it was being executed");
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: `model_spend.${state}`,

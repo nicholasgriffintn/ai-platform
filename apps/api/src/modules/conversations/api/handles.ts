@@ -2,6 +2,7 @@ import { conversationHandleParamsSchema, listPageOf } from "@ngriffin_uk/polycha
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ResourceBuilder } from "~/infrastructure/http/resource";
+import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 
 export function defineConversationHandles(conversations: ResourceBuilder): void {
   conversations
@@ -12,7 +13,7 @@ export function defineConversationHandles(conversations: ResourceBuilder): void 
       description: "Active agent handles granted to delegations in the caller's conversations.",
       handler: async ({ serviceContext, user }) =>
         listPageOf(
-          await serviceContext.repositories.conversationHandles.listForUser(user.id),
+          await serviceContext.repositories.get(ConversationHandleRepository).listForUser(user.id),
           (handle) => handle.id,
         ),
     })
@@ -23,11 +24,9 @@ export function defineConversationHandles(conversations: ResourceBuilder): void 
         "Stops an agent from using a handle granted to one of the caller's conversations.",
       paramSchema: conversationHandleParamsSchema,
       handler: async ({ serviceContext, params, user }) => {
-        const revoked = await serviceContext.repositories.conversationHandles.revokeForUser(
-          params.handle_id,
-          user.id,
-          new Date().toISOString(),
-        );
+        const revoked = await serviceContext.repositories
+          .get(ConversationHandleRepository)
+          .revokeForUser(params.handle_id, user.id, new Date().toISOString());
 
         if (!revoked) {
           throw new AssistantError("Conversation handle not found", ErrorType.NOT_FOUND, 404);

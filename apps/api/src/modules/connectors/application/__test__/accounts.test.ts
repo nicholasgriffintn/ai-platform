@@ -7,6 +7,9 @@ vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
   listComposioConnectedAccounts: listAccountsMock,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+
 import {
   getSelectedRecipeConnectorAccountId,
   listRecipeConnectorAccounts,
@@ -33,7 +36,7 @@ function createContext(records: unknown[] = []) {
   };
   const context = {
     env: {},
-    repositories: { providerConnections },
+    repositories: fakeRepositories([[ProviderConnectionRepository, providerConnections]]),
   } as never;
 
   return { context, providerConnections };

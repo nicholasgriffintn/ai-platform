@@ -4,7 +4,8 @@ import {
   type WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelPermissionRepository } from "~/modules/model-governance/infrastructure/ModelPermissionRepository";
 
 export const DEFAULT_MEMBER_ACTIONS: ModelPlatformAction[] = [
   "view",
@@ -29,10 +30,10 @@ export function withView(actions: readonly ModelPlatformAction[]): ModelPlatform
 }
 
 export async function loadModelPermissions(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
 ): Promise<ResolvedPermissions> {
-  const record = await repositories.modelPermissions.get(workspaceId);
+  const record = await repositories.get(ModelPermissionRepository).get(workspaceId);
 
   return {
     grants: {

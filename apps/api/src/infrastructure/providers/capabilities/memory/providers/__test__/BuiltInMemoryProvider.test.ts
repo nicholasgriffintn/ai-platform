@@ -54,6 +54,9 @@ vi.mock("~/modules/sources/infrastructure/SourceRepository", () => ({
   SourceRepository: vi.fn(),
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+
 import { BuiltInMemoryProvider } from "../BuiltInMemoryProvider";
 
 const env = {
@@ -110,7 +113,7 @@ const repository = (sources: any[] = []) => ({
 
 const createProvider = (repo: ReturnType<typeof repository>, provider = "vectorize") =>
   new BuiltInMemoryProvider(env, user, settings(provider as "vectorize" | "s3vectors"), {
-    repositories: { sources: repo },
+    repositories: fakeRepositories([[SourceRepository, repo]]),
   } as any);
 
 describe("built-in memory embedding provenance", () => {

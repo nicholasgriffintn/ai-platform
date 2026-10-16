@@ -26,13 +26,17 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import {
   resolveProviderContext,
   workspaceHubClient,
 } from "~/modules/model-governance/application/connections";
 import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { badRequest, notFound, requireModelAction } from "./access";
@@ -44,10 +48,10 @@ const REFUSED_EXTENSIONS = [".bin", ".pt", ".pth", ".pkl", ".pickle", ".ckpt"];
 
 export async function enqueueInspection(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   versionId: string,
 ): Promise<void> {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_REGISTRY_INSPECT_TASK_TYPE}:${versionId}:${Date.now()}`,
     task_type: MODEL_REGISTRY_INSPECT_TASK_TYPE,
     task_data: { versionId },
@@ -56,18 +60,20 @@ export async function enqueueInspection(
 }
 
 async function findWorkspaceVersion(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   sourceRef: string,
 ): Promise<string | null> {
   for (const kind of ["model", "adapter"] as const) {
-    const asset = await repositories.modelAssets.findAssetBySource({
+    const asset = await repositories.get(ModelAssetRepository).findAssetBySource({
       workspaceId,
       kind,
       source: "huggingface",
       sourceRef,
     });
-    const [version] = asset ? await repositories.modelAssets.listAssetVersions(asset.id) : [];
+    const [version] = asset
+      ? await repositories.get(ModelAssetRepository).listAssetVersions(asset.id)
+      : [];
 
     if (version) {
       return version.id;
@@ -96,7 +102,7 @@ export async function importAsset(
   const paths = files.map((file) => file.path);
   const isAdapter = hubKind === "model" && paths.includes("adapter_config.json");
   const kind: ModelAssetKind = hubKind === "dataset" ? "dataset" : isAdapter ? "adapter" : "model";
-  const asset = await repositories.modelAssets.createAsset({
+  const asset = await repositories.get(ModelAssetRepository).createAsset({
     workspaceId,
     kind,
     source: "huggingface",
@@ -104,7 +110,7 @@ export async function importAsset(
     displayName: info.id.split("/").pop() ?? info.id,
     createdBy: userId,
   });
-  const existing = await repositories.modelAssets.findVersion(asset.id, info.sha);
+  const existing = await repositories.get(ModelAssetRepository).findVersion(asset.id, info.sha);
 
   if (existing) {
     return getVersionDetail(context, workspaceId, existing.id);
@@ -117,7 +123,7 @@ export async function importAsset(
   const adapterBase = readNonEmptyString(adapterManifest.base_model_name_or_path);
   const config = hubKind === "model" && !isAdapter ? await hub.readConfig(reference) : null;
   const baseModels = [...new Set([...info.baseModels, ...(adapterBase ? [adapterBase] : [])])];
-  const version = await repositories.modelAssets.createVersion({
+  const version = await repositories.get(ModelAssetRepository).createVersion({
     assetId: asset.id,
     workspaceId,
     revision: info.sha,
@@ -150,7 +156,7 @@ export async function importAsset(
     const baseVersionId = await findWorkspaceVersion(repositories, workspaceId, baseRef);
 
     if (baseVersionId) {
-      await repositories.modelAssets.addLineageEdge({
+      await repositories.get(ModelAssetRepository).addLineageEdge({
         fromVersionId: baseVersionId,
         toVersionId: version.id,
         relation: isAdapter && baseRef === adapterBase ? "adapter_of" : "fine_tuned_from",
@@ -158,7 +164,7 @@ export async function importAsset(
     }
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.imported",
@@ -217,7 +223,7 @@ export async function importBucketModel(
       .sort()
       .join("\n"),
   );
-  const asset = await repositories.modelAssets.createAsset({
+  const asset = await repositories.get(ModelAssetRepository).createAsset({
     workspaceId,
     kind: request.kind,
     source: "bucket",
@@ -225,13 +231,13 @@ export async function importBucketModel(
     displayName: request.name,
     createdBy: userId,
   });
-  const existing = await repositories.modelAssets.findVersion(asset.id, revision);
+  const existing = await repositories.get(ModelAssetRepository).findVersion(asset.id, revision);
 
   if (existing) {
     return getVersionDetail(context, workspaceId, existing.id);
   }
 
-  const version = await repositories.modelAssets.createVersion({
+  const version = await repositories.get(ModelAssetRepository).createVersion({
     assetId: asset.id,
     workspaceId,
     revision,
@@ -261,14 +267,14 @@ export async function importBucketModel(
   });
 
   if (request.kind === "adapter" && request.baseVersionId) {
-    await repositories.modelAssets.addLineageEdge({
+    await repositories.get(ModelAssetRepository).addLineageEdge({
       fromVersionId: request.baseVersionId,
       toVersionId: version.id,
       relation: "adapter_of",
     });
   }
 
-  await repositories.modelGovernance.addEvidence([
+  await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId: version.id,
       kind: "provenance",
@@ -286,7 +292,7 @@ export async function importBucketModel(
       details: { files: files.map((file) => file.path) },
     },
   ]);
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.imported",
@@ -306,15 +312,15 @@ export async function reinspectVersion(
 ): Promise<VersionDetail> {
   const { userId } = await requireModelAction(context, workspaceId, "approve");
   const repositories = context.repositories;
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
 
   if (!version) {
     throw notFound("Model version");
   }
 
-  await repositories.modelAssets.updateVersion(versionId, { status: "inspecting" });
+  await repositories.get(ModelAssetRepository).updateVersion(versionId, { status: "inspecting" });
   await enqueueInspection(context.env, repositories, versionId);
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.reinspected",

@@ -6,11 +6,16 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type {
@@ -39,7 +44,7 @@ const DEPLOYMENT_READINESS_DELAY_MS = 10 * 60 * 1000;
 
 async function runCase(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   suite: ModelEvalSuiteRecord,
   graders: readonly ModelGraderRecord[],
   route: ModelRouteRecord,
@@ -81,7 +86,7 @@ const READY_DEPLOYMENT_STATUSES = new Set(["running", "scaled_to_zero"]);
 
 async function waitForDeployment(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: ModelEvalRunRecord,
   route: ModelRouteRecord,
   readinessAttempt: number,
@@ -90,7 +95,7 @@ async function waitForDeployment(
     return "ready";
   }
 
-  const deployment = await repositories.modelDeployments.getById(route.deployment_id);
+  const deployment = await repositories.get(ModelDeploymentRepository).getById(route.deployment_id);
 
   if (deployment && READY_DEPLOYMENT_STATUSES.has(deployment.status)) {
     return "ready";
@@ -100,7 +105,7 @@ async function waitForDeployment(
     return "timed_out";
   }
 
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_REGISTRY_EVAL_TASK_TYPE}:${run.id}:wait:${readinessAttempt + 1}`,
     task_type: MODEL_REGISTRY_EVAL_TASK_TYPE,
     task_data: { runId: run.id, offset: 0, readinessAttempt: readinessAttempt + 1 },
@@ -114,7 +119,7 @@ async function waitForDeployment(
 
 export async function executeEvalRun(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   data: {
     runId: string;
     offset: number;
@@ -123,9 +128,11 @@ export async function executeEvalRun(
     pollAttempt: number;
   },
 ) {
-  const run = await repositories.modelEvals.getRun(data.runId);
-  const suite = run ? await repositories.modelEvals.getSuiteById(run.suite_id) : null;
-  const route = run ? await repositories.modelRoutes.getRouteById(run.route_id) : null;
+  const run = await repositories.get(ModelEvalRepository).getRun(data.runId);
+  const suite = run ? await repositories.get(ModelEvalRepository).getSuiteById(run.suite_id) : null;
+  const route = run
+    ? await repositories.get(ModelRouteRepository).getRouteById(run.route_id)
+    : null;
   const bucket: R2Bucket | undefined = env.PRIVATE_ASSETS_BUCKET;
 
   if (!run || !suite || !route) {
@@ -133,7 +140,7 @@ export async function executeEvalRun(
   }
 
   if (!bucket) {
-    await repositories.modelEvals.updateRun(run.id, {
+    await repositories.get(ModelEvalRepository).updateRun(run.id, {
       status: "failed",
       failure_reason: "No private storage bucket is configured",
     });
@@ -159,7 +166,7 @@ export async function executeEvalRun(
     }
 
     if (readiness === "timed_out") {
-      await repositories.modelEvals.updateRun(run.id, {
+      await repositories.get(ModelEvalRepository).updateRun(run.id, {
         status: "failed",
         failure_reason: "The deployment never became ready",
       });
@@ -167,11 +174,11 @@ export async function executeEvalRun(
       return { status: "error" as const, message: "The deployment never became ready" };
     }
 
-    await repositories.modelEvals.updateRun(run.id, { status: "running" });
+    await repositories.get(ModelEvalRepository).updateRun(run.id, { status: "running" });
 
     const cases = casesForRun(suite, run);
     const judge = await getAuxiliaryModel(env);
-    const graders = await repositories.modelGraders.listByIds(suite.grader_ids);
+    const graders = await repositories.get(ModelGraderRepository).listByIds(suite.grader_ids);
     const previous = data.offset > 0 ? await readEvalResults(bucket, run.id) : [];
     const batch = cases.slice(data.offset, data.offset + CASES_PER_TASK);
     const fresh: EvalCaseResult[] = [];
@@ -184,10 +191,12 @@ export async function executeEvalRun(
     const nextOffset = data.offset + batch.length;
 
     await writeEvalResults(bucket, run.id, results);
-    await repositories.modelEvals.updateRun(run.id, { cases_completed: results.length });
+    await repositories
+      .get(ModelEvalRepository)
+      .updateRun(run.id, { cases_completed: results.length });
 
     if (nextOffset < cases.length) {
-      await new TaskService(env, repositories.tasks).enqueueTask({
+      await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
         id: `${MODEL_REGISTRY_EVAL_TASK_TYPE}:${run.id}:${nextOffset}`,
         task_type: MODEL_REGISTRY_EVAL_TASK_TYPE,
         task_data: { runId: run.id, offset: nextOffset, readinessAttempt: 0 },
@@ -211,7 +220,9 @@ export async function executeEvalRun(
     const reason = getErrorMessage(error, "Unknown error");
 
     logger.error("Eval run failed", { runId: run.id, error: reason });
-    await repositories.modelEvals.updateRun(run.id, { status: "failed", failure_reason: reason });
+    await repositories
+      .get(ModelEvalRepository)
+      .updateRun(run.id, { status: "failed", failure_reason: reason });
 
     return { status: "error" as const, message: reason };
   }

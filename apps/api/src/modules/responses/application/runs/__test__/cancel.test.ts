@@ -2,6 +2,11 @@ import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 
 import { handleCancelChatRun } from "../cancel";
 
@@ -33,28 +38,40 @@ function createContext(currentRun: ChatRun = run) {
   return {
     requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
     ensureDatabase: vi.fn(),
-    repositories: {
-      conversationRuns: {
-        getById: vi.fn().mockResolvedValue(currentRun),
-        acceptCancellation: vi.fn().mockResolvedValue({
-          protocolVersion: 1,
-          commandId: "cancel-1",
-          kind: "cancel",
-          acceptedAt: "2026-09-05T12:00:02.000Z",
-          duplicate: false,
-          run: { ...currentRun, status: "cancelling" },
-        }),
-      },
-      delegations: {
-        listByParentRunId: vi.fn().mockResolvedValue([]),
-      },
-      connectorOperationApprovals: {
-        deleteUnconsumedForRun: vi.fn().mockResolvedValue(undefined),
-      },
-      composioConnectorSessions: {
-        markRunCleanupPending: vi.fn().mockResolvedValue(undefined),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn().mockResolvedValue(currentRun),
+          acceptCancellation: vi.fn().mockResolvedValue({
+            protocolVersion: 1,
+            commandId: "cancel-1",
+            kind: "cancel",
+            acceptedAt: "2026-09-05T12:00:02.000Z",
+            duplicate: false,
+            run: { ...currentRun, status: "cancelling" },
+          }),
+        },
+      ],
+      [
+        DelegationRepository,
+        {
+          listByParentRunId: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        ConnectorOperationApprovalRepository,
+        {
+          deleteUnconsumedForRun: vi.fn().mockResolvedValue(undefined),
+        },
+      ],
+      [
+        ComposioConnectorSessionRepository,
+        {
+          markRunCleanupPending: vi.fn().mockResolvedValue(undefined),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -73,7 +90,7 @@ describe("handleCancelChatRun", () => {
       "web",
     );
     expect(metrics.recordTurnCancellationRequested.mock.invocationCallOrder[0]).toBeGreaterThan(
-      vi.mocked(context.repositories.conversationRuns.acceptCancellation).mock
+      vi.mocked(context.repositories.get(ConversationRunRepository).acceptCancellation).mock
         .invocationCallOrder[0],
     );
   });
@@ -87,14 +104,16 @@ describe("handleCancelChatRun", () => {
         expected_attempt: 1,
       }),
     ).rejects.toMatchObject({ statusCode: 409 });
-    expect(context.repositories.conversationRuns.acceptCancellation).not.toHaveBeenCalled();
+    expect(
+      context.repositories.get(ConversationRunRepository).acceptCancellation,
+    ).not.toHaveBeenCalled();
   });
   it("does not record cancellation when persistence fails", async () => {
     const context = createContext();
 
-    vi.mocked(context.repositories.conversationRuns.acceptCancellation).mockRejectedValueOnce(
-      new Error("write failed"),
-    );
+    vi.mocked(
+      context.repositories.get(ConversationRunRepository).acceptCancellation,
+    ).mockRejectedValueOnce(new Error("write failed"));
     await expect(
       handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }, "web"),
     ).rejects.toThrow("write failed");
@@ -104,7 +123,9 @@ describe("handleCancelChatRun", () => {
   it("does not count a duplicate cancellation as a new request", async () => {
     const context = createContext();
 
-    vi.mocked(context.repositories.conversationRuns.acceptCancellation).mockResolvedValueOnce({
+    vi.mocked(
+      context.repositories.get(ConversationRunRepository).acceptCancellation,
+    ).mockResolvedValueOnce({
       protocolVersion: 1,
       commandId: "cancel-1",
       kind: "cancel",

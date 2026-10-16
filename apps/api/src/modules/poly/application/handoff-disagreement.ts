@@ -3,6 +3,7 @@ import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { recordPolicyCorrection } from "~/modules/corrections/application/corrections";
 import { handoffOverrideRef } from "~/modules/poly/domain/handoff-overrides";
 
@@ -17,7 +18,7 @@ export async function disagreeWithPolyHandoff(
 ): Promise<PolyHandoffDisagreement> {
   const user = context.requireUser();
   const polyContext = await requirePolyContext(context);
-  const record = await context.repositories.activities.getActivityById(handoffId);
+  const record = await context.repositories.get(ActivityRepository).getActivityById(handoffId);
   const handoff = record ? readPolyHandoff(record) : null;
 
   if (

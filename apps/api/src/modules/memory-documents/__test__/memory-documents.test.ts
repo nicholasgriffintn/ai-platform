@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
 import {
   createMemoryDocument,
@@ -48,7 +50,7 @@ function createContext(
   return {
     ensureDatabase: vi.fn(),
     requireUser: () => ({ id: 7 }),
-    repositories: { memoryDocuments },
+    repositories: fakeRepositories([[MemoryDocumentRepository, memoryDocuments]]),
   } as unknown as ServiceContext;
 }
 
@@ -88,7 +90,7 @@ describe("memory documents", () => {
     await listMemoryDocuments(context, "project-1");
 
     expect(requireProjectAccess).toHaveBeenCalledWith(context, "project-1");
-    expect(context.repositories.memoryDocuments.listDocuments).toHaveBeenCalledWith({
+    expect(context.repositories.get(MemoryDocumentRepository).listDocuments).toHaveBeenCalledWith({
       scopeType: "project",
       scopeId: "project-1",
     });

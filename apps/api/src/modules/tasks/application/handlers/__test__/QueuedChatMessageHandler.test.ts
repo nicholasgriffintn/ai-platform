@@ -10,13 +10,16 @@ vi.mock("~/infrastructure/context/serviceContext", () => ({
   createServiceContext: () => ({
     database: {},
     requestCache: {},
-    repositories: {
-      conversationRuns: { getLatestForConversation: mocks.latestRun },
-      users: { getUserById: async () => ({ id: 7 }) },
-      conversations: {
-        getConversation: async () => ({ id: "conversation-1", user_id: 7, project_id: null }),
-      },
-    },
+    repositories: fakeRepositories([
+      [ConversationRunRepository, { getLatestForConversation: mocks.latestRun }],
+      [UserRepository, { getUserById: async () => ({ id: 7 }) }],
+      [
+        ConversationRepository,
+        {
+          getConversation: async () => ({ id: "conversation-1", user_id: 7, project_id: null }),
+        },
+      ],
+    ]),
   }),
 }));
 
@@ -27,6 +30,11 @@ vi.mock("~/modules/conversations/application/manager", () => ({
 vi.mock("~/modules/responses/application/start", () => ({
   startResponse: mocks.startResponse,
 }));
+
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { QueuedChatMessageHandler } from "../QueuedChatMessageHandler";
 

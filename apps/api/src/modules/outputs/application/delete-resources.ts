@@ -17,14 +17,19 @@ import {
   withOutputDeletionPending,
 } from "~/modules/outputs/application/deletion";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requestSiteRuntime } from "~/modules/sites/infrastructure/runtime-client";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireOutputRecordAccess } from "./access";
 
 const ACTIVE_BATCH_STATUSES = new Set(["QUEUED", "RUNNING", "CANCELLATION_REQUESTED"]);
 
 async function getBatchOwner(context: ServiceContext, output: OutputRecord) {
-  const owner = await context.repositories.users.getUserById(output.created_by_user_id);
+  const owner = await context.repositories
+    .get(UserRepository)
+    .getUserById(output.created_by_user_id);
 
   if (!owner) {
     throw new AssistantError("OCR batch owner no longer exists", ErrorType.INTERNAL_ERROR);
@@ -62,7 +67,7 @@ async function prepareOcrBatchDeletion(
     }
 
     if (!isOutputDeletionPending(output)) {
-      output = await context.repositories.outputs.updateOutput(output.id, {
+      output = await context.repositories.get(OutputRepository).updateOutput(output.id, {
         status: "pending",
         expectedRevision: output.revision,
         updatedByUserId: actorUserId,
@@ -83,7 +88,7 @@ async function prepareOcrBatchDeletion(
       );
     }
 
-    output = await context.repositories.outputs.updateOutput(output.id, {
+    output = await context.repositories.get(OutputRepository).updateOutput(output.id, {
       status: "failed",
       expectedRevision: output.revision,
       updatedByUserId: actorUserId,
@@ -110,7 +115,7 @@ async function prepareOcrBatchDeletion(
     },
   );
 
-  return context.repositories.outputs.updateOutput(output.id, {
+  return context.repositories.get(OutputRepository).updateOutput(output.id, {
     status: "failed",
     expectedRevision: output.revision,
     updatedByUserId: actorUserId,
@@ -127,7 +132,7 @@ async function tombstoneOutput(
     return output;
   }
 
-  return context.repositories.outputs.updateOutput(output.id, {
+  return context.repositories.get(OutputRepository).updateOutput(output.id, {
     status: "failed",
     expectedRevision: output.revision,
     updatedByUserId: actorUserId,
@@ -144,9 +149,9 @@ async function prepareOcrBatchResultDeletion(
     return;
   }
 
-  const parent = await context.repositories.outputs.getOutputIncludingDeleting(
-    result.parent_output_id,
-  );
+  const parent = await context.repositories
+    .get(OutputRepository)
+    .getOutputIncludingDeleting(result.parent_output_id);
 
   if (!parent || parent.capability_id !== "ocr" || parent.kind !== "ocr_batch") {
     return;
@@ -169,14 +174,14 @@ async function prepareOcrBatchResultDeletion(
 
   const { resultOutputId: _resultOutputId, ...nextContent } = parentContent;
   const project = parent.project_id
-    ? await context.repositories.workspaces.getProject(parent.project_id)
+    ? await context.repositories.get(WorkspaceRepository).getProject(parent.project_id)
     : null;
 
   if (parent.project_id && !project) {
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.outputs.updateOutput(
+  await context.repositories.get(OutputRepository).updateOutput(
     parent.id,
     {
       status: parent.status,
@@ -201,7 +206,7 @@ export async function deleteOutputResources(
   actorUserId: number,
   outputId: string,
 ): Promise<void> {
-  let root = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
+  let root = await context.repositories.get(OutputRepository).getOutputIncludingDeleting(outputId);
 
   if (!root) {
     throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
@@ -217,7 +222,9 @@ export async function deleteOutputResources(
     root = await prepareOcrBatchDeletion(context, actorUserId, root);
   }
 
-  const descendants = await context.repositories.outputs.listOutputDescendants(outputId);
+  const descendants = await context.repositories
+    .get(OutputRepository)
+    .listOutputDescendants(outputId);
 
   for (const descendant of descendants) {
     await requireOutputRecordAccess(context, actorUserId, descendant, true);
@@ -253,7 +260,7 @@ export async function deleteOutputResources(
   }
 
   const project = root.project_id
-    ? await context.repositories.workspaces.getProject(root.project_id)
+    ? await context.repositories.get(WorkspaceRepository).getProject(root.project_id)
     : null;
 
   if (root.project_id && !project) {
@@ -263,7 +270,7 @@ export async function deleteOutputResources(
   const outputIds = records.map((record) => record.id);
 
   if (project) {
-    await context.repositories.outputs.deleteOutputs(outputIds, {
+    await context.repositories.get(OutputRepository).deleteOutputs(outputIds, {
       workspaceId: project.workspace_id,
       actorUserId,
       action: "output.deleted",
@@ -271,6 +278,6 @@ export async function deleteOutputResources(
       metadata: {},
     });
   } else {
-    await context.repositories.outputs.deleteOutputs(outputIds);
+    await context.repositories.get(OutputRepository).deleteOutputs(outputIds);
   }
 }

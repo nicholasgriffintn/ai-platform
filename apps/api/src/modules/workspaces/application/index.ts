@@ -19,16 +19,20 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import { validateProjectConnectorGrant } from "~/modules/connectors/application/project-grants";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { deleteOutput } from "~/modules/outputs/application";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { forgetWorkspaceAudience } from "~/modules/sync/application/audience";
 import { revokeTeammateContextResources } from "~/modules/teammates/application/computers";
 import {
   archiveProjectTeammateContexts,
   mutateTeammateContextsWithCleanup,
 } from "~/modules/teammates/application/context-lifecycle";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
 import { invalidateProjectEnvironmentCacheForConfiguration } from "./environment-cache";
@@ -68,7 +72,7 @@ async function validateProjectCodingEnvironment(
 
 export async function listWorkspaces(context: ServiceContext) {
   const user = requireWorkAccess(context);
-  const workspaces = await context.repositories.workspaces.listWorkspaces(user.id);
+  const workspaces = await context.repositories.get(WorkspaceRepository).listWorkspaces(user.id);
 
   return listPageOf(workspaces.map(formatWorkspaceSummary), (workspace) => workspace.id);
 }
@@ -77,12 +81,12 @@ export async function createWorkspace(context: ServiceContext, input: CreateWork
   const user = requireWorkAccess(context);
   const id = generateId();
 
-  await context.repositories.workspaces.createWorkspace({
+  await context.repositories.get(WorkspaceRepository).createWorkspace({
     id,
     ...input,
     userId: user.id,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: id,
     actorUserId: user.id,
     action: "workspace.created",
@@ -99,10 +103,10 @@ export async function getWorkspace(
 ): Promise<WorkspaceDetail> {
   const { workspace, role } = await requireWorkspaceAccess(context, workspaceId);
   const [projects, members, invitations] = await Promise.all([
-    context.repositories.workspaces.listProjects(workspaceId),
-    context.repositories.workspaces.listMembers(workspaceId),
+    context.repositories.get(WorkspaceRepository).listProjects(workspaceId),
+    context.repositories.get(WorkspaceRepository).listMembers(workspaceId),
     authorise("workspace.membership", { actorRole: role, targetRole: "", newRole: "" }).allowed
-      ? context.repositories.workspaces.listInvitations(workspaceId)
+      ? context.repositories.get(WorkspaceRepository).listInvitations(workspaceId)
       : Promise.resolve([]),
   ]);
 
@@ -130,7 +134,9 @@ export async function updateWorkspaceMember(
 ) {
   const actor = context.requireUser();
   const access = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  const target = await context.repositories.workspaces.getMembership(workspaceId, memberUserId);
+  const target = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, memberUserId);
 
   if (!target || target.role === "owner") {
     throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
@@ -158,8 +164,10 @@ export async function updateWorkspaceMember(
     );
   }
 
-  await context.repositories.workspaces.updateMemberRole(workspaceId, memberUserId, role);
-  await context.repositories.audit.createRecord({
+  await context.repositories
+    .get(WorkspaceRepository)
+    .updateMemberRole(workspaceId, memberUserId, role);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: actor.id,
     action: "workspace.member.role_changed",
@@ -178,7 +186,9 @@ export async function removeWorkspaceMember(
 ) {
   const actor = context.requireUser();
   const access = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  const target = await context.repositories.workspaces.getMembership(workspaceId, memberUserId);
+  const target = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, memberUserId);
 
   if (!target || target.role === "owner") {
     throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
@@ -202,17 +212,18 @@ export async function removeWorkspaceMember(
     );
   }
 
-  const teammateContexts = await context.repositories.teammateContexts.listForWorkspaceProjects(
-    workspaceId,
-    memberUserId,
-  );
+  const teammateContexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listForWorkspaceProjects(workspaceId, memberUserId);
 
   await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
-    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, memberUserId);
-    await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
+    await context.repositories
+      .get(TeammateContextRepository)
+      .archiveForWorkspaceActor(workspaceId, memberUserId);
+    await context.repositories.get(WorkspaceRepository).removeMember(workspaceId, memberUserId);
   });
   forgetWorkspaceAudience(workspaceId);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: actor.id,
     action: "workspace.member.removed",
@@ -236,17 +247,18 @@ export async function leaveWorkspace(context: ServiceContext, workspaceId: strin
     );
   }
 
-  const teammateContexts = await context.repositories.teammateContexts.listForWorkspaceProjects(
-    workspaceId,
-    user.id,
-  );
+  const teammateContexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listForWorkspaceProjects(workspaceId, user.id);
 
   await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
-    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, user.id);
-    await context.repositories.workspaces.removeMember(workspaceId, user.id);
+    await context.repositories
+      .get(TeammateContextRepository)
+      .archiveForWorkspaceActor(workspaceId, user.id);
+    await context.repositories.get(WorkspaceRepository).removeMember(workspaceId, user.id);
   });
   forgetWorkspaceAudience(workspaceId);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "workspace.member.left",
@@ -270,14 +282,18 @@ export async function transferWorkspaceOwnership(
     throw new AssistantError("You already own this workspace", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const target = await context.repositories.workspaces.getMembership(workspaceId, newOwnerUserId);
+  const target = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, newOwnerUserId);
 
   if (!target) {
     throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.workspaces.transferOwnership(workspaceId, owner.id, newOwnerUserId);
-  await context.repositories.audit.createRecord({
+  await context.repositories
+    .get(WorkspaceRepository)
+    .transferOwnership(workspaceId, owner.id, newOwnerUserId);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: owner.id,
     action: "workspace.ownership.transferred",
@@ -297,8 +313,8 @@ export async function updateWorkspace(
   const user = context.requireUser();
 
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  await context.repositories.workspaces.updateWorkspace(workspaceId, input);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(WorkspaceRepository).updateWorkspace(workspaceId, input);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "workspace.updated",
@@ -314,26 +330,29 @@ export async function deleteWorkspace(context: ServiceContext, workspaceId: stri
   const user = context.requireUser();
 
   await requireWorkspaceAccess(context, workspaceId, ["owner"]);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "workspace.deletion.requested",
     targetType: "workspace",
     targetId: workspaceId,
   });
-  const outputRoots = await context.repositories.outputs.listWorkspaceOutputRoots(workspaceId);
+  const outputRoots = await context.repositories
+    .get(OutputRepository)
+    .listWorkspaceOutputRoots(workspaceId);
 
   for (const output of outputRoots) {
     // Delete through the capability-aware path before workspace cascades discard provider and R2 IDs.
     await deleteOutput(context, user.id, output.id);
   }
 
-  const teammateContexts =
-    await context.repositories.teammateContexts.listForWorkspaceProjects(workspaceId);
+  const teammateContexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listForWorkspaceProjects(workspaceId);
 
   await revokeTeammateContextResources(context, teammateContexts);
 
-  await context.repositories.workspaces.deleteWorkspace(workspaceId);
+  await context.repositories.get(WorkspaceRepository).deleteWorkspace(workspaceId);
 
   return { success: true };
 }
@@ -360,7 +379,7 @@ export async function inviteWorkspaceMember(
     );
   }
 
-  const members = await context.repositories.workspaces.listMembers(workspaceId);
+  const members = await context.repositories.get(WorkspaceRepository).listMembers(workspaceId);
 
   if (members.some((member) => member.email.toLowerCase() === input.email)) {
     throw new AssistantError(
@@ -371,7 +390,7 @@ export async function inviteWorkspaceMember(
   }
 
   const token = randomHex(64).toLowerCase();
-  const invitation = await context.repositories.workspaces.upsertInvitation({
+  const invitation = await context.repositories.get(WorkspaceRepository).upsertInvitation({
     id: generateId(),
     workspaceId,
     email: input.email,
@@ -397,11 +416,13 @@ export async function inviteWorkspaceMember(
       workspaceName: workspace.name,
     });
   } catch (error) {
-    await context.repositories.workspaces.revokeInvitation(workspaceId, invitation.id);
+    await context.repositories
+      .get(WorkspaceRepository)
+      .revokeInvitation(workspaceId, invitation.id);
     throw error;
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "workspace.invitation.created",
@@ -418,9 +439,9 @@ export async function inviteWorkspaceMember(
 
 export async function acceptWorkspaceInvitation(context: ServiceContext, token: string) {
   const user = requireWorkAccess(context);
-  const invitation = await context.repositories.workspaces.getInvitationByTokenHash(
-    await sha256Hex(token),
-  );
+  const invitation = await context.repositories
+    .get(WorkspaceRepository)
+    .getInvitationByTokenHash(await sha256Hex(token));
 
   if (!invitation || invitation.status !== "pending") {
     throw new AssistantError(
@@ -442,9 +463,9 @@ export async function acceptWorkspaceInvitation(context: ServiceContext, token: 
     );
   }
 
-  await context.repositories.workspaces.acceptInvitation(invitation, user.id);
+  await context.repositories.get(WorkspaceRepository).acceptInvitation(invitation, user.id);
   forgetWorkspaceAudience(invitation.workspace_id);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: invitation.workspace_id,
     actorUserId: user.id,
     action: "workspace.invitation.accepted",
@@ -464,13 +485,15 @@ export async function revokeWorkspaceInvitation(
   const user = context.requireUser();
 
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  const revoked = await context.repositories.workspaces.revokeInvitation(workspaceId, invitationId);
+  const revoked = await context.repositories
+    .get(WorkspaceRepository)
+    .revokeInvitation(workspaceId, invitationId);
 
   if (!revoked) {
     throw new AssistantError("Workspace invitation not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "workspace.invitation.revoked",
@@ -492,7 +515,7 @@ export async function createProject(
   await validateProjectCodingEnvironment(context, user.id, input.codingEnvironment);
   const id = generateId();
 
-  await context.repositories.workspaces.createProject({
+  await context.repositories.get(WorkspaceRepository).createProject({
     id,
     workspaceId,
     name: input.name,
@@ -503,7 +526,7 @@ export async function createProject(
     codingEnvironment: input.codingEnvironment,
     createdBy: user.id,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
     action: "project.created",
@@ -517,8 +540,10 @@ export async function createProject(
 export async function getProject(context: ServiceContext, projectId: string) {
   const { project } = await requireProjectAccess(context, projectId);
   const [capabilities, conversations] = await Promise.all([
-    context.repositories.workspaces.listProjectCapabilities(projectId),
-    context.repositories.workspaces.listProjectConversations(projectId, context.requireUser().id),
+    context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId),
+    context.repositories
+      .get(WorkspaceRepository)
+      .listProjectConversations(projectId, context.requireUser().id),
   ]);
 
   return formatProjectDetail({ project, capabilities, conversations });
@@ -571,7 +596,7 @@ export async function updateProject(
           coding_inspection_window_seconds: codingEnvironment?.inspectionWindowSeconds ?? 0,
         };
 
-  await context.repositories.workspaces.updateProject(projectId, {
+  await context.repositories.get(WorkspaceRepository).updateProject(projectId, {
     ...projectFields,
     ...(defaultModelTier === undefined ? {} : { default_model_tier: defaultModelTier }),
     ...codingUpdates,
@@ -581,7 +606,7 @@ export async function updateProject(
     await invalidateProjectEnvironmentCacheForConfiguration(context, project);
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.updated",
@@ -597,10 +622,10 @@ export async function archiveProject(context: ServiceContext, projectId: string)
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
-  await context.repositories.workspaces.updateProject(projectId, {
+  await context.repositories.get(WorkspaceRepository).updateProject(projectId, {
     archived_at: new Date().toISOString(),
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.archived",
@@ -636,7 +661,9 @@ export async function addProjectCapability(
     );
   }
 
-  const existing = (await context.repositories.workspaces.listProjectCapabilities(projectId)).find(
+  const existing = (
+    await context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId)
+  ).find(
     (capability) =>
       capability.kind === input.kind && capability.capability_id === input.capabilityId,
   );
@@ -667,7 +694,7 @@ export async function addProjectCapability(
         : input.configuration;
   const capabilityRowId = existing?.id ?? generateId();
 
-  await context.repositories.workspaces.addProjectCapability({
+  await context.repositories.get(WorkspaceRepository).addProjectCapability({
     id: capabilityRowId,
     projectId,
     kind: input.kind,
@@ -675,7 +702,7 @@ export async function addProjectCapability(
     configuration,
     createdBy: user.id,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.capability.added",
@@ -695,7 +722,7 @@ export async function removeProjectCapability(
   const user = context.requireUser();
   const { project, role } = await requireProjectAccess(context, projectId);
   const capability = (
-    await context.repositories.workspaces.listProjectCapabilities(projectId)
+    await context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId)
   ).find((candidate) => candidate.id === capabilityId);
 
   if (!capability) {
@@ -720,13 +747,15 @@ export async function removeProjectCapability(
     );
   }
 
-  await context.repositories.workspaces.removeProjectCapability(projectId, capabilityId);
+  await context.repositories
+    .get(WorkspaceRepository)
+    .removeProjectCapability(projectId, capabilityId);
 
   if (capability.kind === "teammate") {
     await archiveProjectTeammateContexts(context, projectId, capability.capability_id);
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.capability.removed",

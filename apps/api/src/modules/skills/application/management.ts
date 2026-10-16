@@ -10,6 +10,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { recordProjectAudit } from "~/modules/audit/application";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { getSkillDefinition } from "./catalog";
 import {
@@ -176,7 +177,7 @@ export async function publishProjectSkill(
   const skill = created.document;
 
   try {
-    await context.repositories.workspaces.addProjectCapability({
+    await context.repositories.get(WorkspaceRepository).addProjectCapability({
       id: generateId(),
       projectId,
       kind: SKILL_CAPABILITY_KIND,
@@ -207,7 +208,7 @@ export async function listProjectSkills(
   await requireProjectAccess(context, projectId);
   const [stored, capabilities] = await Promise.all([
     listStoredSkills(context, projectSkillScope(projectId), "stable"),
-    context.repositories.workspaces.listProjectCapabilities(projectId),
+    context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId),
   ]);
   const publishedNames = new Set(
     capabilities
@@ -295,7 +296,9 @@ export async function deleteProjectSkill(
     throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.workspaces.removeProjectCapability(projectId, capability.id);
+  await context.repositories
+    .get(WorkspaceRepository)
+    .removeProjectCapability(projectId, capability.id);
 
   try {
     if (!(await archiveStoredSkill(context, projectSkillScope(projectId), skillId))) {
@@ -303,7 +306,7 @@ export async function deleteProjectSkill(
     }
   } catch (error) {
     try {
-      await context.repositories.workspaces.addProjectCapability({
+      await context.repositories.get(WorkspaceRepository).addProjectCapability({
         id: capability.id,
         projectId,
         kind: SKILL_CAPABILITY_KIND,

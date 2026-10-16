@@ -11,18 +11,24 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import { revalidateDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
 import { buildDelegationResumeInstruction } from "~/modules/delegations/application/resume";
 import { delegationRunCommandId } from "~/modules/delegations/application/run-identity";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskMessage, TaskResult } from "~/modules/tasks/application/types";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
 import { canRunDelegationOnMachine, resolveDelegationExecutionRoute } from "./routing";
@@ -34,7 +40,9 @@ export async function runDelegationTask(
 ): Promise<{ status: TaskResult["status"]; detail: string }> {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);
   const context = createServiceContext({ env });
-  const delegation = await context.repositories.delegations.claimDelegation(payload.delegationId);
+  const delegation = await context.repositories
+    .get(DelegationRepository)
+    .claimDelegation(payload.delegationId);
 
   if (!delegation) {
     return {
@@ -63,7 +71,7 @@ export async function runDelegationTask(
       };
     }
 
-    const user = await context.repositories.users.getUserById(message.user_id ?? 0);
+    const user = await context.repositories.get(UserRepository).getUserById(message.user_id ?? 0);
 
     if (!user) {
       await transitionDelegation(
@@ -81,19 +89,18 @@ export async function runDelegationTask(
       return { status: "error" as const, detail: "Delegating user not found" };
     }
 
-    const parentConversation = await context.repositories.conversations.getConversation(
-      delegation.parentConversationId,
-    );
+    const parentConversation = await context.repositories
+      .get(ConversationRepository)
+      .getConversation(delegation.parentConversationId);
     const parentProjectId =
       typeof parentConversation?.project_id === "string" ? parentConversation.project_id : null;
 
     if (
       !parentConversation ||
       parentProjectId !== (payload.projectId ?? null) ||
-      !(await context.repositories.workspaces.canAccessConversation(
-        delegation.parentConversationId,
-        user.id,
-      ))
+      !(await context.repositories
+        .get(WorkspaceRepository)
+        .canAccessConversation(delegation.parentConversationId, user.id))
     ) {
       await settleDelegation(
         context,
@@ -129,7 +136,9 @@ export async function runDelegationTask(
     const enabledTools = payload.projectId
       ? intersectEnabledTools(
           resolveProjectTools(
-            await context.repositories.workspaces.listProjectCapabilities(payload.projectId),
+            await context.repositories
+              .get(WorkspaceRepository)
+              .listProjectCapabilities(payload.projectId),
           ).enabledTools,
           payload.enabledTools,
         )
@@ -141,7 +150,9 @@ export async function runDelegationTask(
       bindings: delegation.memoryBindings,
     });
 
-    const teammate = await context.repositories.teammates.getTeammateById(delegation.teammateId);
+    const teammate = await context.repositories
+      .get(TeammateRepository)
+      .getTeammateById(delegation.teammateId);
     const teammateModel = teammate?.model
       ? await findModelConfig(teammate.model, env, undefined, user.id)
       : null;
@@ -185,7 +196,7 @@ export async function runDelegationTask(
 
     if (executionRoute === "sandbox") {
       const project = payload.projectId
-        ? await context.repositories.workspaces.getProject(payload.projectId)
+        ? await context.repositories.get(WorkspaceRepository).getProject(payload.projectId)
         : null;
       const codingEnvironment = project
         ? projectCodingEnvironmentSchema.safeParse({
@@ -300,7 +311,7 @@ export async function runDelegationTask(
       }
     }
 
-    const reconciled = await context.repositories.delegations.getById(delegation.id);
+    const reconciled = await context.repositories.get(DelegationRepository).getById(delegation.id);
     const failed =
       reconciled != null && ["failed", "cancelled", "expired"].includes(reconciled.state);
 
@@ -360,7 +371,7 @@ async function enqueueDelegationWake(
   userId: number | undefined,
 ) {
   await scheduleDelegationWake(
-    new TaskService(context.env, context.repositories.tasks),
+    new TaskService(context.env, context.repositories.get(TaskRepository)),
     delegation,
     userId,
   );

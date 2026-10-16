@@ -11,6 +11,9 @@ import {
 import { resolveStoredMessagingProvider } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { toInboundChannelMessage } from "~/modules/channels/application/inbound";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 const logger = getLogger({ prefix: "services/webhooks/sms" });
 
@@ -23,16 +26,20 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
   }
 
   const baseContext = createServiceContext({ env: c.env, requestId: c.get("requestId") });
-  const providerSettings = await baseContext.repositories.userSettings.getProviderSettingsById({
-    providerId,
-    providerSettingsId,
-  });
+  const providerSettings = await baseContext.repositories
+    .get(UserSettingsRepository)
+    .getProviderSettingsById({
+      providerId,
+      providerSettingsId,
+    });
 
   if (!providerSettings || !providerSettings.enabled) {
     throw new AssistantError("SMS provider is not configured", ErrorType.NOT_FOUND);
   }
 
-  const user = await baseContext.repositories.users.getUserById(providerSettings.user_id);
+  const user = await baseContext.repositories
+    .get(UserRepository)
+    .getUserById(providerSettings.user_id);
 
   if (!user) {
     throw new AssistantError("SMS webhook user not found", ErrorType.NOT_FOUND);
@@ -43,11 +50,13 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
     user,
     requestId: c.get("requestId"),
   });
-  const encryptedValue = await context.repositories.userSettings.getProviderApiKeyForSettings({
-    userId: user.id,
-    providerId,
-    providerSettingsId,
-  });
+  const encryptedValue = await context.repositories
+    .get(UserSettingsRepository)
+    .getProviderApiKeyForSettings({
+      userId: user.id,
+      providerId,
+      providerSettingsId,
+    });
 
   if (!encryptedValue) {
     throw new AssistantError("SMS provider credentials are not configured", ErrorType.NOT_FOUND);
@@ -77,7 +86,7 @@ export async function handleSmsAssistantWebhook(c: Context): Promise<Response> {
   }
 
   const digest = await sha256Hex([providerId, providerSettingsId, incoming.messageId].join(":"));
-  const taskService = new TaskService(c.env, context.repositories.tasks);
+  const taskService = new TaskService(c.env, context.repositories.get(TaskRepository));
   const taskId = await taskService.enqueueTask({
     id: `inbound_message_${digest.slice(0, 40)}`,
     task_type: "inbound_message",

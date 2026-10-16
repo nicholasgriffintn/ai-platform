@@ -6,10 +6,13 @@ import {
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { deliverChannelFollowUp } from "~/modules/channels/application/follow-up";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { startResponse } from "~/modules/responses/application/start";
 import type { TaskMessage } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import { deliverDelegationResult } from "./message";
@@ -18,16 +21,18 @@ import { isDelegationGroupReady } from "./wait-policy";
 export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   const payload = delegationWakeTaskDataSchema.parse(message.task_data);
   const bootstrapContext = createServiceContext({ env });
-  const delegations = await bootstrapContext.repositories.delegations.listByParentRunId(
-    payload.parentRunId,
-  );
+  const delegations = await bootstrapContext.repositories
+    .get(DelegationRepository)
+    .listByParentRunId(payload.parentRunId);
   const first = delegations[0];
 
   if (!first) {
     return { status: "skipped" as const, detail: "Delegation group no longer exists" };
   }
 
-  const user = await bootstrapContext.repositories.users.getUserById(message.user_id ?? 0);
+  const user = await bootstrapContext.repositories
+    .get(UserRepository)
+    .getUserById(message.user_id ?? 0);
 
   if (!user) {
     return { status: "error" as const, detail: "Delegating user not found" };
@@ -59,7 +64,9 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     stream: false,
     store: true,
   });
-  const parentRun = await context.repositories.conversationRuns.getById(payload.parentRunId);
+  const parentRun = await context.repositories
+    .get(ConversationRunRepository)
+    .getById(payload.parentRunId);
   const parentConfiguration = teammateRunConfigurationSchema.safeParse(
     parentRun?.resolvedConfiguration,
   );

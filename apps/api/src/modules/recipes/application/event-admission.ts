@@ -6,7 +6,10 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { evaluateRecipeEventCondition } from "~/modules/recipes/application/event-condition";
 import { createRecipeExecutionTaskData } from "~/modules/recipes/application/task-data";
+import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 const EVENT_EVALUATION_LEASE_MS = 120_000;
@@ -63,7 +66,7 @@ export async function admitRecipeEvent(params: {
   const receiptId = `recipe_event_${digest.slice(0, 40)}`;
   const taskId = `${event.source}_event_${digest.slice(0, 40)}`;
   const now = new Date();
-  const claim = await context.repositories.recipeEventReceipts.claimEvent({
+  const claim = await context.repositories.get(RecipeEventReceiptRepository).claimEvent({
     id: receiptId,
     triggerId: subscription.id,
     eventId: event.id,
@@ -83,7 +86,7 @@ export async function admitRecipeEvent(params: {
     state: "skipped" | "queued",
     extra: { decisionReceipt?: unknown; taskId?: string } = {},
   ) =>
-    context.repositories.recipeEventReceipts.settleEvent({
+    context.repositories.get(RecipeEventReceiptRepository).settleEvent({
       id: receiptId,
       triggerId: subscription.id,
       executionToken: claim.executionToken,
@@ -92,7 +95,7 @@ export async function admitRecipeEvent(params: {
       now: new Date().toISOString(),
     });
 
-  if (await context.repositories.tasks.getTaskById(taskId)) {
+  if (await context.repositories.get(TaskRepository).getTaskById(taskId)) {
     await settle("queued", { taskId });
 
     return { accepted: true, queued: true, taskId };
@@ -101,7 +104,9 @@ export async function admitRecipeEvent(params: {
   let decision;
 
   if (subscription.condition) {
-    const user = await context.repositories.users.getUserById(subscription.createdByUserId);
+    const user = await context.repositories
+      .get(UserRepository)
+      .getUserById(subscription.createdByUserId);
 
     if (!user) {
       await settle("skipped");
@@ -133,7 +138,7 @@ export async function admitRecipeEvent(params: {
     return { accepted: true, queued: false };
   }
 
-  await new TaskService(env, context.repositories.tasks).enqueueTask({
+  await new TaskService(env, context.repositories.get(TaskRepository)).enqueueTask({
     id: taskId,
     task_type: "recipe_execution",
     user_id: current.createdByUserId,

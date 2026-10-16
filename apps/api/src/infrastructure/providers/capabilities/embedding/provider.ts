@@ -7,7 +7,7 @@ import {
   WORKERS_EMBEDDING_MODEL,
   WORKERS_EMBEDDING_PROVIDER,
 } from "~/config/storage";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type {
   EmbeddingProvider,
@@ -306,7 +306,7 @@ export function getEmbeddingProvider(
         throw new AssistantError("Vectorize embeddings require AI and Vectorize bindings");
       }
 
-      const repositories = new RepositoryManager(env);
+      const repositories = createRepositories(env);
       const config = {
         ai: env.AI,
         vector_db: env.VECTOR_DB,

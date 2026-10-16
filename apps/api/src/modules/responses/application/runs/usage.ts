@@ -1,7 +1,9 @@
 import type { ChatRun, ChatRunUsage, UsageSource } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { ChatRunUsageEventSummaryRow } from "~/modules/usage/infrastructure/UsageEventRepository";
+import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
 import type { UsageReservationRow } from "~/modules/usage/infrastructure/UsageReservationRepository";
 
 function sum(rows: readonly ChatRunUsageEventSummaryRow[], key: "cost_micros" | "credit_micros") {
@@ -140,7 +142,7 @@ export function buildChatRunUsage(
 }
 
 export async function hydrateChatRunUsage(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   runs: readonly ChatRun[],
 ): Promise<ChatRun[]> {
   if (runs.length === 0) {
@@ -149,8 +151,8 @@ export async function hydrateChatRunUsage(
 
   const runIds = runs.map((run) => run.id);
   const [rows, reservations] = await Promise.all([
-    repositories.usageEvents.summariseChatRuns(runIds),
-    repositories.usageReservations.listReservations("chat_run", runIds),
+    repositories.get(UsageEventRepository).summariseChatRuns(runIds),
+    repositories.get(UsageReservationRepository).listReservations("chat_run", runIds),
   ]);
   const reservationsByRun = new Map(
     reservations.map((reservation) => [reservation.ref_id, reservation]),

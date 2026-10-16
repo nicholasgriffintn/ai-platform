@@ -1,11 +1,12 @@
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { HostManifest } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import { conflict } from "~/modules/model-registry/application/access";
 
 export async function requireHostingBudgetCompatibility(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
   host: HostManifest,
@@ -14,7 +15,7 @@ export async function requireHostingBudgetCompatibility(
     return;
   }
 
-  const budgets = await repositories.modelSpend.listBudgets(workspaceId);
+  const budgets = await repositories.get(ModelSpendRepository).listBudgets(workspaceId);
 
   const requiresPause = budgets.some(
     (budget) =>

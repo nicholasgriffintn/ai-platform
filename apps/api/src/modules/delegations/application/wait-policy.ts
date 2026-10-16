@@ -2,6 +2,7 @@ import type { Delegation, DelegationWaitFor } from "@ngriffin_uk/polychat-schema
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 
 const SETTLED_STATES = new Set<Delegation["state"]>(["done", "failed", "cancelled", "expired"]);
 
@@ -21,7 +22,9 @@ export async function isRunWaitingForDelegations(
   context: ServiceContext,
   parentRunId: string,
 ): Promise<boolean> {
-  const delegations = await context.repositories.delegations.listByParentRunId(parentRunId);
+  const delegations = await context.repositories
+    .get(DelegationRepository)
+    .listByParentRunId(parentRunId);
 
   return (
     delegations.length > 0 &&
@@ -35,7 +38,9 @@ export async function requireDelegationGroupWaitPolicy(
   parentRunId: string,
   waitFor: DelegationWaitFor,
 ): Promise<void> {
-  const existing = await context.repositories.delegations.listByParentRunId(parentRunId);
+  const existing = await context.repositories
+    .get(DelegationRepository)
+    .listByParentRunId(parentRunId);
   const conflicting = existing.find((delegation) => delegation.waitFor !== waitFor);
 
   if (conflicting) {

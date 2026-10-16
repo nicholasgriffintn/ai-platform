@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 
 import { handleLogout } from "./sessions";
 
@@ -8,9 +10,7 @@ describe("notification registration logout", () => {
   it("removes only the signed-out installation before clearing the session", async () => {
     const removeRegistration = vi.fn().mockResolvedValue(undefined);
     const context: ServiceContext = Object.assign(Object.create(null), {
-      repositories: {
-        taskNotifications: { removeRegistration },
-      },
+      repositories: fakeRepositories([[TaskNotificationRepository, { removeRegistration }]]),
     });
 
     await expect(
@@ -27,9 +27,7 @@ describe("notification registration logout", () => {
   it("does not remove another installation when the caller sends no installation identity", async () => {
     const removeRegistration = vi.fn();
     const context: ServiceContext = Object.assign(Object.create(null), {
-      repositories: {
-        taskNotifications: { removeRegistration },
-      },
+      repositories: fakeRepositories([[TaskNotificationRepository, { removeRegistration }]]),
     });
 
     await handleLogout({ context, sessionId: null, userId: 7 });

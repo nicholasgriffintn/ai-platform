@@ -13,6 +13,9 @@ vi.mock("~/modules/connectors/application/operations", () => ({
   executeRecipeConnectorOperation: mocks.executeRecipeConnectorOperation,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+
 import { readArtifactBinding } from "../artifact-bindings";
 
 function artifactMessage(bindings: unknown[]) {
@@ -29,15 +32,18 @@ function createContext(content: string, conversationId = "conversation-1") {
   return {
     requireUser: () => ({ id: 7 }),
     env: {},
-    repositories: {
-      messages: {
-        getMessageById: vi.fn(async () => ({
-          conversation_id: conversationId,
-          user_id: 7,
-          message: { role: "assistant", content },
-        })),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        MessageRepository,
+        {
+          getMessageById: vi.fn(async () => ({
+            conversation_id: conversationId,
+            user_id: 7,
+            message: { role: "assistant", content },
+          })),
+        },
+      ],
+    ]),
   } as never;
 }
 

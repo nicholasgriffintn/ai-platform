@@ -2,6 +2,8 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import { resolveProjectTaskToolApproval } from "../approvals";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "../questions";
@@ -63,9 +65,9 @@ function createContext() {
       env: {},
       database: {},
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-      repositories: {
-        messages: { getLatestPendingToolMessage, updateMessage },
-      },
+      repositories: fakeRepositories([
+        [MessageRepository, { getLatestPendingToolMessage, updateMessage }],
+      ]),
     } as unknown as ServiceContext,
     getLatestPendingToolMessage,
     updateMessage,
@@ -201,9 +203,9 @@ describe("project task tool approvals", () => {
       env: {},
       database: {},
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-      repositories: {
-        messages: { getLatestPendingToolMessage, updateMessage },
-      },
+      repositories: fakeRepositories([
+        [MessageRepository, { getLatestPendingToolMessage, updateMessage }],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(

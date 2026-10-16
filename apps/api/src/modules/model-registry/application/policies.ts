@@ -21,10 +21,15 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import {
+  ModelGovernanceRepository,
+  WORKSPACE_POLICY_SCOPE_KEY,
+} from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
-import { WORKSPACE_POLICY_SCOPE_KEY } from "../infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "../infrastructure/ModelRouteRepository";
 import { badRequest, requireModelAction, requireWorkspaceProject } from "./access";
 import { toModelEvidence, toModelPolicy } from "./mappers";
@@ -63,13 +68,15 @@ async function defaultWorkspacePolicy(workspaceId: string): Promise<ModelPolicy>
 }
 
 export async function loadPolicyStack(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
 ): Promise<PolicyStack> {
   const [workspaceRecord, projectRecord] = await Promise.all([
-    repositories.modelGovernance.getPolicy(workspaceId, WORKSPACE_POLICY_SCOPE_KEY),
-    projectId ? repositories.modelGovernance.getPolicy(workspaceId, projectId) : null,
+    repositories.get(ModelGovernanceRepository).getPolicy(workspaceId, WORKSPACE_POLICY_SCOPE_KEY),
+    projectId
+      ? repositories.get(ModelGovernanceRepository).getPolicy(workspaceId, projectId)
+      : null,
   ]);
   const workspace = workspaceRecord
     ? toModelPolicy(workspaceRecord)
@@ -179,7 +186,9 @@ export async function getPolicies(
 ): Promise<PoliciesResponse> {
   await requireModelAction(context, workspaceId, "view");
 
-  const records = await context.repositories.modelGovernance.listPolicies(workspaceId);
+  const records = await context.repositories
+    .get(ModelGovernanceRepository)
+    .listPolicies(workspaceId);
   const workspaceRecord = records.find((record) => record.scope_key === WORKSPACE_POLICY_SCOPE_KEY);
 
   return {
@@ -199,16 +208,15 @@ export async function upsertPolicy(
 ): Promise<ModelPolicy> {
   const { userId } = await requireModelAction(context, workspaceId, "manage_policy");
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
-  const existing = await context.repositories.modelGovernance.getPolicy(
-    workspaceId,
-    projectId ?? WORKSPACE_POLICY_SCOPE_KEY,
-  );
+  const existing = await context.repositories
+    .get(ModelGovernanceRepository)
+    .getPolicy(workspaceId, projectId ?? WORKSPACE_POLICY_SCOPE_KEY);
   const enforcement = projectId
     ? "advisory"
     : (request.enforcement ?? existing?.enforcement ?? "advisory");
   const rules = requireValidGovernanceRules(request.rules);
   const hash = await hashPolicyRules(rules);
-  const saved = await context.repositories.modelGovernance.savePolicy({
+  const saved = await context.repositories.get(ModelGovernanceRepository).savePolicy({
     workspaceId,
     projectId,
     rules,
@@ -218,7 +226,7 @@ export async function upsertPolicy(
   });
 
   if (saved.revision !== existing?.revision) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId,
       actorUserId: userId,
       action: "model_policy.updated",
@@ -259,11 +267,13 @@ export async function dryRunPolicy(
     ? [current.scoped[0], candidate]
     : [candidate, ...current.scoped.slice(1)];
   const [versions, assets] = await Promise.all([
-    repositories.modelAssets.listVersions(workspaceId, request.versionIds),
-    repositories.modelAssets.listAssets(workspaceId),
+    repositories.get(ModelAssetRepository).listVersions(workspaceId, request.versionIds),
+    repositories.get(ModelAssetRepository).listAssets(workspaceId),
   ]);
   const evidence = (
-    await repositories.modelGovernance.listEvidence(versions.map((version) => version.id))
+    await repositories
+      .get(ModelGovernanceRepository)
+      .listEvidence(versions.map((version) => version.id))
   ).map(toModelEvidence);
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]));
   const changes: PolicyDryRunResult["changes"] = [];

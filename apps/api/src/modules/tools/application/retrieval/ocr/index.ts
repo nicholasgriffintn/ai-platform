@@ -11,6 +11,7 @@ import {
 import { providerHost } from "~/infrastructure/providers/host";
 import { recordProjectAudit } from "~/modules/audit/application";
 import { requireConversationScope } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { resolveOcrInput } from "./input";
@@ -72,9 +73,9 @@ export async function performOcr(params: {
   });
 
   if (resolvedInput.sourceId) {
-    await params.context.repositories.outputs.attachSources(result.outputId, [
-      resolvedInput.sourceId,
-    ]);
+    await params.context.repositories
+      .get(OutputRepository)
+      .attachSources(result.outputId, [resolvedInput.sourceId]);
   }
 
   if (params.projectId) {

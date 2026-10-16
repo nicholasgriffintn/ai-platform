@@ -11,6 +11,7 @@ import {
   buildRecipeConnections,
   buildRecipeInvocationRuntime,
 } from "~/modules/recipes/application/runtime";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
@@ -58,9 +59,9 @@ export async function buildConnectorApprovalRecipeContext(params: {
   let installation = null;
 
   if (params.installationId) {
-    const record = await params.context.repositories.templates.getTemplateById(
-      params.installationId,
-    );
+    const record = await params.context.repositories
+      .get(TemplateRepository)
+      .getTemplateById(params.installationId);
 
     installation = record ? parseRecipeInstallationRecord(record) : null;
 

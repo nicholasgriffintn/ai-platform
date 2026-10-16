@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/preparation/goal" });
@@ -14,7 +15,7 @@ export async function loadActiveGoal(options: CoreChatOptions): Promise<Goal | n
   }
 
   try {
-    return await options.context.repositories.goals.getActiveGoal({
+    return await options.context.repositories.get(GoalRepository).getActiveGoal({
       conversationId: options.completion_id,
     });
   } catch (error) {

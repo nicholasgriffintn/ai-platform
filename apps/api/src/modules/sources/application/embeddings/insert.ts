@@ -6,6 +6,7 @@ import {
 } from "~/infrastructure/context/serviceContext";
 import { resolveEmbeddingRuntime } from "~/infrastructure/providers/capabilities/embedding/helpers";
 import { getPersonalEmbeddingScopeTag } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
+import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { deleteProviderDocuments } from "./deletion";
@@ -47,10 +48,9 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
   let compensationIsSafe = true;
 
   try {
-    const pendingDocument = await serviceContext.repositories.embeddings.getPendingDocumentForRetry(
-      authenticatedUser.id,
-      document.logicalId,
-    );
+    const pendingDocument = await serviceContext.repositories
+      .get(EmbeddingRepository)
+      .getPendingDocumentForRetry(authenticatedUser.id, document.logicalId);
 
     if (pendingDocument) {
       await deleteProviderDocuments({
@@ -59,13 +59,12 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
         userSettings,
         documents: [pendingDocument],
       });
-      await serviceContext.repositories.embeddings.removePendingDocument(
-        authenticatedUser.id,
-        pendingDocument.id,
-      );
+      await serviceContext.repositories
+        .get(EmbeddingRepository)
+        .removePendingDocument(authenticatedUser.id, pendingDocument.id);
     }
 
-    await serviceContext.repositories.embeddings.createDocument({
+    await serviceContext.repositories.get(EmbeddingRepository).createDocument({
       id: document.documentId,
       logicalId: document.logicalId,
       userId: authenticatedUser.id,
@@ -106,17 +105,14 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
     }
 
     try {
-      await serviceContext.repositories.embeddings.activateDocument(
-        authenticatedUser.id,
-        document.documentId,
-      );
+      await serviceContext.repositories
+        .get(EmbeddingRepository)
+        .activateDocument(authenticatedUser.id, document.documentId);
     } catch (error) {
       try {
-        const lifecycleStatus =
-          await serviceContext.repositories.embeddings.getDocumentLifecycleStatus(
-            authenticatedUser.id,
-            document.documentId,
-          );
+        const lifecycleStatus = await serviceContext.repositories
+          .get(EmbeddingRepository)
+          .getDocumentLifecycleStatus(authenticatedUser.id, document.documentId);
 
         if (lifecycleStatus === "active") {
           return {

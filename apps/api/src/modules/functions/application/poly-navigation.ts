@@ -22,6 +22,8 @@ import {
 } from "~/modules/conversations/application/conversation-organisation";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
 import { handleUpdateChatCompletion } from "~/modules/conversations/application/updateChatCompletion";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { searchPolychat } from "~/modules/search/application/global";
 import { hireTeammate as hireTeammateService } from "~/modules/teammates/application";
 import {
@@ -117,11 +119,13 @@ async function listRecentConversations(
   scope: PolyNavigationToolScope,
   limit: number,
 ): Promise<PolyFoundConversation[]> {
-  const page = await scope.context.repositories.conversations.listUserConversations(scope.user.id, {
-    archiveFilter: "active",
-    limit,
-    sortBy: "updated",
-  });
+  const page = await scope.context.repositories
+    .get(ConversationRepository)
+    .listUserConversations(scope.user.id, {
+      archiveFilter: "active",
+      limit,
+      sortBy: "updated",
+    });
 
   return page.data.map(toFoundConversation);
 }
@@ -364,10 +368,9 @@ export const read_conversation: ApiToolDefinition = {
     const scope = requirePolyNavigationScope(toolContext, readConversationDescriptor.name);
     const conversation = await requireConversationAccess(scope.context, args.conversationId);
     const limit = Math.min(args.maxMessages ?? DEFAULT_READ_MESSAGES, MAX_POLY_READ_MESSAGES);
-    const rows = await scope.context.repositories.messages.getConversationMessages(
-      args.conversationId,
-      limit,
-    );
+    const rows = await scope.context.repositories
+      .get(MessageRepository)
+      .getConversationMessages(args.conversationId, limit);
     const lines: string[] = [];
     let used = 0;
 
@@ -430,12 +433,14 @@ export const start_conversation: ApiToolDefinition = {
 
     const conversationId = generateId();
 
-    await scope.context.repositories.conversations.createConversation(
-      conversationId,
-      scope.user.id,
-      args.title,
-      project ? { project_id: project.id } : {},
-    );
+    await scope.context.repositories
+      .get(ConversationRepository)
+      .createConversation(
+        conversationId,
+        scope.user.id,
+        args.title,
+        project ? { project_id: project.id } : {},
+      );
 
     const target: PolyNavigationTarget = {
       kind: "conversation",

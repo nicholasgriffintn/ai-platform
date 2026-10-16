@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+
 import { createWebhookToken, hashWebhookToken } from "../../domain/recipe-webhook-token";
 import { handleRecipeWebhook, MAX_RECIPE_WEBHOOK_BYTES } from "../recipe-webhook";
 
@@ -42,26 +49,35 @@ describe("recipe webhook", () => {
       task: { id: "task_1", max_attempts: 3 },
     });
     createServiceContextMock.mockReturnValue({
-      repositories: {
-        recipeWebhookTriggers: {
-          getTriggerByTokenHash: async (hash: string) =>
-            hash === trigger.external_trigger_id ? trigger : null,
-        },
-        recipeEventReceipts: { claimEvent, settleEvent: async () => true },
-        templates: {
-          getTemplateById: async () => ({
-            id: "installation_1",
-            kind: "recipe",
-            status: "active",
-            created_by_user_id: 42,
-            project_id: null,
-            capability_id: "morning-briefing",
-            configuration: JSON.stringify({ recipeId: "morning-briefing" }),
-          }),
-        },
-        tasks: { createTaskIfAbsent, updateTask: vi.fn(), getTaskById: async () => null },
-        users: { getUserById: async () => ({ id: 42 }) },
-      },
+      repositories: fakeRepositories([
+        [
+          RecipeWebhookTriggerRepository,
+          {
+            getTriggerByTokenHash: async (hash: string) =>
+              hash === trigger.external_trigger_id ? trigger : null,
+          },
+        ],
+        [RecipeEventReceiptRepository, { claimEvent, settleEvent: async () => true }],
+        [
+          TemplateRepository,
+          {
+            getTemplateById: async () => ({
+              id: "installation_1",
+              kind: "recipe",
+              status: "active",
+              created_by_user_id: 42,
+              project_id: null,
+              capability_id: "morning-briefing",
+              configuration: JSON.stringify({ recipeId: "morning-briefing" }),
+            }),
+          },
+        ],
+        [
+          TaskRepository,
+          { createTaskIfAbsent, updateTask: vi.fn(), getTaskById: async () => null },
+        ],
+        [UserRepository, { getUserById: async () => ({ id: 42 }) }],
+      ]),
     });
   });
 

@@ -2,6 +2,12 @@ import type { ChatRun, ChatRunEvent } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
+import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
 
 import { handleReplayChatRunEvents } from "../replay";
 
@@ -45,38 +51,53 @@ function createContext(options?: {
   return {
     requireUser: vi.fn().mockReturnValue({ id: options?.userId ?? 7, plan_id: "pro" }),
     ensureDatabase: vi.fn(),
-    repositories: {
-      conversationRuns: {
-        getById: vi.fn().mockResolvedValue(run),
-        getEventCursor: vi.fn().mockResolvedValue(options?.latest ?? 5),
-        getEventWindow: vi.fn().mockResolvedValue({
-          oldest: options?.oldest === undefined ? 1 : options.oldest,
-          latest: options?.latest ?? 5,
-        }),
-        listEvents: vi.fn().mockResolvedValue(options?.events ?? [event(4), event(5)]),
-        getPartialContent: vi.fn().mockResolvedValue(null),
-      },
-      messages: {
-        getRunMessages: vi.fn().mockResolvedValue([
-          {
-            id: "assistant-1",
-            conversation_id: run.conversationId,
-            run_id: run.id,
-            role: "assistant",
-            content: "Current result",
-          },
-        ]),
-      },
-      usageEvents: {
-        summariseChatRuns: vi.fn().mockResolvedValue([]),
-      },
-      usageReservations: {
-        listReservations: vi.fn().mockResolvedValue([]),
-      },
-      delegations: {
-        listByParentRunId: vi.fn().mockResolvedValue([]),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn().mockResolvedValue(run),
+          getEventCursor: vi.fn().mockResolvedValue(options?.latest ?? 5),
+          getEventWindow: vi.fn().mockResolvedValue({
+            oldest: options?.oldest === undefined ? 1 : options.oldest,
+            latest: options?.latest ?? 5,
+          }),
+          listEvents: vi.fn().mockResolvedValue(options?.events ?? [event(4), event(5)]),
+          getPartialContent: vi.fn().mockResolvedValue(null),
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          getRunMessages: vi.fn().mockResolvedValue([
+            {
+              id: "assistant-1",
+              conversation_id: run.conversationId,
+              run_id: run.id,
+              role: "assistant",
+              content: "Current result",
+            },
+          ]),
+        },
+      ],
+      [
+        UsageEventRepository,
+        {
+          summariseChatRuns: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        UsageReservationRepository,
+        {
+          listReservations: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        DelegationRepository,
+        {
+          listByParentRunId: vi.fn().mockResolvedValue([]),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -136,6 +157,8 @@ describe("handleReplayChatRunEvents", () => {
     await expect(
       handleReplayChatRunEvents(context, run.id, { after: 0, limit: 100 }),
     ).rejects.toMatchObject({ statusCode: 404 });
-    expect(context.repositories.conversationRuns.getEventWindow).not.toHaveBeenCalled();
+    expect(
+      context.repositories.get(ConversationRunRepository).getEventWindow,
+    ).not.toHaveBeenCalled();
   });
 });

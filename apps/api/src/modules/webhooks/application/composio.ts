@@ -9,6 +9,8 @@ import {
   type RecipeEventSubscription,
 } from "~/modules/recipes/application/event-admission";
 import { parseStoredRecipeInstallationData } from "~/modules/recipes/application/installation-persistence";
+import { RecipeComposioTriggerRepository } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { verifyHmacSha256Webhook } from "~/modules/webhooks/infrastructure/webhook-signatures";
 import type { IEnv } from "~/types";
 
@@ -48,9 +50,9 @@ async function resolveActiveTrigger(
   context: ReturnType<typeof createServiceContext>,
   event: z.infer<typeof triggerMessageSchema>,
 ): Promise<RecipeEventSubscription | null> {
-  const trigger = await context.repositories.recipeComposioTriggers.getTriggerByExternalId(
-    event.metadata.trigger_id,
-  );
+  const trigger = await context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .getTriggerByExternalId(event.metadata.trigger_id);
 
   if (
     !trigger ||
@@ -62,9 +64,9 @@ async function resolveActiveTrigger(
     return null;
   }
 
-  const installation = await context.repositories.templates.getTemplateById(
-    trigger.installation_id,
-  );
+  const installation = await context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(trigger.installation_id);
 
   if (
     !installation ||
@@ -171,10 +173,9 @@ export async function handleComposioWebhook(request: Request, env: IEnv): Promis
     const context = createServiceContext({ env });
 
     await Promise.all([
-      context.repositories.recipeComposioTriggers.markConnectedAccountError(
-        result.data.data.id,
-        "Connected account expired",
-      ),
+      context.repositories
+        .get(RecipeComposioTriggerRepository)
+        .markConnectedAccountError(result.data.data.id, "Connected account expired"),
       markComposioAccountExpired(context, result.data.data.id),
     ]);
 

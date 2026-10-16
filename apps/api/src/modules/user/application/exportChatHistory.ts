@@ -5,6 +5,8 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { IEnv, User } from "~/types";
 
 export interface ExportRow {
@@ -37,12 +39,9 @@ async function collectConversationRows(
   let iterations = 0;
 
   while (true) {
-    const messages = await serviceContext.repositories.messages.getConversationMessages(
-      conversationId,
-      MESSAGE_PAGE_SIZE,
-      after,
-      { includeArchived: true },
-    );
+    const messages = await serviceContext.repositories
+      .get(MessageRepository)
+      .getConversationMessages(conversationId, MESSAGE_PAGE_SIZE, after, { includeArchived: true });
 
     if (!messages.length) {
       break;
@@ -96,11 +95,13 @@ export async function handleExportChatHistory({
   let hasMore = true;
 
   while (hasMore) {
-    const page = await serviceContext.repositories.conversations.listUserConversations(user.id, {
-      archiveFilter: "all",
-      limit: CONVERSATION_PAGE_SIZE,
-      after,
-    });
+    const page = await serviceContext.repositories
+      .get(ConversationRepository)
+      .listUserConversations(user.id, {
+        archiveFilter: "all",
+        limit: CONVERSATION_PAGE_SIZE,
+        after,
+      });
 
     const conversationRows = await mapWithConcurrency(
       page.data,

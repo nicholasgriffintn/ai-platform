@@ -7,6 +7,7 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
 import {
   invokeAssistantRecipe,
@@ -23,6 +24,8 @@ import {
 import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
 import { prepareTeammateRun } from "~/modules/teammates/application/execution";
 import { reconcileTeammateRun } from "~/modules/teammates/application/run-reconciliation";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -47,7 +50,7 @@ export class RecipeExecutionHandler implements TaskHandler {
     const data = parsedData.data;
 
     const baseContext = createServiceContext({ env });
-    const user = await baseContext.repositories.users.getUserById(message.user_id);
+    const user = await baseContext.repositories.get(UserRepository).getUserById(message.user_id);
 
     if (!user) {
       return {
@@ -115,9 +118,9 @@ export class RecipeExecutionHandler implements TaskHandler {
       null;
 
     if (data.installationId && data.occurrenceId) {
-      const installationRecord = await context.repositories.templates.getTemplateById(
-        data.installationId,
-      );
+      const installationRecord = await context.repositories
+        .get(TemplateRepository)
+        .getTemplateById(data.installationId);
       const installation = installationRecord
         ? parseRecipeInstallationRecord(installationRecord)
         : null;
@@ -173,10 +176,9 @@ export class RecipeExecutionHandler implements TaskHandler {
       });
 
       const acceptedRun = occurrenceCommandId
-        ? await context.repositories.conversationRuns.getCommandReceipt(
-            message.user_id,
-            occurrenceCommandId,
-          )
+        ? await context.repositories
+            .get(ConversationRunRepository)
+            .getCommandReceipt(message.user_id, occurrenceCommandId)
         : null;
 
       if (teammateContext && data.occurrenceId && !acceptedRun) {
@@ -206,7 +208,7 @@ export class RecipeExecutionHandler implements TaskHandler {
 
     const executionRunReceipt = execution.response.run?.run;
     const executionRun = executionRunReceipt
-      ? await context.repositories.conversationRuns.getById(executionRunReceipt.id)
+      ? await context.repositories.get(ConversationRunRepository).getById(executionRunReceipt.id)
       : null;
 
     if (teammate && executionRun) {

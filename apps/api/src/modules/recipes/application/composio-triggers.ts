@@ -17,6 +17,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RecipeComposioTriggerRecord } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeComposioTriggerRepository } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
 
 import { requireOwnedRecipeInstallation } from "./owned-installation";
 
@@ -160,7 +161,7 @@ export async function createRecipeComposioTrigger(params: {
 
   try {
     return toTrigger(
-      await params.context.repositories.recipeComposioTriggers.createTrigger({
+      await params.context.repositories.get(RecipeComposioTriggerRepository).createTrigger({
         installationId: record.id,
         createdByUserId: params.userId,
         projectId: record.project_id,
@@ -174,10 +175,9 @@ export async function createRecipeComposioTrigger(params: {
       }),
     );
   } catch (error) {
-    const existing =
-      await params.context.repositories.recipeComposioTriggers.getTriggerByExternalId(
-        remote.triggerId,
-      );
+    const existing = await params.context.repositories
+      .get(RecipeComposioTriggerRepository)
+      .getTriggerByExternalId(remote.triggerId);
 
     if (
       ownsResource(params.userId, existing?.created_by_user_id) &&
@@ -200,10 +200,9 @@ export async function listRecipeComposioTriggers(params: {
   installationId: string;
 }): Promise<{ triggers: RecipeComposioTrigger[] }> {
   await requireOwnedRecipeInstallation(params);
-  const records = await params.context.repositories.recipeComposioTriggers.listInstallationTriggers(
-    params.installationId,
-    params.userId,
-  );
+  const records = await params.context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .listInstallationTriggers(params.installationId, params.userId);
 
   return { triggers: records.map(toTrigger) };
 }
@@ -214,10 +213,9 @@ export async function setRecipeComposioTriggerStatus(params: {
   triggerId: string;
   status: "active" | "paused";
 }): Promise<RecipeComposioTrigger | null> {
-  const trigger = await params.context.repositories.recipeComposioTriggers.getTriggerForOwner(
-    params.triggerId,
-    params.userId,
-  );
+  const trigger = await params.context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .getTriggerForOwner(params.triggerId, params.userId);
 
   if (!trigger) {
     return null;
@@ -233,11 +231,9 @@ export async function setRecipeComposioTriggerStatus(params: {
     triggerId: trigger.external_trigger_id,
     enabled: params.status === "active",
   });
-  const updated = await params.context.repositories.recipeComposioTriggers.updateStatus(
-    trigger.id,
-    params.userId,
-    params.status,
-  );
+  const updated = await params.context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .updateStatus(trigger.id, params.userId, params.status);
 
   return updated ? toTrigger(updated) : null;
 }
@@ -247,10 +243,9 @@ export async function deleteRecipeComposioTrigger(params: {
   userId: number;
   triggerId: string;
 }): Promise<boolean> {
-  const trigger = await params.context.repositories.recipeComposioTriggers.getTriggerForOwner(
-    params.triggerId,
-    params.userId,
-  );
+  const trigger = await params.context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .getTriggerForOwner(params.triggerId, params.userId);
 
   if (!trigger) {
     return false;
@@ -266,8 +261,7 @@ export async function deleteRecipeComposioTrigger(params: {
     triggerId: trigger.external_trigger_id,
   });
 
-  return params.context.repositories.recipeComposioTriggers.deleteTrigger(
-    trigger.id,
-    params.userId,
-  );
+  return params.context.repositories
+    .get(RecipeComposioTriggerRepository)
+    .deleteTrigger(trigger.id, params.userId);
 }

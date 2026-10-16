@@ -5,6 +5,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv } from "~/types";
 
 const DRAWING_OUTPUT_KIND = "drawing";
@@ -37,7 +38,7 @@ export async function listDrawings({
   const serviceContext = resolveServiceContext({ context, env });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const list = projectId
     ? await repo.listProjectOutputs(projectId, "drawings", { kind: DRAWING_OUTPUT_KIND })
     : await repo.listPersonalOutputs(userId, "drawings", { kind: DRAWING_OUTPUT_KIND });

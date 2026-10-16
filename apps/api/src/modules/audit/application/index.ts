@@ -3,7 +3,9 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { WorkspaceAuditRecordRow } from "~/modules/audit/infrastructure/AuditRepository";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export function formatAuditRecord(record: WorkspaceAuditRecordRow): WorkspaceAuditRecord {
   return {
@@ -25,7 +27,7 @@ export async function listWorkspaceAudit(
 ) {
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
 
-  const rows = await context.repositories.audit.listRecords(workspaceId, {
+  const rows = await context.repositories.get(AuditRepository).listRecords(workspaceId, {
     ...options,
     limit: options.limit + 1,
   });
@@ -36,16 +38,15 @@ export async function listWorkspaceAudit(
 export async function recordProjectAudit(
   context: ServiceContext,
   projectId: string,
-  input: Omit<
-    Parameters<ServiceContext["repositories"]["audit"]["createRecord"]>[0],
-    "workspaceId"
-  >,
+  input: Omit<Parameters<AuditRepository["createRecord"]>[0], "workspaceId">,
 ) {
-  const project = await context.repositories.workspaces.getProject(projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
 
   if (!project) {
     return;
   }
 
-  await context.repositories.audit.createRecord({ ...input, workspaceId: project.workspace_id });
+  await context.repositories
+    .get(AuditRepository)
+    .createRecord({ ...input, workspaceId: project.workspace_id });
 }

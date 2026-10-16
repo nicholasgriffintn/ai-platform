@@ -30,6 +30,11 @@ vi.mock("~/modules/tasks/application/TaskService", () => ({
   },
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
+
 import { handleSmsAssistantWebhook } from "../sms";
 
 const testUser = {
@@ -74,7 +79,11 @@ function prepareServiceContext() {
   mocks.createServiceContext.mockReturnValue({
     env: { DB: {}, API_BASE_URL: "https://api.polychat.test" },
     database: {},
-    repositories,
+    repositories: fakeRepositories([
+      [UserSettingsRepository, repositories.userSettings],
+      [UserRepository, repositories.users],
+      [TaskRepository, repositories.tasks],
+    ]),
     requestCache: new Map(),
   });
 

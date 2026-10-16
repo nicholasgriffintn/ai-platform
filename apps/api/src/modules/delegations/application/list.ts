@@ -8,7 +8,10 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { filterAccessibleOutputs } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 
 import { canControlAnyDelegation } from "./authority";
 
@@ -20,7 +23,7 @@ async function resolveOutputReferences(
   const outputIds = [
     ...new Set(delegations.flatMap((delegation) => delegation.result?.outputIds ?? [])),
   ];
-  const records = await context.repositories.outputs.getOutputsByIds(outputIds);
+  const records = await context.repositories.get(OutputRepository).getOutputsByIds(outputIds);
   const outputs = await filterAccessibleOutputs(context, userId, records);
 
   return outputs.map((output): DelegationOutputReference => ({
@@ -36,7 +39,9 @@ async function resolveTeammateReferences(
   delegations: readonly Delegation[],
 ): Promise<DelegationTeammateReference[]> {
   const teammateIds = [...new Set(delegations.map((delegation) => delegation.teammateId))];
-  const teammates = await context.repositories.teammates.getTeammatesByIds(teammateIds);
+  const teammates = await context.repositories
+    .get(TeammateRepository)
+    .getTeammatesByIds(teammateIds);
 
   return teammates.map((teammate) => ({
     id: teammate.id,
@@ -56,8 +61,9 @@ export async function listDelegationsWithReferences(
   }
 > {
   const user = context.requireUser();
-  const delegations =
-    await context.repositories.delegations.listByParentConversationId(parentConversationId);
+  const delegations = await context.repositories
+    .get(DelegationRepository)
+    .listByParentConversationId(parentConversationId);
   const [teammates, outputs, canControl] = await Promise.all([
     resolveTeammateReferences(context, delegations),
     resolveOutputReferences(context, delegations, user.id),

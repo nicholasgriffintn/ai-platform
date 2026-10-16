@@ -4,7 +4,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 
 import { verifyCaptchaToken } from "~/infrastructure/captcha";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 
 const logger = getLogger({ prefix: "middleware/captchaMiddleware" });
 
@@ -88,27 +88,17 @@ export async function validateCaptcha(c: Context, next: Next) {
   }
 
   try {
-    let repositories: RepositoryManager | null = null;
-    const getRepositories = () => {
-      if (!repositories) {
-        repositories = RepositoryManager.getInstance(c.env);
-      }
-
-      return repositories;
-    };
+    const anonymousUsers = new AnonymousUserRepository(c.env);
 
     if (anonymousUser) {
-      await getRepositories().anonymousUsers.updateAnonymousUser(anonymousUser.id, {
+      await anonymousUsers.updateAnonymousUser(anonymousUser.id, {
         captcha_verified: 1,
       });
     } else {
-      const createdAnonymousUser = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
-        userIP,
-        userAgent,
-      );
+      const createdAnonymousUser = await anonymousUsers.getOrCreateAnonymousUser(userIP, userAgent);
 
       if (createdAnonymousUser) {
-        await getRepositories().anonymousUsers.updateAnonymousUser(createdAnonymousUser.id, {
+        await anonymousUsers.updateAnonymousUser(createdAnonymousUser.id, {
           captcha_verified: 1,
         });
 

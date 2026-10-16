@@ -2,7 +2,8 @@ import { isDuplicateMeterEventError } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { MICRO_CREDITS_PER_CREDIT, usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 
 const logger = getLogger({ prefix: "services/subscription/stripeOverageSync" });
 
@@ -54,14 +55,16 @@ export function computeOverageSyncDelta(
 }
 
 export async function runStripeOverageSync(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   stripe: MeterEventClient,
   now: Date = new Date(),
 ): Promise<StripeOverageSyncResult> {
   const period = usagePeriodFromDate(now);
   const hourIso = overageSyncHourIso(now);
   const timestamp = Math.floor(Date.parse(hourIso) / 1000);
-  const candidates = await repositories.usageBalances.listOverageSyncCandidates(period);
+  const candidates = await repositories
+    .get(UsageBalanceRepository)
+    .listOverageSyncCandidates(period);
 
   const result: StripeOverageSyncResult = {
     candidates: candidates.length,
@@ -105,19 +108,15 @@ export async function runStripeOverageSync(
         },
       });
 
-      await repositories.usageBalances.recordStripeSyncedOverage(
-        candidate.user_id,
-        candidate.period,
-        delta.syncedMicros,
-      );
+      await repositories
+        .get(UsageBalanceRepository)
+        .recordStripeSyncedOverage(candidate.user_id, candidate.period, delta.syncedMicros);
       result.sent += 1;
     } catch (error) {
       if (isDuplicateMeterEventError(error)) {
-        await repositories.usageBalances.recordStripeSyncedOverage(
-          candidate.user_id,
-          candidate.period,
-          delta.syncedMicros,
-        );
+        await repositories
+          .get(UsageBalanceRepository)
+          .recordStripeSyncedOverage(candidate.user_id, candidate.period, delta.syncedMicros);
         result.markedAfterDuplicate += 1;
         logger.warn("Meter event already existed for this hour, marked overage as synced", {
           userId: candidate.user_id,

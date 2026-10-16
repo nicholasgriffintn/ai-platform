@@ -3,6 +3,7 @@ import { userQuestionsSchema, type DelegationResult } from "@ngriffin_uk/polycha
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { filterAccessibleOutputs } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 type DelegationResultMessage = {
   content?: unknown;
@@ -16,7 +17,9 @@ export async function listDelegationResultOutputIds(
   context: ServiceContext,
   runId: string | undefined,
 ): Promise<string[]> {
-  const outputs = runId ? await context.repositories.outputs.listOutputsForRun(runId) : [];
+  const outputs = runId
+    ? await context.repositories.get(OutputRepository).listOutputsForRun(runId)
+    : [];
   const accessibleOutputs = context.user
     ? await filterAccessibleOutputs(context, context.user.id, outputs)
     : [];

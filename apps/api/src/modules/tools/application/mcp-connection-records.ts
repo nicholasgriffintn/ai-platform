@@ -5,6 +5,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 export const MCP_TOKEN_CONNECTION_KIND = "mcp_bearer";
 export const MCP_OAUTH_CONNECTION_KIND = "mcp_oauth";
@@ -37,7 +38,9 @@ export function connectionKey(context: ServiceContext): string {
 }
 
 export async function requireConnection(context: ServiceContext, connectionId: string) {
-  const connection = await context.repositories.providerConnections.getConnectionById(connectionId);
+  const connection = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionById(connectionId);
 
   if (
     !connection ||

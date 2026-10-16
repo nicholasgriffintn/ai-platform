@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";
@@ -26,11 +27,12 @@ export async function readPendingInteractionMessage<TInteraction>(params: {
   parse: (data: Record<string, unknown>) => TInteraction | null;
 }): Promise<PendingInteractionMessage<TInteraction> | null> {
   const message = params.toolNames
-    ? await params.context.repositories.messages.getLatestPendingToolMessage(
-        params.conversationId,
-        params.toolNames,
-      )
-    : await params.context.repositories.messages.getLatestPendingToolMessage(params.conversationId);
+    ? await params.context.repositories
+        .get(MessageRepository)
+        .getLatestPendingToolMessage(params.conversationId, params.toolNames)
+    : await params.context.repositories
+        .get(MessageRepository)
+        .getLatestPendingToolMessage(params.conversationId);
   const data = readInteractionMessageData(message?.data);
   const interaction = data ? params.parse(data) : null;
 
@@ -106,16 +108,14 @@ export async function resolvePendingInteraction<TInteraction>(params: {
       };
 
       await lease.assertOwned();
-      await params.context.repositories.messages.updateMessage(
-        params.conversationId,
-        current.messageId,
-        {
+      await params.context.repositories
+        .get(MessageRepository)
+        .updateMessage(params.conversationId, current.messageId, {
           content: toolMessage.content,
           status: toolMessage.status,
           data: resolution.data,
           parts: buildMessageParts(toolMessage),
-        },
-      );
+        });
 
       const conversationManager = ConversationManager.getInstance({
         database: params.context.database,

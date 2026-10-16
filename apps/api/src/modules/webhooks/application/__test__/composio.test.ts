@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { RecipeComposioTriggerRepository } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
+import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+
 import { handleComposioWebhook } from "../composio";
 
 const createServiceContextMock = vi.hoisted(() => vi.fn());
@@ -75,43 +83,52 @@ describe("Composio webhook", () => {
     });
     updateTask.mockResolvedValue({ id: "task_1", max_attempts: 3 });
     createServiceContextMock.mockReturnValue({
-      repositories: {
-        recipeComposioTriggers: {
-          getTriggerByExternalId: async () => ({
-            id: "local_trigger_1",
-            installation_id: "installation_1",
-            created_by_user_id: 42,
-            project_id: "project_1",
-            status: "active",
-            external_user_id: "polychat:test:user:42",
-            connected_account_id: "ca_1",
-            trigger_slug: "GMAIL_NEW_GMAIL_MESSAGE",
-            condition: null,
-          }),
-          markConnectedAccountError,
-        },
-        recipeEventReceipts: {
-          claimEvent: async () => ({ status: "execute", executionToken: "lease_1" }),
-          settleEvent: async () => true,
-        },
-        providerConnections: { markExternalConnectionInvalid },
-        templates: {
-          getTemplateById: vi.fn().mockResolvedValue({
-            id: "installation_1",
-            kind: "recipe",
-            status: "active",
-            created_by_user_id: 42,
-            project_id: "project_1",
-            capability_id: "morning-briefing",
-            configuration: JSON.stringify({
-              recipeId: "morning-briefing",
-              configuration: { briefingFocus: "priority mail" },
+      repositories: fakeRepositories([
+        [
+          RecipeComposioTriggerRepository,
+          {
+            getTriggerByExternalId: async () => ({
+              id: "local_trigger_1",
+              installation_id: "installation_1",
+              created_by_user_id: 42,
+              project_id: "project_1",
+              status: "active",
+              external_user_id: "polychat:test:user:42",
+              connected_account_id: "ca_1",
+              trigger_slug: "GMAIL_NEW_GMAIL_MESSAGE",
+              condition: null,
             }),
-          }),
-        },
-        tasks: { createTaskIfAbsent, updateTask, getTaskById: async () => null },
-        users: { getUserById: async () => ({ id: 42, plan_id: "pro" }) },
-      },
+            markConnectedAccountError,
+          },
+        ],
+        [
+          RecipeEventReceiptRepository,
+          {
+            claimEvent: async () => ({ status: "execute", executionToken: "lease_1" }),
+            settleEvent: async () => true,
+          },
+        ],
+        [ProviderConnectionRepository, { markExternalConnectionInvalid }],
+        [
+          TemplateRepository,
+          {
+            getTemplateById: vi.fn().mockResolvedValue({
+              id: "installation_1",
+              kind: "recipe",
+              status: "active",
+              created_by_user_id: 42,
+              project_id: "project_1",
+              capability_id: "morning-briefing",
+              configuration: JSON.stringify({
+                recipeId: "morning-briefing",
+                configuration: { briefingFocus: "priority mail" },
+              }),
+            }),
+          },
+        ],
+        [TaskRepository, { createTaskIfAbsent, updateTask, getTaskById: async () => null }],
+        [UserRepository, { getUserById: async () => ({ id: 42, plan_id: "pro" }) }],
+      ]),
     });
   });
 

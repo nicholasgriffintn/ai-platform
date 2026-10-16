@@ -2,6 +2,8 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import {
   assertValidTranscriptionFile,
@@ -53,17 +55,20 @@ describe("transcription input policy", () => {
         API_BASE_URL: "https://api.polychat.test",
         PRIVATE_ASSETS_BUCKET: { get: bucketGet },
       },
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue({
-            id: "source-1",
-            storage_key: "private/source-1.webm",
-            mime_type: "audio/webm",
-            project_id: null,
-            created_by_user_id: 7,
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue({
+              id: "source-1",
+              storage_key: "private/source-1.webm",
+              mime_type: "audio/webm",
+              project_id: null,
+              created_by_user_id: 7,
+            }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(

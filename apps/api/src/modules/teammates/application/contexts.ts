@@ -16,7 +16,10 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { formatMemoryDocument } from "~/modules/memory-documents/application/memory-documents";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { requireScopedTeammateAccess, requireTeammateAccess } from "./access";
@@ -43,7 +46,9 @@ export async function listTeammateContexts(
 ): Promise<{ contexts: TeammateContext[] }> {
   const user = context.requireUser();
 
-  const contexts = await context.repositories.teammateContexts.listForTeammate(teammateId, user.id);
+  const contexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listForTeammate(teammateId, user.id);
 
   if (contexts.length === 0) {
     await requireTeammateAccess(context, teammateId, "read", user.id);
@@ -68,7 +73,7 @@ export async function ensureTeammateContext(
   await requireContextScope(context, scope, user.id);
   await requireScopedTeammateAccess(context, teammateId, scope, user.id);
 
-  const existing = await context.repositories.teammateContexts.getByIdentity({
+  const existing = await context.repositories.get(TeammateContextRepository).getByIdentity({
     teammateId,
     actorUserId: user.id,
     scope,
@@ -83,7 +88,7 @@ export async function ensureTeammateContext(
   const memoryDocumentId = generateId();
 
   try {
-    return await context.repositories.teammateContexts.createWithResources({
+    return await context.repositories.get(TeammateContextRepository).createWithResources({
       id: contextId,
       teammateId,
       actorUserId: user.id,
@@ -95,7 +100,7 @@ export async function ensureTeammateContext(
       memoryDocumentName: `teammate-${generateId().toLowerCase()}`,
     });
   } catch (error) {
-    const raced = await context.repositories.teammateContexts.getByIdentity({
+    const raced = await context.repositories.get(TeammateContextRepository).getByIdentity({
       teammateId,
       actorUserId: user.id,
       scope,
@@ -128,7 +133,9 @@ export async function requireOwnedTeammateContext(
   contextId: string,
 ): Promise<TeammateContext> {
   const user = context.requireUser();
-  const teammateContext = await context.repositories.teammateContexts.getById(contextId);
+  const teammateContext = await context.repositories
+    .get(TeammateContextRepository)
+    .getById(contextId);
 
   if (!teammateContext || !ownsResource(user.id, teammateContext.actorUserId)) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
@@ -160,9 +167,9 @@ export async function requireTeammateContext(
 
 async function requireContextMemoryDocument(context: ServiceContext, contextId: string) {
   const teammateContext = await requireTeammateContext(context, contextId);
-  const document = await context.repositories.memoryDocuments.getDocumentById(
-    teammateContext.memoryDocumentId,
-  );
+  const document = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentById(teammateContext.memoryDocumentId);
 
   if (
     !document ||
@@ -189,7 +196,7 @@ export async function updateTeammateContextMemory(
 ): Promise<MemoryDocument> {
   const user = context.requireUser();
   const document = await requireContextMemoryDocument(context, contextId);
-  const updated = await context.repositories.memoryDocuments.appendRevision({
+  const updated = await context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: document.id,
     content: input.content,
     changeNote: input.changeNote ?? null,
@@ -213,9 +220,9 @@ export async function listTeammateConnectionGrants(
   contextId: string,
 ): Promise<TeammateConnectionGrantListResponse> {
   const teammateContext = await requireTeammateContext(context, contextId);
-  const records = await context.repositories.providerConnections.listConnections(
-    teammateContext.actorUserId,
-  );
+  const records = await context.repositories
+    .get(ProviderConnectionRepository)
+    .listConnections(teammateContext.actorUserId);
   const connections = records.flatMap((connection) => {
     const provider = getConnectorProviderConfig(connection.provider);
 
@@ -245,7 +252,9 @@ export async function listTeammateConnectionGrants(
   });
 
   return {
-    grants: await context.repositories.teammateContexts.listConnectionGrants(contextId),
+    grants: await context.repositories
+      .get(TeammateContextRepository)
+      .listConnectionGrants(contextId),
     connections,
   };
 }
@@ -263,9 +272,9 @@ export async function upsertTeammateConnectionGrant(
 
   await requireTeammateContext(context, contextId);
 
-  const connection = await context.repositories.providerConnections.getConnectionById(
-    input.connectionId,
-  );
+  const connection = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionById(input.connectionId);
 
   if (
     !connection ||
@@ -305,8 +314,9 @@ export async function upsertTeammateConnectionGrant(
   }
 
   if (allowedOperations.length > 0) {
-    const existingGrants =
-      await context.repositories.teammateContexts.listConnectionGrants(contextId);
+    const existingGrants = await context.repositories
+      .get(TeammateContextRepository)
+      .listConnectionGrants(contextId);
     const competingConnections = await Promise.all(
       existingGrants
         .filter(
@@ -314,7 +324,9 @@ export async function upsertTeammateConnectionGrant(
             grant.connectionId !== input.connectionId && grant.allowedOperations.length > 0,
         )
         .map((grant) =>
-          context.repositories.providerConnections.getConnectionById(grant.connectionId),
+          context.repositories
+            .get(ProviderConnectionRepository)
+            .getConnectionById(grant.connectionId),
         ),
     );
 
@@ -327,7 +339,7 @@ export async function upsertTeammateConnectionGrant(
     }
   }
 
-  const grant = await context.repositories.teammateContexts.upsertConnectionGrant({
+  const grant = await context.repositories.get(TeammateContextRepository).upsertConnectionGrant({
     contextId,
     connectionId: input.connectionId,
     allowedOperations,

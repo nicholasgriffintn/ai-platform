@@ -6,11 +6,11 @@ import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getAudioProvider } from "~/infrastructure/providers/capabilities/audio";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { StorageService } from "~/infrastructure/storage";
 import { requiresAuthenticatedSpeechProvider } from "~/modules/audio/application/access";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { prepareSpeechInput } from "./input";
@@ -65,8 +65,9 @@ async function resolveSpeechSettings({
     };
   }
 
-  const repositories = new RepositoryManager(env);
-  const userSettings = user?.id ? await repositories.userSettings.getUserSettings(user.id) : null;
+  const userSettings = user?.id
+    ? await new UserSettingsRepository(env).getUserSettings(user.id)
+    : null;
   const settingsProvider = userSettings?.speech_provider;
   const resolvedProvider = isSpeechProvider(settingsProvider) ? settingsProvider : "melotts";
 

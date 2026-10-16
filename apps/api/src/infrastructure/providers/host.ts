@@ -6,7 +6,6 @@ import type {
 } from "@ngriffin_uk/polychat-ai-providers";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { StorageService } from "~/infrastructure/storage";
 import { providerMetrics } from "~/infrastructure/telemetry";
 import {
@@ -104,7 +103,7 @@ export const providerHost: ProviderHost = {
     getAuxiliarySpeechModel: async (env, user) => {
       const apiUser = asUser(user);
       const userSettings = apiUser?.id
-        ? await new RepositoryManager(asEnv(env)).userSettings.getUserSettings(apiUser.id)
+        ? await new UserSettingsRepository(asEnv(env)).getUserSettings(apiUser.id)
         : null;
 
       return getAuxiliarySpeechModel(asEnv(env), userSettings ?? undefined, apiUser);

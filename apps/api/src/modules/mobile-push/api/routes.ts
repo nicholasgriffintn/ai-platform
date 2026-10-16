@@ -5,6 +5,7 @@ import {
 import { Hono } from "hono";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 
 const app = new Hono();
 
@@ -16,7 +17,7 @@ defineResource(app, { idParam: "device_id", tags: ["devices"] }, (devices) => {
       description: "Registering the same token again refreshes it.",
       bodySchema: registerMobilePushDeviceSchema,
       handler: async ({ body, serviceContext, user }) => {
-        await serviceContext.repositories.mobilePush.register(user.id, body);
+        await serviceContext.repositories.get(MobilePushRepository).register(user.id, body);
 
         return { id: body.token, registered: true };
       },
@@ -27,7 +28,9 @@ defineResource(app, { idParam: "device_id", tags: ["devices"] }, (devices) => {
       description: "The device id is the push token it registered with.",
       paramSchema: mobilePushDeviceParamsSchema,
       handler: async ({ params, serviceContext, user }) => {
-        await serviceContext.repositories.mobilePush.unregister(user.id, params.device_id);
+        await serviceContext.repositories
+          .get(MobilePushRepository)
+          .unregister(user.id, params.device_id);
 
         return { deleted: true };
       },

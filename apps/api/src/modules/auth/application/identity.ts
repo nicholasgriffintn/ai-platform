@@ -8,16 +8,16 @@ import {
   toAssistantAuthUser,
 } from "~/modules/auth/application/authUser";
 import { resolveGitHubUser } from "~/modules/auth/application/github";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 export function createAssistantIdentityStore(
   context: ServiceContext,
 ): IdentityStore<AssistantAuthUser> {
   return {
     async findUser(provider, providerSubject) {
-      const user = await context.repositories.users.getUserByOauthAccount(
-        provider,
-        providerSubject,
-      );
+      const user = await context.repositories
+        .get(UserRepository)
+        .getUserByOauthAccount(provider, providerSubject);
 
       return user ? toAssistantAuthUser(user) : null;
     },
@@ -43,10 +43,9 @@ async function resolveAppleUser(
   context: ServiceContext,
   identity: ExternalIdentity,
 ): Promise<AssistantAuthUser> {
-  const existing = await context.repositories.users.getUserByOauthAccount(
-    "apple",
-    identity.providerSubject,
-  );
+  const existing = await context.repositories
+    .get(UserRepository)
+    .getUserByOauthAccount("apple", identity.providerSubject);
   const name = getStringRecordValue(identity.claims, "name");
 
   if (existing) {
@@ -61,10 +60,10 @@ async function resolveAppleUser(
     }
 
     if (Object.keys(updates).length > 0) {
-      await context.repositories.users.updateUser(existing.id, updates);
+      await context.repositories.get(UserRepository).updateUser(existing.id, updates);
     }
 
-    const updated = await context.repositories.users.getUserById(existing.id);
+    const updated = await context.repositories.get(UserRepository).getUserById(existing.id);
 
     return toAssistantAuthUser(updated ?? existing);
   }
@@ -73,24 +72,22 @@ async function resolveAppleUser(
     throw new TypeError("A verified Apple email address is required for first sign-in.");
   }
 
-  const emailUser = await context.repositories.users.getUserByEmail(identity.email);
+  const emailUser = await context.repositories.get(UserRepository).getUserByEmail(identity.email);
 
   if (emailUser) {
-    await context.repositories.users.createOauthAccount(
-      emailUser.id,
-      "apple",
-      identity.providerSubject,
-    );
+    await context.repositories
+      .get(UserRepository)
+      .createOauthAccount(emailUser.id, "apple", identity.providerSubject);
     if (name) {
-      await context.repositories.users.updateUser(emailUser.id, { name });
+      await context.repositories.get(UserRepository).updateUser(emailUser.id, { name });
     }
 
-    const updated = await context.repositories.users.getUserById(emailUser.id);
+    const updated = await context.repositories.get(UserRepository).getUserById(emailUser.id);
 
     return toAssistantAuthUser(updated ?? emailUser);
   }
 
-  const created = await context.repositories.users.createUser({
+  const created = await context.repositories.get(UserRepository).createUser({
     email: identity.email,
     name,
   });
@@ -99,11 +96,9 @@ async function resolveAppleUser(
     throw new TypeError("Apple user creation failed.");
   }
 
-  await context.repositories.users.createOauthAccount(
-    created.id,
-    "apple",
-    identity.providerSubject,
-  );
+  await context.repositories
+    .get(UserRepository)
+    .createOauthAccount(created.id, "apple", identity.providerSubject);
   await initialiseAssistantUser(context, created.id);
 
   return toAssistantAuthUser(created);

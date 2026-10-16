@@ -2,6 +2,7 @@ import { recipeExecutionTaskDataSchema, type ChatRun } from "@ngriffin_uk/polych
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 const RECIPE_CONVERSATION_PREFIX = "recipe_";
 
@@ -28,7 +29,7 @@ export async function reconcileRecipeExecutionTask(
     return;
   }
 
-  const task = await context.repositories.tasks.getTaskById(taskId);
+  const task = await context.repositories.get(TaskRepository).getTaskById(taskId);
 
   if (!recipeExecutionTaskDataSchema.safeParse(task?.task_data).success) {
     return;
@@ -41,7 +42,7 @@ export async function reconcileRecipeExecutionTask(
   const status =
     run.status === "succeeded" ? "completed" : run.status === "cancelled" ? "cancelled" : "failed";
 
-  await context.repositories.tasks.settleSuspendedRecipeTask({
+  await context.repositories.get(TaskRepository).settleSuspendedRecipeTask({
     taskId,
     userId: run.initiatorUserId,
     status,

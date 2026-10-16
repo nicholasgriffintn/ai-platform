@@ -2,6 +2,7 @@ import { teammateContextCleanupTaskDataSchema } from "@ngriffin_uk/polychat-sche
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { revokeTeammateContextResources } from "~/modules/teammates/application/computers";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -12,7 +13,7 @@ export class TeammateContextCleanupHandler implements TaskHandler {
     const context = createServiceContext({ env });
     const teammateContexts = await Promise.all(
       payload.contextIds.map((contextId) =>
-        context.repositories.teammateContexts.getById(contextId),
+        context.repositories.get(TeammateContextRepository).getById(contextId),
       ),
     );
     const activeContexts = teammateContexts.filter((item) => item?.status === "active");

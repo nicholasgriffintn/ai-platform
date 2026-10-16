@@ -27,7 +27,9 @@ import { providerRuntime } from "~/infrastructure/providers/runtime";
 import { readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { createOutput, getOutput, updateOutput } from "~/modules/outputs/application";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IUser } from "~/types";
 
@@ -223,7 +225,7 @@ export async function startOcrBatch(
 
   try {
     if (sourceIds.length > 0) {
-      await context.repositories.outputs.attachSources(created.id, sourceIds);
+      await context.repositories.get(OutputRepository).attachSources(created.id, sourceIds);
     }
 
     const job = await batchClient.start({
@@ -251,7 +253,7 @@ export async function startOcrBatch(
       },
     });
 
-    const taskService = new TaskService(context.env, context.repositories.tasks);
+    const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
 
     await taskService.enqueueTask({
       id: `ocr-batch:${created.id}:0`,
@@ -337,7 +339,7 @@ export async function startOcrBatch(
       }
     }
 
-    const taskService = new TaskService(context.env, context.repositories.tasks);
+    const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
 
     await taskService.enqueueTask({
       id: `ocr-batch:${created.id}:reconcile`,

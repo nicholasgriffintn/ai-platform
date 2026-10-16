@@ -11,6 +11,8 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { connectTaskReview } from "../infrastructure/integrations";
@@ -45,10 +47,9 @@ async function resolvePolicy(
   const parsed = reviewPolicyInputSchema.parse(input);
 
   if (parsed.enabled === false) {
-    const existing = await context.repositories.projectTaskIntegrations.getPolicy(
-      parsed.id,
-      projectId,
-    );
+    const existing = await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getPolicy(parsed.id, projectId);
 
     if (!existing || existing.workspaceId !== workspaceId) {
       throw new AssistantError("Review policy not found", ErrorType.NOT_FOUND, 404);
@@ -92,8 +93,8 @@ export async function setProjectReviewPolicy(
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
   const policy = await resolvePolicy(context, projectId, project.workspace_id, input);
 
-  await context.repositories.projectTaskIntegrations.setPolicy(policy);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ProjectTaskIntegrationRepository).setPolicy(policy);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: context.requireUser().id,
     action: "project.review.policy_changed",
@@ -141,10 +142,9 @@ export async function assertReviewDispatchAuthority(
     return;
   }
 
-  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
-    task.id,
-    task.projectId,
-  );
+  const review = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReviewForTask(task.id, task.projectId);
 
   if (!review || review.workspaceId !== task.workspaceId) {
     throw new AssistantError("The review target is unavailable", ErrorType.NOT_FOUND, 404);
@@ -152,10 +152,9 @@ export async function assertReviewDispatchAuthority(
 
   if (review.policyId) {
     await requireProjectAccess(context, task.projectId, ["owner", "admin"]);
-    const policy = await context.repositories.projectTaskIntegrations.getPolicy(
-      review.policyId,
-      task.projectId,
-    );
+    const policy = await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getPolicy(review.policyId, task.projectId);
 
     if (
       !policy ||

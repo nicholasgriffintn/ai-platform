@@ -18,9 +18,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listRecipeConnectors } from "~/modules/connectors/application";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { requireTeammateContext } from "~/modules/teammates/application/contexts";
 import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { createRecipeCapabilityDescriptor } from "./capabilities";
 import {
@@ -114,7 +117,9 @@ export async function requireEnabledProjectRecipe(
   recipeId: string,
 ): Promise<void> {
   await requireProjectAccess(context, projectId);
-  const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+  const capabilities = await context.repositories
+    .get(WorkspaceRepository)
+    .listProjectCapabilities(projectId);
 
   if (
     !capabilities.some(
@@ -341,7 +346,9 @@ async function getRecipeInstallationRecord(params: {
   userId: number;
   installationId: string;
 }): Promise<{ record: RecipeInstallationRecord; data: StoredRecipeInstallationData } | null> {
-  const record = await params.context.repositories.templates.getTemplateById(params.installationId);
+  const record = await params.context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(params.installationId);
 
   if (
     !record ||
@@ -372,17 +379,12 @@ async function findRecipeInstallationRecord(params: {
 }): Promise<RecipeInstallationRecord | null> {
   for (const recipeId of getRecipeIdAliases(params.recipeId)) {
     const record = params.projectId
-      ? await params.context.repositories.templates.getProjectTemplate(
-          params.userId,
-          params.projectId,
-          "recipe",
-          recipeId,
-        )
-      : await params.context.repositories.templates.getPersonalTemplate(
-          params.userId,
-          "recipe",
-          recipeId,
-        );
+      ? await params.context.repositories
+          .get(TemplateRepository)
+          .getProjectTemplate(params.userId, params.projectId, "recipe", recipeId)
+      : await params.context.repositories
+          .get(TemplateRepository)
+          .getPersonalTemplate(params.userId, "recipe", recipeId);
 
     if (record) {
       return record;
@@ -479,12 +481,14 @@ async function upsertRecipeInstallation(params: {
   };
 
   if (existing) {
-    const updated = await params.context.repositories.templates.updateTemplate(existing.id, {
-      name: params.recipe.title,
-      capabilityId: params.recipe.id,
-      configuration: data,
-      status: data.status,
-    });
+    const updated = await params.context.repositories
+      .get(TemplateRepository)
+      .updateTemplate(existing.id, {
+        name: params.recipe.title,
+        capabilityId: params.recipe.id,
+        configuration: data,
+        status: data.status,
+      });
 
     if (updated) {
       const parsed = parseRecipeInstallationRecord(updated);
@@ -495,7 +499,7 @@ async function upsertRecipeInstallation(params: {
     }
   }
 
-  const created = await params.context.repositories.templates.createTemplate({
+  const created = await params.context.repositories.get(TemplateRepository).createTemplate({
     createdByUserId: params.userId,
     projectId: params.projectId,
     kind: "recipe",
@@ -533,8 +537,12 @@ export async function listRecipeInstallations(params: {
   params.context.ensureDatabase();
   const records = params.projectId
     ? (await requireProjectAccess(params.context, params.projectId),
-      await params.context.repositories.templates.listProjectTemplates(params.projectId, "recipe"))
-    : await params.context.repositories.templates.listPersonalTemplates(params.userId, "recipe");
+      await params.context.repositories
+        .get(TemplateRepository)
+        .listProjectTemplates(params.projectId, "recipe"))
+    : await params.context.repositories
+        .get(TemplateRepository)
+        .listPersonalTemplates(params.userId, "recipe");
 
   return {
     installations: records
@@ -667,10 +675,12 @@ export async function updateRecipeInstallation(params: {
     });
   }
 
-  const updated = await params.context.repositories.templates.updateTemplate(existing.record.id, {
-    configuration: data,
-    status: data.status,
-  });
+  const updated = await params.context.repositories
+    .get(TemplateRepository)
+    .updateTemplate(existing.record.id, {
+      configuration: data,
+      status: data.status,
+    });
 
   if (params.update.status && params.update.status !== existing.data.status) {
     await syncRecipeComposioTriggerStatus({
@@ -707,7 +717,7 @@ export async function deleteRecipeInstallation(params: {
     installationId: existing.record.id,
   });
 
-  await params.context.repositories.templates.deleteTemplate(existing.record.id);
+  await params.context.repositories.get(TemplateRepository).deleteTemplate(existing.record.id);
 
   return true;
 }
@@ -927,7 +937,10 @@ export async function invokeAssistantRecipe(
   let taskId: string | undefined;
 
   if (options.queue) {
-    const taskService = new TaskService(options.context.env, options.context.repositories.tasks);
+    const taskService = new TaskService(
+      options.context.env,
+      options.context.repositories.get(TaskRepository),
+    );
     const occurrenceId = `manual:${generateId()}`;
 
     taskId = await taskService.enqueueTask({

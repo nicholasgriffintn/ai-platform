@@ -8,6 +8,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { CapabilityConfigurationScope } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 
 import { validateModelToolConfiguration } from "./modelToolConfiguration";
 
@@ -15,7 +16,9 @@ export async function listModelToolConfigurations(
   context: ServiceContext,
   scope: CapabilityConfigurationScope,
 ): Promise<ListPage<SavedToolConfiguration>> {
-  const records = await context.repositories.capabilityConfigurations.list(scope, "tool");
+  const records = await context.repositories
+    .get(CapabilityConfigurationRepository)
+    .list(scope, "tool");
 
   return listPageOf(
     records.flatMap((record) => {
@@ -43,7 +46,7 @@ export async function saveModelToolConfiguration(
   configuration: Record<string, unknown>,
 ): Promise<SavedToolConfiguration> {
   const validated = validateModelToolConfiguration(toolId, configuration);
-  const record = await context.repositories.capabilityConfigurations.save({
+  const record = await context.repositories.get(CapabilityConfigurationRepository).save({
     scope,
     capabilityKind: "tool",
     capabilityId: toolId,

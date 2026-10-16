@@ -7,6 +7,8 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 function assertPresetExists(selection: PetSelection): void {
   if (selection.pet_source === "preset" && !isPetPresetSlug(selection.pet_id)) {
@@ -25,7 +27,7 @@ export async function validatePetSettingsUpdate(
     Object.hasOwn(settings, "pet_source") || Object.hasOwn(settings, "pet_id");
 
   if (changesDefaultPet) {
-    const current = await context.repositories.userSettings.getUserSettings(userId);
+    const current = await context.repositories.get(UserSettingsRepository).getUserSettings(userId);
     const petSource =
       settings.pet_source === "custom" || settings.pet_source === "preset"
         ? settings.pet_source
@@ -64,9 +66,9 @@ export async function validatePetSettingsUpdate(
   );
 
   if (customPetIds.size > 0) {
-    const ownedPetIds = await context.repositories.userPets.listOwnedPetIds(userId, [
-      ...customPetIds,
-    ]);
+    const ownedPetIds = await context.repositories
+      .get(UserPetRepository)
+      .listOwnedPetIds(userId, [...customPetIds]);
 
     for (const petId of customPetIds) {
       if (!ownedPetIds.has(petId)) {

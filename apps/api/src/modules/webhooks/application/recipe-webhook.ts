@@ -7,6 +7,8 @@ import {
   type RecipeEventSubscription,
 } from "~/modules/recipes/application/event-admission";
 import { parseStoredRecipeInstallationData } from "~/modules/recipes/application/installation-persistence";
+import { RecipeWebhookTriggerRepository } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import {
   hashWebhookToken,
   isWellFormedWebhookToken,
@@ -26,7 +28,9 @@ async function resolveSubscription(
   context: ServiceContext,
   tokenHash: string,
 ): Promise<{ subscription: RecipeEventSubscription | null; paused: boolean }> {
-  const trigger = await context.repositories.recipeWebhookTriggers.getTriggerByTokenHash(tokenHash);
+  const trigger = await context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .getTriggerByTokenHash(tokenHash);
 
   if (!trigger) {
     return { subscription: null, paused: false };
@@ -36,9 +40,9 @@ async function resolveSubscription(
     return { subscription: null, paused: true };
   }
 
-  const installation = await context.repositories.templates.getTemplateById(
-    trigger.installation_id,
-  );
+  const installation = await context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(trigger.installation_id);
 
   if (
     !installation ||

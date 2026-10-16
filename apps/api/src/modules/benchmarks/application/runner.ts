@@ -27,10 +27,14 @@ import {
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import { ai } from "~/infrastructure/ai";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { UsageManager } from "~/modules/usage/application/usageManager";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
@@ -74,15 +78,17 @@ export function maxPassesFor(itemsTotal: number): number {
 
 export async function enqueueBenchmarkRunTask(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   runId: string,
   options: { kind: BenchmarkTaskKind; retryChecks?: boolean; itemsTotal?: number },
 ): Promise<boolean> {
   if (options.kind === "continue" || options.kind === "sweep") {
-    const passes = await repositories.tasks.countTasksByIdPrefix(benchmarkTaskPrefix(runId));
+    const passes = await repositories
+      .get(TaskRepository)
+      .countTasksByIdPrefix(benchmarkTaskPrefix(runId));
 
     if (passes >= maxPassesFor(options.itemsTotal ?? 0)) {
-      await repositories.benchmarkRuns.update(runId, {
+      await repositories.get(BenchmarkRunRepository).update(runId, {
         status: "failed",
         failure_reason: `Gave up after ${passes} worker passes without finishing`,
       });
@@ -93,7 +99,7 @@ export async function enqueueBenchmarkRunTask(
 
   const data: BenchmarkRunTaskData = options.retryChecks ? { runId, retryChecks: true } : { runId };
 
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${benchmarkTaskPrefix(runId)}${Date.now()}`,
     task_type: BENCHMARK_RUN_TASK_TYPE,
     task_data: data,
@@ -193,7 +199,7 @@ async function invokeWithRetries(
 
 export interface RunContext {
   env: IEnv;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   run: BenchmarkRunRecord;
   benchmark: Benchmark;
   target: EntrantTarget;
@@ -353,7 +359,7 @@ export class RunProgress {
 
   constructor(
     private readonly store: BenchmarkResultStore,
-    private readonly repositories: RepositoryManager,
+    private readonly repositories: Repositories,
     private readonly runId: string,
     private readonly itemIds: readonly string[],
     stored: readonly BenchmarkItemResult[],
@@ -419,12 +425,13 @@ export class RunProgress {
     const results = this.ordered();
 
     await this.store.writeResults(this.runId, results);
-    await this.repositories.benchmarkRuns.update(this.runId, {
+    await this.repositories.get(BenchmarkRunRepository).update(this.runId, {
       items_completed: this.answeredCount(),
       ...totals(results),
     });
 
-    this.cancelled = (await this.repositories.benchmarkRuns.getStatus(this.runId)) === "cancelled";
+    this.cancelled =
+      (await this.repositories.get(BenchmarkRunRepository).getStatus(this.runId)) === "cancelled";
   }
 }
 
@@ -501,7 +508,7 @@ export async function answerItems(
 }
 
 async function recordWorkspaceEvidence(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: BenchmarkRunRecord,
   benchmark: Benchmark,
   mean: number,
@@ -510,7 +517,7 @@ async function recordWorkspaceEvidence(
     return;
   }
 
-  await repositories.modelGovernance.addEvidence([
+  await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId: run.entrant.versionId,
       routeId: run.entrant.routeId,
@@ -524,16 +531,18 @@ async function recordWorkspaceEvidence(
 }
 
 async function failRun(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   runId: string,
   reason: string,
 ): Promise<{ status: "success"; message: string }> {
-  await repositories.benchmarkRuns.update(runId, { status: "failed", failure_reason: reason });
+  await repositories
+    .get(BenchmarkRunRepository)
+    .update(runId, { status: "failed", failure_reason: reason });
 
   return { status: "success", message: `Benchmark run ${runId} failed: ${reason}` };
 }
 
-async function isOutOfCredit(repositories: RepositoryManager, user: IUser): Promise<boolean> {
+async function isOutOfCredit(repositories: Repositories, user: IUser): Promise<boolean> {
   const limits = await new UsageManager(repositories, user, null).getUsageLimits();
 
   return limits.credits.state === "exhausted";
@@ -541,10 +550,10 @@ async function isOutOfCredit(repositories: RepositoryManager, user: IUser): Prom
 
 export async function executeBenchmarkRun(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   data: BenchmarkRunTaskData,
 ) {
-  const run = await repositories.benchmarkRuns.get(data.runId);
+  const run = await repositories.get(BenchmarkRunRepository).get(data.runId);
 
   if (!run || !isActiveBenchmarkRunStatus(run.status)) {
     return { status: "success" as const, message: `Benchmark run ${data.runId} needs no work` };
@@ -559,7 +568,7 @@ export async function executeBenchmarkRun(
   const refusal = officialRunRefusal(run);
 
   if (refusal) {
-    await repositories.benchmarkRuns.update(run.id, {
+    await repositories.get(BenchmarkRunRepository).update(run.id, {
       status: "cancelled",
       failure_reason: refusal,
     });
@@ -567,7 +576,11 @@ export async function executeBenchmarkRun(
     return { status: "success" as const, message: `Benchmark run ${run.id} cancelled: ${refusal}` };
   }
 
-  if (!(await repositories.benchmarkRuns.claim(run.id, BENCHMARKS_CONFIG.staleRunMinutes))) {
+  if (
+    !(await repositories
+      .get(BenchmarkRunRepository)
+      .claim(run.id, BENCHMARKS_CONFIG.staleRunMinutes))
+  ) {
     return {
       status: "success" as const,
       message: `Benchmark run ${run.id} is already held by another worker`,
@@ -575,7 +588,9 @@ export async function executeBenchmarkRun(
   }
 
   try {
-    const user = run.owner_user_id ? await repositories.users.getUserById(run.owner_user_id) : null;
+    const user = run.owner_user_id
+      ? await repositories.get(UserRepository).getUserById(run.owner_user_id)
+      : null;
 
     if (run.scope !== "official" && !user) {
       return failRun(repositories, run.id, "The person who started this run is gone");
@@ -627,7 +642,7 @@ export async function executeBenchmarkRun(
     }
 
     if (outcome.kind === "out_of_time") {
-      await repositories.benchmarkRuns.release(run.id);
+      await repositories.get(BenchmarkRunRepository).release(run.id);
 
       const continued = await enqueueBenchmarkRunTask(env, repositories, run.id, {
         kind: "continue",
@@ -657,7 +672,7 @@ export async function executeBenchmarkRun(
     const summary = summariseRunResults(benchmark, results);
 
     await store.writeResults(run.id, results);
-    await repositories.benchmarkRuns.update(run.id, {
+    await repositories.get(BenchmarkRunRepository).update(run.id, {
       status: "completed",
       items_total: benchmark.itemIds.length,
       score: summary.score,

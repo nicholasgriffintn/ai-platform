@@ -15,7 +15,10 @@ import {
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import {
   conflict,
   notFound,
@@ -32,7 +35,7 @@ import { toGrader } from "./mappers";
 export async function scoreWithGrader(
   scope: {
     env: IEnv;
-    repositories: RepositoryManager;
+    repositories: Repositories;
     workspaceId: string;
     projectId: string | null;
   },
@@ -93,7 +96,9 @@ export async function listGraders(
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
 
   return {
-    graders: (await context.repositories.modelGraders.list(workspaceId, projectId)).map(toGrader),
+    graders: (
+      await context.repositories.get(ModelGraderRepository).list(workspaceId, projectId)
+    ).map(toGrader),
   };
 }
 
@@ -105,7 +110,9 @@ export async function createGrader(
   const { userId } = await requireModelAction(context, workspaceId, "build_datasets");
   const request = createGraderRequestSchema.parse(input);
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
-  const existing = await context.repositories.modelGraders.list(workspaceId, projectId);
+  const existing = await context.repositories
+    .get(ModelGraderRepository)
+    .list(workspaceId, projectId);
 
   if (
     existing.some((grader) => grader.metric === request.metric && grader.project_id === projectId)
@@ -113,7 +120,7 @@ export async function createGrader(
     throw conflict(`A grader already scores ${request.metric} here`);
   }
 
-  const grader = await context.repositories.modelGraders.create({
+  const grader = await context.repositories.get(ModelGraderRepository).create({
     workspaceId,
     projectId,
     name: request.name,
@@ -123,7 +130,7 @@ export async function createGrader(
     createdBy: userId,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_grader.created",
@@ -143,20 +150,20 @@ export async function updateGrader(
 ): Promise<Grader> {
   const { userId } = await requireModelAction(context, workspaceId, "build_datasets");
   const request = createGraderRequestSchema.parse(input);
-  const grader = await context.repositories.modelGraders.get(workspaceId, graderId);
+  const grader = await context.repositories.get(ModelGraderRepository).get(workspaceId, graderId);
 
   if (!grader) {
     throw notFound("Grader");
   }
 
-  const updated = await context.repositories.modelGraders.update(graderId, {
+  const updated = await context.repositories.get(ModelGraderRepository).update(graderId, {
     name: request.name,
     description: request.description ?? null,
     config: request.config,
     revision: grader.revision + 1,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_grader.revised",
@@ -174,14 +181,14 @@ export async function deleteGrader(
   graderId: string,
 ): Promise<{ deleted: true }> {
   const { userId } = await requireModelAction(context, workspaceId, "build_datasets");
-  const suites = await context.repositories.modelEvals.listSuites(workspaceId);
+  const suites = await context.repositories.get(ModelEvalRepository).listSuites(workspaceId);
 
   if (suites.some((suite) => suite.grader_ids.includes(graderId))) {
     throw conflict("A suite still uses this grader");
   }
 
-  await context.repositories.modelGraders.delete(workspaceId, graderId);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ModelGraderRepository).delete(workspaceId, graderId);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_grader.deleted",
@@ -200,7 +207,7 @@ export async function previewGrader(
 ): Promise<{ score: number | null }> {
   await requireModelAction(context, workspaceId, "view");
 
-  const grader = await context.repositories.modelGraders.get(workspaceId, graderId);
+  const grader = await context.repositories.get(ModelGraderRepository).get(workspaceId, graderId);
 
   if (!grader) {
     throw notFound("Grader");

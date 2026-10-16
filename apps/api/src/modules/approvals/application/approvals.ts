@@ -14,6 +14,7 @@ import {
   toConnectorOperationApprovalStatusView,
   type ConnectorOperationApprovalStatusView,
 } from "~/modules/connectors/application/operation-approvals";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { listProjectTaskAttention } from "~/modules/project-tasks/application/attention";
 
 const PENDING_LIMIT = 100;
@@ -87,11 +88,9 @@ export async function listApprovals(
   const user = context.requireUser();
   const now = new Date().toISOString();
   const [connector, tasks] = await Promise.all([
-    context.repositories.connectorOperationApprovals.listPendingForUser(
-      user.id,
-      now,
-      PENDING_LIMIT,
-    ),
+    context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .listPendingForUser(user.id, now, PENDING_LIMIT),
     listTaskApprovals(context),
   ]);
   const approvals = [
@@ -118,10 +117,9 @@ export async function listApprovals(
 
 export async function readApproval(context: ServiceContext, approvalId: string): Promise<Approval> {
   const user = context.requireUser();
-  const connector = await context.repositories.connectorOperationApprovals.getByIdForUser(
-    approvalId,
-    user.id,
-  );
+  const connector = await context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .getByIdForUser(approvalId, user.id);
 
   if (connector) {
     return presentConnectorApproval(
@@ -144,10 +142,9 @@ export async function resolveApproval(
   state: "approved" | "rejected",
 ): Promise<Approval> {
   const user = context.requireUser();
-  const connector = await context.repositories.connectorOperationApprovals.getByIdForUser(
-    approvalId,
-    user.id,
-  );
+  const connector = await context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .getByIdForUser(approvalId, user.id);
 
   if (!connector) {
     throw new AssistantError(

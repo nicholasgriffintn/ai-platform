@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 
 const logger = getLogger({ prefix: "services/strudel/feedback" });
 
@@ -31,7 +32,7 @@ export async function submitStrudelFeedback(
   }
 
   try {
-    const trainingExamples = await context.repositories.trainingExamples.findMany({
+    const trainingExamples = await context.repositories.get(TrainingExampleRepository).findMany({
       userId,
       conversationId: generationId,
       source: "app",
@@ -57,7 +58,7 @@ export async function submitStrudelFeedback(
       updateData.feedback_comment = feedback;
     }
 
-    await context.repositories.trainingExamples.updateById(example.id, updateData);
+    await context.repositories.get(TrainingExampleRepository).updateById(example.id, updateData);
 
     logger.info("Updated Strudel generation with feedback", {
       exampleId: example.id,

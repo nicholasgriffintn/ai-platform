@@ -1,7 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cache";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { Guardrails } from "~/infrastructure/providers/capabilities/guardrails";
 import { getAllAttachments } from "~/modules/chat/application/messages/attachments";
 import type {
@@ -10,6 +9,7 @@ import type {
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
 import { describeGuardrailBlock } from "~/modules/chat/domain/guardrails";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({
@@ -39,10 +39,8 @@ export class GuardrailsValidator implements Validator {
       if (options.context?.getUserSettings) {
         userSettings = await options.context.getUserSettings();
       } else if (user?.id) {
-        const repositories = new RepositoryManager(env);
-
         userSettings = await memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
-          repositories.userSettings.getUserSettings(user.id),
+          new UserSettingsRepository(env).getUserSettings(user.id),
         );
       }
 

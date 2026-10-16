@@ -9,6 +9,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getTeammateComputerTeachingRecording } from "~/modules/teammates/application/computers";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { getSkillDefinition } from "./catalog";
 import { personalSkillScope } from "./management-policy";
@@ -52,9 +53,9 @@ export async function createTeachingSkillDraft(
   userId: number,
   input: TeachingSkillDraftInput,
 ): Promise<AuthoredSkillVersionedDocument> {
-  const teammateContext = await context.repositories.teammateContexts.getById(
-    input.teammateContextId,
-  );
+  const teammateContext = await context.repositories
+    .get(TeammateContextRepository)
+    .getById(input.teammateContextId);
 
   if (!teammateContext || !ownsResource(userId, teammateContext.actorUserId)) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);

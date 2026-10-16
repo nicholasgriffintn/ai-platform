@@ -15,7 +15,12 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import { requireChannelSenderMapping } from "~/modules/channels/application/access";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { parseRecipeInstallationRecord } from "~/modules/recipes/application";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
@@ -126,7 +131,9 @@ export async function prepareAdmittedTeammateContinuation(params: {
     },
     teammate,
     connectionGrants: teammateContext
-      ? await params.context.repositories.teammateContexts.listConnectionGrants(teammateContext.id)
+      ? await params.context.repositories
+          .get(TeammateContextRepository)
+          .listConnectionGrants(teammateContext.id)
       : [],
   };
 }
@@ -144,9 +151,9 @@ export async function resolveTeammateInvocation(
 
   switch (invocation.source) {
     case "conversation": {
-      const homeContext = await context.repositories.teammateContexts.getByHomeConversationId(
-        invocation.conversationId,
-      );
+      const homeContext = await context.repositories
+        .get(TeammateContextRepository)
+        .getByHomeConversationId(invocation.conversationId);
 
       if (homeContext) {
         const teammateContext = await requireTeammateContext(context, homeContext.id);
@@ -165,9 +172,9 @@ export async function resolveTeammateInvocation(
         throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
       }
 
-      const conversation = await context.repositories.conversations.getConversation(
-        invocation.conversationId,
-      );
+      const conversation = await context.repositories
+        .get(ConversationRepository)
+        .getConversation(invocation.conversationId);
       const authorisedConversation = conversation
         ? await requireConversationAccess(context, invocation.conversationId)
         : null;
@@ -197,9 +204,13 @@ export async function resolveTeammateInvocation(
     }
 
     case "delegation": {
-      const delegation = await context.repositories.delegations.getById(invocation.delegationId);
+      const delegation = await context.repositories
+        .get(DelegationRepository)
+        .getById(invocation.delegationId);
       const child = delegation
-        ? await context.repositories.conversations.getConversation(delegation.childConversationId)
+        ? await context.repositories
+            .get(ConversationRepository)
+            .getConversation(delegation.childConversationId)
         : null;
 
       if (
@@ -270,9 +281,9 @@ export async function resolveTeammateInvocation(
     }
 
     case "routine": {
-      const installation = await context.repositories.templates.getTemplateById(
-        invocation.installationId,
-      );
+      const installation = await context.repositories
+        .get(TemplateRepository)
+        .getTemplateById(invocation.installationId);
       const parsedInstallation = installation ? parseRecipeInstallationRecord(installation) : null;
       const contextId = parsedInstallation?.teammateContextId ?? null;
 
@@ -298,7 +309,9 @@ export async function resolveTeammateInvocation(
     }
 
     case "project_task": {
-      const task = await context.repositories.projectTasks.getTaskById(invocation.taskId);
+      const task = await context.repositories
+        .get(ProjectTaskRepository)
+        .getTaskById(invocation.taskId);
 
       if (!task || task.projectId !== invocation.projectId || !options?.expectedTeammateId) {
         throw new AssistantError("Project task not found", ErrorType.NOT_FOUND, 404);
@@ -355,7 +368,9 @@ export async function prepareTeammateRun(params: {
         resolution.actorUserId,
       );
   const connectionGrants = resolution.context
-    ? await params.context.repositories.teammateContexts.listConnectionGrants(resolution.context.id)
+    ? await params.context.repositories
+        .get(TeammateContextRepository)
+        .listConnectionGrants(resolution.context.id)
     : [];
 
   return { resolution, teammate, connectionGrants };

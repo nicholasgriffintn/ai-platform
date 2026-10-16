@@ -5,11 +5,14 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { getBatchProvider } from "~/infrastructure/providers/capabilities/batch";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type {
@@ -58,11 +61,11 @@ async function readBatchHandle(bucket: R2Bucket, runId: string): Promise<BatchHa
 
 async function schedulePoll(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   runId: string,
   pollAttempt: number,
 ): Promise<void> {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_REGISTRY_EVAL_TASK_TYPE}:${runId}:batch:${pollAttempt}`,
     task_type: MODEL_REGISTRY_EVAL_TASK_TYPE,
     task_data: { runId, offset: 0, readinessAttempt: 0, batch: true, pollAttempt },
@@ -74,7 +77,7 @@ async function schedulePoll(
 
 export async function executeBatchedEvalRun(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   input: {
     run: ModelEvalRunRecord;
     suite: ModelEvalSuiteRecord;
@@ -112,7 +115,7 @@ export async function executeBatchedEvalRun(
       } satisfies BatchHandle),
       { httpMetadata: { contentType: "application/json" } },
     );
-    await repositories.modelEvals.updateRun(run.id, { status: "running" });
+    await repositories.get(ModelEvalRepository).updateRun(run.id, { status: "running" });
     await schedulePoll(env, repositories, run.id, 1);
 
     return { status: "success" as const, message: `Submitted batch ${batchId}` };
@@ -122,7 +125,7 @@ export async function executeBatchedEvalRun(
 
   if (poll.status === "in_progress") {
     if (pollAttempt >= BATCH_MAX_POLL_ATTEMPTS) {
-      await repositories.modelEvals.updateRun(run.id, {
+      await repositories.get(ModelEvalRepository).updateRun(run.id, {
         status: "failed",
         failure_reason: "The batch did not finish within its 24-hour window",
       });
@@ -136,7 +139,7 @@ export async function executeBatchedEvalRun(
   }
 
   if (poll.status === "failed") {
-    await repositories.modelEvals.updateRun(run.id, {
+    await repositories.get(ModelEvalRepository).updateRun(run.id, {
       status: "failed",
       failure_reason: poll.reason,
     });
@@ -145,7 +148,7 @@ export async function executeBatchedEvalRun(
   }
 
   const judge = await getAuxiliaryModel(env);
-  const graders = await repositories.modelGraders.listByIds(suite.grader_ids);
+  const graders = await repositories.get(ModelGraderRepository).listByIds(suite.grader_ids);
   const byId = new Map(poll.results.map((result) => [result.id, result]));
   const results: EvalCaseResult[] = [];
 
@@ -160,7 +163,9 @@ export async function executeBatchedEvalRun(
   }
 
   await writeEvalResults(bucket, run.id, results);
-  await repositories.modelEvals.updateRun(run.id, { cases_completed: results.length });
+  await repositories
+    .get(ModelEvalRepository)
+    .updateRun(run.id, { cases_completed: results.length });
   await completeEvalRun(repositories, {
     suite,
     graders,

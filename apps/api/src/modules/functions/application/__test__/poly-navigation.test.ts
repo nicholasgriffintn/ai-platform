@@ -2,6 +2,10 @@ import { POLY_NAVIGATION_DATA_KEY, type PolyUiContext } from "@ngriffin_uk/polyc
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
@@ -121,7 +125,11 @@ function createToolContext(conversationType: string | undefined, uiContext?: Pol
       env: {},
       user,
       context: {
-        repositories,
+        repositories: fakeRepositories([
+          [ConversationRepository, repositories.conversations],
+          [MessageRepository, repositories.messages],
+          [TeammateContextRepository, repositories.teammateContexts],
+        ]),
         user,
         requireUser: () => user,
       },

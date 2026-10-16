@@ -4,7 +4,10 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { cancelDelegationChildRun } from "~/modules/delegations/application/cancel-child-run";
 import { scheduleDelegationWake } from "~/modules/delegations/application/schedule-wake";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -18,14 +21,16 @@ export class DelegationExpiryHandler implements TaskHandler {
       return { status: "error", message: "Invalid delegation expiry payload" };
     }
 
-    const user = await systemContext.repositories.users.getUserById(message.user_id);
+    const user = await systemContext.repositories.get(UserRepository).getUserById(message.user_id);
 
     if (!user) {
       return { status: "error", message: "Delegating user not found" };
     }
 
     const context = createServiceContext({ env, user });
-    const delegation = await context.repositories.delegations.getById(payload.data.delegationId);
+    const delegation = await context.repositories
+      .get(DelegationRepository)
+      .getById(payload.data.delegationId);
 
     if (!delegation || Date.parse(delegation.budget.deadline) > Date.now()) {
       return { status: "skipped", message: "Delegation is no longer due to expire" };
@@ -51,7 +56,7 @@ export class DelegationExpiryHandler implements TaskHandler {
 
     if (updated) {
       await scheduleDelegationWake(
-        new TaskService(context.env, context.repositories.tasks),
+        new TaskService(context.env, context.repositories.get(TaskRepository)),
         delegation,
         message.user_id,
       );

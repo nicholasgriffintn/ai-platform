@@ -8,6 +8,7 @@ import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import { getSharedOutputRecord } from "~/modules/outputs/application";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 export async function readSharedSiteImage(
   context: ServiceContext,
@@ -37,7 +38,7 @@ export async function readSharedSiteImage(
     throw new AssistantError("Image is not part of this site", ErrorType.NOT_FOUND, 404);
   }
 
-  const image = await context.repositories.outputs.getOutput(outputId);
+  const image = await context.repositories.get(OutputRepository).getOutput(outputId);
 
   if (
     !image ||

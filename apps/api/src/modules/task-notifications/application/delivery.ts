@@ -7,9 +7,9 @@ import {
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
 import { attentionState, isTaskInboxEligible } from "~/modules/project-tasks/application/attention";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type {
   TaskExecutionContext,
@@ -17,6 +17,7 @@ import type {
   TaskMessage,
   TaskResult,
 } from "~/modules/tasks/application/types";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 const NOTIFICATION_COPY: Record<TaskNotificationCategory, string> = {
@@ -44,7 +45,7 @@ export class TaskNotificationDeliveryHandler implements TaskHandler {
       return { status: "skipped", message: "Notification delivery ID is missing" };
     }
 
-    const repository = new RepositoryManager(env).taskNotifications;
+    const repository = new TaskNotificationRepository(env);
     const candidate = await repository.getDeliveryContext(deliveryId);
 
     if (!candidate || candidate.delivery.status !== "pending") {
@@ -160,7 +161,7 @@ export class TaskNotificationDeliveryHandler implements TaskHandler {
     const deliveryId = isRecord(message.task_data) ? message.task_data.deliveryId : null;
 
     if (typeof deliveryId === "string") {
-      await new RepositoryManager(env).taskNotifications.updateDelivery(deliveryId, {
+      await new TaskNotificationRepository(env).updateDelivery(deliveryId, {
         status: "pending",
         failureCode: "provider_unavailable",
         nextAttemptAt: retryAt(message.max_attempts ?? 3),
@@ -174,9 +175,8 @@ export async function schedulePendingTaskNotificationDeliveries(env: IEnv): Prom
     return 0;
   }
 
-  const repositories = new RepositoryManager(env);
-  const ids = await repositories.taskNotifications.listPendingDeliveryIds();
-  const taskService = new TaskService(env, repositories.tasks);
+  const ids = await new TaskNotificationRepository(env).listPendingDeliveryIds();
+  const taskService = new TaskService(env, new TaskRepository(env));
   const bucket = Math.floor(Date.now() / (15 * 60 * 1000));
 
   const results = await Promise.allSettled(

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 function createManager(parent: Record<string, unknown> | null) {
   const createConversation = vi.fn().mockResolvedValue({ id: "branch-1" });
@@ -12,13 +16,16 @@ function createManager(parent: Record<string, unknown> | null) {
     return parent;
   });
   const database = {
-    repositories: {
-      conversations: { getConversation, createConversation },
-      messages: {
-        createMessagesAndUpdateConversation: vi.fn().mockResolvedValue(undefined),
-      },
-      users: { updateUser: vi.fn().mockResolvedValue(undefined) },
-    },
+    repositories: fakeRepositories([
+      [ConversationRepository, { getConversation, createConversation }],
+      [
+        MessageRepository,
+        {
+          createMessagesAndUpdateConversation: vi.fn().mockResolvedValue(undefined),
+        },
+      ],
+      [UserRepository, { updateUser: vi.fn().mockResolvedValue(undefined) }],
+    ]),
   } as any;
   const manager = ConversationManager.getInstance({
     database,

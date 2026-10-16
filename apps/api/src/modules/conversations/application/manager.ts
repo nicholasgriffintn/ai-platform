@@ -22,7 +22,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Database } from "~/infrastructure/database";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { normaliseMessageTimestampsForStorage } from "~/modules/chat/application/messages/ordering";
 import {
   buildMessageParts,
@@ -50,14 +50,17 @@ import {
 } from "~/modules/conversations/application/turn-admission";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import type {
   ConversationArchiveFilter,
   ConversationSortBy,
   SetConversationsArchivedOptions,
 } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { type UsageLimits, UsageManager } from "~/modules/usage/application/usageManager";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/conversations/manager" });
@@ -96,7 +99,7 @@ export class ConversationManager {
   private env?: IEnv;
   private requestCache?: Map<string, unknown>;
   private taskService?: TaskService;
-  private repositories?: RepositoryManager;
+  private repositories?: Repositories;
   private pendingTurnReservation?: TurnReservation;
   private writeFence?: ConversationWriteFence;
   private runId?: string;
@@ -112,7 +115,7 @@ export class ConversationManager {
     store?: boolean,
     env?: IEnv,
     requestCache?: Map<string, unknown>,
-    repositories?: RepositoryManager,
+    repositories?: Repositories,
     writeFence?: ConversationWriteFence,
     runId?: string,
     durableTurnReservation?: DurableTurnReservation,
@@ -165,7 +168,7 @@ export class ConversationManager {
     store?: boolean;
     env?: IEnv;
     requestCache?: Map<string, unknown>;
-    repositories?: RepositoryManager;
+    repositories?: Repositories;
     writeFence?: ConversationWriteFence;
     runId?: string;
     durableTurnReservation?: DurableTurnReservation;
@@ -266,8 +269,9 @@ export class ConversationManager {
       return undefined;
     }
 
-    const parent =
-      await this.database.repositories.conversations.getConversation(parentConversationId);
+    const parent = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(parentConversationId);
     const parsed = permissionModeSchema.safeParse(parent?.permission_mode);
 
     return parsed.success ? parsed.data : undefined;
@@ -313,17 +317,20 @@ export class ConversationManager {
       throw new AssistantError(authErrorMessage, ErrorType.AUTHENTICATION_ERROR);
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       const { parentConversationId, parentMessageId } = this.getBranchParentIds(options);
       const projectId = options?.metadata?.project_id;
 
       if (projectId) {
-        const project = await this.repositories?.workspaces.getProject(projectId);
+        const project = await this.repositories?.get(WorkspaceRepository).getProject(projectId);
         const membership = project
-          ? await this.repositories?.workspaces.getMembership(project.workspace_id, this.user.id)
+          ? await this.repositories
+              ?.get(WorkspaceRepository)
+              .getMembership(project.workspace_id, this.user.id)
           : null;
 
         if (!project || !membership) {
@@ -342,20 +349,22 @@ export class ConversationManager {
         (await this.getInheritedPermissionMode(parentConversationId)) ??
         undefined;
 
-      return await this.database.repositories.conversations.createConversation(
-        conversation_id,
-        this.user.id,
-        createInitialConversationTitle(initialMessages),
-        {
-          parent_conversation_id: parentConversationId,
-          parent_message_id: parentMessageId,
-          project_id: projectId,
-          type: options?.type,
-          model_id: options?.model_id,
-          model_tier: options?.model_tier,
-          permission_mode: permissionMode,
-        },
-      );
+      return await this.database.repositories
+        .get(ConversationRepository)
+        .createConversation(
+          conversation_id,
+          this.user.id,
+          createInitialConversationTitle(initialMessages),
+          {
+            parent_conversation_id: parentConversationId,
+            parent_message_id: parentMessageId,
+            project_id: projectId,
+            type: options?.type,
+            model_id: options?.model_id,
+            model_tier: options?.model_tier,
+            permission_mode: permissionMode,
+          },
+        );
     }
 
     if (!(await this.canAccessConversation(conversation))) {
@@ -381,10 +390,9 @@ export class ConversationManager {
 
     if (Object.keys(selectionUpdates).length > 0) {
       await this.assertWriteOwnership();
-      await this.database.repositories.conversations.updateConversation(
-        conversation_id,
-        selectionUpdates,
-      );
+      await this.database.repositories
+        .get(ConversationRepository)
+        .updateConversation(conversation_id, selectionUpdates);
 
       return { ...conversation, ...selectionUpdates };
     }
@@ -410,8 +418,9 @@ export class ConversationManager {
     }
 
     return (
-      (await this.repositories?.workspaces.canAccessConversation(conversation.id, this.user.id)) ??
-      false
+      (await this.repositories
+        ?.get(WorkspaceRepository)
+        .canAccessConversation(conversation.id, this.user.id)) ?? false
     );
   }
 
@@ -539,7 +548,7 @@ export class ConversationManager {
 
     if (normalisedMessages.length > 0) {
       await this.assertWriteOwnership();
-      await this.database.repositories.messages.createMessagesAndUpdateConversation(
+      await this.database.repositories.get(MessageRepository).createMessagesAndUpdateConversation(
         conversation_id,
         normalisedMessages.map((message) => ({
           id: message.id,
@@ -578,7 +587,7 @@ export class ConversationManager {
     );
 
     await this.assertWriteOwnership();
-    await this.database.repositories.messages.createCompactionAndArchiveMessages(
+    await this.database.repositories.get(MessageRepository).createCompactionAndArchiveMessages(
       conversation_id,
       normalisedMessages.map((message) => ({
         id: message.id,
@@ -611,11 +620,9 @@ export class ConversationManager {
     );
 
     const messageIds = normalisedMessages.map((message) => message.id);
-    const foreignCount =
-      await this.database.repositories.messages.countMessagesOwnedByOtherConversations(
-        conversation_id,
-        messageIds,
-      );
+    const foreignCount = await this.database.repositories
+      .get(MessageRepository)
+      .countMessagesOwnedByOtherConversations(conversation_id, messageIds);
 
     if (foreignCount > 0) {
       throw new AssistantError(
@@ -627,20 +634,22 @@ export class ConversationManager {
     const lastMessage = normalisedMessages.at(-1);
 
     await this.assertWriteOwnership();
-    const replaced = await this.database.repositories.messages.replaceConversationMessages(
-      conversation_id,
-      normalisedMessages.map((message) => ({
-        id: message.id,
-        role: message.role,
-        content: this.serializeMessageContent(message.content),
-        data: message,
-      })),
-      {
-        last_message_id: lastMessage?.id ?? null,
-        last_message_at: lastMessage ? new Date().toISOString() : null,
-        message_count: normalisedMessages.length,
-      },
-    );
+    const replaced = await this.database.repositories
+      .get(MessageRepository)
+      .replaceConversationMessages(
+        conversation_id,
+        normalisedMessages.map((message) => ({
+          id: message.id,
+          role: message.role,
+          content: this.serializeMessageContent(message.content),
+          data: message,
+        })),
+        {
+          last_message_id: lastMessage?.id ?? null,
+          last_message_at: lastMessage ? new Date().toISOString() : null,
+          message_count: normalisedMessages.length,
+        },
+      );
 
     if (!replaced) {
       throw new AssistantError(
@@ -666,8 +675,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -707,11 +717,9 @@ export class ConversationManager {
 
       if (Object.keys(updates).length > 0) {
         await this.assertWriteOwnership();
-        await this.database.repositories.messages.updateMessage(
-          conversation_id,
-          message.id,
-          updates,
-        );
+        await this.database.repositories
+          .get(MessageRepository)
+          .updateMessage(conversation_id, message.id, updates);
       }
     }
   }
@@ -736,8 +744,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -750,14 +759,11 @@ export class ConversationManager {
       );
     }
 
-    const messages = await this.database.repositories.messages.getConversationMessages(
-      conversation_id,
-      limit ?? 0,
-      after,
-      {
+    const messages = await this.database.repositories
+      .get(MessageRepository)
+      .getConversationMessages(conversation_id, limit ?? 0, after, {
         includeArchived: options?.includeArchived ?? false,
-      },
-    );
+      });
 
     return messages.map(formatStoredMessage);
   }
@@ -779,8 +785,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -799,12 +806,9 @@ export class ConversationManager {
       after,
       includeArchived: options.includeArchived ?? true,
       loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
-        this.database.repositories.messages.getConversationMessages(
-          conversationId,
-          pageLimit,
-          cursor,
-          pageOptions,
-        ),
+        this.database.repositories
+          .get(MessageRepository)
+          .getConversationMessages(conversationId, pageLimit, cursor, pageOptions),
       formatMessage: formatStoredMessage,
       isHiddenMessage: (message) => !options.includeSnapshots && hasSnapshotPart(message),
     });
@@ -827,8 +831,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -857,12 +862,9 @@ export class ConversationManager {
       direction: "before",
       includeArchived: options.includeArchived ?? true,
       loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
-        this.database.repositories.messages.getConversationMessagesBefore(
-          conversationId,
-          pageLimit,
-          cursor,
-          pageOptions,
-        ),
+        this.database.repositories
+          .get(MessageRepository)
+          .getConversationMessagesBefore(conversationId, pageLimit, cursor, pageOptions),
       formatMessage: formatStoredMessage,
       isHiddenMessage: (message) => !options.includeSnapshots && hasSnapshotPart(message),
     });
@@ -889,8 +891,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -904,7 +907,9 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories.messages.archiveMessages(conversation_id, messageIds);
+    await this.database.repositories
+      .get(MessageRepository)
+      .archiveMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
 
@@ -920,8 +925,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -935,20 +941,25 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories.messages.deleteMessages(conversation_id, messageIds);
+    await this.database.repositories
+      .get(MessageRepository)
+      .deleteMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
 
   private async refreshConversationMessageMetadata(conversation_id: string): Promise<void> {
-    const metadata =
-      await this.database.repositories.messages.getConversationMessageMetadata(conversation_id);
+    const metadata = await this.database.repositories
+      .get(MessageRepository)
+      .getConversationMessageMetadata(conversation_id);
 
     await this.assertWriteOwnership();
-    await this.database.repositories.conversations.updateConversation(conversation_id, {
-      last_message_id: metadata.last_message_id,
-      last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
-      message_count: metadata.message_count,
-    });
+    await this.database.repositories
+      .get(ConversationRepository)
+      .updateConversation(conversation_id, {
+        last_message_id: metadata.last_message_id,
+        last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
+        message_count: metadata.message_count,
+      });
   }
 
   async list(options: ConversationListOptions = {}): Promise<ListPage<Record<string, unknown>>> {
@@ -959,10 +970,9 @@ export class ConversationManager {
       );
     }
 
-    const page = await this.database.repositories.conversations.listUserConversations(
-      this.user.id,
-      options,
-    );
+    const page = await this.database.repositories
+      .get(ConversationRepository)
+      .listUserConversations(this.user.id, options);
 
     return mapListPage(page, (conversation) => ({
       ...conversation,
@@ -980,10 +990,9 @@ export class ConversationManager {
 
     await this.assertWriteOwnership();
 
-    return await this.database.repositories.conversations.setPersonalConversationsArchived(
-      this.user.id,
-      options,
-    );
+    return await this.database.repositories
+      .get(ConversationRepository)
+      .setPersonalConversationsArchived(this.user.id, options);
   }
 
   async getConversationMetadata(conversation_id: string): Promise<Record<string, unknown>> {
@@ -994,8 +1003,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -1059,12 +1069,11 @@ export class ConversationManager {
       };
     }
 
-    const dbMessages = await this.database.repositories.messages.getConversationMessages(
-      conversationId,
-      0,
-      undefined,
-      { includeArchived: options.includeArchived ?? true },
-    );
+    const dbMessages = await this.database.repositories
+      .get(MessageRepository)
+      .getConversationMessages(conversationId, 0, undefined, {
+        includeArchived: options.includeArchived ?? true,
+      });
 
     return {
       messages: dbMessages
@@ -1092,8 +1101,9 @@ export class ConversationManager {
       );
     }
 
-    const conversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const conversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     if (!conversation) {
       throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -1121,10 +1131,13 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories.conversations.updateConversation(conversation_id, updateObj);
+    await this.database.repositories
+      .get(ConversationRepository)
+      .updateConversation(conversation_id, updateObj);
 
-    const updatedConversation =
-      await this.database.repositories.conversations.getConversation(conversation_id);
+    const updatedConversation = await this.database.repositories
+      .get(ConversationRepository)
+      .getConversation(conversation_id);
 
     return updatedConversation || {};
   }
@@ -1137,17 +1150,18 @@ export class ConversationManager {
       );
     }
 
-    const result = await this.database.repositories.messages.getMessageById(message_id);
+    const result = await this.database.repositories
+      .get(MessageRepository)
+      .getMessageById(message_id);
 
     if (!result) {
       throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
     }
 
     if (
-      !(await this.repositories?.workspaces.canAccessConversation(
-        result.conversation_id,
-        this.user.id,
-      ))
+      !(await this.repositories
+        ?.get(WorkspaceRepository)
+        .canAccessConversation(result.conversation_id, this.user.id))
     ) {
       throw new AssistantError(
         "You don't have permission to access this message",

@@ -9,6 +9,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { parseSandboxRunData } from "~/modules/sandbox/application/run-data";
 
 import {
@@ -106,10 +107,9 @@ async function authoriseBrokerRequest(params: {
 
   requireOperation(claims, params.operation);
 
-  const record = await params.context.repositories.activities.getActivityByGroup(
-    SANDBOX_RUNS_CAPABILITY_ID,
-    params.runId,
-  );
+  const record = await params.context.repositories
+    .get(ActivityRepository)
+    .getActivityByGroup(SANDBOX_RUNS_CAPABILITY_ID, params.runId);
   const run = record ? parseSandboxRunData(safeParseJson(record.data)) : null;
   const control = await getRunCoordinatorControl(params.context.env, params.runId);
 

@@ -12,6 +12,7 @@ import {
   getAuxiliaryModelForRetrieval,
 } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { analyseArticlePrompt } from "./prompts";
@@ -121,7 +122,7 @@ export async function analyseArticle({
     };
 
     serviceContext.ensureDatabase();
-    const outputRepo = serviceContext.repositories.outputs;
+    const outputRepo = serviceContext.repositories.get(OutputRepository);
     const outputContent = {
       originalArticle: args.article,
       analysis: analysisResult,

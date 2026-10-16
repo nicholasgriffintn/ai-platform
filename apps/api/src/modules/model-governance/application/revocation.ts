@@ -6,9 +6,15 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { notFound, requireModelAction } from "~/modules/model-registry/application/access";
 import { loadRegistryScope, versionStanding } from "~/modules/model-registry/application/scope";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { applyDeploymentState } from "~/modules/model-serving/application/deployments";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
 export async function revokeVersion(
   context: ServiceContext,
@@ -19,13 +25,13 @@ export async function revokeVersion(
   const { userId } = await requireModelAction(context, workspaceId, "approve");
   const { reason } = revokeVersionRequestSchema.parse(input);
   const repositories = context.repositories;
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
 
   if (!version) {
     throw notFound("Model version");
   }
 
-  const edges = (await repositories.modelAssets.listLineage(workspaceId)).filter(
+  const edges = (await repositories.get(ModelAssetRepository).listLineage(workspaceId)).filter(
     (edge) => edge.relation !== "evaluated_on",
   );
   const versionIds = [...new Set([versionId, ...collectDescendants(edges, versionId)])];
@@ -44,18 +50,20 @@ export async function revokeVersionSet(
   const repositories = context.repositories;
   const scope = await loadRegistryScope(repositories, workspaceId, null, { versionIds });
   const [decisions, routes, deployments] = await Promise.all([
-    repositories.modelGovernance.listDecisions(workspaceId, { versionIds }),
-    repositories.modelRoutes.listRoutes(workspaceId, { versionIds, activeOnly: true }),
-    repositories.modelDeployments.list(workspaceId, { liveOnly: true, versionIds }),
+    repositories.get(ModelGovernanceRepository).listDecisions(workspaceId, { versionIds }),
+    repositories
+      .get(ModelRouteRepository)
+      .listRoutes(workspaceId, { versionIds, activeOnly: true }),
+    repositories.get(ModelDeploymentRepository).list(workspaceId, { liveOnly: true, versionIds }),
   ]);
   const routeIds = routes.map((route) => route.id);
-  const aliases = await repositories.modelAliases.listByRoutes(routeIds);
+  const aliases = await repositories.get(ModelAliasRepository).listByRoutes(routeIds);
   const note = `Revoked: ${reason}`;
 
   for (const decision of decisions.filter(
     (item) => item.state === "approved" || item.state === "pending",
   )) {
-    await repositories.modelGovernance.resolveDecision({
+    await repositories.get(ModelGovernanceRepository).resolveDecision({
       decisionId: decision.id,
       state: "revoked",
       decidedBy: userId,
@@ -69,7 +77,7 @@ export async function revokeVersionSet(
     const current = versionStanding(scope, version);
 
     if (current) {
-      await repositories.modelGovernance.createDecision({
+      await repositories.get(ModelGovernanceRepository).createDecision({
         workspaceId,
         projectId: null,
         versionId: version.id,
@@ -91,13 +99,13 @@ export async function revokeVersionSet(
     const routeGone = alias.route_id !== null && routeIds.includes(alias.route_id);
     const canaryGone = alias.canary_route_id !== null && routeIds.includes(alias.canary_route_id);
 
-    await repositories.modelAliases.update(alias.id, {
+    await repositories.get(ModelAliasRepository).update(alias.id, {
       ...(routeGone ? { route_id: canaryGone ? null : alias.canary_route_id } : {}),
       canary_route_id: null,
       canary_percent: 0,
       updated_by: userId,
     });
-    await repositories.modelAliases.addEvent({
+    await repositories.get(ModelAliasRepository).addEvent({
       aliasId: alias.id,
       kind: "revoked",
       fromRouteId: alias.route_id,
@@ -109,7 +117,7 @@ export async function revokeVersionSet(
   }
 
   for (const route of routes) {
-    await repositories.modelRoutes.setStatus(route.id, "retired");
+    await repositories.get(ModelRouteRepository).setStatus(route.id, "retired");
   }
 
   const paused: string[] = [];
@@ -124,7 +132,7 @@ export async function revokeVersionSet(
     }
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.revoked",

@@ -7,6 +7,10 @@ const mocks = vi.hoisted(() => ({
   getByIdForUser: vi.fn(),
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+
 import {
   authoriseConnectorOperation,
   getConnectorOperationApproval,
@@ -16,23 +20,29 @@ import {
 function context() {
   return {
     connectorRunId: "connector_run_1",
-    repositories: {
-      connectorOperationApprovals: {
-        create: mocks.create,
-        consume: mocks.consume,
-        resolve: mocks.resolve,
-        getByIdForUser: mocks.getByIdForUser,
-      },
-      conversationRuns: {
-        getById: vi.fn(async () => ({
-          id: "connector_run_1",
-          initiatorUserId: 42,
-          conversationId: "completion_1",
-          status: "running",
-          attempt: 1,
-        })),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConnectorOperationApprovalRepository,
+        {
+          create: mocks.create,
+          consume: mocks.consume,
+          resolve: mocks.resolve,
+          getByIdForUser: mocks.getByIdForUser,
+        },
+      ],
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn(async () => ({
+            id: "connector_run_1",
+            initiatorUserId: 42,
+            conversationId: "completion_1",
+            status: "running",
+            attempt: 1,
+          })),
+        },
+      ],
+    ]),
   } as never;
 }
 

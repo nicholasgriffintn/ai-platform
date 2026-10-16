@@ -4,7 +4,11 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { resolveSandboxModel } from "~/modules/sandbox/application/worker";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { executeSandboxRunStream } from "../execute-stream";
 import {
@@ -49,18 +53,25 @@ const mockGetMembership = vi.fn();
 const mockContext = {
   env: {},
   requireUser: () => ({ id: 42, plan_id: "pro" }),
-  repositories: {
-    activities: {
-      createActivity: mockCreateActivity,
-      updateActivity: mockUpdateActivity,
-      listRecentUserActivities: mockListPersonalActivities,
-    },
-    workspaces: {
-      getProject: mockGetProject,
-      getWorkspace: mockGetWorkspace,
-      getMembership: mockGetMembership,
-    },
-  },
+  repositories: fakeRepositories([
+    [TaskRepository, {}],
+    [
+      ActivityRepository,
+      {
+        createActivity: mockCreateActivity,
+        updateActivity: mockUpdateActivity,
+        listRecentUserActivities: mockListPersonalActivities,
+      },
+    ],
+    [
+      WorkspaceRepository,
+      {
+        getProject: mockGetProject,
+        getWorkspace: mockGetWorkspace,
+        getMembership: mockGetMembership,
+      },
+    ],
+  ]),
 } as any;
 
 const mockUser = { id: 42 } as any;

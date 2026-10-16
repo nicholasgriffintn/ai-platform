@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
 import type { CoreChatOptions } from "~/types";
 
@@ -103,9 +104,9 @@ async function readApprovedPendingToolName(params: {
     return undefined;
   }
 
-  const stored = await params.context.repositories.messages.getMessageById(
-    params.run.lastMessageId,
-  );
+  const stored = await params.context.repositories
+    .get(MessageRepository)
+    .getMessageById(params.run.lastMessageId);
   const message = stored?.message;
   const data = typeof message?.data === "string" ? safeParseJson(message.data) : message?.data;
   const approval = isRecord(data) && isRecord(data.approval) ? data.approval : undefined;

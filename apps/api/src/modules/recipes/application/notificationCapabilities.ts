@@ -5,6 +5,7 @@ import {
   selectConfiguredMessagingProviderSettings,
   type ConfiguredMessagingProviderSettings,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 interface RecipeNotificationCapabilityParams {
   context?: ServiceContext;
@@ -25,7 +26,7 @@ export async function getRecipeNotificationCapabilities({
   userId,
   apiBaseUrl,
 }: RecipeNotificationCapabilityParams): Promise<RecipeNotificationCapabilities> {
-  if (!context?.repositories?.userSettings || !userId) {
+  if (!context?.repositories?.get(UserSettingsRepository) || !userId) {
     return {
       sms: {
         available: false,
@@ -37,7 +38,7 @@ export async function getRecipeNotificationCapabilities({
   }
 
   const provider = selectConfiguredMessagingProviderSettings(
-    await context.repositories.userSettings.getUserProviderSettings(userId),
+    await context.repositories.get(UserSettingsRepository).getUserProviderSettings(userId),
     { apiBaseUrl },
   );
 

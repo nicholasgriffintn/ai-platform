@@ -8,8 +8,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 import type { IEnv } from "~/types";
 
 const RUN_STATUS_EVENTS: Partial<Record<ChatRunStatus, WebhookEventType>> = {
@@ -29,10 +30,9 @@ export async function dispatchResponseWebhooks(env: IEnv, run: ChatRun): Promise
     return;
   }
 
-  const repositories = new RepositoryManager(env);
-  const endpoints = (await repositories.webhookEndpoints.listEnabled(run.initiatorUserId)).filter(
-    (endpoint) => endpoint.events.includes(type),
-  );
+  const endpoints = (
+    await new WebhookEndpointRepository(env).listEnabled(run.initiatorUserId)
+  ).filter((endpoint) => endpoint.events.includes(type));
 
   if (endpoints.length === 0) {
     return;
@@ -45,7 +45,7 @@ export async function dispatchResponseWebhooks(env: IEnv, run: ChatRun): Promise
     created_at: new Date().toISOString(),
     data: { response: toResponse(run) },
   };
-  const taskService = new TaskService(env, repositories.tasks);
+  const taskService = new TaskService(env, new TaskRepository(env));
 
   await Promise.allSettled(
     endpoints.map((endpoint) =>

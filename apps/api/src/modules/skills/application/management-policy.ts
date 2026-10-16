@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { AuthoredSkillScope } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { SKILL_CAPABILITY_KIND } from "./scope";
 
@@ -37,7 +38,9 @@ export async function getPublishedSkillCapability(
   projectId: string,
   name: string,
 ) {
-  return (await context.repositories.workspaces.listProjectCapabilities(projectId)).find(
+  return (
+    await context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId)
+  ).find(
     (capability) => capability.kind === SKILL_CAPABILITY_KIND && capability.capability_id === name,
   );
 }

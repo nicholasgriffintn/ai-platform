@@ -2,7 +2,9 @@ import { POLY_NAVIGATION_TOOL_NAMES, POLY_TEAMMATE_ID } from "@ngriffin_uk/polyc
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { filterToolsForPolyTurn, isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 
 const tools = [
   { name: "web_search" },
@@ -11,11 +13,7 @@ const tools = [
 ];
 
 function repositories(stored: Record<string, unknown> | null) {
-  return {
-    conversations: {
-      getConversation: async () => stored,
-    },
-  } as never;
+  return fakeRepositories([[ConversationRepository, { getConversation: async () => stored }]]);
 }
 
 function options(overrides: Record<string, unknown>) {

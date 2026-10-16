@@ -11,6 +11,7 @@ import {
   getAuxiliaryModelForRetrieval,
 } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { generateArticleReportPrompt } from "./prompts";
@@ -70,7 +71,7 @@ export async function generateArticlesReport({
     }
 
     serviceContext.ensureDatabase();
-    const outputRepo = serviceContext.repositories.outputs;
+    const outputRepo = serviceContext.repositories.get(OutputRepository);
 
     const relatedItems = projectId
       ? await outputRepo.listProjectOutputGroup(projectId, "articles", args.itemId)

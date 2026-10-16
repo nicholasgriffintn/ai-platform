@@ -1,15 +1,16 @@
 import type { ChatInvocationMessage } from "@ngriffin_uk/polychat-ai-model-providers";
 
 import { ai } from "~/infrastructure/ai";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { notFound } from "~/modules/model-registry/application/access";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import type { IEnv } from "~/types";
 
 export async function completeWorkspaceRoute(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   route: ModelRouteRecord,
   input: string,
   system: string | null,
@@ -26,10 +27,9 @@ export async function completeWorkspaceRoute(
     return result.text;
   }
 
-  const deployment = await repositories.modelDeployments.get(
-    route.workspace_id,
-    route.deployment_id,
-  );
+  const deployment = await repositories
+    .get(ModelDeploymentRepository)
+    .get(route.workspace_id, route.deployment_id);
 
   if (!deployment || deployment.route_id !== route.id) {
     throw notFound("Route deployment");

@@ -9,17 +9,24 @@ const mocks = vi.hoisted(() => ({
   deleteComposioToolSession: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: {
-    getInstance: () => ({
-      composioConnectorSessions: {
+vi.mock("~/modules/connectors/infrastructure/ComposioConnectorSessionRepository", () => ({
+  ComposioConnectorSessionRepository: class {
+    constructor() {
+      return {
         listCleanupDue: mocks.listCleanupDue,
         claimCleanup: mocks.claimCleanup,
         markCleanupPending: mocks.markCleanupPending,
         delete: mocks.deleteRecord,
-      },
-      connectorOperationApprovals: { deleteExpired: mocks.deleteExpired },
-    }),
+      };
+    }
+  },
+}));
+
+vi.mock("~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository", () => ({
+  ConnectorOperationApprovalRepository: class {
+    constructor() {
+      return { deleteExpired: mocks.deleteExpired };
+    }
   },
 }));
 

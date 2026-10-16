@@ -13,6 +13,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService, type StoredSourceFileResult } from "~/infrastructure/storage";
 import { convertBlobToMarkdownViaCloudflare } from "~/modules/documents/application/convert";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const logger = getLogger({ prefix: "services/uploads" });
@@ -326,7 +327,7 @@ export async function handleFileUpload(
     }
   }
 
-  await context.repositories.sources.updateSource(storedSource.sourceId, {
+  await context.repositories.get(SourceRepository).updateSource(storedSource.sourceId, {
     content: markdownContent || null,
     metadata: { uploadType: fileType, convertedToMarkdown: Boolean(markdownContent) },
   });

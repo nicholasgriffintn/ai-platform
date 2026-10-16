@@ -3,6 +3,7 @@ import { siteEvaluationResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { evaluateSitePrompts } from "~/modules/sites/application/evaluate";
 
 import type { JobKindDefinition } from "../../domain/job-kind";
@@ -20,7 +21,7 @@ export const siteEvaluationJobs: JobKindDefinition<"site_evaluation"> = {
       throw new AssistantError("Admin access required", ErrorType.FORBIDDEN, 403);
     }
 
-    const outputs = scope.context.repositories.outputs;
+    const outputs = scope.context.repositories.get(OutputRepository);
     const created = await outputs.createOutput({
       createdByUserId: scope.user.id,
       projectId: scope.projectId,

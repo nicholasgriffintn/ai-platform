@@ -18,7 +18,8 @@ import type { Context, MiddlewareHandler } from "hono";
 import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
 import { loopbackOutboundGateway } from "~/infrastructure/cloudflare/outbound-gateway";
 import { Database } from "~/infrastructure/database";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { AnonymousUser, IEnv, IUser, IUserSettings } from "~/types";
 
 export interface ServiceContextOptions {
@@ -48,7 +49,7 @@ export interface ServiceContext {
   executionRunId?: string;
   executionRunAttempt?: number;
   database: Database;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   requestCache: RequestCache;
   userSettings: IUserSettings | null;
   requireUser(): IUser;
@@ -60,7 +61,7 @@ export interface ServiceContext {
 
 export function optionalRepositories(
   context: Pick<ServiceContext, "env" | "repositories">,
-): RepositoryManager | null {
+): Repositories | null {
   return context.env?.DB ? context.repositories : null;
 }
 
@@ -96,7 +97,7 @@ export const createServiceContext = ({
   executionCtx,
 }: ServiceContextOptions): ServiceContext => {
   let databaseInstance: Database | null = null;
-  let repositoriesInstance: RepositoryManager | null = null;
+  let repositoriesInstance: Repositories | null = null;
   const requestCache = createRequestCache();
   let cachedUserSettings: IUserSettings | null | undefined = undefined;
   let userSettingsPromise: Promise<IUserSettings | null> | null = null;
@@ -131,10 +132,12 @@ export const createServiceContext = ({
     if (userSettingsPromise === null) {
       userSettingsPromise = memoizeRequest(requestCache, `user-settings:${user.id}`, async () => {
         if (!repositoriesInstance) {
-          repositoriesInstance = new RepositoryManager(env);
+          repositoriesInstance = createRepositories(env);
         }
 
-        const settings = await repositoriesInstance.userSettings.getUserSettings(user.id);
+        const settings = await repositoriesInstance
+          .get(UserSettingsRepository)
+          .getUserSettings(user.id);
 
         return settings;
       });
@@ -177,7 +180,7 @@ export const createServiceContext = ({
     },
     get repositories() {
       if (!repositoriesInstance) {
-        repositoriesInstance = new RepositoryManager(env);
+        repositoriesInstance = createRepositories(env);
       }
 
       return repositoriesInstance;

@@ -12,6 +12,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 
 import { findExactRecurrence, quoteAppearsIn } from "../domain/recurrence";
 
@@ -28,7 +30,7 @@ export async function listCorrections(context: ServiceContext): Promise<Correcti
   const user = context.requireUser();
 
   return listPageOf(
-    await context.repositories.corrections.listActive(user.id, LIST_LIMIT),
+    await context.repositories.get(CorrectionRepository).listActive(user.id, LIST_LIMIT),
     (correction) => correction.id,
   );
 }
@@ -36,7 +38,7 @@ export async function listCorrections(context: ServiceContext): Promise<Correcti
 export async function dismissCorrection(context: ServiceContext, id: string): Promise<void> {
   const user = context.requireUser();
 
-  if (!(await context.repositories.corrections.dismiss(user.id, id))) {
+  if (!(await context.repositories.get(CorrectionRepository).dismiss(user.id, id))) {
     throw new AssistantError("That rule is not on your list", ErrorType.NOT_FOUND, 404);
   }
 }
@@ -46,10 +48,9 @@ export async function requireCorrectionQuote(
   conversationId: string,
   quote: string,
 ): Promise<void> {
-  const contents = await context.repositories.messages.getRecentUserMessageContents(
-    conversationId,
-    QUOTE_SEARCH_MESSAGES,
-  );
+  const contents = await context.repositories
+    .get(MessageRepository)
+    .getRecentUserMessageContents(conversationId, QUOTE_SEARCH_MESSAGES);
   const texts = contents.map((content) => extractTextFromMessageContent(content));
 
   if (!quoteAppearsIn(quote, texts)) {
@@ -114,10 +115,9 @@ export async function findRecurringCorrection(
   conversationId: string,
 ): Promise<Correction | null> {
   const user = context.requireUser();
-  const candidates = await context.repositories.corrections.listActive(
-    user.id,
-    RECURRENCE_CANDIDATES,
-  );
+  const candidates = await context.repositories
+    .get(CorrectionRepository)
+    .listActive(user.id, RECURRENCE_CANDIDATES);
 
   if (candidates.length === 0) {
     return null;
@@ -143,7 +143,7 @@ export async function recordNewCorrection(
   const user = context.requireUser();
   const id = generateId();
 
-  await context.repositories.corrections.create({ id, userId: user.id, ...input });
+  await context.repositories.get(CorrectionRepository).create({ id, userId: user.id, ...input });
 
   return id;
 }
@@ -153,9 +153,9 @@ export async function recordPolicyCorrection(
   input: { conversationId: string; pattern: string; quote: string; placementRef: string },
 ): Promise<string> {
   const user = context.requireUser();
-  const [existing] = await context.repositories.corrections.listActiveByPlacementRefs(user.id, [
-    input.placementRef,
-  ]);
+  const [existing] = await context.repositories
+    .get(CorrectionRepository)
+    .listActiveByPlacementRefs(user.id, [input.placementRef]);
 
   if (existing) {
     await recordCorrectionRecurrence(context, {
@@ -187,7 +187,7 @@ export async function recordCorrectionRecurrence(
 ): Promise<void> {
   const user = context.requireUser();
 
-  await context.repositories.corrections.recordRecurrence({
+  await context.repositories.get(CorrectionRepository).recordRecurrence({
     userId: user.id,
     id: input.correction.id,
     placement: input.placement,

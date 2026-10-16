@@ -1,6 +1,7 @@
 import type { ModelsOverview } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import { listDecisions } from "~/modules/model-registry/application/decisions";
 import { listAliases } from "~/modules/model-serving/application/aliases";
 import { listDeployments } from "~/modules/model-serving/application/deployments";
@@ -23,7 +24,7 @@ export async function getModelsOverview(
     listTrainingRuns(context, workspaceId, projectId),
     listDecisions(context, workspaceId, { state: "pending", projectId }),
     getSpendSummary(context, workspaceId),
-    context.repositories.modelConnections.listConnections(workspaceId),
+    context.repositories.get(ModelConnectionRepository).listConnections(workspaceId),
   ]);
 
   return {

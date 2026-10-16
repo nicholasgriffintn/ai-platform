@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { readToolInteractionId } from "~/modules/responses/application/runs/interactions";
 import type { AnonymousUser, IEnv, IUser } from "~/types";
 
@@ -28,10 +29,9 @@ export async function resumeStoredTeammateInteraction(params: {
   }
 
   params.context.ensureDatabase();
-  const run = await params.context.repositories.conversationRuns.getForInteraction(
-    body.completion_id,
-    interactionId,
-  );
+  const run = await params.context.repositories
+    .get(ConversationRunRepository)
+    .getForInteraction(body.completion_id, interactionId);
   const configuration = teammateRunConfigurationSchema.safeParse(run?.resolvedConfiguration);
 
   if (!configuration.success) {

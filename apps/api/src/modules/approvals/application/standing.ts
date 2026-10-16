@@ -14,6 +14,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
 import { readPendingPolyCall } from "~/modules/poly/application/pending-call";
 import { requirePolyContext } from "~/modules/poly/application/poly-context";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -77,10 +78,9 @@ export async function grantPolyStandingApproval(
       expiresAt: new Date(now + TEAMMATE_STANDING_APPROVAL_DAYS * DAY_MS).toISOString(),
     },
   ];
-  const updated = await context.repositories.teammateContexts.updateStandingApprovals(
-    polyContext.id,
-    approvals,
-  );
+  const updated = await context.repositories
+    .get(TeammateContextRepository)
+    .updateStandingApprovals(polyContext.id, approvals);
   const granted = approvals.at(-1);
 
   if (!updated || !granted) {
@@ -117,7 +117,7 @@ export async function revokePolyStandingApproval(
   const { toolName, destination } = parsed;
   const polyContext = await requirePolyContext(context);
   const now = Date.now();
-  const updated = await context.repositories.teammateContexts.updateStandingApprovals(
+  const updated = await context.repositories.get(TeammateContextRepository).updateStandingApprovals(
     polyContext.id,
     polyContext.standingApprovals.filter(
       (approval) =>

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { SavedItemRepository } from "~/modules/conversations/infrastructure/SavedItemRepository";
 
 import { listSavedItems, saveItem, unsaveItem } from "../saved-items";
 
@@ -30,7 +32,7 @@ function createContext() {
   const context = {
     ensureDatabase: vi.fn(),
     requireUser: () => ({ id: 7 }),
-    repositories: { savedItems },
+    repositories: fakeRepositories([[SavedItemRepository, savedItems]]),
   } as unknown as ServiceContext;
 
   return { context, savedItems };

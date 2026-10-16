@@ -1,13 +1,14 @@
 import { toListPage, type WorkAttentionQuery } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { requireWorkAccess } from "~/modules/workspaces/application/access";
 
 export async function listWorkAttention(context: ServiceContext, query: WorkAttentionQuery) {
   const user = requireWorkAccess(context);
   const [{ items, total }, facets] = await Promise.all([
-    context.repositories.attention.list(user.id, query),
-    context.repositories.attention.listFacets(user.id),
+    context.repositories.get(AttentionRepository).list(user.id, query),
+    context.repositories.get(AttentionRepository).listFacets(user.id),
   ]);
 
   return { ...toListPage(items, query.limit, (item) => item.id), total, facets };

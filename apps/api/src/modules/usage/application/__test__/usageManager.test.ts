@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { UsageManager } from "~/modules/usage/application/usageManager";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
+import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { AnonymousUser, User } from "~/types";
 
 function user(overrides: Partial<User> = {}): User {
@@ -36,38 +41,45 @@ function repositories(
 
   return {
     incrementUsageCounters,
-    value: {
-      users: {
-        incrementUsageCounters,
-        getUserById: vi.fn(async () => ({ plan_id: "pro" })),
-      },
-      anonymousUsers: {
-        getCreditSpend: vi.fn(async () => ({
-          spentCreditMicros: options.anonymousSpentCreditMicros ?? 0,
-          reservedCreditMicros: 0,
-        })),
-      },
-      usageBalances: {
-        getBalance: vi.fn(async () => options.balance ?? null),
-      },
-      plans: {
-        getPlanById: vi.fn(async () =>
-          options.plan === undefined
-            ? {
-                included_credits: options.includedCredits ?? 0,
-                grace_credits: options.graceCredits ?? 0,
-              }
-            : options.plan,
-        ),
-      },
-    },
+    value: fakeRepositories([
+      [
+        UserRepository,
+        {
+          incrementUsageCounters,
+          getUserById: vi.fn(async () => ({ plan_id: "pro" })),
+        },
+      ],
+      [
+        AnonymousUserRepository,
+        {
+          getCreditSpend: vi.fn(async () => ({
+            spentCreditMicros: options.anonymousSpentCreditMicros ?? 0,
+            reservedCreditMicros: 0,
+          })),
+        },
+      ],
+      [UsageBalanceRepository, { getBalance: vi.fn(async () => options.balance ?? null) }],
+      [
+        PlanRepository,
+        {
+          getPlanById: vi.fn(async () =>
+            options.plan === undefined
+              ? {
+                  included_credits: options.includedCredits ?? 0,
+                  grace_credits: options.graceCredits ?? 0,
+                }
+              : options.plan,
+          ),
+        },
+      ],
+    ]),
   };
 }
 
 describe("UsageManager", () => {
   it("records one response per turn without cutting off later model steps", async () => {
     const repo = repositories();
-    const manager = new UsageManager(repo.value as never, user(), null);
+    const manager = new UsageManager(repo.value, user(), null);
 
     await manager.incrementUsage();
     await manager.incrementUsage();
@@ -90,7 +102,7 @@ describe("UsageManager", () => {
         overage_enabled: 0,
       },
     });
-    const manager = new UsageManager(repo.value as never, user({ plan_id: "pro" }), null);
+    const manager = new UsageManager(repo.value, user({ plan_id: "pro" }), null);
 
     await expect(manager.getUsageLimits()).resolves.toMatchObject({
       credits: {
@@ -108,7 +120,7 @@ describe("UsageManager", () => {
 
   it("shows configured plan credits before the first ledger event", async () => {
     const repo = repositories({ includedCredits: 500, graceCredits: 50 });
-    const manager = new UsageManager(repo.value as never, user({ plan_id: "pro" }), null);
+    const manager = new UsageManager(repo.value, user({ plan_id: "pro" }), null);
 
     await expect(manager.getUsageLimits()).resolves.toMatchObject({
       credits: {
@@ -126,7 +138,7 @@ describe("UsageManager", () => {
       graceCredits: 0,
       anonymousSpentCreditMicros: 30_000_000,
     });
-    const manager = new UsageManager(repo.value as never, null, anonymousUser());
+    const manager = new UsageManager(repo.value, null, anonymousUser());
 
     await expect(manager.getUsageLimits()).resolves.toMatchObject({
       credits: { state: "exhausted" },

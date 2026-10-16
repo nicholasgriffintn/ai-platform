@@ -8,6 +8,16 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { resolveProjectTaskToolApproval } from "../approvals";
 import { buildStageInstructions, resolveTaskRuntime } from "../flow";
@@ -102,58 +112,82 @@ function createContext(
       env: {},
       ensureDatabase: vi.fn(),
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-      repositories: {
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({
-            id: "project-1",
-            workspace_id: "workspace-1",
-            name: "Pricing",
-            flow: overrides.flow ?? null,
-            ...overrides.project,
-          }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockImplementation(async (_workspaceId, userId: number) => {
-            const memberships = overrides.memberships ?? { 7: true };
+      repositories: fakeRepositories([
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({
+              id: "project-1",
+              workspace_id: "workspace-1",
+              name: "Pricing",
+              flow: overrides.flow ?? null,
+              ...overrides.project,
+            }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockImplementation(async (_workspaceId, userId: number) => {
+              const memberships = overrides.memberships ?? { 7: true };
 
-            return memberships[userId] ? { role: overrides.role ?? "owner" } : null;
-          }),
-          listProjectCapabilities: vi.fn().mockResolvedValue(overrides.capabilities ?? []),
-          updateProject: vi.fn().mockResolvedValue(undefined),
-        },
-        teammates: {
-          getTeammateById: vi.fn().mockResolvedValue(overrides.teammate ?? null),
-          listWorkspaceDefaults: vi.fn().mockResolvedValue([]),
-          listPlatformTeammates: vi.fn().mockResolvedValue([]),
-          upsertPlatformTeammates: vi.fn().mockResolvedValue(undefined),
-        },
-        projectTasks: {
-          getTaskById: vi.fn().mockResolvedValue(task),
-          listProjectTasks: vi.fn().mockResolvedValue(overrides.boardTasks ?? [task]),
-          getMaxPosition: vi.fn().mockResolvedValue(0),
-          countActiveTasks: vi.fn().mockResolvedValue(overrides.activeCount ?? 0),
-          createTask: vi.fn().mockResolvedValue({ task, created: true }),
-          updateTask,
-        },
-        audit: { createRecord: vi.fn().mockResolvedValue(undefined) },
-        conversations: {
-          getConversation: vi.fn().mockResolvedValue(null),
-          createConversation,
-        },
-        tasks: {
-          getTaskById: getDispatchTask,
-          updateTask: updateDispatchTask,
-        },
-        goals: {
-          getGoalById,
-          updateGoal,
-        },
-        activities: {
-          cancelActiveActivitiesByGroup,
-        },
-        connectorOperationApprovals: {
-          listConsumedRunIds: vi.fn().mockResolvedValue(new Set()),
-        },
-      },
+              return memberships[userId] ? { role: overrides.role ?? "owner" } : null;
+            }),
+            listProjectCapabilities: vi.fn().mockResolvedValue(overrides.capabilities ?? []),
+            updateProject: vi.fn().mockResolvedValue(undefined),
+          },
+        ],
+        [
+          TeammateRepository,
+          {
+            getTeammateById: vi.fn().mockResolvedValue(overrides.teammate ?? null),
+            listWorkspaceDefaults: vi.fn().mockResolvedValue([]),
+            listPlatformTeammates: vi.fn().mockResolvedValue([]),
+            upsertPlatformTeammates: vi.fn().mockResolvedValue(undefined),
+          },
+        ],
+        [
+          ProjectTaskRepository,
+          {
+            getTaskById: vi.fn().mockResolvedValue(task),
+            listProjectTasks: vi.fn().mockResolvedValue(overrides.boardTasks ?? [task]),
+            getMaxPosition: vi.fn().mockResolvedValue(0),
+            countActiveTasks: vi.fn().mockResolvedValue(overrides.activeCount ?? 0),
+            createTask: vi.fn().mockResolvedValue({ task, created: true }),
+            updateTask,
+          },
+        ],
+        [AuditRepository, { createRecord: vi.fn().mockResolvedValue(undefined) }],
+        [
+          ConversationRepository,
+          {
+            getConversation: vi.fn().mockResolvedValue(null),
+            createConversation,
+          },
+        ],
+        [
+          TaskRepository,
+          {
+            getTaskById: getDispatchTask,
+            updateTask: updateDispatchTask,
+          },
+        ],
+        [
+          GoalRepository,
+          {
+            getGoalById,
+            updateGoal,
+          },
+        ],
+        [
+          ActivityRepository,
+          {
+            cancelActiveActivitiesByGroup,
+          },
+        ],
+        [
+          ConnectorOperationApprovalRepository,
+          {
+            listConsumedRunIds: vi.fn().mockResolvedValue(new Set()),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext,
     updateTask,
     createConversation,
@@ -173,7 +207,7 @@ vi.mock("../runner", async (importOriginal) => {
     queueProjectTaskRun: vi
       .fn()
       .mockImplementation(async ({ context, task, runnerIdentityUserId, stageId }) =>
-        context.repositories.projectTasks.updateTask(task.id, {
+        context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
           status: "queued",
           runnerIdentityUserId,
           stageId: stageId ?? task.stageId,
@@ -286,7 +320,7 @@ describe("createProjectTask", () => {
       objective: "Ship the pricing note",
     });
 
-    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
+    expect(context.repositories.get(ProjectTaskRepository).createTask).toHaveBeenCalledWith(
       expect.objectContaining({ flowSnapshot: flow, stageId: "build" }),
     );
   });
@@ -466,7 +500,7 @@ describe("startProjectTask", () => {
     });
 
     vi.mocked(
-      context.repositories.connectorOperationApprovals.listConsumedRunIds,
+      context.repositories.get(ConnectorOperationApprovalRepository).listConsumedRunIds,
     ).mockResolvedValue(new Set(["run-1"]));
 
     await expect(startProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({

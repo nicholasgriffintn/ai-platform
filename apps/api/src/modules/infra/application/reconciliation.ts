@@ -8,7 +8,9 @@ import {
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { findNumericFieldDeep } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
+import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/infra/reconciliation" });
@@ -192,7 +194,7 @@ export interface InfraReconciliationResult {
 export async function runInfraReconciliation(params: {
   env: IEnv;
   day?: string;
-  repositories?: RepositoryManager;
+  repositories?: Repositories;
 }): Promise<InfraReconciliationResult> {
   const { env } = params;
   const day = params.day ?? previousUtcDay();
@@ -206,8 +208,8 @@ export async function runInfraReconciliation(params: {
     return { status: "skipped", day, rowsWritten: 0 };
   }
 
-  const repositories = params.repositories ?? new RepositoryManager(env);
-  const attributed = await repositories.usageEvents.summariseInfrastructureDay(day);
+  const repositories = params.repositories ?? createRepositories(env);
+  const attributed = await repositories.get(UsageEventRepository).summariseInfrastructureDay(day);
   const attributedByKey = new Map(
     attributed.map((row) => [`${row.resource}:${row.unit}`, row.cost_micros]),
   );
@@ -229,7 +231,7 @@ export async function runInfraReconciliation(params: {
         entry.quantity,
       );
 
-      await repositories.infraCostDaily.upsertDay({
+      await repositories.get(InfraCostDailyRepository).upsertDay({
         day,
         resource: probe.resource,
         unit: entry.unit,
@@ -250,7 +252,7 @@ export async function runInfraReconciliation(params: {
       continue;
     }
 
-    await repositories.infraCostDaily.upsertDay({
+    await repositories.get(InfraCostDailyRepository).upsertDay({
       day,
       resource: row.resource,
       unit: row.unit,

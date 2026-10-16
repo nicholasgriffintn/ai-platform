@@ -16,8 +16,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import z from "zod/v4";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { openSealedJson, sealJson } from "~/infrastructure/secret-envelope";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
+import { BenchmarkVoteRepository } from "~/modules/benchmarks/infrastructure/BenchmarkVoteRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
@@ -36,7 +38,7 @@ const pairTokenSchema = z.object({
 
 export async function getArenaPair(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   benchmarkId: BenchmarkId,
 ): Promise<{ pair: BenchmarkArenaPair | null }> {
   const benchmark = getBenchmark(benchmarkId);
@@ -99,7 +101,7 @@ export async function getArenaPair(
 
 export async function submitArenaVote(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   user: IUser,
   request: BenchmarkVoteRequest,
 ): Promise<BenchmarkVoteResult> {
@@ -122,15 +124,15 @@ export async function submitArenaVote(
   }
 
   const [left, right] = await Promise.all([
-    repositories.benchmarkRuns.get(token.leftRunId),
-    repositories.benchmarkRuns.get(token.rightRunId),
+    repositories.get(BenchmarkRunRepository).get(token.leftRunId),
+    repositories.get(BenchmarkRunRepository).get(token.rightRunId),
   ]);
 
   if (!left || !right) {
     throw new AssistantError("One of these entries has been withdrawn", ErrorType.NOT_FOUND, 404);
   }
 
-  const created = await repositories.benchmarkVotes.create({
+  const created = await repositories.get(BenchmarkVoteRepository).create({
     benchmarkId: token.benchmarkId,
     version: token.version,
     pairKey: `${token.itemId}:${[left.id, right.id].sort().join(":")}`,
@@ -148,7 +150,7 @@ export async function submitArenaVote(
   return { left: left.entrant.name, right: right.entrant.name, winner: request.winner };
 }
 
-export async function refreshBenchmarkRatings(repositories: RepositoryManager): Promise<number> {
+export async function refreshBenchmarkRatings(repositories: Repositories): Promise<number> {
   let updated = 0;
 
   for (const benchmark of listBenchmarks()) {
@@ -156,10 +158,9 @@ export async function refreshBenchmarkRatings(repositories: RepositoryManager): 
       continue;
     }
 
-    const votes = await repositories.benchmarkVotes.listForBoard(
-      benchmark.summary.id,
-      benchmark.summary.version,
-    );
+    const votes = await repositories
+      .get(BenchmarkVoteRepository)
+      .listForBoard(benchmark.summary.id, benchmark.summary.version);
 
     if (votes.length === 0) {
       continue;
@@ -167,7 +168,10 @@ export async function refreshBenchmarkRatings(repositories: RepositoryManager): 
 
     const runIds = [...new Set(votes.flatMap((vote) => [vote.left_run_id, vote.right_run_id]))];
     const entrantByRun = new Map(
-      (await repositories.benchmarkRuns.listByIds(runIds)).map((run) => [run.id, run.entrant_key]),
+      (await repositories.get(BenchmarkRunRepository).listByIds(runIds)).map((run) => [
+        run.id,
+        run.entrant_key,
+      ]),
     );
     const pairwise: PairwiseVote[] = votes.flatMap((vote) => {
       const left = entrantByRun.get(vote.left_run_id);
@@ -181,7 +185,7 @@ export async function refreshBenchmarkRatings(repositories: RepositoryManager): 
       const rating = ratings.get(run.entrant_key);
 
       if (rating && JSON.stringify(rating) !== JSON.stringify(run.rating)) {
-        await repositories.benchmarkRuns.update(run.id, { rating });
+        await repositories.get(BenchmarkRunRepository).update(run.id, { rating });
         updated += 1;
       }
     }

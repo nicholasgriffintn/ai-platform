@@ -20,10 +20,14 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { TaskInboxRow } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 const DEFAULT_ATTENTION_LIMIT = 50;
 
@@ -144,8 +148,8 @@ export async function listProjectTaskAttention(
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
   const [rows, unread] = await Promise.all([
-    context.repositories.taskNotifications.listInbox(user.id, limit + 1),
-    context.repositories.taskNotifications.countUnreadInbox(user.id),
+    context.repositories.get(TaskNotificationRepository).listInbox(user.id, limit + 1),
+    context.repositories.get(TaskNotificationRepository).countUnreadInbox(user.id),
   ]);
   const items = rows
     .map(formatInboxItem)
@@ -157,8 +161,8 @@ export async function listProjectTaskAttention(
 export async function getTaskNotificationSettings(context: ServiceContext) {
   const user = context.requireUser();
   const [preferences, registrations] = await Promise.all([
-    context.repositories.taskNotifications.getPreferences(user.id),
-    context.repositories.taskNotifications.listRegistrations(user.id),
+    context.repositories.get(TaskNotificationRepository).getPreferences(user.id),
+    context.repositories.get(TaskNotificationRepository).listRegistrations(user.id),
   ]);
 
   return {
@@ -174,10 +178,9 @@ export async function updateTaskNotificationPreferences(
   updates: UpdateTaskNotificationPreferences,
 ) {
   const user = context.requireUser();
-  const preferences = await context.repositories.taskNotifications.updatePreferences(
-    user.id,
-    updates,
-  );
+  const preferences = await context.repositories
+    .get(TaskNotificationRepository)
+    .updatePreferences(user.id, updates);
 
   return {
     ...(await getTaskNotificationSettings(context)),
@@ -190,10 +193,9 @@ export async function registerTaskNotification(
   input: RegisterTaskNotification,
 ) {
   const user = context.requireUser();
-  const registration = await context.repositories.taskNotifications.upsertRegistration(
-    user.id,
-    input,
-  );
+  const registration = await context.repositories
+    .get(TaskNotificationRepository)
+    .upsertRegistration(user.id, input);
 
   return { registration };
 }
@@ -204,7 +206,9 @@ export async function removeTaskNotificationRegistration(
 ) {
   const user = context.requireUser();
 
-  await context.repositories.taskNotifications.removeRegistration(user.id, installationId);
+  await context.repositories
+    .get(TaskNotificationRepository)
+    .removeRegistration(user.id, installationId);
 
   return { success: true };
 }
@@ -215,11 +219,9 @@ export async function updateTaskInboxReceipts(
   action: "read" | "dismiss",
 ) {
   const user = requireWorkAccess(context);
-  const updated = await context.repositories.taskNotifications.updateInboxReceipts(
-    user.id,
-    itemIds,
-    action,
-  );
+  const updated = await context.repositories
+    .get(TaskNotificationRepository)
+    .updateInboxReceipts(user.id, itemIds, action);
 
   if (updated > 0) {
     publishUserEvent(context, user.id, "attention.changed", { action });
@@ -236,7 +238,7 @@ export async function resolveTaskNotificationDeepLink(context: ServiceContext, i
     throw new AssistantError("Notification link is invalid", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const task = await context.repositories.projectTasks.getTaskById(parsed.taskId);
+  const task = await context.repositories.get(ProjectTaskRepository).getTaskById(parsed.taskId);
 
   if (!task) {
     return {
@@ -313,19 +315,18 @@ export async function reconcileTaskNotifications(
       });
     }
 
-    const members = await context.repositories.workspaces.listMembers(task.workspaceId);
+    const members = await context.repositories
+      .get(WorkspaceRepository)
+      .listMembers(task.workspaceId);
     const recipients = notificationRecipients(
       task,
       state,
       members.map((member) => member.user_id),
     );
-    const deliveryIds = await context.repositories.taskNotifications.createDeliveries(
-      task.id,
-      task.attentionVersion,
-      state.category,
-      recipients,
-    );
-    const taskService = new TaskService(context.env, context.repositories.tasks);
+    const deliveryIds = await context.repositories
+      .get(TaskNotificationRepository)
+      .createDeliveries(task.id, task.attentionVersion, state.category, recipients);
+    const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
 
     await Promise.allSettled(
       deliveryIds.map((deliveryId) =>

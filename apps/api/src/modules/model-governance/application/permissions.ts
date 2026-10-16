@@ -5,6 +5,8 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelPermissionRepository } from "~/modules/model-governance/infrastructure/ModelPermissionRepository";
 import { requireModelAction } from "~/modules/model-registry/application/access";
 
 import { loadModelPermissions, withView } from "./permission-grants";
@@ -40,13 +42,13 @@ export async function saveModelPermissions(
 ): Promise<ModelPermissions> {
   const { userId } = await requireModelAction(context, workspaceId, "manage_policy");
 
-  await context.repositories.modelPermissions.save({
+  await context.repositories.get(ModelPermissionRepository).save({
     workspaceId,
     grants: { admin: withView(request.grants.admin), member: withView(request.grants.member) },
     separationOfDuties: request.separationOfDuties,
     updatedBy: userId,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_permissions.updated",

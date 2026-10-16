@@ -28,6 +28,9 @@ vi.mock("../interrupted-reply", () => ({
   salvageInterruptedReply: mockSalvageInterruptedReply,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+
 import { reconcileInactiveChatRun } from "../recovery";
 
 const runningRun: ChatRun = {
@@ -52,13 +55,16 @@ function createContext(transitionedRun: ChatRun, partial: string | null = null):
   return {
     env: { DB: {} },
     waitUntil: vi.fn(),
-    repositories: {
-      conversationRuns: {
-        transition: vi.fn().mockResolvedValue(transitionedRun),
-        getById: vi.fn(),
-        getPartialContent: vi.fn().mockResolvedValue(partial),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRunRepository,
+        {
+          transition: vi.fn().mockResolvedValue(transitionedRun),
+          getById: vi.fn(),
+          getPartialContent: vi.fn().mockResolvedValue(partial),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -113,7 +119,7 @@ describe("reconcileInactiveChatRun", () => {
 
     await expect(reconcileInactiveChatRun(context, runningRun)).resolves.toBe(runningRun);
 
-    expect(context.repositories.conversationRuns.transition).not.toHaveBeenCalled();
+    expect(context.repositories.get(ConversationRunRepository).transition).not.toHaveBeenCalled();
     expect(mockSalvageInterruptedReply).not.toHaveBeenCalled();
   });
 });

@@ -1,28 +1,30 @@
 import { evaluateGate } from "@ngriffin_uk/polychat-library-model-registry";
 import type { AliasGate } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import { conflict, notFound } from "~/modules/model-registry/application/access";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 
 export async function requireAliasGateSuite(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   gate: AliasGate | null | undefined,
 ): Promise<void> {
-  if (gate && !(await repositories.modelEvals.getSuite(workspaceId, gate.suiteId))) {
+  if (gate && !(await repositories.get(ModelEvalRepository).getSuite(workspaceId, gate.suiteId))) {
     throw notFound("Gate suite");
   }
 }
 
 export async function evaluateAliasTarget(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   projectId: string | null,
   routeId: string,
   gate: AliasGate | null,
 ) {
-  const route = await repositories.modelRoutes.getRoute(workspaceId, routeId);
+  const route = await repositories.get(ModelRouteRepository).getRoute(workspaceId, routeId);
 
   if (!route || route.status !== "active") {
     throw notFound("Active route");
@@ -39,7 +41,7 @@ export async function evaluateAliasTarget(
   await requireAliasGateSuite(repositories, workspaceId, gate);
 
   const gateRun = gate
-    ? await repositories.modelEvals.latestCompletedRun(gate.suiteId, route.id)
+    ? await repositories.get(ModelEvalRepository).latestCompletedRun(gate.suiteId, route.id)
     : null;
 
   return {

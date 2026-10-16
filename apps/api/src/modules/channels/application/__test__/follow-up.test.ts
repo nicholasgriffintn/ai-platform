@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 
 import { deliverChannelFollowUp } from "../follow-up";
 
@@ -27,12 +30,15 @@ function createContext(validMapping: boolean): ServiceContext {
   return {
     env: {},
     requireUser: () => ({ id: 42 }),
-    repositories: {
-      channelBindings: { getById: async () => binding },
-      channelSenders: {
-        validateMapping: async () => (validMapping ? { id: "mapping_1" } : null),
-      },
-    },
+    repositories: fakeRepositories([
+      [ChannelBindingRepository, { getById: async () => binding }],
+      [
+        ChannelSenderRepository,
+        {
+          validateMapping: async () => (validMapping ? { id: "mapping_1" } : null),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 

@@ -5,14 +5,17 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import {
   decodeEmbeddingRuntimeTarget,
   toEmbeddingRuntimeTarget,
 } from "~/infrastructure/providers/capabilities/embedding/target";
 import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import { cleanupStaleIndexes, insertSourceVectors } from "./knowledge-vectors";
@@ -54,7 +57,7 @@ export async function indexProjectSource(
 ): Promise<void> {
   await assertOwned();
   await cleanupStaleIndexes(context, sourceId);
-  const source = await context.repositories.sourceSearch.getSource(sourceId);
+  const source = await context.repositories.get(SourceSearchRepository).getSource(sourceId);
 
   if (
     !source ||
@@ -66,10 +69,9 @@ export async function indexProjectSource(
   }
 
   await requireSourceAccess(context, context.requireUser().id, source.id);
-  const existing = await context.repositories.sourceSearch.getDocument(
-    source.id,
-    source.search_revision,
-  );
+  const existing = await context.repositories
+    .get(SourceSearchRepository)
+    .getDocument(source.id, source.search_revision);
 
   if (existing?.status === "active") {
     return;
@@ -86,19 +88,20 @@ export async function indexProjectSource(
         vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
       });
 
-  await context.repositories.sourceSearch.prepare(
-    source,
-    document,
-    target,
-    context.requireUser().id,
-  );
+  await context.repositories
+    .get(SourceSearchRepository)
+    .prepare(source, document, target, context.requireUser().id);
   if (!context.env.AI || !context.env.VECTOR_DB) {
     return;
   }
 
   const token = generateId();
 
-  if (!(await context.repositories.sourceSearch.claim(document.documentId, token, "lexical"))) {
+  if (
+    !(await context.repositories
+      .get(SourceSearchRepository)
+      .claim(document.documentId, token, "lexical"))
+  ) {
     return;
   }
 
@@ -106,17 +109,16 @@ export async function indexProjectSource(
     await assertOwned();
     await insertSourceVectors(context, source, document, target, token, assertOwned);
   } finally {
-    await context.repositories.sourceSearch.release(document.documentId, token);
+    await context.repositories.get(SourceSearchRepository).release(document.documentId, token);
   }
 }
 
 export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
-  const sources = await repositories.sourceSearch.maintenance(
+  const sources = await new SourceSearchRepository(env).maintenance(
     Boolean(env.AI && env.VECTOR_DB),
     true,
   );
-  const tasks = new TaskService(env, repositories.tasks);
+  const tasks = new TaskService(env, new TaskRepository(env));
 
   for (const source of sources) {
     await tasks.enqueueTask({
@@ -136,8 +138,8 @@ export async function indexSourceForUser(
   sourceId: string,
   assertOwned: () => Promise<void>,
 ): Promise<void> {
-  const repositories = RepositoryManager.getInstance(env);
-  const user = userId ? await repositories.users.getUserById(userId) : null;
+  const repositories = createRepositories(env);
+  const user = userId ? await repositories.get(UserRepository).getUserById(userId) : null;
 
   if (!user) {
     await cleanupStaleIndexes({ env, repositories }, sourceId);

@@ -20,7 +20,8 @@ import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cac
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { Database } from "~/infrastructure/database";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
@@ -55,6 +56,7 @@ import {
 } from "~/modules/connectors/application";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
@@ -83,6 +85,7 @@ import {
   resolveModelToolConfigurations,
   type StoredModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfiguration";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import {
   applyProjectCodingEnvironment,
   resolveProjectChatContext,
@@ -149,7 +152,7 @@ interface RequestScope {
   options: CoreChatOptions;
   user: IUser | null | undefined;
   database: Database;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   projectContext: ProjectChatContext | null;
   hasFixedProjectTaskTools: boolean;
   memoryScope: MemoryScope;
@@ -215,7 +218,7 @@ export class RequestPreparer {
     }
 
     return memoizeRequest(options.context?.requestCache, `user-settings:${user.id}`, () =>
-      repositories.userSettings.getUserSettings(user.id),
+      repositories.get(UserSettingsRepository).getUserSettings(user.id),
     );
   }
 
@@ -224,9 +227,9 @@ export class RequestPreparer {
       return undefined;
     }
 
-    const conversation = await scope.repositories.conversations.getConversation(
-      scope.options.completion_id,
-    );
+    const conversation = await scope.repositories
+      .get(ConversationRepository)
+      .getConversation(scope.options.completion_id);
 
     return conversation?.permission_mode;
   }
@@ -287,7 +290,9 @@ export class RequestPreparer {
       return Promise.resolve([]);
     }
 
-    return repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool");
+    return repositories
+      .get(CapabilityConfigurationRepository)
+      .list({ type: "user", id: user.id }, "tool");
   }
 
   private resolveMessageText(validationContext: ValidationContext): string {

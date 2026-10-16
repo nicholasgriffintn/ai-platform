@@ -27,6 +27,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { generateImage } from "~/modules/generate/application/image";
 import type { UserPetRecord } from "~/modules/pets/infrastructure/UserPetRepository";
+import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/pets" });
@@ -133,11 +135,9 @@ function assertSheetIsValid(bytes: Uint8Array): {
 
 export async function listPets(context: ServiceContext, query: ListQuery): Promise<UserPetsPage> {
   const user = context.requireUser();
-  const records = await context.repositories.userPets.listUserPets(
-    user.id,
-    query.limit + 1,
-    query.after,
-  );
+  const records = await context.repositories
+    .get(UserPetRepository)
+    .listUserPets(user.id, query.limit + 1, query.after);
 
   return mapListPage(
     toListPage(records, query.limit, (record) => record.id),
@@ -147,7 +147,7 @@ export async function listPets(context: ServiceContext, query: ListQuery): Promi
 
 export async function getPet(context: ServiceContext, petId: string): Promise<UserPet> {
   const user = context.requireUser();
-  const record = await context.repositories.userPets.getUserPet(user.id, petId);
+  const record = await context.repositories.get(UserPetRepository).getUserPet(user.id, petId);
 
   if (!record) {
     throw new AssistantError("Pet not found", ErrorType.NOT_FOUND, 404);
@@ -197,7 +197,7 @@ export async function createPet(context: ServiceContext, formData: FormData): Pr
     httpMetadata: { contentType: mimeType },
   });
 
-  const record = await context.repositories.userPets.createUserPet({
+  const record = await context.repositories.get(UserPetRepository).createUserPet({
     userId: user.id,
     name,
     description: description ?? null,
@@ -212,13 +212,13 @@ export async function createPet(context: ServiceContext, formData: FormData): Pr
 
 export async function deletePet(context: ServiceContext, petId: string): Promise<void> {
   const user = context.requireUser();
-  const record = await context.repositories.userPets.getUserPet(user.id, petId);
+  const record = await context.repositories.get(UserPetRepository).getUserPet(user.id, petId);
 
   if (!record) {
     throw new AssistantError("Pet not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const settings = await context.repositories.userSettings.getUserSettings(user.id);
+  const settings = await context.repositories.get(UserSettingsRepository).getUserSettings(user.id);
 
   if (settings) {
     const overrides = parsePetModelOverrides(settings.pet_model_overrides);
@@ -233,10 +233,10 @@ export async function deletePet(context: ServiceContext, petId: string): Promise
       });
     }
 
-    await context.repositories.userSettings.updateUserSettings(user.id, update);
+    await context.repositories.get(UserSettingsRepository).updateUserSettings(user.id, update);
   }
 
-  await context.repositories.userPets.deleteUserPet(user.id, petId);
+  await context.repositories.get(UserPetRepository).deleteUserPet(user.id, petId);
 
   const storage = StorageService.forPrivateAssets(context);
 
@@ -257,7 +257,7 @@ export async function readPetSheet(
   petId: string,
 ): Promise<{ data: ArrayBuffer; contentType: string; etag: string }> {
   const user = context.requireUser();
-  const record = await context.repositories.userPets.getUserPet(user.id, petId);
+  const record = await context.repositories.get(UserPetRepository).getUserPet(user.id, petId);
 
   if (!record) {
     throw new AssistantError("Pet not found", ErrorType.NOT_FOUND, 404);

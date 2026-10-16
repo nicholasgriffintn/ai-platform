@@ -6,6 +6,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat-runs/interrupted-reply" });
@@ -36,7 +37,7 @@ export async function salvageInterruptedReply(
   }
 
   try {
-    const user = await context.repositories.users.getUserById(run.initiatorUserId);
+    const user = await context.repositories.get(UserRepository).getUserById(run.initiatorUserId);
 
     if (!user) {
       return false;

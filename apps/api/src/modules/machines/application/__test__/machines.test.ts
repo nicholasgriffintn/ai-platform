@@ -2,7 +2,9 @@ import type { MachineHeartbeat } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
+import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 
 import { heartbeatMachine, listMachines } from "../index";
 
@@ -35,14 +37,17 @@ function context(
   return {
     getUserSettings: vi.fn().mockResolvedValue(settings),
     requireUser: () => ({ id: 42 }) as ServiceContext["user"],
-    repositories: {
-      machines: {
-        upsert: machines.upsert ?? vi.fn().mockResolvedValue(undefined),
-        listForUser: machines.listForUser ?? vi.fn().mockResolvedValue([]),
-        deleteAllForUser: machines.deleteAllForUser ?? vi.fn().mockResolvedValue(undefined),
-        deleteForUser: machines.deleteForUser ?? vi.fn().mockResolvedValue(undefined),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        MachineRepository,
+        {
+          upsert: machines.upsert ?? vi.fn().mockResolvedValue(undefined),
+          listForUser: machines.listForUser ?? vi.fn().mockResolvedValue([]),
+          deleteAllForUser: machines.deleteAllForUser ?? vi.fn().mockResolvedValue(undefined),
+          deleteForUser: machines.deleteForUser ?? vi.fn().mockResolvedValue(undefined),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 

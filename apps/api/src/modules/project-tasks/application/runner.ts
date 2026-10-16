@@ -31,19 +31,28 @@ import {
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { scheduleComposioConnectorRunCleanup } from "~/modules/connectors/application/composio-run";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import { startResponse } from "~/modules/responses/application/start";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/tasks/application/types";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { parseProjectFlow } from "~/modules/workspaces/application/format";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
@@ -79,7 +88,7 @@ export async function enqueueProjectTaskRun(
   approvedTools: string[] = [],
   interaction?: { toolName: string; response: Record<string, unknown> },
 ): Promise<void> {
-  const taskService = new TaskService(context.env, context.repositories.tasks);
+  const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
 
   await taskService.enqueueTask({
     id: dispatchTaskId,
@@ -123,7 +132,7 @@ export async function queueProjectTaskRun(params: {
     task.blockedReason === "run_failed" && task.conversationId
       ? projectTaskConversationId(task.id, dispatchTaskId)
       : null;
-  const queued = await context.repositories.projectTasks.queueTaskForRun({
+  const queued = await context.repositories.get(ProjectTaskRepository).queueTaskForRun({
     taskId: task.id,
     projectId: task.projectId,
     runnerIdentityUserId,
@@ -160,7 +169,7 @@ export async function queueProjectTaskRun(params: {
       params.interaction,
     );
   } catch (error) {
-    await context.repositories.projectTasks.failDispatch({
+    await context.repositories.get(ProjectTaskRepository).failDispatch({
       taskId: task.id,
       projectId: task.projectId,
       dispatchTaskId,
@@ -174,9 +183,11 @@ export async function queueProjectTaskRun(params: {
 
 async function loadDependentBoard(context: ServiceContext, projectId: string) {
   const [tasks, active, project] = await Promise.all([
-    context.repositories.projectTasks.listProjectTasks(projectId, { includeDone: true }),
-    context.repositories.projectTasks.countActiveTasks(projectId),
-    context.repositories.workspaces.getProject(projectId),
+    context.repositories
+      .get(ProjectTaskRepository)
+      .listProjectTasks(projectId, { includeDone: true }),
+    context.repositories.get(ProjectTaskRepository).countActiveTasks(projectId),
+    context.repositories.get(WorkspaceRepository).getProject(projectId),
   ]);
 
   return { tasks, active, project };
@@ -216,7 +227,7 @@ export async function releaseReadyDependentTasks(
         stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
       });
 
-      await context.repositories.audit.createRecord({
+      await context.repositories.get(AuditRepository).createRecord({
         workspaceId: task.workspaceId,
         actorUserId: task.runnerIdentityUserId,
         action: "project.task.started",
@@ -258,20 +269,20 @@ export async function ensureProjectTaskConversation(params: {
   conversationId: string;
   userId: number;
 }): Promise<void> {
-  const existing = await params.context.repositories.conversations.getConversation(
-    params.conversationId,
-  );
+  const existing = await params.context.repositories
+    .get(ConversationRepository)
+    .getConversation(params.conversationId);
 
   if (existing) {
     return;
   }
 
-  await params.context.repositories.conversations.createConversation(
-    params.conversationId,
-    params.userId,
-    params.task.objective.slice(0, 200),
-    { project_id: params.task.projectId, type: "task" },
-  );
+  await params.context.repositories
+    .get(ConversationRepository)
+    .createConversation(params.conversationId, params.userId, params.task.objective.slice(0, 200), {
+      project_id: params.task.projectId,
+      type: "task",
+    });
 }
 
 export function buildTaskPrompt(params: {
@@ -331,17 +342,15 @@ async function updateOwnedProjectTask(params: {
   taskId: string;
   dispatchTaskId: string;
   executionLease: TaskExecutionLease;
-  updates: Parameters<ServiceContext["repositories"]["projectTasks"]["updateTask"]>[1];
+  updates: Parameters<ProjectTaskRepository["updateTask"]>[1];
 }): Promise<ProjectTask> {
   await params.executionLease.assertOwned();
-  const updated = await params.context.repositories.projectTasks.updateTask(
-    params.taskId,
-    params.updates,
-    {
+  const updated = await params.context.repositories
+    .get(ProjectTaskRepository)
+    .updateTask(params.taskId, params.updates, {
       dispatchTaskId: params.dispatchTaskId,
       ownerToken: params.executionLease.ownerToken,
-    },
-  );
+    });
 
   if (!updated) {
     throw ownershipLostError(params.dispatchTaskId);
@@ -390,7 +399,8 @@ export async function recoverRedeliveredProjectTaskRun(params: {
   try {
     await params.executionLease.assertOwned();
     const current =
-      (await params.context.repositories.conversationRuns.getById(params.run.id)) ?? params.run;
+      (await params.context.repositories.get(ConversationRunRepository).getById(params.run.id)) ??
+      params.run;
     let recovered = current;
 
     if (
@@ -398,13 +408,15 @@ export async function recoverRedeliveredProjectTaskRun(params: {
       current.status === "running" ||
       current.status === "cancelling"
     ) {
-      const interrupted = await params.context.repositories.conversationRuns.transition({
-        runId: current.id,
-        attempt: current.attempt,
-        status: "interrupted",
-        terminalReason:
-          "The durable queue owner ended before this run reached a persisted continuation point.",
-      });
+      const interrupted = await params.context.repositories
+        .get(ConversationRunRepository)
+        .transition({
+          runId: current.id,
+          attempt: current.attempt,
+          status: "interrupted",
+          terminalReason:
+            "The durable queue owner ended before this run reached a persisted continuation point.",
+        });
 
       if (!interrupted) {
         throw ownershipLostError(params.run.id);
@@ -422,7 +434,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
       });
 
       if (interaction.recovered === false) {
-        const failed = await params.context.repositories.conversationRuns.transition({
+        const failed = await params.context.repositories.get(ConversationRunRepository).transition({
           runId: recovered.id,
           attempt: recovered.attempt,
           status: "failed",
@@ -473,14 +485,14 @@ export async function runProjectTaskDispatch(params: {
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
   const { env, taskId, projectId, runnerIdentityUserId } = params;
   const baseContext = createServiceContext({ env });
-  const user = await baseContext.repositories.users.getUserById(runnerIdentityUserId);
+  const user = await baseContext.repositories.get(UserRepository).getUserById(runnerIdentityUserId);
 
   if (!user) {
     return { status: "skipped", detail: "Runner identity no longer exists" };
   }
 
   const context = createServiceContext({ env, user });
-  const claimed = await context.repositories.projectTasks.claimQueuedTask({
+  const claimed = await context.repositories.get(ProjectTaskRepository).claimQueuedTask({
     taskId,
     projectId,
     runnerIdentityUserId,
@@ -493,7 +505,7 @@ export async function runProjectTaskDispatch(params: {
     return { status: "skipped", detail: "Task was not queued" };
   }
 
-  const project = await context.repositories.workspaces.getProject(projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
 
   if (!project) {
     await blockTask(
@@ -508,10 +520,9 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail: "Project missing" };
   }
 
-  const membership = await context.repositories.workspaces.getMembership(
-    project.workspace_id,
-    runnerIdentityUserId,
-  );
+  const membership = await context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(project.workspace_id, runnerIdentityUserId);
 
   if (!membership) {
     await blockTask(
@@ -585,7 +596,7 @@ export async function runProjectTaskDispatch(params: {
       updates: { conversationId },
     });
     previousRun = claimed.runId
-      ? await context.repositories.conversationRuns.getById(claimed.runId)
+      ? await context.repositories.get(ConversationRunRepository).getById(claimed.runId)
       : null;
 
     if (params.resumeInterrupted && previousRun) {
@@ -635,11 +646,13 @@ export async function runProjectTaskDispatch(params: {
 
   if (params.resumeInterrupted) {
     await params.executionLease.assertOwned();
-    await context.repositories.activities.failActiveActivitiesByGroup(
-      "project_task",
-      taskId,
-      "The previous durable execution owner ended before recording an outcome.",
-    );
+    await context.repositories
+      .get(ActivityRepository)
+      .failActiveActivitiesByGroup(
+        "project_task",
+        taskId,
+        "The previous durable execution owner ended before recording an outcome.",
+      );
   }
 
   if (
@@ -667,7 +680,7 @@ export async function runProjectTaskDispatch(params: {
 
   await params.executionLease.assertOwned();
 
-  const activity = await context.repositories.activities.createActivity({
+  const activity = await context.repositories.get(ActivityRepository).createActivity({
     createdByUserId: runnerIdentityUserId,
     projectId: claimed.projectId,
     conversationId,
@@ -869,7 +882,7 @@ export async function runProjectTaskDispatch(params: {
       detail,
     );
     await params.executionLease.assertOwned();
-    await context.repositories.activities.updateActivity(activity.id, {
+    await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
       status: "failed",
       summary: detail.slice(0, 200),
     });
@@ -886,10 +899,10 @@ export async function runProjectTaskDispatch(params: {
   let goal = goalId ? await goalService.getGoalById(goalId) : null;
 
   if (!completedRun) {
-    const executedTask = await context.repositories.projectTasks.getTaskById(taskId);
+    const executedTask = await context.repositories.get(ProjectTaskRepository).getTaskById(taskId);
 
     completedRun = executedTask?.runId
-      ? await context.repositories.conversationRuns.getById(executedTask.runId)
+      ? await context.repositories.get(ConversationRunRepository).getById(executedTask.runId)
       : null;
   }
 
@@ -921,9 +934,9 @@ export async function runProjectTaskDispatch(params: {
   const completedOutputIds =
     goal?.status === "completed" && completedRun
       ? (
-          await context.repositories.outputs.listProjectOutputsForRuns(claimed.projectId, [
-            completedRun.id,
-          ])
+          await context.repositories
+            .get(OutputRepository)
+            .listProjectOutputsForRuns(claimed.projectId, [completedRun.id])
         ).map((output) => output.id)
       : [];
   const metKillCondition = goal
@@ -985,7 +998,7 @@ export async function runProjectTaskDispatch(params: {
     },
   });
   await params.executionLease.assertOwned();
-  await context.repositories.activities.updateActivity(activity.id, {
+  await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
@@ -1097,10 +1110,10 @@ export async function settleFailedProjectTaskDispatch(params: {
   detail: string;
 }): Promise<void> {
   const context = createServiceContext({ env: params.env });
-  const task = await context.repositories.projectTasks.getTaskById(params.taskId);
+  const task = await context.repositories.get(ProjectTaskRepository).getTaskById(params.taskId);
 
   if (task?.runId) {
-    const run = await context.repositories.conversationRuns.getById(task.runId);
+    const run = await context.repositories.get(ConversationRunRepository).getById(task.runId);
 
     if (run) {
       await releaseDurableRunResources(context, run);
@@ -1119,9 +1132,7 @@ export async function settleFailedProjectTaskDispatch(params: {
     },
   });
   await params.executionLease.assertOwned();
-  await context.repositories.activities.failActiveActivitiesByGroup(
-    "project_task",
-    params.taskId,
-    params.detail,
-  );
+  await context.repositories
+    .get(ActivityRepository)
+    .failActiveActivitiesByGroup("project_task", params.taskId, params.detail);
 }

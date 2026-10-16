@@ -26,16 +26,22 @@ vi.mock("~/modules/models/application/resolve", async (importOriginal) => {
   };
 });
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+
 import { resolveHostedAgentRunModel } from "./hosted-agent-model";
 
 function context() {
   return {
     env: {},
-    repositories: {
-      workspaces: {
-        getProject: vi.fn(async () => null),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        WorkspaceRepository,
+        {
+          getProject: vi.fn(async () => null),
+        },
+      ],
+    ]),
   } as any;
 }
 

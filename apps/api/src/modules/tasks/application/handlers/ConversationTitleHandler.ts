@@ -5,8 +5,11 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { generateConversationTitle } from "~/modules/conversations/application/title-generation";
 import { needsRicherTitleContext } from "~/modules/conversations/application/title-source";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { conversationAudience } from "~/modules/sync/application/audience";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -25,7 +28,7 @@ export class ConversationTitleHandler implements TaskHandler {
     }
 
     const baseContext = createServiceContext({ env });
-    const user = await baseContext.repositories.users.getUserById(message.user_id);
+    const user = await baseContext.repositories.get(UserRepository).getUserById(message.user_id);
 
     if (!user) {
       return {
@@ -42,14 +45,16 @@ export class ConversationTitleHandler implements TaskHandler {
       return { status: "skipped", message: "User cannot access this conversation" };
     }
 
-    const conversation = await context.repositories.conversations.getConversation(conversationId);
+    const conversation = await context.repositories
+      .get(ConversationRepository)
+      .getConversation(conversationId);
 
     if (!conversation) {
       return { status: "skipped", message: "Conversation no longer exists" };
     }
 
     const messages = (
-      await context.repositories.messages.getConversationMessages(conversationId, 0)
+      await context.repositories.get(MessageRepository).getConversationMessages(conversationId, 0)
     ).map(formatStoredMessage);
 
     if (!needsRicherTitleContext(messages)) {
@@ -63,7 +68,9 @@ export class ConversationTitleHandler implements TaskHandler {
       return { status: "skipped", message: "Conversation already carries this title" };
     }
 
-    await context.repositories.conversations.updateConversation(conversationId, { title });
+    await context.repositories
+      .get(ConversationRepository)
+      .updateConversation(conversationId, { title });
 
     const inFlight: Promise<unknown>[] = [];
 

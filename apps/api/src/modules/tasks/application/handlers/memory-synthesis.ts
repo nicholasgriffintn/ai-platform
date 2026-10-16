@@ -14,6 +14,7 @@ import {
   SourceRepository,
   type SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { defineTask } from "../workflows";
@@ -69,9 +70,9 @@ export const memorySynthesis = defineTask({
       }),
     );
 
-    const synthesisOwner = await createServiceContext({ env }).repositories.users.getUserById(
-      message.user_id,
-    );
+    const synthesisOwner = await createServiceContext({ env })
+      .repositories.get(UserRepository)
+      .getUserById(message.user_id);
     const synthesis = await generateSynthesis(
       categorized,
       existingSynthesis,
@@ -192,9 +193,9 @@ export const memoryReflection = defineTask({
       return { status: "error", message: "Memory maintenance requires an owner" };
     }
 
-    const user = await createServiceContext({ env }).repositories.users.getUserById(
-      message.user_id,
-    );
+    const user = await createServiceContext({ env })
+      .repositories.get(UserRepository)
+      .getUserById(message.user_id);
 
     if (!user) {
       return { status: "skipped", message: "Memory owner no longer exists" };

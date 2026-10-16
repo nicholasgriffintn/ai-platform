@@ -2,7 +2,10 @@ import { POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 
 import { disagreeWithPolyHandoff } from "../handoff-disagreement";
 
@@ -50,10 +53,10 @@ function setup(record: ActivityRecord | null, existing: { id: string }[] = []) {
   };
   const context = {
     requireUser: () => ({ id: 7 }),
-    repositories: {
-      activities: { getActivityById: async () => record },
-      corrections,
-    },
+    repositories: fakeRepositories([
+      [ActivityRepository, { getActivityById: async () => record }],
+      [CorrectionRepository, corrections],
+    ]),
   } as unknown as ServiceContext;
 
   return { context, corrections };

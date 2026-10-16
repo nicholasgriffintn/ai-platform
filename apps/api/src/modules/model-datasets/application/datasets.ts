@@ -31,10 +31,13 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
 import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
 import { revokeVersionSet } from "~/modules/model-governance/application/revocation";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   badRequest,
   conflict,
@@ -49,7 +52,12 @@ import {
   versionStanding,
 } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelDatasetProfileRecord } from "../infrastructure/ModelDatasetRepository";
@@ -68,10 +76,10 @@ const SOURCE_BY_COLLECTION = {
 
 export async function enqueueDatasetProcessing(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   versionId: string,
 ) {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_DATASET_PROCESS_TASK_TYPE}:${versionId}:${Date.now()}`,
     task_type: MODEL_DATASET_PROCESS_TASK_TYPE,
     task_data: { versionId },
@@ -117,7 +125,9 @@ async function sourceIdentity(
 ): Promise<{ sourceRef: string; sourceRevision: string | null }> {
   switch (request.source) {
     case "upload": {
-      const upload = await context.repositories.modelUploads.get(workspaceId, request.uploadId);
+      const upload = await context.repositories
+        .get(ModelUploadRepository)
+        .get(workspaceId, request.uploadId);
 
       if (!upload || upload.status !== "ready" || upload.purpose !== "dataset") {
         throw badRequest("Upload a dataset file and wait for it to finish first");
@@ -149,10 +159,9 @@ async function sourceIdentity(
         sourceRevision: null,
       };
     default: {
-      const route = await context.repositories.modelRoutes.getRoute(
-        workspaceId,
-        request.teacher.routeId,
-      );
+      const route = await context.repositories
+        .get(ModelRouteRepository)
+        .getRoute(workspaceId, request.teacher.routeId);
 
       if (!route || route.status !== "active") {
         throw notFound("Teacher route");
@@ -184,10 +193,9 @@ export async function createDataset(
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
 
   if (request.source === "bucket") {
-    const connection = await context.repositories.modelConnections.getConnection(
-      workspaceId,
-      "aws",
-    );
+    const connection = await context.repositories
+      .get(ModelConnectionRepository)
+      .getConnection(workspaceId, "aws");
 
     if (!connection?.capabilities.read) {
       throw conflict("Connect AWS with read access to the bucket first");
@@ -196,7 +204,7 @@ export async function createDataset(
 
   const { sourceRef, sourceRevision } = await sourceIdentity(context, workspaceId, request, userId);
   const repositories = context.repositories;
-  const asset = await repositories.modelAssets.createAsset({
+  const asset = await repositories.get(ModelAssetRepository).createAsset({
     workspaceId,
     kind: "dataset",
     source: SOURCE_BY_COLLECTION[request.source],
@@ -204,7 +212,7 @@ export async function createDataset(
     displayName: request.name,
     createdBy: userId,
   });
-  const version = await repositories.modelAssets.createVersion({
+  const version = await repositories.get(ModelAssetRepository).createVersion({
     assetId: asset.id,
     workspaceId,
     revision: `pending:${generateId()}`,
@@ -227,7 +235,7 @@ export async function createDataset(
     },
     files: [],
   });
-  const profile = await repositories.modelDatasets.create({
+  const profile = await repositories.get(ModelDatasetRepository).create({
     versionId: version.id,
     workspaceId,
     shape: request.mapping.shape,
@@ -239,14 +247,18 @@ export async function createDataset(
   });
 
   if (sourceRevision) {
-    await repositories.modelDatasets.update(version.id, { stats: { sourceRevision } });
+    await repositories
+      .get(ModelDatasetRepository)
+      .update(version.id, { stats: { sourceRevision } });
   }
 
   if (request.source === "upload") {
-    await repositories.modelUploads.update(request.uploadId, { consumed_by: version.id });
+    await repositories
+      .get(ModelUploadRepository)
+      .update(request.uploadId, { consumed_by: version.id });
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_dataset.created",
@@ -282,7 +294,7 @@ async function summarise(
   }
 
   const standing = versionStanding(scope, version);
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
 
   return {
     assetId: asset.id,
@@ -308,11 +320,11 @@ export async function listDatasets(
 
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
   const repositories = context.repositories;
-  const profiles = await repositories.modelDatasets.list(workspaceId);
+  const profiles = await repositories.get(ModelDatasetRepository).list(workspaceId);
   const scope = await loadRegistryScope(repositories, workspaceId, projectId, {
     versionIds: profiles.map((profile) => profile.version_id),
   });
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
 
   return {
     datasets: scope.versions.flatMap((version) => {
@@ -352,7 +364,7 @@ export async function getDatasetDetail(
   await requireModelAction(context, workspaceId, "view");
 
   const repositories = context.repositories;
-  const profile = await repositories.modelDatasets.get(versionId);
+  const profile = await repositories.get(ModelDatasetRepository).get(versionId);
 
   if (!profile || profile.workspace_id !== workspaceId) {
     throw notFound("Dataset");
@@ -360,8 +372,8 @@ export async function getDatasetDetail(
 
   const summary = await summarise(context, workspaceId, versionId, profile);
   const [versions, edges] = await Promise.all([
-    repositories.modelAssets.listAssetVersions(summary.assetId),
-    repositories.modelAssets.listLineage(workspaceId),
+    repositories.get(ModelAssetRepository).listAssetVersions(summary.assetId),
+    repositories.get(ModelAssetRepository).listLineage(workspaceId),
   ]);
 
   return {
@@ -389,7 +401,7 @@ export async function readDatasetRows(
   await requireModelAction(context, workspaceId, "view");
 
   const query = input;
-  const profile = await context.repositories.modelDatasets.get(versionId);
+  const profile = await context.repositories.get(ModelDatasetRepository).get(versionId);
 
   if (!profile || profile.workspace_id !== workspaceId || profile.status !== "ready") {
     throw notFound("Processed dataset");
@@ -447,8 +459,10 @@ async function deriveWithout(
   userId: number,
 ): Promise<string> {
   const repositories = context.repositories;
-  const source = await repositories.modelDatasets.get(versionId);
-  const sourceVersion = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const source = await repositories.get(ModelDatasetRepository).get(versionId);
+  const sourceVersion = await repositories
+    .get(ModelAssetRepository)
+    .getVersion(workspaceId, versionId);
 
   if (!source || !sourceVersion || source.status !== "ready") {
     throw notFound("Processed dataset");
@@ -472,7 +486,9 @@ async function deriveWithout(
       excluded: [...excludedIndexes].sort((left, right) => left - right),
     }),
   );
-  const existing = await repositories.modelAssets.findVersion(sourceVersion.asset_id, revision);
+  const existing = await repositories
+    .get(ModelAssetRepository)
+    .findVersion(sourceVersion.asset_id, revision);
 
   if (existing?.status === "ready") {
     return existing.id;
@@ -485,8 +501,8 @@ async function deriveWithout(
   }
 
   const version = existing
-    ? await repositories.modelAssets.retryFailedVersion(workspaceId, existing.id)
-    : await repositories.modelAssets.createVersion({
+    ? await repositories.get(ModelAssetRepository).retryFailedVersion(workspaceId, existing.id)
+    : await repositories.get(ModelAssetRepository).createVersion({
         assetId: sourceVersion.asset_id,
         workspaceId,
         revision,
@@ -526,8 +542,8 @@ async function deriveWithout(
     }
 
     const profile =
-      (await repositories.modelDatasets.get(version.id)) ??
-      (await repositories.modelDatasets.create({
+      (await repositories.get(ModelDatasetRepository).get(version.id)) ??
+      (await repositories.get(ModelDatasetRepository).create({
         versionId: version.id,
         workspaceId,
         shape: source.shape,
@@ -540,7 +556,7 @@ async function deriveWithout(
     const result = profiler.result();
     const { rows } = result;
 
-    await repositories.modelDatasets.update(profile.version_id, {
+    await repositories.get(ModelDatasetRepository).update(profile.version_id, {
       status: "ready",
       failure_reason: null,
       processed_at: new Date().toISOString(),
@@ -550,7 +566,7 @@ async function deriveWithout(
         flaggedIndexes,
       },
     });
-    await repositories.modelAssets.finaliseRevision(version.id, {
+    await repositories.get(ModelAssetRepository).finaliseRevision(version.id, {
       revision,
       attributes: {
         ...sourceVersion.attributes,
@@ -558,13 +574,13 @@ async function deriveWithout(
       },
       files,
     });
-    await repositories.modelAssets.addLineageEdge({
+    await repositories.get(ModelAssetRepository).addLineageEdge({
       fromVersionId: versionId,
       toVersionId: version.id,
       relation: "derived_from",
     });
-    await repositories.modelGovernance.addEvidence(
-      (await repositories.modelGovernance.listEvidence([versionId]))
+    await repositories.get(ModelGovernanceRepository).addEvidence(
+      (await repositories.get(ModelGovernanceRepository).listEvidence([versionId]))
         .filter((item) => item.route_id === null && item.kind !== "dataset_stats")
         .map((item) => ({
           versionId: version.id,
@@ -575,7 +591,7 @@ async function deriveWithout(
           details: { ...item.details, inheritedFrom: versionId },
         })),
     );
-    await repositories.modelGovernance.addEvidence([
+    await repositories.get(ModelGovernanceRepository).addEvidence([
       {
         versionId: version.id,
         kind: "dataset_stats",
@@ -590,7 +606,7 @@ async function deriveWithout(
         },
       },
     ]);
-    await repositories.modelAssets.updateVersion(version.id, {
+    await repositories.get(ModelAssetRepository).updateVersion(version.id, {
       status: "ready",
       failure_reason: null,
     });
@@ -600,11 +616,11 @@ async function deriveWithout(
   } catch (error) {
     const failureReason = getErrorMessage(error, "Creating the dataset revision failed");
 
-    await repositories.modelAssets.updateVersion(version.id, {
+    await repositories.get(ModelAssetRepository).updateVersion(version.id, {
       status: "failed",
       failure_reason: failureReason,
     });
-    await repositories.modelDatasets.update(version.id, {
+    await repositories.get(ModelDatasetRepository).update(version.id, {
       status: "failed",
       failure_reason: failureReason,
     });
@@ -621,7 +637,7 @@ export async function excludeDatasetRows(
   const { userId } = await requireModelAction(context, workspaceId, "build_datasets");
   const derivedId = await deriveWithout(context, workspaceId, versionId, request, userId);
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_dataset.rows_excluded",
@@ -639,7 +655,7 @@ export async function excludeDatasetRows(
     context,
     workspaceId,
     derivedId,
-    await context.repositories.modelDatasets.get(derivedId),
+    await context.repositories.get(ModelDatasetRepository).get(derivedId),
   );
 }
 
@@ -652,19 +668,19 @@ export async function requestErasure(
   const { userId } = await requireModelAction(context, workspaceId, "approve");
   const repositories = context.repositories;
   const cleanId = await deriveWithout(context, workspaceId, versionId, request, userId);
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
   const cleanVersions = new Set([cleanId, ...collectDescendants(edges, cleanId)]);
   const affected = collectDescendants(
     edges.filter((edge) => edge.relation !== "evaluated_on"),
     versionId,
   ).filter((id) => !cleanVersions.has(id));
   const dueAt = new Date(Date.now() + request.dueInDays * 86_400_000).toISOString();
-  const routes = await repositories.modelRoutes.listRoutes(workspaceId, {
+  const routes = await repositories.get(ModelRouteRepository).listRoutes(workspaceId, {
     versionIds: affected,
     activeOnly: true,
   });
 
-  await repositories.modelGovernance.addEvidence(
+  await repositories.get(ModelGovernanceRepository).addEvidence(
     [versionId, ...affected].map((id) => ({
       versionId: id,
       kind: "erasure" as const,
@@ -698,7 +714,7 @@ export async function requestErasure(
     await syncVersionReviews(repositories, workspaceId, id);
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_dataset.erasure_requested",
@@ -731,7 +747,7 @@ export async function previewUploadColumns(
 ): Promise<{ columns: string[]; mapping: DatasetMapping; sample: Array<Record<string, unknown>> }> {
   await requireModelAction(context, workspaceId, "build_datasets");
 
-  const upload = await context.repositories.modelUploads.get(workspaceId, uploadId);
+  const upload = await context.repositories.get(ModelUploadRepository).get(workspaceId, uploadId);
 
   if (!upload || upload.status !== "ready") {
     throw notFound("Finished upload");

@@ -10,7 +10,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { createSource } from "~/modules/sources/application/sources";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { getTaskIntegrationAdapter } from "../infrastructure/integrations";
@@ -49,10 +52,9 @@ export async function previewProjectIssue(
 ) {
   const issue = await readProjectIssue(context, projectId, locator);
   const identity = await issueImportIdentity(projectId, context.requireUser().id, issue);
-  const existing = await context.repositories.projectTaskIntegrations.getImport(
-    identity,
-    projectId,
-  );
+  const existing = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getImport(identity, projectId);
 
   return { issue, existingTaskId: existing?.task_id ?? null };
 }
@@ -64,13 +66,14 @@ export async function importProjectIssue(
 ) {
   const issue = await readProjectIssue(context, projectId, input.locator);
   const identity = await issueImportIdentity(projectId, context.requireUser().id, issue);
-  const existing = await context.repositories.projectTaskIntegrations.getImport(
-    identity,
-    projectId,
-  );
+  const existing = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getImport(identity, projectId);
 
   if (existing) {
-    const task = await context.repositories.projectTasks.getTaskById(existing.task_id);
+    const task = await context.repositories
+      .get(ProjectTaskRepository)
+      .getTaskById(existing.task_id);
 
     if (!task || task.projectId !== projectId) {
       throw new AssistantError("Imported task is unavailable", ErrorType.NOT_FOUND, 404);
@@ -128,7 +131,7 @@ export async function importProjectIssue(
     throw new AssistantError("Imported task snapshot is missing", ErrorType.INTERNAL_ERROR);
   }
 
-  const captured = await context.repositories.sources.getSource(capturedSourceId);
+  const captured = await context.repositories.get(SourceRepository).getSource(capturedSourceId);
 
   if (!captured || captured.project_id !== projectId) {
     throw new AssistantError("Imported task snapshot is unavailable", ErrorType.INTERNAL_ERROR);
@@ -136,7 +139,7 @@ export async function importProjectIssue(
 
   const savedIssue = issueSnapshotSchema.parse(parseJsonRecord(captured.metadata).externalIssue);
 
-  const created = await context.repositories.projectTaskIntegrations.recordImport({
+  const created = await context.repositories.get(ProjectTaskIntegrationRepository).recordImport({
     id: identity,
     workspace_id: task.workspaceId,
     project_id: projectId,
@@ -147,10 +150,9 @@ export async function importProjectIssue(
     account_id: savedIssue.accountId,
     external_id: savedIssue.externalId,
   });
-  const recorded = await context.repositories.projectTaskIntegrations.getImport(
-    identity,
-    projectId,
-  );
+  const recorded = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getImport(identity, projectId);
 
   if (!recorded) {
     throw new AssistantError(

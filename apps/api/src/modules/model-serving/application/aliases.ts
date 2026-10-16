@@ -12,7 +12,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import {
   badRequest,
   conflict,
@@ -21,13 +22,16 @@ import {
   requireWorkspaceProject,
 } from "~/modules/model-registry/application/access";
 import { toModelRoute } from "~/modules/model-registry/application/mappers";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
 
 import type { ModelAliasRecord } from "../infrastructure/ModelAliasRepository";
 import { evaluateAliasTarget, requireAliasGateSuite } from "./alias-governance";
 import { toAliasEvent, toModelAlias } from "./mappers";
 
 export async function createAliasForRoute(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   input: {
     workspaceId: string;
     projectId: string | null;
@@ -39,15 +43,15 @@ export async function createAliasForRoute(
     requiresApproval?: boolean;
   },
 ): Promise<ModelAliasRecord> {
-  const existing = (await repositories.modelAliases.list(input.workspaceId, input.projectId)).find(
-    (alias) => alias.name === input.name && alias.project_id === input.projectId,
-  );
+  const existing = (
+    await repositories.get(ModelAliasRepository).list(input.workspaceId, input.projectId)
+  ).find((alias) => alias.name === input.name && alias.project_id === input.projectId);
 
   if (existing) {
     throw conflict(`An alias called ${input.name} already exists here`);
   }
 
-  const alias = await repositories.modelAliases.create({
+  const alias = await repositories.get(ModelAliasRepository).create({
     workspaceId: input.workspaceId,
     projectId: input.projectId,
     name: input.name,
@@ -58,7 +62,7 @@ export async function createAliasForRoute(
     updatedBy: input.userId,
   });
 
-  await repositories.modelAliases.addEvent({
+  await repositories.get(ModelAliasRepository).addEvent({
     aliasId: alias.id,
     kind: "created",
     fromRouteId: null,
@@ -72,7 +76,7 @@ export async function createAliasForRoute(
 }
 
 async function requireAlias(context: ServiceContext, workspaceId: string, aliasId: string) {
-  const alias = await context.repositories.modelAliases.get(workspaceId, aliasId);
+  const alias = await context.repositories.get(ModelAliasRepository).get(workspaceId, aliasId);
 
   if (!alias) {
     throw notFound("Alias");
@@ -90,16 +94,19 @@ export async function listAliases(
 
   const repositories = context.repositories;
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
-  const aliases = await repositories.modelAliases.list(workspaceId, projectId);
-  const routes = await repositories.modelRoutes.listByIds(
-    aliases.flatMap((alias) => (alias.route_id ? [alias.route_id] : [])),
-  );
-  const versions = await repositories.modelAssets.listVersions(
+  const aliases = await repositories.get(ModelAliasRepository).list(workspaceId, projectId);
+  const routes = await repositories
+    .get(ModelRouteRepository)
+    .listByIds(aliases.flatMap((alias) => (alias.route_id ? [alias.route_id] : [])));
+  const versions = await repositories.get(ModelAssetRepository).listVersions(
     workspaceId,
     routes.map((route) => route.version_id),
   );
   const assets = new Map(
-    (await repositories.modelAssets.listAssets(workspaceId)).map((asset) => [asset.id, asset]),
+    (await repositories.get(ModelAssetRepository).listAssets(workspaceId)).map((asset) => [
+      asset.id,
+      asset,
+    ]),
   );
   const nameFor = (routeId: string | null) => {
     const route = routes.find((item) => item.id === routeId);
@@ -127,10 +134,12 @@ export async function getAliasDetail(
   const alias = await requireAlias(context, workspaceId, aliasId);
   const repositories = context.repositories;
   const [events, route, canaryRoute] = await Promise.all([
-    repositories.modelAliases.listEvents(alias.id),
-    alias.route_id ? repositories.modelRoutes.getRoute(workspaceId, alias.route_id) : null,
+    repositories.get(ModelAliasRepository).listEvents(alias.id),
+    alias.route_id
+      ? repositories.get(ModelRouteRepository).getRoute(workspaceId, alias.route_id)
+      : null,
     alias.canary_route_id
-      ? repositories.modelRoutes.getRoute(workspaceId, alias.canary_route_id)
+      ? repositories.get(ModelRouteRepository).getRoute(workspaceId, alias.canary_route_id)
       : null,
   ]);
 
@@ -190,7 +199,7 @@ export async function createAlias(
     requiresApproval: request.requiresApproval,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_alias.created",
@@ -213,14 +222,14 @@ export async function updateAlias(
 
   await requireAliasGateSuite(context.repositories, workspaceId, input.gate);
 
-  const updated = await context.repositories.modelAliases.update(alias.id, {
+  const updated = await context.repositories.get(ModelAliasRepository).update(alias.id, {
     ...(input.description === undefined ? {} : { description: input.description }),
     ...(input.gate === undefined ? {} : { gate: input.gate }),
     ...(input.requiresApproval === undefined ? {} : { requires_approval: input.requiresApproval }),
     updated_by: userId,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_alias.updated",
@@ -240,8 +249,8 @@ export async function deleteAlias(
   const { userId } = await requireModelAction(context, workspaceId, "manage_policy");
   const alias = await requireAlias(context, workspaceId, aliasId);
 
-  await context.repositories.modelAliases.delete(alias.id);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ModelAliasRepository).delete(alias.id);
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_alias.deleted",
@@ -276,7 +285,7 @@ export async function promoteAlias(
   );
 
   if (gate && !gate.passed) {
-    const event = await repositories.modelAliases.addEvent({
+    const event = await repositories.get(ModelAliasRepository).addEvent({
       aliasId: alias.id,
       kind: "requested",
       fromRouteId: alias.route_id,
@@ -295,7 +304,9 @@ export async function promoteAlias(
   }
 
   const needsApproval = alias.requires_approval || access.separationOfDuties;
-  const [latest] = needsApproval ? await repositories.modelAliases.listEvents(alias.id) : [];
+  const [latest] = needsApproval
+    ? await repositories.get(ModelAliasRepository).listEvents(alias.id)
+    : [];
   const hasRequest =
     latest?.kind === "requested" &&
     latest.to_route_id === route.id &&
@@ -309,7 +320,7 @@ export async function promoteAlias(
   }).allowed;
 
   if (!isAuthorisedToActivate) {
-    const event = await repositories.modelAliases.addEvent({
+    const event = await repositories.get(ModelAliasRepository).addEvent({
       aliasId: alias.id,
       kind: "requested",
       fromRouteId: alias.route_id,
@@ -340,7 +351,7 @@ export async function promoteAlias(
   }
 
   const canary = request.canaryPercent !== undefined && alias.route_id !== null;
-  const updated = await repositories.modelAliases.update(
+  const updated = await repositories.get(ModelAliasRepository).update(
     alias.id,
     canary
       ? {
@@ -350,7 +361,7 @@ export async function promoteAlias(
         }
       : { route_id: route.id, canary_route_id: null, canary_percent: 0, updated_by: access.userId },
   );
-  const event = await repositories.modelAliases.addEvent({
+  const event = await repositories.get(ModelAliasRepository).addEvent({
     aliasId: alias.id,
     kind: canary ? "canary_started" : "promoted",
     fromRouteId: alias.route_id,
@@ -360,7 +371,7 @@ export async function promoteAlias(
     actorUserId: access.userId,
   });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: access.userId,
     action: canary ? "model_alias.canary_started" : "model_alias.promoted",
@@ -422,13 +433,13 @@ export async function rollbackAlias(
       throw conflict(`Gate failed: ${target.gate.failures.join("; ")}`);
     }
 
-    const updated = await repositories.modelAliases.update(alias.id, {
+    const updated = await repositories.get(ModelAliasRepository).update(alias.id, {
       canary_route_id: null,
       canary_percent: 0,
       updated_by: userId,
     });
 
-    await repositories.modelAliases.addEvent({
+    await repositories.get(ModelAliasRepository).addEvent({
       aliasId: alias.id,
       kind: "canary_ended",
       fromRouteId: alias.canary_route_id,
@@ -441,7 +452,7 @@ export async function rollbackAlias(
     return toModelAlias(updated);
   }
 
-  const previous = (await repositories.modelAliases.listEvents(alias.id)).find(
+  const previous = (await repositories.get(ModelAliasRepository).listEvents(alias.id)).find(
     (event) =>
       event.kind === "promoted" && event.to_route_id === alias.route_id && event.from_route_id,
   );
@@ -462,12 +473,12 @@ export async function rollbackAlias(
     throw conflict(`Gate failed: ${target.gate.failures.join("; ")}`);
   }
 
-  const updated = await repositories.modelAliases.update(alias.id, {
+  const updated = await repositories.get(ModelAliasRepository).update(alias.id, {
     route_id: previous.from_route_id,
     updated_by: userId,
   });
 
-  await repositories.modelAliases.addEvent({
+  await repositories.get(ModelAliasRepository).addEvent({
     aliasId: alias.id,
     kind: "rolled_back",
     fromRouteId: alias.route_id,
@@ -476,7 +487,7 @@ export async function rollbackAlias(
     gate: null,
     actorUserId: userId,
   });
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_alias.rolled_back",

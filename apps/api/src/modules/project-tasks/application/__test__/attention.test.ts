@@ -2,6 +2,10 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   listProjectTaskAttention,
@@ -14,30 +18,36 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
   const serviceContext: ServiceContext = Object.assign(Object.create(null), {
     env: {},
     requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-    repositories: {
-      taskNotifications: {
-        listInbox: vi.fn().mockResolvedValue([]),
-        countUnreadInbox: vi.fn().mockResolvedValue(0),
-        updateInboxReceipts: vi.fn().mockResolvedValue(1),
-        upsertRegistration: vi.fn().mockResolvedValue({
-          id: "registration-1",
-          installationId: "installation-1",
-          platform: "web",
-          state: "registered",
-          failureCode: null,
-          updatedAt: "2026-09-05T12:00:00.000Z",
-        }),
-      },
-      projectTasks: { getTaskById: vi.fn().mockResolvedValue(null) },
-      workspaces: {
-        getProject: vi.fn().mockResolvedValue({
-          id: "project-1",
-          workspace_id: "workspace-1",
-        }),
-        getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-        getMembership: vi.fn().mockResolvedValue({ role: "member" }),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        TaskNotificationRepository,
+        {
+          listInbox: vi.fn().mockResolvedValue([]),
+          countUnreadInbox: vi.fn().mockResolvedValue(0),
+          updateInboxReceipts: vi.fn().mockResolvedValue(1),
+          upsertRegistration: vi.fn().mockResolvedValue({
+            id: "registration-1",
+            installationId: "installation-1",
+            platform: "web",
+            state: "registered",
+            failureCode: null,
+            updatedAt: "2026-09-05T12:00:00.000Z",
+          }),
+        },
+      ],
+      [ProjectTaskRepository, { getTaskById: vi.fn().mockResolvedValue(null) }],
+      [
+        WorkspaceRepository,
+        {
+          getProject: vi.fn().mockResolvedValue({
+            id: "project-1",
+            workspace_id: "workspace-1",
+          }),
+          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+          getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+        },
+      ],
+    ]),
     ...overrides,
   });
 
@@ -48,7 +58,9 @@ describe("task attention inbox", () => {
   it("projects current failures and completions without changing task authority", async () => {
     const serviceContext = context();
 
-    vi.mocked(serviceContext.repositories.taskNotifications.listInbox).mockResolvedValue([
+    vi.mocked(
+      serviceContext.repositories.get(TaskNotificationRepository).listInbox,
+    ).mockResolvedValue([
       {
         task_id: "failed-task",
         task_version: 3,
@@ -85,7 +97,9 @@ describe("task attention inbox", () => {
       },
     ]);
 
-    vi.mocked(serviceContext.repositories.taskNotifications.countUnreadInbox).mockResolvedValue(64);
+    vi.mocked(
+      serviceContext.repositories.get(TaskNotificationRepository).countUnreadInbox,
+    ).mockResolvedValue(64);
 
     const response = await listProjectTaskAttention(serviceContext);
 
@@ -102,12 +116,12 @@ describe("task attention inbox", () => {
     await expect(
       updateTaskInboxReceipts(serviceContext, ["task-1:v2"], "dismiss"),
     ).resolves.toEqual({ updated: 1 });
-    expect(serviceContext.repositories.taskNotifications.updateInboxReceipts).toHaveBeenCalledWith(
-      7,
-      ["task-1:v2"],
-      "dismiss",
-    );
-    expect(serviceContext.repositories.projectTasks.getTaskById).not.toHaveBeenCalled();
+    expect(
+      serviceContext.repositories.get(TaskNotificationRepository).updateInboxReceipts,
+    ).toHaveBeenCalledWith(7, ["task-1:v2"], "dismiss");
+    expect(
+      serviceContext.repositories.get(ProjectTaskRepository).getTaskById,
+    ).not.toHaveBeenCalled();
   });
 
   it("owns registration by the authenticated account and installation", async () => {
@@ -125,10 +139,9 @@ describe("task attention inbox", () => {
     await expect(registerTaskNotification(serviceContext, input)).resolves.toMatchObject({
       registration: { state: "registered" },
     });
-    expect(serviceContext.repositories.taskNotifications.upsertRegistration).toHaveBeenCalledWith(
-      7,
-      input,
-    );
+    expect(
+      serviceContext.repositories.get(TaskNotificationRepository).upsertRegistration,
+    ).toHaveBeenCalledWith(7, input);
   });
 
   it("makes a superseded deep link non-actionable after rechecking membership", async () => {
@@ -171,7 +184,9 @@ describe("task attention inbox", () => {
       attentionVersion: 4,
     };
 
-    vi.mocked(serviceContext.repositories.projectTasks.getTaskById).mockResolvedValue(task);
+    vi.mocked(serviceContext.repositories.get(ProjectTaskRepository).getTaskById).mockResolvedValue(
+      task,
+    );
 
     await expect(resolveTaskNotificationDeepLink(serviceContext, "task-1:v3")).resolves.toEqual({
       protocolVersion: 1,
@@ -179,11 +194,13 @@ describe("task attention inbox", () => {
       current: false,
       deepLink: null,
     });
-    expect(serviceContext.repositories.workspaces.getMembership).toHaveBeenCalledWith(
+    expect(serviceContext.repositories.get(WorkspaceRepository).getMembership).toHaveBeenCalledWith(
       "workspace-1",
       7,
     );
-    vi.mocked(serviceContext.repositories.workspaces.getMembership).mockResolvedValue(null);
+    vi.mocked(serviceContext.repositories.get(WorkspaceRepository).getMembership).mockResolvedValue(
+      null,
+    );
     await expect(
       resolveTaskNotificationDeepLink(serviceContext, "task-1:v3"),
     ).rejects.toMatchObject({

@@ -2,6 +2,7 @@ import type { ProjectTask, Source } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { formatSource, requireSourcesAccess } from "~/modules/sources/application/sources";
 
 import { renderDependencyHandoffs } from "./dependents";
@@ -46,7 +47,9 @@ export async function buildProjectTaskContext(
   );
   const snapshotContext = renderTaskSources(sources.map(formatSource));
   const dependencies = await Promise.all(
-    task.dependsOnTaskIds.map((id) => context.repositories.projectTasks.getTaskById(id)),
+    task.dependsOnTaskIds.map((id) =>
+      context.repositories.get(ProjectTaskRepository).getTaskById(id),
+    ),
   );
   const lines = [
     task.context?.notes ?? "",

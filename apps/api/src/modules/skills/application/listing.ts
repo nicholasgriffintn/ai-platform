@@ -2,6 +2,7 @@ import type { SkillSummary } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { listSkillSummaries, resolveSkillCatalog } from "./catalog";
 import { resolveProjectSkillGrants } from "./scope";
@@ -13,7 +14,9 @@ export async function listScopedSkillSummaries(
 ): Promise<SkillSummary[]> {
   if (projectId) {
     await requireProjectAccess(context, projectId);
-    const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+    const capabilities = await context.repositories
+      .get(WorkspaceRepository)
+      .listProjectCapabilities(projectId);
     const enabledNames = new Set(resolveProjectSkillGrants(capabilities));
 
     return (

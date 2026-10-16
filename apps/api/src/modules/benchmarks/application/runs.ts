@@ -17,9 +17,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
 import { requireModelAction } from "~/modules/model-registry/application/access";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
@@ -120,10 +123,9 @@ export async function estimateBenchmarkRuns(
 
 async function requireRunAllowance(context: ServiceContext, user: IUser, count: number) {
   const since = new Date(Date.now() - DAY_MS).toISOString();
-  const { active, recent } = await context.repositories.benchmarkRuns.countOwnerRunsSince(
-    user.id,
-    since,
-  );
+  const { active, recent } = await context.repositories
+    .get(BenchmarkRunRepository)
+    .countOwnerRunsSince(user.id, since);
 
   if (active + count > BENCHMARKS_CONFIG.personalActiveRuns) {
     throw new AssistantError(
@@ -180,7 +182,7 @@ export async function startBenchmarkRuns(
   const runs: BenchmarkRun[] = [];
 
   for (const { modelId, model } of targets) {
-    const record = await context.repositories.benchmarkRuns.create({
+    const record = await context.repositories.get(BenchmarkRunRepository).create({
       benchmarkId: benchmark.summary.id,
       version: benchmark.summary.version,
       scope: "personal",
@@ -205,8 +207,8 @@ export async function listMyBenchmarkRuns(
   const user = context.requireUser();
 
   return {
-    runs: (await context.repositories.benchmarkRuns.listByOwner(user.id)).map((record) =>
-      toBenchmarkRun(record, { includeShareToken: true }),
+    runs: (await context.repositories.get(BenchmarkRunRepository).listByOwner(user.id)).map(
+      (record) => toBenchmarkRun(record, { includeShareToken: true }),
     ),
   };
 }
@@ -224,7 +226,7 @@ export async function getSharedRunDetail(
   context: ServiceContext,
   token: string,
 ): Promise<BenchmarkRunDetail> {
-  const record = await context.repositories.benchmarkRuns.getByShareToken(token);
+  const record = await context.repositories.get(BenchmarkRunRepository).getByShareToken(token);
 
   if (!record || record.visibility === "private" || record.status !== "completed") {
     throw new AssistantError("This shared run is not available", ErrorType.NOT_FOUND, 404);
@@ -258,7 +260,7 @@ export async function updateBenchmarkRunVisibility(
 
   const shareToken = record.scope === "official" ? null : shareTokenFor(record, visibility);
 
-  await context.repositories.benchmarkRuns.update(record.id, {
+  await context.repositories.get(BenchmarkRunRepository).update(record.id, {
     visibility,
     share_token: shareToken,
   });
@@ -275,7 +277,9 @@ export async function cancelBenchmarkRun(
 ): Promise<BenchmarkRun> {
   const record = await requireManagedRun(context, runId);
   const reason = "Cancelled before it finished";
-  const cancelled = await context.repositories.benchmarkRuns.cancel(record.id, reason);
+  const cancelled = await context.repositories
+    .get(BenchmarkRunRepository)
+    .cancel(record.id, reason);
 
   if (!cancelled) {
     throw new AssistantError("This run is not active", ErrorType.CONFLICT_ERROR, 409);
@@ -312,7 +316,7 @@ export async function retryBenchmarkRun(
       (result) => result.error !== null,
     );
   const ownerUserId = record.scope === "official" && isPlatformAdmin(user) ? user.id : undefined;
-  const requeued = await context.repositories.benchmarkRuns.requeue(record.id, {
+  const requeued = await context.repositories.get(BenchmarkRunRepository).requeue(record.id, {
     ownerUserId,
     fromCompleted: retryChecks || newItems || unanswered,
     itemsTotal: benchmark.itemIds.length,
@@ -364,7 +368,7 @@ export async function deleteBenchmarkRun(
   const record = await requireManagedRun(context, runId);
 
   await BenchmarkResultStore.forEnv(context.env).deleteResults(record.id);
-  await context.repositories.benchmarkRuns.delete(record.id);
+  await context.repositories.get(BenchmarkRunRepository).delete(record.id);
 
   return { deleted: true };
 }
@@ -388,7 +392,9 @@ export async function startWorkspaceBenchmarkRuns(
 
   const routes = await Promise.all(
     [...new Set(request.routeIds)].map(async (routeId) => {
-      const route = await context.repositories.modelRoutes.getRoute(workspaceId, routeId);
+      const route = await context.repositories
+        .get(ModelRouteRepository)
+        .getRoute(workspaceId, routeId);
 
       if (!route || route.status !== "active") {
         throw new AssistantError(`Active route ${routeId} not found`, ErrorType.NOT_FOUND, 404);
@@ -403,7 +409,7 @@ export async function startWorkspaceBenchmarkRuns(
   const runs: BenchmarkRun[] = [];
 
   for (const route of routes) {
-    const record = await context.repositories.benchmarkRuns.create({
+    const record = await context.repositories.get(BenchmarkRunRepository).create({
       benchmarkId: benchmark.summary.id,
       version: benchmark.summary.version,
       scope: "workspace",
@@ -425,7 +431,7 @@ export async function startWorkspaceBenchmarkRuns(
     runs.push(toBenchmarkRun(record, { includeShareToken: true }));
   }
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_benchmark.started",
@@ -444,8 +450,8 @@ export async function listWorkspaceBenchmarkRuns(
   await requireModelAction(context, workspaceId, "view");
 
   return {
-    runs: (await context.repositories.benchmarkRuns.listByWorkspace(workspaceId)).map((record) =>
-      toBenchmarkRun(record, { includeShareToken: true }),
+    runs: (await context.repositories.get(BenchmarkRunRepository).listByWorkspace(workspaceId)).map(
+      (record) => toBenchmarkRun(record, { includeShareToken: true }),
     ),
   };
 }

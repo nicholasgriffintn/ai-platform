@@ -8,6 +8,9 @@ vi.mock("~/modules/workspaces/application/access", () => ({
   requireProjectAccess: mocks.requireProjectAccess,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+
 import { recallSearchTerms, searchPastConversations } from "../conversation-recall";
 
 function createContext(rows: unknown[] = []) {
@@ -17,7 +20,7 @@ function createContext(rows: unknown[] = []) {
     searchConversationExcerpts,
     context: {
       requireUser: () => ({ id: 7 }),
-      repositories: { messages: { searchConversationExcerpts } },
+      repositories: fakeRepositories([[MessageRepository, { searchConversationExcerpts }]]),
     } as unknown as ServiceContext,
   };
 }

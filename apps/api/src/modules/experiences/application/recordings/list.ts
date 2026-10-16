@@ -6,6 +6,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 export interface IRecordingListRequest {
@@ -40,8 +41,8 @@ export const handleRecordingList = async (
   const repositories = serviceContext.repositories;
 
   const appDataList = projectId
-    ? await repositories.outputs.listProjectOutputs(projectId, "recordings")
-    : await repositories.outputs.listPersonalOutputs(user.id, "recordings");
+    ? await repositories.get(OutputRepository).listProjectOutputs(projectId, "recordings")
+    : await repositories.get(OutputRepository).listPersonalOutputs(user.id, "recordings");
 
   if (!appDataList || appDataList.length === 0) {
     return [];

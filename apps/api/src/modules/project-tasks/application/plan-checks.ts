@@ -10,6 +10,7 @@ import { getErrorMessage, truncateForModel } from "@ngriffin_uk/polychat-utility
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 
 const logger = getLogger({ prefix: "project-tasks/plan-checks" });
 
@@ -161,5 +162,5 @@ export async function recordProjectTaskRetrospective(
     createdAt: new Date().toISOString(),
   };
 
-  await context.repositories.projectTasks.updateTask(task.id, { retrospective });
+  await context.repositories.get(ProjectTaskRepository).updateTask(task.id, { retrospective });
 }

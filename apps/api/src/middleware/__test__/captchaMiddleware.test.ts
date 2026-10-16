@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   loggerError: vi.fn(),
 }));
 const mockVerifyCaptchaToken = vi.fn();
-const mockRepositoryManager = {
+const mockRepositories = {
   anonymousUsers: {
     updateAnonymousUser: vi.fn(),
     getOrCreateAnonymousUser: vi.fn(),
@@ -18,9 +18,11 @@ vi.mock("~/infrastructure/captcha", () => ({
   verifyCaptchaToken: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: {
-    getInstance: vi.fn(),
+vi.mock("~/modules/user/infrastructure/AnonymousUserRepository", () => ({
+  AnonymousUserRepository: class {
+    constructor() {
+      return mockRepositories.anonymousUsers;
+    }
   },
 }));
 
@@ -59,10 +61,8 @@ describe("Captcha Middleware", () => {
     vi.clearAllMocks();
 
     const { verifyCaptchaToken } = await import("~/infrastructure/captcha");
-    const { RepositoryManager } = await import("~/infrastructure/database/repositoryManager");
 
     vi.mocked(verifyCaptchaToken).mockImplementation(mockVerifyCaptchaToken);
-    vi.mocked(RepositoryManager.getInstance).mockReturnValue(mockRepositoryManager as any);
   });
 
   afterEach(() => {
@@ -271,10 +271,9 @@ describe("Captcha Middleware", () => {
       await validateCaptcha(context, mockNext);
 
       expect(mockVerifyCaptchaToken).toHaveBeenCalledWith("valid-token", "secret-key", "site-key");
-      expect(mockRepositoryManager.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith(
-        "anon-123",
-        { captcha_verified: 1 },
-      );
+      expect(mockRepositories.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith("anon-123", {
+        captcha_verified: 1,
+      });
       expect(mockNext).toHaveBeenCalled();
     });
 
@@ -317,18 +316,17 @@ describe("Captcha Middleware", () => {
         error: null,
       });
 
-      mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
+      mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(mockNewUser);
 
       await validateCaptcha(context, mockNext);
 
-      expect(mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
+      expect(mockRepositories.anonymousUsers.getOrCreateAnonymousUser).toHaveBeenCalledWith(
         "127.0.0.1",
         "Mozilla/5.0",
       );
-      expect(mockRepositoryManager.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith(
-        "anon-456",
-        { captcha_verified: 1 },
-      );
+      expect(mockRepositories.anonymousUsers.updateAnonymousUser).toHaveBeenCalledWith("anon-456", {
+        captcha_verified: 1,
+      });
       expect(context.set).toHaveBeenCalledWith("anonymousUser", {
         ...mockNewUser,
         captcha_verified: 1,
@@ -423,7 +421,7 @@ describe("Captcha Middleware", () => {
         error: null,
       });
 
-      mockRepositoryManager.anonymousUsers.getOrCreateAnonymousUser.mockRejectedValue(
+      mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockRejectedValue(
         new Error("Database error"),
       );
 

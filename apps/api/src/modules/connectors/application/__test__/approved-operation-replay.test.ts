@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 
 import { replayApprovedConnectorOperation } from "../approved-operation-replay";
 import { getConnectorArgumentDigest } from "../operation-approvals";
@@ -133,25 +139,31 @@ async function createFixture(state: "approved" | "consumed" = "approved") {
     user,
     connectorRunId: "connector_run_new",
     requestCache: new Map(),
-    repositories: {
-      connectorOperationApprovals: {
-        getByIdForUser,
-        recordExecutionResult,
-        recordIndeterminateExecution: vi.fn(),
-      },
-      conversationRuns: {
-        getById: vi.fn().mockResolvedValue({
-          id: approval.runId,
-          attempt: approval.runAttempt,
-          status: "awaiting_approval",
-          interactionKind: "approval",
-          lastMessageId: pendingResult.id,
-        }),
-      },
-      composioConnectorSessions: { getById: vi.fn().mockResolvedValue(session) },
-      templates: { getTemplateById: vi.fn() },
-      messages: { createProjectedMessage: vi.fn() },
-    },
+    repositories: fakeRepositories([
+      [
+        ConnectorOperationApprovalRepository,
+        {
+          getByIdForUser,
+          recordExecutionResult,
+          recordIndeterminateExecution: vi.fn(),
+        },
+      ],
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn().mockResolvedValue({
+            id: approval.runId,
+            attempt: approval.runAttempt,
+            status: "awaiting_approval",
+            interactionKind: "approval",
+            lastMessageId: pendingResult.id,
+          }),
+        },
+      ],
+      [ComposioConnectorSessionRepository, { getById: vi.fn().mockResolvedValue(session) }],
+      [TemplateRepository, { getTemplateById: vi.fn() }],
+      [MessageRepository, { createProjectedMessage: vi.fn() }],
+    ]),
   } as any;
 
   return { approval, context, session, user };
@@ -206,7 +218,7 @@ describe("replayApprovedConnectorOperation", () => {
         recoverUnknownToolCalls: false,
       },
     );
-    expect(context.repositories.messages.createProjectedMessage).toHaveBeenCalledWith(
+    expect(context.repositories.get(MessageRepository).createProjectedMessage).toHaveBeenCalledWith(
       approval.completionId,
       expect.objectContaining({ id: executedResult.id, data: executedResult }),
     );
@@ -257,11 +269,13 @@ describe("replayApprovedConnectorOperation", () => {
       .mockResolvedValueOnce(initialMessages)
       .mockResolvedValueOnce(initialMessages)
       .mockResolvedValueOnce([...initialMessages, executedResult]);
-    context.repositories.connectorOperationApprovals.getByIdForUser.mockResolvedValue({
-      ...approval,
-      state: "consumed",
-      consumedAt: "2026-08-13T12:02:00.000Z",
-    });
+    context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .getByIdForUser.mockResolvedValue({
+        ...approval,
+        state: "consumed",
+        consumedAt: "2026-08-13T12:02:00.000Z",
+      });
     vi.mocked(handleToolCalls).mockResolvedValue([
       {
         ...executedResult,
@@ -422,8 +436,8 @@ describe("replayApprovedConnectorOperation", () => {
   it("rejects a receipt bound to a different account than the stored session", async () => {
     const { approval, context, user } = await createFixture();
 
-    context.repositories.composioConnectorSessions.getById.mockResolvedValue({
-      ...(await context.repositories.composioConnectorSessions.getById()),
+    context.repositories.get(ComposioConnectorSessionRepository).getById.mockResolvedValue({
+      ...(await context.repositories.get(ComposioConnectorSessionRepository).getById()),
       connectedAccountId: "ca_substituted",
     });
     const conversationManager = createConversationManager([

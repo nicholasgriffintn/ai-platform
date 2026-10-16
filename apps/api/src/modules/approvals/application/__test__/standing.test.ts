@@ -2,7 +2,10 @@ import { POLY_TEAMMATE_ID, type TeammateContext } from "@ngriffin_uk/polychat-sc
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { hasStandingApproval } from "~/modules/chat/application/tools/effects";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { grantPolyStandingApproval } from "../standing";
 
@@ -40,10 +43,10 @@ function context(pending: Record<string, unknown> | null) {
     updateStandingApprovals,
     context: {
       requireUser: () => ({ id: 7 }),
-      repositories: {
-        messages: { getLatestPendingToolMessage: async () => pending },
-        teammateContexts: { updateStandingApprovals },
-      },
+      repositories: fakeRepositories([
+        [MessageRepository, { getLatestPendingToolMessage: async () => pending }],
+        [TeammateContextRepository, { updateStandingApprovals }],
+      ]),
     } as unknown as ServiceContext,
   };
 }

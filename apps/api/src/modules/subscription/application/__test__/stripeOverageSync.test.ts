@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import {
   computeOverageSyncDelta,
   runStripeOverageSync,
 } from "~/modules/subscription/application/stripeOverageSync";
 import type { OverageSyncCandidateRow } from "~/modules/usage/infrastructure/UsageBalanceRepository";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 
 const MICRO = 1_000_000;
 
@@ -28,7 +29,7 @@ function makeRepositories(candidates: OverageSyncCandidateRow[]) {
   };
 
   return {
-    repositories: { usageBalances } as unknown as RepositoryManager,
+    repositories: fakeRepositories([[UsageBalanceRepository, usageBalances]]),
     usageBalances,
   };
 }

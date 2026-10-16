@@ -14,6 +14,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import {
   connectionKey,
@@ -34,7 +35,7 @@ export async function createMcpConnection(context: ServiceContext, input: McpCon
     additionalData: `${externalId}:${url}`,
     payload: { token: input.token },
   });
-  const record = await context.repositories.providerConnections.upsertConnection({
+  const record = await context.repositories.get(ProviderConnectionRepository).upsertConnection({
     userId: context.requireUser().id,
     provider: "mcp",
     kind: MCP_TOKEN_CONNECTION_KIND,
@@ -53,10 +54,9 @@ export async function createMcpConnection(context: ServiceContext, input: McpCon
 }
 
 export async function listMcpConnections(context: ServiceContext) {
-  const records = await context.repositories.providerConnections.listConnections(
-    context.requireUser().id,
-    "mcp",
-  );
+  const records = await context.repositories
+    .get(ProviderConnectionRepository)
+    .listConnections(context.requireUser().id, "mcp");
 
   return listPageOf(
     records
@@ -69,12 +69,9 @@ export async function listMcpConnections(context: ServiceContext) {
 export async function deleteMcpConnection(context: ServiceContext, connectionId: string) {
   const record = await requireConnection(context, connectionId);
 
-  await context.repositories.providerConnections.deleteConnection(
-    record.user_id,
-    "mcp",
-    record.kind,
-    record.external_id,
-  );
+  await context.repositories
+    .get(ProviderConnectionRepository)
+    .deleteConnection(record.user_id, "mcp", record.kind, record.external_id);
 
   return { success: true };
 }

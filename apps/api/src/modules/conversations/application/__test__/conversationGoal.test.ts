@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+
 import {
   handleGetConversationGoal,
   handleRecordRunGoalIteration,
@@ -49,19 +55,28 @@ function createContext(overrides: {
     database: {},
     ensureDatabase: vi.fn(),
     requireUser: vi.fn().mockReturnValue(owner),
-    repositories: {
-      goals: {},
-      conversations: {
-        getConversation: vi.fn().mockResolvedValue(overrides.conversation ?? null),
-        createConversation: createConversation,
-      },
-      activities: {
-        getActivityByGroup: vi.fn().mockResolvedValue(overrides.activity ?? null),
-      },
-      teammateContexts: {
-        getByHomeConversationId: vi.fn().mockResolvedValue(null),
-      },
-    },
+    repositories: fakeRepositories([
+      [GoalRepository, {}],
+      [
+        ConversationRepository,
+        {
+          getConversation: vi.fn().mockResolvedValue(overrides.conversation ?? null),
+          createConversation: createConversation,
+        },
+      ],
+      [
+        ActivityRepository,
+        {
+          getActivityByGroup: vi.fn().mockResolvedValue(overrides.activity ?? null),
+        },
+      ],
+      [
+        TeammateContextRepository,
+        {
+          getByHomeConversationId: vi.fn().mockResolvedValue(null),
+        },
+      ],
+    ]),
   } as any;
 }
 

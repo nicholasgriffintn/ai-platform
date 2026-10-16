@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 
 import { admitRealtimeSession } from "../sessionUsage";
 
@@ -28,7 +30,11 @@ describe("admitRealtimeSession", () => {
     );
 
     await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000 }),
+      admitRealtimeSession({
+        repositories: fakeRepositories([[UsageBalanceRepository, repositories.usageBalances]]),
+        userId: 7,
+        creditMicros: 50_000,
+      }),
     ).resolves.toBe(false);
   });
 
@@ -36,7 +42,11 @@ describe("admitRealtimeSession", () => {
     const repositories = repositoriesWithBalance(balance({ spent_credit_micros: 900_000 }));
 
     await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000 }),
+      admitRealtimeSession({
+        repositories: fakeRepositories([[UsageBalanceRepository, repositories.usageBalances]]),
+        userId: 7,
+        creditMicros: 50_000,
+      }),
     ).resolves.toBe(true);
   });
 
@@ -46,7 +56,11 @@ describe("admitRealtimeSession", () => {
     );
 
     await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000 }),
+      admitRealtimeSession({
+        repositories: fakeRepositories([[UsageBalanceRepository, repositories.usageBalances]]),
+        userId: 7,
+        creditMicros: 50_000,
+      }),
     ).resolves.toBe(true);
   });
 
@@ -60,7 +74,11 @@ describe("admitRealtimeSession", () => {
     } as any;
 
     await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000 }),
+      admitRealtimeSession({
+        repositories: fakeRepositories([[UsageBalanceRepository, repositories.usageBalances]]),
+        userId: 7,
+        creditMicros: 50_000,
+      }),
     ).resolves.toBe(true);
   });
 });

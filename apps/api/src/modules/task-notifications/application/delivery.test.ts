@@ -10,9 +10,11 @@ const mocks = vi.hoisted(() => ({
   markRegistrationFailed: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: class {
-    taskNotifications = mocks;
+vi.mock("~/modules/task-notifications/infrastructure/TaskNotificationRepository", () => ({
+  TaskNotificationRepository: class {
+    constructor() {
+      return mocks;
+    }
   },
 }));
 

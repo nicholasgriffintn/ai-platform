@@ -17,7 +17,7 @@ import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { providerRuntime } from "~/infrastructure/providers/runtime";
 import { StorageService } from "~/infrastructure/storage";
 import {
@@ -26,6 +26,9 @@ import {
   updateOutput,
 } from "~/modules/outputs/application";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
@@ -98,7 +101,7 @@ function getSourceIds(content: Record<string, unknown>): string[] {
 async function cleanupStoredProviderBatch(
   batchClient: OcrBatchClient,
   env: IEnv,
-  user: NonNullable<Awaited<ReturnType<RepositoryManager["users"]["getUserById"]>>>,
+  user: NonNullable<Awaited<ReturnType<UserRepository["getUserById"]>>>,
   state: NonNullable<ReturnType<typeof getProviderCleanupState>>,
 ): Promise<void> {
   await cleanupOcrBatchProviderResources(
@@ -141,8 +144,8 @@ export class OcrBatchPollingHandler implements TaskHandler {
       return { status: "error", message: "Invalid OCR batch polling task" };
     }
 
-    const repositories = new RepositoryManager(env);
-    const user = await repositories.users.getUserById(data.userId);
+    const repositories = createRepositories(env);
+    const user = await repositories.get(UserRepository).getUserById(data.userId);
 
     if (!user) {
       return { status: "error", message: "OCR batch user no longer exists" };
@@ -216,7 +219,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
           },
         });
         const polling = pollingSchedule({ attempt: data.pollAttempt });
-        const taskService = new TaskService(env, context.repositories.tasks);
+        const taskService = new TaskService(env, context.repositories.get(TaskRepository));
 
         await taskService.enqueueTask({
           id: `ocr-batch:${data.outputId}:cleanup:${pendingOutput.revision}`,
@@ -337,7 +340,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
         },
       });
       const polling = pollingSchedule({ attempt: data.pollAttempt });
-      const taskService = new TaskService(env, context.repositories.tasks);
+      const taskService = new TaskService(env, context.repositories.get(TaskRepository));
 
       await taskService.enqueueTask({
         id: `ocr-batch:${data.outputId}:${polling.attempt}`,
@@ -425,10 +428,10 @@ export class OcrBatchPollingHandler implements TaskHandler {
       return;
     }
 
-    const repositories = new RepositoryManager(env);
+    const outputRepository = new OutputRepository(env);
     const [user, output] = await Promise.all([
-      repositories.users.getUserById(data.userId),
-      repositories.outputs.getOutputIncludingDeleting(data.outputId),
+      new UserRepository(env).getUserById(data.userId),
+      outputRepository.getOutputIncludingDeleting(data.outputId),
     ]);
     const content = output ? (safeParseJson<Record<string, unknown>>(output.content) ?? {}) : {};
     const existingCleanup = getProviderCleanupState(content);
@@ -450,12 +453,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
     }
 
     const batchClient = this.dependencies.batchClient ?? new MistralOcrBatchClient(providerRuntime);
-    const taskService = new TaskService(env, repositories.tasks);
+    const taskService = new TaskService(env, new TaskRepository(env));
 
     if (existingCleanup) {
       await enqueueOcrBatchReconciliation(taskService, data, message.priority || 5);
       await cleanupStoredProviderBatch(batchClient, env, user, existingCleanup);
-      await repositories.outputs.updateOutput(output.id, {
+      await outputRepository.updateOutput(output.id, {
         status: output.status,
         expectedRevision: output.revision,
         updatedByUserId: user.id,
@@ -473,7 +476,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       !cancelledJob ||
       ["QUEUED", "RUNNING", "CANCELLATION_REQUESTED"].includes(cancelledJob.status)
     ) {
-      await repositories.outputs.updateOutput(output.id, {
+      await outputRepository.updateOutput(output.id, {
         status: "pending",
         expectedRevision: output.revision,
         updatedByUserId: user.id,
@@ -501,7 +504,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       return;
     }
 
-    const terminalOutput = await repositories.outputs.updateOutput(output.id, {
+    const terminalOutput = await outputRepository.updateOutput(output.id, {
       status: "failed",
       expectedRevision: output.revision,
       updatedByUserId: user.id,
@@ -526,7 +529,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
 
     await enqueueOcrBatchReconciliation(taskService, data, message.priority || 5);
     await cleanupStoredProviderBatch(batchClient, env, user, terminalCleanup);
-    await repositories.outputs.updateOutput(terminalOutput.id, {
+    await outputRepository.updateOutput(terminalOutput.id, {
       status: terminalOutput.status,
       expectedRevision: terminalOutput.revision,
       updatedByUserId: user.id,
@@ -542,7 +545,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
     data: OcrBatchPollingData;
     job: MistralOcrBatchJob;
     output: Awaited<ReturnType<typeof getOutputIncludingDeleting>>;
-    user: NonNullable<Awaited<ReturnType<RepositoryManager["users"]["getUserById"]>>>;
+    user: NonNullable<Awaited<ReturnType<UserRepository["getUserById"]>>>;
   }): Promise<TaskResult> {
     const { batchClient, context, data, job, output, user } = params;
     let outputData: string;
@@ -593,7 +596,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
     const storage = StorageService.forPrivateAssets(context);
     const resultOutputId = `ocr-batch-result:${output.id}`;
     const isExpectedResult = (
-      record: Awaited<ReturnType<typeof context.repositories.outputs.getOutputIncludingDeleting>>,
+      record: Awaited<ReturnType<OutputRepository["getOutputIncludingDeleting"]>>,
     ): boolean =>
       record !== null &&
       !isOutputDeletionPending(record) &&
@@ -604,8 +607,9 @@ export class OcrBatchPollingHandler implements TaskHandler {
       ownsResource(user.id, record.created_by_user_id) &&
       record.project_id === (output.projectId ?? null) &&
       record.storage_key === key;
-    const existingResult =
-      await context.repositories.outputs.getOutputIncludingDeleting(resultOutputId);
+    const existingResult = await context.repositories
+      .get(OutputRepository)
+      .getOutputIncludingDeleting(resultOutputId);
 
     if (existingResult && !isExpectedResult(existingResult)) {
       throw new AssistantError(
@@ -649,8 +653,9 @@ export class OcrBatchPollingHandler implements TaskHandler {
           { id: resultOutputId },
         );
       } catch (error) {
-        const racedResult =
-          await context.repositories.outputs.getOutputIncludingDeleting(resultOutputId);
+        const racedResult = await context.repositories
+          .get(OutputRepository)
+          .getOutputIncludingDeleting(resultOutputId);
 
         if (!isExpectedResult(racedResult)) {
           if (racedResult?.storage_key !== key) {
@@ -673,7 +678,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
     const sourceIds = getSourceIds(output.content);
 
     if (sourceIds.length > 0) {
-      await context.repositories.outputs.attachSources(resultOutputId, sourceIds);
+      await context.repositories.get(OutputRepository).attachSources(resultOutputId, sourceIds);
     }
 
     const batchStatus = job.failed_requests > 0 ? "partial" : "completed";
@@ -722,7 +727,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
     context: ReturnType<typeof createServiceContext>;
     job: MistralOcrBatchJob;
     output: Awaited<ReturnType<typeof getOutputIncludingDeleting>>;
-    user: NonNullable<Awaited<ReturnType<RepositoryManager["users"]["getUserById"]>>>;
+    user: NonNullable<Awaited<ReturnType<UserRepository["getUserById"]>>>;
   }): Promise<TaskResult> {
     const { batchClient, context, job, output, user } = params;
     const terminalOutput = await updateOutput(context, user.id, output.id, {

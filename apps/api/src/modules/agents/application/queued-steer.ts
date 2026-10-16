@@ -8,6 +8,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { removeQueuedFollowUp } from "~/modules/responses/application/runs/follow-up-queue";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 export async function takeQueuedSteer(params: {
   context: ServiceContext;
@@ -15,12 +16,14 @@ export async function takeQueuedSteer(params: {
   conversationId: string;
   steer: (text: string) => Promise<boolean>;
 }): Promise<boolean> {
-  const tasks = await params.context.repositories.tasks.listSuspendedTasksForConversation({
-    taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
-    userId: params.userId,
-    conversationId: params.conversationId,
-    limit: MAX_QUEUED_CHAT_MESSAGES,
-  });
+  const tasks = await params.context.repositories
+    .get(TaskRepository)
+    .listSuspendedTasksForConversation({
+      taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
+      userId: params.userId,
+      conversationId: params.conversationId,
+      limit: MAX_QUEUED_CHAT_MESSAGES,
+    });
 
   for (const task of tasks) {
     const parsed = queuedChatTaskDataSchema.safeParse(task.task_data);

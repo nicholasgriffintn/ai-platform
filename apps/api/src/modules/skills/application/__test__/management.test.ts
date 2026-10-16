@@ -2,6 +2,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { resolveScopedSkillCatalog } from "~/modules/chat/application/preparation/skills";
 import { load_skill } from "~/modules/functions/application/load_skill";
 import type {
@@ -11,6 +13,8 @@ import type {
   AuthoredSkillScope,
   CreateAuthoredSkillInput,
 } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { resolveSkillCatalog } from "../catalog";
 import { listScopedSkillSummaries } from "../listing";
@@ -324,7 +328,11 @@ function createContext() {
     env: { PRIVATE_ASSETS_BUCKET: bucket },
     user,
     requestCache: new Map<string, unknown>(),
-    repositories: { authoredSkills, workspaces, capabilityConfigurations },
+    repositories: fakeRepositories([
+      [AuthoredSkillRepository, authoredSkills],
+      [WorkspaceRepository, workspaces],
+      [CapabilityConfigurationRepository, capabilityConfigurations],
+    ]),
     requireUser: () => user,
     getLogger: () => logger,
   } as unknown as ServiceContext;

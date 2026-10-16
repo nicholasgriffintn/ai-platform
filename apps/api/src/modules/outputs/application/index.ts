@@ -35,8 +35,10 @@ import type {
   OutputRevisionRecord,
   OutputShareRecord,
 } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { getOutputRestoreCapability } from "../domain/revision-policy";
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
@@ -189,7 +191,8 @@ export async function createOutput(
 
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
-    workspaceId = (await context.repositories.workspaces.getProject(input.projectId))?.workspace_id;
+    workspaceId = (await context.repositories.get(WorkspaceRepository).getProject(input.projectId))
+      ?.workspace_id;
 
     if (!workspaceId) {
       throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
@@ -209,7 +212,7 @@ export async function createOutput(
   }
 
   const outputId = options.id ?? generateId();
-  const created = await context.repositories.outputs.createOutput(
+  const created = await context.repositories.get(OutputRepository).createOutput(
     {
       id: outputId,
       createdByUserId: userId,
@@ -262,7 +265,9 @@ export async function getOutputIncludingDeleting(
   userId: number,
   outputId: string,
 ): Promise<Output> {
-  const output = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
+  const output = await context.repositories
+    .get(OutputRepository)
+    .getOutputIncludingDeleting(outputId);
 
   if (!output) {
     throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
@@ -286,12 +291,12 @@ export async function listOutputs(
   const options = { kind: query.kind, limit: query.limit + 1, after: query.after };
   const records = query.project_id
     ? (await requireProjectAccess(context, query.project_id),
-      await context.repositories.outputs.listProjectOutputs(
-        query.project_id,
-        query.capability_id,
-        options,
-      ))
-    : await context.repositories.outputs.listPersonalOutputs(userId, query.capability_id, options);
+      await context.repositories
+        .get(OutputRepository)
+        .listProjectOutputs(query.project_id, query.capability_id, options))
+    : await context.repositories
+        .get(OutputRepository)
+        .listPersonalOutputs(userId, query.capability_id, options);
 
   return mapListPage(
     toListPage(
@@ -311,14 +316,14 @@ export async function updateOutput(
 ): Promise<Output> {
   const existing = await requireOutputAccess(context, userId, outputId, true);
   const project = existing.project_id
-    ? await context.repositories.workspaces.getProject(existing.project_id)
+    ? await context.repositories.get(WorkspaceRepository).getProject(existing.project_id)
     : null;
 
   if (existing.project_id && !project) {
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const updated = await context.repositories.outputs.updateOutput(
+  const updated = await context.repositories.get(OutputRepository).updateOutput(
     outputId,
     {
       ...input,
@@ -353,7 +358,7 @@ export async function listOutputRevisions(
 ): Promise<OutputHistoryResponse> {
   const output = await requireOutputAccess(context, userId, outputId);
 
-  const revisions = await context.repositories.outputs.listRevisions(outputId);
+  const revisions = await context.repositories.get(OutputRepository).listRevisions(outputId);
   const current = formatCurrentRevision(output);
 
   const formattedRevisions = await Promise.all(
@@ -411,21 +416,21 @@ export async function restoreOutputRevision(
     );
   }
 
-  const target = await context.repositories.outputs.getRevision(outputId, revision);
+  const target = await context.repositories.get(OutputRepository).getRevision(outputId, revision);
 
   if (!target) {
     throw new AssistantError("Output revision not found", ErrorType.NOT_FOUND, 404);
   }
 
   const project = current.project_id
-    ? await context.repositories.workspaces.getProject(current.project_id)
+    ? await context.repositories.get(WorkspaceRepository).getProject(current.project_id)
     : null;
 
   if (current.project_id && !project) {
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const restored = await context.repositories.outputs.updateOutput(
+  const restored = await context.repositories.get(OutputRepository).updateOutput(
     outputId,
     {
       title: target.title,
@@ -461,7 +466,7 @@ export async function createOutputShare(
 ): Promise<{ share: OutputShare; token: string }> {
   const output = await requireOutputAccess(context, userId, outputId, true);
   const token = randomHex(32);
-  const share = await context.repositories.outputs.createShare({
+  const share = await context.repositories.get(OutputRepository).createShare({
     id: generateId(),
     outputId,
     tokenHash: await sha256Hex(token),
@@ -489,7 +494,7 @@ export async function listOutputShares(
 ): Promise<ListPage<OutputShare>> {
   await requireOutputAccess(context, userId, outputId, true);
   const now = Date.now();
-  const shares = (await context.repositories.outputs.listShares(outputId)).filter(
+  const shares = (await context.repositories.get(OutputRepository).listShares(outputId)).filter(
     (share) =>
       !share.revoked_at && (!share.expires_at || new Date(share.expires_at).getTime() > now),
   );
@@ -505,7 +510,7 @@ export async function revokeOutputShare(
 ): Promise<void> {
   const output = await requireOutputAccess(context, userId, outputId, true);
 
-  await context.repositories.outputs.revokeShare(outputId, shareId);
+  await context.repositories.get(OutputRepository).revokeShare(outputId, shareId);
   if (output.project_id) {
     await recordProjectAudit(context, output.project_id, {
       actorUserId: userId,
@@ -528,7 +533,9 @@ export async function getSharedOutputRecord(
   context: ServiceContext,
   token: string,
 ): Promise<OutputRecord> {
-  const share = await context.repositories.outputs.getShareByTokenHash(await sha256Hex(token));
+  const share = await context.repositories
+    .get(OutputRepository)
+    .getShareByTokenHash(await sha256Hex(token));
 
   if (
     !share ||
@@ -538,7 +545,7 @@ export async function getSharedOutputRecord(
     throw new AssistantError("Shared output not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const output = await context.repositories.outputs.getOutput(share.output_id);
+  const output = await context.repositories.get(OutputRepository).getOutput(share.output_id);
 
   if (!output || output.status === "archived" || isOutputDeletionPending(output)) {
     throw new AssistantError("Shared output not found", ErrorType.NOT_FOUND, 404);

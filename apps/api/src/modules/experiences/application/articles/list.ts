@@ -4,6 +4,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/apps/articles/list" });
@@ -57,7 +58,7 @@ export async function listArticles({
     }
 
     serviceContext.ensureDatabase();
-    const outputRepo = serviceContext.repositories.outputs;
+    const outputRepo = serviceContext.repositories.get(OutputRepository);
     const allArticleData = projectId
       ? await outputRepo.listProjectOutputs(projectId, "articles")
       : await outputRepo.listPersonalOutputs(userId, "articles");

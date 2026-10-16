@@ -9,6 +9,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { revokeTeammateContextResources } from "./computers";
 import { requireOwnedTeammateContext } from "./contexts";
@@ -21,7 +23,7 @@ export async function queueTeammateContextResourceCleanup(
     return;
   }
 
-  await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+  await new TaskService(context.env, context.repositories.get(TaskRepository)).enqueueTask({
     id: `teammate_context_cleanup_${generateId()}`,
     task_type: TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
     ...(context.user?.id ? { user_id: context.user.id } : {}),
@@ -82,10 +84,9 @@ export async function updateTeammateContextAutonomy(
   autonomyLevel: TeammateAutonomyLevel,
 ): Promise<TeammateContext> {
   await requireOwnedTeammateContext(context, contextId);
-  const updated = await context.repositories.teammateContexts.updateAutonomyLevel(
-    contextId,
-    autonomyLevel,
-  );
+  const updated = await context.repositories
+    .get(TeammateContextRepository)
+    .updateAutonomyLevel(contextId, autonomyLevel);
 
   if (!updated) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
@@ -116,10 +117,14 @@ export async function updateTeammateContextStatus(
   let updated: TeammateContext | null = null;
 
   if (status === "active") {
-    updated = await context.repositories.teammateContexts.updateStatus(contextId, status);
+    updated = await context.repositories
+      .get(TeammateContextRepository)
+      .updateStatus(contextId, status);
   } else {
     await mutateTeammateContextsWithCleanup(context, [teammateContext], async () => {
-      updated = await context.repositories.teammateContexts.updateStatus(contextId, status);
+      updated = await context.repositories
+        .get(TeammateContextRepository)
+        .updateStatus(contextId, status);
     });
   }
 
@@ -135,14 +140,13 @@ export async function archiveProjectTeammateContexts(
   projectId: string,
   teammateId: string,
 ): Promise<void> {
-  const contexts = await context.repositories.teammateContexts.listForProjectTeammate(
-    projectId,
-    teammateId,
-  );
+  const contexts = await context.repositories
+    .get(TeammateContextRepository)
+    .listForProjectTeammate(projectId, teammateId);
 
   await mutateTeammateContextsWithCleanup(context, contexts, () =>
-    context.repositories.teammateContexts.archiveContexts(
-      contexts.map((teammateContext) => teammateContext.id),
-    ),
+    context.repositories
+      .get(TeammateContextRepository)
+      .archiveContexts(contexts.map((teammateContext) => teammateContext.id)),
   );
 }

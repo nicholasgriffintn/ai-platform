@@ -33,6 +33,13 @@ vi.mock("~/modules/responses/application/start", () => ({
 
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
+
 import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
 
 const env = { DB: {}, API_BASE_URL: "https://api.polychat.test" } as any;
@@ -45,27 +52,42 @@ function createContext(
   return {
     env,
     database: {},
-    repositories: {
-      userSettings: {
-        getProviderApiKeyForSettings: vi.fn(async () => "encrypted-config"),
-        getUserProviderSettings: vi.fn(async () => providerSettings),
-      },
-      channelBindings: {
-        getById: vi.fn(async () => binding),
-      },
-      conversationRuns: {
-        getCommandReceipt: vi.fn(async () => null),
-      },
-      messages: {
-        getRunMessages: vi.fn(async () => []),
-      },
-      outboundDeliveries: {
-        prepare: vi.fn(async () => ({})),
-        begin: vi.fn(async () => "execute"),
-        complete: vi.fn(async () => true),
-        markIndeterminate: vi.fn(async () => undefined),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        UserSettingsRepository,
+        {
+          getProviderApiKeyForSettings: vi.fn(async () => "encrypted-config"),
+          getUserProviderSettings: vi.fn(async () => providerSettings),
+        },
+      ],
+      [
+        ChannelBindingRepository,
+        {
+          getById: vi.fn(async () => binding),
+        },
+      ],
+      [
+        ConversationRunRepository,
+        {
+          getCommandReceipt: vi.fn(async () => null),
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          getRunMessages: vi.fn(async () => []),
+        },
+      ],
+      [
+        OutboundDeliveryRepository,
+        {
+          prepare: vi.fn(async () => ({})),
+          begin: vi.fn(async () => "execute"),
+          complete: vi.fn(async () => true),
+          markIndeterminate: vi.fn(async () => undefined),
+        },
+      ],
+    ]),
     requestCache: new Map(),
   } as any;
 }

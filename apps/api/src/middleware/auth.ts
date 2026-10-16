@@ -14,10 +14,12 @@ import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
 import { getUserByJwtToken } from "~/modules/auth/application/jwt";
 import { createAssistantAuth } from "~/modules/auth/application/sharedAuth";
+import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
+import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { AnonymousUser, User } from "~/types";
 
 const logger = getLogger({ prefix: "middleware/auth" });
@@ -79,7 +81,7 @@ export async function authMiddleware(context: Context, next: Next) {
         );
       }
 
-      const user = await new RepositoryManager(context.env).users.getUserById(service.user_id);
+      const user = await new UserRepository(context.env).getUserById(service.user_id);
 
       if (!user) {
         throw new AssistantError(
@@ -108,14 +110,6 @@ export async function authMiddleware(context: Context, next: Next) {
   const userAgent = context.req.header("user-agent") || "unknown";
 
   const jwtSecret = context.env.JWT_SECRET;
-  let repositories: RepositoryManager | null = null;
-  const getRepositories = () => {
-    if (!repositories) {
-      repositories = new RepositoryManager(context.env);
-    }
-
-    return repositories;
-  };
 
   let user: User | null = null;
   let anonymousUser: AnonymousUser | null = null;
@@ -146,7 +140,7 @@ export async function authMiddleware(context: Context, next: Next) {
     authPromises.push(
       (async () => {
         try {
-          return await getRepositories().apiKeys.findUserByApiKey(authToken);
+          return await new ApiKeyRepository(context.env).findUserByApiKey(authToken);
         } catch (error) {
           logger.error("API Key authentication check failed:", { error });
 
@@ -205,11 +199,13 @@ export async function authMiddleware(context: Context, next: Next) {
       const anonymousId = cookies[ANONYMOUS_ID_COOKIE];
 
       if (anonymousId) {
-        anonymousUser = await getRepositories().anonymousUsers.getAnonymousUserById(anonymousId);
+        anonymousUser = await new AnonymousUserRepository(context.env).getAnonymousUserById(
+          anonymousId,
+        );
       }
 
       if (!anonymousUser) {
-        anonymousUser = await getRepositories().anonymousUsers.getOrCreateAnonymousUser(
+        anonymousUser = await new AnonymousUserRepository(context.env).getOrCreateAnonymousUser(
           ipAddress,
           userAgent,
         );

@@ -4,6 +4,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
 
 import { requireProjectAccess } from "./access";
 import { invalidateProjectEnvironmentCacheForConfiguration } from "./environment-cache";
@@ -12,7 +14,7 @@ export async function listProjectEnvironmentVariables(context: ServiceContext, p
   await requireProjectAccess(context, projectId);
 
   return {
-    variables: await context.repositories.projectEnvironmentVariables.list(projectId),
+    variables: await context.repositories.get(ProjectEnvironmentVariableRepository).list(projectId),
   };
 }
 
@@ -25,13 +27,11 @@ export async function setProjectEnvironmentVariable(
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
   const variable = sandboxEnvironmentVariableInputSchema.parse(input);
 
-  await context.repositories.projectEnvironmentVariables.set(
-    projectId,
-    variable.name,
-    variable.value,
-  );
+  await context.repositories
+    .get(ProjectEnvironmentVariableRepository)
+    .set(projectId, variable.name, variable.value);
   await invalidateProjectEnvironmentCacheForConfiguration(context, project);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.updated",
@@ -52,9 +52,11 @@ export async function clearProjectEnvironmentVariable(
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
   const variableName = sandboxEnvironmentVariableNameSchema.parse(name);
 
-  await context.repositories.projectEnvironmentVariables.clear(projectId, variableName);
+  await context.repositories
+    .get(ProjectEnvironmentVariableRepository)
+    .clear(projectId, variableName);
   await invalidateProjectEnvironmentCacheForConfiguration(context, project);
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.updated",

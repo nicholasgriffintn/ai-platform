@@ -6,16 +6,24 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { enqueueEvalRun } from "~/modules/model-evaluation/application/suites";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import { expireDecisions } from "~/modules/model-registry/application/decisions";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import {
   applyDeploymentState,
   enqueueDeploymentSync,
 } from "~/modules/model-serving/application/deployments";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import type { ModelDeploymentRecord } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { enqueueTrainingSync } from "~/modules/model-training/application/runs";
+import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelBudgetRecord } from "../infrastructure/ModelSpendRepository";
@@ -31,27 +39,21 @@ const PAUSABLE = new Set<ModelDeploymentRecord["status"]>([
   "updating",
 ]);
 
-async function scheduleReplays(
-  env: IEnv,
-  repositories: RepositoryManager,
-  now: Date,
-): Promise<number> {
+async function scheduleReplays(env: IEnv, repositories: Repositories, now: Date): Promise<number> {
   let scheduled = 0;
 
-  for (const candidate of await repositories.modelEvals.listReplayCandidates()) {
-    const lastReplay = await repositories.modelEvals.latestRunAt(
-      candidate.suiteId,
-      candidate.routeId,
-      "replay",
-    );
+  for (const candidate of await repositories.get(ModelEvalRepository).listReplayCandidates()) {
+    const lastReplay = await repositories
+      .get(ModelEvalRepository)
+      .latestRunAt(candidate.suiteId, candidate.routeId, "replay");
 
     if (lastReplay && now.getTime() - new Date(lastReplay).getTime() < REPLAY_INTERVAL_MS) {
       continue;
     }
 
     const [suite, route] = await Promise.all([
-      repositories.modelEvals.getSuiteById(candidate.suiteId),
-      repositories.modelRoutes.getRouteById(candidate.routeId),
+      repositories.get(ModelEvalRepository).getSuiteById(candidate.suiteId),
+      repositories.get(ModelRouteRepository).getRouteById(candidate.routeId),
     ]);
 
     if (!suite || !route || route.status !== "active") {
@@ -67,11 +69,11 @@ async function scheduleReplays(
 
 export async function scheduleModelPlatformReconciles(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
 ): Promise<number> {
   const [deployments, runs] = await Promise.all([
-    repositories.modelDeployments.listLive(),
-    repositories.modelTraining.listActive(),
+    repositories.get(ModelDeploymentRepository).listLive(),
+    repositories.get(ModelTrainingRepository).listActive(),
   ]);
   const workspaceIds = [
     ...new Set([
@@ -79,7 +81,7 @@ export async function scheduleModelPlatformReconciles(
       ...runs.map((item) => item.workspace_id),
     ]),
   ];
-  const tasks = new TaskService(env, repositories.tasks);
+  const tasks = new TaskService(env, repositories.get(TaskRepository));
   const hour = new Date().toISOString().slice(0, 13);
 
   for (const workspaceId of workspaceIds) {
@@ -94,7 +96,7 @@ export async function scheduleModelPlatformReconciles(
   return workspaceIds.length;
 }
 
-export async function runModelGovernanceMaintenance(env: IEnv, repositories: RepositoryManager) {
+export async function runModelGovernanceMaintenance(env: IEnv, repositories: Repositories) {
   const now = new Date();
   const expired = await expireDecisions(repositories);
   const replays = await scheduleReplays(env, repositories, now);
@@ -118,7 +120,7 @@ function governingBudget(
 }
 
 async function isIdle(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   minutes: number,
   now: Date,
@@ -128,12 +130,12 @@ async function isIdle(
   }
 
   const [lastUse, lastResume] = await Promise.all([
-    repositories.usageEvents.lastModelUseAt({
+    repositories.get(UsageEventRepository).lastModelUseAt({
       workspaceId: deployment.workspace_id,
       vendor: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
       resource: deploymentChatModelId(deployment.id),
     }),
-    repositories.audit.lastActionAt({
+    repositories.get(AuditRepository).lastActionAt({
       workspaceId: deployment.workspace_id,
       targetType: "model_deployment",
       targetId: deployment.id,
@@ -151,7 +153,7 @@ async function isIdle(
 
 async function pauseFor(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   reason: string,
 ): Promise<boolean> {
@@ -160,7 +162,7 @@ async function pauseFor(
 
     return true;
   } catch (error) {
-    await repositories.modelDeployments.update(deployment.id, {
+    await repositories.get(ModelDeploymentRepository).update(deployment.id, {
       failure_reason: `Automatic pause failed: ${getErrorMessage(error, "Pause failed")}. Provider costs may continue until the deployment is stopped.`,
     });
     logger.warn("Automatic pause failed", {
@@ -174,14 +176,14 @@ async function pauseFor(
 
 export async function reconcileModelPlatform(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
 ) {
   const now = new Date();
   const [deployments, runs, budgets, lines] = await Promise.all([
-    repositories.modelDeployments.list(workspaceId, { liveOnly: true }),
-    repositories.modelTraining.list(workspaceId, null, true),
-    repositories.modelSpend.listBudgets(workspaceId),
+    repositories.get(ModelDeploymentRepository).list(workspaceId, { liveOnly: true }),
+    repositories.get(ModelTrainingRepository).list(workspaceId, null, true),
+    repositories.get(ModelSpendRepository).listBudgets(workspaceId),
     getWorkspaceSpendLines(repositories, workspaceId, now),
   ]);
   const exhausted = new Set(

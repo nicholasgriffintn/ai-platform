@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { SkillCatalog } from "~/modules/skills/application/catalog";
 import { seedRequestSkillRuntime } from "~/modules/skills/application/runtime-state";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { load_skill } from "../load_skill";
 
@@ -30,19 +34,25 @@ function createPinnedPersonalSkillRuntime() {
     user,
     requestCache,
     requireUser: () => user,
-    repositories: {
-      capabilityConfigurations: {
-        list: async () => [
-          {
-            capabilityId: "release-checklist",
-            configuration: { enabled },
-          },
-        ],
-      },
-      authoredSkills: {
-        getByScopeAndName: async () => ({ id: currentSkillId }),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        CapabilityConfigurationRepository,
+        {
+          list: async () => [
+            {
+              capabilityId: "release-checklist",
+              configuration: { enabled },
+            },
+          ],
+        },
+      ],
+      [
+        AuthoredSkillRepository,
+        {
+          getByScopeAndName: async () => ({ id: currentSkillId }),
+        },
+      ],
+    ]),
   };
   const request = {
     context,
@@ -90,18 +100,24 @@ function createPinnedProjectSkillRuntime() {
     user,
     requestCache,
     requireUser: () => user,
-    repositories: {
-      authoredSkills: {
-        getByScopeAndName: async () => ({ id: "internal-skill-1" }),
-      },
-      workspaces: {
-        getProject: async () => ({ id: "project-1", workspace_id: "workspace-1" }),
-        getWorkspace: async () => ({ id: "workspace-1" }),
-        getMembership: async () => (hasMembership ? { role: "member" } : null),
-        listProjectCapabilities: async () =>
-          hasCapability ? [{ kind: "skill", capability_id: "release-checklist" }] : [],
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        AuthoredSkillRepository,
+        {
+          getByScopeAndName: async () => ({ id: "internal-skill-1" }),
+        },
+      ],
+      [
+        WorkspaceRepository,
+        {
+          getProject: async () => ({ id: "project-1", workspace_id: "workspace-1" }),
+          getWorkspace: async () => ({ id: "workspace-1" }),
+          getMembership: async () => (hasMembership ? { role: "member" } : null),
+          listProjectCapabilities: async () =>
+            hasCapability ? [{ kind: "skill", capability_id: "release-checklist" }] : [],
+        },
+      ],
+    ]),
   };
   const request = {
     context,

@@ -31,6 +31,7 @@ import {
 import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 import { createSource, deleteSource } from "~/modules/sources/application/sources";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireSiteIntegrationAccess } from "./integration-access";
 import { updateSite } from "./records";
@@ -125,9 +126,9 @@ export async function snapshotSiteConnector(
       return;
     }
 
-    const capabilities = await context.repositories.workspaces.listProjectCapabilities(
-      request.projectId,
-    );
+    const capabilities = await context.repositories
+      .get(WorkspaceRepository)
+      .listProjectCapabilities(request.projectId);
     const allowed =
       resolveProjectRecipeConnectorScope(capabilities).operationsByProvider[provider] ?? [];
 

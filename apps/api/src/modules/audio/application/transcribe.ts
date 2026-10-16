@@ -2,10 +2,10 @@ import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getTranscriptionProvider } from "~/infrastructure/providers/capabilities/transcription";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { getAuxiliarySpeechModel } from "~/modules/models/application/resolve";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { assertValidTranscriptionFile, type TranscriptionAudioSource } from "./transcription-input";
@@ -39,9 +39,8 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
     let selectedModel: string | undefined;
 
     if (!selectedProvider) {
-      const repositories = new RepositoryManager(env);
       const userSettings = user?.id
-        ? await repositories.userSettings.getUserSettings(user.id)
+        ? await new UserSettingsRepository(env).getUserSettings(user.id)
         : null;
 
       const speechModel = await getAuxiliarySpeechModel(env, userSettings, user);

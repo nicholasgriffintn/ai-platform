@@ -12,12 +12,13 @@ import {
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { TrainingExampleRepository } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { createTelemetry } from "~/infrastructure/telemetry";
 import {
   resolveFeedbackTarget,
   type ChatFeedbackTargetMessage,
 } from "~/modules/conversations/application/feedback-target";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 
 const logger = getLogger({
   prefix: "services/chatCompletionFeedbackSubmission",
@@ -28,9 +29,7 @@ export interface ChatFeedbackContext {
   user?: TelemetryIdentity["user"];
   anonymousUser?: TelemetryIdentity["anonymousUser"];
   messages: ChatFeedbackTargetMessage[];
-  repositories: {
-    trainingExamples: Pick<TrainingExampleRepository, "findMany" | "updateById">;
-  };
+  repositories: Repositories;
 }
 
 export interface ChatCompletionFeedbackOptions {
@@ -74,7 +73,7 @@ export const handleChatCompletionFeedbackSubmission = async (
   }
 
   try {
-    const trainingExamples = await context.repositories.trainingExamples.findMany({
+    const trainingExamples = await context.repositories.get(TrainingExampleRepository).findMany({
       conversationId: completion_id,
       source: "chat",
       limit: 1,
@@ -82,7 +81,7 @@ export const handleChatCompletionFeedbackSubmission = async (
     const [example] = trainingExamples;
 
     if (example) {
-      await context.repositories.trainingExamples.updateById(example.id, {
+      await context.repositories.get(TrainingExampleRepository).updateById(example.id, {
         feedback_rating: request.feedback === 1 ? 5 : 1,
       });
       logger.info("Updated training example with feedback", {

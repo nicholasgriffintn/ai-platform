@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 function createTeammateContext(overrides: {
   userId: number;
@@ -15,20 +18,26 @@ function createTeammateContext(overrides: {
   return {
     user,
     requireUser: () => user,
-    repositories: {
-      teammates: {
-        getTeammateById: vi.fn(async () => ({
-          id: "teammate-1",
-          user_id: 7,
-          owner_scope_type: overrides.ownerScopeType,
-          owner_scope_id: overrides.ownerScopeId,
-        })),
-      },
-      workspaces: {
-        getWorkspace: vi.fn(async () => ({ id: overrides.ownerScopeId })),
-        getMembership: vi.fn(async () => (overrides.role ? { role: overrides.role } : null)),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        TeammateRepository,
+        {
+          getTeammateById: vi.fn(async () => ({
+            id: "teammate-1",
+            user_id: 7,
+            owner_scope_type: overrides.ownerScopeType,
+            owner_scope_id: overrides.ownerScopeId,
+          })),
+        },
+      ],
+      [
+        WorkspaceRepository,
+        {
+          getWorkspace: vi.fn(async () => ({ id: overrides.ownerScopeId })),
+          getMembership: vi.fn(async () => (overrides.role ? { role: overrides.role } : null)),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 

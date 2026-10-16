@@ -10,6 +10,7 @@ import {
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv, IUser } from "~/types";
@@ -173,7 +174,7 @@ export const executeModelGeneration = async (
     createdAt: new Date().toISOString(),
   };
 
-  const stored = await serviceContext.repositories.outputs.createOutput({
+  const stored = await serviceContext.repositories.get(OutputRepository).createOutput({
     createdByUserId: user.id,
     projectId: storage.projectId,
     capabilityId: storage.appId,

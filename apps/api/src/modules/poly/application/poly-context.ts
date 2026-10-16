@@ -7,6 +7,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ensureActiveTeammateContext } from "~/modules/teammates/application/contexts";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 const OWNER_SEEN_RESOLUTION_MS = 60 * 60 * 1000;
 
@@ -39,9 +40,11 @@ export async function markPolyOwnerSeen(
   polyContext: TeammateContext,
   now = Date.now(),
 ): Promise<void> {
-  await context.repositories.teammateContexts.markOwnerSeen(
-    polyContext.id,
-    new Date(now).toISOString(),
-    new Date(now - OWNER_SEEN_RESOLUTION_MS).toISOString(),
-  );
+  await context.repositories
+    .get(TeammateContextRepository)
+    .markOwnerSeen(
+      polyContext.id,
+      new Date(now).toISOString(),
+      new Date(now - OWNER_SEEN_RESOLUTION_MS).toISOString(),
+    );
 }

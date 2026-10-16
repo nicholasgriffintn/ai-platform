@@ -2,6 +2,9 @@ import { hashSecret } from "@ngriffin_uk/auth-core";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { exchangeNativeAuthCode, generateNativeAuthExchangeCode } from "./sessions";
 
@@ -26,12 +29,15 @@ function contextFor({ consumed = true, userId = 7 }: { consumed?: boolean; userI
     consumeNativeAuthCode,
     context: Object.assign(Object.create(null), {
       env: { JWT_SECRET: "a-secret-long-enough-for-hmac-signing" },
-      repositories: {
-        sessions: { getSessionWithJwt, updateSessionJwt, consumeNativeAuthCode },
-        users: {
-          getUserById: vi.fn().mockResolvedValue({ id: userId, email: "pip@polychat.test" }),
-        },
-      },
+      repositories: fakeRepositories([
+        [SessionRepository, { getSessionWithJwt, updateSessionJwt, consumeNativeAuthCode }],
+        [
+          UserRepository,
+          {
+            getUserById: vi.fn().mockResolvedValue({ id: userId, email: "pip@polychat.test" }),
+          },
+        ],
+      ]),
     }) as unknown as ServiceContext,
   };
 }

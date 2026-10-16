@@ -22,10 +22,13 @@ import {
 import { buildChatPostProcessing } from "~/modules/chat/application/streaming/post-processing";
 import { replayApprovedConnectorOperation } from "~/modules/connectors/application/approved-operation-replay";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import { authorityOptions } from "~/modules/responses/domain/authority";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type {
   AnonymousUser,
   ChatCompletionParameters,
@@ -77,11 +80,9 @@ export const startResponse = async (req: {
   }
 
   if (user?.id && chatRequest.connector_approval_id) {
-    const approval =
-      await serviceContext.repositories.connectorOperationApprovals.getResumableByIdForUser(
-        chatRequest.connector_approval_id,
-        user.id,
-      );
+    const approval = await serviceContext.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .getResumableByIdForUser(chatRequest.connector_approval_id, user.id);
 
     connectorApproval = approval ?? undefined;
 
@@ -132,7 +133,9 @@ export const startResponse = async (req: {
     providerMessages = toProviderMessages(connectorReplay.summaryMessages);
 
     if (approval.teammateContextId) {
-      const run = await serviceContext.repositories.conversationRuns.getById(approval.runId);
+      const run = await serviceContext.repositories
+        .get(ConversationRunRepository)
+        .getById(approval.runId);
 
       if (
         !run ||
@@ -160,10 +163,9 @@ export const startResponse = async (req: {
     !teammateResume
   ) {
     serviceContext.ensureDatabase();
-    const teammateContext =
-      await serviceContext.repositories.teammateContexts.getByHomeConversationId(
-        completionIdWithFallback,
-      );
+    const teammateContext = await serviceContext.repositories
+      .get(TeammateContextRepository)
+      .getByHomeConversationId(completionIdWithFallback);
 
     if (teammateContext) {
       throw new AssistantError(

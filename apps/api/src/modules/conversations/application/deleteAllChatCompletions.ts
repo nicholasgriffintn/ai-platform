@@ -1,4 +1,5 @@
-import type { ConversationRepository } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 
 interface DeleteChatCompletionResult {
   success: boolean;
@@ -7,9 +8,7 @@ interface DeleteChatCompletionResult {
 
 export interface DeleteAllChatCompletionsContext {
   requireUser(): { id: number };
-  repositories: {
-    conversations: Pick<ConversationRepository, "deleteAllPersonalConversations">;
-  };
+  repositories: Repositories;
 }
 
 export const handleDeleteAllChatCompletions = async (
@@ -17,7 +16,7 @@ export const handleDeleteAllChatCompletions = async (
 ): Promise<DeleteChatCompletionResult> => {
   const user = context.requireUser();
 
-  await context.repositories.conversations.deleteAllPersonalConversations(user.id);
+  await context.repositories.get(ConversationRepository).deleteAllPersonalConversations(user.id);
 
   return {
     success: true,

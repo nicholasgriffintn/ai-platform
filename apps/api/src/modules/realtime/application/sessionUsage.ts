@@ -22,10 +22,12 @@ import {
   REALTIME_RECONCILIATION_BUFFER_SECONDS,
   REALTIME_RESERVATION_SECONDS,
 } from "~/config/realtime";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import type { IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/realtime/session-usage" });
@@ -75,7 +77,7 @@ export function buildRealtimeUsageDraft(params: {
 
 export async function settleRealtimeSessionUsage(params: {
   env: IEnv;
-  repositories: RepositoryManager | null;
+  repositories: Repositories | null;
   userId: number;
   sessionId: string;
   model: string;
@@ -177,7 +179,7 @@ export function priceRealtimeReservation(
 }
 
 export async function admitRealtimeSession(params: {
-  repositories: RepositoryManager | null;
+  repositories: Repositories | null;
   userId: number;
   creditMicros: number;
 }): Promise<boolean> {
@@ -187,7 +189,9 @@ export async function admitRealtimeSession(params: {
 
   try {
     const period = usagePeriodFromDate();
-    const balance = await params.repositories.usageBalances.getBalance(params.userId, period);
+    const balance = await params.repositories
+      .get(UsageBalanceRepository)
+      .getBalance(params.userId, period);
 
     if (!balance || balance.included_credit_micros <= 0) {
       return true;
@@ -213,7 +217,7 @@ export async function admitRealtimeSession(params: {
 
 export async function registerRealtimeSessionUsage(params: {
   env: IEnv;
-  repositories: RepositoryManager | null;
+  repositories: Repositories | null;
   userId: number;
   sessionId: string;
   model: string;
@@ -248,7 +252,7 @@ export async function registerRealtimeSessionUsage(params: {
   }
 
   try {
-    const taskService = new TaskService(params.env, repositories.tasks);
+    const taskService = new TaskService(params.env, repositories.get(TaskRepository));
 
     await taskService.enqueueTask({
       task_type: REALTIME_RECONCILIATION_TASK_TYPE,

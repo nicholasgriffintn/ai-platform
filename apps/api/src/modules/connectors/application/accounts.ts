@@ -13,6 +13,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { getRecipeConnectorProviderConfig } from "./connector-adapters";
 
@@ -30,7 +31,7 @@ export async function ensureRecipeConnectorAccountReference(params: {
   providerId: RecipeConnectorProvider;
   account: ComposioConnectedAccount;
 }): Promise<ProviderConnectionRecord> {
-  return params.context.repositories.providerConnections.upsertConnection({
+  return params.context.repositories.get(ProviderConnectionRepository).upsertConnection({
     userId: params.userId,
     provider: params.providerId,
     kind: CONNECTOR_ACCOUNT_REFERENCE_KIND,
@@ -73,10 +74,9 @@ export async function listRecipeConnectorAccounts(params: {
       toolkitSlugs: [provider.auth.toolkitSlug],
       authConfigIds: provider.auth.authConfigs.map((config) => config.id),
     }),
-    params.context.repositories.providerConnections.listConnections(
-      params.userId,
-      params.providerId,
-    ),
+    params.context.repositories
+      .get(ProviderConnectionRepository)
+      .listConnections(params.userId, params.providerId),
   ]);
 
   await Promise.all(
@@ -128,14 +128,11 @@ export async function updateRecipeConnectorAccount(params: {
 
   if (params.input.alias !== undefined) {
     if (params.input.alias === null) {
-      await params.context.repositories.providerConnections.deleteConnection(
-        params.userId,
-        params.providerId,
-        ACCOUNT_ALIAS_KIND,
-        account.id,
-      );
+      await params.context.repositories
+        .get(ProviderConnectionRepository)
+        .deleteConnection(params.userId, params.providerId, ACCOUNT_ALIAS_KIND, account.id);
     } else {
-      await params.context.repositories.providerConnections.upsertConnection({
+      await params.context.repositories.get(ProviderConnectionRepository).upsertConnection({
         userId: params.userId,
         provider: params.providerId,
         kind: ACCOUNT_ALIAS_KIND,
@@ -155,7 +152,7 @@ export async function updateRecipeConnectorAccount(params: {
       );
     }
 
-    await params.context.repositories.providerConnections.upsertConnection({
+    await params.context.repositories.get(ProviderConnectionRepository).upsertConnection({
       userId: params.userId,
       provider: params.providerId,
       kind: ACCOUNT_SELECTION_KIND,
@@ -174,11 +171,9 @@ export async function getSelectedRecipeConnectorAccountId(params: {
   userId: number;
   providerId: RecipeConnectorProvider;
 }): Promise<string | undefined> {
-  const selection = await params.context.repositories.providerConnections.getConnection(
-    params.userId,
-    params.providerId,
-    ACCOUNT_SELECTION_KIND,
-  );
+  const selection = await params.context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnection(params.userId, params.providerId, ACCOUNT_SELECTION_KIND);
   const value = getMetadata(selection).accountId;
 
   return typeof value === "string" ? value : undefined;

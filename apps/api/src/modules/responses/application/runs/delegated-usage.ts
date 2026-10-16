@@ -7,7 +7,10 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { delegationRunCommandId } from "~/modules/delegations/application/run-identity";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 
 import { hydrateChatRunUsage } from "./usage";
 
@@ -86,7 +89,9 @@ export async function hydrateDelegatedUsage(
     return run;
   }
 
-  const delegations = await context.repositories.delegations.listByParentRunId(run.id);
+  const delegations = await context.repositories
+    .get(DelegationRepository)
+    .listByParentRunId(run.id);
 
   if (delegations.length === 0) {
     return run;
@@ -104,14 +109,16 @@ export async function hydrateDelegatedUsage(
 
         return Promise.all(
           commandIds.map((commandId) =>
-            context.repositories.conversationRuns.getCommandReceipt(run.initiatorUserId, commandId),
+            context.repositories
+              .get(ConversationRunRepository)
+              .getCommandReceipt(run.initiatorUserId, commandId),
           ),
         );
       }),
     ),
-    context.repositories.teammates.getTeammatesByIds([
-      ...new Set(delegations.map((delegation) => delegation.teammateId)),
-    ]),
+    context.repositories
+      .get(TeammateRepository)
+      .getTeammatesByIds([...new Set(delegations.map((delegation) => delegation.teammateId))]),
   ]);
   const receipts = receiptsByDelegation.flatMap((commandReceipts) =>
     commandReceipts.flatMap((receipt) => (receipt ? [receipt] : [])),

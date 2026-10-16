@@ -2,10 +2,11 @@ import { detectModelPriceDrift } from "@ngriffin_uk/polychat-ai-billing";
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { deriveArtificialAnalysisScores } from "~/modules/model-analysis/application/artificial-analysis/scoring";
 import type { ArtificialAnalysisModelRecord } from "~/modules/model-analysis/application/artificial-analysis/types";
+import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { fetchArtificialAnalysisModels } from "./artificialAnalysis";
@@ -49,14 +50,13 @@ export async function ingestArtificialAnalysisModels({
   }
 
   const ingestedAt = now.toISOString();
-  const repositories = RepositoryManager.getInstance(env);
-  const taskService = new TaskService(env, repositories.tasks);
+  const taskService = new TaskService(env, new TaskRepository(env));
   const models = await fetchArtificialAnalysisModels(env.ARTIFICIAL_ANALYSIS_API_KEY, fetchImpl);
   const records = models.map((model) => ({
     ...model,
     ingested_at: ingestedAt,
   }));
-  const storedModels = await repositories.artificialAnalysis.upsertMany(records);
+  const storedModels = await new ArtificialAnalysisRepository(env).upsertMany(records);
   const driftedModelPrices = reportModelPriceDrift(records);
   const scheduledAt = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
   const scoringTaskId = await taskService.enqueueTask({
@@ -79,7 +79,7 @@ export async function scoreArtificialAnalysisModels({
 }: {
   env: IEnv;
 }): Promise<{ scoredModels: number }> {
-  const repository = RepositoryManager.getInstance(env).artificialAnalysis;
+  const repository = new ArtificialAnalysisRepository(env);
   const models = await repository.listAll();
 
   for (const model of models) {

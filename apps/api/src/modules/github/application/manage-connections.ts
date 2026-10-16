@@ -2,6 +2,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { validateGitHubPrivateKey } from "~/infrastructure/github/app-jwt";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
 import { GITHUB_CONNECTION_KIND } from "./connections";
@@ -71,7 +72,7 @@ export async function upsertGitHubConnectionForUser(
     },
   });
 
-  await context.repositories.providerConnections.upsertConnection({
+  await context.repositories.get(ProviderConnectionRepository).upsertConnection({
     userId,
     provider: "github",
     kind: GITHUB_CONNECTION_KIND,
@@ -106,10 +107,7 @@ export async function deleteGitHubConnectionForUser(
   userId: number,
   installationId: number,
 ): Promise<void> {
-  await context.repositories.providerConnections.deleteConnection(
-    userId,
-    "github",
-    GITHUB_CONNECTION_KIND,
-    String(installationId),
-  );
+  await context.repositories
+    .get(ProviderConnectionRepository)
+    .deleteConnection(userId, "github", GITHUB_CONNECTION_KIND, String(installationId));
 }

@@ -15,9 +15,10 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
 import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { filterModelsForUserAccess } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
@@ -236,13 +237,15 @@ export async function resolveModelTarget(
 
 export async function resolveEntrantTarget(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   user: IUser | null,
   entrant: BenchmarkEntrant,
   scope: BenchmarkScope,
 ): Promise<EntrantTarget> {
   if (entrant.kind === "route") {
-    const route = await repositories.modelRoutes.getRoute(entrant.workspaceId, entrant.routeId);
+    const route = await repositories
+      .get(ModelRouteRepository)
+      .getRoute(entrant.workspaceId, entrant.routeId);
 
     if (!route || route.status !== "active") {
       throw new AssistantError("This model route is no longer active", ErrorType.NOT_FOUND, 404);

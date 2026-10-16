@@ -2,13 +2,17 @@ import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { Delegation } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export async function canControlDelegation(
   context: ServiceContext,
   delegation: Pick<Delegation, "parentConversationId" | "parentRunId">,
   userId: number,
 ): Promise<boolean> {
-  const run = await context.repositories.conversationRuns.getById(delegation.parentRunId);
+  const run = await context.repositories
+    .get(ConversationRunRepository)
+    .getById(delegation.parentRunId);
 
   if (!run) {
     return false;
@@ -19,10 +23,9 @@ export async function canControlDelegation(
     initiatorId: String(run.initiatorUserId),
     conversationId: run.conversationId,
     parentConversationId: delegation.parentConversationId,
-    conversationAccessible: await context.repositories.workspaces.canAccessConversation(
-      delegation.parentConversationId,
-      userId,
-    ),
+    conversationAccessible: await context.repositories
+      .get(WorkspaceRepository)
+      .canAccessConversation(delegation.parentConversationId, userId),
   }).allowed;
 }
 

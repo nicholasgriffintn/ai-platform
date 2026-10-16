@@ -3,9 +3,10 @@ import type { DelegationMemoryBinding } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope } from "~/types";
 
@@ -29,7 +30,7 @@ function mergeBindings(bindings: readonly DelegationMemoryBinding[]): Delegation
 
 export async function resolveRunMemoryScope(params: {
   options: CoreChatOptions;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   projectContext: ProjectChatContext | null;
 }): Promise<MemoryScope> {
   const userId = params.options.context?.user?.id;
@@ -37,7 +38,7 @@ export async function resolveRunMemoryScope(params: {
   const scopeId = params.projectContext?.projectId ?? String(userId ?? "");
   const contextId = params.options.teammate_context_id;
   const teammateContext = contextId
-    ? await params.repositories.teammateContexts.getById(contextId)
+    ? await params.repositories.get(TeammateContextRepository).getById(contextId)
     : null;
 
   if (

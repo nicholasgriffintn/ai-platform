@@ -7,6 +7,8 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import type { CreateTrainingExampleData } from "../infrastructure/TrainingExampleRepository";
 import {
@@ -43,7 +45,9 @@ export function createTrainingExampleSink(
       const userId = signal.user?.id ?? context.user?.id;
 
       if (userId) {
-        const userSettings = await context.repositories.userSettings.getUserSettings(userId);
+        const userSettings = await context.repositories
+          .get(UserSettingsRepository)
+          .getUserSettings(userId);
 
         if (!userSettings?.tracking_enabled) {
           return;
@@ -101,7 +105,7 @@ export function createTrainingExampleSink(
         ...enhancedMetadata,
       };
 
-      await context.repositories.trainingExamples.create(trainingData);
+      await context.repositories.get(TrainingExampleRepository).create(trainingData);
 
       logger.debug("Training example captured", {
         source: signal.source,

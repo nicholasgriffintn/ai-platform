@@ -12,7 +12,9 @@ import {
   hasUserProviderApiKey,
   resolveProviderApiKey,
 } from "~/infrastructure/providers/credentials";
+import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,
@@ -49,7 +51,8 @@ export async function getBrowserAvailability(
 
   const workspaceId = projectWorkspaceId ?? requestedWorkspaceId;
   const workspaceKey = workspaceId
-    ? (await context.repositories.modelConnections.getSecrets(workspaceId, "openai")).apiKey
+    ? (await context.repositories.get(ModelConnectionRepository).getSecrets(workspaceId, "openai"))
+        .apiKey
     : null;
 
   if (workspaceKey) {
@@ -67,7 +70,7 @@ export async function requireBrowserSessionAccess(
   options: { requireToolAccess?: boolean } = {},
 ): Promise<BrowserSessionRecord> {
   const user = context.requireUser();
-  const record = await context.repositories.browserSessions.get(id);
+  const record = await context.repositories.get(BrowserSessionRepository).get(id);
 
   if (!record || !ownsResource(user.id, record.user_id) || record.destroyed_at) {
     throw new AssistantError("Browser session not found", ErrorType.NOT_FOUND, 404);
@@ -137,7 +140,9 @@ export async function resolveBrowserApiKey(
   if (source === "workspace") {
     if (workspaceId) {
       await requireWorkspaceAccess(context, workspaceId);
-      const secrets = await context.repositories.modelConnections.getSecrets(workspaceId, "openai");
+      const secrets = await context.repositories
+        .get(ModelConnectionRepository)
+        .getSecrets(workspaceId, "openai");
 
       if (secrets.apiKey) {
         return secrets.apiKey;

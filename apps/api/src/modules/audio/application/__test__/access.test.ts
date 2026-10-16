@@ -1,23 +1,31 @@
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { checkSpeechAccess } from "~/modules/audio/application/access";
+import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import type { AnonymousUser, IUser } from "~/types";
 
 function makeRepositories(spentCreditMicros: number) {
   return {
-    repositories: {
-      anonymousUsers: {
-        getCreditSpend: vi.fn(async () => ({
-          spentCreditMicros,
-          reservedCreditMicros: 0,
-        })),
-      },
-      plans: {
-        getPlanById: vi.fn(async () => ({ included_credits: 20, grace_credits: 0 })),
-      },
-    } as unknown as RepositoryManager,
+    repositories: fakeRepositories([
+      [
+        AnonymousUserRepository,
+        {
+          getCreditSpend: vi.fn(async () => ({
+            spentCreditMicros,
+            reservedCreditMicros: 0,
+          })),
+        },
+      ],
+      [
+        PlanRepository,
+        {
+          getPlanById: vi.fn(async () => ({ included_credits: 20, grace_credits: 0 })),
+        },
+      ],
+    ]),
   };
 }
 

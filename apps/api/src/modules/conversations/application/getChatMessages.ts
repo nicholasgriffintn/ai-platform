@@ -2,18 +2,14 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateConnectorApprovalMessageState } from "~/modules/connectors/application/approval-message-state";
-import type { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { AnonymousUser, Message } from "~/types";
 
 export type GetChatMessagesContext = Pick<
   ServiceContext,
-  "database" | "ensureDatabase" | "user"
-> & {
-  repositories: {
-    connectorOperationApprovals: Pick<ConnectorOperationApprovalRepository, "getByIdsForUser">;
-  };
-};
+  "database" | "ensureDatabase" | "user" | "repositories"
+>;
 
 export const handleGetChatMessages = async (
   context: GetChatMessagesContext,
@@ -57,7 +53,7 @@ export const handleGetChatMessages = async (
   const messages = await hydrateConnectorApprovalMessageState({
     messages: boundedPage,
     userId: user.id,
-    approvals: context.repositories.connectorOperationApprovals,
+    approvals: context.repositories.get(ConnectorOperationApprovalRepository),
   });
 
   return {
@@ -94,7 +90,7 @@ export const handleGetChatMessageById = async (
   const [message] = await hydrateConnectorApprovalMessageState({
     messages: [result.message],
     userId: user.id,
-    approvals: context.repositories.connectorOperationApprovals,
+    approvals: context.repositories.get(ConnectorOperationApprovalRepository),
   });
 
   return { ...result, message: message ?? result.message };

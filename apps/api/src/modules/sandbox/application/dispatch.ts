@@ -22,10 +22,14 @@ import { MAX_STORED_STREAM_EVENTS } from "~/config/chat";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { executeSandboxProvider } from "~/infrastructure/providers/capabilities/sandbox";
 import { providerLibrary } from "~/infrastructure/providers/library";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectRun } from "~/modules/mobile-push/application";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { persistProjectEnvironmentCacheCandidate } from "~/modules/workspaces/application/environment-cache";
+import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
@@ -100,7 +104,7 @@ export async function enqueueSandboxRunDispatchTask(params: {
     throw new Error("TASK_QUEUE binding is not configured for sandbox run dispatch");
   }
 
-  const taskService = new TaskService(context.env, context.repositories.tasks);
+  const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
 
   return taskService.enqueueTask({
     task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
@@ -123,7 +127,9 @@ async function loadRunData(params: {
   const context = createServiceContext({
     env: params.env,
   });
-  const record = await context.repositories.activities.getActivityById(params.recordId);
+  const record = await context.repositories
+    .get(ActivityRepository)
+    .getActivityById(params.recordId);
 
   if (!record?.data) {
     return null;
@@ -143,7 +149,9 @@ async function persistRunData(params: {
   const context = createServiceContext({
     env: params.env,
   });
-  const record = await context.repositories.activities.getActivityById(params.recordId);
+  const record = await context.repositories
+    .get(ActivityRepository)
+    .getActivityById(params.recordId);
   let runData = params.runData;
 
   runData = await persistSandboxRunArtifact({
@@ -153,7 +161,7 @@ async function persistRunData(params: {
     conversationId: record?.conversation_id,
     run: runData,
   });
-  await context.repositories.activities.updateActivity(params.recordId, {
+  await context.repositories.get(ActivityRepository).updateActivity(params.recordId, {
     status: getSandboxActivityStatus(runData.status),
     data: runData,
   });
@@ -191,7 +199,7 @@ export async function processSandboxRunDispatch(params: {
 }): Promise<void> {
   const { env, message } = params;
   const context = createServiceContext({ env });
-  const user = await context.repositories.users.getUserById(message.userId);
+  const user = await context.repositories.get(UserRepository).getUserById(message.userId);
 
   if (!user) {
     logger.error("Skipping sandbox run dispatch: user not found", {
@@ -237,7 +245,7 @@ export async function processSandboxRunDispatch(params: {
     processingStartedAt: startedAt,
     workflowPhase: "executing",
   };
-  await context.repositories.activities.updateActivity(message.recordId, {
+  await context.repositories.get(ActivityRepository).updateActivity(message.recordId, {
     status: getSandboxActivityStatus(runData.status),
     data: runData,
   });
@@ -264,10 +272,12 @@ export async function processSandboxRunDispatch(params: {
   const deliveryPolicy = taskProfile.deliveryPolicy;
   const environmentVariables =
     executionProvider === "polychat" && message.payload.projectId
-      ? await context.repositories.projectEnvironmentVariables.values(
+      ? await context.repositories.get(ProjectEnvironmentVariableRepository).values(
           message.payload.projectId,
           (
-            await context.repositories.projectEnvironmentVariables.list(message.payload.projectId)
+            await context.repositories
+              .get(ProjectEnvironmentVariableRepository)
+              .list(message.payload.projectId)
           ).map((variable) => variable.name),
         )
       : undefined;
@@ -370,7 +380,9 @@ export async function processSandboxRunDispatch(params: {
       userId: message.userId,
       runData: nextRun,
     });
-    const record = await context.repositories.activities.getActivityById(message.recordId);
+    const record = await context.repositories
+      .get(ActivityRepository)
+      .getActivityById(message.recordId);
 
     await notifyMobileProjectRun({
       context,
@@ -654,7 +666,9 @@ export async function processSandboxRunDispatch(params: {
   });
 
   if (persisted.status === "completed" || persisted.status === "failed") {
-    const record = await context.repositories.activities.getActivityById(message.recordId);
+    const record = await context.repositories
+      .get(ActivityRepository)
+      .getActivityById(message.recordId);
 
     await notifyMobileProjectRun({
       context,
@@ -689,10 +703,9 @@ export async function getSandboxRunRecordForDispatch(params: {
   userId: number;
 }): Promise<{ id: string; run: PersistedSandboxRunData } | null> {
   const context = createServiceContext({ env: params.env });
-  const record = await context.repositories.activities.getActivityByGroup(
-    SANDBOX_RUNS_CAPABILITY_ID,
-    params.runId,
-  );
+  const record = await context.repositories
+    .get(ActivityRepository)
+    .getActivityByGroup(SANDBOX_RUNS_CAPABILITY_ID, params.runId);
 
   if (!record || !ownsResource(params.userId, record.created_by_user_id)) {
     return null;

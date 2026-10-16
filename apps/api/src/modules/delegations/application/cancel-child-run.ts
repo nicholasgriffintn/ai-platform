@@ -7,6 +7,7 @@ import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { cleanupCancelledChatRun } from "~/modules/responses/application/runs/cancellation-cleanup";
 
 export async function cancelDelegationChildRun(
@@ -15,9 +16,9 @@ export async function cancelDelegationChildRun(
   userId: number,
   reason: string,
 ): Promise<void> {
-  const run = await context.repositories.conversationRuns.getLatestForConversation(
-    delegation.childConversationId,
-  );
+  const run = await context.repositories
+    .get(ConversationRunRepository)
+    .getLatestForConversation(delegation.childConversationId);
   const configuration = run
     ? teammateRunConfigurationSchema.safeParse(run.resolvedConfiguration)
     : null;
@@ -33,7 +34,7 @@ export async function cancelDelegationChildRun(
   }
 
   const commandId = `delegation_cancel_${delegation.id}_${run.attempt}`;
-  const receipt = await context.repositories.conversationRuns.acceptCancellation({
+  const receipt = await context.repositories.get(ConversationRunRepository).acceptCancellation({
     commandId,
     digest: await sha256Hex(
       canonicalJson({ runId: run.id, expectedAttempt: run.attempt, delegationId: delegation.id }),
@@ -46,7 +47,7 @@ export async function cancelDelegationChildRun(
   await cleanupCancelledChatRun(context, run);
 
   if (!isTerminalChatRunStatus(receipt.run.status)) {
-    await context.repositories.conversationRuns.transition({
+    await context.repositories.get(ConversationRunRepository).transition({
       runId: run.id,
       attempt: run.attempt,
       status: "cancelled",

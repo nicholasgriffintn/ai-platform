@@ -19,6 +19,8 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { conversationHandleIdForDelegation } from "~/modules/conversations/application/conversation-handles";
+import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { checkDelegationSpawn } from "~/modules/delegations/application/guards";
 import { resolveDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
 import {
@@ -29,18 +31,22 @@ import { delegationRunTaskId } from "~/modules/delegations/application/run-ident
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { requireDelegationGroupWaitPolicy } from "~/modules/delegations/application/wait-policy";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import {
   copyConversationBrief,
   ensureConversationBrief,
 } from "~/modules/memory-documents/application/memory-documents";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   requireProjectTeammate,
   requireTeammateAccess,
 } from "~/modules/teammates/application/access";
 import { hireTeammate } from "~/modules/teammates/application/hire";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -66,11 +72,15 @@ export const delegate: ApiToolDefinition = {
       return { status: "error", name: "delegate", content: "Temporary chats cannot delegate." };
     }
 
-    const parent = await context.repositories.conversations.getConversation(parentConversationId);
+    const parent = await context.repositories
+      .get(ConversationRepository)
+      .getConversation(parentConversationId);
 
     if (
       !parent ||
-      !(await context.repositories.workspaces.canAccessConversation(parentConversationId, user.id))
+      !(await context.repositories
+        .get(WorkspaceRepository)
+        .canAccessConversation(parentConversationId, user.id))
     ) {
       return {
         status: "error",
@@ -173,12 +183,14 @@ export const delegate: ApiToolDefinition = {
 
     const requestedChildConversationId = args.child_conversation_id;
     const selectedChild = requestedChildConversationId
-      ? await context.repositories.conversations.getConversation(requestedChildConversationId)
+      ? await context.repositories
+          .get(ConversationRepository)
+          .getConversation(requestedChildConversationId)
       : null;
     const predecessor = requestedChildConversationId
-      ? await context.repositories.delegations.getByChildConversationId(
-          requestedChildConversationId,
-        )
+      ? await context.repositories
+          .get(DelegationRepository)
+          .getByChildConversationId(requestedChildConversationId)
       : null;
     const selectedBriefDocumentId =
       typeof selectedChild?.brief_document_id === "string" ? selectedChild.brief_document_id : null;
@@ -194,10 +206,9 @@ export const delegate: ApiToolDefinition = {
         isLiveDelegationState(predecessor.state) ||
         predecessor.teammateId !== teammate.id ||
         selectedProjectId !== parentProjectId ||
-        !(await context.repositories.workspaces.canAccessConversation(
-          requestedChildConversationId,
-          user.id,
-        ))
+        !(await context.repositories
+          .get(WorkspaceRepository)
+          .canAccessConversation(requestedChildConversationId, user.id))
       ) {
         return {
           status: "error",
@@ -272,18 +283,20 @@ export const delegate: ApiToolDefinition = {
 
     try {
       if (createsChildConversation) {
-        await context.repositories.conversations.createConversation(
-          childConversationId,
-          user.id,
-          `Delegate: ${teammate.name ?? "Teammate"}`,
-          {
-            type: "delegate",
-            parent_conversation_id: parentConversationId,
-            parent_message_id: toolContext.toolCallId,
-            permission_mode: childPermissionMode,
-            ...(projectId ? { project_id: projectId } : {}),
-          },
-        );
+        await context.repositories
+          .get(ConversationRepository)
+          .createConversation(
+            childConversationId,
+            user.id,
+            `Delegate: ${teammate.name ?? "Teammate"}`,
+            {
+              type: "delegate",
+              parent_conversation_id: parentConversationId,
+              parent_message_id: toolContext.toolCallId,
+              permission_mode: childPermissionMode,
+              ...(projectId ? { project_id: projectId } : {}),
+            },
+          );
 
         if (selectedBriefDocumentId && requestedChildConversationId) {
           const copied = await copyConversationBrief(
@@ -329,7 +342,7 @@ export const delegate: ApiToolDefinition = {
         ],
       });
 
-      delegation = await context.repositories.delegations.createDelegation({
+      delegation = await context.repositories.get(DelegationRepository).createDelegation({
         id: delegationId,
         parentConversationId,
         childConversationId,
@@ -350,9 +363,13 @@ export const delegate: ApiToolDefinition = {
     } catch (error) {
       if (createsChildConversation) {
         await Promise.allSettled([
-          context.repositories.conversations.deleteConversation(childConversationId),
+          context.repositories.get(ConversationRepository).deleteConversation(childConversationId),
           ...(childBriefDocumentId && childBriefDocumentId !== selectedBriefDocumentId
-            ? [context.repositories.memoryDocuments.softDeleteDocument(childBriefDocumentId)]
+            ? [
+                context.repositories
+                  .get(MemoryDocumentRepository)
+                  .softDeleteDocument(childBriefDocumentId),
+              ]
             : []),
         ]);
       }
@@ -361,7 +378,7 @@ export const delegate: ApiToolDefinition = {
     }
 
     try {
-      await context.repositories.conversationHandles.createSpawnHandle({
+      await context.repositories.get(ConversationHandleRepository).createSpawnHandle({
         id: conversationHandleIdForDelegation(delegationId),
         conversationId: parentConversationId,
         delegationId,
@@ -369,7 +386,7 @@ export const delegate: ApiToolDefinition = {
         expiresAt: deadline,
       });
 
-      const tasks = new TaskService(context.env, context.repositories.tasks);
+      const tasks = new TaskService(context.env, context.repositories.get(TaskRepository));
 
       await scheduleDelegationExpiry(tasks, delegation, user.id);
       await tasks.enqueueTask({

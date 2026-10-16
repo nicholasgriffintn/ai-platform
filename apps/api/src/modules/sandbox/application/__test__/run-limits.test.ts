@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+
 import { assertSandboxRunCanStart } from "../run-limits";
 
 function toRunData(overrides: Record<string, unknown> = {}) {
@@ -22,9 +25,7 @@ describe("assertSandboxRunCanStart", () => {
     const listRecentUserActivities = vi.fn().mockResolvedValue([]);
     const context = {
       env: {},
-      repositories: {
-        activities: { listRecentUserActivities },
-      },
+      repositories: fakeRepositories([[ActivityRepository, { listRecentUserActivities }]]),
     } as any;
 
     await expect(
@@ -53,9 +54,7 @@ describe("assertSandboxRunCanStart", () => {
     ]);
     const context = {
       env: {},
-      repositories: {
-        activities: { listRecentUserActivities },
-      },
+      repositories: fakeRepositories([[ActivityRepository, { listRecentUserActivities }]]),
     } as any;
 
     await expect(
@@ -101,9 +100,7 @@ describe("assertSandboxRunCanStart", () => {
     ]);
     const context = {
       env: {},
-      repositories: {
-        activities: { listRecentUserActivities },
-      },
+      repositories: fakeRepositories([[ActivityRepository, { listRecentUserActivities }]]),
     } as any;
 
     await expect(

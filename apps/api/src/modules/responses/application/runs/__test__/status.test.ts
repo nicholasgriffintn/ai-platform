@@ -2,6 +2,14 @@ import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
+import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { handleGetChatRun, handleGetChatRunSnapshot } from "../status";
 
@@ -27,39 +35,57 @@ function createContext(run: ChatRun | null, userId = 7) {
   return {
     requireUser: vi.fn().mockReturnValue({ id: userId, plan_id: "pro" }),
     ensureDatabase: vi.fn(),
-    repositories: {
-      conversationRuns: {
-        getById: vi.fn().mockResolvedValue(run),
-        getEventCursor: vi.fn().mockResolvedValue(4),
-        getPartialContent: vi.fn().mockResolvedValue(null),
-      },
-      messages: {
-        getRunMessages: vi.fn().mockResolvedValue([
-          {
-            id: "assistant-1",
-            conversation_id: "conversation-1",
-            run_id: "run-1",
-            role: "assistant",
-            content: "Partial answer",
-          },
-        ]),
-      },
-      connectorOperationApprovals: {},
-      usageEvents: {
-        summariseChatRuns: vi.fn().mockResolvedValue([]),
-      },
-      usageReservations: {
-        listReservations: vi.fn().mockResolvedValue([]),
-      },
-      delegations: {
-        listByParentRunId: vi.fn().mockResolvedValue([]),
-      },
-      workspaces: {
-        getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
-        getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-        getMembership: vi.fn().mockResolvedValue({ role: "member" }),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn().mockResolvedValue(run),
+          getEventCursor: vi.fn().mockResolvedValue(4),
+          getPartialContent: vi.fn().mockResolvedValue(null),
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          getRunMessages: vi.fn().mockResolvedValue([
+            {
+              id: "assistant-1",
+              conversation_id: "conversation-1",
+              run_id: "run-1",
+              role: "assistant",
+              content: "Partial answer",
+            },
+          ]),
+        },
+      ],
+      [ConnectorOperationApprovalRepository, {}],
+      [
+        UsageEventRepository,
+        {
+          summariseChatRuns: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        UsageReservationRepository,
+        {
+          listReservations: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        DelegationRepository,
+        {
+          listByParentRunId: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [
+        WorkspaceRepository,
+        {
+          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+          getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 
@@ -96,14 +122,16 @@ describe("handleGetChatRun", () => {
       run: expect.objectContaining({ ...projectRun, usage: expect.any(Object) }),
       messages: [expect.objectContaining({ id: "assistant-1" })],
     });
-    expect(memberContext.repositories.workspaces.getMembership).toHaveBeenCalledWith(
+    expect(memberContext.repositories.get(WorkspaceRepository).getMembership).toHaveBeenCalledWith(
       "workspace-1",
       8,
     );
 
     const revokedContext = createContext(projectRun, 8);
 
-    vi.mocked(revokedContext.repositories.workspaces.getMembership).mockResolvedValue(null);
+    vi.mocked(revokedContext.repositories.get(WorkspaceRepository).getMembership).mockResolvedValue(
+      null,
+    );
 
     await expect(handleGetChatRun(revokedContext, projectRun.id)).rejects.toMatchObject({
       statusCode: 404,
@@ -119,20 +147,22 @@ describe("handleGetChatRun", () => {
       run: personalRun,
       messages: [expect.objectContaining({ id: "assistant-1" })],
     });
-    expect(context.repositories.conversationRuns.getById).toHaveBeenCalledOnce();
+    expect(context.repositories.get(ConversationRunRepository).getById).toHaveBeenCalledOnce();
     expect(
-      vi.mocked(context.repositories.conversationRuns.getEventCursor).mock.invocationCallOrder[0],
+      vi.mocked(context.repositories.get(ConversationRunRepository).getEventCursor).mock
+        .invocationCallOrder[0],
     ).toBeLessThan(
-      vi.mocked(context.repositories.conversationRuns.getById).mock.invocationCallOrder[0] ?? 0,
+      vi.mocked(context.repositories.get(ConversationRunRepository).getById).mock
+        .invocationCallOrder[0] ?? 0,
     );
   });
 
   it("surfaces checkpointed tokens as a transient message while the run is live", async () => {
     const context = createContext(personalRun);
 
-    vi.mocked(context.repositories.conversationRuns.getPartialContent).mockResolvedValue(
-      "Hello stream",
-    );
+    vi.mocked(
+      context.repositories.get(ConversationRunRepository).getPartialContent,
+    ).mockResolvedValue("Hello stream");
 
     await expect(handleGetChatRunSnapshot(context, personalRun.id)).resolves.toMatchObject({
       messages: [
@@ -151,9 +181,9 @@ describe("handleGetChatRun", () => {
   it("omits the transient message once the run settles or nothing is checkpointed", async () => {
     const settledContext = createContext({ ...personalRun, status: "succeeded" });
 
-    vi.mocked(settledContext.repositories.conversationRuns.getPartialContent).mockResolvedValue(
-      "stale tokens",
-    );
+    vi.mocked(
+      settledContext.repositories.get(ConversationRunRepository).getPartialContent,
+    ).mockResolvedValue("stale tokens");
 
     await expect(handleGetChatRun(settledContext, personalRun.id)).resolves.toMatchObject({
       messages: [expect.objectContaining({ id: "assistant-1" })],
@@ -164,6 +194,6 @@ describe("handleGetChatRun", () => {
     await expect(handleGetChatRun(emptyContext, personalRun.id)).resolves.toMatchObject({
       messages: [expect.objectContaining({ id: "assistant-1" })],
     });
-    expect(emptyContext.repositories.messages.getRunMessages).toHaveBeenCalledOnce();
+    expect(emptyContext.repositories.get(MessageRepository).getRunMessages).toHaveBeenCalledOnce();
   });
 });

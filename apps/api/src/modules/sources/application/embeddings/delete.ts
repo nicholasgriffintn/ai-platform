@@ -4,6 +4,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { deleteProviderDocuments } from "./deletion";
@@ -20,10 +21,9 @@ export const deleteEmbedding = async ({ request, context, env, user }: DeleteEmb
   const serviceContext = resolveServiceContext({ context, env, user });
   const authenticatedUser = serviceContext.requireUser();
   const input = parseDeleteEmbeddingRequest(request);
-  const documents = await serviceContext.repositories.embeddings.getDocumentsForDeletion(
-    authenticatedUser.id,
-    input.ids,
-  );
+  const documents = await serviceContext.repositories
+    .get(EmbeddingRepository)
+    .getDocumentsForDeletion(authenticatedUser.id, input.ids);
 
   if (documents.length === 0) {
     return { status: "success", data: { ids: input.ids } };
@@ -31,10 +31,9 @@ export const deleteEmbedding = async ({ request, context, env, user }: DeleteEmb
 
   const documentIds = documents.map((document) => document.id);
 
-  await serviceContext.repositories.embeddings.markDocumentsDeletePending(
-    authenticatedUser.id,
-    documentIds,
-  );
+  await serviceContext.repositories
+    .get(EmbeddingRepository)
+    .markDocumentsDeletePending(authenticatedUser.id, documentIds);
 
   const userSettings = await serviceContext.getUserSettings();
 
@@ -49,7 +48,9 @@ export const deleteEmbedding = async ({ request, context, env, user }: DeleteEmb
     documents,
   });
 
-  await serviceContext.repositories.embeddings.deleteDocuments(authenticatedUser.id, documentIds);
+  await serviceContext.repositories
+    .get(EmbeddingRepository)
+    .deleteDocuments(authenticatedUser.id, documentIds);
 
   return { status: "success", data: { ids: input.ids } };
 };

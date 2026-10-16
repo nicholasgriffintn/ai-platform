@@ -13,6 +13,8 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { Message } from "~/types";
 
 interface ActivityCompletion {
@@ -575,16 +577,15 @@ export async function getProjectTaskActivity(
   goal: Goal | null,
   interaction: ProjectTaskInteraction | null,
 ): Promise<ProjectTaskActivityTimeline> {
-  const runs = await context.repositories.conversationRuns.listForProjectTask(
-    task.projectId,
-    task.id,
-  );
+  const runs = await context.repositories
+    .get(ConversationRunRepository)
+    .listForProjectTask(task.projectId, task.id);
   const activityRuns = await Promise.all(
     runs.map(async (run) => ({
       run,
-      events: await context.repositories.conversationRuns.listEvents(run.id, 0, 500),
+      events: await context.repositories.get(ConversationRunRepository).listEvents(run.id, 0, 500),
       messages: (
-        await context.repositories.messages.getRunMessages(run.conversationId, run.id)
+        await context.repositories.get(MessageRepository).getRunMessages(run.conversationId, run.id)
       ).map(formatStoredMessage),
     })),
   );

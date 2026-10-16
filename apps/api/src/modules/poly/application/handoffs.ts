@@ -11,6 +11,8 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import { admitPolyNotification } from "~/modules/poly/domain/budgets";
 import { handoffOverrideRef } from "~/modules/poly/domain/handoff-overrides";
 import type { IUser } from "~/types";
@@ -60,10 +62,9 @@ async function resolveUrgency(
     return { urgency: "high", receipt: null };
   }
 
-  const [override] = await input.context.repositories.corrections.listActiveByPlacementRefs(
-    input.user.id,
-    [handoffOverrideRef(input.installationId)],
-  );
+  const [override] = await input.context.repositories
+    .get(CorrectionRepository)
+    .listActiveByPlacementRefs(input.user.id, [handoffOverrideRef(input.installationId)]);
 
   if (override) {
     return { urgency: "high", receipt: { override: override.id } };
@@ -81,7 +82,7 @@ async function resolveUrgency(
 export async function admitRoutineHandoff(
   input: RoutineHandoffInput,
 ): Promise<PolyHandoffDecision> {
-  const activities = input.context.repositories.activities;
+  const activities = input.context.repositories.get(ActivityRepository);
   const groupId = `routine:${input.occurrenceId}:${input.phase}`;
   const id = `poly_handoff_${(await sha256Hex(`${input.polyConversationId}:${groupId}`)).slice(0, 40)}`;
   const existing = await activities.getActivityById(id);

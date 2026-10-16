@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { createAssistantSessionStores } from "~/modules/auth/application/sessionStore";
+import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 const user = { id: 7, email: "poly@example.com", created_at: "2026-10-01T00:00:00.000Z" };
 const session = {
@@ -19,7 +22,12 @@ function stores(found: unknown) {
 
   return {
     repositories,
-    ...createAssistantSessionStores({ repositories } as unknown as ServiceContext),
+    ...createAssistantSessionStores({
+      repositories: fakeRepositories([
+        [SessionRepository, repositories.sessions],
+        [UserRepository, repositories.users],
+      ]),
+    } as unknown as ServiceContext),
   };
 }
 

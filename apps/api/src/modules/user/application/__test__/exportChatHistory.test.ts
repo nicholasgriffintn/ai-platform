@@ -2,6 +2,9 @@ import type { ListPage } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { User } from "~/types";
 
 import { handleExportChatHistory } from "../exportChatHistory";
@@ -67,10 +70,10 @@ function createContext() {
   };
 
   const context = {
-    repositories: {
-      conversations: { listUserConversations },
-      messages: { getConversationMessages },
-    },
+    repositories: fakeRepositories([
+      [ConversationRepository, { listUserConversations }],
+      [MessageRepository, { getConversationMessages }],
+    ]),
   } as unknown as ServiceContext;
 
   return {

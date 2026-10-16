@@ -2,6 +2,7 @@ import { DOCUMENT_READ_TOOL_NAME, type ReadDocumentInput } from "@ngriffin_uk/po
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { requireDocument } from "~/modules/documents/application/access";
+import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_document as descriptor } from "./definitions/get_document";
@@ -28,7 +29,9 @@ export const get_document: ApiToolDefinition = {
       resolveRequestProjectId(toolContext.request),
     );
     const comment = input.commentId
-      ? await context.repositories.documentComments.get(output.id, input.commentId, user.id)
+      ? await context.repositories
+          .get(DocumentCommentRepository)
+          .get(output.id, input.commentId, user.id)
       : null;
 
     if (input.commentId && !comment) {

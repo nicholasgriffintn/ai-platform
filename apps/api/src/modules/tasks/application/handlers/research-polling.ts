@@ -4,10 +4,10 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getResearchProvider } from "~/infrastructure/providers/capabilities/research";
 import { publishOutputJobChanged } from "~/modules/jobs/application/registry";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type {
   IEnv,
   IUser,
@@ -90,8 +90,7 @@ async function resolveTaskUser(env: IEnv, userId?: number): Promise<IUser | unde
     return undefined;
   }
 
-  const repositories = new RepositoryManager(env);
-  const user = await repositories.users.getUserById(userId);
+  const user = await new UserRepository(env).getUserById(userId);
 
   return user ?? undefined;
 }

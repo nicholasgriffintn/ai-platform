@@ -18,6 +18,9 @@ import { resolveAssistantEmailUser } from "~/modules/auth/application/authUser";
 import { resolveGitHubIdentity } from "~/modules/auth/application/github";
 import { createAssistantIdentityStore } from "~/modules/auth/application/identity";
 import { createAssistantSessionStores } from "~/modules/auth/application/sessionStore";
+import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
+import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
+import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 
 export type { AssistantAuthUser } from "~/modules/auth/application/authUser";
 
@@ -30,7 +33,7 @@ export function createAssistantAuth(context: ServiceContext) {
     users,
     sessions,
     identities: createAssistantIdentityStore(context),
-    challenges: context.repositories.authChallenges,
+    challenges: context.repositories.get(AuthChallengeRepository),
     sessionTtlMs: AUTH_SESSION_TTL_MS,
     challengeTtlMs: MAGIC_LINK_TTL_MS,
   });
@@ -57,7 +60,7 @@ export function createAssistantGitHubAuth(context: ServiceContext) {
       clientId,
       clientSecret,
       redirectUri: appendUrlPath(apiBaseUrl, "/auth/github/callback"),
-      stateStore: context.repositories.oauthStates,
+      stateStore: context.repositories.get(OAuthStateRepository),
       resolveIdentity: resolveGitHubIdentity,
     }),
   );
@@ -87,7 +90,7 @@ export function createAssistantWebAuthn(context: ServiceContext) {
       rpId: new URL(origin).hostname,
       rpName: APP_NAME,
       origins: [origin],
-      store: context.repositories.webAuthn,
+      store: context.repositories.get(WebAuthnRepository),
     }),
   );
 }

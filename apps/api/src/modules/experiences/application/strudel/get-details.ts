@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { PATTERN_OUTPUT_KIND, STRUDEL_APP_ID, mapResponseToPattern } from "./utils";
 
@@ -23,8 +24,8 @@ export async function getPatternDetails({
     const { repositories } = context;
 
     const response = projectId
-      ? await repositories.outputs.getProjectOutput(projectId, patternId)
-      : await repositories.outputs.getPersonalOutput(userId, patternId);
+      ? await repositories.get(OutputRepository).getProjectOutput(projectId, patternId)
+      : await repositories.get(OutputRepository).getPersonalOutput(userId, patternId);
 
     if (
       !response ||

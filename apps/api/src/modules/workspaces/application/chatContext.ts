@@ -14,6 +14,7 @@ import {
   RECIPE_SETUP_TOOL,
 } from "~/modules/recipes/application/catalog";
 import { resolveProjectSkillGrants } from "~/modules/skills/application/scope";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CoreChatOptions } from "~/types";
 
 import { resolveChatProjectAccess } from "./chatProjectAccess";
@@ -72,7 +73,9 @@ export async function resolveProjectChatContext(
 
   const { project } = access;
   const projectId = project.id;
-  const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+  const capabilities = await context.repositories
+    .get(WorkspaceRepository)
+    .listProjectCapabilities(projectId);
   const projectTools = resolveProjectTools(capabilities);
   const codingEnvironment = resolveProjectCodingEnvironment(project);
   const toolIds = [

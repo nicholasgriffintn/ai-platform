@@ -1,7 +1,7 @@
 import { buildTurnContext, type PolyAgendaPromptInput } from "@ngriffin_uk/polychat-ai-prompts";
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { toPolyAgendaPrompt } from "~/modules/poly/application/agenda";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 import type { PerMessageSkill } from "~/modules/skills/application/per-message";
@@ -14,7 +14,7 @@ export interface LatestTurn {
 
 export async function loadPolyAgendaPrompt(
   options: Pick<CoreChatOptions, "poly" | "context">,
-  repositories: RepositoryManager,
+  repositories: Repositories,
 ): Promise<PolyAgendaPromptInput | null> {
   const userId = options.context?.user?.id;
 

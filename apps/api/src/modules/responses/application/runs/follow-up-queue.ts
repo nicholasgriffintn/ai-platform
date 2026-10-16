@@ -19,9 +19,12 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Task } from "~/infrastructure/database/schema";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 const logger = getLogger({ prefix: "services/chat-runs/follow-up-queue" });
 
@@ -67,7 +70,9 @@ export function presentQueuedFollowUp(task: Task): QueuedChatMessage | null {
 
 async function requireQueueableConversation(context: ServiceContext, conversationId: string) {
   const user = context.requireUser();
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
 
   if (!conversation || conversation.project_id || !ownsResource(user.id, conversation.user_id)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
@@ -77,8 +82,9 @@ async function requireQueueableConversation(context: ServiceContext, conversatio
 }
 
 async function hasActiveRun(context: QueueContext, conversationId: string): Promise<boolean> {
-  const latest =
-    await context.repositories.conversationRuns.getLatestForConversation(conversationId);
+  const latest = await context.repositories
+    .get(ConversationRunRepository)
+    .getLatestForConversation(conversationId);
 
   return latest !== null && !isTerminalChatRunStatus(latest.status);
 }
@@ -101,7 +107,7 @@ export async function listQueuedFollowUps(
   conversationId: string,
 ): Promise<QueuedChatMessage[]> {
   const user = await requireQueueableConversation(context, conversationId);
-  const tasks = await context.repositories.tasks.listSuspendedTasksForConversation({
+  const tasks = await context.repositories.get(TaskRepository).listSuspendedTasksForConversation({
     taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     userId: user.id,
     conversationId,
@@ -121,7 +127,7 @@ export async function queueFollowUp(
   input: EnqueueChatMessageRequest,
 ): Promise<QueuedChatMessage> {
   const user = await requireQueueableConversation(context, conversationId);
-  const waiting = await context.repositories.tasks.listSuspendedTasksForConversation({
+  const waiting = await context.repositories.get(TaskRepository).listSuspendedTasksForConversation({
     taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     userId: user.id,
     conversationId,
@@ -141,7 +147,7 @@ export async function queueFollowUp(
     message: { ...input.message, id: input.message.id ?? generateId() },
     request: input.request,
   };
-  const task = await context.repositories.tasks.createTask({
+  const task = await context.repositories.get(TaskRepository).createTask({
     id: `queued_chat_${generateId()}`,
     task_type: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     user_id: user.id,
@@ -171,7 +177,7 @@ export async function removeQueuedFollowUp(
   queuedId: string,
 ): Promise<{ removed: boolean }> {
   const user = await requireQueueableConversation(context, conversationId);
-  const removed = await context.repositories.tasks.cancelSuspendedTask({
+  const removed = await context.repositories.get(TaskRepository).cancelSuspendedTask({
     taskId: queuedId,
     taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     userId: user.id,
@@ -188,17 +194,19 @@ export async function releaseQueuedFollowUp(
   context: QueueContext,
   conversationId: string,
 ): Promise<boolean> {
-  const task = await context.repositories.tasks.releaseNextSuspendedTaskForConversation({
-    taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
-    conversationId,
-  });
+  const task = await context.repositories
+    .get(TaskRepository)
+    .releaseNextSuspendedTaskForConversation({
+      taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
+      conversationId,
+    });
 
   if (!task) {
     return false;
   }
 
   try {
-    await new TaskService(context.env, context.repositories.tasks).dispatchTask(task);
+    await new TaskService(context.env, context.repositories.get(TaskRepository)).dispatchTask(task);
   } catch (error) {
     logger.warn("Queued follow-up remains pending for recovery", {
       taskId: task.id,
@@ -237,7 +245,7 @@ export async function releaseStrandedQueuedFollowUps(
   context: QueueContext,
   now = new Date(),
 ): Promise<number> {
-  const stranded = await context.repositories.tasks.listSuspendedTasksUpdatedBefore({
+  const stranded = await context.repositories.get(TaskRepository).listSuspendedTasksUpdatedBefore({
     taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     updatedBefore: new Date(now.getTime() - STRANDED_AFTER_MS).toISOString(),
     limit: STRANDED_BATCH_SIZE,

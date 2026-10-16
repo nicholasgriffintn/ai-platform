@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { getRecipeById } from "./catalog";
@@ -13,7 +14,9 @@ export async function requireOwnedRecipeInstallation(params: {
   installationId: string;
 }) {
   params.context.ensureDatabase();
-  const record = await params.context.repositories.templates.getTemplateById(params.installationId);
+  const record = await params.context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(params.installationId);
 
   if (
     !record ||

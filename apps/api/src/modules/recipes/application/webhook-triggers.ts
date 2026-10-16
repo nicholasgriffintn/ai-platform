@@ -7,6 +7,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RecipeWebhookTriggerRecord } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
+import { RecipeWebhookTriggerRepository } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
 import {
   createWebhookToken,
   hashWebhookToken,
@@ -32,10 +33,9 @@ async function requireOwnedTrigger(params: {
   userId: number;
   triggerId: string;
 }): Promise<RecipeWebhookTriggerRecord | null> {
-  const trigger = await params.context.repositories.recipeWebhookTriggers.getTriggerForOwner(
-    params.triggerId,
-    params.userId,
-  );
+  const trigger = await params.context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .getTriggerForOwner(params.triggerId, params.userId);
 
   if (!trigger) {
     return null;
@@ -63,13 +63,15 @@ export async function createRecipeWebhookTrigger(params: {
   }
 
   const token = createWebhookToken();
-  const trigger = await params.context.repositories.recipeWebhookTriggers.createTrigger({
-    installationId: record.id,
-    createdByUserId: params.userId,
-    projectId: record.project_id,
-    tokenHash: await hashWebhookToken(token),
-    condition: params.input.condition,
-  });
+  const trigger = await params.context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .createTrigger({
+      installationId: record.id,
+      createdByUserId: params.userId,
+      projectId: record.project_id,
+      tokenHash: await hashWebhookToken(token),
+      condition: params.input.condition,
+    });
 
   return { ...toTrigger(trigger), url: recipeWebhookUrl(params.context.env, token) };
 }
@@ -80,10 +82,9 @@ export async function listRecipeWebhookTriggers(params: {
   installationId: string;
 }): Promise<{ triggers: RecipeWebhookTrigger[] }> {
   await requireOwnedRecipeInstallation(params);
-  const records = await params.context.repositories.recipeWebhookTriggers.listInstallationTriggers(
-    params.installationId,
-    params.userId,
-  );
+  const records = await params.context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .listInstallationTriggers(params.installationId, params.userId);
 
   return { triggers: records.map(toTrigger) };
 }
@@ -100,11 +101,9 @@ export async function setRecipeWebhookTriggerStatus(params: {
     return null;
   }
 
-  const updated = await params.context.repositories.recipeWebhookTriggers.updateStatus(
-    trigger.id,
-    params.userId,
-    params.status,
-  );
+  const updated = await params.context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .updateStatus(trigger.id, params.userId, params.status);
 
   return updated ? toTrigger(updated) : null;
 }
@@ -121,11 +120,9 @@ export async function rotateRecipeWebhookTrigger(params: {
   }
 
   const token = createWebhookToken();
-  const updated = await params.context.repositories.recipeWebhookTriggers.rotateToken(
-    trigger.id,
-    params.userId,
-    await hashWebhookToken(token),
-  );
+  const updated = await params.context.repositories
+    .get(RecipeWebhookTriggerRepository)
+    .rotateToken(trigger.id, params.userId, await hashWebhookToken(token));
 
   return updated
     ? { ...toTrigger(updated), url: recipeWebhookUrl(params.context.env, token) }
@@ -140,6 +137,8 @@ export async function deleteRecipeWebhookTrigger(params: {
   const trigger = await requireOwnedTrigger(params);
 
   return trigger
-    ? params.context.repositories.recipeWebhookTriggers.deleteTrigger(trigger.id, params.userId)
+    ? params.context.repositories
+        .get(RecipeWebhookTriggerRepository)
+        .deleteTrigger(trigger.id, params.userId)
     : false;
 }

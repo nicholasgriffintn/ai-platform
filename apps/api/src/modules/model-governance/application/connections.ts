@@ -16,7 +16,9 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   badRequest,
   conflict,
@@ -39,12 +41,12 @@ function toModelConnection(record: ModelConnectionRecord): ModelConnection {
 }
 
 export async function resolveHubAccess(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
 ): Promise<HubAccess | null> {
   const [connection, secrets] = await Promise.all([
-    repositories.modelConnections.getConnection(workspaceId, "huggingface"),
-    repositories.modelConnections.getSecrets(workspaceId, "huggingface"),
+    repositories.get(ModelConnectionRepository).getConnection(workspaceId, "huggingface"),
+    repositories.get(ModelConnectionRepository).getSecrets(workspaceId, "huggingface"),
   ]);
 
   return connection && secrets.token && connection.config.namespace
@@ -53,7 +55,7 @@ export async function resolveHubAccess(
 }
 
 export async function workspaceHubClient(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
 ): Promise<HuggingFaceHubClient> {
   const hub = await resolveHubAccess(repositories, workspaceId);
@@ -62,7 +64,7 @@ export async function workspaceHubClient(
 }
 
 export async function requireHubAccess(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
 ): Promise<HubAccess> {
   const hub = await resolveHubAccess(repositories, workspaceId);
@@ -75,13 +77,13 @@ export async function requireHubAccess(
 }
 
 export async function resolveProviderContext(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   provider: ModelProviderId,
 ): Promise<ProviderAdapterContext> {
   const [connection, secrets, hub] = await Promise.all([
-    repositories.modelConnections.getConnection(workspaceId, provider),
-    repositories.modelConnections.getSecrets(workspaceId, provider),
+    repositories.get(ModelConnectionRepository).getConnection(workspaceId, provider),
+    repositories.get(ModelConnectionRepository).getSecrets(workspaceId, provider),
     resolveHubAccess(repositories, workspaceId),
   ]);
 
@@ -98,7 +100,9 @@ export async function listProviderCatalogue(
 ): Promise<ProviderCatalogueResponse> {
   await requireModelAction(context, workspaceId, "view");
 
-  const connections = await context.repositories.modelConnections.listConnections(workspaceId);
+  const connections = await context.repositories
+    .get(ModelConnectionRepository)
+    .listConnections(workspaceId);
 
   return {
     providers: listProviderManifests().map((manifest) => {
@@ -116,7 +120,9 @@ async function mergedCredentials(
   request: SaveModelConnectionRequest,
 ) {
   const manifest = providerManifest(provider);
-  const existing = await context.repositories.modelConnections.getSecrets(workspaceId, provider);
+  const existing = await context.repositories
+    .get(ModelConnectionRepository)
+    .getSecrets(workspaceId, provider);
   const secretKeys = new Set(
     manifest.connection.fields.filter((field) => field.kind === "secret").map((field) => field.key),
   );
@@ -196,7 +202,7 @@ export async function saveModelConnection(
   const credentials = await mergedCredentials(context, workspaceId, provider, request);
   const check = await runCheck(context, workspaceId, provider, credentials);
 
-  await context.repositories.modelConnections.saveConnection({
+  await context.repositories.get(ModelConnectionRepository).saveConnection({
     workspaceId,
     provider,
     secrets: credentials.secrets,
@@ -205,7 +211,7 @@ export async function saveModelConnection(
     capabilities: check.capabilities,
     updatedBy: userId,
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_connection.saved",
@@ -219,7 +225,9 @@ export async function saveModelConnection(
     },
   });
 
-  const saved = await context.repositories.modelConnections.getConnection(workspaceId, provider);
+  const saved = await context.repositories
+    .get(ModelConnectionRepository)
+    .getConnection(workspaceId, provider);
 
   if (!saved) {
     throw conflict("The connection did not save");
@@ -234,13 +242,12 @@ export async function deleteModelConnection(
   provider: ModelProviderId,
 ): Promise<{ deleted: boolean }> {
   const { userId } = await requireModelAction(context, workspaceId, "manage_connections");
-  const deleted = await context.repositories.modelConnections.deleteConnection(
-    workspaceId,
-    provider,
-  );
+  const deleted = await context.repositories
+    .get(ModelConnectionRepository)
+    .deleteConnection(workspaceId, provider);
 
   if (deleted) {
-    await context.repositories.audit.createRecord({
+    await context.repositories.get(AuditRepository).createRecord({
       workspaceId,
       actorUserId: userId,
       action: "model_connection.removed",

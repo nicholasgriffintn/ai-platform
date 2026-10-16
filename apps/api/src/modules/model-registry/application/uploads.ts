@@ -28,12 +28,17 @@ import {
 import { sha256Stream } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import {
   resolveHubAccess,
   workspaceHubClient,
 } from "~/modules/model-governance/application/connections";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { ArtefactStore, artefactKeys } from "../infrastructure/ArtefactStore";
@@ -79,10 +84,10 @@ export function toUploadSession(record: ModelUploadRecord): UploadSession {
 
 async function enqueueFinalise(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   data: { uploadId: string; versionId?: string; publishJobId?: string },
 ) {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_UPLOAD_FINALISE_TASK_TYPE}:${data.uploadId}:${Date.now()}`,
     task_type: MODEL_UPLOAD_FINALISE_TASK_TYPE,
     task_data: data,
@@ -158,7 +163,7 @@ export async function createUpload(
     });
   }
 
-  const upload = await context.repositories.modelUploads.create({
+  const upload = await context.repositories.get(ModelUploadRepository).create({
     workspaceId,
     purpose: request.purpose,
     name: request.name,
@@ -167,7 +172,7 @@ export async function createUpload(
     createdBy: userId,
   });
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_upload.started",
@@ -180,7 +185,7 @@ export async function createUpload(
 }
 
 async function requireOpenUpload(context: ServiceContext, workspaceId: string, uploadId: string) {
-  const upload = await context.repositories.modelUploads.get(workspaceId, uploadId);
+  const upload = await context.repositories.get(ModelUploadRepository).get(workspaceId, uploadId);
 
   if (!upload) {
     throw notFound("Upload");
@@ -223,7 +228,7 @@ export async function uploadPart(
   const part = await new ArtefactStore(context.env)
     .resumeMultipartUpload(file.key, file.multipartId)
     .uploadPart(partNumber, body);
-  const recorded = await context.repositories.modelUploads.recordPart({
+  const recorded = await context.repositories.get(ModelUploadRepository).recordPart({
     workspaceId,
     uploadId,
     fileIndex,
@@ -261,8 +266,8 @@ export async function completeUpload(
     );
   }
 
-  await context.repositories.modelUploads.update(uploadId, { status: "hashing" });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ModelUploadRepository).update(uploadId, { status: "hashing" });
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_upload.completed",
@@ -288,7 +293,7 @@ export async function abortUpload(
     await store.resumeMultipartUpload(file.key, file.multipartId).abort();
   }
 
-  await context.repositories.modelUploads.update(uploadId, { status: "aborted" });
+  await context.repositories.get(ModelUploadRepository).update(uploadId, { status: "aborted" });
 
   return toUploadSession({ ...upload, status: "aborted" });
 }
@@ -296,7 +301,7 @@ export async function abortUpload(
 export async function getUpload(context: ServiceContext, workspaceId: string, uploadId: string) {
   await requireModelAction(context, workspaceId, "view");
 
-  const upload = await context.repositories.modelUploads.get(workspaceId, uploadId);
+  const upload = await context.repositories.get(ModelUploadRepository).get(workspaceId, uploadId);
 
   if (!upload) {
     throw notFound("Upload");
@@ -317,7 +322,7 @@ async function hashObject(store: ArtefactStore, key: string): Promise<string> {
 
 async function finishPublish(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   upload: ModelUploadRecord,
   versionId: string,
   publishJobId: string,
@@ -336,14 +341,16 @@ async function finishPublish(
     return PENDING;
   }
 
-  const version = await repositories.modelAssets.getVersion(upload.workspace_id, versionId);
+  const version = await repositories
+    .get(ModelAssetRepository)
+    .getVersion(upload.workspace_id, versionId);
 
   if (!version) {
     return { status: "success", message: "Version is gone" };
   }
 
   if (job.stage !== "COMPLETED") {
-    await repositories.modelAssets.updateVersion(versionId, {
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, {
       status: "failed",
       failure_reason: job.message ?? "Publishing to the Hub failed",
     });
@@ -362,10 +369,10 @@ async function finishPublish(
   const { missing, mismatched } = await verifyPublishedUpload(client, repo, info.sha, upload.files);
   const failed = missing.length > 0 || mismatched.length > 0;
 
-  await repositories.modelAssets.updateVersion(versionId, {
+  await repositories.get(ModelAssetRepository).updateVersion(versionId, {
     attributes: { ...version.attributes, location: hubLocation(repo, info.sha) },
   });
-  await repositories.modelGovernance.addEvidence([
+  await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId,
       kind: "upload_integrity",
@@ -388,10 +395,10 @@ async function finishPublish(
 
 export async function finaliseUpload(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   data: { uploadId: string; versionId?: string; publishJobId?: string },
 ): Promise<PollOutcome> {
-  const upload = await repositories.modelUploads.getById(data.uploadId);
+  const upload = await repositories.get(ModelUploadRepository).getById(data.uploadId);
 
   if (!upload) {
     return { status: "success", message: "Upload is gone" };
@@ -423,7 +430,7 @@ export async function finaliseUpload(
       files.push({ ...file, sha256: await hashObject(store, file.key) });
     }
 
-    await repositories.modelUploads.update(upload.id, {
+    await repositories.get(ModelUploadRepository).update(upload.id, {
       status: "ready",
       files,
       failure_reason: null,
@@ -433,16 +440,17 @@ export async function finaliseUpload(
   } catch (error) {
     const reason = getErrorMessage(error, "Finalising failed");
 
-    await repositories.modelUploads.update(upload.id, { status: "failed", failure_reason: reason });
+    await repositories
+      .get(ModelUploadRepository)
+      .update(upload.id, { status: "failed", failure_reason: reason });
 
     if (data.versionId && upload.consumed_by === data.versionId) {
-      const version = await repositories.modelAssets.getVersion(
-        upload.workspace_id,
-        data.versionId,
-      );
+      const version = await repositories
+        .get(ModelAssetRepository)
+        .getVersion(upload.workspace_id, data.versionId);
 
       if (version) {
-        await repositories.modelAssets.updateVersion(version.id, {
+        await repositories.get(ModelAssetRepository).updateVersion(version.id, {
           status: "failed",
           failure_reason: reason,
         });
@@ -462,7 +470,7 @@ export async function registerUploadedModel(
   const request = registerUploadedModelRequestSchema.parse(input);
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
   const repositories = context.repositories;
-  const upload = await repositories.modelUploads.get(workspaceId, request.uploadId);
+  const upload = await repositories.get(ModelUploadRepository).get(workspaceId, request.uploadId);
 
   if (!upload || upload.status !== "ready" || upload.purpose === "dataset" || upload.consumed_by) {
     throw conflict("Finish a weights upload before registering it");
@@ -474,10 +482,10 @@ export async function registerUploadedModel(
 
   if (request.kind === "adapter") {
     const base = request.baseVersionId
-      ? await repositories.modelAssets.getVersion(workspaceId, request.baseVersionId)
+      ? await repositories.get(ModelAssetRepository).getVersion(workspaceId, request.baseVersionId)
       : null;
     const baseAsset = base
-      ? await repositories.modelAssets.getAsset(workspaceId, base.asset_id)
+      ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, base.asset_id)
       : null;
 
     if (!baseAsset || baseAsset.kind !== "model") {
@@ -492,7 +500,7 @@ export async function registerUploadedModel(
       .sort()
       .join("\n"),
   );
-  const asset = await repositories.modelAssets.createAsset({
+  const asset = await repositories.get(ModelAssetRepository).createAsset({
     workspaceId,
     kind: request.kind,
     source: "upload",
@@ -500,13 +508,13 @@ export async function registerUploadedModel(
     displayName: upload.name,
     createdBy: userId,
   });
-  const existing = await repositories.modelAssets.findVersion(asset.id, revision);
+  const existing = await repositories.get(ModelAssetRepository).findVersion(asset.id, revision);
 
   if (existing) {
     return getVersionDetail(context, workspaceId, existing.id);
   }
 
-  const version = await repositories.modelAssets.createVersion({
+  const version = await repositories.get(ModelAssetRepository).createVersion({
     assetId: asset.id,
     workspaceId,
     revision,
@@ -536,15 +544,15 @@ export async function registerUploadedModel(
   });
 
   if (request.kind === "adapter" && request.baseVersionId) {
-    await repositories.modelAssets.addLineageEdge({
+    await repositories.get(ModelAssetRepository).addLineageEdge({
       fromVersionId: request.baseVersionId,
       toVersionId: version.id,
       relation: "adapter_of",
     });
   }
 
-  await repositories.modelUploads.update(upload.id, { consumed_by: version.id });
-  await repositories.modelGovernance.addEvidence([
+  await repositories.get(ModelUploadRepository).update(upload.id, { consumed_by: version.id });
+  await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId: version.id,
       kind: "provenance",
@@ -558,7 +566,7 @@ export async function registerUploadedModel(
       },
     },
   ]);
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.uploaded",
@@ -593,8 +601,8 @@ export async function registerUploadedModel(
       publishJobId: job.id,
     });
   } else {
-    await repositories.modelAssets.updateVersion(version.id, { status: "ready" });
-    await repositories.modelGovernance.addEvidence([
+    await repositories.get(ModelAssetRepository).updateVersion(version.id, { status: "ready" });
+    await repositories.get(ModelGovernanceRepository).addEvidence([
       {
         versionId: version.id,
         kind: "upload_integrity",

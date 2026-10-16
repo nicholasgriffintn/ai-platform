@@ -9,9 +9,14 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { sendEmail } from "~/modules/email/application";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { getWorkspaceUsageSummary } from "~/modules/usage/application/workspace-reports";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type {
   ProjectCapabilityRow,
   ProjectRow,
@@ -19,6 +24,7 @@ import type {
   WorkspaceMemberRow,
   WorkspaceRow,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   acceptWorkspaceInvitation,
@@ -110,15 +116,18 @@ function createHarness(params?: {
   const context = {
     env: { APP_BASE_URL: "https://work.polychat.test/" },
     requireUser: vi.fn().mockReturnValue(user),
-    repositories: {
-      workspaces: repositories,
-      audit,
-      outputs,
-      usageEvents,
-      teammateContexts: {
-        listForWorkspaceProjects: vi.fn().mockResolvedValue([]),
-      },
-    },
+    repositories: fakeRepositories([
+      [WorkspaceRepository, repositories],
+      [AuditRepository, audit],
+      [OutputRepository, outputs],
+      [UsageEventRepository, usageEvents],
+      [
+        TeammateContextRepository,
+        {
+          listForWorkspaceProjects: vi.fn().mockResolvedValue([]),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 
   return { context, repositories, audit, outputs, usageEvents };

@@ -1,8 +1,8 @@
 import { webhookDeliveryTaskDataSchema, webhookEventSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { openSecret } from "~/infrastructure/secret-envelope";
 import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/tasks/application/types";
+import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 import type { IEnv } from "~/types";
 
 import { deliverWebhookEvent } from "./signing";
@@ -16,7 +16,7 @@ export class WebhookDeliveryHandler implements TaskHandler {
       return { status: "skipped", message: "Webhook delivery payload is invalid" };
     }
 
-    const endpoint = await new RepositoryManager(env).webhookEndpoints.get(
+    const endpoint = await new WebhookEndpointRepository(env).get(
       task.data.userId,
       task.data.endpointId,
     );

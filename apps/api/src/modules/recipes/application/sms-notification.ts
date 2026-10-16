@@ -6,6 +6,7 @@ import {
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
 export async function deliverRecipeSmsNotification(params: {
@@ -24,7 +25,9 @@ export async function deliverRecipeSmsNotification(params: {
   }
 
   const messagingProvider = selectConfiguredMessagingDelivery(
-    await params.context.repositories.userSettings.getUserProviderSettings(params.userId),
+    await params.context.repositories
+      .get(UserSettingsRepository)
+      .getUserProviderSettings(params.userId),
     { mediaUrls: params.notification.mediaUrls, apiBaseUrl: params.env.API_BASE_URL },
   );
 
@@ -32,8 +35,9 @@ export async function deliverRecipeSmsNotification(params: {
     throw new Error("No configured SMS provider can send this scheduled recipe notification");
   }
 
-  const encryptedValue =
-    await params.context.repositories.userSettings.getProviderApiKeyForSettings({
+  const encryptedValue = await params.context.repositories
+    .get(UserSettingsRepository)
+    .getProviderApiKeyForSettings({
       userId: params.userId,
       providerId: messagingProvider.providerId,
       providerSettingsId: messagingProvider.id,

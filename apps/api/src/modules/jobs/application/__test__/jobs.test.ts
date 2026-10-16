@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IUser } from "~/types";
 
 import { cancelJob, listJobs, readJob } from "../jobs";
@@ -64,7 +66,9 @@ function createContext() {
     ),
   };
 
-  return { repositories: { outputs } } as unknown as ServiceContext;
+  return {
+    repositories: fakeRepositories([[OutputRepository, outputs]]),
+  } as unknown as ServiceContext;
 }
 
 const user = { id: 7 } as IUser;

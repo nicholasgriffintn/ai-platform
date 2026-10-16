@@ -19,15 +19,22 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
 import { assertProviderCreationPending } from "~/modules/model-governance/application/provider-creation";
 import { toAssistantError } from "~/modules/model-governance/application/provider-errors";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import { syncVersionReviews } from "~/modules/model-registry/application/decisions";
 import { buildModelHandle, providerLocation } from "~/modules/model-registry/application/handles";
 import { enqueueInspection } from "~/modules/model-registry/application/importing";
 import { requireUsableVersion } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
@@ -41,12 +48,12 @@ const TERMINAL: ReadonlySet<TrainingRunStatus> = new Set(["completed", "failed",
 
 async function datasetHandle(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
   split: "train" | "validation",
 ): Promise<DatasetHandle | null> {
-  const profile = await repositories.modelDatasets.get(versionId);
+  const profile = await repositories.get(ModelDatasetRepository).get(versionId);
   const stats: DatasetStats = profile?.stats ?? {};
   const splitStats = stats.splits?.find((item) => item.name === split);
 
@@ -63,9 +70,9 @@ async function datasetHandle(
   const store = new ArtefactStore(env);
   const key = artefactKeys.datasetSplit(workspaceId, versionId, split);
   const head = await store.head(key);
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
 
   if (!head) {
@@ -98,13 +105,13 @@ async function datasetHandle(
 
 async function buildSubmission(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: ModelTrainingRunRecord,
 ): Promise<TrainingSubmission> {
   const { spec } = run;
   const workspaceId = run.workspace_id;
   const grader = spec.graderId
-    ? await repositories.modelGraders.get(workspaceId, spec.graderId)
+    ? await repositories.get(ModelGraderRepository).get(workspaceId, spec.graderId)
     : null;
   const train = spec.trainDatasetVersionId
     ? await datasetHandle(env, repositories, workspaceId, spec.trainDatasetVersionId, "train")
@@ -156,13 +163,15 @@ function lineageRelation(run: ModelTrainingRunRecord): LineageRelation {
 }
 
 async function registerOutput(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   env: IEnv,
   run: ModelTrainingRunRecord,
   output: TrainingOutput,
 ): Promise<string> {
   const workspaceId = run.workspace_id;
-  const base = await repositories.modelAssets.getVersion(workspaceId, run.spec.baseVersionId);
+  const base = await repositories
+    .get(ModelAssetRepository)
+    .getVersion(workspaceId, run.spec.baseVersionId);
 
   if (!base) {
     throw new Error("The base version is gone");
@@ -186,7 +195,7 @@ async function registerOutput(
       revision: output.revision,
     });
     const files = await hub.listFiles({ kind: "model", repo: output.repo, revision: info.sha });
-    const asset = await repositories.modelAssets.createAsset({
+    const asset = await repositories.get(ModelAssetRepository).createAsset({
       workspaceId,
       kind,
       source: "derived",
@@ -195,8 +204,8 @@ async function registerOutput(
       createdBy: run.created_by,
     });
     const version =
-      (await repositories.modelAssets.findVersion(asset.id, info.sha)) ??
-      (await repositories.modelAssets.createVersion({
+      (await repositories.get(ModelAssetRepository).findVersion(asset.id, info.sha)) ??
+      (await repositories.get(ModelAssetRepository).createVersion({
         assetId: asset.id,
         workspaceId,
         revision: info.sha,
@@ -221,7 +230,7 @@ async function registerOutput(
     versionId = version.id;
     await enqueueInspection(env, repositories, version.id);
   } else {
-    const asset = await repositories.modelAssets.createAsset({
+    const asset = await repositories.get(ModelAssetRepository).createAsset({
       workspaceId,
       kind,
       source: "provider",
@@ -230,8 +239,8 @@ async function registerOutput(
       createdBy: run.created_by,
     });
     const version =
-      (await repositories.modelAssets.findVersion(asset.id, output.ref)) ??
-      (await repositories.modelAssets.createVersion({
+      (await repositories.get(ModelAssetRepository).findVersion(asset.id, output.ref)) ??
+      (await repositories.get(ModelAssetRepository).createVersion({
         assetId: asset.id,
         workspaceId,
         revision: output.ref,
@@ -244,14 +253,14 @@ async function registerOutput(
     versionId = version.id;
   }
 
-  await repositories.modelAssets.addLineageEdge({
+  await repositories.get(ModelAssetRepository).addLineageEdge({
     fromVersionId: base.id,
     toVersionId: versionId,
     relation: lineageRelation(run),
   });
 
   for (const mergedId of run.spec.mergeVersionIds) {
-    await repositories.modelAssets.addLineageEdge({
+    await repositories.get(ModelAssetRepository).addLineageEdge({
       fromVersionId: mergedId,
       toVersionId: versionId,
       relation: "merged_from",
@@ -259,14 +268,14 @@ async function registerOutput(
   }
 
   for (const datasetId of run.dataset_version_ids) {
-    await repositories.modelAssets.addLineageEdge({
+    await repositories.get(ModelAssetRepository).addLineageEdge({
       fromVersionId: datasetId,
       toVersionId: versionId,
       relation: "trained_on",
     });
   }
 
-  await repositories.modelGovernance.addEvidence([
+  await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId,
       kind: "provenance",
@@ -310,7 +319,7 @@ async function registerOutput(
 }
 
 async function recordCost(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: ModelTrainingRunRecord,
   state: TrainingJobState,
   status: TrainingRunStatus,
@@ -318,7 +327,7 @@ async function recordCost(
   const usd = state.costUsd ?? (TERMINAL.has(status) ? (run.estimate.usd ?? null) : null);
 
   if (usd !== null) {
-    await repositories.modelSpend.replaceSubjectCost({
+    await repositories.get(ModelSpendRepository).replaceSubjectCost({
       workspaceId: run.workspace_id,
       projectId: run.project_id,
       subjectType: "training_run",
@@ -336,10 +345,10 @@ async function recordCost(
 
 export async function syncTrainingRun(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   runId: string,
 ): Promise<PollOutcome> {
-  let run = await repositories.modelTraining.getById(runId);
+  let run = await repositories.get(ModelTrainingRepository).getById(runId);
 
   if (!run || TERMINAL.has(run.status)) {
     return { status: "success", message: "Nothing to sync" };
@@ -369,7 +378,7 @@ export async function syncTrainingRun(
         }
       }
 
-      const claimed = await repositories.modelTraining.claimSubmission(run.id);
+      const claimed = await repositories.get(ModelTrainingRepository).claimSubmission(run.id);
 
       if (!claimed) {
         assertProviderCreationPending(run.submission_started_at);
@@ -380,7 +389,7 @@ export async function syncTrainingRun(
       run = claimed;
 
       submitted = await trainer.submit(await buildSubmission(env, repositories, run));
-      const updated = await repositories.modelTraining.recordProviderState(run.id, {
+      const updated = await repositories.get(ModelTrainingRepository).recordProviderState(run.id, {
         status: "submitted",
         provider_job_id: submitted.providerJobId,
         started_at: submitted.startedAt ?? now,
@@ -423,7 +432,7 @@ export async function syncTrainingRun(
         cancelled ? "cancelled" : "cancelling",
       );
 
-      await repositories.modelTraining.recordProviderState(run.id, {
+      await repositories.get(ModelTrainingRepository).recordProviderState(run.id, {
         status: cancelled ? "cancelled" : "cancelling",
         cost_usd: cost,
         last_checked_at: now,
@@ -440,7 +449,7 @@ export async function syncTrainingRun(
     }
 
     for (const checkpoint of [...state.checkpoints, ...reported.checkpoints]) {
-      await repositories.modelTraining.upsertCheckpoint({
+      await repositories.get(ModelTrainingRepository).upsertCheckpoint({
         runId: run.id,
         step: checkpoint.step,
         providerRef: checkpoint.providerRef,
@@ -454,7 +463,7 @@ export async function syncTrainingRun(
         : state.status;
     const cost = await recordCost(repositories, run, state, status);
 
-    const latest = await repositories.modelTraining.getById(run.id);
+    const latest = await repositories.get(ModelTrainingRepository).getById(run.id);
 
     if (latest?.status === "cancelling") {
       return PENDING;
@@ -473,19 +482,21 @@ export async function syncTrainingRun(
 
       const outputVersionId = await registerOutput(repositories, env, run, output);
 
-      const completed = await repositories.modelTraining.recordProviderState(run.id, {
-        status: "completed",
-        output_version_id: outputVersionId,
-        completed_at: state.completedAt ?? now,
-        cost_usd: cost,
-        last_checked_at: now,
-      });
+      const completed = await repositories
+        .get(ModelTrainingRepository)
+        .recordProviderState(run.id, {
+          status: "completed",
+          output_version_id: outputVersionId,
+          completed_at: state.completedAt ?? now,
+          cost_usd: cost,
+          last_checked_at: now,
+        });
 
       if (completed?.status === "cancelling") {
         return PENDING;
       }
 
-      await repositories.audit.createRecord({
+      await repositories.get(AuditRepository).createRecord({
         workspaceId: run.workspace_id,
         actorUserId: null,
         action: "model_training.completed",
@@ -497,7 +508,7 @@ export async function syncTrainingRun(
       return { status: "success", message: "Completed" };
     }
 
-    const updated = await repositories.modelTraining.recordProviderState(run.id, {
+    const updated = await repositories.get(ModelTrainingRepository).recordProviderState(run.id, {
       status,
       cost_usd: cost,
       failure_reason: state.failureReason ?? reported.error,
@@ -512,7 +523,7 @@ export async function syncTrainingRun(
     const reason = getErrorMessage(toAssistantError(error), "Sync failed");
 
     logger.warn("Training sync failed", { runId, error: reason });
-    await repositories.modelTraining.recordProviderState(run.id, {
+    await repositories.get(ModelTrainingRepository).recordProviderState(run.id, {
       last_checked_at: now,
       failure_reason: reason,
       ...(run.provider_job_id ? {} : { status: "failed" as const, completed_at: now }),

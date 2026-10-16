@@ -9,18 +9,30 @@ const mocks = vi.hoisted(() => ({
   updateTemplate: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: {
-    getInstance: vi.fn(() => ({
-      templates: {
+vi.mock("~/modules/templates/infrastructure/TemplateRepository", () => ({
+  TemplateRepository: class {
+    constructor() {
+      return {
         listTemplatesByKind: mocks.listTemplatesByKind,
         updateTemplate: mocks.updateTemplate,
-      },
-      workspaces: {
-        listProjectCapabilities: mocks.listProjectCapabilities,
-      },
-      tasks: {},
-    })),
+      };
+    }
+  },
+}));
+
+vi.mock("~/modules/workspaces/infrastructure/WorkspaceRepository", () => ({
+  WorkspaceRepository: class {
+    constructor() {
+      return { listProjectCapabilities: mocks.listProjectCapabilities };
+    }
+  },
+}));
+
+vi.mock("~/modules/tasks/infrastructure/TaskRepository", () => ({
+  TaskRepository: class {
+    constructor() {
+      return {};
+    }
   },
 }));
 

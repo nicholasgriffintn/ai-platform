@@ -11,7 +11,10 @@ import type {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import type { ModelDecisionRecord } from "../infrastructure/ModelGovernanceRepository";
 import { notFound, requireModelAction, requireWorkspaceProject } from "./access";
@@ -112,7 +115,7 @@ export async function requestDecision(
     !input.exception &&
     !needsHumanDecision(current.verdict) &&
     !isRevoked(scope, input.versionId, routeId);
-  const record = await repositories.modelGovernance.createDecision({
+  const record = await repositories.get(ModelGovernanceRepository).createDecision({
     workspaceId,
     projectId,
     versionId: input.versionId,
@@ -125,7 +128,7 @@ export async function requestDecision(
     requestedBy: userId,
   });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: automatic ? "model_decision.auto_approved" : "model_decision.requested",
@@ -151,14 +154,18 @@ export async function resolveDecision(
 ): Promise<ModelDecision> {
   const { userId, separationOfDuties } = await requireModelAction(context, workspaceId, "approve");
   const repositories = context.repositories;
-  const decision = await repositories.modelGovernance.getDecision(workspaceId, decisionId);
+  const decision = await repositories
+    .get(ModelGovernanceRepository)
+    .getDecision(workspaceId, decisionId);
 
   if (!decision) {
     throw notFound("Decision");
   }
 
   if (separationOfDuties && input.state === "approved") {
-    const version = await repositories.modelAssets.getVersion(workspaceId, decision.version_id);
+    const version = await repositories
+      .get(ModelAssetRepository)
+      .getVersion(workspaceId, decision.version_id);
 
     const isAuthorised = [decision.requested_by, version?.created_by].every(
       (requestedBy) =>
@@ -221,7 +228,7 @@ export async function resolveDecision(
     expiresAt = days ? new Date(Date.now() + days * DAY_MS).toISOString() : null;
   }
 
-  const updated = await repositories.modelGovernance.resolveDecision({
+  const updated = await repositories.get(ModelGovernanceRepository).resolveDecision({
     decisionId,
     state: input.state,
     decidedBy: userId,
@@ -236,7 +243,7 @@ export async function resolveDecision(
     throw notFound("Decision");
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: `model_decision.${input.state}`,
@@ -263,12 +270,14 @@ export async function listDecisions(
   await requireModelAction(context, workspaceId, "view");
 
   const repositories = context.repositories;
-  const decisions = await repositories.modelGovernance.listDecisions(workspaceId, filters);
+  const decisions = await repositories
+    .get(ModelGovernanceRepository)
+    .listDecisions(workspaceId, filters);
   const [versions, assets] = await Promise.all([
-    repositories.modelAssets.listVersions(workspaceId, [
-      ...new Set(decisions.map((decision) => decision.version_id)),
-    ]),
-    repositories.modelAssets.listAssets(workspaceId),
+    repositories
+      .get(ModelAssetRepository)
+      .listVersions(workspaceId, [...new Set(decisions.map((decision) => decision.version_id))]),
+    repositories.get(ModelAssetRepository).listAssets(workspaceId),
   ]);
   const versionsById = new Map(versions.map((version) => [version.id, version]));
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]));
@@ -292,11 +301,11 @@ export async function listDecisions(
 }
 
 export async function syncVersionReviews(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
 ): Promise<ModelDecisionRecord[]> {
-  const decisions = await repositories.modelGovernance.listDecisions(workspaceId, {
+  const decisions = await repositories.get(ModelGovernanceRepository).listDecisions(workspaceId, {
     versionIds: [versionId],
   });
   const scopes = new Set<string | null>([
@@ -324,7 +333,7 @@ export async function syncVersionReviews(
     if (!current || current.usable) {
       if (current && projectId === null && scoped.length === 0) {
         created.push(
-          await repositories.modelGovernance.createDecision({
+          await repositories.get(ModelGovernanceRepository).createDecision({
             workspaceId,
             projectId: null,
             versionId,
@@ -362,7 +371,7 @@ export async function syncVersionReviews(
     ).map((match) => match.ruleId);
 
     created.push(
-      await repositories.modelGovernance.createDecision({
+      await repositories.get(ModelGovernanceRepository).createDecision({
         workspaceId,
         projectId,
         versionId,
@@ -380,7 +389,7 @@ export async function syncVersionReviews(
   }
 
   for (const decision of created) {
-    await repositories.audit.createRecord({
+    await repositories.get(AuditRepository).createRecord({
       workspaceId,
       actorUserId: null,
       action:
@@ -394,11 +403,13 @@ export async function syncVersionReviews(
   return created;
 }
 
-export async function expireDecisions(repositories: RepositoryManager): Promise<number> {
-  const expired = await repositories.modelGovernance.expireDecisions(new Date().toISOString());
+export async function expireDecisions(repositories: Repositories): Promise<number> {
+  const expired = await repositories
+    .get(ModelGovernanceRepository)
+    .expireDecisions(new Date().toISOString());
 
   for (const decision of expired) {
-    await repositories.audit.createRecord({
+    await repositories.get(AuditRepository).createRecord({
       workspaceId: decision.workspace_id,
       actorUserId: null,
       action: "model_decision.expired",
@@ -412,13 +423,15 @@ export async function expireDecisions(repositories: RepositoryManager): Promise<
 }
 
 export async function openRouteReview(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   route: { id: string; workspace_id: string; version_id: string },
   reason: string,
 ): Promise<ModelDecisionRecord | null> {
-  const decisions = await repositories.modelGovernance.listDecisions(route.workspace_id, {
-    versionIds: [route.version_id],
-  });
+  const decisions = await repositories
+    .get(ModelGovernanceRepository)
+    .listDecisions(route.workspace_id, {
+      versionIds: [route.version_id],
+    });
 
   if (
     decisions.some((decision) => decision.route_id === route.id && decision.state === "pending")
@@ -436,7 +449,7 @@ export async function openRouteReview(
     return null;
   }
 
-  const decision = await repositories.modelGovernance.createDecision({
+  const decision = await repositories.get(ModelGovernanceRepository).createDecision({
     workspaceId: route.workspace_id,
     projectId: null,
     versionId: route.version_id,
@@ -449,7 +462,7 @@ export async function openRouteReview(
     requestedBy: null,
   });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId: route.workspace_id,
     actorUserId: null,
     action: "model_decision.reopened",

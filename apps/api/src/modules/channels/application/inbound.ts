@@ -28,8 +28,12 @@ import {
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
@@ -40,6 +44,7 @@ import {
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
 
@@ -298,9 +303,9 @@ async function resolveProviderReplyMediaUrls(params: {
     return undefined;
   }
 
-  const settings = await params.context.repositories.userSettings.getUserProviderSettings(
-    params.userId,
-  );
+  const settings = await params.context.repositories
+    .get(UserSettingsRepository)
+    .getUserProviderSettings(params.userId);
   const currentProviderSettings = settings.find(
     (setting) =>
       setting.id === params.providerSettingsId && setting.provider_id === params.providerId,
@@ -325,8 +330,9 @@ async function resolveInboundChannelProvider(params: {
   providerId: MessagingProviderId;
   providerSettingsId: string;
 }): Promise<{ provider: MessagingProvider; allowedSenders: string[] }> {
-  const encryptedValue =
-    await params.context.repositories.userSettings.getProviderApiKeyForSettings({
+  const encryptedValue = await params.context.repositories
+    .get(UserSettingsRepository)
+    .getProviderApiKeyForSettings({
       userId: params.user.id,
       providerId: params.providerId,
       providerSettingsId: params.providerSettingsId,
@@ -425,7 +431,9 @@ async function resolveBindingDelivery(params: {
   user: IUser;
   data: InboundBindingTaskData;
 }): Promise<ChannelDelivery> {
-  const binding = await params.context.repositories.channelBindings.getById(params.data.bindingId);
+  const binding = await params.context.repositories
+    .get(ChannelBindingRepository)
+    .getById(params.data.bindingId);
 
   if (
     !binding ||
@@ -440,11 +448,9 @@ async function resolveBindingDelivery(params: {
     return { status: "channel_unavailable" };
   }
 
-  const sender = await params.context.repositories.channelSenders.eligibleSender(
-    binding.id,
-    params.data.message.from,
-    params.data.messageContext.isDirect,
-  );
+  const sender = await params.context.repositories
+    .get(ChannelSenderRepository)
+    .eligibleSender(binding.id, params.data.message.from, params.data.messageContext.isDirect);
 
   if (
     !sender ||
@@ -504,7 +510,9 @@ async function resolveBindingDelivery(params: {
       mappingId: sender.id,
       revision: sender.revision,
     });
-    const current = await params.context.repositories.channelBindings.getById(binding.id);
+    const current = await params.context.repositories
+      .get(ChannelBindingRepository)
+      .getById(binding.id);
 
     if (
       !current ||
@@ -608,10 +616,9 @@ export async function handleInboundChannelMessage(params: {
     [params.data.channel, conversationId, message.messageId].join(":"),
   );
   const commandId = `channel_message_${commandDigest.slice(0, 40)}`;
-  const existing = await params.context.repositories.conversationRuns.getCommandReceipt(
-    params.user.id,
-    commandId,
-  );
+  const existing = await params.context.repositories
+    .get(ConversationRunRepository)
+    .getCommandReceipt(params.user.id, commandId);
   let completion;
   let judgement: ChannelEventJudgement | undefined;
 
@@ -751,10 +758,9 @@ export async function handleInboundChannelMessage(params: {
   });
 
   if (judgement?.needsAttention) {
-    await params.context.repositories.conversations.markUnreadForUser(
-      conversationId,
-      params.user.id,
-    );
+    await params.context.repositories
+      .get(ConversationRepository)
+      .markUnreadForUser(conversationId, params.user.id);
   }
 
   return {

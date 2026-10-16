@@ -3,6 +3,13 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { TeammateFeedbackRepository } from "~/modules/teammates/infrastructure/TeammateFeedbackRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { listScopedTeammateSummaries } from "../listing";
 import { publishTeammateToWorkspace } from "../publishTeammate";
@@ -140,7 +147,14 @@ function createContext(
       ensureDatabase: vi.fn(),
       user: currentUser,
       requireUser: vi.fn(() => currentUser),
-      repositories,
+      repositories: fakeRepositories([
+        [TeammateRepository, repositories.teammates],
+        [AuthoredSkillRepository, repositories.authoredSkills],
+        [WorkspaceRepository, repositories.workspaces],
+        [TeammateFeedbackRepository, repositories.teammateFeedback],
+        [TeammateContextRepository, repositories.teammateContexts],
+        [SharedTeammateRepository, repositories.sharedTeammates],
+      ]),
     } as unknown as ServiceContext,
     repositories,
   };

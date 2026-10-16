@@ -7,6 +7,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
+import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
 
 function toMachineRecord(machine: StoredMachine, now: number): MachineRecord {
@@ -37,15 +38,15 @@ export async function heartbeatMachine(
   const id = userId ?? context.requireUser().id;
 
   if (!(await isAdvertisingEnabled(context))) {
-    await context.repositories.machines.deleteAllForUser(id);
+    await context.repositories.get(MachineRepository).deleteAllForUser(id);
 
     return null;
   }
 
-  await context.repositories.machines.upsert(id, heartbeat);
+  await context.repositories.get(MachineRepository).upsert(id, heartbeat);
   publishMachineEvent(context, id, heartbeat.machineId);
 
-  const machine = (await context.repositories.machines.listForUser(id)).find(
+  const machine = (await context.repositories.get(MachineRepository).listForUser(id)).find(
     (candidate) => candidate.machineId === heartbeat.machineId,
   );
 
@@ -64,12 +65,12 @@ export async function listMachines(
   const id = userId ?? context.requireUser().id;
 
   if (!(await isAdvertisingEnabled(context))) {
-    await context.repositories.machines.deleteAllForUser(id);
+    await context.repositories.get(MachineRepository).deleteAllForUser(id);
 
     return [];
   }
 
-  const machines = await context.repositories.machines.listForUser(id);
+  const machines = await context.repositories.get(MachineRepository).listForUser(id);
 
   return machines.map((machine) => toMachineRecord(machine, now));
 }
@@ -81,7 +82,7 @@ export async function forgetMachine(
 ): Promise<{ forgotten: boolean }> {
   const id = userId ?? context.requireUser().id;
 
-  await context.repositories.machines.deleteForUser(id, machineId);
+  await context.repositories.get(MachineRepository).deleteForUser(id, machineId);
 
   return { forgotten: true };
 }

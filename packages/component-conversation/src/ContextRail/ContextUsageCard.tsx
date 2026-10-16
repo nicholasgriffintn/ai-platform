@@ -1,7 +1,6 @@
 import { WorkbenchCard, cn } from "@ngriffin_uk/polychat-component-ui";
 import { formatStatsTokens } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import type { ChatContextSnapshot } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { ChevronRight, ExternalLink, Gauge } from "lucide-react";
 import type { ReactNode } from "react";
 

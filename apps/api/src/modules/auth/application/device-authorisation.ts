@@ -20,6 +20,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
 import { createUserApiKey } from "~/modules/user/application/apiKeys";
 
 const DEVICE_CHALLENGE_PROVIDER = "device";
@@ -90,7 +91,7 @@ async function createDeviceRequest(
     const userCode = randomFromAlphabet(DEVICE_USER_CODE_LENGTH, DEVICE_USER_CODE_ALPHABET);
 
     try {
-      await context.repositories.authChallenges.create({
+      await context.repositories.get(AuthChallengeRepository).create({
         ...record,
         tokenHash: await requestKey(userCode),
         provider: DEVICE_CHALLENGE_PROVIDER,
@@ -116,7 +117,7 @@ export async function startDeviceAuthorisation(
   const deviceCode = randomHex(64).toLowerCase();
   const deviceCodeHash = await sha256Hex(deviceCode);
   const expiresAt = new Date(now.getTime() + DEVICE_CODE_EXPIRES_IN_SECONDS * 1000);
-  const challenges = context.repositories.authChallenges;
+  const challenges = context.repositories.get(AuthChallengeRepository);
 
   await challenges.deleteExpiredForProvider(DEVICE_CHALLENGE_PROVIDER, now);
   await challenges.create({
@@ -151,7 +152,7 @@ export async function pollDeviceAuthorisation(
   deviceCode: string,
   now = new Date(),
 ): Promise<{ error: DeviceTokenError } | DeviceTokenResponse> {
-  const challenges = context.repositories.authChallenges;
+  const challenges = context.repositories.get(AuthChallengeRepository);
   const deviceCodeHash = await sha256Hex(deviceCode);
   const codeHash = await codeKey(deviceCodeHash);
   const challenge = await challenges.findByTokenHash(codeHash);
@@ -199,9 +200,9 @@ export async function getDeviceAuthorisation(
 ): Promise<DeviceAuthorisation> {
   context.requireUser();
   const userCode = requireUserCode(userCodeInput);
-  const request = await context.repositories.authChallenges.findByTokenHash(
-    await requestKey(userCode),
-  );
+  const request = await context.repositories
+    .get(AuthChallengeRepository)
+    .findByTokenHash(await requestKey(userCode));
   const clientName = readNonEmptyString(request?.payload.clientName);
 
   if (!request || !clientName || request.expiresAt.getTime() <= now.getTime()) {
@@ -223,7 +224,7 @@ export async function decideDeviceAuthorisation(
   now = new Date(),
 ): Promise<{ status: "approved" | "denied" }> {
   const user = context.requireUser();
-  const challenges = context.repositories.authChallenges;
+  const challenges = context.repositories.get(AuthChallengeRepository);
   const request = await challenges.consumeByTokenHash(
     await requestKey(requireUserCode(userCodeInput)),
   );

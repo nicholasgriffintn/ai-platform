@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { getActiveThreadOperation } from "~/modules/conversations/infrastructure/coordinator/client";
 import {
   publishConversationChanged,
@@ -52,11 +53,10 @@ export async function reconcileInactiveChatRun(
   }
 
   const cancelled = run.status === "cancelling";
-  const partial = await context.repositories.conversationRuns.getPartialContent(
-    run.id,
-    run.attempt,
-  );
-  const transitioned = await context.repositories.conversationRuns.transition({
+  const partial = await context.repositories
+    .get(ConversationRunRepository)
+    .getPartialContent(run.id, run.attempt);
+  const transitioned = await context.repositories.get(ConversationRunRepository).transition({
     runId: run.id,
     attempt: run.attempt,
     status: cancelled ? "cancelled" : "interrupted",
@@ -74,5 +74,5 @@ export async function reconcileInactiveChatRun(
     return transitioned;
   }
 
-  return (await context.repositories.conversationRuns.getById(run.id)) ?? run;
+  return (await context.repositories.get(ConversationRunRepository).getById(run.id)) ?? run;
 }

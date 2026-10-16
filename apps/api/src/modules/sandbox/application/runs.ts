@@ -11,6 +11,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { notifyMobileProjectRun } from "~/modules/mobile-push/application";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -72,10 +73,9 @@ export async function getSandboxRunRecordForUser(params: {
   runId: string;
 }): Promise<SandboxRunRecord> {
   const { context, userId, runId } = params;
-  const record = await context.repositories.activities.getActivityByGroup(
-    SANDBOX_RUNS_CAPABILITY_ID,
-    runId,
-  );
+  const record = await context.repositories
+    .get(ActivityRepository)
+    .getActivityByGroup(SANDBOX_RUNS_CAPABILITY_ID, runId);
 
   if (!record) {
     throw new AssistantError("Sandbox run not found", ErrorType.NOT_FOUND);
@@ -274,7 +274,9 @@ export async function requestSandboxRunInstruction(params: {
     }
 
     if (instruction.kind === "approval_request") {
-      await context.repositories.activities.updateActivity(runRecord.id, { status: "waiting" });
+      await context.repositories
+        .get(ActivityRepository)
+        .updateActivity(runRecord.id, { status: "waiting" });
       await notifyMobileProjectRun({
         context,
         userId: runRecord.createdByUserId,
@@ -286,7 +288,7 @@ export async function requestSandboxRunInstruction(params: {
         interactionId: instruction.requestId ?? instruction.id,
       });
     } else if (instruction.kind === "approval_response") {
-      await context.repositories.activities.updateActivity(runRecord.id, {
+      await context.repositories.get(ActivityRepository).updateActivity(runRecord.id, {
         status: runRecord.run.status === "paused" ? "waiting" : "running",
       });
     }

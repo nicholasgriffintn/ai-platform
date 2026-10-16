@@ -31,15 +31,23 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/http";
 import type { z } from "zod/v4";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import {
   resolveProviderContext,
   workspaceHubClient,
 } from "~/modules/model-governance/application/connections";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import { syncVersionReviews } from "~/modules/model-registry/application/decisions";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import type { IEnv } from "~/types";
 
@@ -72,12 +80,12 @@ function parseRequest(profile: ModelDatasetProfileRecord): ParsedRequest {
 
 async function* uploadRows(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   uploadId: string,
   limit: number,
 ): AsyncGenerator<Record<string, unknown>> {
-  const upload = await repositories.modelUploads.get(workspaceId, uploadId);
+  const upload = await repositories.get(ModelUploadRepository).get(workspaceId, uploadId);
 
   if (!upload || upload.status !== "ready") {
     throw new Error("The upload is not ready");
@@ -104,14 +112,16 @@ async function* uploadRows(
 }
 
 async function* hubRows(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   request: Extract<ParsedRequest, { source: "hub" }>,
   revision: string,
   limit: number,
 ): AsyncGenerator<Record<string, unknown>> {
   const hub = await workspaceHubClient(repositories, workspaceId);
-  const token = (await repositories.modelConnections.getSecrets(workspaceId, "huggingface")).token;
+  const token = (
+    await repositories.get(ModelConnectionRepository).getSecrets(workspaceId, "huggingface")
+  ).token;
   const urls = await hub.listParquetFiles({
     repo: request.repo,
     revision,
@@ -153,7 +163,7 @@ async function* hubRows(
 }
 
 async function* bucketRows(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   uri: string,
   limit: number,
@@ -196,11 +206,11 @@ async function* bucketRows(
 }
 
 async function* conversationRows(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   request: Extract<ParsedRequest, { source: "conversations" }>,
 ): AsyncGenerator<Record<string, unknown>> {
-  const examples = await repositories.trainingExamples.listForWorkspace({
+  const examples = await repositories.get(TrainingExampleRepository).listForWorkspace({
     workspaceId,
     projectId: request.projectId,
     minFeedbackRating: request.filters.minFeedbackRating,
@@ -282,15 +292,14 @@ async function* stagingRows(
 
 async function generateSyntheticBatch(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   profile: ModelDatasetProfileRecord,
   request: Extract<ParsedRequest, { source: "synthetic" }>,
   stats: DatasetStats,
 ): Promise<boolean> {
-  const route = await repositories.modelRoutes.getRoute(
-    profile.workspace_id,
-    request.teacher.routeId,
-  );
+  const route = await repositories
+    .get(ModelRouteRepository)
+    .getRoute(profile.workspace_id, request.teacher.routeId);
 
   if (!route || route.status !== "active") {
     throw new Error("The teacher route is no longer active");
@@ -343,20 +352,16 @@ async function generateSyntheticBatch(
 
   await writer.close();
   stats.generated = generated + batch;
-  await repositories.modelDatasets.update(profile.version_id, { stats });
+  await repositories.get(ModelDatasetRepository).update(profile.version_id, { stats });
 
   return stats.generated < total;
 }
 
-async function protectedGrams(
-  repositories: RepositoryManager,
-  workspaceId: string,
-  suiteIds: string[],
-) {
+async function protectedGrams(repositories: Repositories, workspaceId: string, suiteIds: string[]) {
   const grams = new Set<string>();
 
   for (const suiteId of suiteIds) {
-    const suite = await repositories.modelEvals.getSuite(workspaceId, suiteId);
+    const suite = await repositories.get(ModelEvalRepository).getSuite(workspaceId, suiteId);
 
     for (const item of suite?.cases ?? []) {
       for (const gram of wordNgrams(`${item.input} ${item.expected ?? ""}`, DECONTAMINATION_GRAM)) {
@@ -378,11 +383,13 @@ function licenceStatus(licence: string) {
 
 export async function processDataset(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   versionId: string,
 ): Promise<PollOutcome> {
-  const profile = await repositories.modelDatasets.get(versionId);
-  const version = profile ? await repositories.modelAssets.getVersionById(versionId) : null;
+  const profile = await repositories.get(ModelDatasetRepository).get(versionId);
+  const version = profile
+    ? await repositories.get(ModelAssetRepository).getVersionById(versionId)
+    : null;
 
   if (!profile || !version || profile.status !== "processing") {
     return { status: "success", message: "Nothing to process" };
@@ -577,10 +584,9 @@ export async function processDataset(
     ];
 
     if (request.source === "synthetic") {
-      const route = await repositories.modelRoutes.getRoute(
-        profile.workspace_id,
-        request.teacher.routeId,
-      );
+      const route = await repositories
+        .get(ModelRouteRepository)
+        .getRoute(profile.workspace_id, request.teacher.routeId);
       const restricted = route ? RESTRICTED_TEACHER_PROVIDERS.has(route.provider) : false;
 
       evidence.push({
@@ -595,8 +601,8 @@ export async function processDataset(
       });
     }
 
-    await repositories.modelGovernance.addEvidence(evidence);
-    await repositories.modelAssets.finaliseRevision(versionId, {
+    await repositories.get(ModelGovernanceRepository).addEvidence(evidence);
+    await repositories.get(ModelAssetRepository).finaliseRevision(versionId, {
       revision: chain,
       attributes: {
         ...version.attributes,
@@ -611,11 +617,11 @@ export async function processDataset(
           format: null,
         })),
     });
-    await repositories.modelAssets.updateVersion(versionId, {
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, {
       status: "ready",
       failure_reason: null,
     });
-    await repositories.modelDatasets.update(versionId, {
+    await repositories.get(ModelDatasetRepository).update(versionId, {
       status: "ready",
       stats: finalStats,
       mapping,
@@ -630,12 +636,12 @@ export async function processDataset(
     const reason = getErrorMessage(error, "Processing failed");
 
     logger.error("Dataset processing failed", { versionId, error: reason });
-    await repositories.modelDatasets.update(versionId, {
+    await repositories.get(ModelDatasetRepository).update(versionId, {
       status: "failed",
       failure_reason: reason,
       stats,
     });
-    await repositories.modelAssets.updateVersion(versionId, {
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, {
       status: "failed",
       failure_reason: reason,
     });

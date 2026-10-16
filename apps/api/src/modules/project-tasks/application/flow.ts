@@ -9,6 +9,7 @@ import {
   resolveProjectCodingEnvironment,
 } from "~/modules/workspaces/application/projectCodingEnvironment";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   resolveDiffReviewRuntime,
@@ -28,14 +29,14 @@ export async function resolveTaskRuntime(params: {
     return resolveDiffReviewRuntime(task, stage);
   }
 
-  const capabilities = await context.repositories.workspaces.listProjectCapabilities(
-    task.projectId,
-  );
+  const capabilities = await context.repositories
+    .get(WorkspaceRepository)
+    .listProjectCapabilities(task.projectId);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
   const teammate = teammateId
     ? await requireProjectTeammate(context, task.projectId, teammateId)
     : null;
-  const project = await context.repositories.workspaces.getProject(task.projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(task.projectId);
 
   return resolveGrantedTaskRuntime({
     task,

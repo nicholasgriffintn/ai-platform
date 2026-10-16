@@ -5,6 +5,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/channel-adapter";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import type { IUser } from "~/types";
 
@@ -19,7 +20,9 @@ export async function sendPolyNotificationToChannels(params: {
   notificationId: string;
   body: string;
 }): Promise<void> {
-  const bindings = await params.context.repositories.channelBindings.listForUser(params.user.id);
+  const bindings = await params.context.repositories
+    .get(ChannelBindingRepository)
+    .listForUser(params.user.id);
   const polyBindings = bindings.filter(
     (binding) =>
       binding.enabled &&

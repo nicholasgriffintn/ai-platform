@@ -12,6 +12,8 @@ import {
 import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
 import { generateEmbeddingVectors } from "~/modules/sources/application/embeddings/lifecycle";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { EmbeddingRuntimeTarget } from "~/types";
 
 import { requireSourceAccess } from "./sources";
@@ -20,7 +22,7 @@ export async function cleanupStaleIndexes(
   context: Pick<ServiceContext, "env" | "repositories">,
   sourceId: string,
 ): Promise<void> {
-  const stale = await context.repositories.sourceSearch.stale(sourceId);
+  const stale = await context.repositories.get(SourceSearchRepository).stale(sourceId);
 
   if (stale.length === 0) {
     return;
@@ -29,13 +31,15 @@ export async function cleanupStaleIndexes(
   for (const document of stale) {
     const token = generateId();
 
-    if (!(await context.repositories.sourceSearch.claim(document.id, token, "stale"))) {
+    if (
+      !(await context.repositories.get(SourceSearchRepository).claim(document.id, token, "stale"))
+    ) {
       continue;
     }
 
     const target = decodeEmbeddingRuntimeTarget(document.target);
 
-    const user = await context.repositories.users.getUserById(document.user_id);
+    const user = await context.repositories.get(UserRepository).getUserById(document.user_id);
 
     if (!user) {
       continue;
@@ -49,7 +53,7 @@ export async function cleanupStaleIndexes(
     }
 
     const runtime = getEmbeddingRuntimeForTarget(context.env, user, settings, target);
-    const chunks = await context.repositories.sourceSearch.chunks(document.id);
+    const chunks = await context.repositories.get(SourceSearchRepository).chunks(document.id);
 
     for (const ids of paginate(
       chunks.map((chunk) => chunk.id),
@@ -62,7 +66,7 @@ export async function cleanupStaleIndexes(
       }
     }
 
-    await context.repositories.sourceSearch.removeStale(document.id, token);
+    await context.repositories.get(SourceSearchRepository).removeStale(document.id, token);
   }
 }
 
@@ -96,7 +100,7 @@ export async function insertSourceVectors(
   await assertOwned();
   await requireSourceAccess(context, context.requireUser().id, source.id);
 
-  if (!(await context.repositories.sourceSearch.renew(document.documentId, token))) {
+  if (!(await context.repositories.get(SourceSearchRepository).renew(document.documentId, token))) {
     return;
   }
 
@@ -110,7 +114,9 @@ export async function insertSourceVectors(
   for (const batch of paginate(vectors, 100)) {
     await assertOwned();
     await requireSourceAccess(context, context.requireUser().id, source.id);
-    if (!(await context.repositories.sourceSearch.renew(document.documentId, token))) {
+    if (
+      !(await context.repositories.get(SourceSearchRepository).renew(document.documentId, token))
+    ) {
       return;
     }
 
@@ -127,5 +133,5 @@ export async function insertSourceVectors(
 
   await assertOwned();
   await requireSourceAccess(context, context.requireUser().id, source.id);
-  await context.repositories.sourceSearch.activate(document.documentId, token);
+  await context.repositories.get(SourceSearchRepository).activate(document.documentId, token);
 }

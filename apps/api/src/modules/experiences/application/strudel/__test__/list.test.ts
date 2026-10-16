@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+
 import { listPatterns } from "../list";
 import { PATTERN_OUTPUT_KIND, STRUDEL_APP_ID } from "../utils";
 
@@ -9,7 +12,9 @@ const listProjectOutputs = vi.fn();
 function createContext() {
   return {
     ensureDatabase: vi.fn(),
-    repositories: { outputs: { listPersonalOutputs, listProjectOutputs } },
+    repositories: fakeRepositories([
+      [OutputRepository, { listPersonalOutputs, listProjectOutputs }],
+    ]),
   } as any;
 }
 

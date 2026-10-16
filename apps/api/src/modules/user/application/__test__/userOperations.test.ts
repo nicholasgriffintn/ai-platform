@@ -3,6 +3,8 @@ import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { deleteProviderApiKey } from "../userOperations";
 
@@ -15,11 +17,14 @@ describe("provider credential cache invalidation", () => {
     const context = {
       ensureDatabase: vi.fn(),
       env: { CACHE: cache },
-      repositories: {
-        userSettings: {
-          deleteProviderApiKey: deleteStoredKey,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          UserSettingsRepository,
+          {
+            deleteProviderApiKey: deleteStoredKey,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(deleteProviderApiKey(context, "openai", 42)).rejects.toMatchObject({

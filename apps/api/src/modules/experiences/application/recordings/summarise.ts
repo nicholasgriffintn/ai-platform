@@ -11,6 +11,7 @@ import {
 } from "~/infrastructure/context/serviceContext";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/apps/recording/summarise" });
@@ -71,18 +72,12 @@ export const handleRecordingSummarise = async (
     const runtimeEnv = serviceContext.env;
 
     const existingSummaries = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "summary",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "summary",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "summary")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "summary");
 
     if (existingSummaries.length > 0) {
       const summaryData = safeParseJson<Record<string, any>>(existingSummaries[0].content) ?? {};
@@ -100,18 +95,12 @@ export const handleRecordingSummarise = async (
     }
 
     const transcriptionData = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "transcribe",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "transcribe",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "transcribe")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "transcribe");
 
     if (transcriptionData.length === 0) {
       throw new AssistantError(
@@ -138,7 +127,7 @@ export const handleRecordingSummarise = async (
         createdAt: new Date().toISOString(),
       };
 
-      await repositories.outputs.createOutput({
+      await repositories.get(OutputRepository).createOutput({
         createdByUserId: user.id,
         projectId,
         capabilityId: "recordings",
@@ -180,7 +169,7 @@ export const handleRecordingSummarise = async (
       createdAt: new Date().toISOString(),
     };
 
-    await repositories.outputs.createOutput({
+    await repositories.get(OutputRepository).createOutput({
       createdByUserId: user.id,
       projectId,
       capabilityId: "recordings",

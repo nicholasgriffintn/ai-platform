@@ -2,6 +2,8 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 export async function requireConversationAccess(
@@ -10,8 +12,8 @@ export async function requireConversationAccess(
 ): Promise<Record<string, unknown>> {
   const user = context.requireUser();
   const [conversation, teammateContext] = await Promise.all([
-    context.repositories.conversations.getConversation(conversationId),
-    context.repositories.teammateContexts.getByHomeConversationId(conversationId),
+    context.repositories.get(ConversationRepository).getConversation(conversationId),
+    context.repositories.get(TeammateContextRepository).getByHomeConversationId(conversationId),
   ]);
 
   if (!conversation) {
@@ -43,7 +45,9 @@ export async function requireOwnConversationForWrite(
   options?: { projectId?: string },
 ): Promise<Record<string, unknown>> {
   const user = context.requireUser();
-  const conversation = await context.repositories.conversations.getConversation(conversationId);
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
 
   if (conversation) {
     return requireConversationAccess(context, conversationId);
@@ -55,12 +59,14 @@ export async function requireOwnConversationForWrite(
     await requireProjectAccess(context, projectId);
   }
 
-  const created = await context.repositories.conversations.createConversation(
-    conversationId,
-    user.id,
-    undefined,
-    projectId ? { project_id: projectId } : {},
-  );
+  const created = await context.repositories
+    .get(ConversationRepository)
+    .createConversation(
+      conversationId,
+      user.id,
+      undefined,
+      projectId ? { project_id: projectId } : {},
+    );
 
   if (!created) {
     throw new AssistantError("Could not create the conversation", ErrorType.DATABASE_ERROR);

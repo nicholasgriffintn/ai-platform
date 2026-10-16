@@ -5,7 +5,7 @@ import type {
 import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import type { IEnv, IUser } from "~/types";
@@ -107,7 +107,7 @@ export async function createRealtimePipelineSession({
     return { ok: false, message: "Input model access changed", status: 403 };
   }
 
-  const repositories = env?.DB ? new RepositoryManager(env) : null;
+  const repositories = env?.DB ? createRepositories(env) : null;
   const pricing = priceRealtimeReservation(
     accessibleInputModel.config,
     request.input.provider,

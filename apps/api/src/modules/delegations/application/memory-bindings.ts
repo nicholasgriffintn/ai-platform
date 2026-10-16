@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
 interface RequestedBinding {
   documentId: string;
@@ -46,9 +47,9 @@ export async function resolveDelegationMemoryBindings(params: {
     : null;
 
   for (const binding of requested.values()) {
-    const document = await params.context.repositories.memoryDocuments.getDocumentById(
-      binding.documentId,
-    );
+    const document = await params.context.repositories
+      .get(MemoryDocumentRepository)
+      .getDocumentById(binding.documentId);
 
     if (!document || !isDocumentInScope(document, params.userId, params.projectId)) {
       throw new AssistantError(

@@ -18,6 +18,11 @@ vi.mock("~/modules/sync/application/conversation-events", () => ({
   publishConversationChanged: mocks.publishConversationChanged,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+
 import { queueFollowUp, releaseQueuedFollowUpAfterRun } from "../follow-up-queue";
 
 function queuedTask(id: string) {
@@ -51,21 +56,27 @@ function createContext(options: {
       env: {},
       waitUntil: vi.fn(),
       requireUser: () => ({ id: 7 }),
-      repositories: {
-        tasks,
-        conversations: {
-          getConversation: vi.fn(async () =>
-            options.conversation === undefined
-              ? { id: "conversation-1", user_id: 7, project_id: null }
-              : options.conversation,
-          ),
-        },
-        conversationRuns: {
-          getLatestForConversation: vi.fn(async () =>
-            options.latestStatus === null ? null : { status: options.latestStatus ?? "running" },
-          ),
-        },
-      },
+      repositories: fakeRepositories([
+        [TaskRepository, tasks],
+        [
+          ConversationRepository,
+          {
+            getConversation: vi.fn(async () =>
+              options.conversation === undefined
+                ? { id: "conversation-1", user_id: 7, project_id: null }
+                : options.conversation,
+            ),
+          },
+        ],
+        [
+          ConversationRunRepository,
+          {
+            getLatestForConversation: vi.fn(async () =>
+              options.latestStatus === null ? null : { status: options.latestStatus ?? "running" },
+            ),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext,
   };
 }

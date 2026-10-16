@@ -21,6 +21,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createUsageRuntime, createUsageStore } from "~/modules/usage/application/runtime";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 
 export async function recordOffPlatformUsage(
   context: ServiceContext,
@@ -56,8 +57,8 @@ export async function getUsageSummary(
 ): Promise<UsageSummaryResponse> {
   const period = query.period ?? usagePeriodFromDate();
   const [bySource, byVendor] = await Promise.all([
-    context.repositories.usageEvents.summariseUserPeriodBy(userId, period, "source"),
-    context.repositories.usageEvents.summariseUserPeriodBy(userId, period, "vendor"),
+    context.repositories.get(UsageEventRepository).summariseUserPeriodBy(userId, period, "source"),
+    context.repositories.get(UsageEventRepository).summariseUserPeriodBy(userId, period, "vendor"),
   ]);
 
   const totals = totalUsageGroups(bySource);
@@ -78,7 +79,7 @@ export async function listUsageEvents(
   const period = query.period ?? usagePeriodFromDate();
   const limit = query.limit;
 
-  const rows = await context.repositories.usageEvents.listUserEvents({
+  const rows = await context.repositories.get(UsageEventRepository).listUserEvents({
     userId,
     period,
     limit: limit + 1,

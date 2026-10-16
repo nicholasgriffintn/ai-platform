@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { updateUserSettings } from "../userOperations";
@@ -111,7 +112,7 @@ describe("user settings provisioning", () => {
         message: "User settings updated successfully",
       });
 
-      const saved = await context.repositories.userSettings.getUserSettings(42);
+      const saved = await context.repositories.get(UserSettingsRepository).getUserSettings(42);
       const rows = sqlite
         .prepare("SELECT COUNT(*) AS count FROM scoped_configuration WHERE kind = 'preferences'")
         .get() as {
@@ -151,7 +152,7 @@ describe("user settings provisioning", () => {
         .get() as {
         count: number;
       };
-      const saved = await context.repositories.userSettings.getUserSettings(42);
+      const saved = await context.repositories.get(UserSettingsRepository).getUserSettings(42);
 
       expect(rows.count).toBe(1);
       expect(saved?.nickname).toBe("Second");
@@ -199,7 +200,9 @@ describe("user settings provisioning", () => {
         42,
       );
       await updateUserSettings(context, { nickname: "Alex" }, 42);
-      expect(await context.repositories.userSettings.getUserSettings(42)).toMatchObject({
+      expect(
+        await context.repositories.get(UserSettingsRepository).getUserSettings(42),
+      ).toMatchObject({
         embedding_provider: "dynamodb-vectors",
         dynamodb_vectors_table_name: "polychat-vectors",
         dynamodb_vectors_index_name: "embeddings",

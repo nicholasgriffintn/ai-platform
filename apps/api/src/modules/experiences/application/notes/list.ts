@@ -27,6 +27,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { describeDocument, formatDocumentBody } from "~/modules/documents/application";
 import { requireOutputRecordAccess } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 function readNoteMetadata(value: unknown): DocumentMetadata | undefined {
@@ -120,7 +121,7 @@ export async function listNotes({
   const serviceContext = resolveServiceContext({ context, env });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const list = projectId
     ? await repo.listProjectOutputs(projectId, "notes", { kind: NOTE_OUTPUT_KIND })
     : await repo.listPersonalOutputs(userId, "notes", { kind: NOTE_OUTPUT_KIND });
@@ -152,7 +153,7 @@ export async function getNote({
   const serviceContext = resolveServiceContext({ context, env });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const entry = projectId
     ? await repo.getProjectOutput(projectId, noteId)
     : await repo.getPersonalOutput(userId, noteId);
@@ -184,7 +185,7 @@ export async function createNote({
   const serviceContext = resolveServiceContext({ context, env, user });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const noteId = generateId();
 
   const sanitisedTitle = sanitiseInput(data.title);
@@ -242,7 +243,7 @@ export async function updateNote({
   const serviceContext = resolveServiceContext({ context, env, user });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const existing = projectId
     ? await repo.getProjectOutput(projectId, noteId)
     : await repo.getPersonalOutput(user.id, noteId);
@@ -310,7 +311,7 @@ export async function deleteNote({
   const serviceContext = resolveServiceContext({ context, env, user });
 
   serviceContext.ensureDatabase();
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
   const existing = projectId
     ? await repo.getProjectOutput(projectId, noteId)
     : await repo.getPersonalOutput(user.id, noteId);

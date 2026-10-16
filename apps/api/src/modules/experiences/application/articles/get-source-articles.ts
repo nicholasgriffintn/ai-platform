@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatOutput } from "~/modules/outputs/application";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv } from "~/types";
 
 const logger = getLogger({
@@ -51,7 +52,7 @@ export async function getSourceArticles({
     }
 
     serviceContext.ensureDatabase();
-    const outputRepo = serviceContext.repositories.outputs;
+    const outputRepo = serviceContext.repositories.get(OutputRepository);
     const articles: Output[] = [];
 
     const articlePromises = ids.map(async (id) => {

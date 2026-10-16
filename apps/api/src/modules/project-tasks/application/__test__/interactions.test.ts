@@ -2,6 +2,8 @@ import { projectTaskInteractionSchema, type ProjectTask } from "@ngriffin_uk/pol
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import { getProjectTaskInteraction } from "../interactions";
 
@@ -20,11 +22,14 @@ function task(overrides: Partial<ProjectTask> = {}): ProjectTask {
 
 function context(message: Record<string, unknown>): ServiceContext {
   return {
-    repositories: {
-      messages: {
-        getLatestProjectTaskInteractionMessage: vi.fn().mockResolvedValue(message),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        MessageRepository,
+        {
+          getLatestProjectTaskInteractionMessage: vi.fn().mockResolvedValue(message),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 

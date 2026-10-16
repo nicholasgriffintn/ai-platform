@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import {
   getPrivateFileAccessScope,
@@ -48,14 +50,17 @@ describe("private file access", () => {
     const bucketGet = vi.fn();
     const context = {
       env: { PRIVATE_ASSETS_BUCKET: { get: bucketGet } },
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue({
-            ...personalFile,
-            content: JSON.stringify({ deletionPending: true }),
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutput: vi.fn().mockResolvedValue({
+              ...personalFile,
+              content: JSON.stringify({ deletionPending: true }),
+            }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(

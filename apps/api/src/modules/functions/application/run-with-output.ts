@@ -7,6 +7,7 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 import { handleFunctions } from "~/modules/functions/application";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IRequest } from "~/types";
 
 const logger = getLogger({ prefix: "services/functions/run-with-output" });
@@ -20,7 +21,7 @@ export const createFunctionOutput = async (
   projectId?: string,
   provenance?: Awaited<ReturnType<typeof createExecutionOutputProvenance>>,
 ): Promise<OutputRecord> =>
-  context.repositories.outputs.createOutput({
+  context.repositories.get(OutputRepository).createOutput({
     createdByUserId: userId,
     projectId,
     capabilityId: functionName,
@@ -114,7 +115,7 @@ export const runFunctionWithOutput = async (
           },
         };
 
-        await context.repositories.outputs.updateOutput(saved.id, {
+        await context.repositories.get(OutputRepository).updateOutput(saved.id, {
           content: { formData: args, result: functionResult },
           expectedRevision: saved.revision,
           updatedByUserId: user.id,

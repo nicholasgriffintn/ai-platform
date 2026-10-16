@@ -14,6 +14,7 @@ import type {
   ConversationGroupRow,
   ConversationUserStateRow,
 } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
+import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -48,13 +49,11 @@ async function readOrganisation(
   projectId: string | null,
 ): Promise<ConversationOrganisation> {
   const [state, group, availableGroups] = await Promise.all([
-    context.repositories.conversationOrganisation.getState(conversationId, userId),
-    context.repositories.conversationOrganisation.getConversationGroup(
-      conversationId,
-      userId,
-      projectId,
-    ),
-    context.repositories.conversationOrganisation.listGroups(userId, projectId),
+    context.repositories.get(ConversationOrganisationRepository).getState(conversationId, userId),
+    context.repositories
+      .get(ConversationOrganisationRepository)
+      .getConversationGroup(conversationId, userId, projectId),
+    context.repositories.get(ConversationOrganisationRepository).listGroups(userId, projectId),
   ]);
 
   return {
@@ -109,10 +108,9 @@ async function updateConversationOrganisation(
 ): Promise<ConversationOrganisation> {
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
-  const current = await context.repositories.conversationOrganisation.getState(
-    conversationId,
-    user.id,
-  );
+  const current = await context.repositories
+    .get(ConversationOrganisationRepository)
+    .getState(conversationId, user.id);
   const currentRevision = current?.revision ?? 0;
 
   if (currentRevision !== input.expectedRevision) {
@@ -128,7 +126,7 @@ async function updateConversationOrganisation(
   }
 
   const now = new Date().toISOString();
-  const stored = await context.repositories.conversationOrganisation.putState({
+  const stored = await context.repositories.get(ConversationOrganisationRepository).putState({
     conversationId,
     userId: user.id,
     expectedRevision: input.expectedRevision,
@@ -164,11 +162,13 @@ export async function createConversationGroup(
     await requireProjectAccess(context, projectId, ["owner", "admin"]);
   }
 
-  const existing = await context.repositories.conversationOrganisation.findGroupByName({
-    userId: user.id,
-    projectId,
-    normalisedName: input.name.toLowerCase(),
-  });
+  const existing = await context.repositories
+    .get(ConversationOrganisationRepository)
+    .findGroupByName({
+      userId: user.id,
+      projectId,
+      normalisedName: input.name.toLowerCase(),
+    });
 
   if (existing) {
     throw new AssistantError(
@@ -179,7 +179,7 @@ export async function createConversationGroup(
   }
 
   return {
-    group: await context.repositories.conversationOrganisation.createGroup({
+    group: await context.repositories.get(ConversationOrganisationRepository).createGroup({
       userId: user.id,
       projectId,
       name: input.name,
@@ -208,14 +208,16 @@ export async function deleteConversationGroup(
   context: ServiceContext,
   groupId: string,
 ): Promise<void> {
-  const group = await context.repositories.conversationOrganisation.getGroup(groupId);
+  const group = await context.repositories
+    .get(ConversationOrganisationRepository)
+    .getGroup(groupId);
 
   if (!group) {
     throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
   }
 
   await authoriseGroupManagement(context, group);
-  await context.repositories.conversationOrganisation.deleteGroup(groupId);
+  await context.repositories.get(ConversationOrganisationRepository).deleteGroup(groupId);
 }
 
 async function moveConversationToGroup(
@@ -228,7 +230,9 @@ async function moveConversationToGroup(
   const projectId = conversationProjectId(conversation);
 
   if (groupId) {
-    const group = await context.repositories.conversationOrganisation.getGroup(groupId);
+    const group = await context.repositories
+      .get(ConversationOrganisationRepository)
+      .getGroup(groupId);
     const groupMatchesScope = group
       ? projectId
         ? group.project_id === projectId
@@ -240,7 +244,7 @@ async function moveConversationToGroup(
     }
   }
 
-  await context.repositories.conversationOrganisation.setConversationGroup({
+  await context.repositories.get(ConversationOrganisationRepository).setConversationGroup({
     conversationId,
     groupId,
     userId: user.id,

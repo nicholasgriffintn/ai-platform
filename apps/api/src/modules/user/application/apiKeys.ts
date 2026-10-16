@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ApiKeyMetadata } from "~/modules/user/infrastructure/ApiKeyRepository";
+import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 
 export async function getUserApiKeys(
   context: ServiceContext,
@@ -8,7 +9,7 @@ export async function getUserApiKeys(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  return context.repositories.apiKeys.getUserApiKeys(id);
+  return context.repositories.get(ApiKeyRepository).getUserApiKeys(id);
 }
 
 export async function createUserApiKey(
@@ -19,7 +20,7 @@ export async function createUserApiKey(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  return context.repositories.apiKeys.createApiKey(id, name);
+  return context.repositories.get(ApiKeyRepository).createApiKey(id, name);
 }
 
 export async function deleteUserApiKey(
@@ -30,5 +31,5 @@ export async function deleteUserApiKey(
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
 
-  await context.repositories.apiKeys.deleteApiKey(id, keyId);
+  await context.repositories.get(ApiKeyRepository).deleteApiKey(id, keyId);
 }

@@ -2,6 +2,10 @@ import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/http";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+
 import { OcrBatchPollingHandler } from "../OcrBatchPollingHandler";
 
 const {
@@ -29,9 +33,11 @@ const {
 }));
 
 vi.mock("~/infrastructure/context/serviceContext", () => ({ createServiceContext }));
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: class {
-    users = { getUserById };
+vi.mock("~/modules/user/infrastructure/UserRepository", () => ({
+  UserRepository: class {
+    constructor() {
+      return { getUserById };
+    }
   },
 }));
 vi.mock("~/modules/outputs/application", () => ({
@@ -58,13 +64,16 @@ describe("OcrBatchPollingHandler", () => {
     getUserById.mockResolvedValue({ id: 42, plan_id: "pro" });
     createServiceContext.mockReturnValue({
       env: {},
-      repositories: {
-        tasks: {},
-        outputs: {
-          attachSources: vi.fn(),
-          getOutputByCapabilityAndGroup: vi.fn().mockResolvedValue(null),
-        },
-      },
+      repositories: fakeRepositories([
+        [TaskRepository, {}],
+        [
+          OutputRepository,
+          {
+            attachSources: vi.fn(),
+            getOutputByCapabilityAndGroup: vi.fn().mockResolvedValue(null),
+          },
+        ],
+      ]),
     });
     getOutput.mockResolvedValue({
       id: "batch-output-1",
@@ -148,16 +157,20 @@ describe("OcrBatchPollingHandler", () => {
 
   it("persists partial terminal results as a scoped child Output", async () => {
     const attachSources = vi.fn();
+    const getOutputIncludingDeleting = vi.fn().mockResolvedValue(null);
     const context = {
       env: {},
-      repositories: {
-        tasks: {},
-        outputs: {
-          attachSources,
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue(null),
-          getOutputByCapabilityAndGroup: vi.fn().mockResolvedValue(null),
-        },
-      },
+      repositories: fakeRepositories([
+        [TaskRepository, {}],
+        [
+          OutputRepository,
+          {
+            attachSources,
+            getOutputIncludingDeleting,
+            getOutputByCapabilityAndGroup: vi.fn().mockResolvedValue(null),
+          },
+        ],
+      ]),
     };
 
     createServiceContext.mockReturnValue(context);
@@ -287,7 +300,7 @@ describe("OcrBatchPollingHandler", () => {
     );
     expect(enqueueTask).not.toHaveBeenCalled();
 
-    context.repositories.outputs.getOutputIncludingDeleting.mockResolvedValueOnce({
+    getOutputIncludingDeleting.mockResolvedValueOnce({
       id: "ocr-batch-result:batch-output-1",
       capability_id: "ocr",
       kind: "ocr_batch_result",
@@ -323,22 +336,25 @@ describe("OcrBatchPollingHandler", () => {
   it("does not revive a batch result that is being deleted", async () => {
     const context = {
       env: {},
-      repositories: {
-        tasks: {},
-        outputs: {
-          attachSources: vi.fn(),
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue({
-            id: "ocr-batch-result:batch-output-1",
-            capability_id: "ocr",
-            kind: "ocr_batch_result",
-            parent_output_id: "batch-output-1",
-            created_by_user_id: 42,
-            project_id: "project-1",
-            storage_key: "ocr/projects/project-1/batch-output-1/results.jsonl",
-            content: JSON.stringify({ deletionPending: true }),
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [TaskRepository, {}],
+        [
+          OutputRepository,
+          {
+            attachSources: vi.fn(),
+            getOutputIncludingDeleting: vi.fn().mockResolvedValue({
+              id: "ocr-batch-result:batch-output-1",
+              capability_id: "ocr",
+              kind: "ocr_batch_result",
+              parent_output_id: "batch-output-1",
+              created_by_user_id: 42,
+              project_id: "project-1",
+              storage_key: "ocr/projects/project-1/batch-output-1/results.jsonl",
+              content: JSON.stringify({ deletionPending: true }),
+            }),
+          },
+        ],
+      ]),
     };
     const batchOutput = {
       id: "batch-output-1",
@@ -404,13 +420,16 @@ describe("OcrBatchPollingHandler", () => {
   it("terminalises and cleans up an oversized provider result without retrying", async () => {
     const context = {
       env: {},
-      repositories: {
-        tasks: {},
-        outputs: {
-          attachSources: vi.fn(),
-          getOutputIncludingDeleting: vi.fn(),
-        },
-      },
+      repositories: fakeRepositories([
+        [TaskRepository, {}],
+        [
+          OutputRepository,
+          {
+            attachSources: vi.fn(),
+            getOutputIncludingDeleting: vi.fn(),
+          },
+        ],
+      ]),
     };
     const batchOutput = {
       id: "batch-output-1",

@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
 import { createSource } from "~/modules/sources/application/sources";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import type {
   ContentExtractParams,
   ContentExtractProvider,
@@ -64,7 +65,9 @@ export async function maybeVectorizeExtractedContent({
     } catch (error) {
       if (insertedIds.length > 0) {
         try {
-          await context.repositories.sources.removeCreatedSources(user.id, projectId, insertedIds);
+          await context.repositories
+            .get(SourceRepository)
+            .removeCreatedSources(user.id, projectId, insertedIds);
         } catch {
           context.getLogger().warn("Extracted source rollback deferred");
         }

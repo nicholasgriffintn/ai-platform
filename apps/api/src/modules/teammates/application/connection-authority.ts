@@ -12,6 +12,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { requireProjectTeammate } from "./access";
 
@@ -35,9 +37,9 @@ export async function resolveTeammateConnectorAuthority(params: {
     throw new AssistantError("Connector provider is unavailable", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const teammateContext = await params.context.repositories.teammateContexts.getById(
-    params.contextId,
-  );
+  const teammateContext = await params.context.repositories
+    .get(TeammateContextRepository)
+    .getById(params.contextId);
 
   if (
     !teammateContext ||
@@ -55,9 +57,9 @@ export async function resolveTeammateConnectorAuthority(params: {
     );
   }
 
-  const liveGrants = await params.context.repositories.teammateContexts.listConnectionGrants(
-    teammateContext.id,
-  );
+  const liveGrants = await params.context.repositories
+    .get(TeammateContextRepository)
+    .listConnectionGrants(teammateContext.id);
   const grants = params.admittedGrants
     ? liveGrants.flatMap((grant) => {
         const admitted = params.admittedGrants?.find(
@@ -82,9 +84,9 @@ export async function resolveTeammateConnectorAuthority(params: {
   const resolved = await Promise.all(
     grants.map(async (grant) => ({
       grant,
-      connection: await params.context.repositories.providerConnections.getConnectionById(
-        grant.connectionId,
-      ),
+      connection: await params.context.repositories
+        .get(ProviderConnectionRepository)
+        .getConnectionById(grant.connectionId),
     })),
   );
   const matching: Array<{

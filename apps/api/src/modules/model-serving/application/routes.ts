@@ -15,6 +15,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import {
   badRequest,
   notFound,
@@ -23,6 +24,9 @@ import {
 } from "~/modules/model-registry/application/access";
 import { toModelRoute } from "~/modules/model-registry/application/mappers";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 
 import { enqueueDeploymentSync } from "./deployments";
@@ -35,16 +39,16 @@ export async function suggestRoutes(
   await requireModelAction(context, workspaceId, "view");
 
   const repositories = context.repositories;
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
 
   if (!version || !asset) {
     throw notFound("Model version");
   }
 
-  const existing = await repositories.modelRoutes.listRoutes(workspaceId, {
+  const existing = await repositories.get(ModelRouteRepository).listRoutes(workspaceId, {
     versionIds: [versionId],
   });
   const registered = new Set(
@@ -85,7 +89,9 @@ export async function createRoute(
   }
 
   const repositories = context.repositories;
-  const version = await repositories.modelAssets.getVersion(workspaceId, input.versionId);
+  const version = await repositories
+    .get(ModelAssetRepository)
+    .getVersion(workspaceId, input.versionId);
 
   if (!version) {
     throw notFound("Model version");
@@ -101,7 +107,7 @@ export async function createRoute(
     );
   }
 
-  const route = await repositories.modelRoutes.createRoute({
+  const route = await repositories.get(ModelRouteRepository).createRoute({
     workspaceId,
     versionId: version.id,
     provider: input.provider,
@@ -113,7 +119,7 @@ export async function createRoute(
     createdBy: userId,
   });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_route.registered",
@@ -165,22 +171,22 @@ export async function retireRoute(
   routeId: string,
 ): Promise<ModelRoute> {
   const { userId } = await requireModelAction(context, workspaceId, "deploy");
-  const route = await context.repositories.modelRoutes.getRoute(workspaceId, routeId);
+  const route = await context.repositories.get(ModelRouteRepository).getRoute(workspaceId, routeId);
 
   if (!route) {
     throw notFound("Route");
   }
 
   if (route.deployment_id) {
-    await context.repositories.modelDeployments.update(route.deployment_id, {
+    await context.repositories.get(ModelDeploymentRepository).update(route.deployment_id, {
       desired_state: "deleted",
       status: "deleting",
     });
     await enqueueDeploymentSync(context.env, context.repositories, route.deployment_id);
   }
 
-  await context.repositories.modelRoutes.setStatus(routeId, "retired");
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(ModelRouteRepository).setStatus(routeId, "retired");
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_route.retired",

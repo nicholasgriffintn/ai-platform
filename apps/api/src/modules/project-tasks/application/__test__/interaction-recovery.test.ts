@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PROJECT_TASK_INTERACTION_TTL_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import { recoverPendingProjectTaskInteraction } from "../interaction-recovery";
 
@@ -10,12 +12,15 @@ function createContext(message: Record<string, unknown> | null) {
 
   return {
     context: {
-      repositories: {
-        messages: {
-          getLatestPendingToolMessage: vi.fn().mockResolvedValue(message),
-          updateMessage,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          MessageRepository,
+          {
+            getLatestPendingToolMessage: vi.fn().mockResolvedValue(message),
+            updateMessage,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext,
     updateMessage,
   };

@@ -12,6 +12,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { Message } from "~/types";
 
@@ -28,10 +30,9 @@ async function withRunPartialMessage(
     return messages;
   }
 
-  const partial = await context.repositories.conversationRuns.getPartialContent(
-    run.id,
-    run.attempt,
-  );
+  const partial = await context.repositories
+    .get(ConversationRunRepository)
+    .getPartialContent(run.id, run.attempt);
 
   if (!partial?.trim()) {
     return messages;
@@ -56,7 +57,7 @@ export async function requireChatRunAccess(
   const user = context.requireUser();
 
   context.ensureDatabase();
-  const run = await context.repositories.conversationRuns.getById(runId);
+  const run = await context.repositories.get(ConversationRunRepository).getById(runId);
 
   if (!run) {
     throw new AssistantError("Run not found", ErrorType.NOT_FOUND, 404);
@@ -73,7 +74,9 @@ export async function requireChatRunAccess(
 
 export async function handleGetChatRun(context: ServiceContext, runId: string) {
   const run = await reconcileInactiveChatRun(context, await requireChatRunAccess(context, runId));
-  const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const messages = await context.repositories
+    .get(MessageRepository)
+    .getRunMessages(run.conversationId, run.id);
   const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [run]);
 
   return {
@@ -86,14 +89,16 @@ export async function handleGetChatRunSnapshot(
   context: ServiceContext,
   runId: string,
 ): Promise<ChatRunSnapshotResponse> {
-  const cursor = await context.repositories.conversationRuns.getEventCursor(runId);
+  const cursor = await context.repositories.get(ConversationRunRepository).getEventCursor(runId);
   const authoritativeRun = await reconcileInactiveChatRun(
     context,
     await requireChatRunAccess(context, runId),
   );
   const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [authoritativeRun]);
   const run = await hydrateDelegatedUsage(context, hydratedRun);
-  const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const messages = await context.repositories
+    .get(MessageRepository)
+    .getRunMessages(run.conversationId, run.id);
   const withPartial = await withRunPartialMessage(context, run, messages.map(formatStoredMessage));
 
   return {
@@ -111,7 +116,9 @@ export async function handleGetChatRunCommand(
   const user = context.requireUser();
 
   context.ensureDatabase();
-  const receipt = await context.repositories.conversationRuns.getCommandReceipt(user.id, commandId);
+  const receipt = await context.repositories
+    .get(ConversationRunRepository)
+    .getCommandReceipt(user.id, commandId);
 
   if (!receipt) {
     throw new AssistantError("Run command not found", ErrorType.NOT_FOUND, 404);

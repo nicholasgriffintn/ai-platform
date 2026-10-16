@@ -2,15 +2,17 @@ import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { messagesSharedThrough } from "~/modules/conversations/domain/share-cutoff";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { Message, User } from "~/types";
 
 export interface ConversationSharingScope {
-  repositories: RepositoryManager;
+  repositories: Repositories;
   user?: User | null;
   canAccessConversation(conversation: Record<string, unknown>): Promise<boolean>;
   assertWriteOwnership(): Promise<void>;
@@ -28,7 +30,9 @@ async function loadOwnedConversation(
     );
   }
 
-  const conversation = await scope.repositories.conversations.getConversation(conversationId);
+  const conversation = await scope.repositories
+    .get(ConversationRepository)
+    .getConversation(conversationId);
 
   if (!conversation) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND);
@@ -84,11 +88,13 @@ export async function shareConversation(
       : generateId();
 
   await scope.assertWriteOwnership();
-  const updated = await scope.repositories.conversations.updateConversation(conversationId, {
-    is_public: 1,
-    share_id,
-    shared_through: now,
-  });
+  const updated = await scope.repositories
+    .get(ConversationRepository)
+    .updateConversation(conversationId, {
+      is_public: 1,
+      share_id,
+      shared_through: now,
+    });
 
   if (!updated) {
     throw new AssistantError("Failed to share conversation", ErrorType.UNKNOWN_ERROR);
@@ -103,11 +109,13 @@ export async function unshareConversation(
 ): Promise<void> {
   await loadOwnedConversation(scope, conversationId, "unshare");
   await scope.assertWriteOwnership();
-  const updated = await scope.repositories.conversations.updateConversation(conversationId, {
-    is_public: 0,
-    share_id: null,
-    shared_through: null,
-  });
+  const updated = await scope.repositories
+    .get(ConversationRepository)
+    .updateConversation(conversationId, {
+      is_public: 0,
+      share_id: null,
+      shared_through: null,
+    });
 
   if (!updated) {
     throw new AssistantError("Failed to unshare conversation", ErrorType.UNKNOWN_ERROR);
@@ -115,13 +123,15 @@ export async function unshareConversation(
 }
 
 export async function getPublicConversation(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   shareId: string,
   limit = 50,
   after?: string,
   options?: { includeArchived?: boolean },
 ): Promise<PublicConversationPage> {
-  const conversation = await repositories.conversations.getConversationByShareId(shareId);
+  const conversation = await repositories
+    .get(ConversationRepository)
+    .getConversationByShareId(shareId);
 
   if (!conversation || conversation.project_id) {
     throw new AssistantError("Shared conversation not found", ErrorType.NOT_FOUND);
@@ -148,7 +158,9 @@ export async function getPublicConversation(
     after,
     includeArchived: options?.includeArchived ?? false,
     loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
-      repositories.messages.getMessages(conversationId, pageLimit, cursor, pageOptions),
+      repositories
+        .get(MessageRepository)
+        .getMessages(conversationId, pageLimit, cursor, pageOptions),
     formatMessage: formatStoredMessage,
     isHiddenMessage: hasSnapshotPart,
   });

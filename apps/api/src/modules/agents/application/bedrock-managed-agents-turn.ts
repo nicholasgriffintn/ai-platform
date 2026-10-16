@@ -12,7 +12,9 @@ import {
   BedrockManagedAgentsClient,
   type BedrockManagedAgentsCredentials,
 } from "~/infrastructure/providers/agents/BedrockManagedAgentsClient";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import { getModelConfig } from "~/modules/models/application/resolve";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IUser } from "~/types";
 
@@ -86,8 +88,8 @@ async function resolveWorkspaceAccount(
 ): Promise<BedrockManagedAgentAccount> {
   const { project } = await requireProjectAccess(context, projectId);
   const [connection, secrets] = await Promise.all([
-    context.repositories.modelConnections.getConnection(project.workspace_id, "aws"),
-    context.repositories.modelConnections.getSecrets(project.workspace_id, "aws"),
+    context.repositories.get(ModelConnectionRepository).getConnection(project.workspace_id, "aws"),
+    context.repositories.get(ModelConnectionRepository).getSecrets(project.workspace_id, "aws"),
   ]);
 
   if (!connection || !secrets.accessKeyId || !secrets.secretAccessKey) {
@@ -112,8 +114,8 @@ async function resolvePersonalAccount(
 ): Promise<BedrockManagedAgentAccount> {
   const user = context.requireUser();
   const [settings, apiKey] = await Promise.all([
-    context.repositories.userSettings.getUserSettings(user.id),
-    context.repositories.userSettings.getProviderApiKey(user.id, "bedrock"),
+    context.repositories.get(UserSettingsRepository).getUserSettings(user.id),
+    context.repositories.get(UserSettingsRepository).getProviderApiKey(user.id, "bedrock"),
   ]);
   const target = parseTarget(
     {

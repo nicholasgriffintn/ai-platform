@@ -10,6 +10,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import type { PlatformTeammateRecord } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -38,7 +39,7 @@ export function resolvePlatformTeammateGrants(
 
 export async function ensurePlatformTeammates(context: ServiceContext): Promise<void> {
   context.ensureDatabase();
-  const existing = await context.repositories.teammates.listPlatformTeammates();
+  const existing = await context.repositories.get(TeammateRepository).listPlatformTeammates();
   const existingById = new Map(existing.map((row) => [row.id, row]));
   const drifted = SYNCED_PLATFORM_TEAMMATES.map(toPlatformTeammateRecord).filter((record) => {
     const row = existingById.get(record.id);
@@ -47,7 +48,7 @@ export async function ensurePlatformTeammates(context: ServiceContext): Promise<
   });
 
   if (drifted.length > 0) {
-    await context.repositories.teammates.upsertPlatformTeammates(drifted);
+    await context.repositories.get(TeammateRepository).upsertPlatformTeammates(drifted);
   }
 }
 

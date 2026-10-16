@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+
 import { startResponse } from "../start";
 
 const { mockConversationManagerGetInstance, mockThreadLease } = vi.hoisted(() => ({
@@ -217,20 +221,26 @@ describe("startResponse", () => {
         database: {},
         requestCache: new Map(),
         ensureDatabase: vi.fn(),
-        repositories: {
-          connectorOperationApprovals: {
-            getResumableByIdForUser: vi.fn().mockResolvedValue({
-              id: "coa_action",
-              state: "approved",
-              expiresAt: "2099-01-01T00:00:00.000Z",
-              completionId,
-              runId: "connector_run_approved",
-            }),
-          },
-          teammateContexts: {
-            getByHomeConversationId: vi.fn().mockResolvedValue(null),
-          },
-        },
+        repositories: fakeRepositories([
+          [
+            ConnectorOperationApprovalRepository,
+            {
+              getResumableByIdForUser: vi.fn().mockResolvedValue({
+                id: "coa_action",
+                state: "approved",
+                expiresAt: "2099-01-01T00:00:00.000Z",
+                completionId,
+                runId: "connector_run_approved",
+              }),
+            },
+          ],
+          [
+            TeammateContextRepository,
+            {
+              getByHomeConversationId: vi.fn().mockResolvedValue(null),
+            },
+          ],
+        ]),
       } as any;
       const request = {
         completion_id: completionId,

@@ -11,6 +11,7 @@ import {
   getAuxiliaryModelForRetrieval,
 } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 import { summariseArticlePrompt } from "./prompts";
@@ -114,7 +115,7 @@ export async function summariseArticle({
     };
 
     serviceContext.ensureDatabase();
-    const outputRepo = serviceContext.repositories.outputs;
+    const outputRepo = serviceContext.repositories.get(OutputRepository);
     const outputContent = {
       originalArticle: args.article,
       summary: summaryResult,
@@ -169,7 +170,7 @@ export const cleanupArticleSession = async (
   projectId?: string,
 ): Promise<void> => {
   context.ensureDatabase();
-  const outputRepo = context.repositories.outputs;
+  const outputRepo = context.repositories.get(OutputRepository);
 
   if (projectId) {
     await outputRepo.deleteProjectOutputGroup(projectId, "articles", itemId, "analysis");

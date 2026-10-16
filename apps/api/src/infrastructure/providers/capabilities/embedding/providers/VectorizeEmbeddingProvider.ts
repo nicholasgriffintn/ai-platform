@@ -7,7 +7,7 @@ import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embe
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { WORKERS_EMBEDDING_MODEL } from "~/config/storage";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import {
   buildVectorizeMetadataFilter,
   requireEmbeddingScopeTag,
@@ -29,7 +29,7 @@ const MAX_VECTORIZE_DELETE_IDS = 500;
 export interface VectorizeEmbeddingProviderConfig {
   ai: Ai;
   vector_db: Vectorize;
-  repositories: RepositoryManager;
+  repositories: Repositories;
 }
 
 export class VectorizeEmbeddingProvider implements EmbeddingProvider {

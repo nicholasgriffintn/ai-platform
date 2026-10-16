@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/infrastructure/github";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import {
   decryptGitHubConnectionPayload,
@@ -75,7 +76,7 @@ export async function getGitHubAppConnectionForUserRepo(
   repo: string,
 ): Promise<GitHubAppConnection> {
   const records = (
-    await context.repositories.providerConnections.listConnections(userId, "github")
+    await context.repositories.get(ProviderConnectionRepository).listConnections(userId, "github")
   ).filter((record) => record.kind === GITHUB_CONNECTION_KIND && record.status === "connected");
 
   for (const record of records) {
@@ -102,12 +103,9 @@ export async function getGitHubTaskConnection(
   repo?: string,
 ): Promise<{ connection: GitHubAppConnection; connectionId: string }> {
   const installationKey = String(installationId);
-  const connection = await context.repositories.providerConnections.getConnection(
-    userId,
-    "github",
-    GITHUB_CONNECTION_KIND,
-    installationKey,
-  );
+  const connection = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnection(userId, "github", GITHUB_CONNECTION_KIND, installationKey);
 
   if (!connection || connection.status !== "connected") {
     throw new AssistantError(
@@ -150,11 +148,9 @@ export async function getGitHubAppConnectionForInstallation(
   installationId: number,
 ): Promise<GitHubAppConnection> {
   const installationKey = String(installationId);
-  const connection = await context.repositories.providerConnections.getConnectionByExternalId(
-    "github",
-    GITHUB_CONNECTION_KIND,
-    installationKey,
-  );
+  const connection = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionByExternalId("github", GITHUB_CONNECTION_KIND, installationKey);
 
   if (!connection || connection.status !== "connected") {
     throw new AssistantError(
@@ -180,7 +176,7 @@ export async function listGitHubAppConnectionsForUser(
   userId: number,
 ): Promise<GitHubAppConnectionSummary[]> {
   const records = (
-    await context.repositories.providerConnections.listConnections(userId, "github")
+    await context.repositories.get(ProviderConnectionRepository).listConnections(userId, "github")
   ).filter((record) => record.kind === GITHUB_CONNECTION_KIND && record.status === "connected");
 
   const summaries: GitHubAppConnectionSummary[] = [];

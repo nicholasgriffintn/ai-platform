@@ -2,6 +2,7 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 
 import { MAX_TASK_LIMIT } from "~/config/limits";
 import { presentPublicTask } from "~/modules/tasks/application/task-presentation";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_task_status as get_task_statusDescriptor } from "./definitions/tasks";
@@ -35,7 +36,7 @@ export const get_task_status: ApiToolDefinition = {
     const taskId = typeof args.taskId === "string" ? args.taskId.trim() : "";
 
     if (taskId) {
-      const task = await request.context.repositories.tasks.getTaskById(taskId);
+      const task = await request.context.repositories.get(TaskRepository).getTaskById(taskId);
 
       if (!task || !ownsResource(userId, task.user_id)) {
         return {
@@ -56,7 +57,9 @@ export const get_task_status: ApiToolDefinition = {
 
     const requestedLimit = typeof args.limit === "number" ? Math.floor(args.limit) : undefined;
     const limit = Math.min(Math.max(requestedLimit ?? DEFAULT_TASK_LIMIT, 1), MAX_TASK_LIMIT);
-    const tasks = await request.context.repositories.tasks.getTasksByUserId(userId, limit);
+    const tasks = await request.context.repositories
+      .get(TaskRepository)
+      .getTasksByUserId(userId, limit);
 
     if (tasks.length === 0) {
       return {

@@ -1,6 +1,10 @@
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
+
 import { complete_goal, set_goal } from "../goal";
 
 function createGoal(overrides: Partial<Goal> = {}): Goal {
@@ -49,26 +53,32 @@ function createContext(
         conversation_type: options.conversationType,
       },
       context: {
-        repositories: {
-          goals: {
-            getActiveGoal: vi.fn(async () => current),
-            getGoalById: vi.fn(async () => current),
-            updateGoal: vi.fn(async (_id: string, updates: any) => {
-              current = { ...current, ...(updates.status ? { status: updates.status } : {}) };
+        repositories: fakeRepositories([
+          [
+            GoalRepository,
+            {
+              getActiveGoal: vi.fn(async () => current),
+              getGoalById: vi.fn(async () => current),
+              updateGoal: vi.fn(async (_id: string, updates: any) => {
+                current = { ...current, ...(updates.status ? { status: updates.status } : {}) };
 
-              return current;
-            }),
-            createGoal: vi.fn(async (params: any) => {
-              current = createGoal({ objective: params.objective, source: params.source });
+                return current;
+              }),
+              createGoal: vi.fn(async (params: any) => {
+                current = createGoal({ objective: params.objective, source: params.source });
 
-              return current;
-            }),
-            listGoals: vi.fn(),
-          },
-          messages: {
-            getConversationMessages: vi.fn(async () => messages),
-          },
-        },
+                return current;
+              }),
+              listGoals: vi.fn(),
+            },
+          ],
+          [
+            MessageRepository,
+            {
+              getConversationMessages: vi.fn(async () => messages),
+            },
+          ],
+        ]),
       },
     },
   } as any;

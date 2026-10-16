@@ -1,10 +1,11 @@
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { isRevoked, loadRegistryScope } from "~/modules/model-registry/application/scope";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
 
 export async function preserveTrainingInputWithdrawals(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   run: ModelTrainingRunRecord,
   outputVersionId: string,
 ): Promise<void> {
@@ -26,7 +27,7 @@ export async function preserveTrainingInputWithdrawals(
     return;
   }
 
-  const evidence = await repositories.modelGovernance.addEvidence([
+  const evidence = await repositories.get(ModelGovernanceRepository).addEvidence([
     {
       versionId: outputVersionId,
       kind: "provenance",
@@ -37,7 +38,7 @@ export async function preserveTrainingInputWithdrawals(
     },
   ]);
 
-  await repositories.modelGovernance.createDecision({
+  await repositories.get(ModelGovernanceRepository).createDecision({
     workspaceId: run.workspace_id,
     projectId: null,
     versionId: outputVersionId,

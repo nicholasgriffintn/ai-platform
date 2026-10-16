@@ -11,7 +11,9 @@ vi.mock("~/modules/models/application/resolve", async (importOriginal) => {
   };
 });
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { resolveSandboxApiBaseUrl } from "~/modules/sandbox/application/urls";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { resolveSandboxModel } from "../worker";
 
@@ -37,11 +39,14 @@ describe("resolveSandboxModel", () => {
       env: {
         SANDBOX_ALLOWED_MODELS: "mistral-large,gpt-4.1",
       },
-      repositories: {
-        userSettings: {
-          getUserSettings: async () => ({ sandbox_model: "gpt-4.1" }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          UserSettingsRepository,
+          {
+            getUserSettings: async () => ({ sandbox_model: "gpt-4.1" }),
+          },
+        ],
+      ]),
     } as any;
 
     const model = await resolveSandboxModel({
@@ -58,11 +63,14 @@ describe("resolveSandboxModel", () => {
       env: {
         SANDBOX_BLOCKED_MODELS: "mistral-large",
       },
-      repositories: {
-        userSettings: {
-          getUserSettings: async () => ({ sandbox_model: null }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          UserSettingsRepository,
+          {
+            getUserSettings: async () => ({ sandbox_model: null }),
+          },
+        ],
+      ]),
     } as any;
 
     await expect(

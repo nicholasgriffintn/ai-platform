@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { providerMetrics } from "~/infrastructure/telemetry";
 import { canUserInvokeDeployment } from "~/modules/model-serving/application/chat-models";
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
@@ -43,7 +43,7 @@ export class DeploymentChatProvider implements AIProvider {
       );
     }
 
-    const repositories = RepositoryManager.getInstance(params.env);
+    const repositories = createRepositories(params.env);
     const deployment = await canUserInvokeDeployment(params.env, actor, parsed.id);
 
     if (!deployment) {

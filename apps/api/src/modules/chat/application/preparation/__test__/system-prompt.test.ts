@@ -1,11 +1,13 @@
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import {
   buildSystemPrompt,
   projectRunMemory,
 } from "~/modules/chat/application/preparation/system-prompt";
+import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, Message } from "~/types";
 
@@ -24,14 +26,17 @@ vi.mock("@ngriffin_uk/polychat-ai-prompts", async (importOriginal) => {
 });
 
 function createRepositories(synthesisText?: string) {
-  return {
-    memorySyntheses: {
-      getActiveSynthesis: vi
-        .fn()
-        .mockResolvedValue(synthesisText ? { synthesis_text: synthesisText } : null),
-    },
-    teammateContexts: { getByIdentity: vi.fn().mockResolvedValue(null) },
-  } as unknown as RepositoryManager;
+  return fakeRepositories([
+    [
+      MemorySynthesisRepository,
+      {
+        getActiveSynthesis: vi
+          .fn()
+          .mockResolvedValue(synthesisText ? { synthesis_text: synthesisText } : null),
+      },
+    ],
+    [TeammateContextRepository, { getByIdentity: vi.fn().mockResolvedValue(null) }],
+  ]);
 }
 
 function baseParams(overrides: Record<string, any> = {}) {
@@ -134,13 +139,13 @@ describe("buildSystemPrompt", () => {
       }),
     );
 
-    expect(repositories.memorySyntheses.getActiveSynthesis).not.toHaveBeenCalled();
+    expect(repositories.get(MemorySynthesisRepository).getActiveSynthesis).not.toHaveBeenCalled();
   });
 
   it("keeps the prompt when the memory read fails", async () => {
     const repositories = createRepositories("remembered things");
 
-    vi.mocked(repositories.memorySyntheses.getActiveSynthesis).mockRejectedValue(
+    vi.mocked(repositories.get(MemorySynthesisRepository).getActiveSynthesis).mockRejectedValue(
       new Error("d1 unavailable"),
     );
 

@@ -12,7 +12,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelBenchmarkStanding, ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { listModelBenchmarkStandings } from "~/modules/benchmarks/application/boards";
 import { filterModelsForUserAccess, getModelConfig } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
@@ -26,7 +26,7 @@ async function loadBenchmarkStandings(
   userId?: number,
 ): Promise<Map<string, ModelBenchmarkStanding[]>> {
   try {
-    return await listModelBenchmarkStandings(RepositoryManager.getInstance(env), userId);
+    return await listModelBenchmarkStandings(createRepositories(env), userId);
   } catch (error) {
     logger.warn("Benchmark standings are unavailable for the model list", { error });
 

@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { Stripe } from "stripe";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { runStripeOverageSync } from "~/modules/subscription/application/stripeOverageSync";
 import type { IEnv } from "~/types";
 
@@ -21,7 +21,7 @@ export class StripeUsageSyncHandler implements TaskHandler {
 
     try {
       const result = await runStripeOverageSync(
-        new RepositoryManager(env),
+        createRepositories(env),
         new Stripe(env.STRIPE_SECRET_KEY),
         syncTime,
       );

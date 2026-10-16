@@ -28,7 +28,9 @@ import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import {
   MCP_OAUTH_CONNECTION_KIND,
@@ -133,7 +135,7 @@ export async function startMcpOAuthConnection(
     const state = `${generateId()}${generateId()}`;
     const now = new Date();
 
-    await context.repositories.oauthStates.create({
+    await context.repositories.get(OAuthStateRepository).create({
       stateHash: await sha256Hex(state),
       provider: STATE_PROVIDER,
       codeVerifier: pkce.verifier,
@@ -185,9 +187,9 @@ export async function completeMcpOAuthConnection(
   context: Pick<ServiceContext, "env" | "repositories">,
   input: { state: string; code?: string; error?: string },
 ): Promise<{ connected: boolean }> {
-  const record = await context.repositories.oauthStates.consumeByStateHash(
-    await sha256Hex(input.state),
-  );
+  const record = await context.repositories
+    .get(OAuthStateRepository)
+    .consumeByStateHash(await sha256Hex(input.state));
 
   if (!record || record.provider !== STATE_PROVIDER || record.expiresAt.getTime() < Date.now()) {
     return { connected: false };
@@ -212,7 +214,7 @@ export async function completeMcpOAuthConnection(
   });
   const externalId = generateId();
 
-  await context.repositories.providerConnections.upsertConnection({
+  await context.repositories.get(ProviderConnectionRepository).upsertConnection({
     userId: flow.data.userId,
     provider: "mcp",
     kind: MCP_OAUTH_CONNECTION_KIND,
@@ -286,7 +288,7 @@ export async function resolveMcpOAuthAccessToken(
       resource: credential.resource,
     });
 
-    await context.repositories.providerConnections.upsertConnection({
+    await context.repositories.get(ProviderConnectionRepository).upsertConnection({
       userId: record.user_id,
       provider: "mcp",
       kind: MCP_OAUTH_CONNECTION_KIND,

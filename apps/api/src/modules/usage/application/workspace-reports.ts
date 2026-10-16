@@ -7,6 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 
 export async function getWorkspaceUsageSummary(
@@ -17,9 +18,15 @@ export async function getWorkspaceUsageSummary(
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
   const period = query.period ?? usagePeriodFromDate();
   const [bySource, byVendor, byProject] = await Promise.all([
-    context.repositories.usageEvents.summariseWorkspacePeriodBy(workspaceId, period, "source"),
-    context.repositories.usageEvents.summariseWorkspacePeriodBy(workspaceId, period, "vendor"),
-    context.repositories.usageEvents.summariseWorkspacePeriodBy(workspaceId, period, "project"),
+    context.repositories
+      .get(UsageEventRepository)
+      .summariseWorkspacePeriodBy(workspaceId, period, "source"),
+    context.repositories
+      .get(UsageEventRepository)
+      .summariseWorkspacePeriodBy(workspaceId, period, "vendor"),
+    context.repositories
+      .get(UsageEventRepository)
+      .summariseWorkspacePeriodBy(workspaceId, period, "project"),
   ]);
   const totals = totalUsageGroups(bySource);
 

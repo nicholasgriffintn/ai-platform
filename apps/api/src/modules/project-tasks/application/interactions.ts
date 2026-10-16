@@ -10,6 +10,7 @@ import { isRecord, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import { readInteractionMessageData } from "./interaction-messages";
 
@@ -73,9 +74,9 @@ export async function getProjectTaskInteraction(
     return null;
   }
 
-  const message = await context.repositories.messages.getLatestProjectTaskInteractionMessage(
-    task.conversationId,
-  );
+  const message = await context.repositories
+    .get(MessageRepository)
+    .getLatestProjectTaskInteractionMessage(task.conversationId);
   const data = readInteractionMessageData(message?.data);
   const humanInTheLoop = data && isRecord(data.humanInTheLoop) ? data.humanInTheLoop : null;
 

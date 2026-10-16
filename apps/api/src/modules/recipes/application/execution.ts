@@ -17,6 +17,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
@@ -110,9 +111,11 @@ export async function recordRecipeInvocationFailure(params: {
     });
   }
 
-  await params.context.repositories.conversations.updateConversation(params.conversationId, {
-    title: buildRecipeConversationTitle(params.invocation),
-  });
+  await params.context.repositories
+    .get(ConversationRepository)
+    .updateConversation(params.conversationId, {
+      title: buildRecipeConversationTitle(params.invocation),
+    });
 
   return content;
 }
@@ -204,9 +207,11 @@ export async function executeRecipeInvocationChat(params: {
 
   if (shouldTitleGeneratedConversation) {
     try {
-      await params.context.repositories.conversations.updateConversation(conversationId, {
-        title: buildRecipeConversationTitle(params.invocation),
-      });
+      await params.context.repositories
+        .get(ConversationRepository)
+        .updateConversation(conversationId, {
+          title: buildRecipeConversationTitle(params.invocation),
+        });
     } catch (error) {
       logger.warn("Failed to title generated recipe conversation", {
         conversationId,

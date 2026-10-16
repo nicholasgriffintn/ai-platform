@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { handleFileUpload } from "../index";
 
@@ -20,11 +22,14 @@ vi.mock("~/modules/documents/application/convert", () => ({
 function createContext(): ServiceContext {
   return {
     env: {},
-    repositories: {
-      sources: {
-        updateSource: vi.fn(),
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        SourceRepository,
+        {
+          updateSource: vi.fn(),
+        },
+      ],
+    ]),
   } as unknown as ServiceContext;
 }
 

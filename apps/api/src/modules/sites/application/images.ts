@@ -27,6 +27,7 @@ import { sseResponse } from "~/infrastructure/http/streaming";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import { generateImage } from "~/modules/generate/application/image";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IUser } from "~/types";
 
 import { getSite, updateSite } from "./records";
@@ -202,7 +203,7 @@ export async function collectSiteImageAssets(
       continue;
     }
 
-    const record = await context.repositories.outputs.getOutput(resource.id);
+    const record = await context.repositories.get(OutputRepository).getOutput(resource.id);
 
     if (!record?.storage_key) {
       continue;

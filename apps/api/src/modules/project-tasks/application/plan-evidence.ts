@@ -9,11 +9,14 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import {
   createChatRunProvenance,
   parseOutputProvenance,
 } from "~/modules/outputs/application/provenance";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
 
 const ACTIVE_RUN_STATUSES = new Set([
@@ -189,15 +192,14 @@ export async function getProjectTaskPlanEvidence(
   task: ProjectTask,
   currentFlow: ProjectFlow | null,
 ): Promise<ProjectTaskPlanEvidence> {
-  const runRecords = await context.repositories.conversationRuns.listForProjectTask(
-    task.projectId,
-    task.id,
-  );
+  const runRecords = await context.repositories
+    .get(ConversationRunRepository)
+    .listForProjectTask(task.projectId, task.id);
   const runs = await hydrateChatRunUsage(context.repositories, runRecords);
   const runIds = runs.map((run) => run.id);
   const [outputs, unsafeRunIds] = await Promise.all([
-    context.repositories.outputs.listProjectOutputsForRuns(task.projectId, runIds),
-    context.repositories.connectorOperationApprovals.listConsumedRunIds(runIds),
+    context.repositories.get(OutputRepository).listProjectOutputsForRuns(task.projectId, runIds),
+    context.repositories.get(ConnectorOperationApprovalRepository).listConsumedRunIds(runIds),
   ]);
 
   return buildProjectTaskPlanEvidence({

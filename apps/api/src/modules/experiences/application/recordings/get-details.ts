@@ -6,6 +6,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 export interface IRecordingDetailRequest {
@@ -39,8 +40,12 @@ export const handleRecordingDetail = async (req: IRecordingDetailRequest): Promi
   const repositories = serviceContext.repositories;
 
   const appDataItems = projectId
-    ? await repositories.outputs.listProjectOutputGroup(projectId, "recordings", recordingId)
-    : await repositories.outputs.listPersonalOutputGroup(user.id, "recordings", recordingId);
+    ? await repositories
+        .get(OutputRepository)
+        .listProjectOutputGroup(projectId, "recordings", recordingId)
+    : await repositories
+        .get(OutputRepository)
+        .listPersonalOutputGroup(user.id, "recordings", recordingId);
 
   if (!appDataItems || appDataItems.length === 0) {
     throw new AssistantError("Recording not found", ErrorType.NOT_FOUND);

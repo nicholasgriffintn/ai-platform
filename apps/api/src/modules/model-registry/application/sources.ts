@@ -14,6 +14,8 @@ import type {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
 import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import { requireModelAction, requireWorkspaceProject } from "./access";
 import { loadPolicyStack } from "./policies";
@@ -67,9 +69,11 @@ export async function searchSources(
       }),
     ),
     loadPolicyStack(repositories, workspaceId, projectId),
-    repositories.modelAssets.listAssets(workspaceId, query.kind),
-    repositories.modelAssets.listVersions(workspaceId),
-    repositories.modelGovernance.listDecisions(workspaceId, projectId ? { projectId } : {}),
+    repositories.get(ModelAssetRepository).listAssets(workspaceId, query.kind),
+    repositories.get(ModelAssetRepository).listVersions(workspaceId),
+    repositories
+      .get(ModelGovernanceRepository)
+      .listDecisions(workspaceId, projectId ? { projectId } : {}),
   ]);
   const assetsByRef = new Map(assets.map((asset) => [asset.source_ref.toLowerCase(), asset]));
 

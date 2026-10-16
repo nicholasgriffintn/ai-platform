@@ -17,7 +17,9 @@ import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enab
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import {
@@ -25,6 +27,7 @@ import {
   readToolInteractionResolution,
 } from "~/modules/responses/application/runs/interactions";
 import { startResponse } from "~/modules/responses/application/start";
+import { TeammateComputerRepository } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { IEnv, IUser } from "~/types";
 
@@ -160,7 +163,9 @@ export async function enqueueTeammateRun({
     : liveConnectionGrants;
   const delegation =
     resolvedInvocation?.source === "delegation"
-      ? await serviceContext.repositories.delegations.getById(resolvedInvocation.delegationId)
+      ? await serviceContext.repositories
+          .get(DelegationRepository)
+          .getById(resolvedInvocation.delegationId)
       : null;
 
   if (
@@ -251,15 +256,18 @@ export async function enqueueTeammateRun({
 
   const formattedTools = formatToolCalls(modelDetails.provider, functionSchemas);
   const teammateComputer = preparedInvocation?.resolution.context
-    ? await serviceContext.repositories.teammateComputers.getByContextId(
-        preparedInvocation.resolution.context.id,
-      )
+    ? await serviceContext.repositories
+        .get(TeammateComputerRepository)
+        .getByContextId(preparedInvocation.resolution.context.id)
     : null;
   const delegationDeadline =
     resumeConfiguration?.deadline ??
     (resolvedInvocation?.source === "delegation"
-      ? (await serviceContext.repositories.delegations.getById(resolvedInvocation.delegationId))
-          ?.budget.deadline
+      ? (
+          await serviceContext.repositories
+            .get(DelegationRepository)
+            .getById(resolvedInvocation.delegationId)
+        )?.budget.deadline
       : undefined);
 
   const requestParams = prepareTeammateCompletionRequest({
@@ -350,10 +358,9 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     });
 
   serviceContext.ensureDatabase();
-  const run = await serviceContext.repositories.conversationRuns.getForInteraction(
-    input.body.completion_id,
-    interactionId,
-  );
+  const run = await serviceContext.repositories
+    .get(ConversationRunRepository)
+    .getForInteraction(input.body.completion_id, interactionId);
 
   if (isPolyTeammateId(input.teammateId)) {
     await recordPolyApprovalOutcome({

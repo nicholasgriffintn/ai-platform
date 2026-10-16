@@ -12,9 +12,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { hasD1DatabaseBinding } from "~/infrastructure/database/bindings";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelAliasRecord } from "../infrastructure/ModelAliasRepository";
@@ -37,7 +41,7 @@ function deploymentConfig(deployment: ModelDeploymentRecord, name: string): Mode
 }
 
 async function routeConfig(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   route: ModelRouteRecord,
   name: string,
 ): Promise<ModelConfigItem | null> {
@@ -46,10 +50,9 @@ async function routeConfig(
   }
 
   if (route.deployment_id) {
-    const deployment = await repositories.modelDeployments.get(
-      route.workspace_id,
-      route.deployment_id,
-    );
+    const deployment = await repositories
+      .get(ModelDeploymentRepository)
+      .get(route.workspace_id, route.deployment_id);
 
     return deployment && isDeploymentInvocable(deployment)
       ? deploymentConfig(deployment, name)
@@ -65,25 +68,23 @@ async function routeConfig(
     : null;
 }
 
-async function memberWorkspaceIds(
-  repositories: RepositoryManager,
-  userId: number,
-): Promise<string[]> {
-  return (await repositories.workspaces.listWorkspaces(userId)).map((workspace) => workspace.id);
+async function memberWorkspaceIds(repositories: Repositories, userId: number): Promise<string[]> {
+  return (await repositories.get(WorkspaceRepository).listWorkspaces(userId)).map(
+    (workspace) => workspace.id,
+  );
 }
 
 async function deploymentHasApproval(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
 ): Promise<boolean> {
   if (!isDeploymentInvocable(deployment) || !deployment.route_id) {
     return false;
   }
 
-  const route = await repositories.modelRoutes.getRoute(
-    deployment.workspace_id,
-    deployment.route_id,
-  );
+  const route = await repositories
+    .get(ModelRouteRepository)
+    .getRoute(deployment.workspace_id, deployment.route_id);
 
   if (
     !route ||
@@ -104,12 +105,12 @@ async function deploymentHasApproval(
 }
 
 async function aliasConfig(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   alias: ModelAliasRecord,
 ): Promise<ModelConfigItem | null> {
   const routeId = chooseAliasRoute(alias);
   const route = routeId
-    ? await repositories.modelRoutes.getRoute(alias.workspace_id, routeId)
+    ? await repositories.get(ModelRouteRepository).getRoute(alias.workspace_id, routeId)
     : null;
 
   if (!route) {
@@ -131,10 +132,10 @@ export async function listPlatformChatModels(
     return {};
   }
 
-  const repositories = RepositoryManager.getInstance(env);
-  const aliases = await repositories.modelAliases.listForMember(
-    await memberWorkspaceIds(repositories, userId),
-  );
+  const repositories = createRepositories(env);
+  const aliases = await repositories
+    .get(ModelAliasRepository)
+    .listForMember(await memberWorkspaceIds(repositories, userId));
   const configs: ModelConfig = {};
 
   for (const alias of aliases) {
@@ -163,16 +164,16 @@ export async function findPlatformChatModel(
     return null;
   }
 
-  const repositories = RepositoryManager.getInstance(env);
+  const repositories = createRepositories(env);
   const workspaces = new Set(await memberWorkspaceIds(repositories, userId));
 
   if (parsed.kind === "alias") {
-    const alias = await repositories.modelAliases.getById(parsed.id);
+    const alias = await repositories.get(ModelAliasRepository).getById(parsed.id);
 
     return alias && workspaces.has(alias.workspace_id) ? aliasConfig(repositories, alias) : null;
   }
 
-  const deployment = await repositories.modelDeployments.getById(parsed.id);
+  const deployment = await repositories.get(ModelDeploymentRepository).getById(parsed.id);
 
   return deployment &&
     workspaces.has(deployment.workspace_id) &&
@@ -186,14 +187,16 @@ export async function canUserInvokeDeployment(
   userId: number,
   deploymentId: string,
 ): Promise<ModelDeploymentRecord | null> {
-  const repositories = RepositoryManager.getInstance(env);
-  const deployment = await repositories.modelDeployments.getById(deploymentId);
+  const repositories = createRepositories(env);
+  const deployment = await repositories.get(ModelDeploymentRepository).getById(deploymentId);
 
   if (!deployment) {
     return null;
   }
 
-  return (await repositories.workspaces.getMembership(deployment.workspace_id, userId)) &&
+  return (await repositories
+    .get(WorkspaceRepository)
+    .getMembership(deployment.workspace_id, userId)) &&
     (await deploymentHasApproval(repositories, deployment))
     ? deployment
     : null;

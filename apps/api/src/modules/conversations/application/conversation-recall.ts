@@ -1,6 +1,7 @@
 import { excerptAround } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const MAX_TERMS = 6;
@@ -45,7 +46,7 @@ export async function searchPastConversations(
     await requireProjectAccess(context, params.projectId);
   }
 
-  const rows = await context.repositories.messages.searchConversationExcerpts({
+  const rows = await context.repositories.get(MessageRepository).searchConversationExcerpts({
     userId: user.id,
     projectId: params.projectId,
     terms,

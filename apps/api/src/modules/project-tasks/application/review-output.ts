@@ -11,16 +11,17 @@ import {
   addOutputProvenanceSources,
   createExecutionOutputProvenance,
 } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 
 export async function retainTaskReviewCompletion(
   context: ServiceContext,
   task: Readonly<ProjectTask>,
   completion: Readonly<ProjectTaskCompletion>,
 ): Promise<ProjectTaskCompletion | null> {
-  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
-    task.id,
-    task.projectId,
-  );
+  const review = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReviewForTask(task.id, task.projectId);
 
   if (!review) {
     return null;
@@ -40,7 +41,7 @@ export async function retainReviewOutput(
   completion: ProjectTaskCompletion,
 ): Promise<string> {
   const outputId = `pr_review_${review.id}_${completion.id}`;
-  const existing = await context.repositories.outputs.getOutput(outputId);
+  const existing = await context.repositories.get(OutputRepository).getOutput(outputId);
 
   if (existing) {
     if (existing.project_id !== review.projectId || existing.group_id !== review.id) {
@@ -84,7 +85,7 @@ export async function retainReviewOutput(
       { id: outputId, provenance },
     );
   } catch (error) {
-    const retained = await context.repositories.outputs.getOutput(outputId);
+    const retained = await context.repositories.get(OutputRepository).getOutput(outputId);
 
     if (!retained || retained.project_id !== review.projectId || retained.group_id !== review.id) {
       throw error;

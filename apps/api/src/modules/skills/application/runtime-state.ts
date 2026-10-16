@@ -2,6 +2,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import type { RequestCache } from "@ngriffin_uk/polychat-utility-server/request-cache";
 
 import { getModelConfigByMatchingModel } from "~/modules/models/application/resolve";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import type { IRequest } from "~/types";
 
 import { listSkillAvailability } from "./availability";
@@ -77,10 +78,9 @@ export async function isPinnedAuthoredSkillAuthorised(
     return false;
   }
 
-  const current = await context.repositories.authoredSkills.getByScopeAndName(
-    scope,
-    provenance.skill,
-  );
+  const current = await context.repositories
+    .get(AuthoredSkillRepository)
+    .getByScopeAndName(scope, provenance.skill);
 
   return current?.id === authorisation.skillId;
 }

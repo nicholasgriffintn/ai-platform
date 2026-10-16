@@ -8,6 +8,7 @@ import { sha256Hex, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 
 import { requireChannelBindingAccess } from "./access";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
@@ -23,12 +24,9 @@ export async function issueChannelPairingChallenge(
   const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString();
 
   if (
-    !(await context.repositories.channelSenders.issueChallenge(
-      bindingId,
-      user.id,
-      await sha256Hex(token),
-      expiresAt,
-    ))
+    !(await context.repositories
+      .get(ChannelSenderRepository)
+      .issueChallenge(bindingId, user.id, await sha256Hex(token), expiresAt))
   ) {
     throw new AssistantError("Channel changed before linking", ErrorType.CONFLICT_ERROR, 409);
   }
@@ -55,12 +53,14 @@ export async function consumeChannelPairingCommand(
   const tokenHash = await sha256Hex(match[1]);
 
   if (!incoming.context.isDirect) {
-    await context.repositories.channelSenders.discardChallenge(tokenHash);
+    await context.repositories.get(ChannelSenderRepository).discardChallenge(tokenHash);
 
     return false;
   }
 
-  const binding = await context.repositories.channelSenders.challengeBinding(tokenHash);
+  const binding = await context.repositories
+    .get(ChannelSenderRepository)
+    .challengeBinding(tokenHash);
 
   if (
     !binding ||
@@ -71,12 +71,9 @@ export async function consumeChannelPairingCommand(
     return false;
   }
 
-  const sender = await context.repositories.channelSenders.consumeChallenge(
-    binding.id,
-    incoming.from,
-    true,
-    tokenHash,
-  );
+  const sender = await context.repositories
+    .get(ChannelSenderRepository)
+    .consumeChallenge(binding.id, incoming.from, true, tokenHash);
 
   if (sender) {
     await publishChannelSendersChanged(context, binding);
@@ -91,7 +88,9 @@ export async function listChannelSenders(
 ): Promise<ListPage<ChannelSender>> {
   const { canManage } = await requireChannelBindingAccess(context, bindingId);
   const user = context.requireUser();
-  const rows = await context.repositories.channelSenders.list(bindingId, user.id, canManage);
+  const rows = await context.repositories
+    .get(ChannelSenderRepository)
+    .list(bindingId, user.id, canManage);
 
   return listPageOf(
     rows.map((row) => ({
@@ -116,12 +115,9 @@ export async function revokeChannelSender(
   const { binding } = await requireChannelBindingAccess(context, bindingId);
 
   if (
-    !(await context.repositories.channelSenders.revoke(
-      bindingId,
-      senderId,
-      expectedRevision,
-      context.requireUser().id,
-    ))
+    !(await context.repositories
+      .get(ChannelSenderRepository)
+      .revoke(bindingId, senderId, expectedRevision, context.requireUser().id))
   ) {
     throw new AssistantError("Sender changed or cannot be revoked", ErrorType.CONFLICT_ERROR, 409);
   }

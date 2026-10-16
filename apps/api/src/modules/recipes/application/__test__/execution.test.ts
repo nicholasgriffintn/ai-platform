@@ -17,6 +17,9 @@ vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
   generateId: mocks.generateId,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+
 import { executeRecipeInvocationChat } from "../execution";
 import { createRecipeMessageUrl } from "../runtime";
 
@@ -39,11 +42,14 @@ describe("executeRecipeInvocationChat", () => {
   const context = {
     env,
     user,
-    repositories: {
-      conversations: {
-        updateConversation,
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRepository,
+        {
+          updateConversation,
+        },
+      ],
+    ]),
   } as any;
   const invocation: RecipeInvocationResponse = {
     recipeId: "notes-assistant",

@@ -2,6 +2,7 @@ import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
 import type { IUser } from "~/types";
 
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
@@ -15,7 +16,7 @@ export async function requireManagedRun(
   runId: string,
 ): Promise<BenchmarkRunRecord> {
   const user = context.requireUser();
-  const run = await context.repositories.benchmarkRuns.get(runId);
+  const run = await context.repositories.get(BenchmarkRunRepository).get(runId);
 
   if (!run || run.scope === "human") {
     throw new AssistantError("Benchmark run not found", ErrorType.NOT_FOUND, 404);

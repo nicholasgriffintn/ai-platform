@@ -16,6 +16,9 @@ vi.mock("~/modules/outputs/application/provenance", () => ({
   createExecutionOutputProvenance: async () => undefined,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+
 import { handleRecordingDetail } from "../get-details";
 import { handleRecordingSummarise } from "../summarise";
 
@@ -41,13 +44,16 @@ function contextWith(outputs: Record<string, unknown>[]) {
     context: {
       env: {},
       ensureDatabase: () => undefined,
-      repositories: {
-        outputs: {
-          createOutput,
-          listPersonalOutputGroup: listGroup,
-          listProjectOutputGroup: listGroup,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            createOutput,
+            listPersonalOutputGroup: listGroup,
+            listProjectOutputGroup: listGroup,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext,
   };
 }

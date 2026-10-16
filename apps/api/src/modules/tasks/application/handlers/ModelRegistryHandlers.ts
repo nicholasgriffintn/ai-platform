@@ -3,7 +3,7 @@ import {
   modelRegistryVersionTaskDataSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { executeEvalRun } from "~/modules/model-evaluation/application/runner";
 import { inspectVersion } from "~/modules/model-registry/application/inspection";
 import type { IEnv } from "~/types";
@@ -18,7 +18,7 @@ export class ModelRegistryInspectHandler implements TaskHandler {
       return { status: "error", message: "versionId is required to inspect a model version" };
     }
 
-    return inspectVersion(RepositoryManager.getInstance(env), parsed.data.versionId);
+    return inspectVersion(createRepositories(env), parsed.data.versionId);
   }
 }
 
@@ -30,6 +30,6 @@ export class ModelRegistryEvalHandler implements TaskHandler {
       return { status: "error", message: "runId is required to execute an eval run" };
     }
 
-    return executeEvalRun(env, RepositoryManager.getInstance(env), parsed.data);
+    return executeEvalRun(env, createRepositories(env), parsed.data);
   }
 }

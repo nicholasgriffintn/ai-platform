@@ -2,6 +2,7 @@ import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import type { Embedder, EmbeddingVector, VectorStore } from "~/types";
 
 import type { PendingEmbeddingChunk } from "./document";
@@ -76,7 +77,7 @@ export const cleanupPendingEmbeddingDocument = async ({
   }
 
   try {
-    await context.repositories.embeddings.removePendingDocument(userId, documentId);
+    await context.repositories.get(EmbeddingRepository).removePendingDocument(userId, documentId);
   } catch {
     context
       .getLogger({ prefix: "services/apps/embeddings/insert" })

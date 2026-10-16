@@ -11,6 +11,9 @@ import {
 } from "~/infrastructure/context/serviceContext";
 import { generateJwtToken } from "~/modules/auth/application/jwt";
 import { createAssistantAuth } from "~/modules/auth/application/sharedAuth";
+import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/auth/sessions" });
@@ -51,10 +54,9 @@ export async function handleLogout({
   const serviceContext = resolveServiceContext({ context, env });
 
   if (userId && notificationInstallationId) {
-    await serviceContext.repositories.taskNotifications.removeRegistration(
-      userId,
-      notificationInstallationId,
-    );
+    await serviceContext.repositories
+      .get(TaskNotificationRepository)
+      .removeRegistration(userId, notificationInstallationId);
   }
 
   if (sessionId) {
@@ -83,8 +85,9 @@ export async function generateUserToken({
 
   if (sessionId) {
     const sessionTokenHash = await hashSecret(sessionId);
-    const sessionData =
-      await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
+    const sessionData = await serviceContext.repositories
+      .get(SessionRepository)
+      .getSessionWithJwt(sessionTokenHash);
 
     if (sessionData?.jwt_token && sessionData?.jwt_expires_at) {
       const jwtExpiresAt = new Date(sessionData.jwt_expires_at);
@@ -105,11 +108,9 @@ export async function generateUserToken({
     const token = await generateJwtToken(user, serviceContext.env.JWT_SECRET, expiresIn);
     const jwtExpiresAt = new Date(Date.now() + expiresIn * 1000);
 
-    await serviceContext.repositories.sessions.updateSessionJwt(
-      sessionTokenHash,
-      token,
-      jwtExpiresAt,
-    );
+    await serviceContext.repositories
+      .get(SessionRepository)
+      .updateSessionJwt(sessionTokenHash, token, jwtExpiresAt);
 
     return {
       token,
@@ -232,7 +233,9 @@ export async function exchangeNativeAuthCode({
 
   const sessionId = payload["session_id"];
   const sessionTokenHash = await hashSecret(sessionId);
-  const session = await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
+  const session = await serviceContext.repositories
+    .get(SessionRepository)
+    .getSessionWithJwt(sessionTokenHash);
 
   if (!session || !ownsResource(userId, session.user_id)) {
     logger.warn("native sign-in code rejected", {
@@ -246,7 +249,7 @@ export async function exchangeNativeAuthCode({
     );
   }
 
-  const consumed = await serviceContext.repositories.sessions.consumeNativeAuthCode({
+  const consumed = await serviceContext.repositories.get(SessionRepository).consumeNativeAuthCode({
     jti: payload.jti,
     sessionId: sessionTokenHash,
     userId,
@@ -263,7 +266,9 @@ export async function exchangeNativeAuthCode({
     );
   }
 
-  const user = (await serviceContext.repositories.users.getUserById(userId)) as IUser | null;
+  const user = (await serviceContext.repositories
+    .get(UserRepository)
+    .getUserById(userId)) as IUser | null;
 
   if (!user) {
     logger.warn("native sign-in code rejected", { reason: "user-missing" });

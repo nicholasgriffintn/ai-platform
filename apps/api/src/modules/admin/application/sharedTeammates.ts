@@ -8,6 +8,8 @@ import {
   sendTeammateFeaturedNotification,
   sendTeammateModerationNotification,
 } from "~/modules/notifications/application";
+import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/admin/sharedTeammates" });
@@ -45,8 +47,9 @@ export async function setTeammateFeaturedStatus({
   const serviceContext = resolveServiceContext({ context, env });
 
   try {
-    const sharedTeammate =
-      await serviceContext.repositories.sharedTeammates.getSharedTeammateById(teammateId);
+    const sharedTeammate = await serviceContext.repositories
+      .get(SharedTeammateRepository)
+      .getSharedTeammateById(teammateId);
 
     if (!sharedTeammate) {
       return {
@@ -55,12 +58,14 @@ export async function setTeammateFeaturedStatus({
       };
     }
 
-    await serviceContext.repositories.sharedTeammates.setFeatured(teammateId, featured);
+    await serviceContext.repositories
+      .get(SharedTeammateRepository)
+      .setFeatured(teammateId, featured);
 
     if (featured) {
-      const teammateOwner = await serviceContext.repositories.users.getUserById(
-        sharedTeammate.user_id,
-      );
+      const teammateOwner = await serviceContext.repositories
+        .get(UserRepository)
+        .getUserById(sharedTeammate.user_id);
 
       if (teammateOwner?.email) {
         await sendTeammateFeaturedNotification(
@@ -113,8 +118,9 @@ export async function moderateTeammate({
   const serviceContext = resolveServiceContext({ context, env });
 
   try {
-    const sharedTeammate =
-      await serviceContext.repositories.sharedTeammates.getSharedTeammateById(teammateId);
+    const sharedTeammate = await serviceContext.repositories
+      .get(SharedTeammateRepository)
+      .getSharedTeammateById(teammateId);
 
     if (!sharedTeammate) {
       return {
@@ -123,11 +129,13 @@ export async function moderateTeammate({
       };
     }
 
-    await serviceContext.repositories.sharedTeammates.moderateTeammate(teammateId, isPublic);
+    await serviceContext.repositories
+      .get(SharedTeammateRepository)
+      .moderateTeammate(teammateId, isPublic);
 
-    const teammateOwner = await serviceContext.repositories.users.getUserById(
-      sharedTeammate.user_id,
-    );
+    const teammateOwner = await serviceContext.repositories
+      .get(UserRepository)
+      .getUserById(sharedTeammate.user_id);
 
     if (teammateOwner?.email) {
       await sendTeammateModerationNotification(
@@ -171,9 +179,9 @@ export async function getAllSharedTeammatesForAdmin({
   env?: IEnv;
 }): Promise<Record<string, unknown>[]> {
   const serviceContext = resolveServiceContext({ context, env });
-  const teammates = await serviceContext.repositories.sharedTeammates.getAllSharedTeammatesForAdmin(
-    {},
-  );
+  const teammates = await serviceContext.repositories
+    .get(SharedTeammateRepository)
+    .getAllSharedTeammatesForAdmin({});
 
   return teammates as unknown as Record<string, unknown>[];
 }

@@ -9,6 +9,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/apps/recording/generate-image" });
@@ -47,18 +48,12 @@ export const handleRecordingGenerateImage = async (
     const runtimeEnv = serviceContext.env;
 
     const existingImages = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "image",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "image",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "image")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "image");
 
     if (existingImages.length > 0) {
       const imageData = safeParseJson<Record<string, any>>(existingImages[0].content) ?? {};
@@ -74,18 +69,12 @@ export const handleRecordingGenerateImage = async (
     }
 
     const summaryData = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "summary",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "summary",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "summary")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "summary");
 
     if (summaryData.length === 0) {
       throw new AssistantError("Recording summary not found. Please summarize recording first");
@@ -165,10 +154,10 @@ export const handleRecordingGenerateImage = async (
       imageKey,
       imageUrl: storedImage.url,
     });
-    const imageOutput = await repositories.outputs.getOutput(storedImage.outputId);
+    const imageOutput = await repositories.get(OutputRepository).getOutput(storedImage.outputId);
 
     if (imageOutput) {
-      await repositories.outputs.updateOutput(imageOutput.id, {
+      await repositories.get(OutputRepository).updateOutput(imageOutput.id, {
         content: appData,
         expectedRevision: imageOutput.revision,
         updatedByUserId: user.id,

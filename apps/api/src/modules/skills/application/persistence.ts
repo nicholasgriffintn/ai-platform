@@ -18,6 +18,7 @@ import type {
   AuthoredSkillScope,
   CreateAuthoredSkillInput,
 } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 
 import { createSkillBundle, type SkillRevisionBundle } from "./bundle";
 import { SkillRevisionStorage } from "./storage";
@@ -116,7 +117,7 @@ function toVersionedDocument(
 }
 
 function repository(context: ServiceContext) {
-  return context.repositories.authoredSkills;
+  return context.repositories.get(AuthoredSkillRepository);
 }
 
 async function reconcileStoredRevision(

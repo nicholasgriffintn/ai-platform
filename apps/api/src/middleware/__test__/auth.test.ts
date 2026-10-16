@@ -31,14 +31,33 @@ const mockAuthenticateSession = vi.hoisted(() => vi.fn());
 const mockVerifyInternalServiceToken = vi.hoisted(() => vi.fn());
 const mockIsbot = vi.fn();
 const repositoryCtor = vi.fn();
-let repositoryFactory = () => mockRepositories;
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: class {
+vi.mock("~/modules/user/infrastructure/ApiKeyRepository", () => ({
+  ApiKeyRepository: class {
     constructor() {
       repositoryCtor();
 
-      return repositoryFactory();
+      return mockRepositories.apiKeys;
+    }
+  },
+}));
+
+vi.mock("~/modules/user/infrastructure/UserRepository", () => ({
+  UserRepository: class {
+    constructor() {
+      repositoryCtor();
+
+      return mockRepositories.users;
+    }
+  },
+}));
+
+vi.mock("~/modules/user/infrastructure/AnonymousUserRepository", () => ({
+  AnonymousUserRepository: class {
+    constructor() {
+      repositoryCtor();
+
+      return mockRepositories.anonymousUsers;
     }
   },
 }));
@@ -121,7 +140,6 @@ describe("Auth Middleware", () => {
     const { getUserByJwtToken } = await import("~/modules/auth/application/jwt");
     const { isbot } = await import("isbot");
 
-    repositoryFactory = () => mockRepositories;
     vi.mocked(getUserByJwtToken).mockImplementation(mockGetUserByJwtToken);
     vi.mocked(isbot).mockImplementation(mockIsbot);
 

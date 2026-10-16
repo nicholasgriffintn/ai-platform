@@ -5,6 +5,7 @@ import {
 import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
 
 import { buildConnectorApprovalRecipeContext } from "./approval-recipe-context";
@@ -20,9 +21,9 @@ async function requireLocalConnection(params: {
   provider: string;
   connectionId: string;
 }) {
-  const connection = await params.context.repositories.providerConnections.getConnectionById(
-    params.connectionId,
-  );
+  const connection = await params.context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionById(params.connectionId);
 
   if (
     !connection ||

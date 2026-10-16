@@ -3,6 +3,9 @@ import type { LibraryEntry, LibraryQuery, VersionDetail } from "@ngriffin_uk/pol
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { toEvalRun } from "~/modules/model-evaluation/application/mappers";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import { notFound, requireModelAction, requireWorkspaceProject } from "./access";
 import {
@@ -70,19 +73,21 @@ export async function getVersionDetail(
 
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
   const repositories = context.repositories;
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
 
   if (!version) {
     throw notFound("Model version");
   }
 
   const [asset, files, siblings, lineage, evalRuns, allDecisions] = await Promise.all([
-    repositories.modelAssets.getAsset(workspaceId, version.asset_id),
-    repositories.modelAssets.listFiles(versionId),
-    repositories.modelAssets.listAssetVersions(version.asset_id),
-    repositories.modelAssets.listLineage(workspaceId),
-    repositories.modelEvals.listRuns({ versionIds: [versionId], limit: 50 }),
-    repositories.modelGovernance.listDecisions(workspaceId, { versionIds: [versionId] }),
+    repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id),
+    repositories.get(ModelAssetRepository).listFiles(versionId),
+    repositories.get(ModelAssetRepository).listAssetVersions(version.asset_id),
+    repositories.get(ModelAssetRepository).listLineage(workspaceId),
+    repositories.get(ModelEvalRepository).listRuns({ versionIds: [versionId], limit: 50 }),
+    repositories
+      .get(ModelGovernanceRepository)
+      .listDecisions(workspaceId, { versionIds: [versionId] }),
   ]);
 
   if (!asset) {

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ deleteExpired: vi.fn() }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: {
-    getInstance: () => ({
-      connectorOperationApprovals: { deleteExpired: mocks.deleteExpired },
-    }),
+vi.mock("~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository", () => ({
+  ConnectorOperationApprovalRepository: class {
+    constructor() {
+      return { deleteExpired: mocks.deleteExpired };
+    }
   },
 }));
 

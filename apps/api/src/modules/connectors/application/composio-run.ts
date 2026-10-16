@@ -17,7 +17,9 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import type { ComposioConnectorSessionRecord } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 
 import {
   getSelectedRecipeConnectorAccountId,
@@ -89,7 +91,7 @@ async function persistToolSession(params: {
   }
 
   const now = Date.now();
-  const session = await params.context.repositories.composioConnectorSessions.create({
+  const session = await params.context.repositories.get(ComposioConnectorSessionRepository).create({
     remoteSessionId: params.remoteSessionId,
     kind: "tool",
     userId: params.userId,
@@ -183,19 +185,21 @@ async function claimSession(params: {
   scope: ConnectorRunScope;
 }): Promise<ComposioConnectorSessionRecord> {
   const claimedAt = new Date().toISOString();
-  const session = await params.context.repositories.composioConnectorSessions.claimForExecution({
-    id: params.sessionId,
-    userId: params.userId,
-    provider: params.provider,
-    operationId: params.operationId,
-    runId: params.context.connectorRunId,
-    completionId: params.scope.completionId,
-    recipeId: params.scope.recipeId,
-    installationId: params.scope.installationId,
-    projectId: params.scope.projectId,
-    teammateContextId: params.scope.teammateContextId,
-    claimedAt,
-  });
+  const session = await params.context.repositories
+    .get(ComposioConnectorSessionRepository)
+    .claimForExecution({
+      id: params.sessionId,
+      userId: params.userId,
+      provider: params.provider,
+      operationId: params.operationId,
+      runId: params.context.connectorRunId,
+      completionId: params.scope.completionId,
+      recipeId: params.scope.recipeId,
+      installationId: params.scope.installationId,
+      projectId: params.scope.projectId,
+      teammateContextId: params.scope.teammateContextId,
+      claimedAt,
+    });
 
   if (!session?.authConfigId || !session.connectedAccountId) {
     throw new AssistantError("Connector session is invalid or expired", ErrorType.FORBIDDEN, 403);
@@ -346,7 +350,7 @@ async function recordConnectorActivity(params: {
   logId?: string;
 }): Promise<void> {
   try {
-    await params.context.repositories.activities.createActivity({
+    await params.context.repositories.get(ActivityRepository).createActivity({
       createdByUserId: params.userId,
       projectId: params.scope.projectId ?? null,
       conversationId: params.scope.conversationId,
@@ -473,11 +477,11 @@ export async function closeComposioConnectorRun(
         env: context.env,
         sessionId: session.remoteSessionId,
       });
-      await context.repositories.composioConnectorSessions.delete(session.id);
+      await context.repositories.get(ComposioConnectorSessionRepository).delete(session.id);
       trackedSessions.delete(session.id);
     } catch (error) {
       try {
-        await context.repositories.composioConnectorSessions.markCleanupPending({
+        await context.repositories.get(ComposioConnectorSessionRepository).markCleanupPending({
           id: session.id,
           cleanupAfter: new Date(Date.now() + CLEANUP_RETRY_DELAY_MS).toISOString(),
         });
@@ -496,7 +500,7 @@ export async function scheduleComposioConnectorRunCleanup(
   context: ServiceContext,
   runId: string,
 ): Promise<void> {
-  await context.repositories.composioConnectorSessions.markRunCleanupPending({
+  await context.repositories.get(ComposioConnectorSessionRepository).markRunCleanupPending({
     runId,
     cleanupAfter: new Date().toISOString(),
   });

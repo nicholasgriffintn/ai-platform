@@ -1,5 +1,7 @@
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 export function outputRecord(overrides: Partial<OutputRecord> = {}): OutputRecord {
   return {
@@ -29,6 +31,6 @@ export function outputRecord(overrides: Partial<OutputRecord> = {}): OutputRecor
 export function articleContext(outputs: Record<string, unknown>): ServiceContext {
   return {
     ensureDatabase: () => undefined,
-    repositories: { outputs },
+    repositories: fakeRepositories([[OutputRepository, outputs]]),
   } as unknown as ServiceContext;
 }

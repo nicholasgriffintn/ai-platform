@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import type { IUser } from "~/types";
 
 import { admitRoutineHandoff, readPolyHandoff } from "../handoffs";
@@ -91,7 +94,13 @@ function input(
   };
 
   return {
-    context: { env: {}, repositories: { activities, corrections } } as unknown as ServiceContext,
+    context: {
+      env: {},
+      repositories: fakeRepositories([
+        [ActivityRepository, activities],
+        [CorrectionRepository, corrections],
+      ]),
+    } as unknown as ServiceContext,
     user: { id: 7 } as IUser,
     polyConversationId: "teammate_home_poly",
     installationId: "installation_inbox",

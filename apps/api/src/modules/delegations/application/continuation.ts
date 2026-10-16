@@ -6,6 +6,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 
 type ContinuationIdentity = Pick<
   Delegation,
@@ -84,7 +85,9 @@ export async function resolveDelegationContinuation(
   delegation: ContinuationIdentity,
 ): Promise<DelegationContinuation> {
   const predecessor = delegation.predecessorDelegationId
-    ? await context.repositories.delegations.getById(delegation.predecessorDelegationId)
+    ? await context.repositories
+        .get(DelegationRepository)
+        .getById(delegation.predecessorDelegationId)
     : null;
 
   return validateDelegationContinuation(delegation, predecessor);

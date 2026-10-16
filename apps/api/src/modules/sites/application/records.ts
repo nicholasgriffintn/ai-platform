@@ -24,6 +24,7 @@ import { requireOutputRecordAccess } from "~/modules/outputs/application/access"
 import { deleteOutputResources } from "~/modules/outputs/application/delete-resources";
 import { createOutputProvenance } from "~/modules/outputs/application/provenance";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { validateSiteSourceBindings } from "./source-bindings";
 
@@ -104,8 +105,8 @@ async function findSiteOutput(
   context.ensureDatabase();
 
   const record = projectId
-    ? await context.repositories.outputs.getProjectOutput(projectId, siteId)
-    : await context.repositories.outputs.getPersonalOutput(userId, siteId);
+    ? await context.repositories.get(OutputRepository).getProjectOutput(projectId, siteId)
+    : await context.repositories.get(OutputRepository).getPersonalOutput(userId, siteId);
 
   if (!record || record.kind !== SITE_OUTPUT_KIND) {
     throw new AssistantError("Site not found", ErrorType.NOT_FOUND, 404);
@@ -135,16 +136,12 @@ export async function listSites(scope: SiteScope, limit = 50): Promise<SiteSumma
   scope.context.ensureDatabase();
 
   const records = scope.projectId
-    ? await scope.context.repositories.outputs.listProjectOutputs(
-        scope.projectId,
-        SITES_CAPABILITY_ID,
-        { kind: SITE_OUTPUT_KIND, limit },
-      )
-    : await scope.context.repositories.outputs.listPersonalOutputs(
-        scope.userId,
-        SITES_CAPABILITY_ID,
-        { kind: SITE_OUTPUT_KIND, limit },
-      );
+    ? await scope.context.repositories
+        .get(OutputRepository)
+        .listProjectOutputs(scope.projectId, SITES_CAPABILITY_ID, { kind: SITE_OUTPUT_KIND, limit })
+    : await scope.context.repositories
+        .get(OutputRepository)
+        .listPersonalOutputs(scope.userId, SITES_CAPABILITY_ID, { kind: SITE_OUTPUT_KIND, limit });
 
   return records.flatMap((record) => {
     const summary = mapSiteSummary(record);
@@ -187,7 +184,7 @@ export async function createSite(scope: SiteScope, input: SaveSiteInput): Promis
     quality: input.quality ?? null,
     turns: [input.turn],
   };
-  const record = await scope.context.repositories.outputs.createOutput({
+  const record = await scope.context.repositories.get(OutputRepository).createOutput({
     createdByUserId: scope.userId,
     projectId: scope.projectId ?? null,
     conversationId: input.conversationId ?? null,
@@ -236,7 +233,7 @@ export async function updateSite(
     quality: input.quality === undefined ? (existing?.quality ?? null) : input.quality,
     turns: [...(existing?.turns ?? []), input.turn],
   };
-  const updated = await scope.context.repositories.outputs.updateOutput(record.id, {
+  const updated = await scope.context.repositories.get(OutputRepository).updateOutput(record.id, {
     title: input.project.title,
     status: "ready",
     content: stored,
@@ -297,7 +294,7 @@ export async function finaliseSiteGeneration(
     quality: input.quality ?? null,
     turns,
   };
-  const updated = await scope.context.repositories.outputs.updateOutput(record.id, {
+  const updated = await scope.context.repositories.get(OutputRepository).updateOutput(record.id, {
     title: input.project.title,
     status: "ready",
     content: stored,

@@ -19,6 +19,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { KVCache } from "~/infrastructure/cache";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 
 import { requireConversationAccess } from "./access";
 
@@ -73,7 +74,7 @@ async function loadDeclaredBinding(
   conversationId: string,
   input: ArtifactBindingReadRequest,
 ): Promise<ArtifactBinding> {
-  const stored = await context.repositories.messages.getMessageById(input.messageId);
+  const stored = await context.repositories.get(MessageRepository).getMessageById(input.messageId);
 
   if (!stored || stored.conversation_id !== conversationId || stored.message.role !== "assistant") {
     return notFound();

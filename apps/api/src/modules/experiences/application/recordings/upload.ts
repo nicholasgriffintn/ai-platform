@@ -7,6 +7,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { StorageService, type StoredSourceFileResult } from "~/infrastructure/storage";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 export type UploadRequest = {
@@ -83,7 +84,7 @@ export const handleRecordingUpload = async (
       createdAt: new Date().toISOString(),
     };
 
-    const output = await repositories.outputs.createOutput({
+    const output = await repositories.get(OutputRepository).createOutput({
       createdByUserId: user.id,
       projectId,
       capabilityId: "recordings",
@@ -97,7 +98,7 @@ export const handleRecordingUpload = async (
       byteSize: audioByteSize,
     });
 
-    await repositories.outputs.attachSources(output.id, [storedAudio.sourceId]);
+    await repositories.get(OutputRepository).attachSources(output.id, [storedAudio.sourceId]);
 
     return {
       status: "success",
@@ -115,7 +116,7 @@ export const handleRecordingUpload = async (
     createdAt: new Date().toISOString(),
   };
 
-  await repositories.outputs.createOutput({
+  await repositories.get(OutputRepository).createOutput({
     createdByUserId: user.id,
     projectId,
     capabilityId: "recordings",

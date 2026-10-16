@@ -20,13 +20,16 @@ import {
 import { canonicalJson, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { requireHostingBudgetCompatibility } from "~/modules/model-governance/application/hosting-budgets";
 import {
   accrueDeploymentCost,
   preflightWorkspaceSpend,
 } from "~/modules/model-governance/application/spend";
 import { recordSpendRequest } from "~/modules/model-governance/application/spend-requests";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import {
   badRequest,
   conflict,
@@ -40,7 +43,13 @@ import {
   loadRegistryScope,
   requireUsableVersion,
 } from "~/modules/model-registry/application/scope";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
@@ -55,11 +64,11 @@ const HEALTH_WINDOW_DAYS = 14;
 
 export async function enqueueDeploymentSync(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deploymentId: string,
   delaySeconds = 0,
 ): Promise<void> {
-  await new TaskService(env, repositories.tasks).enqueueTask({
+  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
     id: `${MODEL_DEPLOYMENT_SYNC_TASK_TYPE}:${deploymentId}:${Date.now()}`,
     task_type: MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
     task_data: { deploymentId },
@@ -144,10 +153,9 @@ async function prepareDeployment(
     await requireUsableVersion(repositories, workspaceId, projectId, adapterId, "Adapter");
   }
 
-  const connection = await repositories.modelConnections.getConnection(
-    workspaceId,
-    spec.target.provider,
-  );
+  const connection = await repositories
+    .get(ModelConnectionRepository)
+    .getConnection(workspaceId, spec.target.provider);
 
   if (!connection?.capabilities.host) {
     throw conflict(
@@ -198,7 +206,7 @@ async function prepareDeployment(
 
 export async function startPreparedDeployment(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   userId: number,
   prepared: PreparedDeployment,
@@ -210,7 +218,7 @@ export async function startPreparedDeployment(
     adapterVersionIds: prepared.adapterVersionIds,
     target: { ...request.spec.target, region: prepared.regionId },
   };
-  const existing = await repositories.modelDeployments.list(workspaceId);
+  const existing = await repositories.get(ModelDeploymentRepository).list(workspaceId);
 
   if (existing.some((deployment) => deployment.name === request.name)) {
     throw conflict(`A deployment called ${request.name} already exists`);
@@ -226,7 +234,7 @@ export async function startPreparedDeployment(
     });
   }
 
-  const deployment = await repositories.modelDeployments.create({
+  const deployment = await repositories.get(ModelDeploymentRepository).create({
     workspaceId,
     projectId: prepared.projectId,
     name: request.name,
@@ -239,7 +247,7 @@ export async function startPreparedDeployment(
     weightsVerified: prepared.weightsVerified,
     createdBy: userId,
   });
-  const route = await repositories.modelRoutes.createRoute({
+  const route = await repositories.get(ModelRouteRepository).createRoute({
     workspaceId,
     versionId: prepared.adapterVersionIds[0] ?? prepared.baseVersionId,
     provider: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
@@ -252,9 +260,9 @@ export async function startPreparedDeployment(
     createdBy: userId,
   });
 
-  await repositories.modelDeployments.update(deployment.id, { route_id: route.id });
+  await repositories.get(ModelDeploymentRepository).update(deployment.id, { route_id: route.id });
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_deployment.created",
@@ -376,7 +384,9 @@ async function requireDeployment(
   workspaceId: string,
   deploymentId: string,
 ): Promise<ModelDeploymentRecord> {
-  const deployment = await context.repositories.modelDeployments.get(workspaceId, deploymentId);
+  const deployment = await context.repositories
+    .get(ModelDeploymentRepository)
+    .get(workspaceId, deploymentId);
 
   if (!deployment || deployment.status === "deleted") {
     throw notFound("Deployment");
@@ -393,13 +403,15 @@ export async function listDeployments(
   await requireModelAction(context, workspaceId, "view");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
-  const deployments = await context.repositories.modelDeployments.list(workspaceId, { projectId });
-  const versions = await context.repositories.modelAssets.listVersions(
+  const deployments = await context.repositories
+    .get(ModelDeploymentRepository)
+    .list(workspaceId, { projectId });
+  const versions = await context.repositories.get(ModelAssetRepository).listVersions(
     workspaceId,
     deployments.map((deployment) => deployment.version_id),
   );
   const assets = new Map(
-    (await context.repositories.modelAssets.listAssets(workspaceId)).map((asset) => [
+    (await context.repositories.get(ModelAssetRepository).listAssets(workspaceId)).map((asset) => [
       asset.id,
       asset,
     ]),
@@ -427,24 +439,26 @@ export async function getDeploymentDetail(
   const repositories = context.repositories;
   const deployment = await requireDeployment(context, workspaceId, deploymentId);
   const route = deployment.route_id
-    ? await repositories.modelRoutes.getRoute(workspaceId, deployment.route_id)
+    ? await repositories.get(ModelRouteRepository).getRoute(workspaceId, deployment.route_id)
     : null;
-  const version = await repositories.modelAssets.getVersion(workspaceId, deployment.version_id);
+  const version = await repositories
+    .get(ModelAssetRepository)
+    .getVersion(workspaceId, deployment.version_id);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
   const since = new Date(Date.now() - HEALTH_WINDOW_DAYS * 86_400_000).toISOString();
   const [usage, aliases, spendUsd] = await Promise.all([
     route
-      ? repositories.usageEvents.summariseModelUsage({
+      ? repositories.get(UsageEventRepository).summariseModelUsage({
           workspaceId,
           vendor: route.provider,
           resources: [route.provider_model_id],
           since,
         })
       : null,
-    route ? repositories.modelAliases.listByRoutes([route.id]) : [],
-    repositories.modelSpend.sumSubjectCost("deployment", deployment.id),
+    route ? repositories.get(ModelAliasRepository).listByRoutes([route.id]) : [],
+    repositories.get(ModelSpendRepository).sumSubjectCost("deployment", deployment.id),
   ]);
 
   return {
@@ -514,11 +528,11 @@ export async function scaleDeployment(
         )
       : deployment;
 
-  await context.repositories.modelDeployments.update(deployment.id, {
+  await context.repositories.get(ModelDeploymentRepository).update(deployment.id, {
     spec,
     spec_hash: await sha256Hex(canonicalJson(spec)),
   });
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_deployment.scaled",
@@ -540,7 +554,7 @@ const STATE_AUDIT_ACTIONS: Record<DeploymentStateAction, string> = {
 
 export async function applyDeploymentState(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
   action: DeploymentStateAction,
   actor: { userId: number | null; reason: string | null },
@@ -561,7 +575,7 @@ export async function applyDeploymentState(
 
   if (action === "delete") {
     updated = { ...updated, status: "deleting" };
-    await repositories.modelDeployments.update(deployment.id, {
+    await repositories.get(ModelDeploymentRepository).update(deployment.id, {
       desired_state: desired,
       status: "deleting",
     });
@@ -570,7 +584,9 @@ export async function applyDeploymentState(
     updated = await runHostAction(repositories, updated, (host, hosted) =>
       action === "pause" ? host.pause(hosted) : host.resume(hosted),
     );
-    await repositories.modelDeployments.update(deployment.id, { desired_state: desired });
+    await repositories
+      .get(ModelDeploymentRepository)
+      .update(deployment.id, { desired_state: desired });
     await enqueueDeploymentSync(env, repositories, deployment.id, 30);
   } else if (deployment.provisioning_started_at) {
     if (action === "resume" && deployment.status === "failed") {
@@ -579,7 +595,9 @@ export async function applyDeploymentState(
       );
     }
 
-    await repositories.modelDeployments.update(deployment.id, { desired_state: desired });
+    await repositories
+      .get(ModelDeploymentRepository)
+      .update(deployment.id, { desired_state: desired });
     await enqueueDeploymentSync(env, repositories, deployment.id);
   } else {
     updated = {
@@ -587,7 +605,7 @@ export async function applyDeploymentState(
       status: action === "pause" ? "paused" : "pending",
       failure_reason: null,
     };
-    await repositories.modelDeployments.update(deployment.id, {
+    await repositories.get(ModelDeploymentRepository).update(deployment.id, {
       desired_state: desired,
       status: updated.status,
       failure_reason: null,
@@ -598,7 +616,7 @@ export async function applyDeploymentState(
     }
   }
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId: deployment.workspace_id,
     actorUserId: actor.userId,
     action: STATE_AUDIT_ACTIONS[action],

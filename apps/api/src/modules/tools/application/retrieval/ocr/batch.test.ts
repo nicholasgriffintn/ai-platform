@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IUser } from "~/types";
 
 import { startOcrBatch } from "./batch";
@@ -84,10 +87,10 @@ describe("startOcrBatch", () => {
     };
     const context = {
       env: {},
-      repositories: {
-        outputs: { attachSources: vi.fn() },
-        tasks: {},
-      },
+      repositories: fakeRepositories([
+        [OutputRepository, { attachSources: vi.fn() }],
+        [TaskRepository, {}],
+      ]),
     } as unknown as ServiceContext;
     const user = { id: 42 } as IUser;
 
@@ -232,7 +235,10 @@ describe("startOcrBatch", () => {
     };
     const context = {
       env: {},
-      repositories: { outputs: { attachSources: vi.fn() }, tasks: {} },
+      repositories: fakeRepositories([
+        [OutputRepository, { attachSources: vi.fn() }],
+        [TaskRepository, {}],
+      ]),
     } as unknown as ServiceContext;
 
     createOutput.mockResolvedValueOnce(created);
@@ -310,7 +316,10 @@ describe("startOcrBatch", () => {
     const attachSources = vi.fn();
     const context = {
       env: {},
-      repositories: { outputs: { attachSources }, tasks: {} },
+      repositories: fakeRepositories([
+        [OutputRepository, { attachSources }],
+        [TaskRepository, {}],
+      ]),
     } as unknown as ServiceContext;
     const user = { id: 42 } as IUser;
 
@@ -377,7 +386,10 @@ describe("startOcrBatch", () => {
     };
     const context = {
       env: {},
-      repositories: { outputs: { attachSources: vi.fn() }, tasks: {} },
+      repositories: fakeRepositories([
+        [OutputRepository, { attachSources: vi.fn() }],
+        [TaskRepository, {}],
+      ]),
     } as unknown as ServiceContext;
 
     readPrivateFile.mockResolvedValue({

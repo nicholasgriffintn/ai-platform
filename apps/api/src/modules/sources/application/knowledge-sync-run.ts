@@ -4,10 +4,12 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
@@ -53,7 +55,9 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
     } catch (error) {
       if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
         await requireKnowledgeSyncAuthority(context, sync, [resource]);
-        await context.repositories.knowledgeSyncs.markUnavailable(sync, token, sourceId);
+        await context.repositories
+          .get(KnowledgeSyncRepository)
+          .markUnavailable(sync, token, sourceId);
       }
 
       throw error;
@@ -63,7 +67,7 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
 
     await requireKnowledgeSyncAuthority(context, sync, [resource]);
     if (
-      !(await context.repositories.knowledgeSyncs.commitResource(sync, token, {
+      !(await context.repositories.get(KnowledgeSyncRepository).commitResource(sync, token, {
         ...document,
         sourceId,
         resourceId: resource.resourceId,
@@ -79,7 +83,7 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
       { kind: "project", projectId: sync.project_id },
       "knowledge_sync.changed",
     );
-    const latest = await context.repositories.knowledgeSyncs.get(sync.id);
+    const latest = await context.repositories.get(KnowledgeSyncRepository).get(sync.id);
 
     if (!latest || latest.generation !== initial.generation) {
       return;
@@ -90,8 +94,8 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
 }
 
 export async function runKnowledgeSync(env: IEnv, id: string, userId: number, generation: number) {
-  const repositories = RepositoryManager.getInstance(env);
-  const sync = await repositories.knowledgeSyncs.get(id);
+  const knowledgeSyncs = new KnowledgeSyncRepository(env);
+  const sync = await knowledgeSyncs.get(id);
 
   if (
     !sync ||
@@ -102,7 +106,7 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
     return;
   }
 
-  const user = await repositories.users.getUserById(userId);
+  const user = await new UserRepository(env).getUserById(userId);
 
   if (!user) {
     return;
@@ -110,7 +114,7 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
 
   const token = generateId();
 
-  if (!(await repositories.knowledgeSyncs.claim(id, generation, token))) {
+  if (!(await knowledgeSyncs.claim(id, generation, token))) {
     return;
   }
 
@@ -128,7 +132,7 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
     throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
   } finally {
     try {
-      await repositories.knowledgeSyncs.release(id, token, errorMessage, pause);
+      await knowledgeSyncs.release(id, token, errorMessage, pause);
       await publishResourceEvent(
         context,
         { kind: "project", projectId: sync.project_id },
@@ -141,8 +145,8 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
 }
 
 export async function scheduleKnowledgeSyncs(env: IEnv): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
-  const syncs = await repositories.knowledgeSyncs.due();
+  const repositories = createRepositories(env);
+  const syncs = await repositories.get(KnowledgeSyncRepository).due();
 
   for (const sync of syncs) {
     await enqueueKnowledgeSync(env, repositories, sync);

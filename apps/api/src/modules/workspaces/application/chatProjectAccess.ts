@@ -1,6 +1,7 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import type { CoreChatOptions } from "~/types";
 
 import { requireProjectAccess } from "./access";
@@ -10,7 +11,7 @@ export async function resolveChatProjectAccess(
   options: Pick<CoreChatOptions, "completion_id" | "metadata">,
 ) {
   const conversation = options.completion_id
-    ? await context.repositories.conversations.getConversation(options.completion_id)
+    ? await context.repositories.get(ConversationRepository).getConversation(options.completion_id)
     : null;
   const storedProjectId =
     typeof conversation?.project_id === "string" ? conversation.project_id : undefined;

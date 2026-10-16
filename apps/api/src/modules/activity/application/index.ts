@@ -11,6 +11,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 function formatActivity(record: ActivityRecord): Activity {
@@ -44,8 +45,10 @@ export async function listActivity(
   };
   const records = query.project_id
     ? (await requireProjectAccess(context, query.project_id),
-      await context.repositories.activities.listProjectActivities(query.project_id, options))
-    : await context.repositories.activities.listPersonalActivities(userId, options);
+      await context.repositories
+        .get(ActivityRepository)
+        .listProjectActivities(query.project_id, options))
+    : await context.repositories.get(ActivityRepository).listPersonalActivities(userId, options);
 
   return mapListPage(
     toListPage(records, query.limit, (record) => record.id),
@@ -58,7 +61,7 @@ export async function getActivity(
   userId: number,
   activityId: string,
 ): Promise<Activity> {
-  const record = await context.repositories.activities.getActivityById(activityId);
+  const record = await context.repositories.get(ActivityRepository).getActivityById(activityId);
 
   if (!record) {
     throw new AssistantError("Activity not found", ErrorType.NOT_FOUND, 404);

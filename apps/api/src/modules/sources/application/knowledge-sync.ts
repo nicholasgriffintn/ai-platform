@@ -19,10 +19,13 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,
@@ -75,9 +78,9 @@ export async function requireKnowledgeSyncAuthority(
 
   await requireProjectAccess(context, sync.project_id, ["owner", "admin"]);
   await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipe.id);
-  const connection = await context.repositories.providerConnections.getConnectionById(
-    sync.connection_id,
-  );
+  const connection = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionById(sync.connection_id);
 
   if (
     !connection ||
@@ -98,11 +101,11 @@ export async function requireKnowledgeSyncAuthority(
 
 export async function enqueueKnowledgeSync(
   env: IEnv,
-  repositories: RepositoryManager,
+  repositories: Repositories,
   sync: KnowledgeSyncRecord,
 ): Promise<void> {
   try {
-    await new TaskService(env, repositories.tasks).enqueueTask({
+    await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
       id: `knowledge_sync_${sync.id}_${sync.generation}_${sync.cursor}`,
       task_type: SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
       user_id: sync.user_id,
@@ -118,7 +121,7 @@ export async function enqueueKnowledgeSync(
 
 export async function listKnowledgeSyncs(context: ServiceContext, projectId: string) {
   await requireProjectAccess(context, projectId);
-  const records = await context.repositories.knowledgeSyncs.list(projectId);
+  const records = await context.repositories.get(KnowledgeSyncRepository).list(projectId);
 
   return listPageOf(
     records.map((record) => formatKnowledgeSync(record, context.requireUser().id)),
@@ -157,7 +160,7 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
 
   const id = generateId();
 
-  await context.repositories.knowledgeSyncs.create({
+  await context.repositories.get(KnowledgeSyncRepository).create({
     id,
     userId,
     projectId: parsed.projectId,
@@ -168,7 +171,7 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
     resources: parsed.resources,
     intervalMinutes: parsed.intervalMinutes,
   });
-  const saved = await context.repositories.knowledgeSyncs.get(id);
+  const saved = await context.repositories.get(KnowledgeSyncRepository).get(id);
 
   if (!saved) {
     throw new AssistantError("Sync could not be saved", ErrorType.DATABASE_ERROR);
@@ -190,7 +193,7 @@ export async function controlKnowledgeSync(
   id: string,
   input: UpdateKnowledgeSync,
 ) {
-  const sync = await context.repositories.knowledgeSyncs.get(id);
+  const sync = await context.repositories.get(KnowledgeSyncRepository).get(id);
 
   if (!sync || !ownsResource(context.requireUser().id, sync.user_id)) {
     throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
@@ -201,8 +204,8 @@ export async function controlKnowledgeSync(
     await requireKnowledgeSyncAuthority(context, sync, parseKnowledgeSyncResources(sync));
   }
 
-  await context.repositories.knowledgeSyncs.control(id, input.action);
-  const saved = await context.repositories.knowledgeSyncs.get(id);
+  await context.repositories.get(KnowledgeSyncRepository).control(id, input.action);
+  const saved = await context.repositories.get(KnowledgeSyncRepository).get(id);
 
   if (!saved) {
     throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);

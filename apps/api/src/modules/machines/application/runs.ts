@@ -6,6 +6,7 @@ import {
   getDurableObjectStub,
   postDurableObjectJson,
 } from "~/infrastructure/durable-objects/client";
+import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
 
 export async function callMachineRun(
@@ -16,7 +17,7 @@ export async function callMachineRun(
 ): Promise<Response> {
   const user = context.requireUser();
   const settings = await context.getUserSettings();
-  const machine = (await context.repositories.machines.listForUser(user.id)).find(
+  const machine = (await context.repositories.get(MachineRepository).listForUser(user.id)).find(
     (item) => item.machineId === machineId,
   );
 

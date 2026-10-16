@@ -2,6 +2,10 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { instantiateProjectStarter } from "../starters";
 
@@ -63,7 +67,11 @@ function createContext(role = "owner") {
       ensureDatabase: vi.fn(),
       user: currentUser,
       requireUser: vi.fn(() => currentUser),
-      repositories,
+      repositories: fakeRepositories([
+        [TeammateRepository, repositories.teammates],
+        [WorkspaceRepository, repositories.workspaces],
+        [AuditRepository, repositories.audit],
+      ]),
     } as unknown as ServiceContext,
     repositories,
   };

@@ -11,6 +11,7 @@ import {
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
@@ -58,18 +59,12 @@ export const handleRecordingTranscribe = async (
     const runtimeEnv = serviceContext.env;
 
     const existingTranscriptions = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "transcribe",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "transcribe",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "transcribe")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "transcribe");
 
     if (existingTranscriptions.length > 0) {
       const transcriptionData = safeParseJson<Record<string, any>>(
@@ -84,18 +79,12 @@ export const handleRecordingTranscribe = async (
     }
 
     const uploadData = projectId
-      ? await repositories.outputs.listProjectOutputGroup(
-          projectId,
-          "recordings",
-          request.recordingId,
-          "upload",
-        )
-      : await repositories.outputs.listPersonalOutputGroup(
-          user.id,
-          "recordings",
-          request.recordingId,
-          "upload",
-        );
+      ? await repositories
+          .get(OutputRepository)
+          .listProjectOutputGroup(projectId, "recordings", request.recordingId, "upload")
+      : await repositories
+          .get(OutputRepository)
+          .listPersonalOutputGroup(user.id, "recordings", request.recordingId, "upload");
 
     if (uploadData.length === 0) {
       throw new AssistantError(
@@ -168,7 +157,7 @@ export const handleRecordingTranscribe = async (
       createdAt: new Date().toISOString(),
     };
 
-    await repositories.outputs.createOutput({
+    await repositories.get(OutputRepository).createOutput({
       createdByUserId: user.id,
       projectId,
       capabilityId: "recordings",

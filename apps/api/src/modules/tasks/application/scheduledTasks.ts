@@ -8,7 +8,6 @@ import {
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   sourceResourceSql,
   synthesisResourceSql,
@@ -16,6 +15,7 @@ import {
 import { previousUtcDay } from "~/modules/infra/application/reconciliation";
 import { scheduleDueRecipeExecutions } from "~/modules/recipes/application/scheduler";
 import { overageSyncHourIso } from "~/modules/subscription/application/stripeOverageSync";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { TaskService } from "./TaskService";
@@ -36,12 +36,15 @@ const DURABLE_TASK_TYPES = [
 ] as const;
 
 export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
   const cutoff = new Date(now.getTime() - DURABLE_DELIVERY_RECOVERY_DELAY_MS);
   const recovered = (
     await Promise.all(
       DURABLE_TASK_TYPES.map((taskType) =>
-        repositories.tasks.requeueFailedTasksByType(taskType, cutoff, MAX_DURABLE_TASK_RECOVERIES),
+        new TaskRepository(env).requeueFailedTasksByType(
+          taskType,
+          cutoff,
+          MAX_DURABLE_TASK_RECOVERIES,
+        ),
       ),
     )
   ).flat();
@@ -54,8 +57,7 @@ export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Pr
 }
 
 export async function redispatchPendingTasks(env: IEnv): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
-  const taskService = new TaskService(env, repositories.tasks);
+  const taskService = new TaskService(env, new TaskRepository(env));
   const dispatched = await taskService.dispatchPendingTasks();
 
   if (dispatched > 0) {
@@ -66,9 +68,8 @@ export async function redispatchPendingTasks(env: IEnv): Promise<number> {
 }
 
 export async function purgeSettledTasks(env: IEnv, now = new Date()): Promise<number> {
-  const repositories = RepositoryManager.getInstance(env);
   const cutoff = new Date(now.getTime() - SETTLED_TASK_RETENTION_MS);
-  const deleted = await repositories.tasks.deleteSettledTasksBefore(
+  const deleted = await new TaskRepository(env).deleteSettledTasksBefore(
     cutoff,
     SETTLED_TASK_PURGE_LIMIT,
   );
@@ -82,8 +83,7 @@ export async function purgeSettledTasks(env: IEnv, now = new Date()): Promise<nu
 
 export async function scheduleInfraReconciliation(env: IEnv, now = new Date()): Promise<void> {
   try {
-    const repositories = RepositoryManager.getInstance(env);
-    const taskService = new TaskService(env, repositories.tasks);
+    const taskService = new TaskService(env, new TaskRepository(env));
     const day = previousUtcDay(now);
 
     await taskService.enqueueTask({
@@ -101,8 +101,7 @@ export async function scheduleInfraReconciliation(env: IEnv, now = new Date()): 
 
 export async function scheduleStripeUsageSync(env: IEnv, now = new Date()): Promise<void> {
   try {
-    const repositories = RepositoryManager.getInstance(env);
-    const taskService = new TaskService(env, repositories.tasks);
+    const taskService = new TaskService(env, new TaskRepository(env));
     const hourIso = overageSyncHourIso(now);
     const hourKey = hourIso.slice(0, 13).replace(/[-T]/g, "");
 
@@ -123,8 +122,6 @@ export async function scheduleStripeUsageSync(env: IEnv, now = new Date()): Prom
 
 export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
   try {
-    const repositories = RepositoryManager.getInstance(env);
-
     const result = await env.DB.prepare(
       `SELECT u.id AS id, COUNT(s.id) AS new_memory_count
        FROM user u
@@ -153,7 +150,7 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
       return;
     }
 
-    const taskService = new TaskService(env, repositories.tasks);
+    const taskService = new TaskService(env, new TaskRepository(env));
     let scheduledCount = 0;
 
     for (const user of users) {
@@ -186,8 +183,6 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
 
 export async function scheduleTrainingQualityScoring(env: IEnv): Promise<void> {
   try {
-    const repositories = RepositoryManager.getInstance(env);
-
     const unscoredCount = await env.DB.prepare(
       `SELECT COUNT(*) as count FROM training_examples 
 			 WHERE quality_score IS NULL AND include_in_training = 1`,
@@ -201,7 +196,7 @@ export async function scheduleTrainingQualityScoring(env: IEnv): Promise<void> {
       return;
     }
 
-    const taskService = new TaskService(env, repositories.tasks);
+    const taskService = new TaskService(env, new TaskRepository(env));
 
     await taskService.enqueueTask({
       task_type: "training_quality_scoring",

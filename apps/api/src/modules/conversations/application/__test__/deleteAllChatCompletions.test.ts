@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+
 import {
   handleDeleteAllChatCompletions,
   type DeleteAllChatCompletionsContext,
@@ -10,9 +13,9 @@ describe("handleDeleteAllChatCompletions", () => {
     const deleteAllPersonalConversations = vi.fn(async () => undefined);
     const context: DeleteAllChatCompletionsContext = {
       requireUser: () => ({ id: 123 }),
-      repositories: {
-        conversations: { deleteAllPersonalConversations },
-      },
+      repositories: fakeRepositories([
+        [ConversationRepository, { deleteAllPersonalConversations }],
+      ]),
     };
 
     const result = await handleDeleteAllChatCompletions(context);
@@ -27,13 +30,16 @@ describe("handleDeleteAllChatCompletions", () => {
   it("does not report success when the bulk deletion fails", async () => {
     const context: DeleteAllChatCompletionsContext = {
       requireUser: () => ({ id: 123 }),
-      repositories: {
-        conversations: {
-          deleteAllPersonalConversations: vi.fn(async () => {
-            throw new Error("database unavailable");
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ConversationRepository,
+          {
+            deleteAllPersonalConversations: vi.fn(async () => {
+              throw new Error("database unavailable");
+            }),
+          },
+        ],
+      ]),
     };
 
     await expect(handleDeleteAllChatCompletions(context)).rejects.toThrow("database unavailable");

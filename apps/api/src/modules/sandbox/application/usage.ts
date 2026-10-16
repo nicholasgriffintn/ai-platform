@@ -15,7 +15,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { createUsageRuntime, createUsageStore } from "~/modules/usage/application/runtime";
 import type { IEnv } from "~/types";
 
@@ -29,7 +30,7 @@ const DURATION_CLAMP_MULTIPLIER = 1.25;
 
 export async function reserveSandboxRun(params: {
   env: IEnv;
-  repositories: RepositoryManager;
+  repositories: Repositories;
   userId: number;
   runId: string;
   timeoutSeconds?: number;
@@ -62,7 +63,7 @@ export async function reserveSandboxRun(params: {
 }
 
 export async function releaseSandboxRunReservation(params: {
-  repositories: RepositoryManager;
+  repositories: Repositories;
   runId: string;
 }): Promise<void> {
   try {
@@ -129,7 +130,9 @@ export async function recordSandboxRunUsage(params: {
       })
     : runWithUsage;
 
-  await context.repositories.activities.updateActivity(record.id, { data: persistedRun });
+  await context.repositories
+    .get(ActivityRepository)
+    .updateActivity(record.id, { data: persistedRun });
 
   return { settled: reservation !== null };
 }

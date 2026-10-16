@@ -13,6 +13,8 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import {
   buildDelegationPendingResult,
   buildDelegationResultFromMessage,
@@ -22,12 +24,19 @@ import { resumeInterruptedDelegation } from "~/modules/delegations/application/r
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
+import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { notifyMobileWork } from "~/modules/mobile-push/application";
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
 import { deliverRecipeOccurrenceToTeammateHome } from "~/modules/recipes/application/occurrences";
 import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
 import { getRecipeExecutionTaskId } from "~/modules/recipes/application/task-reconciliation";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IUser, Message } from "~/types";
 
 type ResultMessage = Pick<Message, "content" | "data" | "id" | "status" | "citations">;
@@ -70,7 +79,9 @@ async function resolveResultMessage(
     return result.finalMessage;
   }
 
-  const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const messages = await context.repositories
+    .get(MessageRepository)
+    .getRunMessages(run.conversationId, run.id);
   const selected =
     messages.find((message) => message.id === run.lastMessageId) ??
     [...messages].reverse().find((message) => message.role === "assistant");
@@ -96,26 +107,29 @@ async function notifyDelegationAttention(
   userId: number,
   state: "awaiting_input" | "awaiting_approval" | "awaiting_takeover",
 ): Promise<void> {
-  await context.repositories.conversations.markUnreadForUser(
-    delegation.parentConversationId,
-    userId,
-  );
-  const parent = await context.repositories.conversations.getConversation(
-    delegation.parentConversationId,
-  );
+  await context.repositories
+    .get(ConversationRepository)
+    .markUnreadForUser(delegation.parentConversationId, userId);
+  const parent = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(delegation.parentConversationId);
   const projectId = typeof parent?.project_id === "string" ? parent.project_id : null;
 
   if (!projectId) {
     return;
   }
 
-  const project = await context.repositories.workspaces.getProject(projectId);
-  const preferences = await context.repositories.taskNotifications.getPreferences(userId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
+  const preferences = await context.repositories
+    .get(TaskNotificationRepository)
+    .getPreferences(userId);
 
   if (
     !project ||
     !isTaskNotificationPreferenceEnabled(preferences, "decisions") ||
-    !(await context.repositories.workspaces.getMembership(project.workspace_id, userId))
+    !(await context.repositories
+      .get(WorkspaceRepository)
+      .getMembership(project.workspace_id, userId))
   ) {
     return;
   }
@@ -143,7 +157,9 @@ async function reconcileDelegationRun(params: {
   delegationId: string;
   result?: AgentLoopExecutionResult;
 }): Promise<void> {
-  const delegation = await params.context.repositories.delegations.getById(params.delegationId);
+  const delegation = await params.context.repositories
+    .get(DelegationRepository)
+    .getById(params.delegationId);
 
   if (!delegation || delegation.childConversationId !== params.run.conversationId) {
     throw new Error("Delegation run no longer matches its durable assignment");
@@ -183,7 +199,7 @@ async function reconcileDelegationRun(params: {
       waitingState,
     );
     await scheduleDelegationExpiry(
-      new TaskService(params.context.env, params.context.repositories.tasks),
+      new TaskService(params.context.env, params.context.repositories.get(TaskRepository)),
       delegation,
       params.user.id,
     );
@@ -247,10 +263,9 @@ async function reconcileDelegationRun(params: {
   );
 
   if (transitioned) {
-    await params.context.repositories.conversations.markUnreadForUser(
-      delegation.parentConversationId,
-      params.user.id,
-    );
+    await params.context.repositories
+      .get(ConversationRepository)
+      .markUnreadForUser(delegation.parentConversationId, params.user.id);
   }
 }
 
@@ -277,12 +292,12 @@ async function reconcileRoutineRun(params: {
     throw new Error("Routine run is missing its teammate context");
   }
 
-  const teammateContext = await params.context.repositories.teammateContexts.getById(
-    params.run.teammateContextId,
-  );
-  const installation = await params.context.repositories.templates.getTemplateById(
-    params.installationId,
-  );
+  const teammateContext = await params.context.repositories
+    .get(TeammateContextRepository)
+    .getById(params.run.teammateContextId);
+  const installation = await params.context.repositories
+    .get(TemplateRepository)
+    .getTemplateById(params.installationId);
 
   if (
     !teammateContext ||
@@ -293,9 +308,9 @@ async function reconcileRoutineRun(params: {
   }
 
   const message = await resolveResultMessage(params.context, params.run, params.result);
-  const conversation = await params.context.repositories.conversations.getConversation(
-    params.run.conversationId,
-  );
+  const conversation = await params.context.repositories
+    .get(ConversationRepository)
+    .getConversation(params.run.conversationId);
   const title =
     typeof conversation?.title === "string"
       ? conversation.title.replace(/^Recipe:\s*/u, "")
@@ -326,7 +341,7 @@ async function reconcileRoutineRun(params: {
   const taskId = getRecipeExecutionTaskId(params.run.conversationId);
 
   if (homeDelivery !== "skipped" && params.run.status === "succeeded" && taskId) {
-    const task = await params.context.repositories.tasks.getTaskById(taskId);
+    const task = await params.context.repositories.get(TaskRepository).getTaskById(taskId);
     const taskData = recipeExecutionTaskDataSchema.safeParse(task?.task_data);
 
     if (taskData.success) {
@@ -368,7 +383,9 @@ export async function reconcileTeammateRun(
     return;
   }
 
-  const user = context.user ?? (await context.repositories.users.getUserById(run.initiatorUserId));
+  const user =
+    context.user ??
+    (await context.repositories.get(UserRepository).getUserById(run.initiatorUserId));
 
   if (!user || user.id !== run.initiatorUserId) {
     throw new Error("Teammate run initiator is unavailable");

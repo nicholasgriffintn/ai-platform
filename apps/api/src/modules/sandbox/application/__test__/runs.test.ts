@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+
 import {
   appendRunCoordinatorEvent,
   getRunCoordinatorControl,
@@ -45,11 +49,14 @@ describe("sandbox runs service", () => {
 
   const context = {
     env: {},
-    repositories: {
-      activities: {
-        getActivityByGroup: mockGetActivityByGroup,
-      },
-    },
+    repositories: fakeRepositories([
+      [
+        ActivityRepository,
+        {
+          getActivityByGroup: mockGetActivityByGroup,
+        },
+      ],
+    ]),
   } as any;
 
   beforeEach(() => {
@@ -122,14 +129,17 @@ describe("sandbox runs service", () => {
     const projectContext = {
       ...context,
       requireUser: vi.fn().mockReturnValue({ id: 42, plan_id: "pro" }),
-      repositories: {
-        ...context.repositories,
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockResolvedValue({ role: "member" }),
-        },
-      },
+      repositories: fakeRepositories([
+        [ActivityRepository, { getActivityByGroup: mockGetActivityByGroup }],
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+          },
+        ],
+      ]),
     };
 
     await expect(
@@ -272,14 +282,19 @@ describe("sandbox runs service", () => {
       const projectContext = {
         ...context,
         requireUser: vi.fn().mockReturnValue({ id: 42, plan_id: "pro" }),
-        repositories: {
-          ...context.repositories,
-          workspaces: {
-            getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
-            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-            getMembership: vi.fn().mockResolvedValue({ role: "member" }),
-          },
-        },
+        repositories: fakeRepositories([
+          [ActivityRepository, { getActivityByGroup: mockGetActivityByGroup }],
+          [
+            WorkspaceRepository,
+            {
+              getProject: vi
+                .fn()
+                .mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+              getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+              getMembership: vi.fn().mockResolvedValue({ role: "member" }),
+            },
+          ],
+        ]),
       };
 
       await expect(

@@ -2,8 +2,12 @@ import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { SandboxProvider } from "~/infrastructure/providers/capabilities/sandbox";
 import { providerLibrary } from "~/infrastructure/providers/library";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
 import { isSandboxRunDispatchMessage, processSandboxRunDispatch } from "../dispatch";
@@ -71,16 +75,22 @@ const sandboxProvider: SandboxProvider = {
 
 const mockServiceContext = {
   env: {},
-  repositories: {
-    users: {
-      getUserById: mockGetUserById,
-    },
-    activities: {
-      getActivityById: mockGetActivityById,
-      updateActivity: mockUpdateActivity,
-    },
-    tasks: {},
-  },
+  repositories: fakeRepositories([
+    [
+      UserRepository,
+      {
+        getUserById: mockGetUserById,
+      },
+    ],
+    [
+      ActivityRepository,
+      {
+        getActivityById: mockGetActivityById,
+        updateActivity: mockUpdateActivity,
+      },
+    ],
+    [TaskRepository, {}],
+  ]),
 } as any;
 
 const baseRunRecord = {

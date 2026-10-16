@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+
 import { completeMcpOAuthConnection } from "../mcp-oauth-connections";
 
 function createContext(record: unknown) {
@@ -9,10 +13,10 @@ function createContext(record: unknown) {
     upsertConnection,
     context: {
       env: { JWT_SECRET: "x".repeat(40), API_BASE_URL: "https://api.example.com" },
-      repositories: {
-        oauthStates: { consumeByStateHash: vi.fn(async () => record) },
-        providerConnections: { upsertConnection },
-      },
+      repositories: fakeRepositories([
+        [OAuthStateRepository, { consumeByStateHash: vi.fn(async () => record) }],
+        [ProviderConnectionRepository, { upsertConnection }],
+      ]),
     } as never,
   };
 }

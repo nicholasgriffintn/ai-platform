@@ -14,9 +14,12 @@ import type {
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { toDatasetProfile } from "~/modules/model-datasets/application/datasets";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
 import { toEvalRun } from "~/modules/model-evaluation/application/mappers";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import { notFound, requireModelAction } from "~/modules/model-registry/application/access";
 import {
   toModelAsset,
@@ -27,15 +30,17 @@ import {
   toModelVersion,
 } from "~/modules/model-registry/application/mappers";
 import { loadRegistryScope, versionStanding } from "~/modules/model-registry/application/scope";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-async function requireVersion(
-  repositories: RepositoryManager,
-  workspaceId: string,
-  versionId: string,
-) {
-  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+async function requireVersion(repositories: Repositories, workspaceId: string, versionId: string) {
+  const version = await repositories.get(ModelAssetRepository).getVersion(workspaceId, versionId);
   const asset = version
-    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, version.asset_id)
     : null;
 
   if (!version || !asset) {
@@ -46,43 +51,51 @@ async function requireVersion(
 }
 
 async function bomInput(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
   routeId?: string,
 ) {
   const { version, asset } = await requireVersion(repositories, workspaceId, versionId);
-  const route = routeId ? await repositories.modelRoutes.getRoute(workspaceId, routeId) : null;
+  const route = routeId
+    ? await repositories.get(ModelRouteRepository).getRoute(workspaceId, routeId)
+    : null;
 
   if (routeId && (!route || route.version_id !== versionId)) {
     throw notFound("Route");
   }
 
   const lineage = collectAncestry(
-    await repositories.modelAssets.listLineage(workspaceId),
+    await repositories.get(ModelAssetRepository).listLineage(workspaceId),
     versionId,
   );
-  const ancestorVersions = await repositories.modelAssets.listVersions(workspaceId, [
-    ...new Set(lineage.map((edge) => edge.fromVersionId)),
-  ]);
+  const ancestorVersions = await repositories
+    .get(ModelAssetRepository)
+    .listVersions(workspaceId, [...new Set(lineage.map((edge) => edge.fromVersionId))]);
   const ancestors = await Promise.all(
     ancestorVersions.map(async (ancestor) => {
-      const ancestorAsset = await repositories.modelAssets.getAsset(workspaceId, ancestor.asset_id);
+      const ancestorAsset = await repositories
+        .get(ModelAssetRepository)
+        .getAsset(workspaceId, ancestor.asset_id);
 
       return ancestorAsset
         ? {
             asset: toModelAsset(ancestorAsset),
             version: toModelVersion(ancestor),
-            files: (await repositories.modelAssets.listFiles(ancestor.id)).map(toModelFile),
+            files: (await repositories.get(ModelAssetRepository).listFiles(ancestor.id)).map(
+              toModelFile,
+            ),
           }
         : null;
     }),
   );
   const [files, evidence, decisions, evalRuns] = await Promise.all([
-    repositories.modelAssets.listFiles(versionId),
-    repositories.modelGovernance.listEvidence([versionId]),
-    repositories.modelGovernance.listDecisions(workspaceId, { versionIds: [versionId] }),
-    repositories.modelEvals.listRuns({ versionIds: [versionId], limit: 20 }),
+    repositories.get(ModelAssetRepository).listFiles(versionId),
+    repositories.get(ModelGovernanceRepository).listEvidence([versionId]),
+    repositories
+      .get(ModelGovernanceRepository)
+      .listDecisions(workspaceId, { versionIds: [versionId] }),
+    repositories.get(ModelEvalRepository).listRuns({ versionIds: [versionId], limit: 20 }),
   ]);
 
   return {
@@ -116,7 +129,7 @@ export async function exportBom(
   const { userId } = await requireModelAction(context, workspaceId, "view");
   const input = await bomInput(context.repositories, workspaceId, versionId, routeId);
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_version.bom_exported",
@@ -129,21 +142,22 @@ export async function exportBom(
 }
 
 async function trainingDatasets(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   versionId: string,
 ) {
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
   const datasetIds = edges
     .filter((edge) => edge.toVersionId === versionId && edge.relation === "trained_on")
     .map((edge) => edge.fromVersionId);
-  const profiles = await repositories.modelDatasets.list(workspaceId, datasetIds);
-  const versions = await repositories.modelAssets.listVersions(workspaceId, datasetIds);
+  const profiles = await repositories.get(ModelDatasetRepository).list(workspaceId, datasetIds);
+  const versions = await repositories
+    .get(ModelAssetRepository)
+    .listVersions(workspaceId, datasetIds);
   const assets = new Map(
-    (await repositories.modelAssets.listAssets(workspaceId, "dataset")).map((asset) => [
-      asset.id,
-      asset,
-    ]),
+    (await repositories.get(ModelAssetRepository).listAssets(workspaceId, "dataset")).map(
+      (asset) => [asset.id, asset],
+    ),
   );
 
   return datasetIds.map((id) => {
@@ -177,17 +191,17 @@ export async function exportModelCard(
 
   const repositories = context.repositories;
   const { version, asset } = await requireVersion(repositories, workspaceId, versionId);
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
   const base = baseEdge(edges, versionId);
   const baseVersion = base
-    ? await repositories.modelAssets.getVersion(workspaceId, base.fromVersionId)
+    ? await repositories.get(ModelAssetRepository).getVersion(workspaceId, base.fromVersionId)
     : null;
   const baseAsset = baseVersion
-    ? await repositories.modelAssets.getAsset(workspaceId, baseVersion.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, baseVersion.asset_id)
     : null;
   const [evidence, evalRuns, datasets] = await Promise.all([
-    repositories.modelGovernance.listEvidence([versionId]),
-    repositories.modelEvals.listRuns({ versionIds: [versionId], limit: 20 }),
+    repositories.get(ModelGovernanceRepository).listEvidence([versionId]),
+    repositories.get(ModelEvalRepository).listRuns({ versionIds: [versionId], limit: 20 }),
     trainingDatasets(repositories, workspaceId, versionId),
   ]);
   const provenance = evidence.find((item) => item.kind === "provenance");
@@ -226,14 +240,14 @@ export async function exportTrainingContentSummary(
 
   const repositories = context.repositories;
   const { version } = await requireVersion(repositories, workspaceId, versionId);
-  const workspace = await repositories.workspaces.getWorkspace(workspaceId);
-  const edges = await repositories.modelAssets.listLineage(workspaceId);
+  const workspace = await repositories.get(WorkspaceRepository).getWorkspace(workspaceId);
+  const edges = await repositories.get(ModelAssetRepository).listLineage(workspaceId);
   const base = baseEdge(edges, versionId);
   const baseVersion = base
-    ? await repositories.modelAssets.getVersion(workspaceId, base.fromVersionId)
+    ? await repositories.get(ModelAssetRepository).getVersion(workspaceId, base.fromVersionId)
     : null;
   const baseAsset = baseVersion
-    ? await repositories.modelAssets.getAsset(workspaceId, baseVersion.asset_id)
+    ? await repositories.get(ModelAssetRepository).getAsset(workspaceId, baseVersion.asset_id)
     : null;
   const flops = version.attributes.trainingComputeFlops;
   const compute =
@@ -282,11 +296,11 @@ export async function exportInventory(
   const repositories = context.repositories;
   const scope = await loadRegistryScope(repositories, workspaceId, null);
   const [deployments, aliases] = await Promise.all([
-    repositories.modelDeployments.list(workspaceId),
-    repositories.modelAliases.list(workspaceId),
+    repositories.get(ModelDeploymentRepository).list(workspaceId),
+    repositories.get(ModelAliasRepository).list(workspaceId),
   ]);
 
-  await repositories.audit.createRecord({
+  await repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: userId,
     action: "model_inventory.exported",

@@ -7,6 +7,7 @@ import { ai } from "~/infrastructure/ai";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -66,8 +67,9 @@ export class TrainingQualityHandler implements TaskHandler {
       let errors = 0;
 
       const scoringUser = message.user_id
-        ? ((await createServiceContext({ env }).repositories.users.getUserById(message.user_id)) ??
-          undefined)
+        ? ((await createServiceContext({ env })
+            .repositories.get(UserRepository)
+            .getUserById(message.user_id)) ?? undefined)
         : undefined;
 
       for (const example of unscoredExamples) {

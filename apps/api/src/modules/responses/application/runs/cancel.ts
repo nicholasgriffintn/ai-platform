@@ -10,6 +10,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { recordTurnCancellationRequested } from "~/modules/chat/application/streaming/continuity-telemetry";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { cancelDelegationTree } from "~/modules/delegations/application/cancel-tree";
 
 import { cleanupCancelledChatRun } from "./cancellation-cleanup";
@@ -42,7 +43,7 @@ export async function handleCancelChatRun(
     );
   }
 
-  const receipt = await context.repositories.conversationRuns.acceptCancellation({
+  const receipt = await context.repositories.get(ConversationRunRepository).acceptCancellation({
     commandId: request.command_id,
     digest: await sha256Hex(
       canonicalJson({ runId: run.id, expectedAttempt: request.expected_attempt }),

@@ -1,6 +1,7 @@
 import type { SessionStore, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import type { User } from "~/types";
 
 import { createAssistantUserStore, toAssistantAuthUser, type AssistantAuthUser } from "./authUser";
@@ -11,7 +12,7 @@ export interface AssistantSessionStores {
 }
 
 export function createAssistantSessionStores(context: ServiceContext): AssistantSessionStores {
-  const repository = context.repositories.sessions;
+  const repository = context.repositories.get(SessionRepository);
   const userStore = createAssistantUserStore(context);
   const sessionUsers = new Map<string, User>();
 

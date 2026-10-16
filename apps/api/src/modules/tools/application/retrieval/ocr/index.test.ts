@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { performOcr } from ".";
 
@@ -48,7 +50,7 @@ describe("performOcr", () => {
     const context = {
       env: {},
       user: { id: 42, plan_id: "pro" },
-      repositories: { outputs: { attachSources } },
+      repositories: fakeRepositories([[OutputRepository, { attachSources }]]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -119,7 +121,7 @@ describe("performOcr", () => {
     const context = {
       env: {},
       user: { id: 42, plan_id: "pro" },
-      repositories: { outputs: { attachSources: vi.fn() } },
+      repositories: fakeRepositories([[OutputRepository, { attachSources: vi.fn() }]]),
     } as unknown as ServiceContext;
 
     await performOcr({

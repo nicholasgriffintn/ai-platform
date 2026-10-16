@@ -5,11 +5,11 @@ const mocks = vi.hoisted(() => ({
   finishUsageReservation: vi.fn(),
 }));
 
-vi.mock("~/infrastructure/database/repositoryManager", () => ({
-  RepositoryManager: class {
-    usageReservations = {
-      listExpiredHeldReservations: mocks.listExpiredHeldReservations,
-    };
+vi.mock("~/modules/usage/infrastructure/UsageReservationRepository", () => ({
+  UsageReservationRepository: class {
+    constructor() {
+      return { listExpiredHeldReservations: mocks.listExpiredHeldReservations };
+    }
   },
 }));
 

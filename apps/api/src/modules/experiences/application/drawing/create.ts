@@ -12,6 +12,7 @@ import {
   type StoredSourceFileResult,
 } from "~/infrastructure/storage";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { drawingDescriptionPrompt } from "./prompts";
@@ -167,7 +168,7 @@ export async function generateImageFromDrawing({
     conversationResponse = await conversationManager.add(drawingId, message);
   }
 
-  const repo = serviceContext.repositories.outputs;
+  const repo = serviceContext.repositories.get(OutputRepository);
 
   const output = await repo.createOutput({
     createdByUserId: user.id,

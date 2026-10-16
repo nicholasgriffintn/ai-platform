@@ -17,8 +17,12 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/http";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
 import { buildPrivateFileUrl, getPrivateFileResourceFromUrl } from "./resource-urls";
@@ -185,7 +189,7 @@ export class StorageService {
       httpMetadata: { contentType: mimeType },
     });
     const context = this.requireResourceContext();
-    const source = await context.repositories.sources.createSource({
+    const source = await context.repositories.get(SourceRepository).createSource({
       createdByUserId,
       projectId,
       conversationId,
@@ -216,7 +220,9 @@ export class StorageService {
       let persistedOutput;
 
       try {
-        persistedOutput = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
+        persistedOutput = await context.repositories
+          .get(OutputRepository)
+          .getOutputIncludingDeleting(outputId);
       } catch {
         throw error;
       }
@@ -257,7 +263,9 @@ export class StorageService {
     byteSize,
   }: RecordOutputFileRequest): Promise<StoredOutputFileResult> {
     const context = this.requireResourceContext();
-    const project = projectId ? await context.repositories.workspaces.getProject(projectId) : null;
+    const project = projectId
+      ? await context.repositories.get(WorkspaceRepository).getProject(projectId)
+      : null;
 
     if (projectId && !project) {
       throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
@@ -280,14 +288,14 @@ export class StorageService {
       byteSize,
     };
     const output = project
-      ? await context.repositories.outputs.createOutput(outputRecord, {
+      ? await context.repositories.get(OutputRepository).createOutput(outputRecord, {
           workspaceId: project.workspace_id,
           actorUserId: createdByUserId,
           action: "output.created",
           outputId,
           metadata: { capabilityId, kind },
         })
-      : await context.repositories.outputs.createOutput(outputRecord);
+      : await context.repositories.get(OutputRepository).createOutput(outputRecord);
 
     return {
       outputId: output.id,
@@ -453,11 +461,11 @@ export class StorageService {
       throw new AssistantError("User data required for private assets", ErrorType.FORBIDDEN);
     }
 
-    const repositories = this.context?.repositories ?? new RepositoryManager(assetEnv);
+    const repositories = this.context?.repositories ?? createRepositories(assetEnv);
     const record =
       resource.kind === "source"
-        ? await repositories.sources.getSource(resource.id)
-        : await repositories.outputs.getOutput(resource.id);
+        ? await repositories.get(SourceRepository).getSource(resource.id)
+        : await repositories.get(OutputRepository).getOutput(resource.id);
 
     if (
       !record ||
@@ -469,11 +477,13 @@ export class StorageService {
     }
 
     if (record.project_id) {
-      const accessUser = await repositories.users.getUserById(ownerUserId);
-      const project = await repositories.workspaces.getProject(record.project_id);
+      const accessUser = await repositories.get(UserRepository).getUserById(ownerUserId);
+      const project = await repositories.get(WorkspaceRepository).getProject(record.project_id);
       const membership =
         hasProEntitlement(accessUser) && project
-          ? await repositories.workspaces.getMembership(project.workspace_id, ownerUserId)
+          ? await repositories
+              .get(WorkspaceRepository)
+              .getMembership(project.workspace_id, ownerUserId)
           : null;
 
       if (!membership) {

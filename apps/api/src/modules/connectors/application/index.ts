@@ -26,7 +26,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
 import {
@@ -130,11 +132,9 @@ async function readStoredToken(
   userId: number,
   providerId: RecipeConnectorProvider,
 ): Promise<{ record: ProviderConnectionRecord; token: ConnectorTokenPayload } | null> {
-  const record = await context.repositories.providerConnections.getConnection(
-    userId,
-    providerId,
-    RECIPE_CONNECTOR_CONNECTION_KIND,
-  );
+  const record = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnection(userId, providerId, RECIPE_CONNECTOR_CONNECTION_KIND);
 
   return decryptStoredToken(context, userId, providerId, record);
 }
@@ -192,12 +192,14 @@ async function writeStoredToken(params: {
     }),
     payload: { ...params.payload },
   });
-  const created = await params.context.repositories.providerConnections.upsertConnection({
-    userId: params.userId,
-    provider: params.providerId,
-    kind: RECIPE_CONNECTOR_CONNECTION_KIND,
-    encryptedData: { encrypted },
-  });
+  const created = await params.context.repositories
+    .get(ProviderConnectionRepository)
+    .upsertConnection({
+      userId: params.userId,
+      provider: params.providerId,
+      kind: RECIPE_CONNECTOR_CONNECTION_KIND,
+      encryptedData: { encrypted },
+    });
 
   return created.id;
 }
@@ -261,9 +263,9 @@ export async function listRecipeConnectors(params: {
   requestUrl?: string;
 }): Promise<{ connectors: RecipeConnectorManifest[] }> {
   params.context.ensureDatabase();
-  const connections = await params.context.repositories.providerConnections.listConnections(
-    params.userId,
-  );
+  const connections = await params.context.repositories
+    .get(ProviderConnectionRepository)
+    .listConnections(params.userId);
   const composioAccounts = isComposioConfigured(params.context.env)
     ? await listMirroredComposioAccounts(params.context, params.userId, connections)
     : [];
@@ -406,7 +408,7 @@ export async function startRecipeConnectorAuthorization(params: {
       const now = Date.now();
 
       try {
-        await params.context.repositories.composioConnectorSessions.create({
+        await params.context.repositories.get(ComposioConnectorSessionRepository).create({
           remoteSessionId: link.sessionId,
           kind: "connection",
           userId: params.userId,
@@ -550,11 +552,9 @@ export async function deleteRecipeConnectorConnection(params: {
     return { success: true };
   }
 
-  await params.context.repositories.providerConnections.deleteConnection(
-    params.userId,
-    params.provider,
-    RECIPE_CONNECTOR_CONNECTION_KIND,
-  );
+  await params.context.repositories
+    .get(ProviderConnectionRepository)
+    .deleteConnection(params.userId, params.provider, RECIPE_CONNECTOR_CONNECTION_KIND);
 
   return { success: true };
 }

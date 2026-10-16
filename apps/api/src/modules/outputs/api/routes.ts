@@ -46,6 +46,7 @@ import {
   updateOutput,
 } from "~/modules/outputs/application";
 import { listOutputReviews, reviewOutput } from "~/modules/outputs/application/review";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 const app = new Hono();
 const outputParamsSchema = z.object({ output_id: z.string().min(1) });
@@ -170,7 +171,9 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
     paramSchema: outputParamsSchema,
     responses: { 200: { description: "Output file or Markdown document" } },
     handler: async ({ params, serviceContext, user }) => {
-      const record = await serviceContext.repositories.outputs.getOutput(params.output_id);
+      const record = await serviceContext.repositories
+        .get(OutputRepository)
+        .getOutput(params.output_id);
 
       if (record?.kind === DOCUMENT_OUTPUT_KIND && !record.storage_key) {
         if (!user) {

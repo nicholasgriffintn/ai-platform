@@ -7,7 +7,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CoreChatOptions } from "~/types";
 
 export interface ConversationModelSelection {
@@ -31,9 +33,9 @@ export async function resolveConversationModelSelection(
     return { conversationExists: false };
   }
 
-  const conversation = await context.repositories.conversations.getConversation(
-    options.completion_id,
-  );
+  const conversation = await context.repositories
+    .get(ConversationRepository)
+    .getConversation(options.completion_id);
 
   if (!conversation) {
     return { conversationExists: false };
@@ -67,7 +69,7 @@ export async function resolveProjectDefaultModelTier(
     return DEFAULT_MODEL_TIER;
   }
 
-  const project = await context.repositories.workspaces.getProject(projectId);
+  const project = await context.repositories.get(WorkspaceRepository).getProject(projectId);
 
   return project?.default_model_tier ?? DEFAULT_MODEL_TIER;
 }

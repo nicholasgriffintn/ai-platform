@@ -15,6 +15,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createOutputProvenance } from "~/modules/outputs/application/provenance";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
 
 import { runSiteGeneration } from "./generate";
@@ -159,7 +160,7 @@ export async function verifySiteInBrowser(
     : evidence.checks.some((check) => check.status === "failed")
       ? "failed"
       : "passed";
-  await context.repositories.outputs.createOutput({
+  await context.repositories.get(OutputRepository).createOutput({
     createdByUserId: context.requireUser().id,
     projectId: site.projectId,
     capabilityId: "featured-sites",

@@ -4,7 +4,11 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import { toChannelBindingMessage } from "./inbound";
@@ -32,10 +36,9 @@ export async function admitChannelMessage(params: {
     return { status: "linked", linked };
   }
 
-  const binding = await context.repositories.channelBindings.getByExternalId(
-    channel,
-    incoming.externalId,
-  );
+  const binding = await context.repositories
+    .get(ChannelBindingRepository)
+    .getByExternalId(channel, incoming.externalId);
 
   if (!binding) {
     logger.info("Ignored a message from a channel that is not connected", { channel });
@@ -43,17 +46,15 @@ export async function admitChannelMessage(params: {
     return { status: "ignored", reason: "unbound_channel" };
   }
 
-  const sender = await context.repositories.channelSenders.eligibleSender(
-    binding.id,
-    incoming.from,
-    incoming.context.isDirect,
-  );
+  const sender = await context.repositories
+    .get(ChannelSenderRepository)
+    .eligibleSender(binding.id, incoming.from, incoming.context.isDirect);
 
   if (!sender) {
     return { status: "ignored", reason: "unverified_sender" };
   }
 
-  const user = await context.repositories.users.getUserById(sender.user_id);
+  const user = await context.repositories.get(UserRepository).getUserById(sender.user_id);
 
   if (!user) {
     throw new AssistantError("Channel binding owner not found", ErrorType.NOT_FOUND);
@@ -69,7 +70,7 @@ export async function admitChannelMessage(params: {
       incoming.messageId,
     ]),
   );
-  const taskService = new TaskService(params.env, context.repositories.tasks);
+  const taskService = new TaskService(params.env, context.repositories.get(TaskRepository));
   const taskId = await taskService.enqueueTask({
     id: `inbound_message_${digest.slice(0, 40)}`,
     task_type: "inbound_message",

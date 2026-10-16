@@ -10,6 +10,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import {
   requireProjectTeammate,
   requireTeammateAccess,
@@ -80,10 +81,9 @@ export async function createChannelBinding(
     }
   }
 
-  const existing = await context.repositories.channelBindings.getByExternalId(
-    input.channel,
-    externalId,
-  );
+  const existing = await context.repositories
+    .get(ChannelBindingRepository)
+    .getByExternalId(input.channel, externalId);
 
   if (existing) {
     throw new AssistantError(
@@ -93,7 +93,7 @@ export async function createChannelBinding(
     );
   }
 
-  const created = await context.repositories.channelBindings.create({
+  const created = await context.repositories.get(ChannelBindingRepository).create({
     channel: input.channel,
     scopeType,
     scopeId: input.projectId ?? String(user.id),
@@ -116,7 +116,7 @@ export async function listChannelBindings(
 ): Promise<ListPage<ChannelBinding>> {
   context.ensureDatabase();
   const user = context.requireUser();
-  const rows = await context.repositories.channelBindings.listForUser(user.id);
+  const rows = await context.repositories.get(ChannelBindingRepository).listForUser(user.id);
   const accessibleRows = hasProEntitlement(user)
     ? rows
     : rows.filter((row) => row.scope_type === "personal");
@@ -140,7 +140,7 @@ export async function deleteChannelBinding(
   const user = context.requireUser();
 
   await requireChannelBindingAccess(context, bindingId, true);
-  await context.repositories.channelBindings.delete(bindingId, user.id);
+  await context.repositories.get(ChannelBindingRepository).delete(bindingId, user.id);
 }
 
 export async function resolveChannelBinding(
@@ -148,5 +148,5 @@ export async function resolveChannelBinding(
   channel: string,
   externalId: string,
 ): Promise<ChannelBindingRow | null> {
-  return context.repositories.channelBindings.getByExternalId(channel, externalId);
+  return context.repositories.get(ChannelBindingRepository).getByExternalId(channel, externalId);
 }

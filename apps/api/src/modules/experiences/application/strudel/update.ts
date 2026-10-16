@@ -6,6 +6,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { requireOutputRecordAccess } from "~/modules/outputs/application/access";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
 
 import {
@@ -47,8 +48,8 @@ export async function updatePattern({
 
   try {
     const existing = projectId
-      ? await repositories.outputs.getProjectOutput(projectId, patternId)
-      : await repositories.outputs.getPersonalOutput(user.id, patternId);
+      ? await repositories.get(OutputRepository).getProjectOutput(projectId, patternId)
+      : await repositories.get(OutputRepository).getPersonalOutput(user.id, patternId);
 
     if (
       !existing ||
@@ -69,7 +70,7 @@ export async function updatePattern({
       tags: request.tags ?? current.tags,
     });
 
-    const updated = await repositories.outputs.updateOutput(patternId, {
+    const updated = await repositories.get(OutputRepository).updateOutput(patternId, {
       title: mergedPayload.name,
       content: mergedPayload,
       expectedRevision: existing.revision,

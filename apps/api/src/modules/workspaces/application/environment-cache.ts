@@ -13,7 +13,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import type { ProjectRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireProjectAccess } from "./access";
 
@@ -142,10 +144,12 @@ export async function invalidateProjectEnvironmentCacheForConfiguration(
       }
     : null;
 
-  await context.repositories.workspaces.invalidateProjectEnvironmentCache(
-    project.id,
-    invalidated ? JSON.stringify(invalidated) : null,
-  );
+  await context.repositories
+    .get(WorkspaceRepository)
+    .invalidateProjectEnvironmentCache(
+      project.id,
+      invalidated ? JSON.stringify(invalidated) : null,
+    );
 
   if (cache && (await deleteBackupObjects(context, cache)) === "failed") {
     logger.error("Project configuration changed but its old environment snapshot was not deleted", {
@@ -172,14 +176,13 @@ export async function applyProjectEnvironmentCacheAction(
       }
     : null;
 
-  await context.repositories.workspaces.invalidateProjectEnvironmentCache(
-    projectId,
-    invalidated ? JSON.stringify(invalidated) : null,
-  );
+  await context.repositories
+    .get(WorkspaceRepository)
+    .invalidateProjectEnvironmentCache(projectId, invalidated ? JSON.stringify(invalidated) : null);
 
   const storageDeletion = cache ? await deleteBackupObjects(context, cache) : "not_found";
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action:
@@ -211,7 +214,9 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
   candidateWasReused?: boolean;
   replaceExistingCache?: boolean;
 }): Promise<void> {
-  const project = await params.context.repositories.workspaces.getProject(params.projectId);
+  const project = await params.context.repositories
+    .get(WorkspaceRepository)
+    .getProject(params.projectId);
 
   if (!project) {
     if (!params.candidateWasReused) {
@@ -221,10 +226,9 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
     return;
   }
 
-  const membership = await params.context.repositories.workspaces.getMembership(
-    project.workspace_id,
-    params.userId,
-  );
+  const membership = await params.context.repositories
+    .get(WorkspaceRepository)
+    .getMembership(project.workspace_id, params.userId);
   const generation = project.coding_cache_generation ?? 0;
   const setupIsCurrent = Boolean(parseEnvironmentSetup(project));
   const boundaryMatches =
@@ -252,8 +256,9 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
           ...params.candidate,
           sizeBytes: await getBackupSize(params.context, params.candidate),
         };
-        const replaced =
-          await params.context.repositories.workspaces.replaceProjectEnvironmentCache(
+        const replaced = await params.context.repositories
+          .get(WorkspaceRepository)
+          .replaceProjectEnvironmentCache(
             params.projectId,
             generation,
             current.backup.id,
@@ -272,12 +277,14 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
       return;
     }
 
-    await params.context.repositories.workspaces.touchProjectEnvironmentCache(
-      params.projectId,
-      generation,
-      current.backup.id,
-      JSON.stringify(params.candidate),
-    );
+    await params.context.repositories
+      .get(WorkspaceRepository)
+      .touchProjectEnvironmentCache(
+        params.projectId,
+        generation,
+        current.backup.id,
+        JSON.stringify(params.candidate),
+      );
 
     return;
   }
@@ -287,12 +294,14 @@ export async function persistProjectEnvironmentCacheCandidate(params: {
     ...params.candidate,
     sizeBytes,
   };
-  const stored = await params.context.repositories.workspaces.storeProjectEnvironmentCache(
-    params.projectId,
-    generation,
-    candidate.cacheKey,
-    JSON.stringify(candidate),
-  );
+  const stored = await params.context.repositories
+    .get(WorkspaceRepository)
+    .storeProjectEnvironmentCache(
+      params.projectId,
+      generation,
+      candidate.cacheKey,
+      JSON.stringify(candidate),
+    );
 
   if (!stored) {
     await deleteBackupObjects(params.context, candidate);

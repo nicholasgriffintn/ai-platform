@@ -3,11 +3,13 @@ import { PENDING, type PollOutcome } from "@ngriffin_uk/polychat-ai-workflows";
 import { TRANSITIONAL_DEPLOYMENT_STATUSES } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { assertProviderCreationPending } from "~/modules/model-governance/application/provider-creation";
 import { toAssistantError } from "~/modules/model-governance/application/provider-errors";
 import { accrueDeploymentCost } from "~/modules/model-governance/application/spend";
 import { requireUsableVersion } from "~/modules/model-registry/application/scope";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
 import { deleteProviderDeployment } from "./deletion";
@@ -18,24 +20,24 @@ const logger = getLogger({ prefix: "modules/model-serving/sync" });
 
 const TRANSITIONAL = new Set(TRANSITIONAL_DEPLOYMENT_STATUSES);
 
-async function retireRoute(repositories: RepositoryManager, deployment: ModelDeploymentRecord) {
+async function retireRoute(repositories: Repositories, deployment: ModelDeploymentRecord) {
   if (deployment.route_id) {
-    await repositories.modelRoutes.setStatus(deployment.route_id, "retired");
+    await repositories.get(ModelRouteRepository).setStatus(deployment.route_id, "retired");
   }
 }
 
 async function accrue(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deployment: ModelDeploymentRecord,
 ): Promise<void> {
   await accrueDeploymentCost(repositories, deployment, isDeploymentBillable(deployment));
 }
 
 export async function syncDeployment(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   deploymentId: string,
 ): Promise<PollOutcome> {
-  let deployment = await repositories.modelDeployments.getById(deploymentId);
+  let deployment = await repositories.get(ModelDeploymentRepository).getById(deploymentId);
 
   if (!deployment || deployment.status === "deleted") {
     return { status: "success", message: "Nothing to sync" };
@@ -51,7 +53,7 @@ export async function syncDeployment(
     await accrue(repositories, deployment);
 
     if (!deployment.provider_ref && deployment.desired_state === "paused") {
-      await repositories.modelDeployments.update(deployment.id, {
+      await repositories.get(ModelDeploymentRepository).update(deployment.id, {
         status: "paused",
         hourly_usd: 0,
         failure_reason: null,
@@ -83,7 +85,9 @@ export async function syncDeployment(
     const { host, hosted, model, adapters } = await hostFor(repositories, deployment);
 
     if (!hosted) {
-      const claimed = await repositories.modelDeployments.claimProvisioning(deployment.id);
+      const claimed = await repositories
+        .get(ModelDeploymentRepository)
+        .claimProvisioning(deployment.id);
 
       if (!claimed) {
         return PENDING;
@@ -126,7 +130,7 @@ export async function syncDeployment(
     const reason = getErrorMessage(toAssistantError(error), "Sync failed");
 
     logger.warn("Deployment sync failed", { deploymentId, error: reason });
-    await repositories.modelDeployments.update(deployment.id, {
+    await repositories.get(ModelDeploymentRepository).update(deployment.id, {
       failure_reason: reason,
       last_checked_at: new Date().toISOString(),
       ...(deployment.provider_ref ? {} : { status: "failed" as const }),

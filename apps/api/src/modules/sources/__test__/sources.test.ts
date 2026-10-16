@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type {
   SourceCollectionRecord,
   SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import {
   addCollectionSources,
@@ -69,12 +71,15 @@ describe("source deletion", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue(memory),
-          deleteSource: deleteSourceRow,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue(memory),
+            deleteSource: deleteSourceRow,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteSource(context, 42, memory.id);
@@ -92,12 +97,15 @@ describe("source deletion", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue(memory),
-          deleteSource: deleteSourceRow,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue(memory),
+            deleteSource: deleteSourceRow,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(deleteSource(context, 42, memory.id)).rejects.toMatchObject({
@@ -112,12 +120,15 @@ describe("source deletion", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue(migratedMemory),
-          deleteSource: vi.fn(),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue(migratedMemory),
+            deleteSource: vi.fn(),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteSource(context, 42, migratedMemory.id);
@@ -135,11 +146,14 @@ describe("source deletion", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue(projectMemory),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue(projectMemory),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteSource(context, 42, projectMemory.id);
@@ -161,12 +175,15 @@ describe("memory source updates", () => {
   it("rejects public mutation of managed memory lifecycle and provenance", async () => {
     const updateSourceRow = vi.fn();
     const context = {
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValue(memory),
-          updateSource: updateSourceRow,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValue(memory),
+            updateSource: updateSourceRow,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -190,12 +207,15 @@ describe("memory source updates", () => {
     };
     const updateSourceRow = vi.fn().mockResolvedValue(undefined);
     const context = {
-      repositories: {
-        sources: {
-          getSource: vi.fn().mockResolvedValueOnce(memory).mockResolvedValueOnce(updated),
-          updateSource: updateSourceRow,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSource: vi.fn().mockResolvedValueOnce(memory).mockResolvedValueOnce(updated),
+            updateSource: updateSourceRow,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const result = await updateSource(context, 42, memory.id, { title: "Concise answers" });
@@ -239,15 +259,18 @@ describe("project conversation context", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
-          ensureProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
-          replaceCollectionSources,
-          getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
-          listCollectionSources: vi.fn().mockResolvedValue([projectSource]),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
+            ensureProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+            replaceCollectionSources,
+            getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+            listCollectionSources: vi.fn().mockResolvedValue([projectSource]),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const result = await setProjectContextSources(context, 42, "project-1", [projectSource.id]);
@@ -270,15 +293,18 @@ describe("project conversation context", () => {
       title: "Launch fact",
     };
     const context = {
-      repositories: {
-        sources: {
-          getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
-          listProjectSources: vi.fn().mockResolvedValue([memorySource]),
-          listCollectionSources: vi
-            .fn()
-            .mockResolvedValue([projectSource, { ...projectSource, status: "failed" }]),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getProjectContextCollection: vi.fn().mockResolvedValue(contextCollection),
+            listProjectSources: vi.fn().mockResolvedValue([memorySource]),
+            listCollectionSources: vi
+              .fn()
+              .mockResolvedValue([projectSource, { ...projectSource, status: "failed" }]),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const result = await listProjectConversationSources(context, 42, "project-1");
@@ -291,7 +317,7 @@ describe("project conversation context", () => {
 
   it("rejects duplicate project context source identifiers", async () => {
     const context = {
-      repositories: { sources: { getSource: vi.fn() } },
+      repositories: fakeRepositories([[SourceRepository, { getSource: vi.fn() }]]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -303,21 +329,26 @@ describe("project conversation context", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSourcesByIds: vi
-            .fn()
-            .mockResolvedValue([{ ...projectSource, project_id: "project-2" }]),
-          ensureProjectContextCollection: vi.fn(),
-          replaceCollectionSources: vi.fn(),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi
+              .fn()
+              .mockResolvedValue([{ ...projectSource, project_id: "project-2" }]),
+            ensureProjectContextCollection: vi.fn(),
+            replaceCollectionSources: vi.fn(),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
       setProjectContextSources(context, 42, "project-1", [projectSource.id]),
     ).rejects.toMatchObject({ statusCode: 400 });
-    expect(context.repositories.sources.replaceCollectionSources).not.toHaveBeenCalled();
+    expect(
+      context.repositories.get(SourceRepository).replaceCollectionSources,
+    ).not.toHaveBeenCalled();
   });
 
   it("rejects the whole batch when one of several source ids is missing", async () => {
@@ -325,19 +356,24 @@ describe("project conversation context", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
-          ensureProjectContextCollection: vi.fn(),
-          replaceCollectionSources: vi.fn(),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
+            ensureProjectContextCollection: vi.fn(),
+            replaceCollectionSources: vi.fn(),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
       setProjectContextSources(context, 42, "project-1", [projectSource.id, otherSource.id]),
     ).rejects.toMatchObject({ statusCode: 404 });
-    expect(context.repositories.sources.replaceCollectionSources).not.toHaveBeenCalled();
+    expect(
+      context.repositories.get(SourceRepository).replaceCollectionSources,
+    ).not.toHaveBeenCalled();
   });
 
   it("validates every source id in a batch and checks project access once per project", async () => {
@@ -345,19 +381,22 @@ describe("project conversation context", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getSourcesByIds: vi
-            .fn()
-            .mockResolvedValue([projectSource, { ...projectSource, id: "source-2" }]),
-          addCollectionSources: addCollectionSourcesRepo,
-          getCollection: vi.fn().mockResolvedValue({
-            id: contextCollection.id,
-            project_id: "project-1",
-            created_by_user_id: 42,
-          }),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi
+              .fn()
+              .mockResolvedValue([projectSource, { ...projectSource, id: "source-2" }]),
+            addCollectionSources: addCollectionSourcesRepo,
+            getCollection: vi.fn().mockResolvedValue({
+              id: contextCollection.id,
+              project_id: "project-1",
+              created_by_user_id: 42,
+            }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const result = await addCollectionSources(context, 42, contextCollection.id, [
@@ -378,12 +417,15 @@ describe("project conversation context", () => {
     const context = {
       env: {},
       user: { id: 42 },
-      repositories: {
-        sources: {
-          getCollection: vi.fn().mockResolvedValue(contextCollection),
-          deleteCollection,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getCollection: vi.fn().mockResolvedValue(contextCollection),
+            deleteCollection,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(deleteSourceCollection(context, 42, contextCollection.id)).rejects.toMatchObject({

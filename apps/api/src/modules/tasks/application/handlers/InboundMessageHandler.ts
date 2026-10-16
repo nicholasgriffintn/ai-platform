@@ -6,6 +6,7 @@ import {
   isInboundBindingTaskData,
   parseInboundChannelTaskData,
 } from "~/modules/channels/application/inbound";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
@@ -25,7 +26,7 @@ export class InboundMessageHandler implements TaskHandler {
     }
 
     const baseContext = createServiceContext({ env });
-    const user = await baseContext.repositories.users.getUserById(message.user_id);
+    const user = await baseContext.repositories.get(UserRepository).getUserById(message.user_id);
 
     if (!user) {
       return {

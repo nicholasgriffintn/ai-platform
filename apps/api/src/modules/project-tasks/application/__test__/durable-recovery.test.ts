@@ -22,6 +22,13 @@ vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   acquireThread: mocks.acquireThread,
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
+import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
+
 import { recoverRedeliveredProjectTaskRun } from "../runner";
 
 function run(status: ChatRun["status"]): ChatRun {
@@ -56,24 +63,30 @@ function setup(current: ChatRun, transitioned: ChatRun | null = null) {
   };
   const context = {
     env: {},
-    repositories: {
-      conversationRuns: {
-        getById: vi.fn().mockResolvedValue(current),
-        transition: vi.fn().mockResolvedValue(transitioned),
-      },
-      messages: {
-        getLatestPendingToolMessage: vi.fn().mockResolvedValue({
-          id: "interaction-1",
-          name: "ask_user",
-          timestamp: Date.now(),
-          data: { humanInTheLoop: { status: "pending" } },
-        }),
-        updateMessage: vi.fn(),
-      },
-      usageReservations: {},
-      usageBalances: {},
-      composioConnectorSessions: {},
-    },
+    repositories: fakeRepositories([
+      [
+        ConversationRunRepository,
+        {
+          getById: vi.fn().mockResolvedValue(current),
+          transition: vi.fn().mockResolvedValue(transitioned),
+        },
+      ],
+      [
+        MessageRepository,
+        {
+          getLatestPendingToolMessage: vi.fn().mockResolvedValue({
+            id: "interaction-1",
+            name: "ask_user",
+            timestamp: Date.now(),
+            data: { humanInTheLoop: { status: "pending" } },
+          }),
+          updateMessage: vi.fn(),
+        },
+      ],
+      [UsageReservationRepository, {}],
+      [UsageBalanceRepository, {}],
+      [ComposioConnectorSessionRepository, {}],
+    ]),
   } as unknown as ServiceContext;
 
   mocks.acquireThread.mockResolvedValue({ acquired: true, lease: threadLease });
@@ -105,7 +118,7 @@ describe("durable project-task run recovery", () => {
     });
 
     expect(recovered.status).toBe("interrupted");
-    expect(context.repositories.conversationRuns.transition).toHaveBeenCalledWith(
+    expect(context.repositories.get(ConversationRunRepository).transition).toHaveBeenCalledWith(
       expect.objectContaining({ runId: "run-1", status: "interrupted" }),
     );
     expect(mocks.finishUsageReservation).toHaveBeenCalledWith(
@@ -130,7 +143,7 @@ describe("durable project-task run recovery", () => {
       });
 
       expect(recovered).toEqual(current);
-      expect(context.repositories.conversationRuns.transition).not.toHaveBeenCalled();
+      expect(context.repositories.get(ConversationRunRepository).transition).not.toHaveBeenCalled();
       expect(mocks.finishUsageReservation).toHaveBeenCalledOnce();
       expect(mocks.scheduleComposioConnectorRunCleanup).not.toHaveBeenCalled();
     },
@@ -141,7 +154,9 @@ describe("durable project-task run recovery", () => {
     const failed: ChatRun = { ...current, status: "failed" };
     const { context, executionLease } = setup(current, failed);
 
-    vi.mocked(context.repositories.messages.getLatestPendingToolMessage).mockResolvedValueOnce({
+    vi.mocked(
+      context.repositories.get(MessageRepository).getLatestPendingToolMessage,
+    ).mockResolvedValueOnce({
       id: "interaction-1",
       name: "ask_user",
       created_at: "2000-01-01T00:00:00.000Z",
@@ -156,7 +171,7 @@ describe("durable project-task run recovery", () => {
         run: current,
       }),
     ).resolves.toEqual(failed);
-    expect(context.repositories.messages.updateMessage).toHaveBeenCalledWith(
+    expect(context.repositories.get(MessageRepository).updateMessage).toHaveBeenCalledWith(
       current.conversationId,
       "interaction-1",
       expect.objectContaining({
@@ -169,7 +184,7 @@ describe("durable project-task run recovery", () => {
         }),
       }),
     );
-    expect(context.repositories.conversationRuns.transition).toHaveBeenCalledWith(
+    expect(context.repositories.get(ConversationRunRepository).transition).toHaveBeenCalledWith(
       expect.objectContaining({ runId: current.id, attempt: current.attempt, status: "failed" }),
     );
   });

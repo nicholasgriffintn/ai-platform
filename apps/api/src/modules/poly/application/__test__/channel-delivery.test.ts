@@ -2,7 +2,9 @@ import { POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
+import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import type { IUser } from "~/types";
 
 import { sendPolyNotificationToChannels } from "../channel-delivery";
@@ -39,7 +41,9 @@ function binding(overrides: Partial<ChannelBindingRow>): ChannelBindingRow {
 function context(bindings: ChannelBindingRow[]) {
   return {
     env: { TELEGRAM_BOT_TOKEN: "telegram-secret", SLACK_BOT_TOKEN: "slack-secret" },
-    repositories: { channelBindings: { listForUser: async () => bindings } },
+    repositories: fakeRepositories([
+      [ChannelBindingRepository, { listForUser: async () => bindings }],
+    ]),
   } as unknown as ServiceContext;
 }
 

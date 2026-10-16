@@ -10,6 +10,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { resolveSandboxModel } from "~/modules/sandbox/application/worker";
 import { resolveProjectEnvironmentCacheForRun } from "~/modules/workspaces/application/environment-cache";
 import type { IEnv, IUser } from "~/types";
@@ -103,7 +104,7 @@ export async function executeSandboxRunStream(
     workflowPhase: "queued",
   };
 
-  const createdRecord = await serviceContext.repositories.activities.createActivity({
+  const createdRecord = await serviceContext.repositories.get(ActivityRepository).createActivity({
     createdByUserId: user.id,
     projectId,
     conversationId,
@@ -187,7 +188,7 @@ export async function executeSandboxRunStream(
       workflowPhase: "dispatching",
     };
 
-    await serviceContext.repositories.activities.updateActivity(createdRecord.id, {
+    await serviceContext.repositories.get(ActivityRepository).updateActivity(createdRecord.id, {
       status: getSandboxActivityStatus(queuedRun.status),
       data: queuedRun,
     });
@@ -211,7 +212,7 @@ export async function executeSandboxRunStream(
       workflowPhase: "failed",
     };
 
-    await serviceContext.repositories.activities.updateActivity(createdRecord.id, {
+    await serviceContext.repositories.get(ActivityRepository).updateActivity(createdRecord.id, {
       status: getSandboxActivityStatus(failedRun.status),
       data: failedRun,
     });

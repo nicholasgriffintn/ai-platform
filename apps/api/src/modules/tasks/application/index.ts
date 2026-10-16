@@ -3,13 +3,14 @@ import { listPageOf } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 import { presentPublicTask } from "./task-presentation";
 import { TaskService } from "./TaskService";
 import { isAccountVisibleTask } from "./taskVisibility";
 
 export async function listUserTasks(context: ServiceContext, userId: number) {
-  const tasks = (await context.repositories.tasks.getTasksByUserId(userId)).filter(
+  const tasks = (await context.repositories.get(TaskRepository).getTasksByUserId(userId)).filter(
     isAccountVisibleTask,
   );
 
@@ -17,25 +18,25 @@ export async function listUserTasks(context: ServiceContext, userId: number) {
 }
 
 export async function getUserTask(context: ServiceContext, userId: number, taskId: string) {
-  const task = await context.repositories.tasks.getTaskById(taskId);
+  const task = await context.repositories.get(TaskRepository).getTaskById(taskId);
 
   if (!task || !ownsResource(userId, task.user_id)) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const executions = await context.repositories.tasks.getTaskExecutions(taskId);
+  const executions = await context.repositories.get(TaskRepository).getTaskExecutions(taskId);
 
   return { task: presentPublicTask(task), executions };
 }
 
 export async function cancelUserTask(context: ServiceContext, userId: number, taskId: string) {
-  const task = await context.repositories.tasks.getTaskById(taskId);
+  const task = await context.repositories.get(TaskRepository).getTaskById(taskId);
 
   if (!task || !ownsResource(userId, task.user_id)) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const taskService = new TaskService(context.env, context.repositories.tasks);
+  const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));
   const cancelled = await taskService.cancelTask(taskId);
 
   if (!cancelled) {

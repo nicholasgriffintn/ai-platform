@@ -21,9 +21,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import { resolveHubAccess } from "~/modules/model-governance/application/connections";
 import { preflightWorkspaceSpend } from "~/modules/model-governance/application/spend";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
 import {
   notFound,
   requireModelAction,
@@ -52,13 +55,17 @@ export interface TrainingInputs {
 }
 
 export async function loadTrainingInputs(
-  repositories: RepositoryManager,
+  repositories: Repositories,
   workspaceId: string,
   datasetVersionId: string | null,
   graderId: string | null,
 ): Promise<TrainingInputs> {
-  const profile = datasetVersionId ? await repositories.modelDatasets.get(datasetVersionId) : null;
-  const grader = graderId ? await repositories.modelGraders.get(workspaceId, graderId) : null;
+  const profile = datasetVersionId
+    ? await repositories.get(ModelDatasetRepository).get(datasetVersionId)
+    : null;
+  const grader = graderId
+    ? await repositories.get(ModelGraderRepository).get(workspaceId, graderId)
+    : null;
 
   if (datasetVersionId && (!profile || profile.workspace_id !== workspaceId)) {
     throw notFound("Dataset");
@@ -130,7 +137,9 @@ export async function planTraining(
     generationsPerPrompt: request.hyperparameters.generationsPerPrompt,
   });
   const location = weightsLocation(baseAsset, base);
-  const connections = await repositories.modelConnections.listConnections(workspaceId);
+  const connections = await repositories
+    .get(ModelConnectionRepository)
+    .listConnections(workspaceId);
   const options = resolveTrainerOptions({
     manifests: listProviderManifests(),
     connections: connections.map((connection) => ({

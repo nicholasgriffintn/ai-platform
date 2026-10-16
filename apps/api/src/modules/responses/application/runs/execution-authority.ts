@@ -2,13 +2,16 @@ import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 
 export async function requireActiveExecutionRun(context: ServiceContext): Promise<void> {
   if (!context.executionRunId || context.executionRunAttempt === undefined) {
     return;
   }
 
-  const run = await context.repositories.conversationRuns.getById(context.executionRunId);
+  const run = await context.repositories
+    .get(ConversationRunRepository)
+    .getById(context.executionRunId);
 
   const isAuthorised = authorise("run.effect", {
     exists: Boolean(run),

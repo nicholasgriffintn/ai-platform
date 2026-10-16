@@ -5,6 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 
 import { reconcileInactiveChatRun } from "./recovery";
 import { handleGetChatRunSnapshot, requireChatRunAccess } from "./status";
@@ -15,7 +16,7 @@ export async function handleReplayChatRunEvents(
   query: ChatRunReplayQuery,
 ): Promise<ChatRunReplayResponse> {
   await reconcileInactiveChatRun(context, await requireChatRunAccess(context, runId));
-  const window = await context.repositories.conversationRuns.getEventWindow(runId);
+  const window = await context.repositories.get(ConversationRunRepository).getEventWindow(runId);
   const retentionGap = window.oldest !== null && query.after < window.oldest - 1;
   const invalidFutureCursor = query.after > window.latest;
   const missingRetainedEvents = window.oldest === null && window.latest > 0;
@@ -34,11 +35,9 @@ export async function handleReplayChatRunEvents(
     };
   }
 
-  const events = await context.repositories.conversationRuns.listEvents(
-    runId,
-    query.after,
-    query.limit,
-  );
+  const events = await context.repositories
+    .get(ConversationRunRepository)
+    .listEvents(runId, query.after, query.limit);
 
   const replayGap = events.some((event, index) => event.sequence !== query.after + index + 1);
   const missingPage = query.after < window.latest && events.length === 0;

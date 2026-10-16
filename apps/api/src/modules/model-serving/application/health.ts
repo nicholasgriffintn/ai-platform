@@ -1,8 +1,12 @@
 import type { RouteHealth } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import { notFound, requireModelAction } from "~/modules/model-registry/application/access";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 
 const HEALTH_WINDOW_DAYS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -15,7 +19,7 @@ export async function getRouteHealth(
   await requireModelAction(context, workspaceId, "view");
 
   const repositories = context.repositories;
-  const route = await repositories.modelRoutes.getRoute(workspaceId, routeId);
+  const route = await repositories.get(ModelRouteRepository).getRoute(workspaceId, routeId);
 
   if (!route) {
     throw notFound("Route");
@@ -27,27 +31,30 @@ export async function getRouteHealth(
   ].filter((value): value is string => typeof value === "string");
   const since = new Date(Date.now() - HEALTH_WINDOW_DAYS * DAY_MS).toISOString();
   const [usage, runs] = await Promise.all([
-    repositories.usageEvents.summariseModelUsage({
+    repositories.get(UsageEventRepository).summariseModelUsage({
       workspaceId,
       vendor: route.provider,
       resources,
       since,
     }),
-    repositories.modelEvals.listRuns({ routeIds: [route.id], limit: 100 }),
+    repositories.get(ModelEvalRepository).listRuns({ routeIds: [route.id], limit: 100 }),
   ]);
   const completed = runs.filter((run) => run.status === "completed");
   const suites = new Map(
     await Promise.all(
       [...new Set(completed.map((run) => run.suite_id))].map(
-        async (suiteId) => [suiteId, await repositories.modelEvals.getSuiteById(suiteId)] as const,
+        async (suiteId) =>
+          [suiteId, await repositories.get(ModelEvalRepository).getSuiteById(suiteId)] as const,
       ),
     ),
   );
   const graders = new Map(
     (
-      await repositories.modelGraders.listByIds([
-        ...new Set([...suites.values()].flatMap((suite) => suite?.grader_ids.slice(0, 1) ?? [])),
-      ])
+      await repositories
+        .get(ModelGraderRepository)
+        .listByIds([
+          ...new Set([...suites.values()].flatMap((suite) => suite?.grader_ids.slice(0, 1) ?? [])),
+        ])
     ).map((grader) => [grader.id, grader.metric] as const),
   );
   const primaryMetric = (suiteId: string) => {

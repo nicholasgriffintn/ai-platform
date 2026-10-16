@@ -14,7 +14,10 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { IUser, Message } from "~/types";
 
 import { getRecipeConnectorAdapter } from "./connector-adapters";
@@ -124,7 +127,7 @@ async function projectExecutionResult(
     failReplay("The stored connector result is invalid");
   }
 
-  await context.repositories.messages.createProjectedMessage(completionId, {
+  await context.repositories.get(MessageRepository).createProjectedMessage(completionId, {
     id: result.id,
     role: result.role,
     content: result.content,
@@ -324,10 +327,9 @@ async function waitForConcurrentResult(params: {
       return result;
     }
 
-    const approval = await params.context.repositories.connectorOperationApprovals.getByIdForUser(
-      params.approvalId,
-      params.userId,
-    );
+    const approval = await params.context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .getByIdForUser(params.approvalId, params.userId);
     const journalled = approval
       ? parseExecutionResult(approval.executionResult, params.boundary)
       : null;
@@ -399,7 +401,7 @@ export async function replayApprovedConnectorOperation(params: {
     includeArchived: false,
   });
   const boundary = findReplayBoundary(messages, approval.id);
-  const run = await context.repositories.conversationRuns.getById(approval.runId);
+  const run = await context.repositories.get(ConversationRunRepository).getById(approval.runId);
 
   if (
     !run ||
@@ -492,8 +494,9 @@ export async function replayApprovedConnectorOperation(params: {
 
     if (!terminalResult) {
       const indeterminate = buildIndeterminateResult(boundary, approval.id);
-      const recorded =
-        await context.repositories.connectorOperationApprovals.recordIndeterminateExecution({
+      const recorded = await context.repositories
+        .get(ConnectorOperationApprovalRepository)
+        .recordIndeterminateExecution({
           id: approval.id,
           userId: user.id,
           observedAt: new Date().toISOString(),
@@ -580,10 +583,9 @@ export async function replayApprovedConnectorOperation(params: {
     typeof toolResult.content === "string" &&
     toolResult.content.includes("already used, or does not match this action")
   ) {
-    const refreshedApproval = await context.repositories.connectorOperationApprovals.getByIdForUser(
-      approval.id,
-      user.id,
-    );
+    const refreshedApproval = await context.repositories
+      .get(ConnectorOperationApprovalRepository)
+      .getByIdForUser(approval.id, user.id);
 
     if (refreshedApproval?.state === "consumed") {
       const winnerResult = await waitForConcurrentResult({
@@ -606,12 +608,14 @@ export async function replayApprovedConnectorOperation(params: {
     failIndeterminate();
   }
 
-  const recorded = await context.repositories.connectorOperationApprovals.recordExecutionResult({
-    id: approval.id,
-    userId: user.id,
-    executionToken,
-    result: serialiseExecutionResult(toolResult),
-  });
+  const recorded = await context.repositories
+    .get(ConnectorOperationApprovalRepository)
+    .recordExecutionResult({
+      id: approval.id,
+      userId: user.id,
+      executionToken,
+      result: serialiseExecutionResult(toolResult),
+    });
 
   if (!recorded) {
     failIndeterminate();

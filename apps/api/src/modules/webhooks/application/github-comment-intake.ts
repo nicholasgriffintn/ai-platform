@@ -7,6 +7,8 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { extractSandboxCommand } from "~/infrastructure/github";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { startPullRequestReview } from "~/modules/project-tasks/application/pull-request-review";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import {
   executeWebhookSandboxCommand,
@@ -37,7 +39,9 @@ export async function processGithubComment(context: ServiceContext, raw: unknown
     return { success: true };
   }
 
-  const user = await context.repositories.users.getUserByGithubId(String(data.comment.user.id));
+  const user = await context.repositories
+    .get(UserRepository)
+    .getUserByGithubId(String(data.comment.user.id));
 
   if (!user) {
     return { success: true };
@@ -96,11 +100,9 @@ async function startCommentReview(
   userId: number,
 ): Promise<SandboxExecutionResult> {
   const policies = (
-    await context.repositories.projectTaskIntegrations.listPolicies(
-      "github",
-      String(data.installation.id),
-      data.repository.full_name.toLowerCase(),
-    )
+    await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .listPolicies("github", String(data.installation.id), data.repository.full_name.toLowerCase())
   ).filter((policy) => policy.ownerUserId === userId);
 
   if (policies.length !== 1) {

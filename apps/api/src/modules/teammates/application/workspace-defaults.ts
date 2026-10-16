@@ -2,7 +2,11 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { TeammateFeedbackRepository } from "~/modules/teammates/infrastructure/TeammateFeedbackRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireTeammateAccess, TEAMMATE_CAPABILITY_KIND } from "./access";
 import { archiveProjectTeammateContexts } from "./context-lifecycle";
@@ -20,7 +24,7 @@ export async function removeInheritedTeammateFromProject(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
-  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
+  const teammate = await context.repositories.get(TeammateRepository).getTeammateById(teammateId);
   const isPlatformDefault = teammate?.owner_scope_type === "platform";
   const isWorkspaceDefault =
     teammate?.owner_scope_type === "workspace" && teammate.owner_scope_id === project.workspace_id;
@@ -33,7 +37,7 @@ export async function removeInheritedTeammateFromProject(
     );
   }
 
-  await context.repositories.workspaces.addProjectCapability({
+  await context.repositories.get(WorkspaceRepository).addProjectCapability({
     id: generateId(),
     projectId,
     kind: TEAMMATE_CAPABILITY_KIND,
@@ -43,7 +47,7 @@ export async function removeInheritedTeammateFromProject(
   });
   await archiveProjectTeammateContexts(context, projectId, teammateId);
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.teammate.removed",
@@ -62,13 +66,11 @@ export async function restoreInheritedTeammateToProject(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
-  await context.repositories.workspaces.removeProjectCapabilityByCapabilityId(
-    projectId,
-    TEAMMATE_CAPABILITY_KIND,
-    teammateId,
-  );
+  await context.repositories
+    .get(WorkspaceRepository)
+    .removeProjectCapabilityByCapabilityId(projectId, TEAMMATE_CAPABILITY_KIND, teammateId);
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.teammate.restored",
@@ -87,7 +89,7 @@ export async function recordTeammateFeedback(
   const user = context.requireUser();
 
   await requireTeammateAccess(context, teammateId, "read", user.id);
-  await context.repositories.teammateFeedback.record({
+  await context.repositories.get(TeammateFeedbackRepository).record({
     teammateId,
     userId: user.id,
     conversationId: input.conversationId ?? null,

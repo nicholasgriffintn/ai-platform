@@ -2,9 +2,11 @@ import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { getGitHubAppInstallationToken } from "~/infrastructure/github";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { encryptGitHubConnectionPayload } from "../connection-crypto";
 import {
@@ -77,11 +79,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          listConnections,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            listConnections,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const connection = await getGitHubAppConnectionForUserRepo(context, USER_ID, "owner/repo");
@@ -105,11 +110,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          getConnectionByExternalId,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            getConnectionByExternalId,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const connection = await getGitHubAppConnectionForInstallation(context, 3001);
@@ -132,11 +140,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          getConnection,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            getConnection,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const connection = await getGitHubAppConnectionForUserInstallation(context, USER_ID, 8001);
@@ -158,7 +169,7 @@ describe("github connections", () => {
     );
     const context = {
       env: { JWT_SECRET },
-      repositories: { providerConnections: { getConnection } },
+      repositories: fakeRepositories([[ProviderConnectionRepository, { getConnection }]]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -176,7 +187,7 @@ describe("github connections", () => {
     );
     const context = {
       env: { JWT_SECRET },
-      repositories: { providerConnections: { getConnection } },
+      repositories: fakeRepositories([[ProviderConnectionRepository, { getConnection }]]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -207,11 +218,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          listConnections,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            listConnections,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const summaries = await listGitHubAppConnectionsForUser(context, USER_ID);
@@ -256,11 +270,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          getConnection,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            getConnection,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const repositories = await listGitHubInstallationRepositoriesForUser(context, USER_ID, 8002);
@@ -289,11 +306,14 @@ describe("github connections", () => {
 
     const context = {
       env: { JWT_SECRET },
-      repositories: {
-        providerConnections: {
-          listConnections,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            listConnections,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(listGitHubAppConnectionsForUser(context, USER_ID)).rejects.toMatchObject({
@@ -314,11 +334,14 @@ describe("github connections", () => {
 
     const context = {
       env: {},
-      repositories: {
-        providerConnections: {
-          getConnectionByExternalId,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ProviderConnectionRepository,
+          {
+            getConnectionByExternalId,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(getGitHubAppConnectionForInstallation(context, 3001)).rejects.toThrow(

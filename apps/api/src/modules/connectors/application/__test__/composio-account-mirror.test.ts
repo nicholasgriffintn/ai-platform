@@ -15,7 +15,9 @@ vi.mock("../connector-adapters", () => ({
 }));
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { listMirroredComposioAccounts } from "../composio-account-mirror";
 
@@ -76,7 +78,7 @@ function context() {
     context: {
       env: {},
       waitUntil,
-      repositories: { providerConnections: { upsertConnection } },
+      repositories: fakeRepositories([[ProviderConnectionRepository, { upsertConnection }]]),
     } as unknown as ServiceContext,
   };
 }

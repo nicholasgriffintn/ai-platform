@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+
 import { proxySandboxBranchDelivery } from "./credential-broker";
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
 
@@ -28,23 +31,26 @@ async function directDeliveryRequest() {
     access,
     context: {
       env,
-      repositories: {
-        activities: {
-          getActivityByGroup: vi.fn(async () => ({
-            created_by_user_id: 7,
-            data: JSON.stringify({
-              runId: "run-123",
-              installationId: 42,
-              repo: "owner/repository",
-              task: "Implement the change",
-              model: "gpt-6-astra",
-              status: "running",
-              startedAt: "2026-09-12T12:00:00.000Z",
-              updatedAt: "2026-09-12T12:00:00.000Z",
-            }),
-          })),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          ActivityRepository,
+          {
+            getActivityByGroup: vi.fn(async () => ({
+              created_by_user_id: 7,
+              data: JSON.stringify({
+                runId: "run-123",
+                installationId: 42,
+                repo: "owner/repository",
+                task: "Implement the change",
+                model: "gpt-6-astra",
+                status: "running",
+                startedAt: "2026-09-12T12:00:00.000Z",
+                updatedAt: "2026-09-12T12:00:00.000Z",
+              }),
+            })),
+          },
+        ],
+      ]),
     } as any,
   };
 }

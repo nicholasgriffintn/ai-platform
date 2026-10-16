@@ -2,8 +2,11 @@ import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { resolveProjectModelTier } from "~/modules/chat/application/policy/project-model-tier";
 import { getConversationBranches } from "~/modules/conversations/application/conversationThreads";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
 import {
@@ -46,7 +49,10 @@ function createContext({
       plan_id: "pro",
     }),
     getUserSettings: vi.fn().mockResolvedValue(null),
-    repositories,
+    repositories: fakeRepositories([
+      [ConversationRepository, repositories.conversations],
+      [WorkspaceRepository, repositories.workspaces],
+    ]),
   } as unknown as ServiceContext;
 
   return { context, repositories };

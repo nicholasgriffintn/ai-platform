@@ -13,7 +13,9 @@ import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const CONVERSATION_BRIEF_TEMPLATE = `# Objective
@@ -77,7 +79,9 @@ async function getConversationBrief(
     return null;
   }
 
-  const document = await context.repositories.memoryDocuments.getDocumentById(documentId);
+  const document = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentById(documentId);
 
   if (!document || !documentMatchesScope(document, conversationScope(conversation))) {
     throw new AssistantError("Conversation brief is unavailable", ErrorType.FORBIDDEN, 403);
@@ -98,7 +102,7 @@ export async function ensureConversationBrief(
 
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
-  const created = await context.repositories.memoryDocuments.createDocument({
+  const created = await context.repositories.get(MemoryDocumentRepository).createDocument({
     ...conversationScope(conversation),
     kind: "conversation_brief",
     name: `conversation-brief-${generateId().replaceAll("-", "").toLowerCase()}`,
@@ -106,11 +110,15 @@ export async function ensureConversationBrief(
     createdByUserId: user.id,
   });
 
-  if (await context.repositories.conversations.assignBriefDocument(conversationId, created.id)) {
+  if (
+    await context.repositories
+      .get(ConversationRepository)
+      .assignBriefDocument(conversationId, created.id)
+  ) {
     return formatMemoryDocument(created);
   }
 
-  await context.repositories.memoryDocuments.softDeleteDocument(created.id);
+  await context.repositories.get(MemoryDocumentRepository).softDeleteDocument(created.id);
 
   return getConversationBrief(context, conversationId);
 }
@@ -128,7 +136,7 @@ export async function copyConversationBrief(
 
   const user = context.requireUser();
   const target = await requireConversationAccess(context, targetConversationId);
-  const created = await context.repositories.memoryDocuments.createDocument({
+  const created = await context.repositories.get(MemoryDocumentRepository).createDocument({
     ...conversationScope(target),
     kind: "conversation_brief",
     name: `conversation-brief-${generateId().replaceAll("-", "").toLowerCase()}`,
@@ -137,12 +145,14 @@ export async function copyConversationBrief(
   });
 
   if (
-    await context.repositories.conversations.assignBriefDocument(targetConversationId, created.id)
+    await context.repositories
+      .get(ConversationRepository)
+      .assignBriefDocument(targetConversationId, created.id)
   ) {
     return formatMemoryDocument(created);
   }
 
-  await context.repositories.memoryDocuments.softDeleteDocument(created.id);
+  await context.repositories.get(MemoryDocumentRepository).softDeleteDocument(created.id);
   throw new AssistantError(
     "The new conversation could not be bound to its brief",
     ErrorType.CONFLICT_ERROR,
@@ -162,7 +172,7 @@ export async function listMemoryDocuments(
 ): Promise<{ documents: MemoryDocumentSummary[] }> {
   context.ensureDatabase();
   const scope = await resolveScope(context, projectId);
-  const rows = await context.repositories.memoryDocuments.listDocuments(scope);
+  const rows = await context.repositories.get(MemoryDocumentRepository).listDocuments(scope);
 
   return { documents: rows.map(toSummary) };
 }
@@ -174,7 +184,9 @@ export async function getMemoryDocument(
 ): Promise<MemoryDocument> {
   context.ensureDatabase();
   const scope = await resolveScope(context, projectId);
-  const row = await context.repositories.memoryDocuments.getDocumentByName(scope, name);
+  const row = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentByName(scope, name);
 
   if (!row) {
     throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
@@ -190,7 +202,9 @@ export async function createMemoryDocument(
   context.ensureDatabase();
   const user = context.requireUser();
   const scope = await resolveScope(context, input.projectId);
-  const existing = await context.repositories.memoryDocuments.getDocumentByName(scope, input.name);
+  const existing = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentByName(scope, input.name);
 
   if (existing) {
     throw new AssistantError(
@@ -200,7 +214,7 @@ export async function createMemoryDocument(
     );
   }
 
-  const created = await context.repositories.memoryDocuments.createDocument({
+  const created = await context.repositories.get(MemoryDocumentRepository).createDocument({
     ...scope,
     name: input.name,
     content: input.content ?? "",
@@ -218,13 +232,15 @@ export async function updateMemoryDocument(
   context.ensureDatabase();
   const user = context.requireUser();
   const scope = await resolveScope(context, input.projectId);
-  const existing = await context.repositories.memoryDocuments.getDocumentByName(scope, name);
+  const existing = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentByName(scope, name);
 
   if (!existing) {
     throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const updated = await context.repositories.memoryDocuments.appendRevision({
+  const updated = await context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: existing.id,
     content: input.content,
     changeNote: input.changeNote ?? null,
@@ -250,13 +266,15 @@ export async function deleteMemoryDocument(
 ): Promise<void> {
   context.ensureDatabase();
   const scope = await resolveScope(context, projectId);
-  const existing = await context.repositories.memoryDocuments.getDocumentByName(scope, name);
+  const existing = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentByName(scope, name);
 
   if (!existing) {
     throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await context.repositories.memoryDocuments.softDeleteDocument(existing.id);
+  await context.repositories.get(MemoryDocumentRepository).softDeleteDocument(existing.id);
 }
 
 export async function listMemoryDocumentRevisions(
@@ -266,13 +284,15 @@ export async function listMemoryDocumentRevisions(
 ): Promise<{ revisions: MemoryDocumentRevision[] }> {
   context.ensureDatabase();
   const scope = await resolveScope(context, projectId);
-  const existing = await context.repositories.memoryDocuments.getDocumentByName(scope, name);
+  const existing = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentByName(scope, name);
 
   if (!existing) {
     throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const rows = await context.repositories.memoryDocuments.listRevisions(existing.id);
+  const rows = await context.repositories.get(MemoryDocumentRepository).listRevisions(existing.id);
 
   return {
     revisions: rows.map((row) => ({

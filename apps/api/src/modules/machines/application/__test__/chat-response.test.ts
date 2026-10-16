@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import type { ChatCompletionParameters } from "~/types";
 
 import { executeMachineChatResponse } from "../chat-response";
@@ -34,7 +36,7 @@ describe("executeMachineChatResponse", () => {
       context: {
         user: { id: 7 },
         executionRunId: undefined,
-        repositories: { conversationRuns: { getById: vi.fn() } },
+        repositories: fakeRepositories([[ConversationRunRepository, { getById: vi.fn() }]]),
       },
     } as unknown as ChatCompletionParameters;
 

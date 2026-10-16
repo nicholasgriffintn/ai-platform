@@ -5,6 +5,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   reconcileTeammateRun,
   teammateRunNeedsReconciliation,
@@ -32,7 +33,7 @@ export async function settleTeammateRun(
   }
 
   try {
-    await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+    await new TaskService(context.env, context.repositories.get(TaskRepository)).enqueueTask({
       id: `teammate_run_reconciliation_${run.id}_${run.attempt}`,
       task_type: TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
       user_id: run.initiatorUserId,

@@ -31,8 +31,10 @@ import {
 import type { ModelVersionAttributes } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { Repositories } from "~/infrastructure/database/repositories";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import { syncVersionReviews } from "./decisions";
@@ -178,9 +180,11 @@ async function inspectDataset(
   ];
 }
 
-export async function inspectVersion(repositories: RepositoryManager, versionId: string) {
-  const version = await repositories.modelAssets.getVersionById(versionId);
-  const asset = version ? await repositories.modelAssets.getAssetById(version.asset_id) : null;
+export async function inspectVersion(repositories: Repositories, versionId: string) {
+  const version = await repositories.get(ModelAssetRepository).getVersionById(versionId);
+  const asset = version
+    ? await repositories.get(ModelAssetRepository).getAssetById(version.asset_id)
+    : null;
 
   if (!version || !asset) {
     return { status: "skipped" as const, message: `Version ${versionId} no longer exists` };
@@ -189,7 +193,7 @@ export async function inspectVersion(repositories: RepositoryManager, versionId:
   const location = weightsLocation(asset, version);
 
   if (location?.kind !== "hub") {
-    await repositories.modelAssets.updateVersion(versionId, { status: "ready" });
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, { status: "ready" });
     await syncVersionReviews(repositories, asset.workspace_id, versionId);
 
     return { status: "success" as const, message: "Only Hub commits carry files to inspect" };
@@ -205,7 +209,9 @@ export async function inspectVersion(repositories: RepositoryManager, versionId:
   };
   const evidence: EvidenceDraft[] = [];
   const record = (drafts: EvidenceDraft[]) =>
-    repositories.modelGovernance.addEvidence(drafts.map((draft) => ({ ...draft, versionId })));
+    repositories
+      .get(ModelGovernanceRepository)
+      .addEvidence(drafts.map((draft) => ({ ...draft, versionId })));
 
   try {
     const [info, files] = await Promise.all([
@@ -236,7 +242,7 @@ export async function inspectVersion(repositories: RepositoryManager, versionId:
     }
 
     await record(evidence);
-    await repositories.modelAssets.updateVersion(versionId, {
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, {
       status: "ready",
       attributes,
       failure_reason: null,
@@ -249,7 +255,7 @@ export async function inspectVersion(repositories: RepositoryManager, versionId:
 
     logger.error("Model version inspection failed", { versionId, error: reason });
     await record(evidence);
-    await repositories.modelAssets.updateVersion(versionId, {
+    await repositories.get(ModelAssetRepository).updateVersion(versionId, {
       status: "failed",
       failure_reason: reason,
     });

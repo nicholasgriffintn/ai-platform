@@ -13,7 +13,9 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { delegationRunTaskId } from "~/modules/delegations/application/run-identity";
 import {
   findUnsettledToolCalls,
@@ -22,6 +24,7 @@ import {
 import { getFunctionToolDescriptors } from "~/modules/functions/application/definitions";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
 import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IUser, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/delegations/resume" });
@@ -47,7 +50,9 @@ async function settleUnsettledToolCalls(
   user: IUser,
   run: ChatRun,
 ): Promise<string[] | null> {
-  const rows = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const rows = await context.repositories
+    .get(MessageRepository)
+    .getRunMessages(run.conversationId, run.id);
   const unsettled = findUnsettledToolCalls(rows);
 
   if (unsettled.length === 0) {
@@ -117,17 +122,17 @@ export async function resumeInterruptedDelegation(params: {
     return false;
   }
 
-  const attempt = await context.repositories.conversationRuns.countInterruptedForConversation(
-    run.conversationId,
-  );
+  const attempt = await context.repositories
+    .get(ConversationRunRepository)
+    .countInterruptedForConversation(run.conversationId);
 
   if (attempt < 1 || attempt > MAX_DELEGATION_RUN_RESUMES) {
     return false;
   }
 
-  const previous = await context.repositories.tasks.getTaskById(
-    delegationRunTaskId(delegation.id, attempt > 1 ? attempt - 1 : undefined),
-  );
+  const previous = await context.repositories
+    .get(TaskRepository)
+    .getTaskById(delegationRunTaskId(delegation.id, attempt > 1 ? attempt - 1 : undefined));
   const taskData = delegationRunTaskDataSchema.safeParse(previous?.task_data);
 
   if (!taskData.success) {
@@ -153,7 +158,7 @@ export async function resumeInterruptedDelegation(params: {
       return false;
     }
 
-    await new TaskService(context.env, context.repositories.tasks).enqueueTask({
+    await new TaskService(context.env, context.repositories.get(TaskRepository)).enqueueTask({
       id: delegationRunTaskId(delegation.id, attempt),
       task_type: DELEGATION_RUN_TASK_TYPE,
       user_id: user.id,

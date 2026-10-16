@@ -7,6 +7,9 @@ import type {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { createSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -25,8 +28,8 @@ interface ReviewOptions {
 export async function listProjectReviews(context: ServiceContext, projectId: string) {
   await requireProjectAccess(context, projectId);
   const [policies, reviews] = await Promise.all([
-    context.repositories.projectTaskIntegrations.listProjectPolicies(projectId),
-    context.repositories.projectTaskIntegrations.listReviews(projectId),
+    context.repositories.get(ProjectTaskIntegrationRepository).listProjectPolicies(projectId),
+    context.repositories.get(ProjectTaskIntegrationRepository).listReviews(projectId),
   ]);
 
   return { policies, reviews };
@@ -38,10 +41,9 @@ export async function getProjectTaskReview(
   taskId: string,
 ) {
   await requireProjectAccess(context, projectId);
-  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
-    taskId,
-    projectId,
-  );
+  const review = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReviewForTask(taskId, projectId);
 
   return { review };
 }
@@ -76,7 +78,9 @@ async function createPullRequestReview(
   }
 
   const id = await reviewIdentity(projectId, captured.target, reviewScope.policyRevision);
-  const existing = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
+  const existing = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReview(id, projectId);
 
   if (existing) {
     return { review: existing, reused: true };
@@ -156,14 +160,16 @@ async function createPullRequestReview(
     },
   );
 
-  const created = await context.repositories.projectTaskIntegrations.recordReview({
+  const created = await context.repositories.get(ProjectTaskIntegrationRepository).recordReview({
     ...reviewScope,
     id,
     taskId: task.id,
     sourceId,
     policyId: options.policy?.id ?? null,
   });
-  const review = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
+  const review = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReview(id, projectId);
 
   if (!review) {
     throw new AssistantError("Review could not be recorded", ErrorType.DATABASE_ERROR);
@@ -179,17 +185,18 @@ export async function startPullRequestReview(
   options: ReviewOptions = {},
 ) {
   const result = await createPullRequestReview(context, projectId, locator, options);
-  const task = await context.repositories.projectTasks.getTaskById(result.review.taskId);
+  const task = await context.repositories
+    .get(ProjectTaskRepository)
+    .getTaskById(result.review.taskId);
   const retryableReasons = options.policy ? ["dispatch_failed"] : ["dispatch_failed", "run_failed"];
   const canRetry =
     task?.status === "blocked" && retryableReasons.includes(task.blockedReason ?? "");
 
   if (task && (task.status === "backlog" || canRetry)) {
     if (options.policy) {
-      const policy = await context.repositories.projectTaskIntegrations.getPolicy(
-        options.policy.id,
-        projectId,
-      );
+      const policy = await context.repositories
+        .get(ProjectTaskIntegrationRepository)
+        .getPolicy(options.policy.id, projectId);
 
       if (!policy || !matchesReviewPolicy(policy, result.review)) {
         throw new AssistantError("Automatic review policy changed", ErrorType.CONFLICT_ERROR, 409, {
@@ -208,13 +215,15 @@ export async function startPullRequestReview(
 
 async function requireProjectReview(context: ServiceContext, projectId: string, reviewId: string) {
   const { project } = await requireProjectAccess(context, projectId);
-  const review = await context.repositories.projectTaskIntegrations.getReview(reviewId, projectId);
+  const review = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .getReview(reviewId, projectId);
 
   if (!review || review.workspaceId !== project.workspace_id || review.projectId !== projectId) {
     throw new AssistantError("Review not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const task = await context.repositories.projectTasks.getTaskById(review.taskId);
+  const task = await context.repositories.get(ProjectTaskRepository).getTaskById(review.taskId);
 
   if (!task || task.projectId !== projectId) {
     throw new AssistantError("Review task not found", ErrorType.NOT_FOUND, 404);
@@ -275,12 +284,9 @@ export async function publishPullRequestReview(
 
   await retainReviewOutput(context, review, completion);
   const body = `${input.body}\n\nReviewed base ${review.target.baseSha}, head ${review.target.headSha}. Diff-only review from Polychat.\n<!-- polychat-review:${review.id} -->`;
-  const claimed = await context.repositories.projectTaskIntegrations.claimPublication(
-    review.id,
-    projectId,
-    completion.id,
-    body,
-  );
+  const claimed = await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .claimPublication(review.id, projectId, completion.id, body);
 
   if (!claimed) {
     throw new AssistantError(
@@ -295,30 +301,24 @@ export async function publishPullRequestReview(
   try {
     publication = await client.publishReview(review.target, body);
   } catch (error) {
-    await context.repositories.projectTaskIntegrations.settlePublication(
-      review.id,
-      projectId,
-      null,
-    );
+    await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .settlePublication(review.id, projectId, null);
     throw error;
   }
 
   if (publication.status === "rejected") {
-    await context.repositories.projectTaskIntegrations.releasePublication(
-      review.id,
-      projectId,
-      body,
-    );
+    await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .releasePublication(review.id, projectId, body);
     throw publication.error;
   }
 
-  await context.repositories.projectTaskIntegrations.settlePublication(
-    review.id,
-    projectId,
-    publication.url,
-  );
+  await context.repositories
+    .get(ProjectTaskIntegrationRepository)
+    .settlePublication(review.id, projectId, publication.url);
 
-  await context.repositories.audit.createRecord({
+  await context.repositories.get(AuditRepository).createRecord({
     workspaceId: review.workspaceId,
     actorUserId: context.requireUser().id,
     action: "project.review.published",
@@ -328,7 +328,9 @@ export async function publishPullRequestReview(
   });
 
   return {
-    review: await context.repositories.projectTaskIntegrations.getReview(review.id, projectId),
+    review: await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getReview(review.id, projectId),
   };
 }
 
@@ -341,22 +343,21 @@ export async function reconcileReviewPublication(
   const client = await connectOwnedReview(context, review);
 
   if (["unknown", "publishing"].includes(review.publicationStatus)) {
-    const body = await context.repositories.projectTaskIntegrations.getPublicationBody(
-      review.id,
-      projectId,
-    );
+    const body = await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getPublicationBody(review.id, projectId);
     const url = body ? await client.findPublication(review.target, body) : null;
 
     if (url) {
-      await context.repositories.projectTaskIntegrations.settlePublication(
-        review.id,
-        projectId,
-        url,
-      );
+      await context.repositories
+        .get(ProjectTaskIntegrationRepository)
+        .settlePublication(review.id, projectId, url);
     }
   }
 
   return {
-    review: await context.repositories.projectTaskIntegrations.getReview(review.id, projectId),
+    review: await context.repositories
+      .get(ProjectTaskIntegrationRepository)
+      .getReview(review.id, projectId),
   };
 }

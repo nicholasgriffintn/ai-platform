@@ -2,6 +2,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 
 import { listSkillAvailability, resolveSkillAvailability } from "./availability";
 import { resolveSkillCatalog } from "./catalog";
@@ -13,7 +14,7 @@ import {
 
 async function loadDisabledSkillIds(context: ServiceContext, userId: number): Promise<Set<string>> {
   const scope = await resolvePersonalSkillScope(
-    context.repositories.capabilityConfigurations,
+    context.repositories.get(CapabilityConfigurationRepository),
     userId,
   );
 
@@ -57,7 +58,7 @@ export async function setPersonalSkillEnabled(
     );
   }
 
-  await context.repositories.capabilityConfigurations.save({
+  await context.repositories.get(CapabilityConfigurationRepository).save({
     scope: { type: "user", id: userId },
     capabilityKind: SKILL_CAPABILITY_KIND,
     capabilityId: skillId,

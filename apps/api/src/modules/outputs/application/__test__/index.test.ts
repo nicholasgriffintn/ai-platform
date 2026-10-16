@@ -10,6 +10,12 @@ vi.mock("~/infrastructure/storage", () => ({
   StorageService: { forPrivateAssets: vi.fn(() => ({ deleteObject })) },
 }));
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+
 import {
   deleteOutput,
   formatSharedOutput,
@@ -86,7 +92,9 @@ describe("output shares", () => {
 describe("output provenance access", () => {
   it("does not reveal personal provenance across owners", async () => {
     const context = {
-      repositories: { outputs: { getOutput: vi.fn().mockResolvedValue(output) } },
+      repositories: fakeRepositories([
+        [OutputRepository, { getOutput: vi.fn().mockResolvedValue(output) }],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(getOutput(context, 7, output.id)).rejects.toMatchObject({ statusCode: 404 });
@@ -101,10 +109,10 @@ describe("output provenance access", () => {
       }),
     };
     const context = {
-      repositories: {
-        outputs: { getOutput: vi.fn().mockResolvedValue(outputWithSource) },
-        sources: { getSource: vi.fn().mockResolvedValue(null) },
-      },
+      repositories: fakeRepositories([
+        [OutputRepository, { getOutput: vi.fn().mockResolvedValue(outputWithSource) }],
+        [SourceRepository, { getSource: vi.fn().mockResolvedValue(null) }],
+      ]),
     } as unknown as ServiceContext;
 
     const result = await getOutput(context, 42, output.id);
@@ -119,14 +127,17 @@ describe("output provenance access", () => {
     const projectOutput = { ...output, project_id: "project-1", sensitivity: "internal" as const };
     const context = {
       requireUser: () => ({ id: 7, plan_id: "pro" }),
-      repositories: {
-        outputs: { getOutput: vi.fn().mockResolvedValue(projectOutput) },
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockResolvedValue(null),
-        },
-      },
+      repositories: fakeRepositories([
+        [OutputRepository, { getOutput: vi.fn().mockResolvedValue(projectOutput) }],
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockResolvedValue(null),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(getOutput(context, 7, projectOutput.id)).rejects.toMatchObject({
@@ -159,13 +170,16 @@ describe("output revision restore", () => {
       restored_from_revision: 1,
     });
     const context = {
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue({ ...output, revision: 2 }),
-          getRevision: vi.fn().mockResolvedValue(target),
-          updateOutput,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutput: vi.fn().mockResolvedValue({ ...output, revision: 2 }),
+            getRevision: vi.fn().mockResolvedValue(target),
+            updateOutput,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     const restored = await restoreOutputRevision(context, 42, output.id, 1, {
@@ -196,13 +210,16 @@ describe("output revision restore", () => {
     const getRevision = vi.fn();
     const updateOutput = vi.fn();
     const context = {
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue({ ...output, revision: 3 }),
-          getRevision,
-          updateOutput,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutput: vi.fn().mockResolvedValue({ ...output, revision: 3 }),
+            getRevision,
+            updateOutput,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -217,25 +234,31 @@ describe("output revision restore", () => {
     const updateOutput = vi.fn();
     const context = {
       requireUser: () => ({ id: 42, plan_id: "pro" }),
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue({
-            ...output,
-            project_id: "project-1",
-            revision: 2,
-          }),
-          getRevision,
-          updateOutput,
-        },
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({
-            id: "project-1",
-            workspace_id: "workspace-1",
-          }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockResolvedValue(null),
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutput: vi.fn().mockResolvedValue({
+              ...output,
+              project_id: "project-1",
+              revision: 2,
+            }),
+            getRevision,
+            updateOutput,
+          },
+        ],
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({
+              id: "project-1",
+              workspace_id: "workspace-1",
+            }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockResolvedValue(null),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -248,17 +271,20 @@ describe("output revision restore", () => {
   it("does not present an external function result as reversible", async () => {
     const updateOutput = vi.fn();
     const context = {
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue({
-            ...output,
-            revision: 2,
-            capability_id: "gmail",
-            kind: "dynamic_app_response",
-          }),
-          updateOutput,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutput: vi.fn().mockResolvedValue({
+              ...output,
+              revision: 2,
+              capability_id: "gmail",
+              kind: "dynamic_app_response",
+            }),
+            updateOutput,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(
@@ -277,7 +303,7 @@ describe("output listing", () => {
         { ...output, id: "deleting-output", content: JSON.stringify({ deletionPending: true }) },
       ]);
     const context = {
-      repositories: { outputs: { listPersonalOutputs } },
+      repositories: fakeRepositories([[OutputRepository, { listPersonalOutputs }]]),
     } as unknown as ServiceContext;
 
     const result = await listOutputs(context, 42, {
@@ -319,16 +345,19 @@ describe("output deletion", () => {
     const updateOutput = vi.fn();
     const deleteOutputs = vi.fn();
     const context = {
-      repositories: {
-        outputs: {
-          getOutputIncludingDeleting: vi
-            .fn()
-            .mockResolvedValueOnce(resultOutput)
-            .mockResolvedValueOnce(batchOutput),
-          updateOutput,
-          deleteOutputs,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutputIncludingDeleting: vi
+              .fn()
+              .mockResolvedValueOnce(resultOutput)
+              .mockResolvedValueOnce(batchOutput),
+            updateOutput,
+            deleteOutputs,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(deleteOutput(context, 42, resultOutput.id)).rejects.toMatchObject({
@@ -370,17 +399,20 @@ describe("output deletion", () => {
 
     deleteObject.mockResolvedValue(undefined);
     const context = {
-      repositories: {
-        outputs: {
-          getOutputIncludingDeleting: vi
-            .fn()
-            .mockResolvedValueOnce(resultOutput)
-            .mockResolvedValueOnce(batchOutput),
-          listOutputDescendants: vi.fn().mockResolvedValue([]),
-          updateOutput,
-          deleteOutputs,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutputIncludingDeleting: vi
+              .fn()
+              .mockResolvedValueOnce(resultOutput)
+              .mockResolvedValueOnce(batchOutput),
+            listOutputDescendants: vi.fn().mockResolvedValue([]),
+            updateOutput,
+            deleteOutputs,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteOutput(context, 42, resultOutput.id);
@@ -407,19 +439,22 @@ describe("output deletion", () => {
 
     deleteObject.mockResolvedValue(undefined);
     const context = {
-      repositories: {
-        outputs: {
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue(storedOutput),
-          listOutputDescendants: vi.fn().mockResolvedValue([]),
-          updateOutput: vi.fn().mockResolvedValue({
-            ...storedOutput,
-            status: "failed",
-            revision: 2,
-            content: JSON.stringify({ deletionPending: true }),
-          }),
-          deleteOutputs,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutputIncludingDeleting: vi.fn().mockResolvedValue(storedOutput),
+            listOutputDescendants: vi.fn().mockResolvedValue([]),
+            updateOutput: vi.fn().mockResolvedValue({
+              ...storedOutput,
+              status: "failed",
+              revision: 2,
+              content: JSON.stringify({ deletionPending: true }),
+            }),
+            deleteOutputs,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteOutput(context, 42, storedOutput.id);
@@ -441,19 +476,22 @@ describe("output deletion", () => {
 
     deleteObject.mockRejectedValueOnce(new Error("R2 unavailable"));
     const context = {
-      repositories: {
-        outputs: {
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue(storedOutput),
-          listOutputDescendants: vi.fn().mockResolvedValue([]),
-          updateOutput: vi.fn().mockResolvedValue({
-            ...storedOutput,
-            status: "failed",
-            revision: 2,
-            content: JSON.stringify({ deletionPending: true }),
-          }),
-          deleteOutputs,
-        },
-      },
+      repositories: fakeRepositories([
+        [
+          OutputRepository,
+          {
+            getOutputIncludingDeleting: vi.fn().mockResolvedValue(storedOutput),
+            listOutputDescendants: vi.fn().mockResolvedValue([]),
+            updateOutput: vi.fn().mockResolvedValue({
+              ...storedOutput,
+              status: "failed",
+              revision: 2,
+              content: JSON.stringify({ deletionPending: true }),
+            }),
+            deleteOutputs,
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await expect(deleteOutput(context, 42, storedOutput.id)).rejects.toThrow("R2 unavailable");
@@ -517,23 +555,29 @@ describe("output deletion", () => {
     const context = {
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       env: {},
-      repositories: {
-        users: { getUserById: vi.fn().mockResolvedValue(creator) },
-        outputs: {
-          getOutputIncludingDeleting: vi.fn().mockResolvedValue(batchOutput),
-          listOutputDescendants: vi.fn().mockResolvedValue([]),
-          updateOutput,
-          deleteOutputs: vi.fn().mockResolvedValue(undefined),
-        },
-        workspaces: {
-          getProject: vi.fn().mockResolvedValue({
-            id: "project-1",
-            workspace_id: "workspace-1",
-          }),
-          getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-          getMembership: vi.fn().mockResolvedValue({ role: "admin" }),
-        },
-      },
+      repositories: fakeRepositories([
+        [UserRepository, { getUserById: vi.fn().mockResolvedValue(creator) }],
+        [
+          OutputRepository,
+          {
+            getOutputIncludingDeleting: vi.fn().mockResolvedValue(batchOutput),
+            listOutputDescendants: vi.fn().mockResolvedValue([]),
+            updateOutput,
+            deleteOutputs: vi.fn().mockResolvedValue(undefined),
+          },
+        ],
+        [
+          WorkspaceRepository,
+          {
+            getProject: vi.fn().mockResolvedValue({
+              id: "project-1",
+              workspace_id: "workspace-1",
+            }),
+            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
+            getMembership: vi.fn().mockResolvedValue({ role: "admin" }),
+          },
+        ],
+      ]),
     } as unknown as ServiceContext;
 
     await deleteOutput(context, 7, batchOutput.id);
