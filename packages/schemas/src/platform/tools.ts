@@ -1,10 +1,7 @@
 import z from "zod/v4";
 
-import type {
-  chatCompletionToolSchema,
-  chatHostedToolSettingsSchema,
-} from "../response-command.js";
-import { chatToolChoiceSchema } from "../response-command.js";
+import type { chatCompletionToolSchema, chatHostedToolSettingsSchema } from "../engine-request.js";
+import { chatToolChoiceSchema } from "../engine-request.js";
 import { toolIdSchema } from "../tool-ids.js";
 
 const recordSchema = z.record(z.string(), z.unknown());

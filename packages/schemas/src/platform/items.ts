@@ -1,8 +1,8 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
+import { chatMessageContentPartSchema, connectorApprovalIdSchema } from "../engine-request.js";
 import { messagePartSchema, messagePartsSchema, type MessagePart } from "../message-parts.js";
-import { chatMessageContentPartSchema, connectorApprovalIdSchema } from "../response-command.js";
 import type { MessageRole } from "../shared.js";
 
 const recordSchema = z.record(z.string(), z.unknown());

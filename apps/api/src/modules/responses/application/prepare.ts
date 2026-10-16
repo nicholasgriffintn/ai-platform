@@ -1,8 +1,8 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import type { ResponseCommand } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { resumeStoredTeammateInteraction } from "~/modules/teammates/application/interaction-resume";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { AnonymousUser, IUser } from "~/types";

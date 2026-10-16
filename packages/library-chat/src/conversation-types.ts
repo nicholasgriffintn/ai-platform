@@ -6,7 +6,7 @@ import type {
   MessagePart as SchemaMessagePart,
   ToolResponseType,
   SandboxTaskType,
-  ResponseCommand as SchemaChatCompletionRequestBody,
+  EngineRequest as SchemaChatCompletionRequestBody,
   PlatformResponse,
   ChatHostedToolSettings as SchemaHostedToolSettings,
   ConversationModeMetadata,

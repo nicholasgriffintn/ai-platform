@@ -10,7 +10,6 @@ import {
   ownershipLostError,
 } from "@ngriffin_uk/polychat-library-tasks";
 import {
-  responseCommandSchema,
   nextFlowStageId,
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
@@ -20,7 +19,6 @@ import {
   type ChatRun,
   type ProjectTask,
   type ProjectTaskBlockedReason,
-  type ResponseAuthority,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
@@ -45,6 +43,7 @@ import { OutputRepository } from "~/modules/outputs/infrastructure/OutputReposit
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/tasks/application/types";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
@@ -711,19 +710,11 @@ export async function runProjectTaskDispatch(params: {
         previousRun?.status === "awaiting_takeover")
         ? previousRun.id
         : undefined;
-    const request = {
-      completion_id: conversationId,
-      command_id: params.dispatchTaskId,
-      command_payload: {
-        approvedTools: params.approvedTools ?? [],
-        dispatchTaskId: params.dispatchTaskId,
-        objective: claimed.objective,
-        projectId: claimed.projectId,
-        stageId: claimed.stageId,
-        taskId: claimed.id,
-      },
-      ...(resumableRunId ? { run_id: resumableRunId } : {}),
-      conversation_type: "task" as const,
+    const request: ResponseCommand = {
+      conversationId,
+      conversationType: "task",
+      commandId: params.dispatchTaskId,
+      ...(resumableRunId ? { runId: resumableRunId } : {}),
       messages: buildTaskRunMessages(
         history,
         buildTaskPrompt({
@@ -732,20 +723,20 @@ export async function runProjectTaskDispatch(params: {
           contextNotes: await buildProjectTaskContext(context, claimed),
         }),
       ),
-      ...(runtime.model ? { model: runtime.model } : {}),
-      mode: runtime.mode,
       stream: false,
       store: true,
-      enabled_tools: [...runtime.enabledTools],
-      ...(claimed.executionProfile === "diff_review"
-        ? { tool_selection_mode: "explicit" as const }
-        : {}),
-      approved_tools: params.approvedTools,
-      options: params.interaction ? { toolInteraction: params.interaction } : undefined,
-      require_approval_for: [...runtime.requireApprovalFor],
-      enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
-      tool_choice: "auto" as const,
-      metadata: { project_id: claimed.projectId },
+      settings: {
+        ...(runtime.model ? { model: runtime.model } : {}),
+        mode: runtime.mode,
+        enabled_tools: [...runtime.enabledTools],
+        ...(claimed.executionProfile === "diff_review"
+          ? { tool_selection_mode: "explicit" as const }
+          : {}),
+        approved_tools: params.approvedTools,
+        options: params.interaction ? { toolInteraction: params.interaction } : undefined,
+        tool_choice: "auto",
+        metadata: { project_id: claimed.projectId },
+      },
     };
     const previousConfiguration = resumableRunId
       ? teammateRunConfigurationSchema.safeParse(previousRun?.resolvedConfiguration)
@@ -777,19 +768,28 @@ export async function runProjectTaskDispatch(params: {
       );
     }
 
-    const parsedRequest = responseCommandSchema.parse(request);
     const authority: ResponseAuthority = {
       durableExecution: {
         kind: "project_task",
         dispatchTaskId: params.dispatchTaskId,
         executionOwnerToken: params.executionLease.ownerToken,
       },
+      commandPayload: {
+        approvedTools: params.approvedTools ?? [],
+        dispatchTaskId: params.dispatchTaskId,
+        objective: claimed.objective,
+        projectId: claimed.projectId,
+        stageId: claimed.stageId,
+        taskId: claimed.id,
+      },
+      requireApprovalFor: [...runtime.requireApprovalFor],
+      enforceModeToolPolicy: runtime.enforceModeToolPolicy,
     };
     const response = runtime.teammate
       ? await enqueueTeammateRun({
           env,
           context,
-          body: parsedRequest,
+          body: request,
           teammateId: runtime.teammate.id,
           user,
           anonymousUser: undefined,
@@ -809,7 +809,7 @@ export async function runProjectTaskDispatch(params: {
           ...(resumeConfiguration ? { resumeConfiguration } : {}),
           ...(remainingSteps !== undefined ? { maxStepsOverride: remainingSteps } : {}),
         })
-      : await startResponse({ env, context, user, command: parsedRequest, authority });
+      : await startResponse({ env, context, user, command: request, authority });
 
     if (response instanceof Response) {
       const receiptResponse = chatRunCommandReceiptResponseSchema.safeParse(

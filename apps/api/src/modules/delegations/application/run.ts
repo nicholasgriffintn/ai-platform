@@ -1,6 +1,6 @@
 import {
-  responseCommandSchema,
   delegationRunTaskDataSchema,
+  permissionModeSchema,
   projectCodingEnvironmentSchema,
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
@@ -20,6 +20,7 @@ import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskMessage, TaskResult } from "~/modules/tasks/application/types";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
@@ -252,9 +253,9 @@ export async function runDelegationTask(
     }
 
     const commandId = delegationRunCommandId(delegation.id, payload.resume?.attempt);
-    const body = responseCommandSchema.parse({
-      completion_id: delegation.childConversationId,
-      command_id: commandId,
+    const body: ResponseCommand = {
+      conversationId: delegation.childConversationId,
+      commandId,
       messages: [
         {
           role: "user",
@@ -265,11 +266,13 @@ export async function runDelegationTask(
       ],
       stream: false,
       store: true,
-      enabled_tools: enabledTools,
-      permission_mode: parentConversation.permission_mode,
-      ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
-      ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
-    });
+      settings: {
+        enabled_tools: enabledTools,
+        permission_mode: permissionModeSchema.parse(parentConversation.permission_mode),
+        ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
+        ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
+      },
+    };
 
     const response = await enqueueTeammateRun({
       env,

@@ -72,7 +72,7 @@ export * from "./audit.js";
 export * from "./audio.js";
 export * from "./auth.js";
 export * from "./conversation-type.js";
-export * from "./response-command.js";
+export * from "./engine-request.js";
 export * from "./platform/index.js";
 export * from "./ports/chat-completions.js";
 export * from "./chat-context.js";

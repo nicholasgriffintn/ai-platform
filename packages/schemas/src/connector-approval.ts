@@ -1,7 +1,7 @@
 import { isRecord, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
-import { connectorApprovalIdSchema } from "./response-command.js";
+import { connectorApprovalIdSchema } from "./engine-request.js";
 
 export const connectorOperationApprovalStateSchema = z.enum([
   "pending",

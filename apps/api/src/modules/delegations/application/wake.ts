@@ -1,5 +1,4 @@
 import {
-  responseCommandSchema,
   delegationWakeTaskDataSchema,
   teammateRunConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -9,6 +8,7 @@ import { deliverChannelFollowUp } from "~/modules/channels/application/follow-up
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import type { TaskMessage } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
@@ -52,9 +52,9 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     return { status: "skipped" as const, detail: "Delegation group is still running" };
   }
 
-  const body = responseCommandSchema.parse({
-    completion_id: payload.parentConversationId,
-    command_id: `delegation_wake_${payload.parentRunId}`,
+  const body: ResponseCommand = {
+    conversationId: payload.parentConversationId,
+    commandId: `delegation_wake_${payload.parentRunId}`,
     messages: [
       {
         role: "user",
@@ -63,7 +63,7 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     ],
     stream: false,
     store: true,
-  });
+  };
   const parentRun = await context.repositories
     .get(ConversationRunRepository)
     .getById(payload.parentRunId);

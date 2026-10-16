@@ -124,7 +124,7 @@ describe("executeRecipeInvocationChat", () => {
       user,
       authority: { trigger: "schedule" },
       command: expect.objectContaining({
-        completion_id: "sms_conversation",
+        conversationId: "sms_conversation",
         messages: [
           {
             id: "message-1",
@@ -136,13 +136,15 @@ describe("executeRecipeInvocationChat", () => {
             content: "Run this installed Notion recipe.",
           },
         ],
-        options: expect.objectContaining({
-          source: "sms",
-          channel: {
-            id: "sms",
-            from: "+15551234567",
-            to: "+15557654321",
-          },
+        settings: expect.objectContaining({
+          options: expect.objectContaining({
+            source: "sms",
+            channel: {
+              id: "sms",
+              from: "+15551234567",
+              to: "+15557654321",
+            },
+          }),
         }),
       }),
     });

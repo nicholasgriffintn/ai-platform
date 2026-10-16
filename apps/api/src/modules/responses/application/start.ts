@@ -1,10 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  toolOutputEvent,
-  type ResponseAuthority,
-  type ResponseCommand,
-} from "@ngriffin_uk/polychat-schemas";
+import { toolOutputEvent } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -26,18 +22,12 @@ import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infra
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
-import { authorityOptions } from "~/modules/responses/domain/authority";
+import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
-import type {
-  AnonymousUser,
-  ChatCompletionParameters,
-  CreateChatCompletionsResponse,
-  IEnv,
-  IUser,
-} from "~/types";
+import type { AnonymousUser, CreateChatCompletionsResponse, IEnv, IUser } from "~/types";
 
-import { normaliseChatCompletionRequest } from "./normaliseChatCompletionRequest";
+import { toEngineRequest } from "./engine-request";
 
 const logger = getLogger({
   prefix: "services/responses/start",
@@ -45,7 +35,7 @@ const logger = getLogger({
 
 export const startResponse = async (req: {
   env: IEnv;
-  command: ResponseCommand | Omit<ChatCompletionParameters, "env">;
+  command: ResponseCommand;
   authority?: ResponseAuthority;
   user?: IUser;
   anonymousUser?: AnonymousUser;
@@ -58,7 +48,7 @@ export const startResponse = async (req: {
     req;
   const serviceContext =
     context ?? createServiceContext({ env, user, anonymousUser: anonymousUser ?? null });
-  const chatRequest = normaliseChatCompletionRequest(command);
+  const chatRequest = toEngineRequest(command, authority);
   const isStreaming = command.stream ?? false;
   let providerMessages = toProviderMessages(chatRequest.messages);
   let connectorReplay: Awaited<ReturnType<typeof replayApprovedConnectorOperation>> | undefined;
@@ -69,7 +59,7 @@ export const startResponse = async (req: {
     throw new AssistantError("Missing required parameter: messages", ErrorType.PARAMS_ERROR);
   }
 
-  const completionIdWithFallback = command.completion_id || `chat_${generateId()}`;
+  const completionIdWithFallback = command.conversationId || `chat_${generateId()}`;
 
   if (chatRequest.connector_approval_id && !user?.id) {
     throw new AssistantError(
@@ -177,7 +167,6 @@ export const startResponse = async (req: {
 
   const result = await processChatRequest({
     ...chatRequest,
-    ...authorityOptions(authority),
     messages: providerMessages,
     app_url,
     env,
@@ -221,7 +210,6 @@ export const startResponse = async (req: {
             : {}),
         }
       : {}),
-    location: "location" in command ? command.location || undefined : undefined,
     context: serviceContext,
     executionCtx,
   });

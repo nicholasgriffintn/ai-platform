@@ -1,13 +1,10 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import {
-  responseCommandSchema,
-  teammateRunConfigurationSchema,
-  type ResponseCommand,
-} from "@ngriffin_uk/polychat-schemas";
+import { teammateRunConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { readToolInteractionId } from "~/modules/responses/application/runs/interactions";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import type { AnonymousUser, IEnv, IUser } from "~/types";
 
 import { resumeTeammateRun } from "./run-admission";
@@ -21,8 +18,7 @@ export async function resumeStoredTeammateInteraction(params: {
   executionCtx?: ExecutionContext;
   signal?: AbortSignal;
 }) {
-  const body = responseCommandSchema.parse(params.body);
-  const interactionId = readToolInteractionId(body.options);
+  const interactionId = readToolInteractionId(params.body.settings?.options);
 
   if (!interactionId) {
     return null;
@@ -31,7 +27,7 @@ export async function resumeStoredTeammateInteraction(params: {
   params.context.ensureDatabase();
   const run = await params.context.repositories
     .get(ConversationRunRepository)
-    .getForInteraction(body.completion_id, interactionId);
+    .getForInteraction(params.body.conversationId, interactionId);
   const configuration = teammateRunConfigurationSchema.safeParse(run?.resolvedConfiguration);
 
   if (!configuration.success) {
@@ -40,7 +36,6 @@ export async function resumeStoredTeammateInteraction(params: {
 
   return resumeTeammateRun({
     ...params,
-    body,
     teammateId: configuration.data.teammateId,
   });
 }

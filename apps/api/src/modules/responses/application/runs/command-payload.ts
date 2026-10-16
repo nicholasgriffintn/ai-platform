@@ -1,8 +1,20 @@
-import { responseCommandInputSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  chatCompletionMessageSchema,
+  engineRequestInputSchema,
+  type EngineRequest,
+} from "@ngriffin_uk/polychat-schemas";
+import z from "zod/v4";
 
-import type { CoreChatOptions, Message } from "~/types";
+import type { CoreChatOptions } from "~/types";
 
-function toCommandMessage(message: Message) {
+const commandMessagesSchema = z.array(chatCompletionMessageSchema);
+
+interface CommandMessageSource {
+  content?: unknown;
+  parts?: readonly unknown[] | null;
+}
+
+function toCommandMessage<TMessage extends CommandMessageSource>(message: TMessage) {
   const hasParts = Boolean(message.parts?.length);
   const hasContent =
     message.content !== undefined &&
@@ -20,8 +32,14 @@ function toCommandMessage(message: Message) {
   return messageWithContent;
 }
 
+export function toCommandMessages<TMessage extends CommandMessageSource>(
+  messages: readonly TMessage[],
+): EngineRequest["messages"] {
+  return commandMessagesSchema.parse(messages.map(toCommandMessage));
+}
+
 export function buildChatRunCommandPayload(options: CoreChatOptions) {
-  return responseCommandInputSchema.parse({
+  return engineRequestInputSchema.parse({
     ...options,
     messages: options.messages?.map(toCommandMessage),
   });

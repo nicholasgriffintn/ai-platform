@@ -1,6 +1,13 @@
 import z from "zod/v4";
 
 import { chatRunCommandReceiptSchema } from "../chat-runs.js";
+import {
+  chatCompactionModeSchema,
+  chatCompletionMessageSchema,
+  chatCompletionToolSchema,
+  chatResponseFormatSchema,
+  chatToolChoiceSchema,
+} from "../engine-request.js";
 import { messagePartsSchema } from "../message-parts.js";
 import { modelTierSchema } from "../model-lineup.js";
 import {
@@ -14,13 +21,6 @@ import {
 import { responseToolsSchema } from "../platform/tools.js";
 import { permissionModeSchema } from "../providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "../reasoning.js";
-import {
-  chatCompactionModeSchema,
-  chatCompletionMessageSchema,
-  chatCompletionToolSchema,
-  chatResponseFormatSchema,
-  chatToolChoiceSchema,
-} from "../response-command.js";
 import { runProvenanceSchema } from "../run-provenance.js";
 import { messageSchema } from "../shared.js";
 

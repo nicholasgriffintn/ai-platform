@@ -1,8 +1,8 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
-  responseCommandSchema,
   isTerminalChatRunStatus,
   queuedChatTaskDataSchema,
+  responseSettingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -10,7 +10,7 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
+import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { startResponse } from "~/modules/responses/application/start";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
@@ -57,20 +57,25 @@ export class QueuedChatMessageHandler implements TaskHandler {
       store: true,
       requestCache: context.requestCache,
     }).get(conversationId);
-    const chatRequest = responseCommandSchema.parse({
-      ...buildChatRunCommandPayload({
-        ...request,
-        env,
-        completion_id: conversationId,
-        store: true,
-        messages: [...history, { ...userMessage, content: userMessage.content ?? "" }],
-      }),
-      command_id: message.taskId,
-      stream: false,
-    });
 
     try {
-      await startResponse({ env, context, user, command: chatRequest });
+      await startResponse({
+        env,
+        context,
+        user,
+        command: {
+          conversationId,
+          conversationType: request.conversation_type,
+          commandId: message.taskId,
+          messages: toCommandMessages([
+            ...history,
+            { ...userMessage, content: userMessage.content ?? "" },
+          ]),
+          stream: false,
+          store: true,
+          settings: responseSettingsSchema.parse(request),
+        },
+      });
     } catch (error) {
       if (error instanceof AssistantError && error.type === ErrorType.CONFLICT_ERROR) {
         return { status: "suspended", message: "The conversation is busy" };

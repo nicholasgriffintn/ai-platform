@@ -3,7 +3,6 @@ import {
   extractChatCompletionNotification,
 } from "@ngriffin_uk/polychat-ai-providers";
 import {
-  responseCommandSchema,
   INBOUND_CHANNEL_IDS,
   isPolyTeammateId,
   type InboundChannelId,
@@ -35,9 +34,10 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
-import { buildChatRunCommandPayload } from "~/modules/responses/application/runs/command-payload";
+import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   ensureActiveTeammateContext,
@@ -671,26 +671,27 @@ export async function handleInboundChannelMessage(params: {
       conversationId,
       historyLimit: profile.historyLimit,
     });
-    const request = responseCommandSchema.parse({
-      ...buildChatRunCommandPayload({
-        env: params.env,
-        completion_id: conversationId,
-        store: true,
+    const request: ResponseCommand = {
+      conversationId,
+      commandId,
+      messages: toCommandMessages([
+        ...activeMessages,
+        {
+          role: "user",
+          content: buildInboundMessageContent({
+            body: message.body,
+            media: message.media,
+          }),
+        },
+      ]),
+      stream: false,
+      store: true,
+      settings: {
         mode: "agent",
         max_steps: profile.maxSteps,
         ...(delivery.poly ? {} : { enabled_tools: profile.tools }),
         tool_choice: "auto",
         ...(delivery.projectId ? { metadata: { project_id: delivery.projectId } } : {}),
-        messages: [
-          ...activeMessages,
-          {
-            role: "user",
-            content: buildInboundMessageContent({
-              body: message.body,
-              media: message.media,
-            }),
-          },
-        ],
         options: {
           channel: {
             id: profile.id,
@@ -698,10 +699,8 @@ export async function handleInboundChannelMessage(params: {
             ...(message.to ? { to: message.to } : {}),
           },
         },
-      }),
-      command_id: commandId,
-      stream: false,
-    });
+      },
+    };
 
     await delivery.validate();
 

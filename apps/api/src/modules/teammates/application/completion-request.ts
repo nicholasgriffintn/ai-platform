@@ -7,12 +7,11 @@ import {
   SKILL_LOAD_TOOL_NAME,
   type ChatHostedToolSettings,
   type McpToolConfiguration,
-  type ParsedResponseCommand,
+  type ResponseSettings,
 } from "@ngriffin_uk/polychat-schemas";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
 import type { Teammate } from "~/infrastructure/database/schema";
-import type { AssistantPersona, ChatCompletionParameters, Message } from "~/types";
 
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -23,68 +22,34 @@ type CompletionTeammate = Pick<
 
 export interface TeammateCompletionRequestInput {
   teammate: CompletionTeammate;
-  body: ParsedResponseCommand;
+  settings: ResponseSettings;
   modelProvider: string;
-  formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
-  persona: AssistantPersona;
   mcpServers?: McpToolConfiguration["servers"];
   maxStepsOverride?: number;
   modeOverride?: string;
 }
 
-type PreparedTeammateCompletionRequest = Omit<ChatCompletionParameters, "env">;
+type PreparedTeammateSettings = ResponseSettings & { mode: string; max_steps: number };
 
 class TeammateCompletionRequestPreparer {
   constructor(private readonly input: TeammateCompletionRequestInput) {}
 
-  prepare(): PreparedTeammateCompletionRequest {
-    const {
-      user: _requestUser,
-      platform: requestPlatform,
-      stop: requestStop,
-      tool_choice: requestToolChoice,
-      messages: requestMessages,
-      ...requestBody
-    } = this.input.body;
-
+  prepare(): PreparedTeammateSettings {
+    const { settings, teammate } = this.input;
     const enabledTools = this.resolveEnabledTools();
 
     return {
-      ...requestBody,
-      messages: requestMessages.map((message): Message => ({
-        ...message,
-        content: message.content ?? "",
-      })),
-      persona: this.input.persona,
-      model: this.input.teammate.model || this.input.body.model,
-      provider: this.input.teammate.model ? this.input.modelProvider : this.input.body.provider,
-      tools: this.input.formattedTools,
-      stream: this.input.body.stream,
+      ...settings,
+      model: teammate.model || settings.model,
+      provider: teammate.model ? this.input.modelProvider : settings.provider,
       mode: this.resolveMode(enabledTools),
-      tool_policy_mode: "chat",
-      max_steps:
-        this.input.maxStepsOverride ??
-        this.input.teammate.max_steps ??
-        this.input.body.max_steps ??
-        20,
-      temperature: this.input.teammate.temperature
-        ? Number.parseFloat(this.input.teammate.temperature)
-        : this.input.body.temperature,
-      top_p: this.input.body.top_p,
-      platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
-      stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
+      max_steps: this.input.maxStepsOverride ?? teammate.max_steps ?? settings.max_steps ?? 20,
+      temperature: teammate.temperature
+        ? Number.parseFloat(teammate.temperature)
+        : settings.temperature,
+      platform: settings.platform === "obsidian" ? "api" : settings.platform,
       enabled_tools: enabledTools,
       tool_options: this.resolveToolOptions(enabledTools),
-      denied_tools: this.input.body.denied_tools,
-      approved_tools: this.input.body.approved_tools,
-      use_multi_model: this.input.body.use_multi_model,
-      models: this.input.body.models,
-      reasoning_effort: this.input.body.reasoning_effort ?? this.input.body.reasoning?.effort,
-      verbosity: this.input.body.verbosity,
-      budget_constraint: this.input.body.budget_constraint,
-      parallel_tool_calls: this.input.body.parallel_tool_calls,
-      response_format: this.input.body.response_format,
-      tool_choice: requestToolChoice,
     };
   }
 
@@ -109,9 +74,9 @@ class TeammateCompletionRequestPreparer {
     const configured =
       (this.input.mcpServers?.length ?? 0) > 0 ? mergeToolIds(stored ?? [], "mcp") : stored;
     const requested =
-      this.input.teammate.id === POLY_TEAMMATE_ID && this.input.body.enabled_tools !== undefined
-        ? [...new Set([...this.input.body.enabled_tools, ...POLY_NAVIGATION_TOOL_NAMES])]
-        : this.input.body.enabled_tools;
+      this.input.teammate.id === POLY_TEAMMATE_ID && this.input.settings.enabled_tools !== undefined
+        ? [...new Set([...this.input.settings.enabled_tools, ...POLY_NAVIGATION_TOOL_NAMES])]
+        : this.input.settings.enabled_tools;
     let permitted =
       configured && requested
         ? intersectEnabledTools(configured, requested)
@@ -131,10 +96,11 @@ class TeammateCompletionRequestPreparer {
   private resolveToolOptions(
     enabledTools: string[] | undefined,
   ): ChatHostedToolSettings | undefined {
-    const { mcp_servers: _requestedMcpServers, ...requested } = this.input.body.tool_options ?? {};
+    const { mcp_servers: _requestedMcpServers, ...requested } =
+      this.input.settings.tool_options ?? {};
     const mcpEnabled =
       enabledTools?.includes("mcp") === true &&
-      !this.input.body.denied_tools?.includes("mcp") &&
+      !this.input.settings.denied_tools?.includes("mcp") &&
       (this.input.mcpServers?.length ?? 0) > 0;
     const toolOptions: ChatHostedToolSettings = {
       ...requested,
@@ -159,6 +125,6 @@ class TeammateCompletionRequestPreparer {
 
 export function prepareTeammateCompletionRequest(
   input: TeammateCompletionRequestInput,
-): PreparedTeammateCompletionRequest {
+): PreparedTeammateSettings {
   return new TeammateCompletionRequestPreparer(input).prepare();
 }

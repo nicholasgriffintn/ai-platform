@@ -7,9 +7,7 @@ import {
   teammateRunConfigurationSchema,
   readToolIds,
   type ChatRun,
-  type ResponseAuthority,
   type ConversationType,
-  type ParsedResponseCommand,
   type TeammateInvocation,
   type TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
@@ -27,6 +25,7 @@ import {
   readToolInteractionResolution,
 } from "~/modules/responses/application/runs/interactions";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { TeammateComputerRepository } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { IEnv, IUser } from "~/types";
@@ -43,7 +42,7 @@ import { readTeammateSkillIds } from "./teammateResponse";
 export interface TeammateRunAdmissionInput {
   env: IEnv;
   context?: ServiceContext;
-  body: ParsedResponseCommand;
+  body: ResponseCommand;
   teammateId: string;
   user: IUser | undefined;
   anonymousUser: any;
@@ -98,18 +97,21 @@ export async function enqueueTeammateRun({
     (user
       ? ({
           source: "conversation",
-          conversationId: body.completion_id,
+          conversationId: body.conversationId,
         } as const)
       : undefined);
   const conversationProjectAccess =
     resolvedInvocation?.source === "conversation"
-      ? await resolveChatProjectAccess(serviceContext, body)
+      ? await resolveChatProjectAccess(serviceContext, {
+          completion_id: body.conversationId,
+          metadata: body.settings?.metadata,
+        })
       : null;
   const preparedInvocation = continuationRun
     ? await prepareAdmittedTeammateContinuation({
         context: serviceContext,
         run: continuationRun,
-        conversationId: body.completion_id,
+        conversationId: body.conversationId,
         teammateId,
       })
     : resolvedInvocation
@@ -126,7 +128,7 @@ export async function enqueueTeammateRun({
     (await requireTeammateAccess(serviceContext, teammateId, "read", user?.id));
 
   if (isPolyTeammateId(teammateId)) {
-    requirePolyHomeRun(preparedInvocation?.resolution, body.completion_id);
+    requirePolyHomeRun(preparedInvocation?.resolution, body.conversationId);
   }
 
   const liveMcpServers = resolveTeammateMcpServers(teammate.servers);
@@ -170,7 +172,7 @@ export async function enqueueTeammateRun({
 
   if (
     resolvedInvocation?.source === "delegation" &&
-    (!delegation || delegation.childConversationId !== body.completion_id)
+    (!delegation || delegation.childConversationId !== body.conversationId)
   ) {
     throw new AssistantError(
       "Delegation does not match this conversation",
@@ -207,7 +209,7 @@ export async function enqueueTeammateRun({
   const isPolyTeammate = isPolyTeammateId(teammate.id);
   const requestedEnabledTools = isPolyTeammate
     ? executionPolicy?.enabledTools
-    : (executionPolicy?.enabledTools ?? body.enabled_tools);
+    : (executionPolicy?.enabledTools ?? body.settings?.enabled_tools);
   const liveEnabledTools = requestedEnabledTools
     ? intersectEnabledTools(currentEnabledTools, requestedEnabledTools)
     : currentEnabledTools;
@@ -215,8 +217,8 @@ export async function enqueueTeammateRun({
     resumeConfiguration && !isPolyTeammate
       ? intersectEnabledTools(resumeConfiguration.enabledTools, liveEnabledTools)
       : liveEnabledTools;
-  const effectiveBody = {
-    ...body,
+  const effectiveSettings = {
+    ...body.settings,
     ...(effectiveEnabledTools ? { enabled_tools: effectiveEnabledTools } : {}),
   };
   const effectiveTeammate = {
@@ -230,7 +232,7 @@ export async function enqueueTeammateRun({
     skill_ids: effectiveSkillIds,
   };
 
-  const requestedModel = effectiveTeammate.model || effectiveBody.model || undefined;
+  const requestedModel = effectiveTeammate.model || effectiveSettings.model || undefined;
   const fallbackModel = requestedModel
     ? undefined
     : await getDefaultChatModel(serviceContext.env, user);
@@ -238,7 +240,7 @@ export async function enqueueTeammateRun({
   const modelDetails = await findModelConfig(
     modelToUse || "",
     env,
-    body.provider ?? fallbackModel?.provider,
+    effectiveSettings.provider ?? fallbackModel?.provider,
     user?.id,
   );
 
@@ -270,63 +272,68 @@ export async function enqueueTeammateRun({
         )?.budget.deadline
       : undefined);
 
-  const requestParams = prepareTeammateCompletionRequest({
+  const settings = prepareTeammateCompletionRequest({
     teammate: effectiveTeammate,
-    body: effectiveBody,
+    settings: effectiveSettings,
     modelProvider: modelDetails.provider,
-    formattedTools,
-    persona:
-      resumeConfiguration?.persona ??
-      buildTeammatePersona(teammate, preparedInvocation?.resolution.behaviour ?? "colleague"),
     mcpServers,
     maxStepsOverride,
     modeOverride: resumeConfiguration?.mode ?? executionPolicy?.mode,
   });
+  const persona =
+    resumeConfiguration?.persona ??
+    buildTeammatePersona(teammate, preparedInvocation?.resolution.behaviour ?? "colleague");
 
   const response = await startResponse({
     env: serviceContext.env,
-    authority: { ...authority, ...(delegationContext ? { delegationContext } : {}) },
     command: {
-      ...requestParams,
-      ...(conversationType ? { conversation_type: conversationType } : {}),
-      ...(preparedInvocation?.resolution.context
-        ? admitTeammateContextAuthority({
-            context: preparedInvocation.resolution.context,
-            trigger: authority.trigger,
-            now: Date.now(),
-          })
-        : {}),
-      ...(teammateComputer ? { computer_id: teammateComputer.id } : {}),
-      ...(resolvedInvocation?.source === "delegation"
-        ? { delegation_id: resolvedInvocation.delegationId }
-        : {}),
-      resolved_configuration: {
-        teammateId: teammate.id,
-        behaviour: preparedInvocation?.resolution.behaviour ?? "colleague",
-        ...(resolvedInvocation ? { invocation: resolvedInvocation } : {}),
-        persona: requestParams.persona,
-        model: modelDetails.matchingModel,
-        mode: requestParams.mode,
-        skillIds: effectiveSkillIds,
-        enabledTools: requestParams.enabled_tools ?? [],
-        memoryBindings: delegationContext?.memoryBindings ?? [],
-        ...(delegationContinuation ? { delegationContinuation } : {}),
-        mcpServers,
-        connectionGrants:
-          connectionGrants.map((grant) => ({
+      ...body,
+      ...(conversationType ? { conversationType } : {}),
+      settings,
+    },
+    authority: {
+      ...authority,
+      ...(delegationContext ? { delegationContext } : {}),
+      teammate: {
+        functionTools: formattedTools,
+        ...(preparedInvocation?.resolution.context
+          ? admitTeammateContextAuthority({
+              context: preparedInvocation.resolution.context,
+              trigger: authority.trigger,
+              now: Date.now(),
+            })
+          : {}),
+        ...(teammateComputer ? { computerId: teammateComputer.id } : {}),
+        ...(resolvedInvocation?.source === "delegation"
+          ? { delegationId: resolvedInvocation.delegationId }
+          : {}),
+        configuration: teammateRunConfigurationSchema.parse({
+          teammateId: teammate.id,
+          behaviour: preparedInvocation?.resolution.behaviour ?? "colleague",
+          ...(resolvedInvocation ? { invocation: resolvedInvocation } : {}),
+          persona,
+          model: modelDetails.matchingModel,
+          mode: settings.mode,
+          skillIds: effectiveSkillIds,
+          enabledTools: settings.enabled_tools ?? [],
+          memoryBindings: delegationContext?.memoryBindings ?? [],
+          ...(delegationContinuation ? { delegationContinuation } : {}),
+          mcpServers,
+          connectionGrants: connectionGrants.map((grant) => ({
             id: grant.id,
             connectionId: grant.connectionId,
             revision: grant.revision,
             allowedOperations: grant.allowedOperations,
-          })) ?? [],
-        maxSteps: resumeConfiguration?.maxSteps ?? requestParams.max_steps ?? 20,
-        usedSteps: resumeConfiguration?.usedSteps ?? 0,
-        ...(resumeConfiguration?.maxCreditMicros !== undefined
-          ? { maxCreditMicros: resumeConfiguration.maxCreditMicros }
-          : authority.durableExecution?.kind === "delegation"
-            ? { maxCreditMicros: authority.durableExecution.maxCreditMicros }
-            : {}),
-        ...(delegationDeadline ? { deadline: delegationDeadline } : {}),
+          })),
+          maxSteps: resumeConfiguration?.maxSteps ?? settings.max_steps,
+          usedSteps: resumeConfiguration?.usedSteps ?? 0,
+          ...(resumeConfiguration?.maxCreditMicros !== undefined
+            ? { maxCreditMicros: resumeConfiguration.maxCreditMicros }
+            : authority.durableExecution?.kind === "delegation"
+              ? { maxCreditMicros: authority.durableExecution.maxCreditMicros }
+              : {}),
+          ...(delegationDeadline ? { deadline: delegationDeadline } : {}),
+        }),
       },
     },
     user,
@@ -340,7 +347,7 @@ export async function enqueueTeammateRun({
 }
 
 export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
-  const interactionId = readToolInteractionId(input.body.options);
+  const interactionId = readToolInteractionId(input.body.settings?.options);
 
   if (!interactionId) {
     throw new AssistantError(
@@ -360,14 +367,14 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
   serviceContext.ensureDatabase();
   const run = await serviceContext.repositories
     .get(ConversationRunRepository)
-    .getForInteraction(input.body.completion_id, interactionId);
+    .getForInteraction(input.body.conversationId, interactionId);
 
   if (isPolyTeammateId(input.teammateId)) {
     await recordPolyApprovalOutcome({
       context: serviceContext,
-      conversationId: input.body.completion_id,
+      conversationId: input.body.conversationId,
       interactionId,
-      options: input.body.options,
+      options: input.body.settings?.options,
     });
   }
 
@@ -376,7 +383,7 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     run,
     teammateId: input.teammateId,
     interactionId,
-    resolution: readToolInteractionResolution(input.body.options),
+    resolution: readToolInteractionResolution(input.body.settings?.options),
   });
 
   return enqueueTeammateRun({

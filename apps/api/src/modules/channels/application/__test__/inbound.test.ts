@@ -140,17 +140,19 @@ describe("inbound channel messages", () => {
     expect(mocks.startResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         command: expect.objectContaining({
-          mode: "agent",
           stream: false,
-          max_steps: 3,
-          enabled_tools: ["trigger_recipe", "get_task_status", "get_weather"],
-          options: {
-            channel: {
-              id: "sms",
-              from: "+15551234567",
-              to: "+15557654321",
+          settings: expect.objectContaining({
+            mode: "agent",
+            max_steps: 3,
+            enabled_tools: ["trigger_recipe", "get_task_status", "get_weather"],
+            options: {
+              channel: {
+                id: "sms",
+                from: "+15551234567",
+                to: "+15557654321",
+              },
             },
-          },
+          }),
         }),
       }),
     );
@@ -222,7 +224,7 @@ describe("inbound channel messages", () => {
     const [first] = mocks.startResponse.mock.calls[0];
     const [second] = mocks.startResponse.mock.calls[1];
 
-    expect(second.command.completion_id).not.toBe(first.command.completion_id);
+    expect(second.command.conversationId).not.toBe(first.command.conversationId);
   });
 
   it("bounds stored history to the channel window before running the turn", async () => {

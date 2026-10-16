@@ -1,13 +1,13 @@
 import z from "zod/v4";
 
-import { permissionModeSchema, type PermissionMode } from "./providers.js";
-import { reasoningEffortSchema } from "./reasoning.js";
 import {
   chatCompletionMessageSchema,
   chatCompletionToolSchema,
   chatResponseFormatSchema,
   chatToolChoiceSchema,
-} from "./response-command.js";
+} from "./engine-request.js";
+import { permissionModeSchema, type PermissionMode } from "./providers.js";
+import { reasoningEffortSchema } from "./reasoning.js";
 
 export const AGENT_HARNESS_IDS = [
   "pi",

@@ -2,13 +2,17 @@ import {
   isStoredItem,
   itemsToMessages,
   resolveToolSelection,
+  type EngineRequest,
   type ParsedCreateResponseRequest,
-  type ResponseCommand,
+  type ResponseSettings,
   type StoredItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { omitUndefinedProperties } from "@ngriffin_uk/polychat-utility-core";
 
-type CommandMessages = NonNullable<ResponseCommand["messages"]>;
-type CommandOptions = NonNullable<ResponseCommand["options"]>;
+import type { ResponseCommand } from "~/modules/responses/domain/command";
+
+type CommandMessages = EngineRequest["messages"];
+type CommandOptions = NonNullable<ResponseSettings["options"]>;
 
 export interface ResponseCommandMappingOptions {
   platform?: string;
@@ -55,7 +59,7 @@ function mapInput(input: ParsedCreateResponseRequest["input"]): MappedInput {
 
 function mapConversation(conversation: ParsedCreateResponseRequest["conversation"]): {
   completionId?: string;
-  conversationType?: ResponseCommand["conversation_type"];
+  conversationType?: ResponseCommand["conversationType"];
   projectId?: string;
   ephemeral: boolean;
 } {
@@ -80,7 +84,7 @@ function mapConversation(conversation: ParsedCreateResponseRequest["conversation
 }
 
 function mapEnvironment(environment: ParsedCreateResponseRequest["environment"]): {
-  computeSite?: ResponseCommand["compute_site"];
+  computeSite?: ResponseSettings["compute_site"];
   sandbox?: CommandOptions["sandbox"];
 } {
   if (!environment) {
@@ -109,12 +113,6 @@ function mapEnvironment(environment: ParsedCreateResponseRequest["environment"])
   }
 }
 
-function defined<T extends Record<string, unknown>>(record: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(record).filter(([, value]) => value !== undefined),
-  ) as Partial<T>;
-}
-
 export function toResponseCommand(
   request: ParsedCreateResponseRequest,
   options: ResponseCommandMappingOptions = {},
@@ -124,11 +122,11 @@ export function toResponseCommand(
   const environment = mapEnvironment(request.environment);
   const tools = resolveToolSelection(request.tools);
   const sampling = request.sampling ?? {};
-  const metadata = defined({
+  const metadata = omitUndefinedProperties({
     ...request.metadata,
     project_id: conversation.projectId ?? request.metadata?.project_id,
   });
-  const commandOptions = defined({
+  const commandOptions = omitUndefinedProperties({
     source: request.options?.source,
     recipe: request.options?.recipe,
     connector: request.options?.connector,
@@ -136,13 +134,7 @@ export function toResponseCommand(
     sandbox: environment.sandbox,
     toolInteraction: input.toolInteraction,
   });
-
-  return defined({
-    messages: input.messages,
-    completion_id: conversation.completionId,
-    conversation_type: conversation.conversationType,
-    store: request.store ?? (conversation.ephemeral ? false : undefined),
-    stream: request.stream,
+  const settings = omitUndefinedProperties({
     system_prompt: request.instructions,
     model: request.model,
     models: request.models,
@@ -184,12 +176,23 @@ export function toResponseCommand(
     include_encrypted_reasoning: request.include?.includes("reasoning.encrypted")
       ? true
       : undefined,
-    command_id: request.idempotency_key,
-    run_id: request.response_id,
     connector_approval_id: input.connectorApprovalId,
     platform: request.client?.platform ?? options.platform,
     poly: options.poly ? { ui_context: request.client?.ui_context } : undefined,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     options: Object.keys(commandOptions).length > 0 ? commandOptions : undefined,
-  }) as ResponseCommand;
+  });
+
+  return {
+    messages: input.messages,
+    ...omitUndefinedProperties({
+      conversationId: conversation.completionId,
+      conversationType: conversation.conversationType,
+      commandId: request.idempotency_key,
+      runId: request.response_id,
+      stream: request.stream,
+      store: request.store ?? (conversation.ephemeral ? false : undefined),
+    }),
+    settings,
+  };
 }

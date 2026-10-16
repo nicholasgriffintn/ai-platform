@@ -16,15 +16,15 @@ import {
   type ChatRunStatus,
 } from "../chat-runs.js";
 import { conversationTypeSchema } from "../conversation-type.js";
-import { modelTierSchema } from "../model-lineup.js";
-import { polyUiContextSchema } from "../poly.js";
-import { permissionModeSchema } from "../providers.js";
-import { reasoningEffortSchema, reasoningSettingsSchema } from "../reasoning.js";
 import {
   chatCompactionModeSchema,
   chatResponseFormatSchema,
   connectorChatRequestOptionsSchema,
-} from "../response-command.js";
+} from "../engine-request.js";
+import { modelTierSchema } from "../model-lineup.js";
+import { polyUiContextSchema } from "../poly.js";
+import { permissionModeSchema } from "../providers.js";
+import { reasoningEffortSchema, reasoningSettingsSchema } from "../reasoning.js";
 import { runProvenanceSchema } from "../run-provenance.js";
 import { sandboxRequestOptionsSchema } from "../sandbox.js";
 import { chatRunUsageSchema } from "../usage.js";

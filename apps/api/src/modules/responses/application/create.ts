@@ -3,7 +3,6 @@ import {
   chatRunCommandReceiptSchema,
   isPolyTeammateId,
   messageToItem,
-  responseCommandSchema,
   toResponse,
   type ChatCompletionResponseBody,
   type ParsedCreateResponseRequest,
@@ -94,10 +93,10 @@ export async function createResponse({
     poly: isPolyTeammateId(teammateId),
   });
   const result = teammateId
-    ? await (command.options?.toolInteraction ? resumeTeammateRun : enqueueTeammateRun)({
+    ? await (command.settings?.options?.toolInteraction ? resumeTeammateRun : enqueueTeammateRun)({
         env: context.env,
         context,
-        body: responseCommandSchema.parse(command),
+        body: command,
         teammateId,
         user,
         anonymousUser,
@@ -119,7 +118,7 @@ export async function createResponse({
   }
 
   return completionToResponse(result, {
-    conversationId: command.completion_id,
+    conversationId: command.conversationId,
     userId: user?.id,
   });
 }

@@ -69,8 +69,8 @@ describe("QueuedChatMessageHandler", () => {
     expect(mocks.startResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         command: expect.objectContaining({
-          command_id: "queued_chat_1",
-          completion_id: "conversation-1",
+          commandId: "queued_chat_1",
+          conversationId: "conversation-1",
           stream: false,
         }),
       }),

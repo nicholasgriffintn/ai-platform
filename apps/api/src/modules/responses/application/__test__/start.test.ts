@@ -111,7 +111,7 @@ describe("startResponse", () => {
             ],
           },
         ],
-        model: "gpt-4",
+        settings: { model: "gpt-4" },
       } as any;
 
       mockProcessChatRequest.mockResolvedValue({
@@ -154,8 +154,7 @@ describe("startResponse", () => {
         env: mockEnv,
         command: {
           messages: [{ role: "user", content: "Hello" }],
-          model: "gpt-6-astra",
-          service_tier: "fast",
+          settings: { model: "gpt-6-astra", service_tier: "fast" },
         },
         user: mockUser,
       });
@@ -172,10 +171,10 @@ describe("startResponse", () => {
         startResponse({
           env: mockEnv,
           command: {
-            completion_id: "completion-with-approval",
-            connector_approval_id: "coa_action",
+            conversationId: "completion-with-approval",
             messages: [],
-          } as any,
+            settings: { connector_approval_id: "coa_action" },
+          },
         }),
       ).rejects.toMatchObject({ statusCode: 401 });
       expect(mockProcessChatRequest).not.toHaveBeenCalled();
@@ -242,11 +241,10 @@ describe("startResponse", () => {
         ]),
       } as any;
       const request = {
-        completion_id: completionId,
-        connector_approval_id: "coa_action",
+        conversationId: completionId,
         messages: [],
-        model: "gpt-4",
-      } as any;
+        settings: { connector_approval_id: "coa_action", model: "gpt-4" },
+      };
 
       mockProcessChatRequest.mockResolvedValue({
         response: { response: "Draft created" },
@@ -353,7 +351,7 @@ describe("startResponse", () => {
     it("should expose compaction markers as post-processing metadata, not choices", async () => {
       const request = {
         messages: [{ role: "user", content: "Hello" }],
-        compaction: "auto",
+        settings: { compaction: "auto" },
       } as any;
       const compactionMessage = {
         id: "snapshot-1-compaction",

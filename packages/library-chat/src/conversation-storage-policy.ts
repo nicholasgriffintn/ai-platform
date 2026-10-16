@@ -1,12 +1,12 @@
 import type {
-  ResponseCommand,
+  EngineRequest,
   ConversationRetention,
   RetentionReason,
 } from "@ngriffin_uk/polychat-schemas";
 
 export type { ConversationRetention, RetentionReason } from "@ngriffin_uk/polychat-schemas";
 
-export type ChatRequestOptions = Partial<ResponseCommand>;
+export type ChatRequestOptions = Partial<EngineRequest>;
 
 export interface ConversationStorageState {
   isAuthenticationLoading?: boolean;

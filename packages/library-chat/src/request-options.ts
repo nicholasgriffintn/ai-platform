@@ -1,6 +1,6 @@
-import type { ResponseCommand } from "@ngriffin_uk/polychat-schemas";
+import type { EngineRequest } from "@ngriffin_uk/polychat-schemas";
 
-export type ChatRequestOptions = Partial<ResponseCommand>;
+export type ChatRequestOptions = Partial<EngineRequest>;
 
 export function mergeChatRequestOptions(
   base: ChatRequestOptions | undefined,

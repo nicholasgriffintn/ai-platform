@@ -102,20 +102,20 @@ describe("admitTeammateContextAuthority", () => {
         trigger: "schedule",
         now: eightDaysLater,
       }),
-    ).toMatchObject({ autonomy_level: "assistant", standing_approvals: [] });
+    ).toMatchObject({ autonomyLevel: "assistant", standingApprovals: [] });
   });
 
   it("leaves the dial alone when the owner starts the turn or has been around", () => {
     expect(
       admitTeammateContextAuthority({ context: partner, trigger: "user", now: eightDaysLater }),
-    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
+    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
     expect(
       admitTeammateContextAuthority({
         context: partner,
         trigger: "schedule",
         now: Date.parse("2026-10-05T09:00:00.000Z"),
       }),
-    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
+    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
   });
 
   it("never brakes a teammate other than Poly", () => {
@@ -125,6 +125,6 @@ describe("admitTeammateContextAuthority", () => {
         trigger: "schedule",
         now: eightDaysLater,
       }),
-    ).toMatchObject({ autonomy_level: "partner", standing_approvals: [standing] });
+    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
   });
 });

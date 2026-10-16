@@ -4,10 +4,7 @@ import type {
   RecipeInvocationResponse,
   TeammateInvocation,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  responseCommandSchema,
-  createRecipeChatRequestOptions,
-} from "@ngriffin_uk/polychat-schemas";
+import { createRecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
@@ -21,6 +18,7 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
@@ -137,9 +135,9 @@ export async function executeRecipeInvocationChat(params: {
 }> {
   const conversationId = params.conversationId ?? `recipe_${generateId()}`;
   const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
-  const request = responseCommandSchema.parse({
-    completion_id: conversationId,
-    ...(params.commandId ? { command_id: params.commandId } : {}),
+  const request: ResponseCommand = {
+    conversationId,
+    ...(params.commandId ? { commandId: params.commandId } : {}),
     messages: [
       ...(params.priorMessages ?? []),
       {
@@ -147,15 +145,17 @@ export async function executeRecipeInvocationChat(params: {
         content: params.invocation.conversationStarter,
       },
     ],
-    mode: "agent",
     stream: false,
     store: true,
-    enabled_tools: params.invocation.enabledTools,
-    tool_choice: "auto",
-    reasoning: { effort: "none" },
-    metadata: params.projectId ? { project_id: params.projectId } : undefined,
-    options: buildRecipeExecutionOptions(params),
-  });
+    settings: {
+      mode: "agent",
+      enabled_tools: params.invocation.enabledTools,
+      tool_choice: "auto",
+      reasoning: { effort: "none" },
+      metadata: params.projectId ? { project_id: params.projectId } : undefined,
+      options: buildRecipeExecutionOptions(params),
+    },
+  };
   const response = params.teammate
     ? await enqueueTeammateRun({
         env: params.env,
@@ -172,7 +172,7 @@ export async function executeRecipeInvocationChat(params: {
         env: params.env,
         context: params.context,
         user: params.user,
-        command: { ...request, conversation_type: "task" },
+        command: { ...request, conversationType: "task" },
         authority: { trigger: "schedule" },
       });
 

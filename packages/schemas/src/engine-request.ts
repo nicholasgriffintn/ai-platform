@@ -1,6 +1,5 @@
 import z from "zod/v4";
 
-import { isAgentModelId } from "./agent-model-id.js";
 import { chatRequestModeSchema, toolPermissionSchema } from "./agent-modes.js";
 import {
   recipeChatRequestOptionsSchema,
@@ -8,10 +7,9 @@ import {
   type RecipeChatRequestOptions,
 } from "./apps.js";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode.js";
-import { chatRunCommandIdSchema, chatRunIdSchema, chatRunTriggerSchema } from "./chat-runs.js";
+import { chatRunCommandIdSchema, chatRunIdSchema } from "./chat-runs.js";
 import { computeSiteSchema } from "./compute-sites.js";
 import { conversationTypeSchema } from "./conversation-type.js";
-import { delegationContextSchema } from "./delegations.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
 import { modelTierSchema } from "./model-lineup.js";
@@ -338,7 +336,7 @@ export const chatRequestOptionsSchema = z
   })
   .strict();
 
-export const responseCommandFieldsSchema = z.object({
+export const engineRequestFieldsSchema = z.object({
   model: z.string().optional().describe("The model to use for the chat completion."),
   models: z
     .array(z.string().min(1))
@@ -614,83 +612,29 @@ export const durableExecutionSchema = z.discriminatedUnion("kind", [
 
 export type DurableExecution = z.infer<typeof durableExecutionSchema>;
 
-export const responseAuthoritySchema = z
-  .object({
-    trigger: chatRunTriggerSchema.optional(),
-    delegationContext: delegationContextSchema
-      .optional()
-      .describe("Trusted context for a run created by a delegation."),
-    durableExecution: durableExecutionSchema
-      .optional()
-      .describe("Durable execution metadata used to resume owned background work."),
-  })
-  .strict();
-
-export type ResponseAuthority = z.infer<typeof responseAuthoritySchema>;
-
-export const responseCommandInputSchema = responseCommandFieldsSchema.omit({
+export const engineRequestInputSchema = engineRequestFieldsSchema.omit({
   command_id: true,
   run_id: true,
   stream: true,
 });
 
-export const partialResponseCommandSchema = responseCommandFieldsSchema.partial().strict();
+export const partialEngineRequestSchema = engineRequestFieldsSchema.partial().strict();
 
-export const responseCommandSchema = responseCommandFieldsSchema
-  .strict()
-  .superRefine((request, ctx) => {
-    if (request.model && request.models?.length) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["models"],
-        message: "Provide either model or models, not both",
-      });
-    }
+export const responseSettingsSchema = engineRequestFieldsSchema.omit({
+  messages: true,
+  completion_id: true,
+  conversation_type: true,
+  command_id: true,
+  run_id: true,
+  stream: true,
+  store: true,
+  command_payload: true,
+  require_approval_for: true,
+  enforce_mode_tool_policy: true,
+});
 
-    if (
-      request.model_tier &&
-      (request.models?.length || (request.model && !isAgentModelId(request.model)))
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["model_tier"],
-        message: "model_tier is only valid with no explicit model, or with an agent model",
-      });
-    }
-
-    if (request.models?.length && request.use_multi_model !== true) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["use_multi_model"],
-        message: "use_multi_model must be true when models is provided",
-      });
-    }
-
-    const tokenLimitFields = [
-      request.max_tokens !== undefined ? "max_tokens" : undefined,
-      request.max_completion_tokens !== undefined ? "max_completion_tokens" : undefined,
-      request.max_output_tokens !== undefined ? "max_output_tokens" : undefined,
-    ].filter((field): field is string => field !== undefined);
-
-    if (tokenLimitFields.length > 1) {
-      ctx.addIssue({
-        code: "custom",
-        path: [tokenLimitFields[1] ?? "max_tokens"],
-        message: "Provide only one of max_tokens, max_completion_tokens, or max_output_tokens",
-      });
-    }
-
-    if (request.reasoning !== undefined && request.reasoning_effort !== undefined) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["reasoning_effort"],
-        message: "Provide either reasoning or reasoning_effort, not both",
-      });
-    }
-  });
-
-export type ResponseCommand = z.input<typeof responseCommandSchema>;
-export type ParsedResponseCommand = z.output<typeof responseCommandSchema>;
+export type EngineRequest = z.input<typeof engineRequestFieldsSchema>;
+export type ResponseSettings = z.input<typeof responseSettingsSchema>;
 
 export type ChatHostedToolSettings = z.input<typeof chatHostedToolSettingsSchema>;
 export type ChatRequestOptions = z.input<typeof chatRequestOptionsSchema>;

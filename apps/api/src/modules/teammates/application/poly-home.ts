@@ -46,9 +46,9 @@ export function admitTeammateContextAuthority(params: {
     : { autonomyLevel: context.autonomyLevel, standingApprovals: context.standingApprovals };
 
   return {
-    teammate_context_id: context.id,
-    autonomy_level: authority.autonomyLevel,
-    standing_approvals: authority.standingApprovals,
-    approval_streaks: context.approvalStreaks,
+    contextId: context.id,
+    autonomyLevel: authority.autonomyLevel,
+    standingApprovals: authority.standingApprovals,
+    approvalStreaks: context.approvalStreaks,
   };
 }
