@@ -235,6 +235,7 @@ export class ShieldstralGuardProvider implements GuardrailsProvider {
         provider: "shieldstral",
         isValid,
         violations: isValid ? [] : [source === "INPUT" ? "unsafe_prompt" : "unsafe_response"],
+        reasons: [],
         rawResponse: {
           model,
           policyVersion,

@@ -1,11 +1,11 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   declareTool,
-  flattenObjectRootSchema,
   isToolDeclaration,
   toProviderToolDeclarations,
   type ProviderToolDeclaration,
   type ToolDeclaration,
+  toToolInputJsonSchema,
 } from "@ngriffin_uk/polychat-library-tools";
 import z from "zod/v4";
 
@@ -85,12 +85,12 @@ function resolveFunctionParameters(func: {
     return func.parameters.jsonSchema || func.parameters;
   }
 
-  if (!func.inputSchema) {
+  if (!(func.inputSchema instanceof z.ZodType)) {
     return null;
   }
 
   try {
-    return flattenObjectRootSchema(z.toJSONSchema(func.inputSchema as z.ZodType));
+    return toToolInputJsonSchema(func.inputSchema);
   } catch (error) {
     logger.warn("Failed to convert tool input schema to JSON schema", {
       name: func.name,

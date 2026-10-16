@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { identifierToWords } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
@@ -119,32 +120,42 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
 
       const data = (await response.json()) as Record<string, any>;
       const violations: string[] = [];
+      const reasons: string[] = [];
 
       if (data.assessments?.[0]) {
         const assessment = data.assessments[0];
 
         if (assessment.topicPolicy?.topics) {
-          violations.push(
-            ...assessment.topicPolicy.topics
-              .filter((topic: { action: string }) => topic.action === "BLOCKED")
-              .map((topic: { name: string }) => `Blocked topic: ${topic.name}`),
-          );
+          for (const topic of assessment.topicPolicy.topics as { action: string; name: string }[]) {
+            if (topic.action === "BLOCKED") {
+              violations.push(`Blocked topic: ${topic.name}`);
+              reasons.push(topic.name);
+            }
+          }
         }
 
         if (assessment.contentPolicy?.filters) {
-          violations.push(
-            ...assessment.contentPolicy.filters
-              .filter((filter: { action: string }) => filter.action === "BLOCKED")
-              .map((filter: { type: string }) => `Content violation: ${filter.type}`),
-          );
+          for (const filter of assessment.contentPolicy.filters as {
+            action: string;
+            type: string;
+          }[]) {
+            if (filter.action === "BLOCKED") {
+              violations.push(`Content violation: ${filter.type}`);
+              reasons.push(identifierToWords(filter.type));
+            }
+          }
         }
 
         if (assessment.sensitiveInformationPolicy?.piiEntities) {
-          violations.push(
-            ...assessment.sensitiveInformationPolicy.piiEntities
-              .filter((entity: { action: string }) => entity.action === "BLOCKED")
-              .map((entity: { type: string }) => `PII detected: ${entity.type}`),
-          );
+          for (const entity of assessment.sensitiveInformationPolicy.piiEntities as {
+            action: string;
+            type: string;
+          }[]) {
+            if (entity.action === "BLOCKED") {
+              violations.push(`PII detected: ${entity.type}`);
+              reasons.push(`personal information (${identifierToWords(entity.type)})`);
+            }
+          }
         }
       }
 
@@ -157,6 +168,7 @@ export class BedrockGuardrailsProvider implements GuardrailsProvider {
         provider: "bedrock",
         isValid: data.action === "NONE",
         violations,
+        reasons: [...new Set(reasons)],
         rawResponse: data,
       };
     } catch (error) {

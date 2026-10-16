@@ -9,6 +9,7 @@ import type {
   Validator,
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
+import { describeGuardrailBlock } from "~/modules/chat/domain/guardrails";
 import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({
@@ -70,8 +71,7 @@ export class GuardrailsValidator implements Validator {
         return {
           validation: {
             isValid: false,
-            error:
-              inputValidation?.rawResponse?.blockedResponse || "Input did not pass safety checks",
+            error: describeGuardrailBlock("input", inputValidation?.reasons ?? []),
             violations: inputValidation?.violations,
             rawViolations: inputValidation?.rawResponse,
             validationType: "input",

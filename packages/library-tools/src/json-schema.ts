@@ -1,4 +1,32 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import z from "zod/v4";
+
+function isEmptyRecord(value: unknown): boolean {
+  return isRecord(value) && Object.keys(value).length === 0;
+}
+
+function pruneEmptyAdditionalProperties(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(pruneEmptyAdditionalProperties);
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key, entry]) => key !== "additionalProperties" || !isEmptyRecord(entry))
+      .map(([key, entry]) => [key, pruneEmptyAdditionalProperties(entry)]),
+  );
+}
+
+export function toToolInputJsonSchema(inputSchema: z.ZodType): Record<string, unknown> {
+  const { $schema: _schema, ...schema } = z.toJSONSchema(inputSchema, { io: "input" });
+  const pruned = pruneEmptyAdditionalProperties(flattenObjectRootSchema(schema));
+
+  return isRecord(pruned) ? pruned : {};
+}
 
 export function flattenObjectRootSchema(schema: Record<string, unknown>): Record<string, unknown> {
   const alternatives = schema.anyOf;

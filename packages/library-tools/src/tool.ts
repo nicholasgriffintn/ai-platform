@@ -1,8 +1,8 @@
-import z from "zod/v4";
+import type z from "zod/v4";
 
 import { declareTool, type ToolDeclaration } from "./declaration.js";
 import type { ToolEffects } from "./effects.js";
-import { flattenObjectRootSchema } from "./json-schema.js";
+import { toToolInputJsonSchema } from "./json-schema.js";
 
 export interface ToolResult {
   status?: string;
@@ -76,11 +76,9 @@ export function defineTool<
 export function toToolDeclaration(
   tool: Pick<ToolDescriptor, "name" | "description" | "inputSchema">,
 ): ToolDeclaration {
-  const { $schema: _schema, ...schema } = z.toJSONSchema(tool.inputSchema, { io: "input" });
-
   return declareTool({
     name: tool.name,
     description: tool.description,
-    schema: flattenObjectRootSchema(schema),
+    schema: toToolInputJsonSchema(tool.inputSchema),
   });
 }

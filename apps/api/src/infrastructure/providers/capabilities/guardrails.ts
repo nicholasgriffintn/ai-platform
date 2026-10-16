@@ -125,7 +125,7 @@ export class Guardrails {
     const provider = await this.resolveProvider();
 
     if (!provider) {
-      return { provider: "none", isValid: true, violations: [] };
+      return { provider: "none", isValid: true, violations: [], reasons: [] };
     }
 
     const result = await provider.validateContent(message, "INPUT");
@@ -158,7 +158,7 @@ export class Guardrails {
     const provider = await this.resolveProvider();
 
     if (!provider) {
-      return { provider: "none", isValid: true, violations: [] };
+      return { provider: "none", isValid: true, violations: [], reasons: [] };
     }
 
     const result = await provider.validateContent(response, "OUTPUT");

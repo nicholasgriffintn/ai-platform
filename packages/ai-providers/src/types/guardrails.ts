@@ -35,5 +35,6 @@ export interface GuardrailResult {
   provider: string;
   isValid: boolean;
   violations: string[];
+  reasons: string[];
   rawResponse?: any;
 }

@@ -593,7 +593,7 @@ export class ChatOrchestrator {
       return {
         selectedModel: primaryModel,
         validation: "output",
-        error: "Response did not pass safety checks",
+        error: runResult.response.response,
         violations: runResult.guardrailViolations,
         ...(runLifecycle ? { runReceipt: runLifecycle.receipt } : {}),
       };

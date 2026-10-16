@@ -54,6 +54,10 @@ describe("evaluateTypeSafeGuardrail", () => {
 
     expect(result.isValid).toBe(false);
     expect(result.violations).toEqual(["jailbreak", "harmful_activity"]);
+    expect(result.reasons).toEqual([
+      "trying to get round the assistant's instructions",
+      "help with something harmful",
+    ]);
   });
 
   it("blocks on severity alone when no single hazard is confident", () => {

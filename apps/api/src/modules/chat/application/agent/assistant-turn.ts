@@ -16,6 +16,7 @@ import { expandTurnArtifactEdits } from "~/modules/chat/application/agent/artifa
 import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
+import { describeGuardrailBlock } from "~/modules/chat/domain/guardrails";
 import { buildAssistantMessageData } from "~/modules/chat/domain/mode-metadata";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
@@ -97,7 +98,7 @@ export async function finaliseAssistantTurn(
     ? editedTurn.turn
     : {
         ...turn,
-        content: "Response blocked by safety checks.",
+        content: guardrailResult.error,
         thinking: undefined,
         signature: undefined,
         toolCalls: [],
@@ -271,10 +272,7 @@ async function validateOutput(params: FinaliseAssistantTurnParams): Promise<{
 
   return {
     passed: false,
-    error:
-      typeof validation?.rawResponse?.blockedResponse === "string"
-        ? validation.rawResponse.blockedResponse
-        : "Content failed validation checks",
+    error: describeGuardrailBlock("output", validation?.reasons ?? []),
     violations: validation?.violations || [],
   };
 }

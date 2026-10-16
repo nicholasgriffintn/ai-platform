@@ -116,6 +116,14 @@ export function humaniseIdentifier(value: string): string {
   return capitaliseFirst(spaced);
 }
 
+export function identifierToWords(value: string): string {
+  return value.replace(/[_-]+/g, " ").trim().toLowerCase();
+}
+
+export function formatConjunctionList(items: readonly string[]): string {
+  return new Intl.ListFormat("en-GB", { type: "conjunction" }).format(items);
+}
+
 export function joinNonEmptyStrings(
   parts: Array<string | null | undefined>,
   separator = " ",

@@ -35,6 +35,13 @@ const HAZARD_QUESTION_IDS = [
 
 type HazardQuestionId = (typeof HAZARD_QUESTION_IDS)[number];
 
+const HAZARD_REASONS: Record<HazardQuestionId, string> = {
+  jailbreak: "trying to get round the assistant's instructions",
+  harmful_activity: "help with something harmful",
+  medical_decision: "a medical decision that needs a professional",
+  self_harm: "self-harm",
+};
+
 function guardrailQuestions(source: GuardrailSource): DecisionQuestions {
   const subject =
     source === "INPUT" ? "the `message` sent to an AI assistant" : "the AI assistant's `message`";
@@ -103,7 +110,7 @@ export function evaluateTypeSafeGuardrail(
   source: GuardrailSource,
   options: { blockThreshold: number; severityBlockLevel: number },
 ): GuardrailResult {
-  const violations: string[] = [];
+  const violations: HazardQuestionId[] = [];
   const probabilities: Partial<Record<HazardQuestionId, number>> = {};
 
   for (const id of HAZARD_QUESTION_IDS) {
@@ -123,14 +130,15 @@ export function evaluateTypeSafeGuardrail(
   const severity = response.answers.severity;
   const severityScore = severity?.type === "score" ? severity.score : 0;
 
-  if (violations.length === 0 && severityScore >= options.severityBlockLevel) {
-    violations.push(source === "INPUT" ? "unsafe_prompt" : "unsafe_response");
-  }
+  const severityBlocked = violations.length === 0 && severityScore >= options.severityBlockLevel;
 
   return {
     provider: TYPESAFE_PROVIDER_NAME,
-    isValid: violations.length === 0,
-    violations,
+    isValid: violations.length === 0 && !severityBlocked,
+    violations: severityBlocked
+      ? [source === "INPUT" ? "unsafe_prompt" : "unsafe_response"]
+      : violations,
+    reasons: violations.map((id) => HAZARD_REASONS[id]),
     rawResponse: {
       model: response.model,
       probabilities,

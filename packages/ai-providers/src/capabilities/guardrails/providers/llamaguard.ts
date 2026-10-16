@@ -15,6 +15,23 @@ import { normaliseGuardrailInput } from "../content.js";
 
 const logger = getLogger({ prefix: "lib/guardrails/llamaguard" });
 
+function readCategoryNames(categories: string): Map<string, string> {
+  return new Map(
+    [...categories.matchAll(/^(S\d+):\s*(.+?)\.?\s*$/gm)].flatMap(([, code, name]) =>
+      code && name ? [[code, name.toLowerCase()] as const] : [],
+    ),
+  );
+}
+
+function readViolatedCodes(verdict: string): string[] {
+  const [, codes = ""] = verdict.trim().split(/\n+/);
+
+  return codes
+    .split(",")
+    .map((code) => code.trim().toUpperCase())
+    .filter(Boolean);
+}
+
 export interface LlamaGuardConfig {
   ai: Ai;
   env: ProviderEnv;
@@ -84,7 +101,10 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
       const responseText = response.response.toLowerCase().trim();
       const [verdict] = responseText.split(/\s|\n/, 1);
       const isValid = verdict === "safe";
-      const violations = isValid ? [] : [response.response];
+      const codes = isValid ? [] : readViolatedCodes(response.response);
+      const categoryNames = readCategoryNames(unsafeCategories);
+      const violations = isValid ? [] : codes.length > 0 ? codes : [response.response];
+      const reasons = codes.flatMap((code) => categoryNames.get(code) ?? []);
 
       logger.debug("Llama Guard validation result", {
         violations,
@@ -95,6 +115,7 @@ Provide your safety assessment for ONLY THE LAST ${role} in the above conversati
         provider: "llamaguard",
         isValid,
         violations,
+        reasons,
         rawResponse: response.response,
       };
     } catch (error) {

@@ -11,13 +11,8 @@ export const web_search: ApiToolDefinition = {
     const completion_id = context.completionId;
     const conversationManager = context.conversationManager;
 
-    const { query, search_depth, include_answer, include_raw_content, include_images } = args;
-    const options: SearchOptions = {
-      search_depth,
-      include_answer,
-      include_raw_content,
-      include_images,
-    };
+    const { query, search_depth } = args;
+    const options: SearchOptions = { search_depth };
 
     const {
       answer,

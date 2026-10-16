@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ChatOrchestrator } from "~/modules/chat/application/core/ChatOrchestrator";
+import { describeGuardrailBlock } from "~/modules/chat/domain/guardrails";
 import type { CoreChatOptions } from "~/types";
 
 const {
@@ -745,8 +746,10 @@ describe("ChatOrchestrator", () => {
         );
         mockGuardrails.validateOutput.mockResolvedValue({
           isValid: false,
-          violations: ["unsafe_response"],
+          violations: ["self_harm"],
+          reasons: ["self-harm"],
         });
+        const blockedReply = describeGuardrailBlock("output", ["self-harm"]);
 
         const result = await orchestrator.process({ ...mockOptions, stream: true });
 
@@ -758,7 +761,7 @@ describe("ChatOrchestrator", () => {
 
         expect(streamOutput).toContain("unsafe streamed output");
         expect(streamOutput.indexOf("unsafe streamed output")).toBeLessThan(
-          streamOutput.indexOf("Response blocked by safety checks."),
+          streamOutput.indexOf(blockedReply),
         );
         const retraction = streamOutput
           .split("\n")
@@ -769,7 +772,7 @@ describe("ChatOrchestrator", () => {
           );
 
         expect(retraction.item).toMatchObject({
-          content: [{ type: "text", text: "Response blocked by safety checks." }],
+          content: [{ type: "text", text: blockedReply }],
           metadata: { tool_calls: [] },
         });
         expect(retraction.item.metadata.post_processing.guardrails.passed).toBe(false);
@@ -777,7 +780,7 @@ describe("ChatOrchestrator", () => {
         expect(mockConversationManager.add).toHaveBeenCalledWith(
           "test-completion-id",
           expect.objectContaining({
-            content: "Response blocked by safety checks.",
+            content: blockedReply,
             tool_calls: null,
           }),
         );
