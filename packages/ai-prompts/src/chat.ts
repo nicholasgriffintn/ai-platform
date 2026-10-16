@@ -77,7 +77,7 @@ export interface PromptMemoryPolicy {
 }
 
 export interface UserContextInput {
-  date: string;
+  date?: string | null;
   userNickname?: string | null;
   userJobRole?: string | null;
   latitude?: number | null;
@@ -106,6 +106,8 @@ export interface BehaviourSectionOptions {
   supportsToolCalls?: boolean;
   simulatedThinking?: boolean;
   preferredLanguage?: string | null;
+  currentTimeTool?: string;
+  userInformationTool?: string;
 }
 
 export function isAgentMode(mode?: string | null): boolean {
@@ -167,6 +169,8 @@ export function buildBehaviourSection({
   supportsToolCalls,
   simulatedThinking,
   preferredLanguage,
+  currentTimeTool = "get_current_time",
+  userInformationTool = "get_user_information",
 }: BehaviourSectionOptions): string {
   const builder = new PromptBuilder("<behaviour>").addLine();
   const addRule = (text: string) => builder.addLine(`<rule>${text}</rule>`);
@@ -186,7 +190,14 @@ export function buildBehaviourSection({
     addRule(getPromptText("chat/behaviour/rules/simulated-thinking"));
   }
 
-  addRule(getPromptText("chat/behaviour/rules/date"));
+  addRule(
+    supportsToolCalls
+      ? renderPrompt("chat/behaviour/rules/live-context-tools", {
+          currentTimeTool,
+          userInformationTool,
+        })
+      : getPromptText("chat/behaviour/rules/date"),
+  );
 
   const sanitizedLanguage = preferredLanguage?.trim();
 
@@ -387,7 +398,7 @@ export function buildUserContextSection({
       !!userJobRole,
       renderPrompt("chat/user-context/job-role", { userJobRole: escapeHtml(userJobRole ?? "") }),
     )
-    .addIf(!!date, renderPrompt("chat/user-context/date", { date: escapeHtml(date) }));
+    .addIf(!!date, renderPrompt("chat/user-context/date", { date: escapeHtml(date ?? "") }));
 
   if (
     latitude !== undefined &&
@@ -529,6 +540,8 @@ export interface StandardChatPromptOptions {
   channel?: ChannelContextInput | null;
   userContext: UserContextInput;
   skillLoadTool?: string;
+  currentTimeTool?: string;
+  userInformationTool?: string;
   userTraits?: string | null;
   userPreferences?: string | null;
   platform?: string | null;
@@ -551,6 +564,8 @@ export function buildStandardChatPrompt({
   channel,
   userContext,
   skillLoadTool,
+  currentTimeTool,
+  userInformationTool,
   userTraits,
   userPreferences,
   platform,
@@ -584,6 +599,8 @@ export function buildStandardChatPrompt({
         supportsToolCalls: capabilities.supportsToolCalls,
         simulatedThinking: capabilities.simulatedThinking,
         preferredLanguage,
+        currentTimeTool,
+        userInformationTool,
       }),
     )
     .add(buildPersonaSection(persona))
@@ -595,7 +612,13 @@ export function buildStandardChatPrompt({
     .addIf(isTeammate, buildAgentGuidelinesSection())
     .add(buildChannelSection(channel))
     .add(buildSkillsSection(skills, { skillLoadTool }))
-    .add(buildUserContextSection(userContext))
+    .add(
+      buildUserContextSection(
+        capabilities.supportsToolCalls
+          ? { ...userContext, date: null, latitude: null, longitude: null }
+          : userContext,
+      ),
+    )
     .add(
       buildSessionConfigSection({
         mode: chatMode,

@@ -2,7 +2,12 @@ import {
   resolveToolDestination,
   resolveToolEffectClass,
 } from "@ngriffin_uk/polychat-library-tools";
-import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import {
+  CALCULATOR_TOOL_NAME,
+  CAPABILITY_DISCOVERY_TOOL_NAME,
+  CURRENT_TIME_TOOL_NAME,
+  USER_INFORMATION_TOOL_NAME,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
@@ -71,12 +76,15 @@ describe("functions tool registry", () => {
       "run_council",
       CAPABILITY_DISCOVERY_TOOL_NAME,
       "load_skill",
+      CURRENT_TIME_TOOL_NAME,
+      CALCULATOR_TOOL_NAME,
+      USER_INFORMATION_TOOL_NAME,
       "web_search",
       "search_conversations",
     ]);
   });
 
-  it("keeps a project authoritative over everything but discovery", () => {
+  it("keeps a project authoritative over everything but discovery and ambient tools", () => {
     const enabled = resolveRequestFunctionToolNames({
       projectTools: ["create_note", "load_skill"],
       requestedToolNames: ["create_note", "run_council"],
@@ -84,7 +92,14 @@ describe("functions tool registry", () => {
       user: { id: 1, plan_id: "pro" },
     });
 
-    expect(enabled).toEqual(["create_note", CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill"]);
+    expect(enabled).toEqual([
+      "create_note",
+      CAPABILITY_DISCOVERY_TOOL_NAME,
+      "load_skill",
+      CURRENT_TIME_TOOL_NAME,
+      CALCULATOR_TOOL_NAME,
+      USER_INFORMATION_TOOL_NAME,
+    ]);
   });
 
   it("lets a platform teammate bring its own tools into a project", () => {
@@ -96,7 +111,13 @@ describe("functions tool registry", () => {
       user: { id: 1, plan_id: "pro" },
     });
 
-    expect(enabled).toEqual(["search_documents", "create_note"]);
+    expect(enabled).toEqual([
+      "search_documents",
+      "create_note",
+      CURRENT_TIME_TOOL_NAME,
+      CALCULATOR_TOOL_NAME,
+      USER_INFORMATION_TOOL_NAME,
+    ]);
   });
 
   it("does not switch platform tools on for other project chats", () => {
@@ -107,7 +128,12 @@ describe("functions tool registry", () => {
       user: { id: 1, plan_id: "pro" },
     });
 
-    expect(enabled).toEqual(["create_note"]);
+    expect(enabled).toEqual([
+      "create_note",
+      CURRENT_TIME_TOOL_NAME,
+      CALCULATOR_TOOL_NAME,
+      USER_INFORMATION_TOOL_NAME,
+    ]);
   });
 
   it("activates companion tools alongside a discovered tool", () => {
@@ -118,13 +144,18 @@ describe("functions tool registry", () => {
     expect(expandFunctionToolNames(["web_search"])).toEqual(["web_search"]);
   });
 
-  it("keeps an explicit tool selection authoritative", () => {
+  it("keeps an explicit tool selection authoritative apart from ambient tools", () => {
     const enabled = resolveEnabledFunctionToolNames(["search_grounding"], {
       id: 1,
       plan_id: "pro",
     });
 
-    expect([...enabled]).toEqual(["search_grounding"]);
+    expect([...enabled]).toEqual([
+      "search_grounding",
+      CURRENT_TIME_TOOL_NAME,
+      CALCULATOR_TOOL_NAME,
+      USER_INFORMATION_TOOL_NAME,
+    ]);
     expect(enabled.has(CAPABILITY_DISCOVERY_TOOL_NAME)).toBe(false);
     expect(enabled.has("load_skill")).toBe(false);
     expect(enabled.has("trigger_recipe")).toBe(false);

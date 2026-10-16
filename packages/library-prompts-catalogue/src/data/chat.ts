@@ -176,6 +176,25 @@ export const chatPromptEntries = [
     text: "Use the supplied current date to interpret relative dates, and restate an exact calendar date when a relative reference could be ambiguous.",
   },
   {
+    id: "chat/behaviour/rules/live-context-tools",
+    task: "chat-section",
+    title: "Behaviour: live context from tools",
+    description: "Date, time and location rule used when live context comes from tools.",
+    text: "You do not know the current date, the time or where the user is. Call {{currentTimeTool}} before answering anything that depends on the date or time, and {{userInformationTool}} before anything that depends on their location. Restate an exact calendar date when a relative reference could be ambiguous.",
+    variables: [
+      {
+        name: "currentTimeTool",
+        description: "Name of the tool that returns the current date and time.",
+        example: "get_current_time",
+      },
+      {
+        name: "userInformationTool",
+        description: "Name of the tool that returns the user's location and profile details.",
+        example: "get_user_information",
+      },
+    ],
+  },
+  {
     id: "chat/behaviour/rules/language",
     task: "chat-section",
     title: "Behaviour: reply language",

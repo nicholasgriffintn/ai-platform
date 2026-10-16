@@ -2,27 +2,31 @@ import { getWeatherForLocation } from "~/modules/tools/application/retrieval/wea
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_weather as get_weatherDescriptor } from "./definitions/weather";
+import { resolveUserCoordinates } from "./user-location";
 
 export const get_weather: ApiToolDefinition = {
   ...get_weatherDescriptor,
   execute: async (args, context) => {
     const req = context.request;
-    const location = {
-      longitude: args.longitude || args.lat,
-      latitude: args.latitude || args.lon,
-    };
+    const latitude = args.latitude ?? args.lat;
+    const longitude = args.longitude ?? args.lon;
+    const location =
+      typeof latitude === "number" && typeof longitude === "number"
+        ? { latitude, longitude }
+        : resolveUserCoordinates(req);
 
-    if (!location.longitude || !location.latitude) {
+    if (!location) {
       return {
         status: "error",
         name: "get_weather",
-        content: "Missing location",
+        content: "No location given and the user's location is not available. Ask where they are.",
         data: {},
       };
     }
 
-    const data = await getWeatherForLocation(req.env, location);
-
-    return data;
+    return getWeatherForLocation(req.env, {
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
   },
 };

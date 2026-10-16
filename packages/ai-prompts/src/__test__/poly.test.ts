@@ -26,7 +26,7 @@ describe("Poly in the standard prompt", () => {
     expect(prompt).toContain("<place>Attention</place>");
     expect(prompt).toContain("&lt;conversation-1&gt;");
     expect(prompt).not.toContain("<conversation-1>");
-    expect(prompt).toContain("2026-10-05");
+    expect(prompt).toContain("Call get_current_time");
   });
 
   it("lists the agenda as escaped data and leaves it out when there is nothing on it", () => {

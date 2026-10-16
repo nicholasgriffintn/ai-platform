@@ -10,7 +10,9 @@ import {
 } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  CURRENT_TIME_TOOL_NAME,
   SKILL_LOAD_TOOL_NAME,
+  USER_INFORMATION_TOOL_NAME,
   resolveSandboxDeliveryPolicy,
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
@@ -171,10 +173,12 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
           date: request.date || asToday(),
           userNickname: userSettings?.nickname || null,
           userJobRole: userSettings?.job_role || null,
-          latitude: request.location?.latitude || user?.latitude,
-          longitude: request.location?.longitude || user?.longitude,
+          latitude: request.location?.latitude ?? user?.latitude,
+          longitude: request.location?.longitude ?? user?.longitude,
         },
         skillLoadTool: SKILL_LOAD_TOOL_NAME,
+        currentTimeTool: CURRENT_TIME_TOOL_NAME,
+        userInformationTool: USER_INFORMATION_TOOL_NAME,
         userTraits: userSettings?.traits || null,
         userPreferences: userSettings?.preferences || null,
         poly: request.poly

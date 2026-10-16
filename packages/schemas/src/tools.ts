@@ -12,6 +12,10 @@ import { toolIdSchema, toolIdsSchema } from "./tool-ids.js";
 export { mergeToolIds, normaliseToolIds, readToolIds } from "./tool-ids.js";
 export { toolIdSchema, toolIdsSchema };
 
+export const CURRENT_TIME_TOOL_NAME = "get_current_time";
+export const CALCULATOR_TOOL_NAME = "calculate";
+export const USER_INFORMATION_TOOL_NAME = "get_user_information";
+
 export const toolCategories = [
   "Research",
   "Creative",

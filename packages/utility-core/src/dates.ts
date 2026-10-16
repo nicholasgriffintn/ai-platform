@@ -71,3 +71,53 @@ export function epochSecondsToIso(value: unknown): string | null {
 export function hoursBetween(start: string, end: string): number {
   return Math.max(0, Date.parse(end) - Date.parse(start)) / 3_600_000;
 }
+
+export interface ZonedInstant {
+  iso: string;
+  unixSeconds: number;
+  timeZone: string;
+  date: string;
+  time: string;
+  weekday: string;
+  utcOffset: string;
+}
+
+export function isValidTimeZone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en-GB", { timeZone }).format(new Date());
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function describeZonedInstant(instant: Date, timeZone = "UTC"): ZonedInstant {
+  const parts = new Map(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+      weekday: "long",
+      timeZoneName: "longOffset",
+    })
+      .formatToParts(instant)
+      .map((part) => [part.type, part.value]),
+  );
+  const offset = (parts.get("timeZoneName") ?? "GMT").replace("GMT", "");
+
+  return {
+    iso: instant.toISOString(),
+    unixSeconds: Math.floor(instant.getTime() / 1000),
+    timeZone,
+    date: `${parts.get("year")}-${parts.get("month")}-${parts.get("day")}`,
+    time: `${parts.get("hour")}:${parts.get("minute")}:${parts.get("second")}`,
+    weekday: parts.get("weekday") ?? "",
+    utcOffset: offset || "+00:00",
+  };
+}

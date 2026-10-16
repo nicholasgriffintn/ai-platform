@@ -170,7 +170,7 @@ export async function queueOfficialRuns(
       itemsTotal: benchmark.summary.itemCount,
     });
 
-    await enqueueBenchmarkRunTask(env, repositories, record.id);
+    await enqueueBenchmarkRunTask(env, repositories, record.id, { kind: "start" });
     queued.push(toBenchmarkRun(record));
   }
 
@@ -190,11 +190,20 @@ export async function recoverStaleBenchmarkRuns(
     BENCHMARKS_CONFIG.staleRunMinutes,
   );
 
+  let recovered = 0;
+
   for (const run of stale) {
-    await enqueueBenchmarkRunTask(env, repositories, run.id);
+    if (
+      await enqueueBenchmarkRunTask(env, repositories, run.id, {
+        kind: "sweep",
+        itemsTotal: run.items_total,
+      })
+    ) {
+      recovered += 1;
+    }
   }
 
-  return stale.length;
+  return recovered;
 }
 
 function latestOfficialRuns(

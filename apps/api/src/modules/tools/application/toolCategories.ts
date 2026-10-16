@@ -28,10 +28,13 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "run_sandbox_task",
   ],
   Productivity: [
+    "calculate",
     "configure_recipe",
     "create_note",
+    "get_current_time",
     "get_note",
     "get_recipe",
+    "get_user_information",
     "search_conversations",
     "search_memories",
     "store_memory",

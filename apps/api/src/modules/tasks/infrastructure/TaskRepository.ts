@@ -120,6 +120,16 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return { task, created };
   }
 
+  public async countTasksByIdPrefix(prefix: string): Promise<number> {
+    const row = await this.runQuery<{ total: number }>(
+      "SELECT COUNT(*) AS total FROM tasks WHERE id LIKE ? ESCAPE '\\'",
+      [`${prefix.replaceAll(/[\\%_]/g, (match) => `\\${match}`)}%`],
+      true,
+    );
+
+    return row?.total ?? 0;
+  }
+
   public async getTaskById(taskId: string): Promise<Task | null> {
     const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
     const result = await this.runQuery<Task>(query, values, true);

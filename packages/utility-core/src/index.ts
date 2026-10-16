@@ -1,3 +1,4 @@
+export * from "./arithmetic.js";
 export * from "./arrays.js";
 export * from "./async-queue.js";
 export * from "./binary.js";

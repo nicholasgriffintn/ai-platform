@@ -76,6 +76,6 @@ describe("benchmarkRetryDelayMs", () => {
     const long = new AssistantError("Please retry in 600s", ErrorType.RATE_LIMIT_ERROR, 429);
 
     expect(benchmarkRetryDelayMs(plain, 2)).toBe(7_000);
-    expect(benchmarkRetryDelayMs(long, 1)).toBe(90_000);
+    expect(benchmarkRetryDelayMs(long, 1)).toBe(60_000);
   });
 });

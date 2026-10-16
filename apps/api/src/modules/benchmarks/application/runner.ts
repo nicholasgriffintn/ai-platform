@@ -45,11 +45,11 @@ import { invokeEntrant } from "./invoke";
 
 const logger = getLogger({ prefix: "modules/benchmarks/runner" });
 
-const TASK_TIME_BUDGET_MS = 6 * 60 * 1000;
-const TRANSIENT_ATTEMPTS = 4;
+const TASK_TIME_BUDGET_MS = 4 * 60 * 1000;
+const TRANSIENT_ATTEMPTS = 3;
 const MAX_ITEM_ATTEMPTS = 2;
 const TRANSIENT_DELAY_MS = 3_000;
-const MAX_RETRY_DELAY_MS = 90_000;
+const MAX_RETRY_DELAY_MS = 60_000;
 const RETRY_HINT_PATTERN = /retry in ([\d.]+)\s*s/i;
 const MAX_STORED_OUTPUT = 20_000;
 const MAX_STORED_ERROR = 500;
@@ -59,23 +59,48 @@ const PASSES = ["first", "sweep"] as const;
 type RunOutcome =
   | { kind: "done" }
   | { kind: "cancelled" }
-  | { kind: "out_of_time" }
+  | { kind: "out_of_time"; resolved: number }
   | { kind: "fatal"; reason: string };
+
+export type BenchmarkTaskKind = "start" | "retry" | "continue" | "sweep";
+
+export function benchmarkTaskPrefix(runId: string): string {
+  return `${BENCHMARK_RUN_TASK_TYPE}:${runId}:`;
+}
+
+export function maxPassesFor(itemsTotal: number): number {
+  return Math.max(BENCHMARKS_CONFIG.maxTasksPerRun, itemsTotal * 2 + 2);
+}
 
 export async function enqueueBenchmarkRunTask(
   env: IEnv,
   repositories: RepositoryManager,
   runId: string,
-  options: { retryChecks?: boolean } = {},
-): Promise<void> {
+  options: { kind: BenchmarkTaskKind; retryChecks?: boolean; itemsTotal?: number },
+): Promise<boolean> {
+  if (options.kind === "continue" || options.kind === "sweep") {
+    const passes = await repositories.tasks.countTasksByIdPrefix(benchmarkTaskPrefix(runId));
+
+    if (passes >= maxPassesFor(options.itemsTotal ?? 0)) {
+      await repositories.benchmarkRuns.update(runId, {
+        status: "failed",
+        failure_reason: `Gave up after ${passes} worker passes without finishing`,
+      });
+
+      return false;
+    }
+  }
+
   const data: BenchmarkRunTaskData = options.retryChecks ? { runId, retryChecks: true } : { runId };
 
   await new TaskService(env, repositories.tasks).enqueueTask({
-    id: `${BENCHMARK_RUN_TASK_TYPE}:${runId}:${Date.now()}`,
+    id: `${benchmarkTaskPrefix(runId)}${Date.now()}`,
     task_type: BENCHMARK_RUN_TASK_TYPE,
     task_data: data,
     priority: RUN_TASK_PRIORITY,
   });
+
+  return true;
 }
 
 async function judgeArtefact(
@@ -136,22 +161,23 @@ export function benchmarkRetryDelayMs(error: unknown, attempt: number): number {
 async function invokeWithRetries(
   scope: Parameters<typeof invokeEntrant>[0],
   target: EntrantTarget,
+  deadline: number,
 ) {
   for (let attempt = 1; ; attempt += 1) {
     try {
       return await invokeEntrant(scope, target);
     } catch (error) {
       const classification = classifyProviderRetryError(error);
+      const delayMs = benchmarkRetryDelayMs(error, attempt);
 
       if (
         attempt >= TRANSIENT_ATTEMPTS ||
         !classification.retryable ||
-        classification.classification === "timeout"
+        classification.classification === "timeout" ||
+        Date.now() + delayMs >= deadline
       ) {
         throw error;
       }
-
-      const delayMs = benchmarkRetryDelayMs(error, attempt);
 
       logger.warn("Benchmark item hit a transient provider error, retrying", {
         runId: scope.runId,
@@ -165,7 +191,7 @@ async function invokeWithRetries(
   }
 }
 
-interface RunContext {
+export interface RunContext {
   env: IEnv;
   repositories: RepositoryManager;
   run: BenchmarkRunRecord;
@@ -173,6 +199,7 @@ interface RunContext {
   target: EntrantTarget;
   user: IUser | null;
   billingUser: IUser | null;
+  deadline: number;
 }
 
 function errorResult(
@@ -218,6 +245,7 @@ async function runItem(
         itemId,
       },
       target,
+      context.deadline,
     );
     const scored = benchmark.score(itemId, response.answer);
     const artefact = benchmark.artefact(itemId, response.answer);
@@ -318,10 +346,9 @@ export function describeUnanswered(
   return `${count} of ${itemsTotal} items got no answer. ${first}`;
 }
 
-class RunProgress {
+export class RunProgress {
   private readonly results = new Map<string, BenchmarkItemResult>();
   private flush: Promise<void> = Promise.resolve();
-  private sinceCheckpoint = 0;
   private cancelled = false;
 
   constructor(
@@ -352,7 +379,8 @@ class RunProgress {
         options.pass === "first" &&
         options.includeFailedChecks &&
         result.artefact === null &&
-        result.score === 0
+        result.score === 0 &&
+        this.attemptsFor(itemId) < MAX_ITEM_ATTEMPTS
       );
     });
   }
@@ -379,17 +407,9 @@ class RunProgress {
 
   record(result: BenchmarkItemResult): void {
     this.results.set(result.itemId, result);
-    this.sinceCheckpoint += 1;
-  }
-
-  checkpointIfDue(): Promise<void> {
-    return this.sinceCheckpoint >= BENCHMARKS_CONFIG.itemConcurrency
-      ? this.checkpoint()
-      : Promise.resolve();
   }
 
   checkpoint(): Promise<void> {
-    this.sinceCheckpoint = 0;
     this.flush = this.flush.then(() => this.write());
 
     return this.flush;
@@ -408,7 +428,7 @@ class RunProgress {
   }
 }
 
-async function answerItems(
+export async function answerItems(
   context: RunContext,
   progress: RunProgress,
   startedAt: number,
@@ -423,10 +443,11 @@ async function answerItems(
     });
 
     if (pending.length === 0) {
-      return { kind: "done" };
+      continue;
     }
 
     const halt: { outcome: RunOutcome | null } = { outcome: null };
+    let resolved = 0;
 
     logger.info("Benchmark pass starting", { runId: context.run.id, pass, items: pending.length });
 
@@ -438,7 +459,7 @@ async function answerItems(
           }
 
           if (Date.now() - startedAt >= TASK_TIME_BUDGET_MS) {
-            halt.outcome ??= { kind: "out_of_time" };
+            halt.outcome ??= { kind: "out_of_time", resolved: 0 };
 
             return;
           }
@@ -450,12 +471,13 @@ async function answerItems(
           );
 
           progress.record(result);
+          resolved += 1;
 
           if (result.error !== null && isFatalEntrantError(cause)) {
             halt.outcome ??= { kind: "fatal", reason: result.error };
           }
 
-          await progress.checkpointIfDue();
+          await progress.checkpoint();
 
           if (progress.isCancelled()) {
             halt.outcome ??= { kind: "cancelled" };
@@ -471,7 +493,7 @@ async function answerItems(
     }
 
     if (halt.outcome) {
-      return halt.outcome;
+      return halt.outcome.kind === "out_of_time" ? { kind: "out_of_time", resolved } : halt.outcome;
     }
   }
 
@@ -579,10 +601,20 @@ export async function executeBenchmarkRun(
       benchmark.itemIds,
       await store.readResults(run.id),
     );
+    const startedAt = Date.now();
     const outcome = await answerItems(
-      { env, repositories, run, benchmark, target, user, billingUser },
+      {
+        env,
+        repositories,
+        run,
+        benchmark,
+        target,
+        user,
+        billingUser,
+        deadline: startedAt + TASK_TIME_BUDGET_MS,
+      },
       progress,
-      Date.now(),
+      startedAt,
       { retryChecks: data.retryChecks === true },
     );
 
@@ -590,15 +622,24 @@ export async function executeBenchmarkRun(
       return { status: "success" as const, message: `Benchmark run ${run.id} was cancelled` };
     }
 
+    if (outcome.kind === "out_of_time" && outcome.resolved === 0) {
+      return failRun(repositories, run.id, "A worker pass finished without resolving any item");
+    }
+
     if (outcome.kind === "out_of_time") {
       await repositories.benchmarkRuns.release(run.id);
-      await enqueueBenchmarkRunTask(env, repositories, run.id, {
+
+      const continued = await enqueueBenchmarkRunTask(env, repositories, run.id, {
+        kind: "continue",
         retryChecks: data.retryChecks === true,
+        itemsTotal: benchmark.itemIds.length,
       });
 
       return {
         status: "success" as const,
-        message: `${progress.answeredCount()}/${benchmark.itemIds.length} items answered so far`,
+        message: continued
+          ? `${progress.answeredCount()}/${benchmark.itemIds.length} items answered so far`
+          : `Benchmark run ${run.id} gave up after too many passes`,
       };
     }
 

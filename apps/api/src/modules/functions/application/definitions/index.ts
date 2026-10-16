@@ -6,10 +6,12 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
+import { calculate } from "./calculate";
 import { configure_knowledge_sync } from "./configure_knowledge_sync";
 import { review_output, run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
+import { get_current_time } from "./current_time";
 import { decide } from "./decide";
 import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
@@ -57,6 +59,7 @@ import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import type { FunctionToolDescriptor } from "./types";
 import { use_computer } from "./use_computer";
+import { get_user_information } from "./user_information";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
@@ -71,6 +74,9 @@ export interface FunctionToolCatalogueOptions {
 
 const descriptors: FunctionToolDescriptor[] = [
   configure_knowledge_sync,
+  get_current_time,
+  calculate,
+  get_user_information,
   get_weather,
   grade_writing,
   decide,

@@ -1,12 +1,10 @@
 import type { RecipeInstallationTrigger } from "@ngriffin_uk/polychat-schemas";
-import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId, isValidTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 function validateTimezone(timezone: string): void {
-  try {
-    new Intl.DateTimeFormat("en-GB", { timeZone: timezone }).format(new Date());
-  } catch {
+  if (!isValidTimeZone(timezone)) {
     throw new AssistantError(`Unknown schedule timezone: ${timezone}`, ErrorType.PARAMS_ERROR, 400);
   }
 }

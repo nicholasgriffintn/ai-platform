@@ -192,7 +192,7 @@ export async function startBenchmarkRuns(
       itemsTotal: benchmark.summary.itemCount,
     });
 
-    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
+    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, { kind: "start" });
     runs.push(toBenchmarkRun(record, { includeShareToken: true }));
   }
 
@@ -329,10 +329,19 @@ export async function retryBenchmarkRun(
   }
 
   const store = BenchmarkResultStore.forEnv(context.env);
-  const kept = (await store.readResults(record.id)).filter((result) => result.error === null);
+  const kept = (await store.readResults(record.id))
+    .filter((result) => result.error === null)
+    .map((result) =>
+      retryChecks && result.artefact === null && result.score === 0
+        ? { ...result, attempts: 0 }
+        : result,
+    );
 
   await store.writeResults(record.id, kept);
-  await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, { retryChecks });
+  await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, {
+    kind: "retry",
+    retryChecks,
+  });
 
   return toBenchmarkRun(
     {
@@ -412,7 +421,7 @@ export async function startWorkspaceBenchmarkRuns(
       itemsTotal: benchmark.summary.itemCount,
     });
 
-    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id);
+    await enqueueBenchmarkRunTask(context.env, context.repositories, record.id, { kind: "start" });
     runs.push(toBenchmarkRun(record, { includeShareToken: true }));
   }
 

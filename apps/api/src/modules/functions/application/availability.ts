@@ -1,6 +1,9 @@
 import {
+  CALCULATOR_TOOL_NAME,
   CAPABILITY_DISCOVERY_TOOL_NAME,
+  CURRENT_TIME_TOOL_NAME,
   SKILL_LOAD_TOOL_NAME,
+  USER_INFORMATION_TOOL_NAME,
   type ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
@@ -9,11 +12,20 @@ import type { IUser } from "~/types";
 
 const DISCOVERY_FUNCTION_TOOLS = [CAPABILITY_DISCOVERY_TOOL_NAME, SKILL_LOAD_TOOL_NAME] as const;
 const SIGNED_IN_FUNCTION_TOOLS = ["web_search", "search_conversations"] as const;
+const AMBIENT_FUNCTION_TOOLS = [
+  CURRENT_TIME_TOOL_NAME,
+  CALCULATOR_TOOL_NAME,
+  USER_INFORMATION_TOOL_NAME,
+] as const;
+
+function withAmbientTools(toolNames: readonly string[]): string[] {
+  return [...new Set([...toolNames, ...AMBIENT_FUNCTION_TOOLS])];
+}
 
 export function resolveManagedFunctionToolNames(access: { isSignedIn: boolean }): string[] {
   return access.isSignedIn
-    ? [...DISCOVERY_FUNCTION_TOOLS, ...SIGNED_IN_FUNCTION_TOOLS]
-    : [...DISCOVERY_FUNCTION_TOOLS];
+    ? [...DISCOVERY_FUNCTION_TOOLS, ...AMBIENT_FUNCTION_TOOLS, ...SIGNED_IN_FUNCTION_TOOLS]
+    : [...DISCOVERY_FUNCTION_TOOLS, ...AMBIENT_FUNCTION_TOOLS];
 }
 
 export function resolveEnabledFunctionToolNames(
@@ -21,7 +33,7 @@ export function resolveEnabledFunctionToolNames(
   user: Pick<IUser, "id" | "plan_id"> | undefined,
 ): Set<string> {
   if (requestedToolNames !== undefined) {
-    return new Set(requestedToolNames);
+    return new Set(withAmbientTools(requestedToolNames));
   }
 
   return new Set(resolveManagedFunctionToolNames({ isSignedIn: Boolean(user?.id) }));
@@ -41,14 +53,14 @@ export function resolveRequestFunctionToolNames(params: {
     : requestedToolNames;
 
   if (toolSelectionMode !== "managed") {
-    return scopedRequestedTools ? [...scopedRequestedTools] : undefined;
+    return scopedRequestedTools ? withAmbientTools(scopedRequestedTools) : undefined;
   }
 
-  const discoveryTools = new Set<string>(DISCOVERY_FUNCTION_TOOLS);
+  const unscopedTools = new Set<string>([...DISCOVERY_FUNCTION_TOOLS, ...AMBIENT_FUNCTION_TOOLS]);
   const baselineTools = resolveManagedFunctionToolNames({
     isSignedIn: Boolean(user?.id),
   }).filter(
-    (toolName) => !projectTools || discoveryTools.has(toolName) || projectTools.includes(toolName),
+    (toolName) => !projectTools || unscopedTools.has(toolName) || projectTools.includes(toolName),
   );
 
   return [...new Set([...(scopedRequestedTools ?? []), ...baselineTools, ...(projectTools ?? [])])];
