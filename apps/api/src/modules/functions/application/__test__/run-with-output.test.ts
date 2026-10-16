@@ -37,7 +37,6 @@ function createRequest(overrides: Partial<IRequest> = {}): IRequest {
   return {
     app_url: "https://app.example.com",
     context: {
-      database: {},
       env,
       repositories: fakeRepositories([[OutputRepository, outputRepository]]),
       requestCache: new Map(),

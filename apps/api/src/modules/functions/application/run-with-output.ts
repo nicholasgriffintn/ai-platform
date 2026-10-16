@@ -55,7 +55,6 @@ export const runFunctionWithOutput = async (
   }
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
     user,
     anonymousUser,
     store: !!user?.id,

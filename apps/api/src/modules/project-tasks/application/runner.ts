@@ -698,7 +698,6 @@ export async function runProjectTaskDispatch(params: {
   try {
     await params.executionLease.assertOwned();
     const conversationManager = ConversationManager.getInstance({
-      database: context.database,
       repositories: context.repositories,
       user,
       env,

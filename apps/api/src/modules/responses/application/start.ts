@@ -113,7 +113,6 @@ export const startResponse = async (req: {
           approval,
           context: serviceContext,
           conversationManager: ConversationManager.getInstance({
-            database: serviceContext.database,
             repositories: serviceContext.repositories,
             user,
             model: chatRequest.model,

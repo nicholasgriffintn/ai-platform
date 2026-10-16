@@ -8,7 +8,7 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 
 export type CancelChatCompletionContext = Pick<
   ServiceContext,
-  "database" | "ensureDatabase" | "env" | "requestCache" | "requireUser"
+  "repositories" | "ensureDatabase" | "env" | "requestCache" | "requireUser"
 >;
 
 export async function handleCancelChatCompletion(
@@ -25,7 +25,7 @@ export async function handleCancelChatCompletion(
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     requestCache: context.requestCache,
   });

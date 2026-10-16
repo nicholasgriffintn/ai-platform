@@ -21,7 +21,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import type { Database } from "~/infrastructure/database";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { normaliseMessageTimestampsForStorage } from "~/modules/chat/application/messages/ordering";
 import {
@@ -88,25 +87,24 @@ interface ConversationWriteOptions {
 }
 
 export class ConversationManager {
-  private database: Database;
   private model?: string;
   private provider?: string;
   private platform?: Platform;
   private store?: boolean = true;
   private user?: User | null;
   private anonymousUser?: AnonymousUser | null;
-  private usageManager?: UsageManager;
+  private usageManager: UsageManager;
   private env?: IEnv;
   private requestCache?: Map<string, unknown>;
   private taskService?: TaskService;
-  private repositories?: Repositories;
+  private repositories: Repositories;
   private pendingTurnReservation?: TurnReservation;
   private writeFence?: ConversationWriteFence;
   private runId?: string;
   private durableTurnReservation?: DurableTurnReservation;
 
   private constructor(
-    database: Database,
+    repositories: Repositories,
     user?: User | null,
     anonymousUser?: AnonymousUser | null,
     model?: string,
@@ -115,12 +113,10 @@ export class ConversationManager {
     store?: boolean,
     env?: IEnv,
     requestCache?: Map<string, unknown>,
-    repositories?: Repositories,
     writeFence?: ConversationWriteFence,
     runId?: string,
     durableTurnReservation?: DurableTurnReservation,
   ) {
-    this.database = database;
     this.user = user;
     this.anonymousUser = anonymousUser;
     this.model = model;
@@ -129,23 +125,18 @@ export class ConversationManager {
     this.store = store ?? true;
     this.env = env;
     this.requestCache = requestCache;
-    this.repositories = repositories ?? database.repositories;
+    this.repositories = repositories;
     this.writeFence = writeFence;
     this.runId = runId;
     this.durableTurnReservation = durableTurnReservation;
-    const resolvedRepositories = this.repositories;
-
     if (env?.DB) {
       this.taskService = new TaskService(env, new TaskRepository(env));
     }
 
-    this.usageManager = resolvedRepositories
-      ? new UsageManager(resolvedRepositories, user ?? null, anonymousUser ?? null)
-      : undefined;
+    this.usageManager = new UsageManager(repositories, user ?? null, anonymousUser ?? null);
   }
 
   public static getInstance({
-    database,
     user,
     anonymousUser,
     model,
@@ -159,7 +150,6 @@ export class ConversationManager {
     runId,
     durableTurnReservation,
   }: {
-    database: Database;
     user?: User | null;
     anonymousUser?: AnonymousUser | null;
     model?: string;
@@ -168,13 +158,13 @@ export class ConversationManager {
     store?: boolean;
     env?: IEnv;
     requestCache?: Map<string, unknown>;
-    repositories?: Repositories;
+    repositories: Repositories;
     writeFence?: ConversationWriteFence;
     runId?: string;
     durableTurnReservation?: DurableTurnReservation;
   }): ConversationManager {
     return new ConversationManager(
-      database,
+      repositories,
       user,
       anonymousUser,
       model,
@@ -183,7 +173,6 @@ export class ConversationManager {
       store ?? true,
       env,
       requestCache,
-      repositories,
       writeFence,
       runId,
       durableTurnReservation,
@@ -247,8 +236,7 @@ export class ConversationManager {
       if (
         message.role === "assistant" &&
         !hasSnapshotPart(message) &&
-        !isCompactionMarkerMessage(message) &&
-        this.usageManager
+        !isCompactionMarkerMessage(message)
       ) {
         try {
           await this.usageManager.incrementUsage();
@@ -269,7 +257,7 @@ export class ConversationManager {
       return undefined;
     }
 
-    const parent = await this.database.repositories
+    const parent = await this.repositories
       .get(ConversationRepository)
       .getConversation(parentConversationId);
     const parsed = permissionModeSchema.safeParse(parent?.permission_mode);
@@ -317,7 +305,7 @@ export class ConversationManager {
       throw new AssistantError(authErrorMessage, ErrorType.AUTHENTICATION_ERROR);
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -326,7 +314,7 @@ export class ConversationManager {
       const projectId = options?.metadata?.project_id;
 
       if (projectId) {
-        const project = await this.repositories?.get(WorkspaceRepository).getProject(projectId);
+        const project = await this.repositories.get(WorkspaceRepository).getProject(projectId);
         const membership = project
           ? await this.repositories
               ?.get(WorkspaceRepository)
@@ -349,7 +337,7 @@ export class ConversationManager {
         (await this.getInheritedPermissionMode(parentConversationId)) ??
         undefined;
 
-      return await this.database.repositories
+      return await this.repositories
         .get(ConversationRepository)
         .createConversation(
           conversation_id,
@@ -390,7 +378,7 @@ export class ConversationManager {
 
     if (Object.keys(selectionUpdates).length > 0) {
       await this.assertWriteOwnership();
-      await this.database.repositories
+      await this.repositories
         .get(ConversationRepository)
         .updateConversation(conversation_id, selectionUpdates);
 
@@ -463,10 +451,6 @@ export class ConversationManager {
   }
 
   async getUsageLimits(): Promise<UsageLimits | null> {
-    if (!this.usageManager) {
-      return null;
-    }
-
     try {
       return await this.usageManager.getUsageLimits();
     } catch (error) {
@@ -548,7 +532,7 @@ export class ConversationManager {
 
     if (normalisedMessages.length > 0) {
       await this.assertWriteOwnership();
-      await this.database.repositories.get(MessageRepository).createMessagesAndUpdateConversation(
+      await this.repositories.get(MessageRepository).createMessagesAndUpdateConversation(
         conversation_id,
         normalisedMessages.map((message) => ({
           id: message.id,
@@ -587,7 +571,7 @@ export class ConversationManager {
     );
 
     await this.assertWriteOwnership();
-    await this.database.repositories.get(MessageRepository).createCompactionAndArchiveMessages(
+    await this.repositories.get(MessageRepository).createCompactionAndArchiveMessages(
       conversation_id,
       normalisedMessages.map((message) => ({
         id: message.id,
@@ -620,7 +604,7 @@ export class ConversationManager {
     );
 
     const messageIds = normalisedMessages.map((message) => message.id);
-    const foreignCount = await this.database.repositories
+    const foreignCount = await this.repositories
       .get(MessageRepository)
       .countMessagesOwnedByOtherConversations(conversation_id, messageIds);
 
@@ -634,22 +618,20 @@ export class ConversationManager {
     const lastMessage = normalisedMessages.at(-1);
 
     await this.assertWriteOwnership();
-    const replaced = await this.database.repositories
-      .get(MessageRepository)
-      .replaceConversationMessages(
-        conversation_id,
-        normalisedMessages.map((message) => ({
-          id: message.id,
-          role: message.role,
-          content: this.serializeMessageContent(message.content),
-          data: message,
-        })),
-        {
-          last_message_id: lastMessage?.id ?? null,
-          last_message_at: lastMessage ? new Date().toISOString() : null,
-          message_count: normalisedMessages.length,
-        },
-      );
+    const replaced = await this.repositories.get(MessageRepository).replaceConversationMessages(
+      conversation_id,
+      normalisedMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: this.serializeMessageContent(message.content),
+        data: message,
+      })),
+      {
+        last_message_id: lastMessage?.id ?? null,
+        last_message_at: lastMessage ? new Date().toISOString() : null,
+        message_count: normalisedMessages.length,
+      },
+    );
 
     if (!replaced) {
       throw new AssistantError(
@@ -675,7 +657,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -717,7 +699,7 @@ export class ConversationManager {
 
       if (Object.keys(updates).length > 0) {
         await this.assertWriteOwnership();
-        await this.database.repositories
+        await this.repositories
           .get(MessageRepository)
           .updateMessage(conversation_id, message.id, updates);
       }
@@ -744,7 +726,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -759,7 +741,7 @@ export class ConversationManager {
       );
     }
 
-    const messages = await this.database.repositories
+    const messages = await this.repositories
       .get(MessageRepository)
       .getConversationMessages(conversation_id, limit ?? 0, after, {
         includeArchived: options?.includeArchived ?? false,
@@ -785,7 +767,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -806,7 +788,7 @@ export class ConversationManager {
       after,
       includeArchived: options.includeArchived ?? true,
       loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
-        this.database.repositories
+        this.repositories
           .get(MessageRepository)
           .getConversationMessages(conversationId, pageLimit, cursor, pageOptions),
       formatMessage: formatStoredMessage,
@@ -831,7 +813,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -862,7 +844,7 @@ export class ConversationManager {
       direction: "before",
       includeArchived: options.includeArchived ?? true,
       loadMessages: (conversationId, pageLimit, cursor, pageOptions) =>
-        this.database.repositories
+        this.repositories
           .get(MessageRepository)
           .getConversationMessagesBefore(conversationId, pageLimit, cursor, pageOptions),
       formatMessage: formatStoredMessage,
@@ -891,7 +873,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -907,9 +889,7 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories
-      .get(MessageRepository)
-      .archiveMessages(conversation_id, messageIds);
+    await this.repositories.get(MessageRepository).archiveMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
 
@@ -925,7 +905,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -941,25 +921,21 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories
-      .get(MessageRepository)
-      .deleteMessages(conversation_id, messageIds);
+    await this.repositories.get(MessageRepository).deleteMessages(conversation_id, messageIds);
     await this.refreshConversationMessageMetadata(conversation_id);
   }
 
   private async refreshConversationMessageMetadata(conversation_id: string): Promise<void> {
-    const metadata = await this.database.repositories
+    const metadata = await this.repositories
       .get(MessageRepository)
       .getConversationMessageMetadata(conversation_id);
 
     await this.assertWriteOwnership();
-    await this.database.repositories
-      .get(ConversationRepository)
-      .updateConversation(conversation_id, {
-        last_message_id: metadata.last_message_id,
-        last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
-        message_count: metadata.message_count,
-      });
+    await this.repositories.get(ConversationRepository).updateConversation(conversation_id, {
+      last_message_id: metadata.last_message_id,
+      last_message_at: metadata.last_message_id ? new Date().toISOString() : null,
+      message_count: metadata.message_count,
+    });
   }
 
   async list(options: ConversationListOptions = {}): Promise<ListPage<Record<string, unknown>>> {
@@ -970,7 +946,7 @@ export class ConversationManager {
       );
     }
 
-    const page = await this.database.repositories
+    const page = await this.repositories
       .get(ConversationRepository)
       .listUserConversations(this.user.id, options);
 
@@ -990,7 +966,7 @@ export class ConversationManager {
 
     await this.assertWriteOwnership();
 
-    return await this.database.repositories
+    return await this.repositories
       .get(ConversationRepository)
       .setPersonalConversationsArchived(this.user.id, options);
   }
@@ -1003,7 +979,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -1069,7 +1045,7 @@ export class ConversationManager {
       };
     }
 
-    const dbMessages = await this.database.repositories
+    const dbMessages = await this.repositories
       .get(MessageRepository)
       .getConversationMessages(conversationId, 0, undefined, {
         includeArchived: options.includeArchived ?? true,
@@ -1101,7 +1077,7 @@ export class ConversationManager {
       );
     }
 
-    const conversation = await this.database.repositories
+    const conversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -1131,11 +1107,11 @@ export class ConversationManager {
     }
 
     await this.assertWriteOwnership();
-    await this.database.repositories
+    await this.repositories
       .get(ConversationRepository)
       .updateConversation(conversation_id, updateObj);
 
-    const updatedConversation = await this.database.repositories
+    const updatedConversation = await this.repositories
       .get(ConversationRepository)
       .getConversation(conversation_id);
 
@@ -1150,9 +1126,7 @@ export class ConversationManager {
       );
     }
 
-    const result = await this.database.repositories
-      .get(MessageRepository)
-      .getMessageById(message_id);
+    const result = await this.repositories.get(MessageRepository).getMessageById(message_id);
 
     if (!result) {
       throw new AssistantError("Message not found", ErrorType.NOT_FOUND);
@@ -1187,7 +1161,7 @@ export class ConversationManager {
 
   private sharingScope(): ConversationSharingScope {
     return {
-      repositories: this.database.repositories,
+      repositories: this.repositories,
       user: this.user,
       canAccessConversation: (conversation) => this.canAccessConversation(conversation),
       assertWriteOwnership: () => this.assertWriteOwnership(),
@@ -1208,6 +1182,6 @@ export class ConversationManager {
     after?: string,
     options?: { includeArchived?: boolean },
   ): Promise<PublicConversationPage> {
-    return getPublicConversation(this.database.repositories, share_id, limit, after, options);
+    return getPublicConversation(this.repositories, share_id, limit, after, options);
   }
 }

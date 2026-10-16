@@ -7,28 +7,26 @@ import { MessageRepository } from "~/modules/conversations/infrastructure/Messag
 
 function createManager(assertOwned: () => Promise<void>) {
   const createCompactionAndArchiveMessages = vi.fn().mockResolvedValue(undefined);
-  const database = {
-    repositories: fakeRepositories([
-      [
-        ConversationRepository,
-        {
-          getConversation: vi.fn().mockResolvedValue({
-            id: "conversation-1",
-            user_id: 123,
-            project_id: null,
-          }),
-        },
-      ],
-      [
-        MessageRepository,
-        {
-          createCompactionAndArchiveMessages,
-        },
-      ],
-    ]),
-  } as any;
+  const repositories = fakeRepositories([
+    [
+      ConversationRepository,
+      {
+        getConversation: vi.fn().mockResolvedValue({
+          id: "conversation-1",
+          user_id: 123,
+          project_id: null,
+        }),
+      },
+    ],
+    [
+      MessageRepository,
+      {
+        createCompactionAndArchiveMessages,
+      },
+    ],
+  ]);
   const manager = ConversationManager.getInstance({
-    database,
+    repositories,
     user: { id: 123 } as any,
     writeFence: { assertOwned },
   });

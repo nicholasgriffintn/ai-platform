@@ -70,7 +70,6 @@ export async function recordRecipeInvocationFailure(params: {
 }): Promise<string> {
   const defaultModel = await getDefaultChatModel(params.env, params.user);
   const conversationManager = ConversationManager.getInstance({
-    database: params.context.database,
     repositories: params.context.repositories,
     user: params.user,
     model: defaultModel.model,

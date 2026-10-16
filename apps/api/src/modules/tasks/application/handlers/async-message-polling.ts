@@ -5,7 +5,7 @@ import { PENDING } from "@ngriffin_uk/polychat-ai-workflows";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { z } from "zod/v4";
 
-import { Database } from "~/infrastructure/database";
+import { createRepositories } from "~/infrastructure/database/repositories";
 import { handleAsyncInvocation } from "~/modules/conversations/application/async/handler";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
@@ -24,8 +24,7 @@ export const asyncMessagePolling = definePoll({
     pollAttempt: z.number().optional(),
   }),
   check: async (data, { env }) => {
-    const database = new Database(env);
-
+    const repositories = createRepositories(env);
     const userRepository = new UserRepository(env);
     const user = await userRepository.getUserById(data.userId);
 
@@ -37,7 +36,7 @@ export const asyncMessagePolling = definePoll({
     }
 
     const conversationManager = ConversationManager.getInstance({
-      database,
+      repositories,
       user,
       store: true,
       env,
@@ -76,7 +75,7 @@ export const asyncMessagePolling = definePoll({
       (lease) =>
         handleAsyncInvocation(data.asyncInvocation, targetMessage, {
           conversationManager: ConversationManager.getInstance({
-            database,
+            repositories,
             user,
             store: true,
             env,

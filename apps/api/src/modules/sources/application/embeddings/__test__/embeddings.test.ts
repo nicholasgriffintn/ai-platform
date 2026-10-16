@@ -50,6 +50,7 @@ vi.mock("~/infrastructure/context/serviceContext", () => ({
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { deleteEmbedding } from "../delete";
 import { insertEmbedding } from "../insert";
@@ -59,7 +60,12 @@ import { queryEmbeddings } from "../query";
 const createContext = (userId: number, embeddings: Record<string, ReturnType<typeof vi.fn>>) =>
   ({
     env: { EMBEDDING_SCOPE_SECRET: "test-embedding-scope-secret-32-characters" },
+    user: { id: userId },
     repositories: fakeRepositories([
+      [
+        UserSettingsRepository,
+        { getUserSettings: vi.fn().mockResolvedValue({ embedding_provider: "vectorize" }) },
+      ],
       [
         EmbeddingRepository,
         {
@@ -82,7 +88,6 @@ const createContext = (userId: number, embeddings: Record<string, ReturnType<typ
       ],
     ]),
     requireUser: () => ({ id: userId }),
-    getUserSettings: vi.fn().mockResolvedValue({ embedding_provider: "vectorize" }),
     getLogger: vi.fn(() => ({ error: vi.fn(), warn: vi.fn() })),
   }) as any;
 

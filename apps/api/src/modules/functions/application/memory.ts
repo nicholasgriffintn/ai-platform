@@ -16,6 +16,7 @@ import {
 import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
 import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager } from "~/modules/memory/application/manager";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { IUserSettings } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -33,7 +34,9 @@ async function getMemoryToolSettings(
     return { error: "Memory tools require a signed-in pro user." };
   }
 
-  const userSettings = await context.request.context?.getUserSettings?.();
+  const userSettings = context.request.context
+    ? await getRequestUserSettings(context.request.context)
+    : null;
 
   if (!userSettings) {
     return { error: "Memory settings are not available for this request." };
@@ -201,7 +204,7 @@ export const read_memory_document: ApiToolDefinition = {
       request.memoryScope.type !== "bound" &&
       !resolveMemoryPolicy({
         user: request.context.user,
-        userSettings: await request.context.getUserSettings(),
+        userSettings: await getRequestUserSettings(request.context),
         store: request.request?.store === true,
       }).canRetrieve
     ) {

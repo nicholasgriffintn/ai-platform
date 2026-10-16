@@ -258,7 +258,6 @@ async function getActiveChannelMessages(params: {
   historyLimit: number;
 }): Promise<Message[]> {
   const conversationManager = ConversationManager.getInstance({
-    database: params.context.database,
     repositories: params.context.repositories,
     user: params.user,
     env: params.context.env,

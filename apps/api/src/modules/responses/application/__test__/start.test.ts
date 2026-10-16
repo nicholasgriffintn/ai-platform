@@ -218,7 +218,6 @@ describe("startResponse", () => {
       const context = {
         env: mockEnv,
         connectorRunId: "connector_run_new",
-        database: {},
         requestCache: new Map(),
         ensureDatabase: vi.fn(),
         repositories: fakeRepositories([

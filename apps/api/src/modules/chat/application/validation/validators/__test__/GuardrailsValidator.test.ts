@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { GuardrailsValidator } from "~/modules/chat/application/validation/validators/GuardrailsValidator";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 const { validateInput } = vi.hoisted(() => ({ validateInput: vi.fn() }));
 
@@ -35,7 +37,7 @@ describe("GuardrailsValidator", () => {
         messages: [],
         context: {
           user: { id: 42 },
-          getUserSettings,
+          repositories: fakeRepositories([[UserSettingsRepository, { getUserSettings }]]),
         },
       } as never,
       {

@@ -51,7 +51,6 @@ function createContext(
 ) {
   return {
     env,
-    database: {},
     repositories: fakeRepositories([
       [
         UserSettingsRepository,

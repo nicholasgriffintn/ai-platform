@@ -15,20 +15,18 @@ function createManager(parent: Record<string, unknown> | null) {
 
     return parent;
   });
-  const database = {
-    repositories: fakeRepositories([
-      [ConversationRepository, { getConversation, createConversation }],
-      [
-        MessageRepository,
-        {
-          createMessagesAndUpdateConversation: vi.fn().mockResolvedValue(undefined),
-        },
-      ],
-      [UserRepository, { updateUser: vi.fn().mockResolvedValue(undefined) }],
-    ]),
-  } as any;
+  const repositories = fakeRepositories([
+    [ConversationRepository, { getConversation, createConversation }],
+    [
+      MessageRepository,
+      {
+        createMessagesAndUpdateConversation: vi.fn().mockResolvedValue(undefined),
+      },
+    ],
+    [UserRepository, { updateUser: vi.fn().mockResolvedValue(undefined) }],
+  ]);
   const manager = ConversationManager.getInstance({
-    database,
+    repositories,
     user: { id: 123 } as any,
     store: true,
   });

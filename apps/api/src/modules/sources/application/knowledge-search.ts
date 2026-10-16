@@ -5,7 +5,7 @@ import type {
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { fuseRankedResults, toFtsQuery } from "@ngriffin_uk/polychat-utility-server/search-ranking";
 
-import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getEmbeddingRuntimeForTarget } from "~/infrastructure/providers/capabilities/embedding/helpers";
 import { decodeEmbeddingRuntimeTarget } from "~/infrastructure/providers/capabilities/embedding/target";
 import {
@@ -20,6 +20,7 @@ import type {
 } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 export async function requireKnowledgeScope(
@@ -47,10 +48,9 @@ async function semanticTargetPassages(
       return [];
     }
 
-    const settings = await createServiceContext({
-      env: context.env,
-      user: owner,
-    }).getUserSettings();
+    const settings = await context.repositories
+      .get(UserSettingsRepository)
+      .getUserSettings(owner.id);
 
     if (!settings) {
       return [];

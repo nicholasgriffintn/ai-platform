@@ -10,7 +10,7 @@ export async function handleUnshareConversation(
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
   });
 

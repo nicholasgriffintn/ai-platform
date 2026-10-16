@@ -16,6 +16,7 @@ import type {
   EmbeddingDocumentProviderTarget,
 } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { IEnv, IUser } from "~/types";
 
 import { queryEmbeddingRuntime } from "./provider-query";
@@ -71,7 +72,7 @@ const queryStoredTargets = async (
   authenticatedUser: IUser,
   input: ReturnType<typeof parseQueryEmbeddingsRequest>,
 ) => {
-  const userSettings = await serviceContext.getUserSettings();
+  const userSettings = await getRequestUserSettings(serviceContext);
 
   if (!userSettings) {
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);

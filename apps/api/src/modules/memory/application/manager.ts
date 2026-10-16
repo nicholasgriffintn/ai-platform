@@ -16,6 +16,7 @@ import { toProviderMessages } from "~/modules/chat/application/messages/provider
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/memory/manager" });
@@ -117,7 +118,7 @@ export class MemoryManager {
 
   public async deleteMemory(memoryId: string, providerId?: MemoryProviderId): Promise<boolean> {
     const userSettings = this.serviceContext
-      ? await this.serviceContext.getUserSettings()
+      ? await getRequestUserSettings(this.serviceContext)
       : undefined;
 
     if (providerId && !userSettings && providerId !== "built-in") {
@@ -171,7 +172,7 @@ export class MemoryManager {
 
     const userSettings =
       opts?.userSettings ??
-      (this.serviceContext ? await this.serviceContext.getUserSettings() : undefined);
+      (this.serviceContext ? await getRequestUserSettings(this.serviceContext) : undefined);
     const provider = getMemoryProvider({
       env: this.env,
       user: this.user,

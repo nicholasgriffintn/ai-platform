@@ -101,7 +101,7 @@ export async function handleSetConversationGoal(
 
   await recordGoalMarker({
     conversationManager: ConversationManager.getInstance({
-      database: context.database,
+      repositories: context.repositories,
       user,
       env: context.env,
     }),
@@ -143,7 +143,7 @@ export async function handleUpdateConversationGoal(
 
   await recordGoalMarker({
     conversationManager: ConversationManager.getInstance({
-      database: context.database,
+      repositories: context.repositories,
       user,
       env: context.env,
     }),

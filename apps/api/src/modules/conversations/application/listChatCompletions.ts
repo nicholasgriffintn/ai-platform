@@ -11,7 +11,7 @@ function managerFor(context: ServiceContext): ConversationManager {
 
   context.ensureDatabase();
 
-  return ConversationManager.getInstance({ database: context.database, user });
+  return ConversationManager.getInstance({ repositories: context.repositories, user });
 }
 
 export function handleListChatCompletions(

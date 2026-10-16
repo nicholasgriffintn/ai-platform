@@ -4,6 +4,7 @@ import type { ResponseCommand } from "@ngriffin_uk/polychat-schemas";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { startResponse } from "~/modules/responses/application/start";
 import { resumeStoredTeammateInteraction } from "~/modules/teammates/application/interaction-resume";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { AnonymousUser, IUser } from "~/types";
 
 export interface PrepareConversationCompletionInput {
@@ -32,7 +33,7 @@ export async function prepareConversationCompletion({
 
   if (user?.id) {
     try {
-      await context.getUserSettings();
+      await getRequestUserSettings(context);
     } catch (error) {
       context
         .getLogger({ prefix: "conversations/completion-preparation" })

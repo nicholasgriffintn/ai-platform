@@ -51,7 +51,6 @@ export class QueuedChatMessageHandler implements TaskHandler {
 
     const context = createServiceContext({ env, user });
     const history = await ConversationManager.getInstance({
-      database: context.database,
       repositories: context.repositories,
       user,
       env,

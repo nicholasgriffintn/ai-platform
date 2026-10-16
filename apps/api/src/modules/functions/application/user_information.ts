@@ -1,3 +1,4 @@
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_user_information as get_user_informationDescriptor } from "./definitions/user_information";
@@ -7,7 +8,9 @@ export const get_user_information: ApiToolDefinition = {
   ...get_user_informationDescriptor,
   execute: async (_args, context) => {
     const user = context.request.user;
-    const settings = user?.id ? await context.request.context?.getUserSettings?.() : null;
+    const settings = context.request.context
+      ? await getRequestUserSettings(context.request.context)
+      : null;
     const coordinates = resolveUserCoordinates(context.request);
     const data = {
       coordinates,

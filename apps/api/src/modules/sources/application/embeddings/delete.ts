@@ -5,6 +5,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { IEnv, IUser } from "~/types";
 
 import { deleteProviderDocuments } from "./deletion";
@@ -35,7 +36,7 @@ export const deleteEmbedding = async ({ request, context, env, user }: DeleteEmb
     .get(EmbeddingRepository)
     .markDocumentsDeletePending(authenticatedUser.id, documentIds);
 
-  const userSettings = await serviceContext.getUserSettings();
+  const userSettings = await getRequestUserSettings(serviceContext);
 
   if (!userSettings) {
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);

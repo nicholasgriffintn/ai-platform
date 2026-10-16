@@ -8,6 +8,7 @@ import {
 } from "~/infrastructure/durable-objects/client";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
 export async function callMachineRun(
   context: ServiceContext,
@@ -16,7 +17,7 @@ export async function callMachineRun(
   body?: unknown,
 ): Promise<Response> {
   const user = context.requireUser();
-  const settings = await context.getUserSettings();
+  const settings = await getRequestUserSettings(context);
   const machine = (await context.repositories.get(MachineRepository).listForUser(user.id)).find(
     (item) => item.machineId === machineId,
   );

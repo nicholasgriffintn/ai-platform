@@ -16,11 +16,9 @@ import {
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cache";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
-import { Database } from "~/infrastructure/database";
-import type { Repositories } from "~/infrastructure/database/repositories";
+import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
@@ -85,6 +83,7 @@ import {
   resolveModelToolConfigurations,
   type StoredModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfiguration";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import {
   applyProjectCodingEnvironment,
@@ -151,7 +150,6 @@ interface SavedToolConfiguration {
 interface RequestScope {
   options: CoreChatOptions;
   user: IUser | null | undefined;
-  database: Database;
   repositories: Repositories;
   projectContext: ProjectChatContext | null;
   hasFixedProjectTaskTools: boolean;
@@ -167,8 +165,7 @@ export class RequestPreparer {
   private async resolveScope(options: CoreChatOptions): Promise<RequestScope> {
     const { platform = "api", mode = "normal" } = options;
     const user = options.context?.user;
-    const database = options.context?.database ?? new Database(this.env);
-    const repositories = options.context?.repositories ?? database.repositories;
+    const repositories = options.context?.repositories ?? createRepositories(this.env);
     const poly = options.context ? await isAdmittedPolyRun(options, repositories) : false;
     const projectContext =
       options.context && !poly ? await resolveProjectChatContext(options.context, options) : null;
@@ -189,7 +186,6 @@ export class RequestPreparer {
     return {
       options: scopedOptions,
       user,
-      database,
       repositories,
       projectContext,
       hasFixedProjectTaskTools:
@@ -207,19 +203,9 @@ export class RequestPreparer {
   }
 
   private resolveUserSettings(scope: RequestScope) {
-    const { options, user, repositories } = scope;
-
-    if (options.context?.getUserSettings) {
-      return options.context.getUserSettings();
-    }
-
-    if (!user?.id) {
-      return Promise.resolve(null);
-    }
-
-    return memoizeRequest(options.context?.requestCache, `user-settings:${user.id}`, () =>
-      repositories.get(UserSettingsRepository).getUserSettings(user.id),
-    );
+    return scope.options.context
+      ? getRequestUserSettings(scope.options.context)
+      : Promise.resolve(null);
   }
 
   private async resolveStoredPermissionMode(scope: RequestScope): Promise<unknown> {
@@ -345,7 +331,7 @@ export class RequestPreparer {
     }
 
     const scope = await this.resolveScope(options);
-    const { user, database, repositories, projectContext, platform, mode } = scope;
+    const { user, repositories, projectContext, platform, mode } = scope;
 
     const modelConfigsPromise = buildModelConfigs(scope.options, validationContext);
     const userSettingsPromise = this.resolveUserSettings(scope);
@@ -394,7 +380,6 @@ export class RequestPreparer {
     assertBackgroundRequestIsSupported(scope.options, primaryProvider);
 
     const conversationManager = ConversationManager.getInstance({
-      database,
       repositories,
       user: user || undefined,
       anonymousUser: scope.options.anonymousUser,

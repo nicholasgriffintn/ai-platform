@@ -13,6 +13,7 @@ import type { PendingEmbeddingDocument } from "~/modules/sources/application/emb
 import { generateEmbeddingVectors } from "~/modules/sources/application/embeddings/lifecycle";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { EmbeddingRuntimeTarget } from "~/types";
 
@@ -46,7 +47,7 @@ export async function cleanupStaleIndexes(
     }
 
     const ownerContext = createServiceContext({ env: context.env, user });
-    const settings = await ownerContext.getUserSettings();
+    const settings = await getRequestUserSettings(ownerContext);
 
     if (!settings) {
       continue;
@@ -78,7 +79,7 @@ export async function insertSourceVectors(
   token: string,
   assertOwned: () => Promise<void>,
 ): Promise<void> {
-  const settings = await context.getUserSettings();
+  const settings = await getRequestUserSettings(context);
 
   if (!settings) {
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);

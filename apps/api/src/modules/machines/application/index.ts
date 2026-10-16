@@ -9,6 +9,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
 function toMachineRecord(machine: StoredMachine, now: number): MachineRecord {
   return machineRecordSchema.parse({
@@ -24,7 +25,7 @@ function toMachineRecord(machine: StoredMachine, now: number): MachineRecord {
 }
 
 async function isAdvertisingEnabled(context: ServiceContext): Promise<boolean> {
-  const settings = await context.getUserSettings();
+  const settings = await getRequestUserSettings(context);
 
   return settings?.advertise_machines !== false;
 }

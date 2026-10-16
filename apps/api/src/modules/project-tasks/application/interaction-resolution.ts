@@ -118,7 +118,6 @@ export async function resolvePendingInteraction<TInteraction>(params: {
         });
 
       const conversationManager = ConversationManager.getInstance({
-        database: params.context.database,
         repositories: params.context.repositories,
         user,
         env: params.context.env,

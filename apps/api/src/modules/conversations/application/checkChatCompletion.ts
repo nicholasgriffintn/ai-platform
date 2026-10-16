@@ -7,6 +7,7 @@ import {
 } from "~/infrastructure/providers/capabilities/guardrails";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
 export const handleCheckChatCompletion = async (
   context: ServiceContext,
@@ -25,7 +26,7 @@ export const handleCheckChatCompletion = async (
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     requestCache: context.requestCache,
   });
@@ -52,7 +53,7 @@ export const handleCheckChatCompletion = async (
     })
     .join("\n");
 
-  const userSettings = await context.getUserSettings();
+  const userSettings = await getRequestUserSettings(context);
   const guardrails = new Guardrails(context.env, user, userSettings);
   const validation =
     role === "user"

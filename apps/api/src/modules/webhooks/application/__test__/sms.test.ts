@@ -78,7 +78,6 @@ function prepareServiceContext() {
 
   mocks.createServiceContext.mockReturnValue({
     env: { DB: {}, API_BASE_URL: "https://api.polychat.test" },
-    database: {},
     repositories: fakeRepositories([
       [UserSettingsRepository, repositories.userSettings],
       [UserRepository, repositories.users],

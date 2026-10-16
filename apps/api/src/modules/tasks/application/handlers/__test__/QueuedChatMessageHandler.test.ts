@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("~/infrastructure/context/serviceContext", () => ({
   createServiceContext: () => ({
-    database: {},
     requestCache: {},
     repositories: fakeRepositories([
       [ConversationRunRepository, { getLatestForConversation: mocks.latestRun }],

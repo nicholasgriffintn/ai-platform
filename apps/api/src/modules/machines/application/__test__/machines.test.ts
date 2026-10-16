@@ -5,6 +5,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { heartbeatMachine, listMachines } from "../index";
 
@@ -35,9 +36,10 @@ function context(
   }>,
 ): ServiceContext {
   return {
-    getUserSettings: vi.fn().mockResolvedValue(settings),
+    user: { id: 42 } as ServiceContext["user"],
     requireUser: () => ({ id: 42 }) as ServiceContext["user"],
     repositories: fakeRepositories([
+      [UserSettingsRepository, { getUserSettings: vi.fn().mockResolvedValue(settings) }],
       [
         MachineRepository,
         {

@@ -36,7 +36,7 @@ export const handleUpdateChatCompletion = async (
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     env: context.env,
   });
@@ -54,7 +54,6 @@ export const handleUpdateChatCompletion = async (
       { env: context.env, conversationId: completion_id, kind: "edit_messages" },
       async (lease) => {
         const guardedConversationManager = ConversationManager.getInstance({
-          database: context.database,
           repositories: context.repositories,
           user,
           env: context.env,

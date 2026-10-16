@@ -63,7 +63,6 @@ function createContext() {
   return {
     context: {
       env: {},
-      database: {},
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       repositories: fakeRepositories([
         [MessageRepository, { getLatestPendingToolMessage, updateMessage }],
@@ -201,7 +200,6 @@ describe("project task tool approvals", () => {
     });
     const context = {
       env: {},
-      database: {},
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       repositories: fakeRepositories([
         [MessageRepository, { getLatestPendingToolMessage, updateMessage }],

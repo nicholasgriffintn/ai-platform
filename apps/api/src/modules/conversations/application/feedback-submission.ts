@@ -14,7 +14,7 @@ export async function submitConversationFeedback(
 
   context.ensureDatabase();
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
   });
   const conversation = await conversationManager.getConversationDetails(completionId);

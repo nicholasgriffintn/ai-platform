@@ -14,7 +14,7 @@ import {
 
 export type CompactChatCompletionContext = Pick<
   ServiceContext,
-  "database" | "ensureDatabase" | "env" | "requireUser"
+  "repositories" | "ensureDatabase" | "env" | "requireUser"
 >;
 
 export async function handleCompactChatCompletion(
@@ -37,7 +37,7 @@ export async function handleCompactChatCompletion(
 
   try {
     const conversationManager = ConversationManager.getInstance({
-      database: context.database,
+      repositories: context.repositories,
       user,
       env: context.env,
       writeFence: lock.lease,

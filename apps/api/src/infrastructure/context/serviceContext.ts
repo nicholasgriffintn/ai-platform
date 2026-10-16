@@ -10,17 +10,14 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
   createRequestCache,
-  memoizeRequest,
   type RequestCache,
 } from "@ngriffin_uk/polychat-utility-server/request-cache";
 import type { Context, MiddlewareHandler } from "hono";
 
 import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
 import { loopbackOutboundGateway } from "~/infrastructure/cloudflare/outbound-gateway";
-import { Database } from "~/infrastructure/database";
 import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
-import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { AnonymousUser, IEnv, IUser, IUserSettings } from "~/types";
+import type { AnonymousUser, IEnv, IUser } from "~/types";
 
 export interface ServiceContextOptions {
   env: IEnv;
@@ -48,14 +45,10 @@ export interface ServiceContext {
   originDeviceId?: string | null;
   executionRunId?: string;
   executionRunAttempt?: number;
-  database: Database;
   repositories: Repositories;
   requestCache: RequestCache;
-  userSettings: IUserSettings | null;
   requireUser(): IUser;
   ensureDatabase(): D1Database;
-  getUserSettings(): Promise<IUserSettings | null>;
-  setUserSettings(settings: IUserSettings | null): void;
   getLogger(options?: LoggerOptions): ReturnType<typeof getLogger>;
 }
 
@@ -96,11 +89,7 @@ export const createServiceContext = ({
   outboundGateway,
   executionCtx,
 }: ServiceContextOptions): ServiceContext => {
-  let databaseInstance: Database | null = null;
-  let repositoriesInstance: Repositories | null = null;
   const requestCache = createRequestCache();
-  let cachedUserSettings: IUserSettings | null | undefined = undefined;
-  let userSettingsPromise: Promise<IUserSettings | null> | null = null;
 
   const ensureDatabase = (): D1Database => {
     if (!env.DB) {
@@ -118,41 +107,6 @@ export const createServiceContext = ({
     return user;
   };
 
-  const loadUserSettings = async (): Promise<IUserSettings | null> => {
-    if (!user?.id) {
-      cachedUserSettings = null;
-
-      return null;
-    }
-
-    if (cachedUserSettings !== undefined) {
-      return cachedUserSettings;
-    }
-
-    if (userSettingsPromise === null) {
-      userSettingsPromise = memoizeRequest(requestCache, `user-settings:${user.id}`, async () => {
-        if (!repositoriesInstance) {
-          repositoriesInstance = createRepositories(env);
-        }
-
-        const settings = await repositoriesInstance
-          .get(UserSettingsRepository)
-          .getUserSettings(user.id);
-
-        return settings;
-      });
-    }
-
-    cachedUserSettings = await userSettingsPromise;
-
-    return cachedUserSettings;
-  };
-
-  const setUserSettings = (settings: IUserSettings | null) => {
-    cachedUserSettings = settings;
-    userSettingsPromise = Promise.resolve(settings);
-  };
-
   const getContextLogger = (options?: LoggerOptions) => {
     return getLogger({
       ...options,
@@ -168,31 +122,13 @@ export const createServiceContext = ({
     connectorRunId,
     originDeviceId,
     requestCache,
-    get userSettings() {
-      return cachedUserSettings ?? null;
-    },
-    get database() {
-      if (!databaseInstance) {
-        databaseInstance = new Database(env);
-      }
-
-      return databaseInstance;
-    },
-    get repositories() {
-      if (!repositoriesInstance) {
-        repositoriesInstance = createRepositories(env);
-      }
-
-      return repositoriesInstance;
-    },
+    repositories: createRepositories(env),
     requireUser,
     ensureDatabase,
     waitUntil: waitUntil ?? ((work) => void work.catch(() => undefined)),
     outboundGateway,
     executionCtx,
     experimentAssignments: {},
-    getUserSettings: loadUserSettings,
-    setUserSettings,
     getLogger: getContextLogger,
   };
 };

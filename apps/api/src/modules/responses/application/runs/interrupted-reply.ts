@@ -47,7 +47,7 @@ export async function salvageInterruptedReply(
       { env: context.env, conversationId: run.conversationId, kind: "durable_recovery" },
       async (lease) => {
         const conversationManager = ConversationManager.getInstance({
-          database: context.database,
+          repositories: context.repositories,
           user,
           store: true,
           env: context.env,

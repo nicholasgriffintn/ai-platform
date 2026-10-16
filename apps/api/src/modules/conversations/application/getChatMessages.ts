@@ -8,7 +8,7 @@ import type { AnonymousUser, Message } from "~/types";
 
 export type GetChatMessagesContext = Pick<
   ServiceContext,
-  "database" | "ensureDatabase" | "user" | "repositories"
+  "ensureDatabase" | "user" | "repositories"
 >;
 
 export const handleGetChatMessages = async (
@@ -33,7 +33,7 @@ export const handleGetChatMessages = async (
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     anonymousUser,
   });
@@ -81,7 +81,7 @@ export const handleGetChatMessageById = async (
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     anonymousUser,
   });

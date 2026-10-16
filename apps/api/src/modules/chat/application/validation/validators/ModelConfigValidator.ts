@@ -15,6 +15,7 @@ import type {
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
 import { resolveRequestModelConfig } from "~/modules/models/application/request-config";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({
@@ -55,7 +56,7 @@ export class ModelConfigValidator implements Validator {
     const { allAttachments } = getAllAttachments(lastMessageContent);
 
     const storedSelection = await resolveConversationModelSelection(options);
-    const userSettings = options.context ? await options.context.getUserSettings() : null;
+    const userSettings = options.context ? await getRequestUserSettings(options.context) : null;
     const hasExplicitModel = Boolean(requestedModel || requestedModels?.length);
     const effectiveModel =
       requestedModel ??

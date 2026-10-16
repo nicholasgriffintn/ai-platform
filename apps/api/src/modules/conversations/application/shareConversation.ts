@@ -11,7 +11,7 @@ export async function handleShareConversation(
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
   });
 

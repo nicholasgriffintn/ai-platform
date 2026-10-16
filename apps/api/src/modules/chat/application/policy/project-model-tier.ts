@@ -8,6 +8,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CoreChatOptions } from "~/types";
@@ -21,7 +22,7 @@ export interface ConversationModelSelection {
 export async function resolveAccountDefaultComputeSite(
   context: ServiceContext,
 ): Promise<ComputeSite | undefined> {
-  return (await context.getUserSettings())?.default_compute_site ?? undefined;
+  return (await getRequestUserSettings(context))?.default_compute_site ?? undefined;
 }
 
 export async function resolveConversationModelSelection(
@@ -100,7 +101,7 @@ export async function resolveProjectModelTier(
     return access.project.default_model_tier;
   }
 
-  const settings = await options.context.getUserSettings();
+  const settings = await getRequestUserSettings(options.context);
 
   return settings?.default_model_tier ?? DEFAULT_MODEL_TIER;
 }

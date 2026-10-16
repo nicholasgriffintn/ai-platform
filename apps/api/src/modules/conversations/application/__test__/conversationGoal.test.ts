@@ -52,7 +52,6 @@ function createContext(overrides: {
 }) {
   return {
     env: {},
-    database: {},
     ensureDatabase: vi.fn(),
     requireUser: vi.fn().mockReturnValue(owner),
     repositories: fakeRepositories([

@@ -37,7 +37,7 @@ export const handleGenerateChatCompletionTitle = async (
 
   context.ensureDatabase();
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     store,
   });

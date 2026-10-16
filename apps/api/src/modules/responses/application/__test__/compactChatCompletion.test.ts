@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Database } from "~/infrastructure/database";
+import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { IEnv } from "~/types";
 
@@ -67,9 +67,8 @@ describe("handleCompactChatCompletion", () => {
     plan_id: null,
   };
   const env = { AI: {} } as IEnv;
-  const database = {} as Database;
   const context: CompactChatCompletionContext = {
-    database,
+    repositories: fakeRepositories([]),
     ensureDatabase: vi.fn(),
     env,
     requireUser: vi.fn(() => user),
@@ -87,7 +86,7 @@ describe("handleCompactChatCompletion", () => {
     mockThreadLease.release.mockClear();
     mockWithThreadLockIfFree.mockReset().mockImplementation(async (_params, run) => run());
     conversationManager = ConversationManager.getInstance({
-      database: context.database,
+      repositories: context.repositories,
       user,
       env: context.env,
     });

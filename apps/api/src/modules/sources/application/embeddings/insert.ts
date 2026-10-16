@@ -7,6 +7,7 @@ import {
 import { resolveEmbeddingRuntime } from "~/infrastructure/providers/capabilities/embedding/helpers";
 import { getPersonalEmbeddingScopeTag } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { IEnv, IUser } from "~/types";
 
 import { deleteProviderDocuments } from "./deletion";
@@ -27,7 +28,7 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
   const input = parseInsertEmbeddingRequest(request);
   const document = prepareEmbeddingDocument(input);
 
-  const userSettings = await serviceContext.getUserSettings();
+  const userSettings = await getRequestUserSettings(serviceContext);
 
   if (!userSettings) {
     throw new AssistantError("User settings not found", ErrorType.NOT_FOUND, 404);

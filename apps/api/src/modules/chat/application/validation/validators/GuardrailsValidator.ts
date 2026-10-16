@@ -9,6 +9,7 @@ import type {
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
 import { describeGuardrailBlock } from "~/modules/chat/domain/guardrails";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { CoreChatOptions } from "~/types";
 
@@ -36,8 +37,8 @@ export class GuardrailsValidator implements Validator {
     try {
       let userSettings: any = null;
 
-      if (options.context?.getUserSettings) {
-        userSettings = await options.context.getUserSettings();
+      if (options.context) {
+        userSettings = await getRequestUserSettings(options.context);
       } else if (user?.id) {
         userSettings = await memoizeRequest(requestCache, `user-settings:${user.id}`, () =>
           new UserSettingsRepository(env).getUserSettings(user.id),

@@ -88,7 +88,7 @@ async function settleUnsettledToolCalls(
     { env: context.env, conversationId: run.conversationId, kind: "durable_recovery" },
     async (lease) => {
       const manager = ConversationManager.getInstance({
-        database: context.database,
+        repositories: context.repositories,
         user,
         store: true,
         env: context.env,

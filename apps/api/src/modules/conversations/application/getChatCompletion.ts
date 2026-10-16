@@ -38,7 +38,6 @@ async function refreshPendingMessages(
     { env: context.env, conversationId: completionId, kind: "async_result" },
     (lease) => {
       const conversationManager = ConversationManager.getInstance({
-        database: context.database,
         repositories: context.repositories,
         user,
         env: context.env,
@@ -128,7 +127,7 @@ export const handleGetChatCompletion = async (
   context.ensureDatabase();
 
   const conversationManager = ConversationManager.getInstance({
-    database: context.database,
+    repositories: context.repositories,
     user,
     env: context.env,
   });

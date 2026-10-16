@@ -48,7 +48,6 @@ function createContext({
       email: "member@example.com",
       plan_id: "pro",
     }),
-    getUserSettings: vi.fn().mockResolvedValue(null),
     repositories: fakeRepositories([
       [ConversationRepository, repositories.conversations],
       [WorkspaceRepository, repositories.workspaces],
