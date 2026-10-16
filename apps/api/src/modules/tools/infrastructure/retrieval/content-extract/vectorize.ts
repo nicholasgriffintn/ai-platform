@@ -2,9 +2,9 @@ import { createSourceSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
 import { createSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type {
   ContentExtractParams,
   ContentExtractProvider,

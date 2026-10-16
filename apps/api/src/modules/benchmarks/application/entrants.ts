@@ -16,11 +16,11 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { Repositories } from "~/infrastructure/database/repositories";
-import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
-import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
 import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
 import { filterModelsForUserAccess } from "~/modules/models/application/resolve";
+import type { AuthorisedModelTarget } from "~/modules/responses/application/engine/streaming/responses";
 import type { IEnv, IUser } from "~/types";
 
 export type EntrantTarget =

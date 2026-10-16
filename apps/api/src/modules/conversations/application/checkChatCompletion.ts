@@ -5,8 +5,8 @@ import {
   Guardrails,
   type GuardrailResult,
 } from "~/infrastructure/providers/capabilities/guardrails";
-import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
 export const handleCheckChatCompletion = async (

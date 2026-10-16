@@ -7,9 +7,9 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/tasks/application/types";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";

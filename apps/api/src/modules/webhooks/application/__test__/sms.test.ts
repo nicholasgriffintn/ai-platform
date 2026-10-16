@@ -24,14 +24,14 @@ vi.mock("~/infrastructure/providers/capabilities/messaging/delivery", async (imp
   };
 });
 
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     enqueueTask = mocks.enqueueTask;
   },
 }));
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 

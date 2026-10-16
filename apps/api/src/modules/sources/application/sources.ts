@@ -14,7 +14,6 @@ import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-se
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
-import { recordProjectAudit } from "~/modules/audit/application";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MemoryManager } from "~/modules/memory/application/manager";
@@ -25,6 +24,7 @@ import type {
 } from "~/modules/sources/infrastructure/SourceRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { recordProjectAudit } from "~/modules/workspaces/application/audit";
 
 function formatFile(record: SourceRecord): Source["file"] {
   if (!record.storage_key || !record.mime_type) {

@@ -1,6 +1,6 @@
 import { DELEGATION_WAKE_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
-import type { TaskService } from "~/modules/tasks/application/TaskService";
+import type { TaskService } from "~/modules/queue/application/TaskService";
 
 export async function scheduleDelegationWake(
   tasks: TaskService,

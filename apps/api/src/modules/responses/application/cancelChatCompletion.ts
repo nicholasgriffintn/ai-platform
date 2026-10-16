@@ -2,9 +2,9 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { recordTurnCancellationRequested } from "~/modules/chat/application/streaming/continuity-telemetry";
-import { requestTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { recordTurnCancellationRequested } from "~/modules/responses/application/engine/streaming/continuity-telemetry";
+import { requestTurnCancellation } from "~/modules/responses/application/engine/streaming/turn-cancellation";
 
 export type CancelChatCompletionContext = Pick<
   ServiceContext,

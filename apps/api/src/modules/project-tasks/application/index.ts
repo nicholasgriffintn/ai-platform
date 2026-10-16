@@ -31,8 +31,8 @@ import { createGoalService } from "~/modules/goals/application/createGoalService
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import type { ListProjectTaskFilters } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import {
   listProjectDefaultTeammateIds,
   resolveProjectTeammateIds,

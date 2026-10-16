@@ -4,7 +4,7 @@ import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { ai } from "~/infrastructure/ai";
-import type { PanelTurn } from "~/modules/chat/application/panel";
+import type { PanelTurn } from "~/modules/responses/application/engine/panel";
 import type { IEnv, IUser } from "~/types";
 
 const MAX_COUNCIL_DECISION_CHARS = 40_000;

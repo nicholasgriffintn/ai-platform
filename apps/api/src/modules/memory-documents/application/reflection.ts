@@ -7,14 +7,14 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import type { TaskExecutionContext } from "~/modules/tasks/application/types";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import type { TaskExecutionContext } from "~/modules/queue/application/types";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { resolveMemoryPolicy } from "~/modules/responses/domain/memory";
 import {
   getTeammateContextMemory,
   requireTeammateContext,

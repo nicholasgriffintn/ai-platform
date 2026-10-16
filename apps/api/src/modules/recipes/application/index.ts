@@ -17,8 +17,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listRecipeConnectors } from "~/modules/connectors/application";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { requireTeammateContext } from "~/modules/teammates/application/contexts";
 import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";

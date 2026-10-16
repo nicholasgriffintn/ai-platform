@@ -6,8 +6,8 @@ import type { AsyncInvocationMetadata } from "@ngriffin_uk/polychat-ai-providers
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
 import { getChatProvider, listChatProviders } from "~/infrastructure/providers/capabilities/chat";
-import { buildMessageParts } from "~/modules/chat/application/messages/parts";
-import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
+import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
+import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import type { ChatCompletionParameters, Message } from "~/types";
 
 import type { AsyncInvocationHandler, AsyncRefreshContext, AsyncRefreshResult } from "./types";

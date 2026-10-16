@@ -19,7 +19,7 @@ vi.mock("~/infrastructure/providers/capabilities/ocr", () => ({
 vi.mock("./input", () => ({ resolveOcrInput }));
 vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess }));
 vi.mock("~/modules/outputs/application/access", () => ({ requireConversationScope }));
-vi.mock("~/modules/audit/application", () => ({ recordProjectAudit }));
+vi.mock("~/modules/workspaces/application/audit", () => ({ recordProjectAudit }));
 
 const result = {
   model: "mistral-ocr-4-1",

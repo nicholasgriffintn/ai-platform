@@ -1,0 +1,57 @@
+import {
+  DOCUMENT_CAPABILITY_ID,
+  DOCUMENT_WRITE_TOOL_NAME,
+  type WriteDocumentInput,
+} from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { writeDocument } from "~/modules/documents/application";
+import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
+import type { IFunctionResponse } from "~/types";
+import type { ApiToolDefinition } from "~/types/functions";
+
+import { write_document as writeDocumentDescriptor } from "./definitions/write_document";
+
+export const write_document: ApiToolDefinition = {
+  ...writeDocumentDescriptor,
+  execute: async (args: WriteDocumentInput, toolContext) => {
+    const request = toolContext.request;
+    const context = request.context;
+    const user = request.user;
+
+    if (!context || !user?.id) {
+      throw new AssistantError(
+        "Writing a document needs a signed-in user",
+        ErrorType.AUTHENTICATION_ERROR,
+        401,
+      );
+    }
+
+    const requestProjectId = resolveRequestProjectId(request);
+
+    if (requestProjectId && args.projectId && requestProjectId !== args.projectId) {
+      throw new AssistantError("Document is outside this project", ErrorType.FORBIDDEN, 403);
+    }
+
+    const projectId = requestProjectId ?? args.projectId ?? undefined;
+    const saved = await writeDocument(context, user, {
+      title: args.title,
+      body: args.body,
+      capabilityId: DOCUMENT_CAPABILITY_ID,
+      sourceType: "assistant",
+      ...(args.outputId ? { outputId: args.outputId } : {}),
+      ...(args.expectedRevision ? { expectedRevision: args.expectedRevision } : {}),
+      ...(projectId ? { projectId } : {}),
+      ...(request.request?.completion_id ? { conversationId: request.request.completion_id } : {}),
+    });
+
+    return {
+      status: "success",
+      name: DOCUMENT_WRITE_TOOL_NAME,
+      content: args.outputId
+        ? `Revised ${saved.title}. It is revision ${saved.revision} in Files.`
+        : `Wrote ${saved.title}. You can find it in Files, revise it, or export it.`,
+      data: { outputId: saved.id, title: saved.title, revision: saved.revision },
+    } satisfies IFunctionResponse;
+  },
+};

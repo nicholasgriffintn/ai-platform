@@ -6,7 +6,7 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import type { SandboxProvider } from "~/infrastructure/providers/capabilities/sandbox";
 import { providerLibrary } from "~/infrastructure/providers/library";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
@@ -49,7 +49,7 @@ vi.mock("../usage", () => ({
   releaseSandboxRunReservation: vi.fn(async () => undefined),
   reserveSandboxRun: vi.fn(async () => undefined),
 }));
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     public enqueueTask = mockEnqueueTask;
   },

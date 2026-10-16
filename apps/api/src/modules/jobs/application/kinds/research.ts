@@ -1,7 +1,7 @@
 import { researchStatusSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { createFunctionOutput } from "~/modules/functions/application/run-with-output";
+import { createFunctionOutput } from "~/modules/outputs/application/run-with-output";
 import { getResearchTaskStatus, startResearchTask } from "~/modules/research/application/task";
 
 import type { JobKindDefinition } from "../../domain/job-kind";

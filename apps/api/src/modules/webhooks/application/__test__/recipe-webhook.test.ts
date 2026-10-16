@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
 import { RecipeWebhookTriggerRepository } from "~/modules/recipes/infrastructure/RecipeWebhookTriggerRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 

@@ -7,21 +7,21 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { sseResponse } from "~/infrastructure/http/streaming";
-import { processChatRequest } from "~/modules/chat/application/core";
-import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
-import { buildMessageParts } from "~/modules/chat/application/messages/parts";
-import {
-  toProviderMessages,
-  toProviderResponseMessagePartSource,
-  toProviderResponseMessages,
-} from "~/modules/chat/application/messages/provider-mapping";
-import { buildChatPostProcessing } from "~/modules/chat/application/streaming/post-processing";
 import { replayApprovedConnectorOperation } from "~/modules/connectors/application/approved-operation-replay";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
+import { processChatRequest } from "~/modules/responses/application/engine/core";
+import { formatAssistantMessage } from "~/modules/responses/application/engine/messages/assistant-format";
+import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
+import {
+  toProviderMessages,
+  toProviderResponseMessagePartSource,
+  toProviderResponseMessages,
+} from "~/modules/responses/application/engine/messages/provider-mapping";
+import { buildChatPostProcessing } from "~/modules/responses/application/engine/streaming/post-processing";
 import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";

@@ -1,12 +1,12 @@
 import type { TeammateContext } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { resolveFunctionTool } from "~/modules/tools/application/catalogue";
 import {
   resolveToolCallDestination,
   resolveToolCallEffectClass,
-} from "~/modules/chat/application/tools/effects";
-import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
-import { resolveFunctionTool } from "~/modules/functions/application";
+} from "~/modules/tools/application/effects";
 
 export async function readPendingPolyCall(
   context: ServiceContext,

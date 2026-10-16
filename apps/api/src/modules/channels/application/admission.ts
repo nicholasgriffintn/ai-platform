@@ -6,8 +6,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 

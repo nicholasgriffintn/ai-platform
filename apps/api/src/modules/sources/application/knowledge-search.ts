@@ -12,7 +12,7 @@ import {
   getPersonalEmbeddingScopeTag,
   getProjectEmbeddingScopeTag,
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
-import { rerankAuthorisedDocuments } from "~/modules/functions/application/document-reranking";
+import { rerankAuthorisedDocuments } from "~/modules/sources/application/document-reranking";
 import { queryEmbeddingRuntime } from "~/modules/sources/application/embeddings/provider-query";
 import type {
   KnowledgeScope,

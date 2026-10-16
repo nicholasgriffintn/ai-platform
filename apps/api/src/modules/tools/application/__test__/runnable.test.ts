@@ -1,7 +1,8 @@
 import { prepareToolFormData, runnableToolSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { decide } from "~/modules/functions/application/definitions/decide";
+import "~/tools";
+import { decide } from "~/modules/decisions/application/tools/definitions/decide";
 
 import { getRunnableTool } from "../runnable";
 

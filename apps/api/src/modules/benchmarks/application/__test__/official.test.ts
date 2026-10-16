@@ -17,7 +17,7 @@ vi.mock("~/modules/models/application/resolve", () => ({
   filterModelsForUserAccess: mocks.filterModelsForUserAccess,
 }));
 
-vi.mock("~/modules/chat/application/policy/model-access", () => ({
+vi.mock("~/modules/models/application/access", () => ({
   resolveExecutableModelForRequest: vi.fn(),
 }));
 

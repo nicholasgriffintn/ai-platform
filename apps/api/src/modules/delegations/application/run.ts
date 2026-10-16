@@ -19,11 +19,11 @@ import { delegationRunCommandId } from "~/modules/delegations/application/run-id
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import type { TaskMessage, TaskResult } from "~/modules/queue/application/types";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import type { TaskMessage, TaskResult } from "~/modules/tasks/application/types";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";

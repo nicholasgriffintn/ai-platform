@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 
 import { replayApprovedConnectorOperation } from "../approved-operation-replay";
@@ -15,7 +15,7 @@ const approvalMocks = vi.hoisted(() => ({
   getConnectorArgumentDigest: vi.fn().mockResolvedValue("approved-argument-digest"),
 }));
 
-vi.mock("~/modules/chat/application/tools/execution", () => ({
+vi.mock("~/modules/responses/application/engine/tools/execution", () => ({
   handleToolCalls: vi.fn(),
 }));
 

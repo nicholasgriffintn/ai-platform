@@ -19,13 +19,13 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
-import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
+import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
 import {
   publishConversationChanged,
   publishRunChanged,

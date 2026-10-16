@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { resolveProjectModelTier } from "~/modules/chat/application/policy/project-model-tier";
 import { getConversationBranches } from "~/modules/conversations/application/conversationThreads";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { resolveProjectModelTier } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
@@ -13,6 +13,7 @@ import {
   resolveAllowedProjectConnectorOperations,
   resolveProjectRecipeConnectorScope,
 } from "../projectRecipeConnectorScope";
+import "~/tools";
 
 function createContext({
   conversation = null,

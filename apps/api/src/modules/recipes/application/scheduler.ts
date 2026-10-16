@@ -6,8 +6,8 @@ import {
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import type { TemplateRecord } from "~/modules/templates/infrastructure/TemplateRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";

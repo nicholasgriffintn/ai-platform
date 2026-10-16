@@ -21,10 +21,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Task } from "~/infrastructure/database/schema";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 
 const logger = getLogger({ prefix: "services/chat-runs/follow-up-queue" });
 

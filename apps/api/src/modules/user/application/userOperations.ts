@@ -7,9 +7,6 @@ import {
   getUserConfigurableProviderMetadata,
   listConfigurableUserProviderIds,
 } from "~/infrastructure/providers/userConfigurableProviders";
-import { createUserSettings } from "~/modules/auth/application/user";
-import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
-import { validatePetSettingsUpdate } from "~/modules/pets/application/settings";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 const logger = getLogger({ prefix: "services/user/operations" });
@@ -34,7 +31,7 @@ const ensureRepo = (context: ServiceContext) => {
   return context.repositories.get(UserSettingsRepository);
 };
 
-async function invalidateUserModelCache(
+export async function invalidateUserModelCache(
   context: ServiceContext,
   userId: number,
   operation: string,
@@ -64,32 +61,6 @@ async function invalidateUserModelCache(
   );
 }
 
-export async function updateUserSettings(
-  context: ServiceContext,
-  settings: any,
-  userId?: number,
-): Promise<{ success: boolean; message: string }> {
-  const repo = ensureRepo(context);
-  const id = userId ?? context.requireUser().id;
-
-  await createUserSettings(context.repositories, id);
-
-  const validatedSettings = await validatePetSettingsUpdate(context, id, settings);
-
-  await repo.updateUserSettings(id, validatedSettings);
-
-  if (validatedSettings.advertise_machines === false) {
-    await context.repositories.get(MachineRepository).deleteAllForUser(id);
-  }
-
-  await invalidateUserModelCache(context, id, "update-user-settings");
-
-  return {
-    success: true,
-    message: "User settings updated successfully",
-  };
-}
-
 export async function storeProviderApiKey(
   context: ServiceContext,
   providerId: string,
@@ -101,7 +72,7 @@ export async function storeProviderApiKey(
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
 
-  await createUserSettings(context.repositories, id);
+  await repo.createUserSettings(id);
   await repo.createUserProviderSettings(id, [providerId]);
 
   await repo.storeProviderApiKey(id, providerId, apiKey, secretKey, configuration);

@@ -9,7 +9,7 @@ import { APP_DESCRIPTION, APP_NAME } from "~/config/app";
 import {
   toAssistantModelMetadata,
   type PromptModelMetadata,
-} from "~/modules/chat/application/prompts/model-metadata";
+} from "~/modules/responses/application/engine/prompts/model-metadata";
 
 function buildArticlePromptMetadata(metadata: PromptModelMetadata | undefined): string {
   return buildAssistantMetadataSection({

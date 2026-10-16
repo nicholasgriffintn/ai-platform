@@ -7,12 +7,12 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationManager } from "~/modules/conversations/application/manager";
+import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import {
   cloneMessagesForBranch,
   selectBranchSourceMessages,
-} from "~/modules/chat/application/messages/branch-cloning";
-import { ConversationManager } from "~/modules/conversations/application/manager";
-import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
+} from "~/modules/responses/application/engine/messages/branch-cloning";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { Message } from "~/types";

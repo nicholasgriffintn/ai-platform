@@ -11,7 +11,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
@@ -21,10 +20,11 @@ import {
   findUnsettledToolCalls,
   settleInterruptedCall,
 } from "~/modules/delegations/domain/interrupted-calls";
-import { getFunctionToolDescriptors } from "~/modules/functions/application/definitions";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { getFunctionToolDescriptors } from "~/modules/tools/application/catalogue";
+import { resolveToolCallEffectClass } from "~/modules/tools/application/effects";
 import type { IUser, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/delegations/resume" });

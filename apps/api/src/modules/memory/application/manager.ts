@@ -11,12 +11,12 @@ import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getMemoryProvider } from "~/infrastructure/providers/capabilities/memory";
 import type { MemoryProviderId } from "~/infrastructure/providers/capabilities/memory/types";
-import { recordProjectAudit } from "~/modules/audit/application";
-import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
+import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
+import { recordProjectAudit } from "~/modules/workspaces/application/audit";
 import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/memory/manager" });

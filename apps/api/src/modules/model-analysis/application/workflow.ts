@@ -5,8 +5,8 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { deriveArtificialAnalysisScores } from "~/modules/model-analysis/application/artificial-analysis/scoring";
 import type { ArtificialAnalysisModelRecord } from "~/modules/model-analysis/application/artificial-analysis/types";
 import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { fetchArtificialAnalysisModels } from "./artificialAnalysis";

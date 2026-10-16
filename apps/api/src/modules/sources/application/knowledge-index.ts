@@ -10,11 +10,11 @@ import {
   decodeEmbeddingRuntimeTarget,
   toEmbeddingRuntimeTarget,
 } from "~/infrastructure/providers/capabilities/embedding/target";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 

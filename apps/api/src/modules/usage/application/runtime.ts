@@ -10,9 +10,9 @@ import { createRepositories, type Repositories } from "~/infrastructure/database
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { SyncPublisher } from "~/modules/sync/application/publish";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";

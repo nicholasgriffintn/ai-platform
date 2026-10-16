@@ -11,10 +11,10 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
 import { readPendingPolyCall } from "~/modules/poly/application/pending-call";
 import { requirePolyContext } from "~/modules/poly/application/poly-context";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { isStandingApprovalEligible } from "~/modules/tools/application/effects";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

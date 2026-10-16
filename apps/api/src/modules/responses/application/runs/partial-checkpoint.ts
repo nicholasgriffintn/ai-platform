@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
+import type { ChatEventSink } from "~/modules/responses/application/engine/streaming/emitter";
 
 const logger = getLogger({ prefix: "services/chat-runs/partial-checkpoint" });
 

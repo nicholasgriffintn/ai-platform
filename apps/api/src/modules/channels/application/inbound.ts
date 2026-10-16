@@ -29,7 +29,6 @@ import {
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
-import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
@@ -37,6 +36,7 @@ import { deliverOutboundOperation } from "~/modules/delivery/application/outboun
 import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
+import { getInboundChannelProfile } from "~/modules/responses/domain/channels";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {

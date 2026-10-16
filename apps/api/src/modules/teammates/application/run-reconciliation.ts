@@ -12,7 +12,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import {
@@ -27,12 +26,13 @@ import { isRunWaitingForDelegations } from "~/modules/delegations/application/wa
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { notifyMobileWork } from "~/modules/mobile-push/application";
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { deliverRecipeOccurrenceToTeammateHome } from "~/modules/recipes/application/occurrences";
 import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
 import { getRecipeExecutionTaskId } from "~/modules/recipes/application/task-reconciliation";
+import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";

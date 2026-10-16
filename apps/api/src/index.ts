@@ -35,16 +35,17 @@ import { receiveChannelEmail } from "./modules/channels/application/email-intake
 import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
 import { handleGetMetrics } from "./modules/metrics/application/getMetrics";
+import type { TaskMessage } from "./modules/queue/application/types";
 import { RealtimeProxyCoordinator } from "./modules/realtime/infrastructure/proxy-coordinator/object";
 import { SandboxRunCoordinator } from "./modules/sandbox/infrastructure/run-coordinator/object";
+import "./models";
+import "./tools";
 import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/object";
-import { QueueExecutor } from "./modules/tasks/application/QueueExecutor";
-import { workflows } from "./modules/tasks/application/registry";
-import type { TaskMessage } from "./modules/tasks/application/types";
 import type { InfraUsageQueueMessage } from "./modules/usage/application/infra-usage-queue";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
+import { consumeQueueBatch, workflows } from "./workflows";
 
 const app = new Hono<{
   Bindings: IEnv;
@@ -322,10 +323,7 @@ const handler = {
     await workflows.runCron(env, event);
   },
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
-    await QueueExecutor.respondToCronQueue(env, {
-      ...batch,
-      messages: batch.messages as Message<TaskMessage | InfraUsageQueueMessage>[],
-    });
+    await consumeQueueBatch(env, batch.messages as Message<TaskMessage | InfraUsageQueueMessage>[]);
   },
 } satisfies ExportedHandler<IEnv>;
 

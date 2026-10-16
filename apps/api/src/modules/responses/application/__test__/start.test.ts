@@ -16,11 +16,11 @@ const { mockConversationManagerGetInstance, mockThreadLease } = vi.hoisted(() =>
   },
 }));
 
-vi.mock("~/modules/chat/application/core", () => ({
+vi.mock("~/modules/responses/application/engine/core", () => ({
   processChatRequest: vi.fn(),
 }));
 
-vi.mock("~/modules/chat/application/messages/assistant-format", () => ({
+vi.mock("~/modules/responses/application/engine/messages/assistant-format", () => ({
   formatAssistantMessage: vi.fn(),
 }));
 
@@ -54,9 +54,9 @@ describe("startResponse", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const { processChatRequest } = await import("~/modules/chat/application/core");
+    const { processChatRequest } = await import("~/modules/responses/application/engine/core");
     const { formatAssistantMessage } =
-      await import("~/modules/chat/application/messages/assistant-format");
+      await import("~/modules/responses/application/engine/messages/assistant-format");
 
     mockProcessChatRequest = vi.mocked(processChatRequest);
     mockFormatAssistantMessage = vi.mocked(formatAssistantMessage);

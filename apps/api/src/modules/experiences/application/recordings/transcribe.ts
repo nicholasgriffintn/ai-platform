@@ -12,8 +12,8 @@ import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/apps/recording/transcribe" });

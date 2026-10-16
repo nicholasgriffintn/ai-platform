@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
-import { resolveScopedSkillCatalog } from "~/modules/chat/application/preparation/skills";
-import { load_skill } from "~/modules/functions/application/load_skill";
+import { resolveScopedSkillCatalog } from "~/modules/responses/application/engine/preparation/skills";
+import { load_skill } from "~/modules/skills/application/tools/load_skill";
 import type {
   AppendAuthoredSkillRevisionInput,
   AuthoredSkillRecord,
@@ -47,7 +47,7 @@ vi.mock("~/modules/workspaces/application/access", () => ({
   requireProjectAccess: requireProjectAccessMock,
 }));
 
-vi.mock("~/modules/audit/application", () => ({
+vi.mock("~/modules/workspaces/application/audit", () => ({
   recordProjectAudit: recordProjectAuditMock,
 }));
 

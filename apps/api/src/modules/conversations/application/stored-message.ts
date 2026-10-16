@@ -5,7 +5,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import {
   buildMessageParts,
   normaliseMessageParts,
-} from "~/modules/chat/application/messages/parts";
+} from "~/modules/responses/application/engine/messages/parts";
 import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/conversations/stored-message" });

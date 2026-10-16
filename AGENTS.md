@@ -8,6 +8,7 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 - Keep routes and page files orchestration-only. Move parsing, state machines, timers, retries, and durable logic into services, hooks, or shared libs.
 - Reuse shared helpers from `packages/utility-core` and `packages/utility-server`. Keep domain logic in its owning module; do not introduce API `lib` or `utils` catch-all directories.
 - Keep wire contracts in `packages/schemas` and validate against all consumers.
+- Keep queue handlers and tools in their owning API module and register them in `apps/api/src/workflows.ts` and `apps/api/src/tools.ts`.
 - Keep API/package boundaries in place. Avoid coupling `component-*` packages to routers, stores, or API clients except `component-shell`.
 - Keep authority checks at I/O boundaries. Verify personal vs project scope, reversibility, and owner permissions on every boundary.
 - Use `packages/library-policy` for Cedar authorisation decisions. Load current trusted facts in the owning module and keep signatures, tenant filters, lease fences and atomic grant consumption at their existing boundaries. Follow [the policy package README](packages/library-policy/README.md) when adding actions or governance rules.

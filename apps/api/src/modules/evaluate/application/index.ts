@@ -6,7 +6,7 @@ import {
 
 import type { IEnv } from "~/types";
 
-export { evaluateWithTools, type EvaluateWithToolsOptions } from "./tools";
+export { evaluateWithTools, type EvaluateWithToolsOptions } from "./evaluate-with-tools";
 
 export interface ResolveEvaluatorOptions {
   env: IEnv;

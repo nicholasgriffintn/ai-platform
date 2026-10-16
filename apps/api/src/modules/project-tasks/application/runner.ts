@@ -31,7 +31,6 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
-import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { scheduleComposioConnectorRunCleanup } from "~/modules/connectors/application/composio-run";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
@@ -41,12 +40,13 @@ import { createGoalService } from "~/modules/goals/application/createGoalService
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import type { TaskExecutionLease } from "~/modules/queue/application/types";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import { startResponse } from "~/modules/responses/application/start";
 import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import type { TaskExecutionLease } from "~/modules/tasks/application/types";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";

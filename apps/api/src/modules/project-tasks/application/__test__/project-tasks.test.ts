@@ -15,7 +15,7 @@ import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infra
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 

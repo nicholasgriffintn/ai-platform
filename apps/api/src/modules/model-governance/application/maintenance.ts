@@ -21,8 +21,8 @@ import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructur
 import type { ModelDeploymentRecord } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { enqueueTrainingSync } from "~/modules/model-training/application/runs";
 import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { IEnv } from "~/types";
 

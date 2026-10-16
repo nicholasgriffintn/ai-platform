@@ -11,12 +11,12 @@ import type {
   DiscoverableFunctionTool,
 } from "~/modules/assistant-capabilities/application/discovery";
 import { listRecipeConnectors } from "~/modules/connectors/application";
-import { resolveEnabledFunctionToolNames } from "~/modules/functions/application/availability";
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
-import { INTERNAL_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
-import { PermissionChecker } from "~/modules/functions/application/permissions";
 import { listAssistantRecipes, listRecipeInstallations } from "~/modules/recipes/application";
+import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
+import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
+import { INTERNAL_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
+import { PermissionChecker } from "~/modules/tools/application/permissions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";

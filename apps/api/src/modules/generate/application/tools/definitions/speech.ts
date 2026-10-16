@@ -1,0 +1,57 @@
+import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+
+import { SPEECH_PROVIDERS } from "~/config/providers";
+import type { FunctionToolDescriptor } from "~/types/functions";
+
+function listSpeechModels(): string[] {
+  return [
+    ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "speech"),
+    ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
+  ].sort((left, right) => left.localeCompare(right));
+}
+
+let cachedInputSchema: ReturnType<typeof jsonSchemaToZod> | undefined;
+
+export const create_speech: FunctionToolDescriptor = {
+  name: "create_speech",
+  description:
+    "Converts text to spoken audio with customizable voice characteristics. Use when users need audio narration, pronunciation guidance, or accessibility options.",
+  get inputSchema() {
+    cachedInputSchema ??= jsonSchemaToZod({
+      type: "object",
+      properties: {
+        prompt: {
+          type: "string",
+          description: "the exact prompt passed in",
+        },
+        lang: {
+          type: "string",
+          description: "The language code for the speech (e.g., 'en-US', 'fr-FR', 'ja-JP')",
+          default: "en-US",
+        },
+        provider: {
+          type: "string",
+          description: "Speech generation provider",
+          enum: Array.from(SPEECH_PROVIDERS),
+          default: "workers-ai",
+        },
+        model: {
+          type: "string",
+          description: "Specific speech generation model to use",
+          enum: listSpeechModels(),
+        },
+        voice: {
+          type: "string",
+          description: "Voice preset or identifier for speech synthesis",
+        },
+      },
+      required: ["prompt"],
+    });
+
+    return cachedInputSchema;
+  },
+  type: "byok",
+  permissions: ["network"],
+  effects: { effectClass: "draft" },
+};

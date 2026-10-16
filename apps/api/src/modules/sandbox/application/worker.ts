@@ -8,8 +8,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { SandboxProviderExecuteOptions } from "~/infrastructure/providers/capabilities/sandbox";
 import { generateJwtToken } from "~/modules/auth/application/jwt";
-import { resolveProjectDefaultModelTier } from "~/modules/chat/application/policy/project-model-tier";
 import { filterModelsForUserAccess } from "~/modules/models/application/resolve";
+import { resolveProjectDefaultModelTier } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { resolveSandboxApiBaseUrl } from "~/modules/sandbox/application/urls";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";

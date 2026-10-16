@@ -4,7 +4,7 @@ import {
   DEFAULT_CONVERSATION_TITLE,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { isCompactionMarkerMessage } from "~/modules/chat/application/messages/parts";
+import { isCompactionMarkerMessage } from "~/modules/responses/application/engine/messages/parts";
 import type { Message } from "~/types";
 
 const UNTITLED = new Set(["", DEFAULT_CONVERSATION_TITLE.toLowerCase(), "untitled"]);

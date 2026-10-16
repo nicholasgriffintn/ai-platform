@@ -5,8 +5,8 @@ import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 import { getResearchProvider } from "~/infrastructure/providers/capabilities/research";
 import { getAuxiliaryResearchProvider } from "~/modules/models/application/resolve";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type {
   IEnv,
   IFunctionResponse,

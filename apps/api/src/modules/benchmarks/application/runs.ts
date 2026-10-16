@@ -19,10 +19,10 @@ import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
-import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
-import type { AuthorisedModelTarget } from "~/modules/chat/application/streaming/responses";
 import { requireModelAction } from "~/modules/model-registry/application/access";
 import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
+import type { AuthorisedModelTarget } from "~/modules/responses/application/engine/streaming/responses";
 import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";

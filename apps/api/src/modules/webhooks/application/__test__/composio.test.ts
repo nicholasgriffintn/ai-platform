@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { RecipeComposioTriggerRepository } from "~/modules/recipes/infrastructure/RecipeComposioTriggerRepository";
 import { RecipeEventReceiptRepository } from "~/modules/recipes/infrastructure/RecipeEventReceiptRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 

@@ -1,5 +1,6 @@
 import type { Hono } from "hono";
 
+import account from "~/modules/account/api/routes";
 import activity from "~/modules/activity/api/routes";
 import admin from "~/modules/admin/api/routes";
 import approvals from "~/modules/approvals/api/routes";
@@ -37,6 +38,7 @@ import pets from "~/modules/pets/api/routes";
 import plans from "~/modules/plans/api/routes";
 import poly from "~/modules/poly/api/routes";
 import chatCompletionsPort from "~/modules/ports/chat-completions/api/routes";
+import tasks from "~/modules/queue/api/routes";
 import realtime from "~/modules/realtime/api/routes";
 import recipes from "~/modules/recipes/api/routes";
 import responses from "~/modules/responses/api/routes";
@@ -48,13 +50,11 @@ import skills from "~/modules/skills/api/routes";
 import sources from "~/modules/sources/api/routes";
 import billing from "~/modules/subscription/api/routes";
 import sync from "~/modules/sync/api/routes";
-import tasks from "~/modules/tasks/api/routes";
 import teammates from "~/modules/teammates/api";
 import templates from "~/modules/templates/api/routes";
 import tools from "~/modules/tools/api/routes";
 import uploads from "~/modules/uploads/api/routes";
 import usage from "~/modules/usage/api/routes";
-import account from "~/modules/user/api/account";
 import apiKeys from "~/modules/user/api/api-keys";
 import providers from "~/modules/user/api/providers";
 import webhookEndpoints from "~/modules/webhook-endpoints/api/routes";

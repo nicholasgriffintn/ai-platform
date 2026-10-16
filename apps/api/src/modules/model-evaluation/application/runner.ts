@@ -14,8 +14,8 @@ import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/M
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type {

@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fromProviderError } from "~/infrastructure/errors";
-import { withAvailableFunctions } from "~/modules/chat/application/tools/available-functions";
+import { withAvailableFunctions } from "~/modules/responses/application/engine/tools/available-functions";
 import { withCapabilityMetering } from "~/modules/usage/application/capabilityMetering";
 import type { ChatCompletionParameters } from "~/types";
 

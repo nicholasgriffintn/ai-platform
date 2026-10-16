@@ -23,7 +23,7 @@ import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { runFunctionWithOutput } from "~/modules/functions/application/run-with-output";
+import { runFunctionWithOutput } from "~/modules/outputs/application/run-with-output";
 import {
   createMcpConnection,
   deleteMcpConnection,

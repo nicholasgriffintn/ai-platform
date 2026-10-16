@@ -5,10 +5,10 @@ import { stripSurroundingQuotes } from "@ngriffin_uk/polychat-utility-server/str
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
-import { sanitiseMessages } from "~/modules/chat/application/messages/sanitise";
 import { createInitialConversationTitle } from "~/modules/conversations/application/title-source";
 import { getTitlingModel } from "~/modules/models/application/resolve";
+import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
+import { sanitiseMessages } from "~/modules/responses/application/engine/messages/sanitise";
 import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/conversations/title-generation" });

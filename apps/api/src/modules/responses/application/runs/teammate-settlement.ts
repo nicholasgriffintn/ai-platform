@@ -3,9 +3,9 @@ import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, type ChatRun } from "@ngriffin_u
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
 import {
   reconcileTeammateRun,
   teammateRunNeedsReconciliation,

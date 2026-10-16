@@ -1,8 +1,8 @@
 import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
-} from "~/modules/chat/application/edit-completions";
-import { resolveSystemModelId } from "~/modules/chat/domain/system-models";
+} from "~/modules/code/application/edit-completions";
+import { resolveSystemModelId } from "~/modules/responses/domain/system-models";
 
 export const handleCreateApplyEditCompletions = async ({
   env,

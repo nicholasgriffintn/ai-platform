@@ -14,7 +14,8 @@ import {
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { describe, expect, it } from "vitest";
 
-import { getFunctionToolCatalogue } from "~/modules/functions/application";
+import "~/tools";
+import { getFunctionToolCatalogue } from "~/modules/tools/application/catalogue";
 
 import { listSkillAvailability } from "../availability";
 import { getSkillResource, listSkillDefinitions, loadSkill } from "../catalog";

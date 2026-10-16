@@ -5,8 +5,8 @@ import { z } from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 const app = new Hono<{ Bindings: IEnv }>();

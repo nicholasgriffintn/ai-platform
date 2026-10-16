@@ -21,11 +21,11 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { TaskInboxRow } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 

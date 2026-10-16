@@ -5,7 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { run_sandbox_task } from "~/modules/functions/application/definitions/sandbox";
+import { run_sandbox_task } from "~/modules/sandbox/application/tools/definitions/sandbox";
 import type { ProjectRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export const PROJECT_CODING_TOOL_IDS = [run_sandbox_task.name];

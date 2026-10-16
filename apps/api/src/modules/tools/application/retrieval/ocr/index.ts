@@ -9,10 +9,10 @@ import {
   resolveOcrProviderName,
 } from "~/infrastructure/providers/capabilities/ocr";
 import { providerHost } from "~/infrastructure/providers/host";
-import { recordProjectAudit } from "~/modules/audit/application";
 import { requireConversationScope } from "~/modules/outputs/application/access";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { recordProjectAudit } from "~/modules/workspaces/application/audit";
 
 import { resolveOcrInput } from "./input";
 

@@ -56,8 +56,8 @@ import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/Mo
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelDatasetProfileRecord } from "../infrastructure/ModelDatasetRepository";

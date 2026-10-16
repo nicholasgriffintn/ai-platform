@@ -10,8 +10,8 @@ import {
 } from "~/infrastructure/providers/capabilities/messaging";
 import { resolveStoredMessagingProvider } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { toInboundChannelMessage } from "~/modules/channels/application/inbound";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 

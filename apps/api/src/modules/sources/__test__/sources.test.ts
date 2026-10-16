@@ -32,7 +32,7 @@ vi.mock("~/modules/workspaces/application/access", () => ({
   requireProjectAccess: requireProjectAccessMock,
 }));
 
-vi.mock("~/modules/audit/application", () => ({
+vi.mock("~/modules/workspaces/application/audit", () => ({
   recordProjectAudit: recordProjectAuditMock,
 }));
 

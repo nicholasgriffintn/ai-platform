@@ -28,8 +28,8 @@ import { readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { createOutput, getOutput, updateOutput } from "~/modules/outputs/application";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IUser } from "~/types";
 

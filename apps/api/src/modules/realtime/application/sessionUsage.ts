@@ -24,8 +24,8 @@ import {
 } from "~/config/realtime";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { getModelConfig } from "~/modules/models/application/resolve";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import type { IEnv } from "~/types";

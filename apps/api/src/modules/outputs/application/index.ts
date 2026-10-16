@@ -21,7 +21,6 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { recordProjectAudit } from "~/modules/audit/application";
 import {
   isOutputDeletionPending,
   parseOutputContent as parseContent,
@@ -38,6 +37,7 @@ import type {
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { recordProjectAudit } from "~/modules/workspaces/application/audit";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { getOutputRestoreCapability } from "../domain/revision-policy";

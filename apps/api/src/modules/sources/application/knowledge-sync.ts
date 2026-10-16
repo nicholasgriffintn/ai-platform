@@ -21,11 +21,11 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { publishResourceEvent } from "~/modules/sync/application/resource-events";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,

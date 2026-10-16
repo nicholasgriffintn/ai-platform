@@ -7,10 +7,10 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { runCouncilReview } from "~/modules/chat/application/council-review";
-import type { PanelCompletionScope } from "~/modules/chat/application/panel";
 import { councilReviewSubject } from "~/modules/outputs/domain/council-review";
 import { OutputReviewRepository } from "~/modules/outputs/infrastructure/OutputReviewRepository";
+import { runCouncilReview } from "~/modules/responses/application/engine/council-review";
+import type { PanelCompletionScope } from "~/modules/responses/application/engine/panel";
 
 import { requireOutputAccess } from "./access";
 import { formatOutput } from "./index";

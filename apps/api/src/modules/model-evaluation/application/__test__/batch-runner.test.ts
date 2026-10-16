@@ -15,7 +15,7 @@ const enqueueTask = vi.hoisted(() => vi.fn());
 vi.mock("~/infrastructure/providers/capabilities/batch", () => ({
   getBatchProvider: () => provider,
 }));
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     enqueueTask = enqueueTask;
   },
@@ -31,7 +31,7 @@ vi.mock("~/modules/model-registry/application/decisions", () => ({
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { BATCH_MAX_POLL_ATTEMPTS, executeBatchedEvalRun } from "../batch-runner";
 

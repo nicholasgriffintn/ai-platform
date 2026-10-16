@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("~/infrastructure/ai", () => ({ ai: {} }));
 vi.mock("~/modules/models/application/resolve", () => ({ getAuxiliaryModel: vi.fn() }));
-vi.mock("~/modules/tasks/application/TaskService", () => ({ TaskService: vi.fn() }));
+vi.mock("~/modules/queue/application/TaskService", () => ({ TaskService: vi.fn() }));
 vi.mock("~/modules/usage/application/usageManager", () => ({ UsageManager: vi.fn() }));
 
 import { getBenchmark } from "@ngriffin_uk/polychat-library-benchmarks";

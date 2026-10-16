@@ -1,12 +1,12 @@
 import type { RunnableTool } from "@ngriffin_uk/polychat-schemas";
 
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
-import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
+import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import {
   formatFunctionName,
   getFunctionIcon,
   getFunctionResponseType,
 } from "~/modules/tools/application/functions";
+import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
 import { getToolCategory } from "~/modules/tools/application/toolCategories";
 import { buildToolFormSchema } from "~/modules/tools/utils/form-schema";
 

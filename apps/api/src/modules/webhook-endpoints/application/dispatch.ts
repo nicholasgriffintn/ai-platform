@@ -8,8 +8,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 import type { IEnv } from "~/types";
 

@@ -3,12 +3,12 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
-import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { messagesSharedThrough } from "~/modules/conversations/domain/share-cutoff";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { hasSnapshotPart } from "~/modules/responses/application/engine/messages/parts";
 import type { Message, User } from "~/types";
 
 export interface ConversationSharingScope {

@@ -1,0 +1,105 @@
+import type { ToolDefinitionLike } from "@ngriffin_uk/polychat-ai-providers";
+import { estimateTextTokens, resolveRequestUser } from "@ngriffin_uk/polychat-ai-providers";
+import {
+  FINISH_TOOL_NAME,
+  PermissionChecker,
+  teammateControlToolDeclarations,
+} from "@ngriffin_uk/polychat-library-tools";
+import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
+import { getCatalogueToolName } from "@ngriffin_uk/polychat-utility-server/tool-names";
+
+import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
+import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
+import { filterToolsForPolyTurn } from "~/modules/tools/application/poly-turn-policy";
+import type { ChatCompletionParameters } from "~/types";
+
+const permissionChecker = new PermissionChecker();
+
+export type AvailableFunctionsSource = Pick<
+  ChatCompletionParameters,
+  | "enabled_tools"
+  | "options"
+  | "tools"
+  | "context"
+  | "connectedConnectorProviders"
+  | "mode"
+  | "tool_policy_mode"
+  | "conversation_type"
+  | "trigger"
+  | "require_approval_for"
+  | "denied_tools"
+  | "enforce_mode_tool_policy"
+>;
+
+export interface ResolvedAvailableFunctions {
+  available_functions: ToolDefinitionLike[];
+  deferred_functions: ToolDefinitionLike[];
+  tools: Record<string, any>[] | undefined;
+}
+
+export function resolveAvailableFunctions(
+  params: AvailableFunctionsSource,
+): ResolvedAvailableFunctions {
+  const user = resolveRequestUser(params);
+  const toolPolicyMode = params.tool_policy_mode ?? params.mode;
+  const enabledTools = resolveEnabledFunctionToolNames(params.enabled_tools, user);
+  const catalogueTools = listFunctionToolDefinitions({
+    connectedConnectorProviders: params.connectedConnectorProviders,
+    selectedConnectorProvider: params.options?.connector?.provider,
+  });
+  const availableTools = filterToolsForPolyTurn(catalogueTools, {
+    conversationType: params.conversation_type,
+    trigger: params.trigger,
+  });
+  const allowed = availableTools
+    .filter((func) => enabledTools.has(func.name))
+    .filter(
+      (func) =>
+        permissionChecker.checkToolActivation({
+          toolName: func.name,
+          mode: toolPolicyMode,
+          user,
+          toolType: func.type,
+          toolPermissions: func.permissions,
+          requireApprovalFor: params.require_approval_for,
+          deniedTools: params.denied_tools,
+          enforceModePolicy: params.enforce_mode_tool_policy,
+        }).allowed,
+    );
+  const available_functions: ToolDefinitionLike[] = [...allowed];
+
+  if (isAgentExecutionMode(params.mode)) {
+    const controlTools =
+      params.conversation_type === "task"
+        ? teammateControlToolDeclarations.filter((tool) => tool.function.name !== FINISH_TOOL_NAME)
+        : teammateControlToolDeclarations;
+
+    available_functions.push(...controlTools);
+  }
+
+  const catalogueToolNames = new Set(catalogueTools.map((tool) => tool.name));
+  const tools = params.tools?.filter((tool) => {
+    const name = getCatalogueToolName(tool);
+
+    return !name || !catalogueToolNames.has(name);
+  });
+
+  return {
+    available_functions,
+    deferred_functions: catalogueTools,
+    tools,
+  };
+}
+
+export function withAvailableFunctions<T extends AvailableFunctionsSource>(
+  params: T,
+): T & ResolvedAvailableFunctions {
+  return { ...params, ...resolveAvailableFunctions(params) };
+}
+
+export function estimateToolDefinitionTokens(params: AvailableFunctionsSource): number {
+  const { available_functions, tools } = resolveAvailableFunctions(params);
+  const definitions = [...available_functions, ...(tools ?? [])];
+
+  return definitions.length > 0 ? estimateTextTokens(JSON.stringify(definitions)) : 0;
+}

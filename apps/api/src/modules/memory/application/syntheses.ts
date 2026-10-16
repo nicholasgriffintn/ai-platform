@@ -2,8 +2,8 @@ import { listPageOf, type TriggerMemorySynthesisRequest } from "@ngriffin_uk/pol
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 export async function createMemorySynthesisTask(
   context: ServiceContext,

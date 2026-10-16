@@ -2,7 +2,7 @@ import { recipeExecutionTaskDataSchema, type ChatRun } from "@ngriffin_uk/polych
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 const RECIPE_CONVERSATION_PREFIX = "recipe_";
 

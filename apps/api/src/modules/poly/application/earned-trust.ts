@@ -1,10 +1,10 @@
 import { POLY_CONVERSATION_TYPE, POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { isStandingApprovalEligible } from "~/modules/chat/application/tools/effects";
 import { recordApprovalOutcome } from "~/modules/poly/domain/earned-trust";
 import { readToolInteractionResolution } from "~/modules/responses/application/runs/interactions";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { isStandingApprovalEligible } from "~/modules/tools/application/effects";
 
 import { readPendingPolyCall } from "./pending-call";
 import { markPolyOwnerSeen } from "./poly-context";

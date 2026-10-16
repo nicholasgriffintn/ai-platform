@@ -3,9 +3,9 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Teammate } from "~/infrastructure/database/schema";
-import { request_approval, ask_user } from "~/modules/functions/application/human_in_the_loop";
-import { messageParent } from "~/modules/functions/application/message-parent";
+import { messageParent } from "~/modules/delegations/application/tools/message-parent";
 import { readTeammateSkillIds } from "~/modules/teammates/application/teammateResponse";
+import { request_approval, ask_user } from "~/modules/tools/application/builtin/human_in_the_loop";
 import type { AssistantPersona, AssistantPersonaExample } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

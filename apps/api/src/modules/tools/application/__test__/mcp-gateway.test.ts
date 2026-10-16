@@ -26,7 +26,7 @@ vi.mock("~/modules/models/application/resolve", async (importOriginal) => ({
     model === "vision-model" ? { modalities: { input: ["text", "image"] } } : { multimodal: false },
 }));
 
-import { mcp_call_tool } from "~/modules/functions/application/mcp_gateway";
+import { mcp_call_tool } from "~/modules/tools/application/builtin/mcp_gateway";
 
 import { mergeNativeMcpToolNames, shouldUseNativeMcpGateway } from "../mcp-gateway-servers";
 

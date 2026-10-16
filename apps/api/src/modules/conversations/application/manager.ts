@@ -22,13 +22,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
-import { normaliseMessageTimestampsForStorage } from "~/modules/chat/application/messages/ordering";
-import {
-  buildMessageParts,
-  hasSnapshotPart,
-  isCompactionMarkerMessage,
-  normaliseMessageParts,
-} from "~/modules/chat/application/messages/parts";
 import {
   getPublicConversation,
   shareConversation,
@@ -56,8 +49,15 @@ import type {
   SetConversationsArchivedOptions,
 } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { normaliseMessageTimestampsForStorage } from "~/modules/responses/application/engine/messages/ordering";
+import {
+  buildMessageParts,
+  hasSnapshotPart,
+  isCompactionMarkerMessage,
+  normaliseMessageParts,
+} from "~/modules/responses/application/engine/messages/parts";
 import { type UsageLimits, UsageManager } from "~/modules/usage/application/usageManager";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { AnonymousUser, Message, Platform, User, IEnv } from "~/types";

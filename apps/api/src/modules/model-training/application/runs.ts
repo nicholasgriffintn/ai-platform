@@ -35,8 +35,8 @@ import { requireUsableVersion } from "~/modules/model-registry/application/scope
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
 import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
 import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";

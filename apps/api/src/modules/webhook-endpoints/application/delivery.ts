@@ -1,7 +1,7 @@
 import { webhookDeliveryTaskDataSchema, webhookEventSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { openSecret } from "~/infrastructure/secret-envelope";
-import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/tasks/application/types";
+import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
 import { WebhookEndpointRepository } from "~/modules/webhook-endpoints/infrastructure/WebhookEndpointRepository";
 import type { IEnv } from "~/types";
 

@@ -14,7 +14,7 @@ const metrics = vi.hoisted(() => ({
   recordTurnCancellationRequested: vi.fn(),
 }));
 
-vi.mock("~/modules/chat/application/streaming/continuity-telemetry", () => metrics);
+vi.mock("~/modules/responses/application/engine/streaming/continuity-telemetry", () => metrics);
 
 const run: ChatRun = {
   protocolVersion: 1,

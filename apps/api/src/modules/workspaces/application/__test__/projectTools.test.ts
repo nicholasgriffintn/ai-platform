@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { resolveProjectTools, validateProjectToolConfiguration } from "../projectTools";
+import "~/tools";
 
 describe("project tool configuration", () => {
   it("rejects incomplete configuration for tools marked as requiring it", () => {

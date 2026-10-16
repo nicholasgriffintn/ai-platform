@@ -37,8 +37,8 @@ import {
 import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { ArtefactStore, artefactKeys } from "../infrastructure/ArtefactStore";

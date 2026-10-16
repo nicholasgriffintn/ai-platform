@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { resolveSandboxModel } from "~/modules/sandbox/application/worker";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { executeSandboxRunStream } from "../execute-stream";
@@ -37,7 +37,7 @@ vi.mock("../run-coordinator", () => ({
   openRunCoordinatorEventsSocket: vi.fn(async () => null),
   updateRunCoordinatorControl: vi.fn(),
 }));
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     public enqueueTask = mockEnqueueTask;
   },

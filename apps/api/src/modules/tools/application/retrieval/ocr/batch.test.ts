@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IUser } from "~/types";
 
 import { startOcrBatch } from "./batch";
@@ -34,7 +34,7 @@ vi.mock("~/modules/outputs/application", () => ({
   updateOutput,
 }));
 
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     enqueueTask = enqueueTask;
   },

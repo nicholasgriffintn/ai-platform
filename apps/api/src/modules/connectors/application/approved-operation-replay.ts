@@ -12,12 +12,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import type { ConnectorOperationApprovalRecord } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
 import type { IUser, Message } from "~/types";
 
 import { getRecipeConnectorAdapter } from "./connector-adapters";

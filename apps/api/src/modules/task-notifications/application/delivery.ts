@@ -9,15 +9,15 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
 import { attentionState, isTaskInboxEligible } from "~/modules/project-tasks/application/attention";
-import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
+import { TaskService } from "~/modules/queue/application/TaskService";
 import type {
   TaskExecutionContext,
   TaskHandler,
   TaskMessage,
   TaskResult,
-} from "~/modules/tasks/application/types";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+} from "~/modules/queue/application/types";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import type { IEnv } from "~/types";
 
 const NOTIFICATION_COPY: Record<TaskNotificationCategory, string> = {

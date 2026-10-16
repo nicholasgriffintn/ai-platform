@@ -16,11 +16,11 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { ai } from "~/infrastructure/ai";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Repositories } from "~/infrastructure/database/repositories";
+import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import {
   getAIResponseForTarget,
   type AuthorisedModelTarget,
-} from "~/modules/chat/application/streaming/responses";
-import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
+} from "~/modules/responses/application/engine/streaming/responses";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { IEnv, IUser, Message } from "~/types";
 

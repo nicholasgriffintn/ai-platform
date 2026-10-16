@@ -47,8 +47,8 @@ import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/Mo
 import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
-import { TaskService } from "~/modules/tasks/application/TaskService";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskService } from "~/modules/queue/application/TaskService";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import type { IEnv } from "~/types";
 

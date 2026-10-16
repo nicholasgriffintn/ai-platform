@@ -15,7 +15,6 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
-import { listWorkspaceAudit } from "~/modules/audit/application";
 import {
   acceptWorkspaceInvitation,
   createWorkspace,
@@ -30,6 +29,7 @@ import {
   updateWorkspace,
   updateWorkspaceMember,
 } from "~/modules/workspaces/application";
+import { listWorkspaceAudit } from "~/modules/workspaces/application/audit";
 
 const app = new Hono();
 const workspaceParamsSchema = z.object({ workspace_id: z.string().min(1) });

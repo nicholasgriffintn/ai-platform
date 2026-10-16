@@ -3,11 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { hasStandingApproval } from "~/modules/chat/application/tools/effects";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
+import { hasStandingApproval } from "~/modules/tools/application/effects";
 
 import { grantPolyStandingApproval } from "../standing";
+import "~/tools";
 
 const ensureContext = vi.hoisted(() => vi.fn());
 

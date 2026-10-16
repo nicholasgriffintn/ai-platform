@@ -1,6 +1,6 @@
 import { responseReceiptEvent, type ChatContextSnapshot } from "@ngriffin_uk/polychat-schemas";
 
-import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
+import type { ChatEventSink } from "~/modules/responses/application/engine/streaming/emitter";
 
 import type { ChatRunLifecycle } from "./lifecycle";
 

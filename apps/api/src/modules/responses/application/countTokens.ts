@@ -3,7 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
-import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
+import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
 import type { ChatCompletionParameters, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/completions/countTokens" });

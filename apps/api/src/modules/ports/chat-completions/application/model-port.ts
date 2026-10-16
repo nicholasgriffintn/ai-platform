@@ -14,10 +14,10 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
-import { consumeProviderStream } from "~/modules/chat/application/agent/provider-stream";
-import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
-import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
-import { getAIResponse } from "~/modules/chat/application/streaming/responses";
+import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
+import { consumeProviderStream } from "~/modules/responses/application/engine/agent/provider-stream";
+import type { ChatEventSink } from "~/modules/responses/application/engine/streaming/emitter";
+import { getAIResponse } from "~/modules/responses/application/engine/streaming/responses";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { ChatCompletionParameters, IUser, Message, ToolCall } from "~/types";
 

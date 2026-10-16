@@ -11,7 +11,7 @@ import {
   getSandboxFunctionName,
   postCommentToIssue,
 } from "~/infrastructure/github";
-import { runFunctionWithOutput } from "~/modules/functions/application/run-with-output";
+import { runFunctionWithOutput } from "~/modules/outputs/application/run-with-output";
 import type { IEnv, IRequest, IUser } from "~/types";
 
 interface GitHubConnectionCredentials {

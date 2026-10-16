@@ -3,10 +3,10 @@ import type { Tool } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getComputerUseAvailability } from "~/modules/computer-use/application/access";
-import { resolveManagedFunctionToolNames } from "~/modules/functions/application/availability";
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
-import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
+import { resolveManagedFunctionToolNames } from "~/modules/tools/application/availability";
+import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
+import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
 
 import { getToolCategory } from "./toolCategories";
 

@@ -24,7 +24,7 @@ import {
   streamHarnessRecords,
 } from "~/modules/agents/application/harness-turn";
 import { startRemoteHarnessTurn } from "~/modules/agents/application/remote-harness-turn";
-import { resolveHostedAgentRunModel } from "~/modules/models/application/hosted-agent-model";
+import { resolveHostedAgentRunModel } from "~/modules/responses/application/engine/policy/hosted-agent-model";
 import type { ChatCompletionParameters, IUser } from "~/types";
 
 function requireHarnessAccess(

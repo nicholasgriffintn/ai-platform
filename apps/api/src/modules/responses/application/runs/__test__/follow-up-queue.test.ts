@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   publishConversationChanged: vi.fn(),
 }));
 
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: class {
     dispatchTask = mocks.dispatchTask;
   },
@@ -21,7 +21,7 @@ vi.mock("~/modules/sync/application/conversation-events", () => ({
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
+import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { queueFollowUp, releaseQueuedFollowUpAfterRun } from "../follow-up-queue";
 

@@ -2,9 +2,9 @@ import { expireHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions
 
 import { PROJECT_TASK_INTERACTION_TTL_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";

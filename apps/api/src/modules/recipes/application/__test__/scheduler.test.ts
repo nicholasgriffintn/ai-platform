@@ -28,7 +28,7 @@ vi.mock("~/modules/workspaces/infrastructure/WorkspaceRepository", () => ({
   },
 }));
 
-vi.mock("~/modules/tasks/infrastructure/TaskRepository", () => ({
+vi.mock("~/modules/queue/infrastructure/TaskRepository", () => ({
   TaskRepository: class {
     constructor() {
       return {};
@@ -36,7 +36,7 @@ vi.mock("~/modules/tasks/infrastructure/TaskRepository", () => ({
   },
 }));
 
-vi.mock("~/modules/tasks/application/TaskService", () => ({
+vi.mock("~/modules/queue/application/TaskService", () => ({
   TaskService: vi.fn().mockImplementation(function TaskService() {
     return {
       enqueueTask: mocks.enqueueTask,
