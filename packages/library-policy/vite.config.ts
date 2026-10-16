@@ -1,6 +1,8 @@
 import { packageTaskConfig } from "@ngriffin_uk/polychat-config/tasks";
 
-const config = packageTaskConfig({ build: "tsc -p tsconfig.json && pnpm build:runtime" });
+const config = packageTaskConfig({
+  build: "tsc -p tsconfig.json && node scripts/build-runtime.mjs",
+});
 
 config.run.tasks.build.cache.input.push(
   "src/**",
