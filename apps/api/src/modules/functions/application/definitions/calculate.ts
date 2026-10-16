@@ -7,7 +7,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const calculate: FunctionToolDescriptor = {
   name: CALCULATOR_TOOL_NAME,
   description:
-    "Evaluates an arithmetic expression exactly. Use it for any calculation beyond trivial mental arithmetic rather than working it out in text. Supports + - * / % ^, parentheses, the constants pi, e and tau, and the functions abs, sqrt, cbrt, pow, exp, ln, log (base 10), log2, round, floor, ceil, trunc, sign, min, max, hypot, sin, cos, tan, asin, acos, atan and atan2 (radians).",
+    "Evaluates an arithmetic expression exactly. Use it for any calculation beyond trivial mental arithmetic rather than working it out in text. Supports + - * / ^ (or **), % as the remainder with the sign of the left operand (-5 % 3 = -2), parentheses, the constants pi, e and tau, and the functions abs, sqrt, cbrt, pow, exp, ln, log (base 10), log2, round, floor, ceil, trunc, sign, min, max, hypot, sin, cos, tan, asin, acos, atan and atan2 (radians).",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

@@ -1,4 +1,29 @@
 export const MAX_ARITHMETIC_EXPRESSION_LENGTH = 1000;
+export const MAX_ARITHMETIC_NESTING_DEPTH = 100;
+
+interface ArithmeticFunction {
+  minArgs: number;
+  maxArgs: number;
+  apply: (args: readonly number[]) => number;
+}
+
+const unary = (fn: (value: number) => number): ArithmeticFunction => ({
+  minArgs: 1,
+  maxArgs: 1,
+  apply: ([value]) => fn(value),
+});
+
+const binary = (fn: (left: number, right: number) => number): ArithmeticFunction => ({
+  minArgs: 2,
+  maxArgs: 2,
+  apply: ([left, right]) => fn(left, right),
+});
+
+const variadic = (fn: (...values: number[]) => number): ArithmeticFunction => ({
+  minArgs: 1,
+  maxArgs: Number.POSITIVE_INFINITY,
+  apply: (args) => fn(...args),
+});
 
 const ARITHMETIC_CONSTANTS: ReadonlyMap<string, number> = new Map([
   ["pi", Math.PI],
@@ -6,30 +31,30 @@ const ARITHMETIC_CONSTANTS: ReadonlyMap<string, number> = new Map([
   ["tau", Math.PI * 2],
 ]);
 
-const ARITHMETIC_FUNCTIONS: ReadonlyMap<string, (...args: number[]) => number> = new Map([
-  ["abs", Math.abs],
-  ["acos", Math.acos],
-  ["asin", Math.asin],
-  ["atan", Math.atan],
-  ["atan2", Math.atan2],
-  ["cbrt", Math.cbrt],
-  ["ceil", Math.ceil],
-  ["cos", Math.cos],
-  ["exp", Math.exp],
-  ["floor", Math.floor],
-  ["hypot", Math.hypot],
-  ["ln", Math.log],
-  ["log", Math.log10],
-  ["log2", Math.log2],
-  ["max", Math.max],
-  ["min", Math.min],
-  ["pow", Math.pow],
-  ["round", Math.round],
-  ["sign", Math.sign],
-  ["sin", Math.sin],
-  ["sqrt", Math.sqrt],
-  ["tan", Math.tan],
-  ["trunc", Math.trunc],
+const ARITHMETIC_FUNCTIONS: ReadonlyMap<string, ArithmeticFunction> = new Map([
+  ["abs", unary(Math.abs)],
+  ["acos", unary(Math.acos)],
+  ["asin", unary(Math.asin)],
+  ["atan", unary(Math.atan)],
+  ["atan2", binary(Math.atan2)],
+  ["cbrt", unary(Math.cbrt)],
+  ["ceil", unary(Math.ceil)],
+  ["cos", unary(Math.cos)],
+  ["exp", unary(Math.exp)],
+  ["floor", unary(Math.floor)],
+  ["hypot", variadic(Math.hypot)],
+  ["ln", unary(Math.log)],
+  ["log", unary(Math.log10)],
+  ["log2", unary(Math.log2)],
+  ["max", variadic(Math.max)],
+  ["min", variadic(Math.min)],
+  ["pow", binary(Math.pow)],
+  ["round", unary(Math.round)],
+  ["sign", unary(Math.sign)],
+  ["sin", unary(Math.sin)],
+  ["sqrt", unary(Math.sqrt)],
+  ["tan", unary(Math.tan)],
+  ["trunc", unary(Math.trunc)],
 ]);
 
 type ArithmeticToken =
@@ -45,29 +70,49 @@ export class ArithmeticExpressionError extends Error {
 }
 
 const TOKEN_PATTERN =
-  /\s*(?:(\d+(?:\.\d*)?(?:e[+-]?\d+)?|\.\d+(?:e[+-]?\d+)?)|([a-z_][a-z0-9_]*)|(\*\*|[-+*/%^(),]))/iy;
+  /(\d+(?:\.\d*)?(?:e[+-]?\d+)?|\.\d+(?:e[+-]?\d+)?)|([a-z_][a-z0-9_]*)|(\*\*|[-+*/%^(),])/iy;
+
+function describeArity({ minArgs, maxArgs }: ArithmeticFunction): string {
+  const plural = (count: number) => `${count} ${count === 1 ? "argument" : "arguments"}`;
+
+  if (minArgs === maxArgs) {
+    return plural(minArgs);
+  }
+
+  return Number.isFinite(maxArgs)
+    ? `${minArgs} to ${plural(maxArgs)}`
+    : `at least ${plural(minArgs)}`;
+}
 
 function tokeniseArithmetic(expression: string): ArithmeticToken[] {
   const tokens: ArithmeticToken[] = [];
+  let index = 0;
 
-  TOKEN_PATTERN.lastIndex = 0;
-
-  while (TOKEN_PATTERN.lastIndex < expression.length) {
-    if (/^\s*$/.test(expression.slice(TOKEN_PATTERN.lastIndex))) {
-      break;
+  while (index < expression.length) {
+    if (/\s/.test(expression[index] ?? "")) {
+      index += 1;
+      continue;
     }
 
-    const start = TOKEN_PATTERN.lastIndex;
+    TOKEN_PATTERN.lastIndex = index;
     const match = TOKEN_PATTERN.exec(expression);
 
     if (!match) {
       throw new ArithmeticExpressionError(
-        `Unexpected character "${expression.slice(start).trim()[0]}" at position ${start + 1}`,
+        `Unexpected character "${expression[index]}" at position ${index + 1}`,
       );
     }
 
+    index = TOKEN_PATTERN.lastIndex;
+
     if (match[1] !== undefined) {
-      tokens.push({ kind: "number", value: Number(match[1]) });
+      const value = Number(match[1]);
+
+      if (!Number.isFinite(value)) {
+        throw new ArithmeticExpressionError(`Number "${match[1]}" is out of range`);
+      }
+
+      tokens.push({ kind: "number", value });
     } else if (match[2] !== undefined) {
       tokens.push({ kind: "name", value: match[2].toLowerCase() });
     } else {
@@ -87,6 +132,7 @@ export function evaluateArithmetic(expression: string): number {
 
   const tokens = tokeniseArithmetic(expression);
   let position = 0;
+  let depth = 0;
 
   const peekSymbol = (): string | undefined => {
     const token = tokens[position];
@@ -137,19 +183,31 @@ export function evaluateArithmetic(expression: string): number {
   };
 
   const parseUnary = (): number => {
-    if (peekSymbol() === "-") {
-      position += 1;
+    depth += 1;
 
-      return -parseUnary();
+    if (depth > MAX_ARITHMETIC_NESTING_DEPTH) {
+      throw new ArithmeticExpressionError(
+        `Expressions are limited to ${MAX_ARITHMETIC_NESTING_DEPTH} levels of nesting`,
+      );
     }
 
-    if (peekSymbol() === "+") {
-      position += 1;
+    try {
+      if (peekSymbol() === "-") {
+        position += 1;
 
-      return parseUnary();
+        return -parseUnary();
+      }
+
+      if (peekSymbol() === "+") {
+        position += 1;
+
+        return parseUnary();
+      }
+
+      return parsePower();
+    } finally {
+      depth -= 1;
     }
-
-    return parsePower();
   };
 
   const parsePower = (): number => {
@@ -162,6 +220,36 @@ export function evaluateArithmetic(expression: string): number {
     position += 1;
 
     return base ** parseUnary();
+  };
+
+  const parseCall = (name: string): number => {
+    const fn = ARITHMETIC_FUNCTIONS.get(name);
+
+    if (!fn) {
+      throw new ArithmeticExpressionError(`Unknown function "${name}"`);
+    }
+
+    position += 1;
+    const args: number[] = [];
+
+    if (peekSymbol() !== ")") {
+      args.push(parseExpression());
+
+      while (peekSymbol() === ",") {
+        position += 1;
+        args.push(parseExpression());
+      }
+    }
+
+    expectSymbol(")");
+
+    if (args.length < fn.minArgs || args.length > fn.maxArgs) {
+      throw new ArithmeticExpressionError(
+        `"${name}" takes ${describeArity(fn)}, got ${args.length}`,
+      );
+    }
+
+    return fn.apply(args);
   };
 
   const parsePrimary = (): number => {
@@ -189,37 +277,17 @@ export function evaluateArithmetic(expression: string): number {
       return value;
     }
 
-    if (peekSymbol() !== "(") {
-      const constant = ARITHMETIC_CONSTANTS.get(token.value);
-
-      if (constant === undefined) {
-        throw new ArithmeticExpressionError(`Unknown constant "${token.value}"`);
-      }
-
-      return constant;
+    if (peekSymbol() === "(") {
+      return parseCall(token.value);
     }
 
-    const fn = ARITHMETIC_FUNCTIONS.get(token.value);
+    const constant = ARITHMETIC_CONSTANTS.get(token.value);
 
-    if (!fn) {
-      throw new ArithmeticExpressionError(`Unknown function "${token.value}"`);
+    if (constant === undefined) {
+      throw new ArithmeticExpressionError(`Unknown constant "${token.value}"`);
     }
 
-    position += 1;
-    const args: number[] = [];
-
-    if (peekSymbol() !== ")") {
-      args.push(parseExpression());
-
-      while (peekSymbol() === ",") {
-        position += 1;
-        args.push(parseExpression());
-      }
-    }
-
-    expectSymbol(")");
-
-    return fn(...args);
+    return constant;
   };
 
   if (tokens.length === 0) {
