@@ -84,7 +84,6 @@ import {
   type StoredModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfiguration";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
-import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import {
   applyProjectCodingEnvironment,
   resolveProjectChatContext,
