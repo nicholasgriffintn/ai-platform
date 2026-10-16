@@ -355,12 +355,6 @@ export function ContextUsageCard({
         <SegmentBar segments={segments} contextWindow={snapshot.usage.contextWindow} />
         <SegmentLegend segments={segments} contextWindow={snapshot.usage.contextWindow} />
         <SnapshotDetails snapshot={snapshot} resolveReferenceHref={resolveReferenceHref} />
-        <p className="mt-2 text-[11px]">
-          Step {snapshot.step} · {snapshot.usage.source === "reported" ? "reported" : "estimated"}
-          {snapshot.provider ? ` by ${snapshot.provider}` : ""} ·{" "}
-          {formatRelativeTime(snapshot.generatedAt)}
-          {snapshot.breakdown?.length ? " · split is estimated" : ""}
-        </p>
       </WorkbenchCard>
     );
   }
@@ -376,10 +370,6 @@ export function ContextUsageCard({
         <UsageHeadline inputTokens={fallback.inputTokens} contextWindow={fallback.contextWindow} />
         <SegmentBar segments={segments} contextWindow={fallback.contextWindow} />
         <SegmentLegend segments={segments} contextWindow={fallback.contextWindow} />
-        <p className="mt-2 text-[11px]">
-          From the last reply's reported input. The split by instructions, tools and messages
-          arrives with the next reply.
-        </p>
       </WorkbenchCard>
     );
   }
@@ -387,10 +377,6 @@ export function ContextUsageCard({
   return (
     <WorkbenchCard title="Context" icon={Gauge}>
       <div aria-hidden="true" className="h-2 w-full rounded-full bg-selection" />
-      <p className="mt-2">
-        Not measured yet. Each reply records exactly what the model was handed, so this fills in
-        after the next one.
-      </p>
     </WorkbenchCard>
   );
 }
