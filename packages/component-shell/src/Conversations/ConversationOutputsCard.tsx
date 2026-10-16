@@ -56,11 +56,7 @@ export function ConversationOutputsCard({
     <WorkbenchCard
       title="Outputs"
       icon={Package}
-      aside={
-        artifacts.length > 0 ? (
-          <span className="font-mono text-[11px] tabular-nums">{artifacts.length}</span>
-        ) : undefined
-      }
+      aside={<span className="font-mono text-[11px] tabular-nums">{artifacts.length}</span>}
     >
       <ul className="space-y-0.5">
         {artifacts.map((artifact) => (
@@ -83,11 +79,6 @@ export function ConversationOutputsCard({
           />
         ))}
       </ul>
-      {artifacts.length === 0 ? (
-        <p className="mt-1">
-          Nothing made yet. Ask for a document, some code or a plan and it lands here.
-        </p>
-      ) : null}
     </WorkbenchCard>
   );
 }

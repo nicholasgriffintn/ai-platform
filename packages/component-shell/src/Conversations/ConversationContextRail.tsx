@@ -26,7 +26,9 @@ export function ConversationContextRail({
         fallback={workbench.fallback}
         resolveReferenceHref={(path) => `${API_BASE_URL}${path}`}
       />
-      <ConversationOutputsCard conversationId={conversationId} artifacts={workbench.artifacts} />
+      {workbench.artifacts.length > 0 ? (
+        <ConversationOutputsCard conversationId={conversationId} artifacts={workbench.artifacts} />
+      ) : null}
       {children}
       <ConversationUsageCard summary={workbench.usage} runUsage={workbench.runUsage} />
     </>
