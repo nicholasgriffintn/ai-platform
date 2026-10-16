@@ -38,6 +38,10 @@ import {
   buildSystemPrompt,
   projectRunMemory,
 } from "~/modules/chat/application/preparation/system-prompt";
+import {
+  buildLatestTurn,
+  loadPolyAgendaPrompt,
+} from "~/modules/chat/application/preparation/turn-context";
 import { resolveToolIntentRequest } from "~/modules/chat/application/tools/tool-intent";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import {
@@ -65,7 +69,6 @@ import {
 } from "~/modules/skills/application";
 import {
   listPerMessageSkillCandidates,
-  renderPerMessageSkills,
   selectPerMessageSkills,
 } from "~/modules/skills/application/per-message";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
@@ -494,6 +497,7 @@ export class RequestPreparer {
       skills,
       activeGoal,
     });
+    const polyAgendaPromise = loadPolyAgendaPrompt(scope.options, repositories);
 
     if (storeMessagesTask !== null) {
       await storeMessagesTask;
@@ -558,12 +562,23 @@ export class RequestPreparer {
       );
     }
 
+    const [perMessageSkills, polyAgenda] = await Promise.all([
+      perMessageSkillsPromise,
+      polyAgendaPromise,
+    ]);
+    const latestTurn = buildLatestTurn({
+      text: messageWithContext,
+      poly: scope.options.poly,
+      agenda: polyAgenda,
+      activeGoal,
+      skills: perMessageSkills,
+    });
     const messages = await buildProviderContext({
       conversationManager,
       completionId: scope.options.completion_id,
       shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
-      messageWithContext: renderPerMessageSkills(await perMessageSkillsPromise, messageWithContext),
+      latestTurn,
     });
 
     return {

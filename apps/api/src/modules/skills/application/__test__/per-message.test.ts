@@ -7,11 +7,7 @@ import {
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  listPerMessageSkillCandidates,
-  renderPerMessageSkills,
-  selectPerMessageSkills,
-} from "../per-message";
+import { listPerMessageSkillCandidates, selectPerMessageSkills } from "../per-message";
 
 const evaluateDecisionPolicy = vi.hoisted(() => vi.fn());
 
@@ -92,9 +88,7 @@ describe("per-message skills", () => {
     );
 
     expect(candidates.map((candidate) => candidate.id)).toEqual(["house-style"]);
-    expect(renderPerMessageSkills(candidates, "Draft the reply")).toContain(
-      '<skill name="house-style">\nUse British English.\n</skill>',
-    );
+    expect(candidates.map((candidate) => candidate.body)).toEqual(["Use British English."]);
   });
 
   it("answers with no skills when the decision provider is too slow", async () => {

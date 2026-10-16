@@ -27,19 +27,14 @@ export const chatPromptEntries = [
     task: "chat-section",
     title: "Active model card",
     description:
-      "Describes the active model, its modalities, limits and supported capabilities inside <model_card>.",
+      "Describes the active model, its modalities and knowledge cutoff inside <model_card>.",
     text: `<model_card>
 <model_id>{{modelId}}</model_id>
 <provider>{{provider}}</provider>
 <display_name>{{displayName}}</display_name>
 <input_modalities>{{inputModalities}}</input_modalities>
 <output_modalities>{{outputModalities}}</output_modalities>
-<context_window>{{contextWindow}}</context_window>
-<effective_max_output_tokens>{{effectiveMaxOutputTokens}}</effective_max_output_tokens>
 <knowledge_cutoff>{{knowledgeCutoff}}</knowledge_cutoff>
-<release_date>{{releaseDate}}</release_date>
-<last_updated>{{lastUpdated}}</last_updated>
-<supported_capabilities>{{supportedCapabilities}}</supported_capabilities>
 </model_card>`,
     variables: [
       { name: "modelId", description: "Model identifier used for the request." },
@@ -60,26 +55,9 @@ export const chatPromptEntries = [
         default: "unspecified",
       },
       {
-        name: "contextWindow",
-        description: "Context window size in tokens.",
-        default: "unspecified",
-      },
-      {
-        name: "effectiveMaxOutputTokens",
-        description: "Effective maximum output tokens for this request.",
-        default: "provider_default",
-      },
-      {
         name: "knowledgeCutoff",
         description: "Model knowledge cutoff date.",
         default: "unspecified",
-      },
-      { name: "releaseDate", description: "Model release date.", default: "unspecified" },
-      { name: "lastUpdated", description: "Model last-updated date.", default: "unspecified" },
-      {
-        name: "supportedCapabilities",
-        description: "Comma-separated capability list, or 'none'.",
-        default: "none",
       },
     ],
   },
@@ -310,8 +288,7 @@ export const chatPromptEntries = [
 <standard>Decline or redirect any requests that involve disallowed or dangerous content, including self-harm, hate, harassment, sexual content involving minors, illicit behavior, or instructions that facilitate wrongdoing.</standard>
 <standard>For high-risk advice (medical, legal, financial, mental health), provide general guidance only and recommend consulting a qualified professional.</standard>
 <standard>If a user appears to be in immediate danger or facing a crisis, encourage them to contact local emergency services or trusted support resources.</standard>
-<standard>Protect user privacy: do not request or store sensitive personal data (passwords, financial identifiers, health records) and remove such data from responses.</standard>
-<standard>Auto-redact or truncate accidental PII when echoing or quoting user content.</standard>
+<standard>Protect privacy: never ask for or store passwords, financial identifiers or health records, and redact accidental personal data when echoing or quoting content.</standard>
 <standard>Respect intellectual property and copyright restrictions. Do not provide disallowed reproductions of protected material.</standard>
 </safety_standards>`,
   },
@@ -447,23 +424,6 @@ Load each skill and each of its resources once. What {{skillLoadTool}} returns s
     variables: [{ name: "preferredLanguage", description: "Preferred reply language." }],
   },
   {
-    id: "chat/session-config/verbosity",
-    task: "chat-section",
-    title: "Verbosity interpretation",
-    description:
-      "Declares the selected verbosity and the meaning of each verbosity level inside <session_config>.",
-    text: `<verbosity>
-<selected>{{verbosity}}</selected>
-<interpretation>
-<low>Shortest complete answer; minimal explanation and structure.</low>
-<medium>Concise for simple questions; enough explanation for complex work to be understood and acted on.</medium>
-<high>Detailed context, assumptions, examples, edge cases, and trade-offs when relevant.</high>
-<caveman>Ultra-compressed fragments with no filler while preserving accuracy and required substance.</caveman>
-</interpretation>
-</verbosity>`,
-    variables: [{ name: "verbosity", description: "Selected verbosity level." }],
-  },
-  {
     id: "chat/session-config/platform",
     task: "chat-section",
     title: "Origin platform line",
@@ -483,18 +443,11 @@ Load each skill and each of its resources once. What {{skillLoadTool}} returns s
     id: "chat/session-config/memory-policy",
     task: "chat-section",
     title: "Memory policy block",
-    description:
-      "Declares memory status, retrieval and storage flags, and embeds the matching instruction.",
+    description: "Wraps the instruction matching the memory policy.",
     text: `<memory_policy>
-<status>{{memoryStatus}}</status>
-<retrieval>{{memoryRetrieval}}</retrieval>
-<storage>{{memoryStorage}}</storage>
 {{memoryInstruction}}
 </memory_policy>`,
     variables: [
-      { name: "memoryStatus", description: "'enabled' or 'disabled'." },
-      { name: "memoryRetrieval", description: "'enabled' or 'disabled'." },
-      { name: "memoryStorage", description: "'enabled' or 'disabled'." },
       {
         name: "memoryInstruction",
         description: "Instruction line matching the memory policy.",
@@ -507,7 +460,7 @@ Load each skill and each of its resources once. What {{skillLoadTool}} returns s
     variant: "store",
     title: "Memory instruction: storage enabled",
     description: "Memory instruction used when storage is enabled.",
-    text: "<instruction>Memory storage is enabled by the user's settings. Store only concise, durable context that will help in future conversations; never store credentials, financial identifiers, medical details, or short-lived logistics.</instruction>",
+    text: "<instruction>You may retrieve relevant memories and store new ones. Store only concise, durable context that will help in future conversations; never store credentials, financial identifiers, medical details, or short-lived logistics.</instruction>",
   },
   {
     id: "chat/session-config/memory-instruction/retrieve",
@@ -865,6 +818,27 @@ When the objective is genuinely satisfied, call complete_goal with an evidence l
     text: `<blocked_rule>
 If no defensible path remains, or the work needs the user's input or an approval, stop and report the paths attempted, the evidence gathered, the blocker, and what would unblock it. Do not manufacture another attempt to look busy.
 </blocked_rule>`,
+  },
+  {
+    id: "chat/goal/progress-note",
+    task: "chat-goal",
+    title: "Goal progress note",
+    description: "Points the model at the per-turn goal progress journal.",
+    text: "<progress_note>The latest turn's <turn_context> carries goal_progress: what has already been tried and any stall warning. Read it before choosing the next step.</progress_note>",
+  },
+  {
+    id: "chat/turn-context/note",
+    task: "chat-section",
+    title: "Turn context note",
+    description: "Opening note inside the per-turn <turn_context> block.",
+    text: "<note>Polychat added this context for the current turn; the user did not write it. It describes the state right now and replaces any earlier turn_context.</note>",
+  },
+  {
+    id: "chat/turn-context/skills-note",
+    task: "chat-section",
+    title: "Selected skills note",
+    description: "Introduces the skills selected for the current message inside <turn_context>.",
+    text: "<note>These skills were selected for this message. Follow them where they apply.</note>",
   },
   {
     id: "chat/goal/stall-warning",

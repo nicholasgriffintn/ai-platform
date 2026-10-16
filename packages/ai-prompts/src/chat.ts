@@ -4,7 +4,6 @@ import { PromptBuilder } from "./builder.js";
 import { getPromptText, renderPrompt, tryGetPrompt } from "./prompts.js";
 
 const AGENT_MODES = new Set(["agent", "plan", "build", "explore"]);
-const JOURNAL_TAIL_LENGTH = 5;
 
 export interface AssistantModelMetadata {
   modelId: string;
@@ -12,12 +11,7 @@ export interface AssistantModelMetadata {
   displayName?: string;
   inputModalities?: readonly string[];
   outputModalities?: readonly string[];
-  contextWindow?: number;
-  effectiveMaxOutputTokens?: number;
   knowledgeCutoff?: string;
-  releaseDate?: string;
-  lastUpdated?: string;
-  supportedCapabilities?: readonly string[];
   supportsToolCalls?: boolean;
 }
 
@@ -134,11 +128,6 @@ export function buildAssistantMetadataSection({
   assistantDescription,
   model,
 }: AssistantMetadataOptions): string {
-  const supportedCapabilities =
-    model.supportedCapabilities && model.supportedCapabilities.length > 0
-      ? model.supportedCapabilities.join(", ")
-      : "none";
-
   const identity = renderPrompt("chat/identity", { assistantName, assistantDescription });
   const modelCard = renderPrompt("chat/model-card", {
     modelId: model.modelId,
@@ -146,12 +135,7 @@ export function buildAssistantMetadataSection({
     displayName: model.displayName,
     inputModalities: asList(model.inputModalities),
     outputModalities: asList(model.outputModalities),
-    contextWindow: model.contextWindow,
-    effectiveMaxOutputTokens: model.effectiveMaxOutputTokens,
     knowledgeCutoff: model.knowledgeCutoff,
-    releaseDate: model.releaseDate,
-    lastUpdated: model.lastUpdated,
-    supportedCapabilities,
   });
 
   return `${identity}\n\n${modelCard}\n\n`;
@@ -425,9 +409,6 @@ function buildMemoryPolicy(memory: PromptMemoryPolicy): string {
       : "disabled";
 
   return renderPrompt("chat/session-config/memory-policy", {
-    memoryStatus: memory.enabled ? "enabled" : "disabled",
-    memoryRetrieval: memory.canRetrieve ? "enabled" : "disabled",
-    memoryStorage: memory.canStore ? "enabled" : "disabled",
     memoryInstruction: getPromptText(
       `chat/session-config/memory-instruction/${instructionVariant}`,
     ),
@@ -437,13 +418,11 @@ function buildMemoryPolicy(memory: PromptMemoryPolicy): string {
 export function buildSessionConfigSection({
   mode = "standard",
   platform,
-  verbosity = "medium",
   preferredLanguage,
   memory,
 }: {
   mode?: string;
   platform?: string | null;
-  verbosity?: string;
   preferredLanguage?: string | null;
   memory: PromptMemoryPolicy;
 }): string {
@@ -451,7 +430,6 @@ export function buildSessionConfigSection({
     .addLine()
     .addLine(`<mode>${mode}</mode>`)
     .addIf(!!platform, renderPrompt("chat/session-config/platform", { platform: platform ?? "" }))
-    .add(renderPrompt("chat/session-config/verbosity", { verbosity }))
     .addIf(
       !!preferredLanguage,
       renderPrompt("chat/session-config/language", {
@@ -478,50 +456,15 @@ export function buildMemorySummaryContext({
   })}`;
 }
 
-function formatJournalEntry(entry: GoalProgressEntryInput): string {
-  const lines = [
-    renderPrompt("chat/goal/journal/base", { surface: entry.surface, summary: entry.summary }),
-  ];
-
-  if (entry.steer) {
-    lines.push(renderPrompt("chat/goal/journal/steer", { steer: entry.steer }));
-  }
-
-  if (entry.evidence.length > 0) {
-    lines.push(renderPrompt("chat/goal/journal/evidence", { evidence: entry.evidence.join(", ") }));
-  }
-
-  if (entry.next) {
-    lines.push(renderPrompt("chat/goal/journal/next", { next: entry.next }));
-  }
-
-  return lines.join("\n");
-}
-
-export function buildGoalContractSection(goal: GoalInput): string {
-  const journal = goal.progress.slice(-JOURNAL_TAIL_LENGTH);
-  const lines = [
+export function buildGoalContractSection(goal: Pick<GoalInput, "objective">): string {
+  return `${[
     "<active_goal>",
     renderPrompt("chat/goal/objective", { objective: goal.objective }),
     getPromptText("chat/goal/completion-rule"),
     getPromptText("chat/goal/blocked-rule"),
-  ];
-
-  if (goal.stall_streak > 0) {
-    lines.push(getPromptText("chat/goal/stall-warning"));
-  }
-
-  if (journal.length > 0) {
-    lines.push(
-      renderPrompt("chat/goal/progress-header", { iterationCount: goal.iteration_count }),
-      ...journal.map(formatJournalEntry),
-      "</progress_so_far>",
-    );
-  }
-
-  lines.push("</active_goal>");
-
-  return `${lines.join("\n")}\n`;
+    getPromptText("chat/goal/progress-note"),
+    "</active_goal>",
+  ].join("\n")}\n`;
 }
 
 export interface StandardChatPromptOptions {
@@ -545,7 +488,7 @@ export interface StandardChatPromptOptions {
   userTraits?: string | null;
   userPreferences?: string | null;
   platform?: string | null;
-  poly?: PolyPromptOptions | null;
+  poly?: boolean;
 }
 
 export function buildStandardChatPrompt({
@@ -604,7 +547,7 @@ export function buildStandardChatPrompt({
       }),
     )
     .add(buildPersonaSection(persona))
-    .add(buildPolySection(poly))
+    .addIf(!!poly, `${getPromptText("chat/poly/behaviour")}\n`)
     .add(buildResponseStyleSection(responseStyle))
     .add(buildFormattingSection({ isCoding }))
     .addIf(isCoding, buildCodingConductSection())
@@ -623,118 +566,10 @@ export function buildStandardChatPrompt({
       buildSessionConfigSection({
         mode: chatMode,
         platform,
-        verbosity,
         preferredLanguage,
         memory: memoryPolicy,
       }),
     )
-    .build();
-}
-
-export const POLY_PLACE_LABELS: Readonly<Record<string, string>> = {
-  conversations: "Conversations",
-  canvas: "Canvas",
-  sites: "Sites",
-  attention: "Attention",
-  files: "Files",
-  teammates: "Teammates",
-  scheduled: "Scheduled",
-  plugins: "Plugins",
-  you: "Account settings",
-};
-
-export const POLY_MODE_LABELS: Readonly<Record<string, string>> = {
-  chat: "Chat",
-  work: "Work",
-};
-
-export interface PolyUiContextInput {
-  mode?: string | null;
-  place?: string | null;
-  route?: string | null;
-  conversationId?: string | null;
-  workspaceId?: string | null;
-  projectId?: string | null;
-  taskId?: string | null;
-  runId?: string | null;
-}
-
-function buildUiContextSection(uiContext?: PolyUiContextInput | null): string {
-  if (!uiContext) {
-    return "";
-  }
-
-  const lines = [
-    "<ui_context>",
-    uiContext.mode ? `<mode>${POLY_MODE_LABELS[uiContext.mode] ?? uiContext.mode}</mode>` : null,
-    uiContext.place
-      ? `<place>${POLY_PLACE_LABELS[uiContext.place] ?? uiContext.place}</place>`
-      : null,
-    uiContext.route ? `<route>${escapeHtml(uiContext.route)}</route>` : null,
-    uiContext.conversationId
-      ? `<open_conversation_id>${escapeHtml(uiContext.conversationId)}</open_conversation_id>`
-      : null,
-    uiContext.workspaceId
-      ? `<workspace_id>${escapeHtml(uiContext.workspaceId)}</workspace_id>`
-      : null,
-    uiContext.projectId ? `<project_id>${escapeHtml(uiContext.projectId)}</project_id>` : null,
-    uiContext.taskId ? `<task_id>${escapeHtml(uiContext.taskId)}</task_id>` : null,
-    uiContext.runId ? `<run_id>${escapeHtml(uiContext.runId)}</run_id>` : null,
-    getPromptText("chat/poly/ui-context-note"),
-    "</ui_context>",
-  ].filter((line): line is string => Boolean(line));
-
-  return `${lines.join("\n")}\n`;
-}
-
-export interface PolyAgendaPromptInput {
-  needsYou: readonly string[];
-  workingOn: readonly string[];
-  done: readonly string[];
-  noted: readonly string[];
-}
-
-export interface PolyPromptOptions {
-  uiContext?: PolyUiContextInput | null;
-  agenda?: PolyAgendaPromptInput | null;
-}
-
-function buildAgendaList(tag: string, items: readonly string[]): string | null {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return [`<${tag}>`, ...items.map((item) => `- ${escapeHtml(item)}`), `</${tag}>`].join("\n");
-}
-
-function buildAgendaSection(agenda?: PolyAgendaPromptInput | null): string {
-  if (!agenda) {
-    return "";
-  }
-
-  const lists = [
-    buildAgendaList("needs_you", agenda.needsYou),
-    buildAgendaList("working_on", agenda.workingOn),
-    buildAgendaList("done_this_week", agenda.done),
-    buildAgendaList("noted_quietly", agenda.noted),
-  ].filter((list): list is string => Boolean(list));
-
-  if (lists.length === 0) {
-    return "";
-  }
-
-  return `<agenda>\n${lists.join("\n")}\n${getPromptText("chat/poly/agenda-note")}\n</agenda>\n`;
-}
-
-function buildPolySection(poly?: PolyPromptOptions | null): string {
-  if (!poly) {
-    return "";
-  }
-
-  return new PromptBuilder(getPromptText("chat/poly/behaviour"))
-    .addLine()
-    .add(buildUiContextSection(poly.uiContext))
-    .add(buildAgendaSection(poly.agenda))
     .build();
 }
 

@@ -40,8 +40,6 @@ export {
   buildUserContextSection,
   getResponseStyle,
   isAgentMode,
-  POLY_MODE_LABELS,
-  POLY_PLACE_LABELS,
   resolvePromptCapabilities,
   type AssistantMetadataOptions,
   type AssistantModelMetadata,
@@ -50,9 +48,6 @@ export {
   type ChannelContextInput,
   type GoalInput,
   type GoalProgressEntryInput,
-  type PolyAgendaPromptInput,
-  type PolyPromptOptions,
-  type PolyUiContextInput,
   type PromptCapabilities,
   type PromptMemoryPolicy,
   type ResolvePromptCapabilityArgs,
@@ -65,6 +60,16 @@ export {
   type UserContextInput,
 } from "./chat.js";
 export { PromptNotFoundError, PromptRenderError, PromptTemplateError } from "./errors.js";
+export {
+  buildGoalProgressSection,
+  buildTurnContext,
+  POLY_MODE_LABELS,
+  POLY_PLACE_LABELS,
+  type PolyAgendaPromptInput,
+  type PolyUiContextInput,
+  type TurnContextInput,
+  type TurnSkillInput,
+} from "./turn-context.js";
 export {
   getPrompt,
   getPromptForTask,

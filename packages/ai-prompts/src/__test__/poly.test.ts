@@ -13,46 +13,14 @@ const base = {
 };
 
 describe("Poly in the standard prompt", () => {
-  it("keeps the standard sections and adds Poly's behaviour and escaped ui context", () => {
-    const prompt = buildStandardChatPrompt({
-      ...base,
-      poly: {
-        uiContext: { place: "attention", conversationId: "<conversation-1>" },
-      },
-    });
+  it("keeps Poly's behaviour in the system prompt and leaves per-turn context out", () => {
+    const prompt = buildStandardChatPrompt({ ...base, poly: true });
 
     expect(prompt).toContain("You are Poly, the person's own assistant.");
     expect(prompt).toContain("This is the person's one continuous conversation with you.");
-    expect(prompt).toContain("<place>Attention</place>");
-    expect(prompt).toContain("&lt;conversation-1&gt;");
-    expect(prompt).not.toContain("<conversation-1>");
     expect(prompt).toContain("Call get_current_time");
-  });
-
-  it("lists the agenda as escaped data and leaves it out when there is nothing on it", () => {
-    const withAgenda = buildStandardChatPrompt({
-      ...base,
-      poly: {
-        agenda: {
-          needsYou: ["delegation: Book <venue> (awaiting approval)"],
-          workingOn: [],
-          done: ["goal: Ship notes (completed)"],
-          noted: ["routine: Inbox sweep (not urgent)"],
-        },
-      },
-    });
-    const empty = buildStandardChatPrompt({
-      ...base,
-      poly: { agenda: { needsYou: [], workingOn: [], done: [], noted: [] } },
-    });
-
-    expect(withAgenda).toContain(
-      "<needs_you>\n- delegation: Book &lt;venue&gt; (awaiting approval)",
-    );
-    expect(withAgenda).toContain("<done_this_week>");
-    expect(withAgenda).toContain("<noted_quietly>\n- routine: Inbox sweep (not urgent)");
-    expect(withAgenda).not.toContain("<working_on>");
-    expect(empty).not.toContain("<agenda>");
+    expect(prompt).not.toContain("<ui_context>");
+    expect(prompt).not.toContain("<agenda>");
   });
 
   it("leaves ordinary chats without the Poly section", () => {

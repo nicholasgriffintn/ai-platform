@@ -4,7 +4,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { restoreStoredAttachmentContent } from "~/modules/chat/application/messages/stored-attachments";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
-import type { Message } from "~/types";
+import type { Message, MessageContent } from "~/types";
+
+import type { LatestTurn } from "./turn-context";
 
 const logger = getLogger({ prefix: "services/chat/preparation/provider-context" });
 
@@ -13,30 +15,39 @@ export interface BuildProviderContextParams {
   completionId?: string;
   shouldStoreMessages: boolean;
   fallbackMessages: Message[];
-  messageWithContext: string;
+  latestTurn: LatestTurn;
+}
+
+function buildLatestMessageContent(
+  storedContent: Message["content"],
+  { text, context }: LatestTurn,
+): string | MessageContent[] {
+  const turnContextParts: MessageContent[] = context ? [{ type: "text", text: context }] : [];
+
+  if (Array.isArray(storedContent)) {
+    return [
+      ...storedContent.map((part) => (part.type === "text" ? { ...part, text } : part)),
+      ...turnContextParts,
+    ];
+  }
+
+  return turnContextParts.length > 0 ? [{ type: "text", text }, ...turnContextParts] : text;
 }
 
 export function buildFinalMessages(
   sanitisedMessages: Message[],
-  messageWithContext: string,
+  latestTurn: LatestTurn,
 ): Message[] {
   const messagesWithAttachments = restoreStoredAttachmentContent(sanitisedMessages);
-
-  const chatMessages = messagesWithAttachments.map((msg, index) => {
-    if (index !== messagesWithAttachments.length - 1) {
-      return msg;
-    }
-
-    if (Array.isArray(msg.content)) {
-      return Object.assign({}, msg, {
-        content: msg.content.map((part) =>
-          part.type === "text" ? Object.assign({}, part, { text: messageWithContext }) : part,
-        ),
-      });
-    }
-
-    return Object.assign({}, msg, { content: messageWithContext });
-  });
+  const latestIndex = messagesWithAttachments.length - 1;
+  const chatMessages = messagesWithAttachments.map((msg, index) =>
+    index === latestIndex
+      ? {
+          ...msg,
+          content: buildLatestMessageContent(msg.content, latestTurn),
+        }
+      : msg,
+  );
 
   return toProviderMessages(chatMessages).filter((msg) => msg.role !== "system");
 }
@@ -46,17 +57,17 @@ export async function buildProviderContext({
   completionId,
   shouldStoreMessages,
   fallbackMessages,
-  messageWithContext,
+  latestTurn,
 }: BuildProviderContextParams): Promise<Message[]> {
   if (!shouldStoreMessages || !completionId) {
-    return buildFinalMessages(fallbackMessages, messageWithContext);
+    return buildFinalMessages(fallbackMessages, latestTurn);
   }
 
   try {
     const activeMessages = await conversationManager.get(completionId);
 
     if (Array.isArray(activeMessages) && activeMessages.length > 0) {
-      const providerMessages = buildFinalMessages(activeMessages, messageWithContext);
+      const providerMessages = buildFinalMessages(activeMessages, latestTurn);
 
       if (providerMessages.length > 0) {
         return providerMessages;

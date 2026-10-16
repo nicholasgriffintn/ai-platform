@@ -126,20 +126,3 @@ export async function selectPerMessageSkills(params: {
     clearTimeout(timer);
   }
 }
-
-export function renderPerMessageSkills(
-  skills: readonly PerMessageSkill[],
-  message: string,
-): string {
-  if (skills.length === 0) {
-    return message;
-  }
-
-  const blocks = skills.map((skill) => `<skill name="${skill.id}">\n${skill.body}\n</skill>`);
-
-  return [
-    "These skills were selected for this message. Follow them where they apply.",
-    ...blocks,
-    message,
-  ].join("\n\n");
-}
