@@ -29,6 +29,7 @@ export type IEnv = {
   DB: D1Database;
   CACHE: KVNamespace;
   TASK_QUEUE?: Queue;
+  USAGE_QUEUE?: Queue;
   TASK_NOTIFICATION_PROVIDER_URL?: string;
   TASK_NOTIFICATION_PROVIDER_TOKEN?: string;
   WEB_PUSH_PUBLIC_KEY?: string;

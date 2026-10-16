@@ -208,6 +208,10 @@
       {
         "binding": "TASK_QUEUE",
         "queue": "polychat-task-queue"
+      },
+      {
+        "binding": "USAGE_QUEUE",
+        "queue": "polychat-usage-queue"
       }
     ],
     "consumers": [
@@ -216,6 +220,11 @@
         "max_batch_size": 1,
         "max_concurrency": 10,
         "dead_letter_queue": "polychat-task-queue-dlq"
+      },
+      {
+        "queue": "polychat-usage-queue",
+        "max_batch_size": 100,
+        "max_batch_timeout": 10
       }
     ]
   }

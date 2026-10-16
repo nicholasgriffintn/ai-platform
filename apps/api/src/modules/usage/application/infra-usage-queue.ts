@@ -36,13 +36,13 @@ export async function meterRequestInfraUsage(
   env: IEnv,
   usage: Omit<InfraUsageQueueMessage, "kind">,
 ): Promise<void> {
-  if (!env.TASK_QUEUE) {
+  if (!env.USAGE_QUEUE) {
     await emitInfraUsage(createUsageRuntime({ env }), { ...usage, delivery: "inline" });
 
     return;
   }
 
-  await env.TASK_QUEUE.send({ kind: INFRA_USAGE_QUEUE_MESSAGE_KIND, ...usage });
+  await env.USAGE_QUEUE.send({ kind: INFRA_USAGE_QUEUE_MESSAGE_KIND, ...usage });
 }
 
 export async function rollUpInfraUsageMessages(

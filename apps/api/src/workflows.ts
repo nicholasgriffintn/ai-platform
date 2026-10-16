@@ -71,7 +71,11 @@ export async function consumeQueueBatch(
   env: IEnv,
   messages: readonly Message<TaskMessage | InfraUsageQueueMessage>[],
 ): Promise<void> {
-  await QueueExecutor.respondToCronQueue(env, messages.filter(isTaskQueueMessage), workflows);
+  const taskMessages = messages.filter(isTaskQueueMessage);
+
+  if (taskMessages.length > 0) {
+    await QueueExecutor.respondToCronQueue(env, taskMessages, workflows);
+  }
 
   const infraUsageMessages = messages.filter((message) => !isTaskQueueMessage(message));
 
