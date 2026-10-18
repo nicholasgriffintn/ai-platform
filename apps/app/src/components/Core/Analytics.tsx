@@ -1,3 +1,4 @@
+import { runWhenIdle } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect } from "react";
 
 const IS_PRODUCTION = import.meta.env.PROD;
@@ -6,20 +7,6 @@ const BEACON_CDN_ENDPOINT = "https://beacon-cdn.polychat.app";
 const SHOULD_TRACK_CLICKS = true;
 const SHOULD_TRACK_USER_TIMINGS = true;
 const RESPECT_DO_NOT_TRACK = false;
-
-function onIdle(callback: () => void): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(() => callback(), { timeout: 8000 });
-
-    return;
-  }
-
-  setTimeout(callback, 3000);
-}
 
 function ensurePreconnect(href: string): void {
   if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) {
@@ -79,7 +66,7 @@ export function Analytics({
 
     ensurePreconnect(beaconEndpoint);
 
-    onIdle(() => {
+    runWhenIdle(() => {
       if (document.querySelector(`script[src="${beaconEndpoint}/beacon.min.js"]`)) {
         return;
       }
@@ -138,7 +125,7 @@ export function Analytics({
 
     window.__OPEN_FEATURE_INITALISED__ = true;
 
-    onIdle(() => {
+    runWhenIdle(() => {
       if (document.querySelector(`script[src="${beaconEndpoint}/exp-beacon.min.js"]`)) {
         return;
       }

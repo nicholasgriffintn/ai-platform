@@ -19,7 +19,6 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import {
   Ellipsis,
-  Loader2,
   Maximize2,
   Minimize2,
   PanelRight,
@@ -37,6 +36,7 @@ import { PolyAgendaStrip } from "./PolyAgendaStrip.js";
 import { PolyFace } from "./PolyFace.js";
 import { PolyFlock } from "./PolyFlock.js";
 import { PolyMemoryView } from "./PolyMemoryView.js";
+import { PolyOpening } from "./PolyOpening.js";
 import { PolyRulesView } from "./PolyRulesView.js";
 import { PolyThread } from "./PolyThread.js";
 
@@ -172,10 +172,7 @@ export function PolyPanel({ layout, isExpanded, onToggleExpanded, onClose }: Pol
           />
         </div>
       ) : !agenda.data ? (
-        <output className="flex flex-1 items-center justify-center">
-          <Loader2 size={20} aria-hidden="true" className="animate-spin text-muted-foreground" />
-          <span className="sr-only">Opening Poly</span>
-        </output>
+        <PolyOpening />
       ) : (
         <>
           <Tabs

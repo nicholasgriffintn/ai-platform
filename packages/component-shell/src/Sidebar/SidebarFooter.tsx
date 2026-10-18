@@ -13,6 +13,7 @@ import { Feather } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
+import { preloadPolyPanel } from "../Poly/LazyPolyPanel.js";
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover.js";
 
 const ATTENTION_GLANCE_MS = 4000;
@@ -46,6 +47,8 @@ export function SidebarFooter() {
           "flex w-full min-w-0 items-center justify-between gap-3 rounded-none border-b border-sidebar-border px-3 py-3 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset",
           showPoly ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-sidebar",
         )}
+        onPointerEnter={preloadPolyPanel}
+        onFocus={preloadPolyPanel}
         onClick={() => {
           trackEvent({
             name: "open_poly",

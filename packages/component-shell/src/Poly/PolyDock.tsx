@@ -5,7 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { type KeyboardEvent, type PointerEvent, useRef } from "react";
 
-import { PolyPanel } from "./PolyPanel.js";
+import { LazyPolyPanel } from "./LazyPolyPanel.js";
+import { PolyOpening } from "./PolyOpening.js";
 
 const KEYBOARD_STEP = 24;
 
@@ -64,7 +65,7 @@ export function PolyDock() {
         onPointerUp={handlePointerUp}
         onKeyDown={handleKeyDown}
       />
-      <PolyPanel layout="dock" onClose={() => setShowPoly(false)} />
+      <LazyPolyPanel layout="dock" onClose={() => setShowPoly(false)} fallback={<PolyOpening />} />
     </aside>
   );
 }

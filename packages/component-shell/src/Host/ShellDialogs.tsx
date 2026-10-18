@@ -14,14 +14,9 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
 
+import { PolyOverlay } from "../Poly/PolyOverlay.js";
 import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
 import { useShellHost } from "./ShellHostContext.js";
-
-const PolyOverlay = lazy(() =>
-  import("../Poly/PolyOverlay.js").then((module) => ({
-    default: module.PolyOverlay,
-  })),
-);
 
 const ProjectPickerDialog = lazy(() =>
   import("../Work/ProjectPickerDialog.js").then((module) => ({
@@ -105,11 +100,7 @@ export function ShellDialogs() {
 
   return (
     <>
-      {polyPresentation === "window" && (
-        <Suspense fallback={null}>
-          <PolyOverlay open onClose={() => setShowPoly(false)} />
-        </Suspense>
-      )}
+      {polyPresentation === "window" && <PolyOverlay open onClose={() => setShowPoly(false)} />}
       {projectPicker && (
         <Suspense fallback={null}>
           <ProjectPickerDialog

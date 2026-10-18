@@ -48,3 +48,19 @@ export function downloadBlob(filename: string, blob: Blob) {
 export function downloadTextFile(filename: string, content: string, mimeType = "text/plain") {
   downloadBlob(filename, new Blob([content], { type: `${mimeType};charset=utf-8` }));
 }
+
+export function runWhenIdle(callback: () => void, timeoutMs = 8000): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  if ("requestIdleCallback" in window) {
+    const handle = window.requestIdleCallback(() => callback(), { timeout: timeoutMs });
+
+    return () => window.cancelIdleCallback(handle);
+  }
+
+  const handle = setTimeout(callback, 3000);
+
+  return () => clearTimeout(handle);
+}

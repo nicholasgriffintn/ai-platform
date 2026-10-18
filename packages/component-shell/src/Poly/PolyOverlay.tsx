@@ -1,7 +1,13 @@
-import { Dialog, DialogContent, DialogDescription } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@ngriffin_uk/polychat-component-ui";
 import { useState } from "react";
 
-import { PolyPanel } from "./PolyPanel.js";
+import { LazyPolyPanel } from "./LazyPolyPanel.js";
+import { PolyOpening } from "./PolyOpening.js";
 
 export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,11 +21,17 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
         <DialogDescription className="sr-only">
           One conversation that carries on wherever you are in Polychat.
         </DialogDescription>
-        <PolyPanel
+        <LazyPolyPanel
           layout="window"
           isExpanded={isExpanded}
           onToggleExpanded={() => setIsExpanded((expanded) => !expanded)}
           onClose={onClose}
+          fallback={
+            <>
+              <DialogTitle className="sr-only">Poly</DialogTitle>
+              <PolyOpening />
+            </>
+          }
         />
       </DialogContent>
     </Dialog>
