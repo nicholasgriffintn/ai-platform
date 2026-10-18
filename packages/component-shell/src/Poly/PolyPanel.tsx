@@ -4,10 +4,10 @@ import {
   EmptyState,
   OptionsMenu,
   OptionsMenuAction,
-  cn,
   Tabs,
   TabsList,
   TabsTrigger,
+  cn,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -74,7 +74,7 @@ export function PolyPanel({ layout, isExpanded, onToggleExpanded, onClose }: Pol
     <div className="relative flex h-full min-h-0 flex-col">
       <div
         className={cn(
-          "flex items-center gap-2 border-b border-border px-3 py-2",
+          "flex min-h-9 items-center gap-2 border-b border-border px-4 py-3",
           layout === "window" && "pr-14",
         )}
       >
