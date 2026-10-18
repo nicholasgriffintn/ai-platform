@@ -11,6 +11,7 @@ import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { CheckCircle2, RotateCcw, Save, Upload } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
 import { useSkillEditorController } from "./useSkillEditorController.js";
 
 export interface SkillEditorPageProps {
@@ -31,30 +32,35 @@ export function SkillEditorPage({
   const controller = useSkillEditorController({ skillId, projectId, canManage });
 
   if (controller.isLoading) {
-    return <FormLoadingSkeleton />;
+    return (
+      <PageShell.Content className="max-w-4xl">
+        <FormLoadingSkeleton />
+      </PageShell.Content>
+    );
   }
 
   if (isAuthenticationError(controller.loadError)) {
     return (
-      <SignInEmptyState
-        title="Sign in to review skills"
-        message="Sign in to review, edit and publish skill revisions."
-        className="mx-4 my-8 min-h-[300px]"
-      />
+      <PageShell.Content className="max-w-4xl">
+        <PageShell.Header title="Skill" />
+        <SignInEmptyState
+          title="Sign in to review skills"
+          message="Sign in to review, edit and publish skill revisions."
+          className="min-h-[300px]"
+        />
+      </PageShell.Content>
     );
   }
 
   if (controller.loadError || !controller.skill) {
     return (
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-foreground">Skill unavailable</h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            This skill no longer exists, or it is not yours to open.
-          </p>
-          <BackLink href={backPath} label={backLabel} />
-        </Card>
-      </div>
+      <PageShell.Content className="max-w-4xl">
+        <PageShell.Header title="Skill unavailable" />
+        <BackLink href={backPath} label={backLabel} />
+        <p role="alert" className="text-sm leading-6 text-muted-foreground">
+          This skill no longer exists, or it is not yours to open.
+        </p>
+      </PageShell.Content>
     );
   }
 
@@ -64,12 +70,10 @@ export function SkillEditorPage({
   const draftRevisionId = controller.history?.state.draftRevisionId;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10 md:py-14">
-      <header className="mb-8 space-y-3">
-        <BackLink href={backPath} label={backLabel} />
-        <h1 className="text-2xl font-bold text-foreground">{skill.name}</h1>
-        <p className="text-sm leading-6 text-muted-foreground">{skill.description}</p>
-      </header>
+    <PageShell.Content className="max-w-4xl">
+      <PageShell.Header title={skill.name} />
+      <BackLink href={backPath} label={backLabel} />
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{skill.description}</p>
 
       <Card className="space-y-5 p-6 shadow-none">
         <div className="flex items-start justify-between gap-4">
@@ -180,6 +184,6 @@ export function SkillEditorPage({
           </ul>
         )}
       </section>
-    </div>
+    </PageShell.Content>
   );
 }

@@ -4,7 +4,6 @@ import {
   WorkspaceMemberList,
   WorkspaceMembersSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useAuthStatus,
   useWorkspaceMemberMutations,
@@ -14,10 +13,10 @@ import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { InviteMemberDialog } from "./InviteMemberDialog.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkPageFailure } from "./WorkPageFailure.js";
 
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
@@ -35,21 +34,16 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
     return <WorkspaceMembersSkeleton />;
   }
 
-  if (isAuthenticationError(error)) {
-    return (
-      <SignInEmptyState
-        title="Sign in to view workspace people"
-        message="Sign in to manage workspace access and members."
-        className="mx-4 my-8 min-h-[300px]"
-      />
-    );
-  }
-
   if (error || !workspace) {
     return (
-      <div role="alert" className="p-10 text-sm text-failure">
-        {error?.message ?? "Workspace not found"}
-      </div>
+      <WorkPageFailure
+        title="People & access"
+        error={error}
+        fallbackMessage="Workspace not found"
+        signInTitle="Sign in to view workspace people"
+        signInMessage="Sign in to manage workspace access and members."
+        className="max-w-5xl"
+      />
     );
   }
 

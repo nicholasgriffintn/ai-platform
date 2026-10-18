@@ -51,7 +51,8 @@ export function getTeammateGroupPath(conversationId: string): string {
   return `${MODE_BASE_PATHS.chat}/groups/${encodeURIComponent(conversationId)}`;
 }
 
-const TEAMMATE_THREAD_PATH = /^\/chat\/(?:teammates|groups)\/[^/]+\/?$/u;
+const TEAMMATE_THREAD_PATH =
+  /^(?:\/chat\/(?:teammates|groups)|\/work\/[^/]+\/projects\/[^/]+\/teammates)\/[^/]+\/?$/u;
 
 export function isTeammateThreadPath(pathname: string): boolean {
   return TEAMMATE_THREAD_PATH.test(pathname);

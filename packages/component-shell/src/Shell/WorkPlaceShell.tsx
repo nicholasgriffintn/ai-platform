@@ -1,4 +1,7 @@
-import { isProjectConversationPath } from "@ngriffin_uk/polychat-library-react";
+import {
+  isProjectConversationPath,
+  isTeammateThreadPath,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 import { useLocation, useParams } from "react-router";
 
@@ -18,11 +21,12 @@ function WorkShell({ children, projectId, workspaceId }: WorkShellProps) {
   const { pathname } = useLocation();
   const { projectQuery } = useWorkData();
   const projectColour = projectQuery.data?.colour;
-  const isProjectConversation = Boolean(projectId) && isProjectConversationPath(pathname);
+  const isConversation =
+    Boolean(projectId) && (isProjectConversationPath(pathname) || isTeammateThreadPath(pathname));
 
   return (
     <PageShell
-      title={isProjectConversation ? undefined : "Work"}
+      title={isConversation ? undefined : "Work"}
       sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
       fullBleed
       displayNavBar={false}

@@ -3,10 +3,8 @@ import {
   ProjectTeammatesCard,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ChannelConnections } from "../Channels/ChannelConnections.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectBriefCard } from "./ProjectBriefCard.js";
@@ -16,6 +14,7 @@ import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard.js";
 import { ProjectRoutingCard } from "./ProjectRoutingCard.js";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkPageFailure } from "./WorkPageFailure.js";
 
 export function ProjectSettings({
   workspaceId,
@@ -32,21 +31,16 @@ export function ProjectSettings({
     return <ProjectOverviewSkeleton />;
   }
 
-  if (isAuthenticationError(error)) {
-    return (
-      <SignInEmptyState
-        title="Sign in to view this project"
-        message="Sign in to change how this project runs."
-        className="mx-4 my-8 min-h-[300px]"
-      />
-    );
-  }
-
   if (error || !project) {
     return (
-      <div role="alert" className="p-10 text-sm text-failure">
-        {error?.message ?? "Project not found"}
-      </div>
+      <WorkPageFailure
+        title="Project settings"
+        error={error}
+        fallbackMessage="Project not found"
+        signInTitle="Sign in to view this project"
+        signInMessage="Sign in to change how this project runs."
+        className="max-w-4xl"
+      />
     );
   }
 

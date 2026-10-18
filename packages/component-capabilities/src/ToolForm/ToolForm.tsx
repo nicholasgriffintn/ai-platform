@@ -126,7 +126,7 @@ export const ToolForm = ({
               {getIcon(tool.icon, tool.theme)}
             </div>
             <div>
-              <h1 className={cn("mb-2 text-2xl font-bold text-foreground")}>{tool.name}</h1>
+              <h2 className={cn("mb-2 text-2xl font-bold text-foreground")}>{tool.name}</h2>
               <p className={cn("text-muted-foreground")}>{tool.description}</p>
             </div>
           </div>

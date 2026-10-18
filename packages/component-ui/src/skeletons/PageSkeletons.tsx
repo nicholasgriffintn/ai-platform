@@ -118,12 +118,11 @@ export function ContentLoadingSkeleton({ label = "Loading" }: { label?: string }
 
 export function FormLoadingSkeleton({ label = "Loading" }: { label?: string }) {
   return (
-    <LoadingRegion label={label} className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
-      <header className="mb-8 space-y-3">
+    <LoadingRegion label={label}>
+      <div className="mb-8 space-y-3">
         <Skeleton className="h-4 w-44" />
-        <Skeleton className="h-8 w-64 max-w-full" />
         <Skeleton className="h-4 w-96 max-w-full" />
-      </header>
+      </div>
       <Card className="gap-5 p-6 shadow-none">
         {Array.from({ length: 3 }, (_, index) => (
           <div key={index} className="space-y-2">

@@ -9,6 +9,8 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { PageShell } from "../Shell/PageShell.js";
+
 export function InvitationAcceptPage() {
   const [searchParams] = useSearchParams();
   const [token] = useState(() => consumeWorkspaceInvitationToken(searchParams.get("token")));
@@ -38,15 +40,18 @@ export function InvitationAcceptPage() {
   const sessionExpired = isAuthenticationError(acceptInvitation.error);
 
   return (
-    <InvitationAcceptView
-      hasToken={!!token}
-      requiresSignIn={(!!token && !isAuthenticated) || sessionExpired}
-      sessionExpired={sessionExpired}
-      onSignIn={() => setShowLoginModal(true)}
-      isAccepting={acceptInvitation.isPending}
-      errorMessage={acceptInvitation.error?.message}
-      acceptedWorkspace={acceptInvitation.data ?? null}
-      onOpenWorkspace={(workspaceId) => void navigate(`/work/${workspaceId}`)}
-    />
+    <PageShell.Content className="max-w-xl">
+      <PageShell.Header title="Join a workspace" />
+      <InvitationAcceptView
+        hasToken={!!token}
+        requiresSignIn={(!!token && !isAuthenticated) || sessionExpired}
+        sessionExpired={sessionExpired}
+        onSignIn={() => setShowLoginModal(true)}
+        isAccepting={acceptInvitation.isPending}
+        errorMessage={acceptInvitation.error?.message}
+        acceptedWorkspace={acceptInvitation.data ?? null}
+        onOpenWorkspace={(workspaceId) => void navigate(`/work/${workspaceId}`)}
+      />
+    </PageShell.Content>
   );
 }

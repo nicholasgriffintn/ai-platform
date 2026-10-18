@@ -20,11 +20,8 @@ export default function SharedConversationPage() {
 
   if (isLoading) {
     return (
-      <PageShell
-        className="flex h-screen w-full items-center justify-center bg-canvas"
-        displayNavBar={false}
-      >
-        <LoadingSpinner message="Loading shared conversation..." />
+      <PageShell title="Shared Conversation" bgClassName="bg-canvas" displayNavBar={false}>
+        <LoadingSpinner message="Loading shared conversation..." className="py-16" />
       </PageShell>
     );
   }
@@ -33,7 +30,7 @@ export default function SharedConversationPage() {
     return (
       <PageShell
         title="Shared Conversation Not Available"
-        className="bg-canvas"
+        bgClassName="bg-canvas"
         displayNavBar={false}
       >
         <PageStatus message={error}>
@@ -55,7 +52,7 @@ export default function SharedConversationPage() {
       }
       displayNavBar={false}
       fullBleed
-      className="flex min-h-screen flex-col bg-canvas"
+      bgClassName="bg-canvas"
     >
       <ArtifactWorkbenchProvider>
         <SharedConversationView messages={messages} />

@@ -6,7 +6,6 @@ import {
   ProjectOverviewSkeleton,
   ProjectTasksSummary,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useArchiveProject,
   useProjectTasks,
@@ -17,12 +16,12 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectConversationStarter } from "./ProjectConversationStarter.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
 import { useProjectTemplateSave } from "./useProjectTemplateSave.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkPageFailure } from "./WorkPageFailure.js";
 
 export function ProjectHome({
   workspaceId,
@@ -44,21 +43,15 @@ export function ProjectHome({
     return <ProjectOverviewSkeleton />;
   }
 
-  if (isAuthenticationError(error)) {
-    return (
-      <SignInEmptyState
-        title="Sign in to view this project"
-        message="Sign in to access this project and its conversations."
-        className="mx-4 my-8 min-h-[300px]"
-      />
-    );
-  }
-
   if (error || !project) {
     return (
-      <div role="alert" className="p-10 text-sm text-failure">
-        {error?.message ?? "Project not found"}
-      </div>
+      <WorkPageFailure
+        title="Project"
+        error={error}
+        fallbackMessage="Project not found"
+        signInTitle="Sign in to view this project"
+        signInMessage="Sign in to access this project and its conversations."
+      />
     );
   }
 

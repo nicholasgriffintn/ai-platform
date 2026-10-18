@@ -18,13 +18,13 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
 import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkPageFailure } from "./WorkPageFailure.js";
 
 export function ProjectTaskBoard({
   workspaceId,
@@ -60,10 +60,12 @@ export function ProjectTaskBoard({
 
   if (isAuthenticationError(error)) {
     return (
-      <SignInEmptyState
-        title="Sign in to view project tasks"
-        message="Sign in to see the tasks this project is working through."
-        className="mx-4 my-8 min-h-[300px]"
+      <WorkPageFailure
+        title="Tasks"
+        error={error}
+        fallbackMessage="Tasks could not be loaded"
+        signInTitle="Sign in to view project tasks"
+        signInMessage="Sign in to see the tasks this project is working through."
       />
     );
   }

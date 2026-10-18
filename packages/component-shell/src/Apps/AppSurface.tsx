@@ -2,9 +2,10 @@ import {
   ContentLoadingSkeleton,
   LoadingRegion,
   Skeleton,
-  cn,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
+
+import { PageShell } from "../Shell/PageShell.js";
 
 export type AppSurfacePresentation =
   | { layout: "contained"; loading: "content" }
@@ -29,18 +30,11 @@ export function AppSurface({
   children: ReactNode;
   presentation: AppSurfacePresentation;
 }) {
-  return (
-    <div
-      className={cn(
-        "mx-auto w-full",
-        presentation.layout === "contained"
-          ? "container max-w-6xl p-4"
-          : "h-full min-h-0 max-w-none overflow-hidden",
-      )}
-    >
-      {children}
-    </div>
-  );
+  if (presentation.layout === "contained") {
+    return <PageShell.Content className="max-w-6xl">{children}</PageShell.Content>;
+  }
+
+  return <div className="h-full min-h-0 w-full overflow-hidden">{children}</div>;
 }
 
 export function AppSurfaceLoading({

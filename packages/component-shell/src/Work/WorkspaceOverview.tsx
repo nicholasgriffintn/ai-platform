@@ -5,16 +5,15 @@ import {
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { useTaskAttention, useDeleteWorkspace } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { CreateProjectDialog } from "./CreateProjectDialog.js";
 import { InviteMemberDialog } from "./InviteMemberDialog.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkPageFailure } from "./WorkPageFailure.js";
 
 export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
@@ -30,21 +29,15 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
     return <WorkspaceOverviewSkeleton />;
   }
 
-  if (isAuthenticationError(error)) {
-    return (
-      <SignInEmptyState
-        title="Sign in to view this workspace"
-        message="Sign in to access this workspace and its projects."
-        className="mx-4 my-8 min-h-[300px]"
-      />
-    );
-  }
-
   if (error || !workspace) {
     return (
-      <div role="alert" className="p-10 text-sm text-failure">
-        {error?.message ?? "Workspace not found"}
-      </div>
+      <WorkPageFailure
+        title="Workspace"
+        error={error}
+        fallbackMessage="Workspace not found"
+        signInTitle="Sign in to view this workspace"
+        signInMessage="Sign in to access this workspace and its projects."
+      />
     );
   }
 

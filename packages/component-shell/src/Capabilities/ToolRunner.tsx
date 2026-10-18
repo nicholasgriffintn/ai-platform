@@ -1,5 +1,5 @@
 import { ToolForm } from "@ngriffin_uk/polychat-component-capabilities";
-import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
 import {
   getErrorMessage,
   isAuthenticationError,
@@ -10,6 +10,7 @@ import { useState } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../Content/ResponseRenderer.js";
+import { PageShell } from "../Shell/PageShell.js";
 
 interface ToolRunnerProps {
   backPath: string;
@@ -23,16 +24,23 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
   if (isLoading) {
-    return <FormLoadingSkeleton />;
+    return (
+      <PageShell.Content>
+        <FormLoadingSkeleton />
+      </PageShell.Content>
+    );
   }
 
   if (isAuthenticationError(error)) {
     return (
-      <SignInEmptyState
-        title="Sign in to run this tool"
-        message="Sign in to run tools and keep their results."
-        className="mx-4 my-8 min-h-[300px]"
-      />
+      <PageShell.Content>
+        <PageShell.Header title="Tool" />
+        <SignInEmptyState
+          title="Sign in to run this tool"
+          message="Sign in to run tools and keep their results."
+          className="min-h-[300px]"
+        />
+      </PageShell.Content>
     );
   }
 
@@ -40,27 +48,22 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
     const isMissing = isNotFoundError(error) || !tool;
 
     return (
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-foreground">
-            {isMissing ? "Tool unavailable" : "Could not load this tool"}
-          </h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            {isMissing
-              ? "This tool no longer exists."
-              : getErrorMessage(error, "Try again in a moment.")}
-          </p>
-          <BackLink href={backPath} label="Back to capabilities" />
-        </Card>
-      </div>
+      <PageShell.Content>
+        <PageShell.Header title={isMissing ? "Tool unavailable" : "Could not load this tool"} />
+        <BackLink href={backPath} label="Back to capabilities" />
+        <p role="alert" className="text-sm leading-6 text-muted-foreground">
+          {isMissing
+            ? "This tool no longer exists."
+            : getErrorMessage(error, "Try again in a moment.")}
+        </p>
+      </PageShell.Content>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">
-      <header className="mb-8">
-        <BackLink href={backPath} label="Back to capabilities" />
-      </header>
+    <PageShell.Content>
+      <PageShell.Header title={tool.name} />
+      <BackLink href={backPath} label="Back to capabilities" />
       {result ? (
         <ResponseRenderer app={tool} result={result} onReset={() => setResult(null)} />
       ) : (
@@ -71,6 +74,6 @@ export function ToolRunner({ backPath, projectId, toolId }: ToolRunnerProps) {
           isSubmitting={executeTool.isPending}
         />
       )}
-    </div>
+    </PageShell.Content>
   );
 }

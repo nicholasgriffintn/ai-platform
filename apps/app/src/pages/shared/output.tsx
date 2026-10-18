@@ -7,13 +7,14 @@ import {
 import {
   ButtonLink,
   Card,
+  LoadingSpinner,
   PageStatus,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL, getSharedOutput } from "@ngriffin_uk/polychat-library-client";
 import { useRunnableTool } from "@ngriffin_uk/polychat-library-react";
 import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
-import { FileQuestion, Loader2 } from "lucide-react";
+import { FileQuestion } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
@@ -59,8 +60,8 @@ export default function SharedOutputPage() {
 
   if (!output || !token) {
     return (
-      <PageShell className="flex min-h-screen items-center justify-center" displayNavBar={false}>
-        <Loader2 size={40} className="animate-spin text-muted-foreground" />
+      <PageShell title="Shared output" displayNavBar={false}>
+        <LoadingSpinner message="Loading shared output..." className="py-16" />
       </PageShell>
     );
   }
@@ -76,31 +77,29 @@ export default function SharedOutputPage() {
   }
 
   return (
-    <PageShell title={output.title} displayNavBar={false}>
-      <div className="mx-auto w-full max-w-4xl py-8">
-        <Card className="gap-5 p-6 shadow-none">
-          <div className="flex items-center gap-3">
-            <FileQuestion size={20} className="text-muted-foreground" />
-            <div>
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {output.capabilityId}
-              </p>
-              <h1 className="text-xl font-semibold">{output.title}</h1>
-            </div>
+    <PageShell title={output.title} displayNavBar={false} className="max-w-4xl">
+      <Card className="gap-5 p-6 shadow-none">
+        <div className="flex items-center gap-3">
+          <FileQuestion size={20} className="text-muted-foreground" />
+          <div>
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              {output.capabilityId}
+            </p>
+            <h2 className="text-xl font-semibold">{output.title}</h2>
           </div>
-          {output.file ? (
-            <a
-              href={`${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`}
-              target="_blank"
-              rel="noreferrer"
-              className={textLinkClassName({ tone: "accent" })}
-            >
-              Open {output.file.filename || "shared file"}
-            </a>
-          ) : null}
-          <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
-        </Card>
-      </div>
+        </div>
+        {output.file ? (
+          <a
+            href={`${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`}
+            target="_blank"
+            rel="noreferrer"
+            className={textLinkClassName({ tone: "accent" })}
+          >
+            Open {output.file.filename || "shared file"}
+          </a>
+        ) : null}
+        <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
+      </Card>
     </PageShell>
   );
 }
