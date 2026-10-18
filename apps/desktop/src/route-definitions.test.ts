@@ -24,11 +24,16 @@ describe("desktop routes", () => {
     expect(definitions).toContainEqual({ path: "/chat/files/*", page: NOT_FOUND_PAGE });
   });
 
-  it("stops answering 404 for a place once a page claims it", () => {
+  it("serves a shared place under both the chat and the project layout", () => {
     expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({
       path: "/chat/files/*",
       page: "files",
       layout: "chat",
+    });
+    expect(DESKTOP_ROUTE_DEFINITIONS).toContainEqual({
+      path: "/work/:workspaceId/projects/:projectId/files/*",
+      page: "files",
+      layout: "work",
     });
     expect(DESKTOP_ROUTE_DEFINITIONS).not.toContainEqual({
       path: "/chat/files/*",

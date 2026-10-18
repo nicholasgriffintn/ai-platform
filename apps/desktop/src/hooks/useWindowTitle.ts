@@ -24,7 +24,7 @@ export function useWindowTitle() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const title = describeWindowTitle(readPageForPath(pathname));
+    const title = describeWindowTitle(readPageForPath(pathname), pathname);
 
     document.title = title;
     setNativeWindowTitle(title);

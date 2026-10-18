@@ -59,6 +59,7 @@ export * from "./Pages/AppErrorBoundary.js";
 export * from "./Pages/ErrorPage.js";
 export * from "./Pages/NotFoundPage.js";
 export * from "./Pets/PetShowcase.js";
+export * from "./Places/index.js";
 export * from "./Plugins/PluginsPage.js";
 export * from "./Plugins/ProjectPluginsPage.js";
 export * from "./Pricing/PricingPage.js";

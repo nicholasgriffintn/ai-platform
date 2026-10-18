@@ -1,3 +1,5 @@
+import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
+
 export const APP_WINDOW_TITLE = "Polychat";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -17,21 +19,10 @@ const PAGE_TITLES: Record<string, string> = {
   profile: "Profile",
   project: "Project",
   "project-activity": "Project activity",
-  "project-app": "Project app",
-  "project-canvas": "Canvas",
   "project-chat": "Project conversation",
-  "project-files": "Project files",
-  "project-plugins": "Plugins",
-  "project-scheduled": "Scheduled",
   "project-settings": "Project settings",
-  "project-skill": "Project skill",
   "project-task": "Task",
   "project-tasks": "Tasks",
-  "project-teammate": "Project teammate",
-  "project-teammate-context": "Project teammate context",
-  "project-teammate-settings": "Project teammate settings",
-  "project-teammates": "Project teammates",
-  "project-tool": "Project tool",
   root: "Chat",
   scheduled: "Scheduled",
   skill: "Skill",
@@ -50,8 +41,24 @@ const PAGE_TITLES: Record<string, string> = {
   "teammate-settings": "Teammate settings",
 };
 
-export function describeWindowTitle(page: string | undefined): string {
-  const place = page ? PAGE_TITLES[page] : undefined;
+const PROJECT_PLACE_TITLES: Record<string, string> = {
+  apps: "Project app",
+  files: "Project files",
+  skill: "Project skill",
+  teammate: "Project teammate",
+  "teammate-context": "Project teammate context",
+  "teammate-settings": "Project teammate settings",
+  teammates: "Project teammates",
+  tools: "Project tool",
+};
+
+export function describeWindowTitle(page: string | undefined, pathname = ""): string {
+  if (!page) {
+    return APP_WINDOW_TITLE;
+  }
+
+  const inProject = pathname.startsWith(`${MODE_BASE_PATHS.work}/`);
+  const place = (inProject ? PROJECT_PLACE_TITLES[page] : undefined) ?? PAGE_TITLES[page];
 
   return place ? `${place} — ${APP_WINDOW_TITLE}` : APP_WINDOW_TITLE;
 }
