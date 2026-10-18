@@ -1,20 +1,17 @@
-import type { MetaDescriptor } from "react-router";
-
-interface PlaceMetaArgs {
-  params: { projectId?: string };
-}
+import type { MetaFunction } from "react-router";
 
 export function placeMeta(titles: {
   personal: string;
   project?: string;
   description?: string;
-}): (args: PlaceMetaArgs) => MetaDescriptor[] {
+}): MetaFunction {
   return ({ params }) => {
-    const title = params.projectId ? (titles.project ?? titles.personal) : titles.personal;
+    const inProject = typeof params.projectId === "string";
+    const title = inProject ? (titles.project ?? titles.personal) : titles.personal;
 
     return [
       { title: `${title} - Polychat` },
-      ...(titles.description && !params.projectId
+      ...(titles.description && !inProject
         ? [{ name: "description", content: titles.description }]
         : []),
     ];
