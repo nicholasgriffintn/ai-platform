@@ -301,7 +301,7 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     const isUpdatePath = /^\/conversations\/[^/]+$/.test(path) && method === "PATCH";
     const isDeletePath = /^\/conversations\/[^/]+$/.test(path) && method === "DELETE";
     const isCheckPath = /^\/conversations\/[^/]+\/check$/.test(path) && method === "POST";
-    const isFeedbackPath = /^\/conversations\/[^/]+\/feedback$/.test(path) && method === "POST";
+    const isReactionsPath = /^\/conversations\/[^/]+\/reactions$/.test(path) && method === "POST";
     const isSharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "POST";
     const isUnsharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "DELETE";
     const isGetSharedPath = /^\/conversations\/shared\/[^/]+$/.test(path) && method === "GET";
@@ -315,7 +315,7 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
       isUpdatePath ||
       isDeletePath ||
       isCheckPath ||
-      isFeedbackPath ||
+      isReactionsPath ||
       isSharePath ||
       isUnsharePath ||
       isGetSharedPath;

@@ -178,6 +178,7 @@ export type ProviderExecutionParams = {
   credentialAuthority?: CredentialAuthority;
   conversation_type?: ConversationType;
   trigger?: ChatRunTrigger;
+  dry_run?: boolean;
   delegation_context?: DelegationContext;
   teammate_context_id?: string;
   computer_id?: string;

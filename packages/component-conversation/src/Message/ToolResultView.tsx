@@ -9,6 +9,7 @@ import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { ToolIcon } from "./toolIcons.js";
+import { ToolReceiptRow } from "./ToolReceiptRow.js";
 
 interface ToolResultViewProps {
   display: ToolResultDisplay;
@@ -60,6 +61,19 @@ export const ToolResultView = ({
           onToolInteraction={onToolInteraction}
         />
       </div>
+    );
+  }
+
+  if (display.receipt && display.result && !display.renderer) {
+    return (
+      <ToolReceiptRow receipt={display.receipt} className={className}>
+        <ResponseView
+          result={display.result}
+          responseType={display.responseType}
+          embedded
+          onToolInteraction={onToolInteraction}
+        />
+      </ToolReceiptRow>
     );
   }
 

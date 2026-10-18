@@ -69,8 +69,8 @@ export function TeammateEditorPage({
         backPath={backPath}
         backLabel={backLabel}
         teammateName={controller.teammate ? controller.teammate.name : "New teammate"}
-        teammatePath={pagePaths.editorPath}
-        contextPath={controller.teammate ? pagePaths.contextPath : undefined}
+        settingsPath={pagePaths.settingsPath}
+        homePath={controller.teammate ? pagePaths.homePath : undefined}
         activeSection="configuration"
         description="Define what this teammate is, how it behaves, and what it can use."
       />

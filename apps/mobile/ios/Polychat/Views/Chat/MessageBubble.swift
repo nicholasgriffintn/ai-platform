@@ -56,6 +56,40 @@ struct MessageBubble: View {
                         .padding(.horizontal, message.role == "user" ? 14 : 0)
                         .padding(.vertical, message.role == "user" ? 10 : 0)
                         .background(messageBackground)
+                        .contextMenu {
+                            if canReact {
+                                ForEach(Self.reactionPalette, id: \.self) { emoji in
+                                    Button(emoji) {
+                                        react(emoji)
+                                    }
+                                }
+                            }
+                        }
+                }
+
+                if !reactionSummaries.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(reactionSummaries, id: \.emoji) { summary in
+                            Button {
+                                react(summary.emoji)
+                            } label: {
+                                Text(summary.count > 1 ? "\(summary.emoji) \(summary.count)" : summary.emoji)
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule().fill(
+                                            summary.mine
+                                                ? Color.polychat.messageUserBackground.opacity(0.65)
+                                                : Color.gray.opacity(0.15)
+                                        )
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!canReact)
+                            .accessibilityLabel(summary.mine ? "Remove \(summary.emoji)" : "React \(summary.emoji)")
+                        }
+                    }
                 }
 
                 if shouldShowActions {
@@ -207,6 +241,45 @@ struct MessageBubble: View {
 
     private func copyMessage() {
         UIPasteboard.general.string = message.renderedTextContent
+    }
+
+    private static let reactionPalette = ["👍", "👎", "❤️", "🎉", "😂", "👀", "✅", "🙏"]
+
+    private var canReact: Bool {
+        message.role == "assistant" && !message.isCompactionMarker
+    }
+
+    private struct ReactionSummary {
+        let emoji: String
+        let count: Int
+        let mine: Bool
+    }
+
+    private var reactionSummaries: [ReactionSummary] {
+        let reactions = message.data?.reactions ?? []
+        var order: [String] = []
+        var counts: [String: Int] = [:]
+        var mine: Set<String> = []
+
+        for reaction in reactions {
+            if counts[reaction.emoji] == nil {
+                order.append(reaction.emoji)
+            }
+            counts[reaction.emoji, default: 0] += 1
+            if reaction.actor == "person" {
+                mine.insert(reaction.emoji)
+            }
+        }
+
+        return order.map { ReactionSummary(emoji: $0, count: counts[$0] ?? 0, mine: mine.contains($0)) }
+    }
+
+    private func react(_ emoji: String) {
+        let remove = reactionSummaries.contains { $0.emoji == emoji && $0.mine }
+
+        Task {
+            await conversationManager.react(to: message, emoji: emoji, remove: remove)
+        }
     }
 }
 

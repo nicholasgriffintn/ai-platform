@@ -1,0 +1,20 @@
+import { TeammateEditorPage } from "@ngriffin_uk/polychat-component-shell";
+import { getPlacePaths } from "@ngriffin_uk/polychat-library-react";
+import { useParams } from "react-router";
+
+export function meta() {
+  return [{ title: "Configure a teammate - Polychat" }];
+}
+
+export default function PersonalTeammateSettingsPage() {
+  const { teammateId = "" } = useParams();
+
+  return (
+    <TeammateEditorPage
+      teammateId={teammateId}
+      teammatesPath="/chat/teammates"
+      backPath={getPlacePaths("chat").teammates}
+      backLabel="Back to teammates"
+    />
+  );
+}

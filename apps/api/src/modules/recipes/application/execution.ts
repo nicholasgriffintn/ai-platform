@@ -169,6 +169,7 @@ export async function executeRecipeInvocationChat(params: {
         authority: {
           trigger: "schedule",
           ...(params.invocation.readOnly ? { autonomyCeiling: "observer" as const } : {}),
+          ...(params.invocation.dryRun ? { dryRun: true } : {}),
         },
       })
     : await startResponse({
@@ -176,7 +177,10 @@ export async function executeRecipeInvocationChat(params: {
         context: params.context,
         user: params.user,
         command: { ...request, conversationType: "task" },
-        authority: { trigger: "schedule" },
+        authority: {
+          trigger: "schedule",
+          ...(params.invocation.dryRun ? { dryRun: true } : {}),
+        },
       });
 
   let recoveredResponse: CreateChatCompletionsResponse | null = null;

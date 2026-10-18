@@ -2,12 +2,14 @@ import type { ContextBudgetSystemSection } from "@ngriffin_uk/polychat-ai-agents
 import { buildGoalContractSection, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { collectPersonReactions } from "@ngriffin_uk/polychat-library-chat/reactions";
 import {
   excerptMemoryDocument,
   type ChatContextDocument,
   type Goal,
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
+import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
@@ -16,6 +18,8 @@ import {
   buildMemoryPromptContext,
   type resolveMemoryPolicy,
 } from "~/modules/responses/domain/memory";
+import { TeammateGroupRepository } from "~/modules/teammates/infrastructure/TeammateGroupRepository";
+import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope, Message } from "~/types";
 
@@ -80,6 +84,65 @@ function appendProjectInstructions(
   }
 
   return result;
+}
+
+function appendReactionContext(
+  systemPrompt: SystemPromptResult,
+  messages: readonly Message[],
+): SystemPromptResult {
+  const reacted = collectPersonReactions(messages);
+
+  if (reacted.length === 0) {
+    return systemPrompt;
+  }
+
+  return appendSection(
+    systemPrompt,
+    "project",
+    renderPrompt("chat/context/reactions", {
+      reactions: reacted.map(({ emoji, excerpt }) => `- ${emoji} on "${excerpt}"`).join("\n"),
+    }),
+  );
+}
+
+async function appendGroupContext(
+  systemPrompt: SystemPromptResult,
+  params: {
+    repositories: Repositories;
+    conversationId: string | undefined;
+    teammateId: string | undefined;
+  },
+): Promise<SystemPromptResult> {
+  if (!params.conversationId || !params.teammateId) {
+    return systemPrompt;
+  }
+
+  const group = await params.repositories
+    .get(TeammateGroupRepository)
+    .getByConversationId(params.conversationId);
+
+  if (!group || !group.teammateIds.includes(params.teammateId)) {
+    return systemPrompt;
+  }
+
+  const members = await params.repositories
+    .get(TeammateRepository)
+    .getTeammatesByIds(group.teammateIds);
+  const self = members.find((member) => member.id === params.teammateId);
+
+  if (!self) {
+    return systemPrompt;
+  }
+
+  return appendSection(
+    systemPrompt,
+    "project",
+    renderPrompt("chat/context/teammate-group", {
+      self: self.name,
+      group: group.name,
+      members: members.map((member) => member.name).join(", "),
+    }),
+  );
 }
 
 async function appendMemoryContext(
@@ -164,10 +227,20 @@ export async function buildSystemPrompt({
   };
 
   const withMemory = async (prompt: string) =>
-    appendProjectInstructions(
-      await appendMemoryContext(basePrompt(prompt), memoryContext),
-      projectContext,
-      activeGoal,
+    appendGroupContext(
+      appendReactionContext(
+        appendProjectInstructions(
+          await appendMemoryContext(basePrompt(prompt), memoryContext),
+          projectContext,
+          activeGoal,
+        ),
+        sanitisedMessages,
+      ),
+      {
+        repositories,
+        conversationId: completion_id,
+        teammateId: readOptionalString(options.resolved_configuration?.teammateId),
+      },
     );
 
   if (system_prompt && !options.poly) {

@@ -432,6 +432,26 @@ public struct TitleGenerationResponse: Codable {
     public let title: String
 }
 
+public struct ItemReactionRequest: Encodable {
+    let itemId: String
+    let emoji: String
+    let remove: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case itemId = "item_id"
+        case emoji
+        case remove
+    }
+}
+
+public struct ItemReactionEnvelope: Decodable {
+    public let response: ItemReactionResult
+
+    public struct ItemReactionResult: Decodable {
+        public let reactions: [ChatMessageData.MessageReaction]
+    }
+}
+
 public struct UpdateConversationRequest: Encodable {
     let title: String?
     let items: [ConversationItem]?

@@ -47,6 +47,10 @@ export function getPlacePaths(mode: ProductMode): PlacePaths {
   };
 }
 
+export function getTeammateGroupPath(conversationId: string): string {
+  return `${MODE_BASE_PATHS.chat}/groups/${encodeURIComponent(conversationId)}`;
+}
+
 export function getProductMode(pathname: string): ProductMode {
   return pathname === MODE_BASE_PATHS.work || pathname.startsWith(`${MODE_BASE_PATHS.work}/`)
     ? "work"

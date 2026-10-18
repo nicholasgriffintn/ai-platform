@@ -141,6 +141,7 @@ export async function deliverDelegationResult(
         platform: "api",
         data: {
           delegationId: delegation.id,
+          teammateId: delegation.teammateId,
           delegationState: delegation.state,
           outputIds: accessibleOutputs.map((output) => output.id),
         },

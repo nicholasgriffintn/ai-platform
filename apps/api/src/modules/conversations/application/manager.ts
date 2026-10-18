@@ -71,6 +71,7 @@ export interface ConversationListOptions {
   query?: string;
   sortBy?: ConversationSortBy;
   updatedAfter?: string;
+  teammateThreads?: "include" | "exclude";
 }
 
 export interface ConversationDetails extends Record<string, unknown> {

@@ -287,6 +287,7 @@ export interface ConversationListOptions {
   after?: string;
   query?: string;
   sortBy?: ConversationSortBy;
+  teammateThreads?: "include" | "exclude";
 }
 
 export interface ConversationListPage {

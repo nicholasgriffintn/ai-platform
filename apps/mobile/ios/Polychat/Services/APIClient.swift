@@ -430,6 +430,19 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func reactToItem(
+        conversationId: String,
+        itemId: String,
+        emoji: String,
+        remove: Bool
+    ) async throws -> ItemReactionEnvelope {
+        try await send(
+            path: "/conversations/\(conversationId)/reactions",
+            method: "POST",
+            body: ItemReactionRequest(itemId: itemId, emoji: emoji, remove: remove)
+        )
+    }
+
     func fetchConversations(
         limit: Int = 50,
         after: String? = nil,

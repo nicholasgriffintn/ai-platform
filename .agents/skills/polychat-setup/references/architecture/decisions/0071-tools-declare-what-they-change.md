@@ -22,3 +22,7 @@ The class describes the call, not the run scope, so the same tool keeps one clas
 ## Consequences
 
 Approval and autonomy rules can now be expressed over effects, and receipts can say what kind of change happened. Classifying built-in tools is a review decision recorded beside each descriptor rather than inferred. Dynamic classes run model-supplied input through code, so they must stay pure and cheap. Connector operations already carry `readOnly`, `destructive` and `openWorld` flags; until those are read at execution time, connector execution is classified as `write` and discovery as `read`.
+
+## Receipts and dry runs
+
+Two behaviours now read the effect class at the execution boundary. A successful call whose class is `write` or stronger carries a receipt (what kind of change, which tool, which destination), and transcripts show that receipt instead of raw tool output. A routine started as a dry run never executes a call of that strength: it gets a drafted receipt describing what would have happened, while reads and drafts still run for real. Both rules key on the class rather than the tool name, so an undeclared tool is treated as `write` here too.

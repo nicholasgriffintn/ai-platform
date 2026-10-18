@@ -34,12 +34,25 @@ export interface ChannelReply {
   subject?: string;
 }
 
+export interface ChannelMessageRef {
+  externalId: string;
+  threadId: string;
+  messageId: string;
+}
+
+export interface ChannelReaction {
+  emoji: string;
+  remove?: boolean;
+}
+
 export interface ChannelAdapter {
   readonly id: InboundChannelId;
   readonly label: string;
   readonly scopes: readonly ("personal" | "project")[];
   isReplyConfigured(env: IEnv): boolean;
   sendReply(reply: ChannelReply, env: IEnv): Promise<void>;
+  react?(target: ChannelMessageRef, reaction: ChannelReaction, env: IEnv): Promise<void>;
+  showWorking?(target: ChannelMessageRef, env: IEnv): Promise<void>;
 }
 
 export interface WebhookChannelAdapter extends ChannelAdapter {

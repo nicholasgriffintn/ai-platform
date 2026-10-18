@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import type { CharacterReaction, CharacterReactionMood } from "../../lib/pet/presence.js";
+
 const MAX_NUDGES = 3;
 
 export interface PetNudge {
@@ -21,6 +23,8 @@ interface PetStore {
   listening: boolean;
   speaking: boolean;
   gaze: PetGaze | null;
+  reaction: CharacterReaction | null;
+  reactTo: (mood: CharacterReactionMood) => void;
   setReviewing: (conversationId: string, reviewing: boolean) => void;
   setListening: (listening: boolean) => void;
   setSpeaking: (speaking: boolean) => void;
@@ -38,6 +42,8 @@ export const usePetStore = create<PetStore>()((set) => ({
   listening: false,
   speaking: false,
   gaze: null,
+  reaction: null,
+  reactTo: (mood) => set({ reaction: { mood, at: Date.now() } }),
   setReviewing: (conversationId, reviewing) =>
     set((state) => {
       if (conversationId in state.reviewing === reviewing) {

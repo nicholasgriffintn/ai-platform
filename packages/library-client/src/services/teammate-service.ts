@@ -18,6 +18,9 @@ import {
   type MemoryDocument,
   type UpdateMemoryDocumentInput,
   type RecordTeammateFeedbackInput,
+  type CreateTeammateGroupInput,
+  type TeammateGroup,
+  type TeammateRosterEntry,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { requestJson, resource, withQuery, type ResourceQuery } from "../resource.js";
@@ -29,6 +32,8 @@ type MarketplacePage = ListPage<SharedTeammateSummary> & {
 
 const teammates = resource<TeammateResponse>("/teammates");
 const contexts = resource<TeammateContext>("/teammates/contexts");
+const groups = resource<TeammateGroup>("/teammates/groups");
+const roster = resource<TeammateRosterEntry>("/teammates/roster");
 const memoryDocuments = resource<MemoryDocument>("/memory/documents");
 const MARKETPLACE_PATH = "/teammates/marketplace";
 const marketplace = resource<SharedTeammateSummary>(MARKETPLACE_PATH);
@@ -207,6 +212,18 @@ export class TeammateService {
 
   listTeammates(): Promise<TeammateResponse[]> {
     return teammates.listAll();
+  }
+
+  listTeammateGroups(): Promise<TeammateGroup[]> {
+    return groups.listAll();
+  }
+
+  listTeammateRoster(): Promise<TeammateRosterEntry[]> {
+    return roster.listAll();
+  }
+
+  createTeammateGroup(input: CreateTeammateGroupInput): Promise<TeammateGroup> {
+    return groups.create(input);
   }
 
   async listSharedTeammates({

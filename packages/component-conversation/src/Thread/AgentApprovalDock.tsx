@@ -1,6 +1,8 @@
 import { AgentApprovalCard } from "@ngriffin_uk/polychat-component-content";
 import type { AgentApproval, AgentApprovalDecision } from "@ngriffin_uk/polychat-schemas";
 
+import { ApprovalBatchReview } from "./ApprovalBatchReview.js";
+
 export interface ConversationAgentApproval {
   approval: AgentApproval;
   answer: (decision: AgentApprovalDecision) => Promise<void>;
@@ -18,6 +20,7 @@ export function AgentApprovalDock({ pending, resolve }: ConversationAgentApprova
 
   return (
     <div className="space-y-2" data-poly-anchor="approval">
+      <ApprovalBatchReview pending={pending} resolve={resolve} />
       {pending.map((entry) => (
         <AgentApprovalCard
           key={entry.approval.requestId}

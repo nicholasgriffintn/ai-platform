@@ -1,5 +1,6 @@
 import type { AgentMode } from "./agent-modes.js";
 import { POLY_NAVIGATION_TOOL_NAMES } from "./poly.js";
+import { REACT_TOOL_NAME } from "./reactions.js";
 import type { TeammateKind } from "./teammate-roles.js";
 
 export const PLATFORM_TEAMMATE_ID_PREFIX = "platform-";
@@ -258,6 +259,7 @@ export const POLY_TEAMMATE: PlatformTeammate = {
     "load_skill",
     "save_skill",
     "propose_correction",
+    REACT_TOOL_NAME,
     "search_documents",
     "get_document",
     "write_document",

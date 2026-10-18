@@ -13,6 +13,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
 import { projectQueryKey } from "./useWorkspaces.js";
 
 const organisationQueryKey = (conversationId: string) => [
@@ -33,6 +34,7 @@ export function useConversationOrganisation(conversationId: string | null, proje
       queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] }),
       queryClient.invalidateQueries({ queryKey: ["global-search"] }),
       queryClient.invalidateQueries({ queryKey: ["work-attention"] }),
+      queryClient.invalidateQueries({ queryKey: TEAMMATE_ROSTER_QUERY_KEY }),
       ...(projectId
         ? [queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) })]
         : []),

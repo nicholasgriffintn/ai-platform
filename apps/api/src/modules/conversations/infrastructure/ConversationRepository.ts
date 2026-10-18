@@ -24,6 +24,7 @@ export interface PersonalConversationFilter {
   archiveFilter?: ConversationArchiveFilter;
   query?: string;
   updatedAfter?: string;
+  teammateThreads?: "include" | "exclude";
 }
 
 export interface ListUserConversationsOptions extends PersonalConversationFilter {
@@ -40,6 +41,7 @@ export interface SetConversationsArchivedOptions {
   archived: boolean;
   query?: string;
   updatedAfter?: string;
+  teammateThreads?: "include" | "exclude";
 }
 
 export interface CreateConversationOptions {
@@ -209,7 +211,7 @@ export class ConversationRepository extends BaseRepository {
     userId: number,
     options: PersonalConversationFilter,
   ): { whereClause: string; values: unknown[] } {
-    const { archiveFilter = "active", query, updatedAfter } = options;
+    const { archiveFilter = "active", query, updatedAfter, teammateThreads = "include" } = options;
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
@@ -228,6 +230,13 @@ export class ConversationRepository extends BaseRepository {
       )`,
     ];
     const values: unknown[] = [userId];
+
+    if (teammateThreads === "exclude") {
+      whereClauses.push(
+        "NOT EXISTS (SELECT 1 FROM teammate_context tc WHERE tc.home_conversation_id = c.id)",
+        "NOT EXISTS (SELECT 1 FROM teammate_group_member m WHERE m.conversation_id = c.id)",
+      );
+    }
 
     if (archiveFilter === "active") {
       whereClauses.push("c.is_archived = 0");
@@ -340,7 +349,7 @@ export class ConversationRepository extends BaseRepository {
     userId: number,
     options: SetConversationsArchivedOptions,
   ): Promise<number> {
-    const { archived, query, updatedAfter } = options;
+    const { archived, query, updatedAfter, teammateThreads = "include" } = options;
     const whereClauses = [
       "user_id = ?",
       "project_id IS NULL",
@@ -348,6 +357,13 @@ export class ConversationRepository extends BaseRepository {
       "is_archived = ?",
     ];
     const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
+
+    if (teammateThreads === "exclude") {
+      whereClauses.push(
+        "NOT EXISTS (SELECT 1 FROM teammate_context tc WHERE tc.home_conversation_id = conversation.id)",
+        "NOT EXISTS (SELECT 1 FROM teammate_group_member m WHERE m.conversation_id = conversation.id)",
+      );
+    }
 
     const trimmedQuery = query?.trim();
 

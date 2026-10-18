@@ -106,6 +106,7 @@ export const recipeExecutionTaskDataSchema = z.object({
   configuration: recipeConfigurationSchema.optional(),
   notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
   notificationTarget: z.string().min(1).optional(),
+  dryRun: z.boolean().optional(),
 });
 
 export const taskTypeSchema = z.enum(TASK_TYPES);

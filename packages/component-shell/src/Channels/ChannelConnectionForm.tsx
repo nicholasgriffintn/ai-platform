@@ -107,6 +107,19 @@ export function ChannelConnectionForm({
           ...teammates.map((teammate) => ({ value: teammate.id, label: teammate.name })),
         ]}
       />
+      {form.channel === "email" ? null : (
+        <FormSelect<"off" | "ack" | "full">
+          label="Reactions"
+          value={form.reactionLevel}
+          disabled={isPending}
+          onValueChange={form.setReactionLevel}
+          options={[
+            { value: "ack", label: "👀 while working, ⚠️ if it fails" },
+            { value: "full", label: "Also ✅ when it is done" },
+            { value: "off", label: "No reactions" },
+          ]}
+        />
+      )}
       <div className="border-t border-border pt-4">
         <Switch
           label="Reply only when needed"

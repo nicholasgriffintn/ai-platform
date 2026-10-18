@@ -47,6 +47,7 @@ export function defineConversationRecords(conversations: ResourceBuilder): void 
           query: query.q,
           sortBy: query.sort_by,
           updatedAfter: query.updated_after,
+          teammateThreads: query.teammate_threads ?? "include",
         }),
     })
     .deleteAll({
@@ -74,6 +75,7 @@ export function defineConversationRecords(conversations: ResourceBuilder): void 
           archived: body.archived,
           query: body.q,
           updatedAfter: body.updated_after,
+          teammateThreads: body.teammate_threads ?? "include",
         }),
     })
     .read({

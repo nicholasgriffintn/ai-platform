@@ -13,6 +13,8 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
 import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { startResponse } from "~/modules/responses/application/start";
+import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
@@ -57,24 +59,35 @@ export class QueuedChatMessageHandler implements TaskHandler {
       requestCache: context.requestCache,
     }).get(conversationId);
 
+    const command = {
+      conversationId,
+      conversationType: request.conversation_type,
+      commandId: message.taskId,
+      messages: toCommandMessages([
+        ...history,
+        { ...userMessage, content: userMessage.content ?? "" },
+      ]),
+      stream: false,
+      store: true,
+      settings: responseSettingsSchema.parse(request),
+    };
+    const home = await context.repositories
+      .get(TeammateContextRepository)
+      .getByHomeConversationId(conversationId);
+
     try {
-      await startResponse({
-        env,
-        context,
-        user,
-        command: {
-          conversationId,
-          conversationType: request.conversation_type,
-          commandId: message.taskId,
-          messages: toCommandMessages([
-            ...history,
-            { ...userMessage, content: userMessage.content ?? "" },
-          ]),
-          stream: false,
-          store: true,
-          settings: responseSettingsSchema.parse(request),
-        },
-      });
+      if (home) {
+        await enqueueTeammateRun({
+          env,
+          context,
+          body: command,
+          teammateId: home.teammateId,
+          user,
+          anonymousUser: null,
+        });
+      } else {
+        await startResponse({ env, context, user, command });
+      }
     } catch (error) {
       if (error instanceof AssistantError && error.type === ErrorType.CONFLICT_ERROR) {
         return { status: "suspended", message: "The conversation is busy" };

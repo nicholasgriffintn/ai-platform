@@ -7,7 +7,7 @@ import {
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
-  getTeammateEditorPath,
+  getTeammateSettingsPath,
   getProjectSurface,
   getProjectConversationPath,
   NEW_TEAMMATE_ID,
@@ -161,7 +161,7 @@ export function ProjectTaskBoard({
         teammates={teammates}
         skills={skills}
         capabilitiesHref={`${basePath}/teammates`}
-        createTeammateHref={getTeammateEditorPath(
+        createTeammateHref={getTeammateSettingsPath(
           getProjectSurface(workspaceId, projectId),
           NEW_TEAMMATE_ID,
         )}

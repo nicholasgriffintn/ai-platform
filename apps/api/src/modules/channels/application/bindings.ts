@@ -34,6 +34,7 @@ function toBinding(
     label: row.label,
     teammateId: row.teammate_id,
     interactionMode: row.interaction_mode,
+    reactionLevel: row.reaction_level,
     enabled: Number(row.enabled) === 1,
     createdAt: row.created_at,
     canManage,
@@ -101,6 +102,7 @@ export async function createChannelBinding(
     label: input.label ?? null,
     teammateId: input.teammateId ?? null,
     interactionMode: input.interactionMode ?? "automated",
+    reactionLevel: input.reactionLevel ?? "ack",
     createdByUserId: user.id,
   });
 

@@ -5,6 +5,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import {
   CHANNEL_TOP_LEVEL_THREAD,
   type ChannelIncoming,
+  type ChannelMessageRef,
+  type ChannelReaction,
   type ChannelReply,
   type ChannelVerification,
   type WebhookChannelAdapter,
@@ -14,10 +16,15 @@ import type { IEnv } from "~/types";
 
 import { parseSlackMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
+import { toSlackEmojiName } from "./slack-emoji";
 
 const SLACK_SIGNATURE_VERSION = "v0";
 const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
 const SLACK_POST_MESSAGE_URL = "https://slack.com/api/chat.postMessage";
+const SLACK_REACTION_ADD_URL = "https://slack.com/api/reactions.add";
+const SLACK_REACTION_REMOVE_URL = "https://slack.com/api/reactions.remove";
+const SLACK_THREAD_STATUS_URL = "https://slack.com/api/assistant.threads.setStatus";
+const SLACK_WORKING_STATUS = "is working on it…";
 
 const encoder = new TextEncoder();
 
@@ -76,6 +83,59 @@ export class SlackChannelAdapter implements WebhookChannelAdapter {
   }
 
   async sendReply(reply: ChannelReply, env: IEnv): Promise<void> {
+    await this.call(
+      SLACK_POST_MESSAGE_URL,
+      {
+        channel: this.channelId(reply.externalId),
+        text: reply.body,
+        ...(reply.threadId === CHANNEL_TOP_LEVEL_THREAD ? {} : { thread_ts: reply.threadId }),
+      },
+      env,
+    );
+  }
+
+  async react(target: ChannelMessageRef, reaction: ChannelReaction, env: IEnv): Promise<void> {
+    const name = toSlackEmojiName(reaction.emoji);
+
+    if (!name) {
+      return;
+    }
+
+    await this.call(
+      reaction.remove ? SLACK_REACTION_REMOVE_URL : SLACK_REACTION_ADD_URL,
+      { channel: this.channelId(target.externalId), timestamp: target.messageId, name },
+      env,
+    );
+  }
+
+  async showWorking(target: ChannelMessageRef, env: IEnv): Promise<void> {
+    if (target.threadId === CHANNEL_TOP_LEVEL_THREAD) {
+      return;
+    }
+
+    await this.call(
+      SLACK_THREAD_STATUS_URL,
+      {
+        channel_id: this.channelId(target.externalId),
+        thread_ts: target.threadId,
+        status: SLACK_WORKING_STATUS,
+      },
+      env,
+    );
+  }
+
+  private channelId(externalId: string): string {
+    const parsed = slackChannelAddressSchema.safeParse(externalId);
+    const channelId = parsed.success ? parsed.data.split(":")[1] : null;
+
+    if (!channelId) {
+      throw new AssistantError("Invalid Slack destination", ErrorType.PARAMS_ERROR, 400);
+    }
+
+    return channelId;
+  }
+
+  private async call(url: string, body: Record<string, unknown>, env: IEnv): Promise<void> {
     const secret = getChannelSecrets(this.id, env).reply;
 
     if (!secret) {
@@ -85,24 +145,13 @@ export class SlackChannelAdapter implements WebhookChannelAdapter {
       );
     }
 
-    const parsed = slackChannelAddressSchema.safeParse(reply.externalId);
-    const channelId = parsed.success ? parsed.data.split(":")[1] : null;
-
-    if (!channelId) {
-      throw new AssistantError("Invalid Slack destination", ErrorType.PARAMS_ERROR, 400);
-    }
-
-    const response = await fetch(SLACK_POST_MESSAGE_URL, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         authorization: `Bearer ${secret}`,
         "content-type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({
-        channel: channelId,
-        text: reply.body,
-        ...(reply.threadId === CHANNEL_TOP_LEVEL_THREAD ? {} : { thread_ts: reply.threadId }),
-      }),
+      body: JSON.stringify(body),
     });
 
     await requireSuccessfulChannelSend(response, "Slack");

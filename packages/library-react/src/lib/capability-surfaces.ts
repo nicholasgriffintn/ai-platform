@@ -4,10 +4,7 @@ import type {
   ProjectExperienceDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
-import {
-  createTeammateConversationActionPath,
-  createRecipeManagementActionPath,
-} from "./assistant-action-launch.js";
+import { createRecipeManagementActionPath } from "./assistant-action-launch.js";
 import { getPlacePaths } from "./navigation/places.js";
 
 export interface CapabilitySurface {
@@ -50,8 +47,12 @@ export function getSurfaceFromPathname(pathname: string): CapabilitySurface {
 
 export const NEW_TEAMMATE_ID = "new";
 
-export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: string): string {
-  return `${surface.basePath}/teammates/${teammateId}`;
+export function getTeammateHomePath(surface: CapabilitySurface, teammateId: string): string {
+  return `${surface.basePath}/teammates/${encodeURIComponent(teammateId)}`;
+}
+
+export function getTeammateSettingsPath(surface: CapabilitySurface, teammateId: string): string {
+  return `${getTeammateHomePath(surface, teammateId)}/settings`;
 }
 
 export function getSkillEditorPath(surface: CapabilitySurface, skillId: string): string {
@@ -151,7 +152,7 @@ export function getCapabilityOpenPath(
   }
 
   if (item.kind === "teammate") {
-    return createTeammateConversationActionPath(getConversationPath(surface), item.capability.id);
+    return getTeammateHomePath(surface, item.capability.id);
   }
 
   if (item.kind === "recipe" || item.kind === "installed_recipe") {

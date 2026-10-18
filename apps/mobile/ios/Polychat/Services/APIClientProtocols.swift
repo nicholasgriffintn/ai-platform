@@ -73,6 +73,7 @@ protocol ConversationAPIClient {
         resolution: String
     ) async throws -> ProjectTaskResponse
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse
+    func reactToItem(conversationId: String, itemId: String, emoji: String, remove: Bool) async throws -> ItemReactionEnvelope
     func updateConversation(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?) async throws
     func deleteConversation(id: String) async throws
 }

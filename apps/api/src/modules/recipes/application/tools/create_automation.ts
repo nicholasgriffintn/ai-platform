@@ -76,6 +76,7 @@ export const create_automation: ApiToolDefinition = {
         installationId: installed.installation?.id,
         schedule,
         readyToRun: installed.readyToRun,
+        receipt: { title: "Created routine", detail: `${installed.recipe.title} · ${schedule}` },
       },
     } satisfies IFunctionResponse;
   },

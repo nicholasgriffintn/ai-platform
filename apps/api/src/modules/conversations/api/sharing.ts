@@ -1,9 +1,10 @@
 import {
   checkConversationRequestSchema,
   checkConversationResponseSchema,
-  conversationFeedbackRequestSchema,
   conversationParamsSchema,
   errorResponseSchema,
+  itemReactionRequestSchema,
+  itemReactionEnvelopeSchema,
   shareConversationResponseSchema,
   sharedConversationParamsSchema,
   sharedConversationQuerySchema,
@@ -15,9 +16,9 @@ import type { ResourceBuilder } from "~/infrastructure/http/resource";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 
 import { handleCheckChatCompletion } from "../application/checkChatCompletion";
-import { submitConversationFeedback } from "../application/feedback-submission";
 import { handleGetSharedConversation } from "../application/getSharedConversation";
 import { presentItems } from "../application/present";
+import { reactToConversationItem } from "../application/reactions";
 import { handleShareConversation } from "../application/shareConversation";
 import { handleUnshareConversation } from "../application/unshareConversation";
 
@@ -40,26 +41,20 @@ export function defineConversationSharing(conversations: ResourceBuilder): void 
     }),
   });
 
-  conversations.action("feedback", {
-    summary: "Submit feedback about an item",
+  conversations.action("reactions", {
+    summary: "Add or remove a reaction on an item",
     auth: true,
     paramSchema: conversationParamsSchema,
-    bodySchema: conversationFeedbackRequestSchema,
+    bodySchema: itemReactionRequestSchema,
     responses: {
       200: {
-        description: "Feedback submission status",
-        schema: z.object({ response: z.object({ status: z.string(), message: z.string() }) }),
+        description: "The item's reactions after the change",
+        schema: itemReactionEnvelopeSchema,
       },
-      404: { description: "Conversation not found", schema: errorResponseSchema },
+      404: { description: "Conversation or item not found", schema: errorResponseSchema },
     },
-    middleware: [validateCaptcha],
     handler: async ({ serviceContext, params, body }) => ({
-      response: await submitConversationFeedback(serviceContext, params.conversation_id, {
-        message_id: body.item_id,
-        log_id: body.log_id,
-        feedback: body.feedback,
-        score: body.score,
-      }),
+      response: await reactToConversationItem(serviceContext, params.conversation_id, body),
     }),
   });
 

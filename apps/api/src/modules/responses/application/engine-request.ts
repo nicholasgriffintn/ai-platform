@@ -116,6 +116,7 @@ function authorityEngineFields(
 ): Partial<PreparedChatCompletionRequest> {
   return {
     ...(authority.trigger ? { trigger: authority.trigger } : {}),
+    ...(authority.dryRun ? { dry_run: true } : {}),
     ...(authority.delegationContext ? { delegation_context: authority.delegationContext } : {}),
     ...(authority.durableExecution ? { durable_execution: authority.durableExecution } : {}),
     ...(authority.commandPayload ? { command_payload: authority.commandPayload } : {}),

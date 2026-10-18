@@ -49,8 +49,16 @@ export function useChats(options: ConversationListOptions = {}) {
       limit: options.limit ?? DEFAULT_CHAT_LIST_LIMIT,
       query: options.query?.trim() || undefined,
       sortBy: fetchSortBy,
+      teammateThreads: options.teammateThreads ?? "include",
     }),
-    [options.activity, options.archived, options.limit, options.query, fetchSortBy],
+    [
+      options.activity,
+      options.archived,
+      options.limit,
+      options.query,
+      options.teammateThreads,
+      fetchSortBy,
+    ],
   );
 
   const remoteChatsQuery = useInfiniteQuery({
@@ -327,6 +335,7 @@ export function useSetAllChatsArchived() {
         archived,
         activity: options.activity,
         query: options.query,
+        teammateThreads: options.teammateThreads,
       });
 
       return local + remote;

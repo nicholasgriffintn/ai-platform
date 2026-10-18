@@ -1,6 +1,6 @@
 import type { Conversation, Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { CHATS_QUERY_KEY, apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { CHATS_QUERY_KEY, apiService } from "@ngriffin_uk/polychat-library-client";
 import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { canReplaceStoredConversationMessages } from "@ngriffin_uk/polychat-schemas/conversation-replacement";
@@ -22,6 +22,7 @@ import {
   type LiveTurn,
 } from "../chat/live-turn-messages.js";
 import { mergeRealtimeTranscriptText } from "../chat/transcript-text.js";
+import { useConversationScope } from "../state/conversation-scope.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
 export interface FinalLiveInputTranscript {
@@ -69,8 +70,7 @@ export function useLiveConversationMessages({
   onFinalInputTranscript,
 }: UseLiveConversationMessagesOptions = {}) {
   const queryClient = useQueryClient();
-  const currentConversationId = useChatStore((state) => state.currentConversationId);
-  const startNewConversation = useChatStore((state) => state.startNewConversation);
+  const { currentConversationId, startNewConversation } = useConversationScope();
   const { determineStorageMode, updateConversation } = useConversationStorage();
 
   const currentConversationIdRef = useRef(currentConversationId);

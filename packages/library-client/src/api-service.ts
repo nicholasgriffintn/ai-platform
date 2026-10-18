@@ -38,6 +38,11 @@ import type {
   RecordTeammateFeedbackInput,
   EnqueueChatMessageRequest,
   ArtifactBindingReadRequest,
+  ItemReactionRequest,
+  MessageReaction,
+  CreateTeammateGroupInput,
+  TeammateGroup,
+  TeammateRosterEntry,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -106,6 +111,7 @@ class ApiService {
     archived: boolean;
     activity?: ConversationActivityWindow;
     query?: string;
+    teammateThreads?: "include" | "exclude";
   }): Promise<number> => this.conversationsService.setAllArchived(options);
 
   getChat = (conversationId: string, options?: GetConversationOptions): Promise<Conversation> =>
@@ -178,8 +184,10 @@ class ApiService {
   unshareConversation = (conversationId: string): Promise<void> =>
     this.conversationsService.unshare(conversationId);
 
-  submitFeedback = (conversationId: string, itemId: string, feedback: 1 | -1): Promise<void> =>
-    this.conversationsService.submitFeedback(conversationId, itemId, feedback);
+  reactToItem = (
+    conversationId: string,
+    request: ItemReactionRequest,
+  ): Promise<MessageReaction[]> => this.conversationsService.reactToItem(conversationId, request);
 
   generateSpeech = (
     input: string,
@@ -253,6 +261,14 @@ class ApiService {
 
   revokePolyStandingApproval = (toolName: string, destination: string): Promise<void> =>
     this.polyService.revokePolyStandingApproval(toolName, destination);
+
+  listTeammateGroups = (): Promise<TeammateGroup[]> => this.teammateService.listTeammateGroups();
+
+  listTeammateRoster = (): Promise<TeammateRosterEntry[]> =>
+    this.teammateService.listTeammateRoster();
+
+  createTeammateGroup = (input: CreateTeammateGroupInput): Promise<TeammateGroup> =>
+    this.teammateService.createTeammateGroup(input);
 
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();

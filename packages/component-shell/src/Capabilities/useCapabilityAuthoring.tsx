@@ -199,7 +199,7 @@ export function useCapabilityAuthoring({
     }
 
     setHireTeammateOpen(false);
-    void navigate(teammates.editPath(hired.id));
+    void navigate(teammates.homePath(hired.id));
 
     return hired;
   };

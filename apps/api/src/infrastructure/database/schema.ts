@@ -1072,6 +1072,9 @@ export const channelBinding = sqliteTable(
     interaction_mode: text({ enum: ["direct", "automated"] })
       .notNull()
       .default("automated"),
+    reaction_level: text({ enum: ["off", "ack", "full"] })
+      .notNull()
+      .default("ack"),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -2279,6 +2282,31 @@ export const workspaceAuditRecord = sqliteTable(
 );
 
 export type WorkspaceAuditRecord = typeof workspaceAuditRecord.$inferSelect;
+
+export const teammateGroupMember = sqliteTable(
+  "teammate_group_member",
+  {
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    teammate_id: text()
+      .notNull()
+      .references(() => teammates.id, { onDelete: "cascade" }),
+    position: integer().notNull(),
+    added_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.conversation_id, table.teammate_id] }),
+    teammateIdx: index("teammate_group_member_teammate_idx").on(table.teammate_id),
+  }),
+);
+
+export type TeammateGroupMemberRow = typeof teammateGroupMember.$inferSelect;
 
 export const teammates = sqliteTable(
   "teammates",

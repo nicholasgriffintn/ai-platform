@@ -91,6 +91,24 @@ class ConversationManager: ObservableObject {
         await loadConversations()
     }
 
+    func react(to message: ChatMessage, emoji: String, remove: Bool) async {
+        guard let apiClient, let conversation = currentConversation else {
+            return
+        }
+
+        do {
+            _ = try await apiClient.reactToItem(
+                conversationId: conversation.id,
+                itemId: message.id,
+                emoji: emoji,
+                remove: remove
+            )
+            await loadConversationMessages(conversation)
+        } catch {
+            self.error = "That reaction did not go through."
+        }
+    }
+
     func loadConversationMessages(id conversationId: String) async {
         guard let conversation = conversations.first(where: { $0.id == conversationId }) else {
             return

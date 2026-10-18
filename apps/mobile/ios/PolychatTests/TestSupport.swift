@@ -534,6 +534,15 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         TitleGenerationResponse(title: generatedTitle)
     }
 
+    func reactToItem(
+        conversationId: String,
+        itemId: String,
+        emoji: String,
+        remove: Bool
+    ) async throws -> ItemReactionEnvelope {
+        throw URLError(.unsupportedURL)
+    }
+
     func updateConversation(
         id: String,
         title: String?,

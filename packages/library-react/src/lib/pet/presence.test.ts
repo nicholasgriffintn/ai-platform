@@ -18,6 +18,7 @@ function input(overrides: Partial<CharacterPresenceInput> = {}): CharacterPresen
     lastCompletedAt: null,
     lastActiveAt: null,
     lastArrivedAt: null,
+    lastReaction: null,
     now: NOW,
     formatTime: (iso) => iso.slice(11, 16),
     ...overrides,
@@ -66,6 +67,16 @@ describe("character presence", () => {
       accent: "sleep",
       status: "Paused until 18:30",
     });
+  });
+
+  it("plays a short reaction to a person's reaction, then settles", () => {
+    const fresh = deriveCharacterPresence(input({ lastReaction: { mood: "fret", at: NOW - 500 } }));
+    const stale = deriveCharacterPresence(
+      input({ lastReaction: { mood: "fret", at: NOW - 60_000 } }),
+    );
+
+    expect(fresh).toMatchObject({ state: "fret", accent: "drop" });
+    expect(stale.state).toBe("idle");
   });
 
   it("ignores a pause that has already ended", () => {

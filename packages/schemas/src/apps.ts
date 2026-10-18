@@ -1494,6 +1494,12 @@ export type CreateInstallationTriggerRequest = z.infer<
 export const recipeInvocationRequestSchema = z.object({
   input: z.string().optional(),
   queue: z.boolean().optional(),
+  dryRun: z
+    .boolean()
+    .optional()
+    .describe(
+      "Test the routine without changing anything: tools that would write, send, spend or delete return a draft instead.",
+    ),
   projectId: z.string().min(1).optional(),
   channel: z
     .enum(["web", "ios", "sms", "slack", "telegram", "email", "scheduled", "event", "tool"])
@@ -1517,6 +1523,7 @@ export const recipeInvocationResponseSchema = z.object({
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
   configuration: recipeConfigurationSchema,
   readOnly: z.boolean().optional(),
+  dryRun: z.boolean().optional(),
   taskId: z.string().optional(),
 });
 

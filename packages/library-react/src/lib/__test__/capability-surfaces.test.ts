@@ -133,12 +133,14 @@ describe("capability surfaces", () => {
     expect(getCapabilityOpenPath(modelTool, PERSONAL_SURFACE, [])).toBeNull();
   });
 
-  it("starts a conversation with an available teammate in either scope", () => {
+  it("opens an available teammate's own conversation in either scope", () => {
     const teammate = teammateItem("available");
 
-    expect(getCapabilityOpenPath(teammate, PERSONAL_SURFACE, [])).toBe("/chat?teammate=researcher");
+    expect(getCapabilityOpenPath(teammate, PERSONAL_SURFACE, [])).toBe(
+      "/chat/teammates/researcher",
+    );
     expect(getCapabilityOpenPath(teammate, getProjectSurface("w1", "p1"), [])).toBe(
-      "/work/w1/projects/p1/chat?teammate=researcher",
+      "/work/w1/projects/p1/teammates/researcher",
     );
   });
 

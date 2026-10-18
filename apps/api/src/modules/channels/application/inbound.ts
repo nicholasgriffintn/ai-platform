@@ -26,6 +26,7 @@ import {
   resolveStoredMessagingProvider,
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
+import type { ChannelRunSignal } from "~/modules/channels/domain/reaction-signals";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
@@ -52,6 +53,7 @@ import { requireChannelSenderMapping } from "./access";
 import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
+import { runChannelTurn, signalChannelRun } from "./run-signals";
 
 export interface InboundChannelMessage {
   messageId: string;
@@ -372,6 +374,7 @@ type ChannelDelivery =
       interactionMode: "direct" | "automated";
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
+      signal?(signal: ChannelRunSignal): Promise<void>;
     };
 
 async function resolveProviderDelivery(params: {
@@ -566,6 +569,18 @@ async function resolveBindingDelivery(params: {
     interactionMode: binding.interaction_mode,
     validate,
     ...(binding.scope_type === "project" ? { projectId: binding.scope_id } : {}),
+    signal: (signal) =>
+      signalChannelRun({
+        adapter,
+        env: params.env,
+        level: binding.reaction_level,
+        target: {
+          externalId: binding.external_id,
+          threadId: params.data.messageContext.threadId,
+          messageId: params.data.message.messageId,
+        },
+        signal,
+      }),
     send: async (reply) => {
       await validate();
 
@@ -703,37 +718,42 @@ export async function handleInboundChannelMessage(params: {
     };
 
     await delivery.validate();
+    await delivery.signal?.("picked_up");
 
-    completion = delivery.teammateId
-      ? await enqueueTeammateRun({
-          env: params.env,
-          context: params.context,
-          body: request,
-          teammateId: delivery.teammateId,
-          user: params.user,
-          anonymousUser: undefined,
-          authority: { trigger: "channel" },
-          invocation: isInboundBindingTaskData(params.data)
-            ? {
-                source: "channel",
-                bindingId: params.data.bindingId,
-                messageId: message.messageId,
-                senderMappingId: params.data.senderMappingId,
-                senderRevision: params.data.senderRevision,
-                threadId: params.data.messageContext.threadId,
-                ...(params.data.messageContext.subject
-                  ? { subject: params.data.messageContext.subject }
-                  : {}),
-              }
-            : undefined,
-        })
-      : await startResponse({
-          env: params.env,
-          context: params.context,
-          user: params.user,
-          command: request,
-          authority: { trigger: "channel" },
-        });
+    const teammateId = delivery.teammateId;
+
+    completion = await runChannelTurn(delivery, () =>
+      teammateId
+        ? enqueueTeammateRun({
+            env: params.env,
+            context: params.context,
+            body: request,
+            teammateId,
+            user: params.user,
+            anonymousUser: undefined,
+            authority: { trigger: "channel" },
+            invocation: isInboundBindingTaskData(params.data)
+              ? {
+                  source: "channel",
+                  bindingId: params.data.bindingId,
+                  messageId: message.messageId,
+                  senderMappingId: params.data.senderMappingId,
+                  senderRevision: params.data.senderRevision,
+                  threadId: params.data.messageContext.threadId,
+                  ...(params.data.messageContext.subject
+                    ? { subject: params.data.messageContext.subject }
+                    : {}),
+                }
+              : undefined,
+          })
+        : startResponse({
+            env: params.env,
+            context: params.context,
+            user: params.user,
+            command: request,
+            authority: { trigger: "channel" },
+          }),
+    );
   }
 
   const notification = extractChatCompletionNotification(completion, {
@@ -754,6 +774,7 @@ export async function handleInboundChannelMessage(params: {
     },
     send: () => delivery.send({ body: notification.body, mediaUrls: notification.mediaUrls }),
   });
+  await delivery.signal?.("done");
 
   if (judgement?.needsAttention) {
     await params.context.repositories

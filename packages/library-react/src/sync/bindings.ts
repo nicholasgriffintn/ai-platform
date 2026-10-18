@@ -24,6 +24,7 @@ import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenc
 import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
+import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
 import { applyUsageChanged } from "./usage.js";
 
 export interface SyncBindingContext {
@@ -57,6 +58,7 @@ const refreshPolyAgenda: SyncBinding["apply"] = (context, event) => {
 const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
   refreshConversationDetail(context, event);
   context.invalidate([CHATS_QUERY_KEY, "remote"]);
+  context.invalidate(TEAMMATE_ROSTER_QUERY_KEY);
 };
 
 export const SYNC_BINDINGS: SyncBinding[] = [
@@ -72,7 +74,10 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "message.changed", apply: refreshConversationDetail },
   {
     type: "conversation.unread_changed",
-    apply: (context) => context.invalidate([CHATS_QUERY_KEY, "remote"]),
+    apply: (context) => {
+      context.invalidate([CHATS_QUERY_KEY, "remote"]);
+      context.invalidate(TEAMMATE_ROSTER_QUERY_KEY);
+    },
   },
   {
     type: "conversation.deleted",
@@ -248,6 +253,7 @@ export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["inval
     ["memory-synthesis"],
     ["memory-synthesis-history"],
     teammateContextMemoryQueryPrefix,
+    TEAMMATE_ROSTER_QUERY_KEY,
     ["project-tasks"],
     ["project-task"],
     TASK_ATTENTION_QUERY_KEY,

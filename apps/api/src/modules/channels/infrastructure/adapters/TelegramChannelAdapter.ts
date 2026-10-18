@@ -4,6 +4,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import {
   CHANNEL_TOP_LEVEL_THREAD,
   type ChannelIncoming,
+  type ChannelMessageRef,
+  type ChannelReaction,
   type ChannelReply,
   type ChannelVerification,
   type WebhookChannelAdapter,
@@ -13,6 +15,7 @@ import type { IEnv } from "~/types";
 
 import { parseTelegramMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
+import { toTelegramReaction } from "./telegram-reactions";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
 
@@ -50,6 +53,48 @@ export class TelegramChannelAdapter implements WebhookChannelAdapter {
   }
 
   async sendReply(reply: ChannelReply, env: IEnv): Promise<void> {
+    await this.call(
+      "sendMessage",
+      {
+        chat_id: reply.externalId,
+        text: reply.body,
+        ...this.threadFields(reply.threadId),
+      },
+      env,
+    );
+  }
+
+  async react(target: ChannelMessageRef, reaction: ChannelReaction, env: IEnv): Promise<void> {
+    const emoji = toTelegramReaction(reaction.emoji);
+
+    if (!emoji) {
+      return;
+    }
+
+    await this.call(
+      "setMessageReaction",
+      {
+        chat_id: target.externalId,
+        message_id: Number(target.messageId),
+        reaction: reaction.remove ? [] : [{ type: "emoji", emoji }],
+      },
+      env,
+    );
+  }
+
+  async showWorking(target: ChannelMessageRef, env: IEnv): Promise<void> {
+    await this.call(
+      "sendChatAction",
+      { chat_id: target.externalId, action: "typing", ...this.threadFields(target.threadId) },
+      env,
+    );
+  }
+
+  private threadFields(threadId: string): { message_thread_id?: number } {
+    return threadId === CHANNEL_TOP_LEVEL_THREAD ? {} : { message_thread_id: Number(threadId) };
+  }
+
+  private async call(method: string, body: Record<string, unknown>, env: IEnv): Promise<void> {
     const secret = getChannelSecrets(this.id, env).reply;
 
     if (!secret) {
@@ -59,16 +104,10 @@ export class TelegramChannelAdapter implements WebhookChannelAdapter {
       );
     }
 
-    const response = await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
+    const response = await fetch(`https://api.telegram.org/bot${secret}/${method}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        chat_id: reply.externalId,
-        text: reply.body,
-        ...(reply.threadId !== CHANNEL_TOP_LEVEL_THREAD
-          ? { message_thread_id: Number(reply.threadId) }
-          : {}),
-      }),
+      body: JSON.stringify(body),
     });
 
     await requireSuccessfulChannelSend(response, "Telegram");

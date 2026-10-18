@@ -1,4 +1,4 @@
-import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import type { ChannelReactionLevel, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -14,6 +14,7 @@ export interface CreateChannelBindingRecord {
   label?: string | null;
   teammateId?: string | null;
   interactionMode: "direct" | "automated";
+  reactionLevel: ChannelReactionLevel;
   createdByUserId: number;
 }
 
@@ -24,8 +25,8 @@ export class ChannelBindingRepository extends BaseRepository {
     await this.executeRun(
       `INSERT INTO channel_binding
          (id, channel, scope_type, scope_id, external_id, label, teammate_id,
-          interaction_mode, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          interaction_mode, reaction_level, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         record.channel,
@@ -35,6 +36,7 @@ export class ChannelBindingRepository extends BaseRepository {
         record.label ?? null,
         record.teammateId ?? null,
         record.interactionMode,
+        record.reactionLevel,
         record.createdByUserId,
       ],
     );

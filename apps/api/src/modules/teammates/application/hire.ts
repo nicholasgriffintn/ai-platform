@@ -52,6 +52,7 @@ export async function hireTeammate(
       system_prompt: brief,
       enabled_tools: role?.suggestedTools ? [...role.suggestedTools] : [],
       mode: role?.mode ?? null,
+      ...(role?.characterId ? { character_id: role.characterId } : {}),
       ...(params.workspace_id ? { workspace_id: params.workspace_id } : {}),
     },
     user,

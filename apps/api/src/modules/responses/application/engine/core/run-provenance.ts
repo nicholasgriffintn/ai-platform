@@ -12,6 +12,7 @@ export function resolveRunProvenance(input: {
   model: string;
   provider: string;
   modelConfig?: ModelConfigItem | null;
+  teammateId?: string;
 }): RunProvenance {
   const inferredSite: ComputeSite = input.modelConfig?.machineId
     ? "machine"
@@ -30,5 +31,6 @@ export function resolveRunProvenance(input: {
     model,
     vendor,
     ...(input.modelConfig?.machineId ? { machineId: input.modelConfig.machineId } : {}),
+    ...(input.teammateId ? { teammateId: input.teammateId } : {}),
   });
 }

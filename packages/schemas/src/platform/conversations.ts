@@ -42,6 +42,12 @@ export const listConversationsQuerySchema = listQuerySchema.extend({
   sort_by: conversationSortBySchema.optional().default("updated"),
   updated_after: z.iso.datetime().optional(),
   type: conversationTypeSchema.optional(),
+  teammate_threads: z
+    .enum(["include", "exclude"])
+    .optional()
+    .describe(
+      "Whether to list your teammate and group conversations. Exclude them when they are shown in a teammate roster instead.",
+    ),
 });
 
 export type ListConversationsQuery = z.infer<typeof listConversationsQuerySchema>;
@@ -66,6 +72,7 @@ export const archiveConversationsRequestSchema = z.object({
   archived: z.boolean(),
   q: z.string().trim().max(200).optional(),
   updated_after: z.iso.datetime().optional(),
+  teammate_threads: z.enum(["include", "exclude"]).optional(),
 });
 
 export const archiveConversationsResponseSchema = z.object({
@@ -177,15 +184,6 @@ export const checkConversationResponseSchema = z.object({
     }),
   }),
 });
-
-export const conversationFeedbackRequestSchema = z.object({
-  item_id: z.string().min(1).optional(),
-  log_id: z.string().min(1).optional(),
-  feedback: z.union([z.literal(1), z.literal(-1)]),
-  score: z.number().min(0).max(100).optional(),
-});
-
-export type ConversationFeedbackRequest = z.infer<typeof conversationFeedbackRequestSchema>;
 
 export const conversationFeedbackSubmissionSchema = z.object({
   message_id: z.string().min(1).optional(),

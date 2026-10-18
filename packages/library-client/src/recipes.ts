@@ -52,6 +52,7 @@ export async function invokeAssistantRecipe(
   recipeId: string,
   input?: string,
   projectId?: string,
+  options: { dryRun?: boolean } = {},
 ): Promise<RecipeInvocationResponse> {
   let headers = {};
 
@@ -64,7 +65,12 @@ export async function invokeAssistantRecipe(
   const response = await fetchApiOrThrow(`/recipes/${encodeURIComponent(recipeId)}/invoke`, {
     method: "POST",
     headers,
-    body: { channel: "web", input, projectId },
+    body: {
+      channel: "web",
+      input,
+      projectId,
+      ...(options.dryRun ? { dryRun: true, queue: true } : {}),
+    },
   });
 
   return returnFetchedData<RecipeInvocationResponse>(response);

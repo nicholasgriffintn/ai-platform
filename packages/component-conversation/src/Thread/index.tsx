@@ -84,6 +84,7 @@ import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
 import { FooterInfo } from "./FooterInfo.js";
 import { MessageList } from "./MessageList.js";
+import { resolveThreadModeConfig, type ThreadSurface } from "./surface-profiles.js";
 import { useApprovalRules } from "./useApprovalRules.js";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit.js";
 import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
@@ -98,6 +99,7 @@ export interface ConversationFollowUpQueue {
 }
 
 export interface ThreadModeConfig {
+  surface?: ThreadSurface;
   assistantActionRoutes?: {
     recipes?: string;
   };
@@ -140,7 +142,6 @@ export interface ThreadModeConfig {
   hideModelSelector?: boolean;
   hideVoiceControls?: boolean;
   petPresetSlug?: string;
-  isPolyThread?: boolean;
   focusComposerOnOpen?: boolean;
   forceAutoPlayResponses?: boolean;
   analyticsSource?: string;
@@ -165,7 +166,8 @@ interface ConversationThreadProps {
   modeConfig?: ThreadModeConfig;
 }
 
-export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
+export const ConversationThread = ({ modeConfig: configuredMode }: ConversationThreadProps) => {
+  const modeConfig = useMemo(() => resolveThreadModeConfig(configuredMode), [configuredMode]);
   const {
     currentArtifact,
     isPanelVisible,
@@ -932,8 +934,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const petFollows = usePetFollowEnabled();
   const polyIsOpen = useUIStore((state) => state.showPoly);
   const setShowPoly = useUIStore((state) => state.setShowPoly);
-  const showPetPerch = petFollows && !modeConfig?.isPolyThread && !polyIsOpen;
-  const openPolyFromPet = modeConfig?.isPolyThread ? undefined : () => setShowPoly(true);
+  const isPolySurface = modeConfig?.surface === "poly";
+  const showPetPerch = petFollows && !isPolySurface && !polyIsOpen;
+  const openPolyFromPet = isPolySurface ? undefined : () => setShowPoly(true);
 
   usePetNudgeSources({
     conversationId: currentConversationId,

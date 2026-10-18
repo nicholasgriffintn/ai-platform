@@ -1,22 +1,21 @@
-import { TeammateEditorPage } from "@ngriffin_uk/polychat-component-shell";
+import { TeammateHomePage } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
 
 export function meta() {
-  return [{ title: "Configure a teammate - Polychat" }];
+  return [{ title: "Project teammate - Polychat" }];
 }
 
-export default function ProjectTeammatePage() {
+export default function ProjectTeammateHomePage() {
   const { workspaceId = "", projectId = "", teammateId = "" } = useParams();
-  const projectPath = `/work/${workspaceId}/projects/${projectId}`;
+  const teammatesPath = `/work/${workspaceId}/projects/${projectId}/teammates`;
 
   return (
-    <TeammateEditorPage
+    <TeammateHomePage
       teammateId={teammateId}
-      teammatesPath={`${projectPath}/teammates`}
-      backPath={`${projectPath}/teammates`}
+      teammatesPath={teammatesPath}
+      backPath={teammatesPath}
       backLabel="Back to teammates"
       projectId={projectId}
-      workspaceId={workspaceId}
     />
   );
 }

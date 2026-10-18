@@ -28,7 +28,7 @@ const PAGE_TITLES: Record<string, string> = {
   "project-task": "Task",
   "project-tasks": "Tasks",
   "project-teammate": "Project teammate",
-  "project-teammate-context": "Project teammate context",
+  "project-teammate-settings": "Project teammate settings",
   "project-teammates": "Project teammates",
   "project-tool": "Project tool",
   root: "Chat",
@@ -44,7 +44,8 @@ const PAGE_TITLES: Record<string, string> = {
   workspace: "Workspace",
   "workspace-governance": "Workspace governance",
   "workspace-members": "Workspace people",
-  "teammate-context": "Teammate context",
+  "teammate-group": "Group",
+  "teammate-settings": "Teammate settings",
 };
 
 export function describeWindowTitle(page: string | undefined): string {

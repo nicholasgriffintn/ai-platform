@@ -20,6 +20,7 @@ import {
   CalendarClock,
   Activity,
   ChevronRight,
+  FlaskConical,
   PauseCircle,
   PlayCircle,
   Plug,
@@ -44,6 +45,8 @@ interface RecipeCardProps {
   onManageEventTriggers?: (recipe: AssistantRecipe, installation: RecipeInstallation) => void;
   onToggleInstallationStatus: (installation: RecipeInstallation) => void;
   onDeleteInstallation: (installation: RecipeInstallation) => void;
+  onDryRun?: (recipe: AssistantRecipe, installation: RecipeInstallation) => void;
+  isDryRunning?: boolean;
   isStarting: boolean;
   isConfiguring: boolean;
   isEditingConfiguration: boolean;
@@ -63,6 +66,8 @@ export function RecipeCard({
   onManageEventTriggers,
   onToggleInstallationStatus,
   onDeleteInstallation,
+  onDryRun,
+  isDryRunning = false,
   isStarting,
   isConfiguring,
   isEditingConfiguration,
@@ -183,6 +188,18 @@ export function RecipeCard({
                       </Button>
                     )}
                   </div>
+                )}
+                {installation && isConfigured && onDryRun && (
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    icon={<FlaskConical className="h-4 w-4" />}
+                    onClick={() => onDryRun(recipe, installation)}
+                    isLoading={isDryRunning}
+                    disabled={isPaused}
+                  >
+                    Dry run
+                  </Button>
                 )}
                 {installation && canUseEventTriggers && onManageEventTriggers && (
                   <Button

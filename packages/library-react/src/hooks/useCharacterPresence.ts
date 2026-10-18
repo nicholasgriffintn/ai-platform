@@ -9,12 +9,17 @@ import {
   deriveCharacterPresence,
   PET_ACKNOWLEDGE_WINDOW_MS,
   PET_CHEER_WINDOW_MS,
+  PET_REACTION_WINDOW_MS,
 } from "../lib/pet/presence.js";
 import { usePetStore } from "../state/stores/petStore.js";
 import { usePolyAgenda } from "./usePolyAgenda.js";
 
 const ACTIVE_TICK_MS = 1000;
-const QUIET_TICK_MS = Math.min(PET_CHEER_WINDOW_MS, PET_ACKNOWLEDGE_WINDOW_MS);
+const QUIET_TICK_MS = Math.min(
+  PET_CHEER_WINDOW_MS,
+  PET_ACKNOWLEDGE_WINDOW_MS,
+  PET_REACTION_WINDOW_MS,
+);
 
 export interface CharacterPresenceOptions {
   conversationId?: string | null;
@@ -64,8 +69,9 @@ export function useCharacterPresence(options: CharacterPresenceOptions = {}): Ch
     (state) => (conversationId ? state.streams[conversationId]?.activity : null) ?? null,
   );
   const reviewing = usePetStore((state) =>
-    conversationId ? state.reviewing[conversationId] === true : false,
+    conversationId ? conversationId in state.reviewing : false,
   );
+  const lastReaction = usePetStore((state) => state.reaction);
   const voice = usePetStore((state) =>
     state.listening ? "listening" : state.speaking ? "speaking" : "off",
   );
@@ -90,6 +96,7 @@ export function useCharacterPresence(options: CharacterPresenceOptions = {}): Ch
       lastCompletedAt: null,
       lastActiveAt: null,
       lastArrivedAt: null,
+      lastReaction: null,
       now: Date.now(),
       formatTime: formatClockTime,
     }),
@@ -119,6 +126,7 @@ export function useCharacterPresence(options: CharacterPresenceOptions = {}): Ch
           lastCompletedAt: lastCompletedAt.current,
           lastActiveAt: lastActiveAt.current,
           lastArrivedAt,
+          lastReaction,
           now: Date.now(),
           formatTime: formatClockTime,
         }),
@@ -139,6 +147,7 @@ export function useCharacterPresence(options: CharacterPresenceOptions = {}): Ch
     workingOn,
     pausedUntil,
     lastArrivedAt,
+    lastReaction,
   ]);
 
   return presence;

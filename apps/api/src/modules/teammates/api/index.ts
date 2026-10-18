@@ -1,13 +1,17 @@
 import {
+  createTeammateGroupSchema,
   createTeammateSchema,
+  teammateRosterEntrySchema,
   ensureTeammateContextSchema,
   hireTeammateSchema,
   listPageOf,
+  listSchema,
   publishTeammateToWorkspaceSchema,
   recordTeammateFeedbackSchema,
   teammateConnectionGrantListResponseSchema,
   teammateConnectionGrantSchema,
   teammateContextSchema,
+  teammateGroupSchema,
   teammateResponseSchema,
   updateTeammateContextAutonomySchema,
   updateTeammateContextPauseSchema,
@@ -22,6 +26,7 @@ import z from "zod/v4";
 import { defineResource } from "~/infrastructure/http/resource";
 import {
   createTeammate,
+  createTeammateGroup,
   deleteTeammate,
   ensureTeammateContext,
   getTeammateById,
@@ -29,6 +34,8 @@ import {
   hireTeammate,
   listTeammateConnectionGrants,
   listTeammateContexts,
+  listTeammateGroups,
+  listTeammateRoster,
   publishTeammateToWorkspace,
   recordTeammateFeedback,
   removeInheritedTeammateFromProject,
@@ -63,6 +70,49 @@ const updateTeammateContextSchema = updateTeammateContextStatusSchema
   );
 
 defineMarketplace(app);
+
+defineResource(
+  app,
+  { path: "/roster", idParam: "conversation_id", tags: ["teammates"] },
+  (roster) => {
+    roster.list({
+      auth: true,
+      summary: "List the teammates and groups you are talking to",
+      description:
+        "Personal teammate conversations that have messages and the groups you started, most recent activity first.",
+      responses: {
+        200: {
+          description: "Roster entries",
+          schema: listSchema(teammateRosterEntrySchema),
+        },
+      },
+      handler: async ({ serviceContext }) =>
+        listPageOf(await listTeammateRoster(serviceContext), (entry) => entry.conversationId),
+    });
+  },
+);
+
+defineResource(
+  app,
+  { path: "/groups", idParam: "conversation_id", tags: ["teammates"] },
+  (groups) => {
+    groups
+      .list({
+        auth: true,
+        summary: "List teammate groups",
+        description: "Group conversations you started, newest activity first, with their members.",
+        handler: async ({ serviceContext }) =>
+          listPageOf(await listTeammateGroups(serviceContext), (group) => group.conversationId),
+      })
+      .create({
+        auth: true,
+        summary: "Start a group with two to six teammates",
+        bodySchema: createTeammateGroupSchema,
+        responses: { 200: { description: "The group", schema: teammateGroupSchema } },
+        handler: ({ serviceContext, body }) => createTeammateGroup(serviceContext, body),
+      });
+  },
+);
 
 defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates) => {
   teammates

@@ -64,6 +64,7 @@ export function buildToolRequestContext(params: {
       completion_id: chatOptions.completion_id,
       conversation_type: chatOptions.conversation_type,
       trigger: chatOptions.trigger,
+      dry_run: chatOptions.dry_run,
       autonomy_level: chatOptions.autonomy_level,
       standing_approvals: chatOptions.standing_approvals,
       approval_streaks: chatOptions.approval_streaks,

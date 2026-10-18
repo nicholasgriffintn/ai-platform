@@ -126,6 +126,7 @@ defineResource(app, { idParam: "recipe_id", tags: ["recipes"] }, (recipes) => {
           projectId: body.projectId,
           requestUrl: raw.req.url,
           queue: body.queue,
+          dryRun: body.dryRun,
           requireInstalled: true,
         })) ?? notFound("Recipe not found"),
     });

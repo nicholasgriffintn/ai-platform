@@ -1,7 +1,8 @@
-import { ToolResponseType } from "@ngriffin_uk/polychat-schemas";
+import { ToolResponseType, type ToolReceipt } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
+import { readToolReceipt } from "./tool-receipts.js";
 
 export { applyToolInteractionResolutions } from "./tool-interaction-resolutions.js";
 
@@ -16,6 +17,7 @@ export interface ToolResultDisplay {
   responseType?: string;
   renderer?: string;
   result?: Record<string, unknown>;
+  receipt?: ToolReceipt;
   streamPreview?: ToolStreamPreview;
 }
 
@@ -295,6 +297,7 @@ const buildDisplay = ({
     responseType: readOptionalString(data?.responseType),
     renderer: readOptionalString(data?.renderer),
     streamPreview: readToolStreamPreview(data),
+    receipt: readToolReceipt(data),
     result: {
       status: status ?? "success",
       name: toolName,

@@ -13,10 +13,13 @@ import {
   usePolyStandingApprovals,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
+import { POLY_TEAMMATE_ID, type ResponseAgent } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 import { useLocation } from "react-router";
 
 import { usePolyNavigation } from "./usePolyNavigation.js";
+
+const POLY_AGENT: ResponseAgent = { type: "teammate", id: POLY_TEAMMATE_ID };
 
 const POLY_SUGGESTIONS: ChatSuggestion[] = [
   {
@@ -59,7 +62,7 @@ export function PolyThread({
   conversationId: string;
   onNavigate: (href: string) => void;
 }) {
-  const scope = useLocalConversationScope(conversationId);
+  const scope = useLocalConversationScope(conversationId, undefined, POLY_AGENT);
   const standingApprovals = usePolyStandingApprovals();
   const polySpeaks = useUIStore((state) => state.polySpeaks);
   const { pathname } = useLocation();
@@ -81,6 +84,7 @@ export function PolyThread({
           <div className="relative min-h-0 flex-1 overflow-hidden">
             <ConversationThread
               modeConfig={{
+                surface: "poly",
                 agentApprovals,
                 requestOptions: { poly: { ui_context: uiContext } },
                 welcomeTitle: "This is Poly.",
@@ -89,15 +93,8 @@ export function PolyThread({
                 welcomeSuggestions: POLY_SUGGESTIONS,
                 welcomeCapabilitySuggestions: false,
                 inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
-                hideComposerActionMenu: true,
-                hideChatSettings: true,
-                hideInlineResponseControls: true,
-                hideComposerSuggestions: true,
-                hideModelSelector: true,
-                isPolyThread: true,
                 focusComposerOnOpen: true,
                 forceAutoPlayResponses: polySpeaks,
-                toolSelectionLocked: true,
                 analyticsSource: "poly",
                 onToolInteraction: async (_toolName, action, data) => {
                   if (

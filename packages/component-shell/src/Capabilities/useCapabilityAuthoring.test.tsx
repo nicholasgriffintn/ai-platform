@@ -137,7 +137,7 @@ describe("capability library teammate authoring", () => {
 
     addChoice(result, "Build one from scratch")?.();
 
-    expect(navigate).toHaveBeenCalledWith("/chat/teammates/new");
+    expect(navigate).toHaveBeenCalledWith("/chat/teammates/new/settings");
     expect(addChoice(result, "Attach a teammate")).toBeUndefined();
     expect(addChoice(result, "Browse shared teammates")).toBeDefined();
   });
@@ -150,12 +150,14 @@ describe("capability library teammate authoring", () => {
 
     addChoice(result, "Build one from scratch")?.();
 
-    expect(navigate).toHaveBeenCalledWith("/work/workspace-1/projects/project-1/teammates/new");
+    expect(navigate).toHaveBeenCalledWith(
+      "/work/workspace-1/projects/project-1/teammates/new/settings",
+    );
     expect(addChoice(result, "Attach a teammate")).toBeDefined();
     expect(addChoice(result, "Browse shared teammates")).toBeUndefined();
   });
 
-  it("attaches a teammate hired inside a project and opens its editor", async () => {
+  it("attaches a teammate hired inside a project and opens its conversation", async () => {
     const addCapability = vi.fn(async () => undefined);
     const { result } = renderAuthoring({
       projectActions: { addCapability, canManage: true },

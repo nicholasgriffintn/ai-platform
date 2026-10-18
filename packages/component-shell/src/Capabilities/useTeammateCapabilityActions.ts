@@ -3,7 +3,8 @@ import {
   capabilityCatalogQueryKey,
   useTeammates,
   useWorkspaces,
-  getTeammateEditorPath,
+  getTeammateHomePath,
+  getTeammateSettingsPath,
   type CapabilitySurface,
   resolveTeammateManagePermission,
   NEW_TEAMMATE_ID,
@@ -23,6 +24,7 @@ export interface TeammateCapabilityActions {
   hireError: Error | null;
   isHiring: boolean;
   editPath: (teammateId: string) => string;
+  homePath: (teammateId: string) => string;
   findTeammate: (teammateId: string) => TeammateResponse | undefined;
   isDeleting: boolean;
   isLoadingAttachable: boolean;
@@ -103,13 +105,14 @@ export function useTeammateCapabilityActions(
     attachableTeammates,
     canManageTeammate: (teammateId: string) => manageableTeammateIds.has(teammateId),
     canShareTeammate: (teammateId: string) => shareableTeammateIds.has(teammateId),
-    createPath: getTeammateEditorPath(surface, NEW_TEAMMATE_ID),
+    createPath: getTeammateSettingsPath(surface, NEW_TEAMMATE_ID),
     deleteTeammate: async (teammateId: string) => {
       await deleteTeammateAsync(teammateId);
       await refreshCatalogue();
     },
     deletionError: deleteTeammateError,
-    editPath: (teammateId: string) => getTeammateEditorPath(surface, teammateId),
+    editPath: (teammateId: string) => getTeammateSettingsPath(surface, teammateId),
+    homePath: (teammateId: string) => getTeammateHomePath(surface, teammateId),
     hireTeammate: async (input: HireTeammateInput) => {
       const hired = await hireTeammateMutation(input);
 

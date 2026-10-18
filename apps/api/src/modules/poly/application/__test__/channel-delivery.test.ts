@@ -31,6 +31,7 @@ function binding(overrides: Partial<ChannelBindingRow>): ChannelBindingRow {
     label: null,
     teammate_id: POLY_TEAMMATE_ID,
     interaction_mode: "direct",
+    reaction_level: "ack",
     created_by: 7,
     enabled: true,
     created_at: "2026-10-06T09:00:00.000Z",

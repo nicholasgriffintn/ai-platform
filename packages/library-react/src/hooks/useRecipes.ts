@@ -91,6 +91,13 @@ export function useInstallAssistantRecipe() {
   });
 }
 
+export function useDryRunAssistantRecipe() {
+  return useMutation({
+    mutationFn: ({ recipeId, projectId }: { recipeId: string; projectId?: string }) =>
+      invokeAssistantRecipe(recipeId, undefined, projectId, { dryRun: true }),
+  });
+}
+
 export function useInvokeAssistantRecipe() {
   return useMutation({
     mutationFn: ({

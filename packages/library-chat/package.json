@@ -167,6 +167,21 @@
       "types": "./dist/textarea-selection-position.d.ts",
       "import": "./dist/textarea-selection-position.js"
     },
+    "./handoffs": {
+      "polychat-source": "./src/handoffs.ts",
+      "types": "./dist/handoffs.d.ts",
+      "import": "./dist/handoffs.js"
+    },
+    "./reactions": {
+      "polychat-source": "./src/reactions.ts",
+      "types": "./dist/reactions.d.ts",
+      "import": "./dist/reactions.js"
+    },
+    "./tool-receipts": {
+      "polychat-source": "./src/tool-receipts.ts",
+      "types": "./dist/tool-receipts.d.ts",
+      "import": "./dist/tool-receipts.js"
+    },
     "./tool-results": {
       "polychat-source": "./src/tool-results.ts",
       "types": "./dist/tool-results.d.ts",

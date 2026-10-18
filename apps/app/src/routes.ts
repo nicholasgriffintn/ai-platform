@@ -7,7 +7,8 @@ export default [
     route("attention", "pages/chat/attention.tsx"),
     route("files/*", "pages/chat/files.tsx"),
     route("teammates", "pages/chat/teammates.tsx"),
-    route("teammates/:teammateId/context", "pages/chat/teammate-context.tsx"),
+    route("groups/:conversationId", "pages/chat/group.tsx"),
+    route("teammates/:teammateId/settings", "pages/chat/teammate-settings.tsx"),
     route("teammates/:teammateId", "pages/chat/teammate.tsx"),
     route("plugins", "pages/chat/plugins.tsx"),
     route("scheduled", "pages/chat/scheduled.tsx"),
@@ -35,8 +36,8 @@ export default [
     route(":workspaceId/projects/:projectId/canvas", "pages/work/project-canvas.tsx"),
     route(":workspaceId/projects/:projectId/teammates", "pages/work/project-teammates.tsx"),
     route(
-      ":workspaceId/projects/:projectId/teammates/:teammateId/context",
-      "pages/work/project-teammate-context.tsx",
+      ":workspaceId/projects/:projectId/teammates/:teammateId/settings",
+      "pages/work/project-teammate-settings.tsx",
     ),
     route(
       ":workspaceId/projects/:projectId/teammates/:teammateId",

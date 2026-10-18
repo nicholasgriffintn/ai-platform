@@ -4,11 +4,19 @@ import type { PetStateName } from "@ngriffin_uk/polychat-schemas";
 
 export const PET_CHEER_WINDOW_MS = 3000;
 export const PET_ACKNOWLEDGE_WINDOW_MS = 2500;
+export const PET_REACTION_WINDOW_MS = 2000;
 export const PET_DOZE_AFTER_MS = 5 * 60 * 1000;
 
 export type PetAccent = "alert" | "drop" | "sleep" | "rings" | "spark";
 
 export type CharacterVoiceState = "off" | "listening" | "speaking";
+
+export type CharacterReactionMood = "cheer" | "fret";
+
+export interface CharacterReaction {
+  mood: CharacterReactionMood;
+  at: number;
+}
 
 export interface CharacterAgendaSignal {
   needsYou: number;
@@ -25,6 +33,7 @@ export interface CharacterPresenceInput {
   lastCompletedAt: number | null;
   lastActiveAt: number | null;
   lastArrivedAt: number | null;
+  lastReaction: CharacterReaction | null;
   now: number;
   formatTime: (iso: string) => string;
 }
@@ -135,6 +144,12 @@ export function deriveCharacterPresence(input: CharacterPresenceInput): Characte
 
   if (input.lastArrivedAt !== null && now - input.lastArrivedAt <= PET_ACKNOWLEDGE_WINDOW_MS) {
     return presence("acknowledge", "Got it, starting on that", null, agenda);
+  }
+
+  if (input.lastReaction && now - input.lastReaction.at <= PET_REACTION_WINDOW_MS) {
+    return input.lastReaction.mood === "cheer"
+      ? presence("cheer", "Glad that landed", "spark", agenda)
+      : presence("fret", "Noted, that one missed", "drop", agenda);
   }
 
   if (input.lastCompletedAt !== null && now - input.lastCompletedAt <= PET_CHEER_WINDOW_MS) {

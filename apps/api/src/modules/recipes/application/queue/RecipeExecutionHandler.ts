@@ -68,6 +68,7 @@ export class RecipeExecutionHandler implements TaskHandler {
       configuration: data.configuration,
       projectId: data.projectId ?? undefined,
       installationId: data.installationId,
+      dryRun: data.dryRun,
       requireInstalled: true,
     });
 

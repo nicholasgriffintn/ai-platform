@@ -29,7 +29,6 @@ import {
   isAgentModelId,
   isBrowserModel,
   isTerminalResponseStatus,
-  POLY_TEAMMATE_ID,
   responseActivityEventSchema,
   responseSchema,
   runsOnDevice,
@@ -111,7 +110,11 @@ export function useStreamingResponse(
   const updateStreamLoadingMessage = useStreamActivityStore(
     (state) => state.updateStreamLoadingMessage,
   );
-  const { currentConversationId } = useConversationScope();
+  const {
+    currentConversationId,
+    agent: scopeAgent,
+    defaultAgent: scopeDefaultAgent,
+  } = useConversationScope();
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
   );
@@ -647,11 +650,11 @@ export function useStreamingResponse(
           let assistantMessage: Message;
 
           try {
-            const agent: ResponseAgent | undefined = effectiveRequestOptions?.poly
-              ? { type: "teammate", id: POLY_TEAMMATE_ID }
-              : chatMode === "agent" && selectedTeammateId
+            const agent: ResponseAgent | undefined =
+              scopeAgent ??
+              (chatMode === "agent" && selectedTeammateId
                 ? { type: "teammate", id: selectedTeammateId }
-                : undefined;
+                : scopeDefaultAgent);
 
             assistantMessage = await apiService.createResponse({
               chatSettings,
@@ -813,6 +816,8 @@ export function useStreamingResponse(
       useMultiModel,
       modelTier,
       selectedTeammateId,
+      scopeAgent,
+      scopeDefaultAgent,
       apiModels,
       webLLMModels,
       updateLoading,

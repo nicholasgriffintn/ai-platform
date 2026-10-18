@@ -3,6 +3,7 @@ import type {
   ToolInteractionHandler,
 } from "@ngriffin_uk/polychat-component-content";
 import { ModelIcon } from "@ngriffin_uk/polychat-component-models";
+import { TeammateCharacter } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import {
@@ -13,14 +14,15 @@ import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMessageSelection, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { Target } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
 
 import { EditableMessageContent } from "./EditableMessageContent.js";
 import { MessageActions } from "./MessageActions.js";
 import { MessageContent } from "./MessageContent.js";
+import { MessageReactionChips } from "./MessageReactions.js";
 import { MessageSelectionQuote } from "./MessageSelectionQuote.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { ToolMessage } from "./ToolMessage.js";
+import { useMessageReactions, type MessageReactionHandler } from "./useMessageReactions.js";
 
 const EMPTY_RESOLVED_TOOL_CALL_IDS: ReadonlySet<string> = new Set();
 
@@ -96,9 +98,17 @@ export const isRenderableMessage = (
   return Boolean(hasTextContent || hasReasoning || hasSupportingContent || hasRenderablePart);
 };
 
+export interface MessageAttribution {
+  teammateId: string;
+  name: string;
+  characterId: string;
+}
+
 export const ChatMessageView = ({
+  attribution,
   conversationId,
-  canSubmitFeedback = false,
+  canReact = false,
+  viewerId,
   message,
   isGenerating = false,
   modelConfig,
@@ -124,12 +134,15 @@ export const ChatMessageView = ({
   isTemporary = false,
   copied,
   onCopy,
-  onSubmitFeedback,
+  onReact,
+  onReactionMood,
   onQuoteSelection,
   renderModelSelector,
 }: {
+  attribution?: MessageAttribution;
   conversationId?: string;
-  canSubmitFeedback?: boolean;
+  canReact?: boolean;
+  viewerId?: string;
   message: Message;
   isGenerating?: boolean;
   modelConfig?: ModelConfigItem;
@@ -159,15 +172,22 @@ export const ChatMessageView = ({
   isTemporary?: boolean;
   copied: boolean;
   onCopy: (value: string) => void;
-  onSubmitFeedback?: (value: 1 | -1) => Promise<void>;
+  onReact?: MessageReactionHandler;
+  onReactionMood?: (mood: "cheer" | "fret") => void;
   onQuoteSelection?: (selection: ChatMessageSelection) => void;
   renderModelSelector: (args: {
     onModelSelect: (modelId: string) => void;
     onCancel: () => void;
   }) => ReactNode;
 }) => {
-  const [feedbackState, setFeedbackState] = useState<"none" | "liked" | "disliked">("none");
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const reactionsEnabled =
+    canReact && Boolean(conversationId) && !isSharedView && message.role === "assistant";
+  const reactions = useMessageReactions({
+    message,
+    viewerId,
+    onReact: reactionsEnabled ? onReact : undefined,
+    onMood: onReactionMood,
+  });
   const resolvedToolCallIds = useResolvedToolCallIds();
   const assistantModelName =
     message.role === "assistant" && message.model
@@ -191,25 +211,9 @@ export const ChatMessageView = ({
     }
   };
 
-  const submitFeedback = async (value: 1 | -1) => {
-    if (!canSubmitFeedback || !conversationId || isSubmittingFeedback || isSharedView) {
-      return;
-    }
-
-    setIsSubmittingFeedback(true);
-    try {
-      await onSubmitFeedback?.(value);
-      setFeedbackState(value === 1 ? "liked" : "disliked");
-    } catch (error) {
-      console.error("Failed to submit feedback:", error);
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
-  };
-
   return (
     <article
-      className={`flex ${message.role === "user" ? "flex-col items-end" : "justify-start"}`}
+      className={`flex flex-col gap-1 ${message.role === "user" ? "items-end" : "items-start"}`}
       data-role={message.role}
       data-tool-response={isToolResponse}
       data-tool-name={message.name}
@@ -237,17 +241,31 @@ export const ChatMessageView = ({
           className={`flex flex-col gap-2 py-2 ${message.role === "user" || isTemporary ? "px-3" : ""}`}
         >
           <div className="flex items-start gap-3">
-            {assistantModelName && (
-              <div className="flex flex-shrink-0 items-center gap-1">
-                <ModelIcon
-                  modelName={assistantModelName}
-                  provider={modelConfig?.provider ?? message.provider}
-                  url={modelConfig?.avatarUrl}
+            {attribution ? (
+              <div className="flex flex-shrink-0 flex-col items-center gap-0.5">
+                <TeammateCharacter
+                  characterId={attribution.characterId}
+                  teammateId={attribution.teammateId}
+                  name={attribution.name}
                   size={24}
-                  title={assistantModelName}
-                  mono
                 />
+                <span className="max-w-16 truncate text-[10px] text-muted-foreground">
+                  {attribution.name}
+                </span>
               </div>
+            ) : (
+              assistantModelName && (
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <ModelIcon
+                    modelName={assistantModelName}
+                    provider={modelConfig?.provider ?? message.provider}
+                    url={modelConfig?.avatarUrl}
+                    size={24}
+                    title={assistantModelName}
+                    mono
+                  />
+                </div>
+              )
             )}
             <div className="flex-1 overflow-x-auto">
               {isToolResponse ? (
@@ -291,10 +309,12 @@ export const ChatMessageView = ({
                 message={message}
                 copied={copied}
                 copyMessageToClipboard={copyMessageToClipboard}
-                feedbackState={feedbackState}
-                canSubmitFeedback={canSubmitFeedback}
-                isSubmittingFeedback={isSubmittingFeedback}
-                submitFeedback={submitFeedback}
+                onPickReaction={
+                  reactionsEnabled && !isToolResponse
+                    ? (emoji) => void reactions.toggle(emoji)
+                    : undefined
+                }
+                isReacting={reactions.isPending}
                 isSharedView={isSharedView}
                 onRetry={onRetry && message.id ? () => onRetry(message.id) : undefined}
                 isRetrying={isRetrying}
@@ -313,6 +333,12 @@ export const ChatMessageView = ({
             )}
         </div>
       </div>
+      <MessageReactionChips
+        summaries={reactions.summaries}
+        disabled={!reactionsEnabled || reactions.isPending}
+        onToggle={(emoji) => void reactions.toggle(emoji)}
+        align={message.role === "user" ? "end" : "start"}
+      />
     </article>
   );
 };

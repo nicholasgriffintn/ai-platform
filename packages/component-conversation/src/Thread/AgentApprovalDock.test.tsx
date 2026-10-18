@@ -58,4 +58,25 @@ describe("AgentApprovalDock", () => {
     await waitFor(() => expect(answer).toHaveBeenLastCalledWith("accept"));
     await waitFor(() => expect(resolve).toHaveBeenCalledWith("request-1"));
   });
+
+  it("approves every ticked item on its own and leaves unticked ones waiting", async () => {
+    const answers = [vi.fn(), vi.fn(), vi.fn()].map((answer) =>
+      answer.mockResolvedValue(undefined),
+    );
+    const resolve = vi.fn();
+    const pending = answers.map((answer, index) => ({
+      approval: approval({ requestId: `request-${index}`, title: `Send draft ${index}` }),
+      answer,
+    }));
+
+    render(<AgentApprovalDock pending={pending} resolve={resolve} />);
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Send draft 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Approve 2" }));
+
+    await waitFor(() => expect(resolve).toHaveBeenCalledTimes(2));
+    expect(answers[0]).toHaveBeenCalledWith("accept");
+    expect(answers[1]).not.toHaveBeenCalled();
+    expect(answers[2]).toHaveBeenCalledWith("accept");
+  });
 });

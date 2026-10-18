@@ -4,6 +4,7 @@ import { fill_in_middle_completion } from "~/modules/code/application/tools/fill
 import { next_edit_completion } from "~/modules/code/application/tools/next_edit";
 import { use_computer } from "~/modules/computer-use/application/tools/use_computer";
 import { list_saved_messages } from "~/modules/conversations/application/tools/list_saved_messages";
+import { react } from "~/modules/conversations/application/tools/react";
 import { search_conversations } from "~/modules/conversations/application/tools/search_conversations";
 import { propose_correction } from "~/modules/corrections/application/tools/propose_correction";
 import {
@@ -131,6 +132,7 @@ registerTools([
   load_skill,
   process_recording,
   propose_correction,
+  react,
   save_skill,
   review_output,
   run_council,

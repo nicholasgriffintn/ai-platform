@@ -8,7 +8,7 @@ import {
   type ResponseEventInput,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { sleep } from "@ngriffin_uk/polychat-utility-core";
+import { readOptionalString, sleep } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { isAbortError } from "~/infrastructure/abort";
@@ -254,6 +254,7 @@ export class ChatOrchestrator {
           model: prepared.primaryModel,
           provider: prepared.primaryProvider,
           modelConfig: prepared.primaryModelConfig,
+          teammateId: readOptionalString(options.resolved_configuration?.teammateId),
         });
 
         await runLifecycle?.recordProvenance(runProvenance);

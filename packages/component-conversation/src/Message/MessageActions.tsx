@@ -21,8 +21,6 @@ import {
   Volume2,
   VolumeX,
   RefreshCw,
-  ThumbsDown,
-  ThumbsUp,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
@@ -30,16 +28,15 @@ import { toast } from "sonner";
 
 import { MessageInfo } from "./MessageInfo.js";
 import { MessageProvenanceMark } from "./MessageProvenanceMark.js";
+import { MessageReactionPicker } from "./MessageReactions.js";
 import { MessageStats } from "./MessageStats.js";
 
 export interface MessageActionsProps {
   message: Message;
   copied: boolean;
   copyMessageToClipboard: () => void;
-  feedbackState: "none" | "liked" | "disliked";
-  canSubmitFeedback: boolean;
-  isSubmittingFeedback: boolean;
-  submitFeedback: (value: 1 | -1) => Promise<void>;
+  onPickReaction?: (emoji: string) => void;
+  isReacting: boolean;
   isSharedView: boolean;
   onRetry?: () => void;
   isRetrying?: boolean;
@@ -67,10 +64,8 @@ export const MessageActions = ({
   message,
   copied,
   copyMessageToClipboard,
-  feedbackState,
-  canSubmitFeedback,
-  isSubmittingFeedback,
-  submitFeedback,
+  onPickReaction,
+  isReacting,
   isSharedView,
   onRetry,
   isRetrying = false,
@@ -345,44 +340,14 @@ export const MessageActions = ({
           />
         )}
         {provenance ? <MessageProvenanceMark provenance={message.provenance} /> : null}
+        {onPickReaction && !isSharedView && !isCompactionMarker ? (
+          <MessageReactionPicker
+            disabled={isReacting}
+            onPick={onPickReaction}
+            className={messageActionButtonClassName}
+          />
+        ) : null}
       </div>
-      {canSubmitFeedback && !isSharedView && message.role === "assistant" && (
-        <div className="flex items-center space-x-1">
-          <span className="text-xs text-muted-foreground">Helpful?</span>
-          <Button
-            type="button"
-            variant="icon"
-            onClick={() => void submitFeedback(1)}
-            disabled={isSubmittingFeedback || feedbackState === "liked"}
-            className={cn(
-              messageActionButtonClassName,
-              feedbackState === "liked" ? "bg-success/12 text-success" : undefined,
-              (isSubmittingFeedback || feedbackState === "liked") &&
-                "cursor-not-allowed opacity-50",
-            )}
-            title={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
-            aria-label={feedbackState === "liked" ? "Feedback submitted" : "Thumbs up"}
-          >
-            <ThumbsUp size={14} />
-          </Button>
-          <Button
-            type="button"
-            variant="icon"
-            onClick={() => void submitFeedback(-1)}
-            disabled={isSubmittingFeedback || feedbackState === "disliked"}
-            className={cn(
-              messageActionButtonClassName,
-              feedbackState === "disliked" ? "bg-failure/12 text-failure" : undefined,
-              (isSubmittingFeedback || feedbackState === "disliked") &&
-                "cursor-not-allowed opacity-50",
-            )}
-            title={feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"}
-            aria-label={feedbackState === "disliked" ? "Feedback submitted" : "Thumbs down"}
-          >
-            <ThumbsDown size={14} />
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

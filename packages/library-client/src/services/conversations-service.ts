@@ -15,6 +15,9 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import {
   artifactBindingReadResponseSchema,
+  itemReactionEnvelopeSchema,
+  type ItemReactionRequest,
+  type MessageReaction,
   conversationGroupSchema,
   messagesToItems,
   queuedChatMessageSchema,
@@ -117,6 +120,7 @@ export class ConversationsService {
       limit: options.limit,
       after: options.after,
       sort_by: options.sortBy,
+      teammate_threads: options.teammateThreads,
     });
     const results = page.data.map((conversation) => {
       let group: unknown = conversation.group ?? null;
@@ -158,6 +162,7 @@ export class ConversationsService {
     archived: boolean;
     activity?: ConversationActivityWindow;
     query?: string;
+    teammateThreads?: "include" | "exclude";
   }): Promise<number> {
     const activityCutoff = conversationActivityCutoff(options.activity);
     const response = await fetchApiOrThrow("/conversations/archive", {
@@ -167,6 +172,7 @@ export class ConversationsService {
         archived: options.archived,
         q: options.query?.trim() || undefined,
         updated_after: activityCutoff?.toISOString(),
+        teammate_threads: options.teammateThreads,
       },
     });
     const data = await returnFetchedData<{ archived?: number }>(response);
@@ -402,20 +408,18 @@ export class ConversationsService {
     }
   }
 
-  async submitFeedback(conversationId: string, itemId: string, feedback: 1 | -1): Promise<void> {
-    if (!conversationId || !itemId) {
-      throw new Error("No conversation or item ID provided");
-    }
-
-    const response = await fetchApi(conversationPath(conversationId, "/feedback"), {
+  async reactToItem(
+    conversationId: string,
+    request: ItemReactionRequest,
+  ): Promise<MessageReaction[]> {
+    const response = await fetchApiOrThrow(conversationPath(conversationId, "/reactions"), {
       method: "POST",
-      headers: await this.headers(),
-      body: { item_id: itemId, feedback },
+      headers: await this.getHeaders(),
+      body: request,
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to submit feedback: ${response.statusText}`);
-    }
+    return itemReactionEnvelopeSchema.parse(await returnFetchedData<unknown>(response)).response
+      .reactions;
   }
 
   async readArtifactBinding(

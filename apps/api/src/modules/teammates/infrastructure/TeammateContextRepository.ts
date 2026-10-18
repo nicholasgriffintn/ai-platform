@@ -58,7 +58,48 @@ function formatGrant(row: TeammateConnectionGrantRow): TeammateConnectionGrant {
   };
 }
 
+export interface TeammateThreadActivity {
+  teammateId: string;
+  conversationId: string;
+  lastActivityAt: string;
+  unread: boolean;
+}
+
 export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  async listPersonalThreadsWithMessages(
+    actorUserId: number,
+    excludedTeammateId: string,
+  ): Promise<TeammateThreadActivity[]> {
+    const rows = await this.runQuery<{
+      teammate_id: string;
+      conversation_id: string;
+      last_activity_at: string;
+      is_unread: number;
+    }>(
+      `SELECT tc.teammate_id, tc.home_conversation_id AS conversation_id,
+         COALESCE(c.last_message_at, c.updated_at, c.created_at) AS last_activity_at,
+         COALESCE(state.is_unread, 0) AS is_unread
+       FROM teammate_context tc
+       JOIN conversation c ON c.id = tc.home_conversation_id
+       LEFT JOIN user_resource_state state
+         ON state.conversation_id = c.id AND state.user_id = tc.actor_user_id
+       WHERE tc.actor_user_id = ?
+         AND tc.scope_type = 'personal'
+         AND tc.status != 'archived'
+         AND tc.teammate_id != ?
+         AND COALESCE(c.is_archived, 0) = 0
+         AND COALESCE(c.message_count, 0) > 0`,
+      [actorUserId, excludedTeammateId],
+    );
+
+    return rows.map((row) => ({
+      teammateId: row.teammate_id,
+      conversationId: row.conversation_id,
+      lastActivityAt: row.last_activity_at,
+      unread: row.is_unread === 1,
+    }));
+  }
+
   async createWithResources(params: {
     id: string;
     teammateId: string;

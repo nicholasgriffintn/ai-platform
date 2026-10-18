@@ -1,8 +1,13 @@
 import { RecipeCard } from "@ngriffin_uk/polychat-component-capabilities";
 import { Button, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
-import type { EnabledCapability } from "@ngriffin_uk/polychat-library-react";
+import {
+  useDryRunAssistantRecipe,
+  type EnabledCapability,
+} from "@ngriffin_uk/polychat-library-react";
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Ellipsis, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { RecipeEventTriggersDialog } from "../Recipes/RecipeEventTriggersDialog.js";
 import type { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
@@ -29,6 +34,7 @@ export function RecipeCapabilityCard({
   workflows,
 }: RecipeCapabilityCardProps) {
   const cardState = workflows.actions.getRecipeCardState(recipe, installation);
+  const dryRun = useDryRunAssistantRecipe();
 
   return (
     <>
@@ -48,6 +54,22 @@ export function RecipeCapabilityCard({
           void workflows.actions.toggleInstallationStatus(target)
         }
         onDeleteInstallation={workflows.deleteDialog.setInstallation}
+        onDryRun={(target, targetInstallation) =>
+          void dryRun
+            .mutateAsync({
+              recipeId: target.id,
+              projectId: targetInstallation.projectId ?? undefined,
+            })
+            .then(() =>
+              toast.success(
+                "Dry run started. Nothing will be sent or changed; the run shows up in Scheduled.",
+              ),
+            )
+            .catch((error: unknown) =>
+              toast.error(getErrorMessage(error, "The dry run could not start")),
+            )
+        }
+        isDryRunning={dryRun.isPending}
         isStarting={cardState.isStarting}
         isConfiguring={cardState.isConfiguring}
         isEditingConfiguration={cardState.isEditingConfiguration}

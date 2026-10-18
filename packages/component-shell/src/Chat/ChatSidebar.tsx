@@ -38,6 +38,7 @@ import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
+import { TeammateRosterSection } from "../Sidebar/TeammateRosterSection.js";
 
 const ConversationGroupsDialog = lazy(() =>
   import("../Conversations/ConversationGroupsDialog.js").then((module) => ({
@@ -89,6 +90,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     activity: conversationListFilters.activity,
     archived: conversationListFilters.archiveFilter,
     sortBy: conversationListFilters.sortBy,
+    teammateThreads: "exclude",
   });
   const deleteChat = useDeleteChat();
   const conversationStreams = useStreamActivityStore((state) => state.streams);
@@ -203,6 +205,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
         options: {
           activity: conversationListFilters.activity,
           archived: conversationListFilters.archiveFilter,
+          teammateThreads: "exclude",
         },
       });
 
@@ -277,6 +280,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                 </SidebarNavButton>
                 <PlacesNavLinks onNavigate={closeOnMobile} />
               </SidebarNavSection>
+              {isAuthenticated && <TeammateRosterSection onNavigate={closeOnMobile} />}
               {!isAuthenticated && (
                 <div className="mt-4">
                   <DiscoverSidebarSection onNavigate={closeOnMobile} />

@@ -1,4 +1,5 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import type { ResponseAgent } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   createContext,
@@ -16,6 +17,8 @@ export interface ConversationScope {
   startNewConversation: (id?: string) => string;
   clearCurrentConversation: () => void;
   getCurrentConversationId: () => string | undefined;
+  agent?: ResponseAgent;
+  defaultAgent?: ResponseAgent;
 }
 
 const ConversationScopeContext = createContext<ConversationScope | null>(null);
@@ -60,6 +63,8 @@ export function useConversationScope(): ConversationScope {
 export function useLocalConversationScope(
   initialConversationId: string | undefined,
   onChange?: (id: string | undefined) => void,
+  agent?: ResponseAgent,
+  defaultAgent?: ResponseAgent,
 ): ConversationScope {
   const [conversationId, setConversationId] = useState(initialConversationId);
   const conversationIdRef = useRef(conversationId);
@@ -93,6 +98,8 @@ export function useLocalConversationScope(
       },
       clearCurrentConversation: () => update(undefined),
       getCurrentConversationId: () => conversationIdRef.current,
+      ...(agent ? { agent } : {}),
+      ...(defaultAgent ? { defaultAgent } : {}),
     };
-  }, [conversationId]);
+  }, [agent, conversationId, defaultAgent]);
 }

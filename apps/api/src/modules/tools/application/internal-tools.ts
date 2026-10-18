@@ -7,6 +7,7 @@ export const INTERNAL_FUNCTION_TOOLS = new Set<string>([
   "configure_recipe",
   "get_recipe",
   "load_skill",
+  "react",
   "request_approval",
   "search_pashi_tools",
   "trigger_recipe",

@@ -158,6 +158,21 @@ public struct ChatMessageData: Codable, Equatable {
     public let council: CouncilMetadata?
     public let error: String?
     public let streamPreview: StreamPreview?
+    public let reactions: [MessageReaction]?
+
+    public struct MessageReaction: Codable, Equatable {
+        public let emoji: String
+        public let actor: String
+        public let actorId: String
+        public let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case emoji
+            case actor
+            case actorId = "actor_id"
+            case createdAt = "created_at"
+        }
+    }
 
     public struct StreamPreview: Codable, Equatable {
         public let truncated: Bool

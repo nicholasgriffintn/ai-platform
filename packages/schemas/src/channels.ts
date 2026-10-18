@@ -6,6 +6,14 @@ import { listSchema } from "./platform/list.js";
 export const slackChannelAddressSchema = z.string().regex(/^T[A-Z0-9]+:[CDG][A-Z0-9]+$/);
 export const emailChannelAddressSchema = z.email().max(200);
 
+export const channelReactionLevelSchema = z
+  .enum(["off", "ack", "full"])
+  .describe(
+    "How the teammate reacts in the channel: off, ack shows 👀 while it works and ⚠️ if it fails, full also marks finished requests ✅.",
+  );
+
+export type ChannelReactionLevel = z.infer<typeof channelReactionLevelSchema>;
+
 export const channelBindingScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
@@ -20,6 +28,7 @@ export const channelBindingSchema = z.object({
   label: z.string().nullable(),
   teammateId: z.string().nullable(),
   interactionMode: z.enum(["direct", "automated"]),
+  reactionLevel: channelReactionLevelSchema,
   enabled: z.boolean(),
   createdAt: z.string(),
   canManage: z.boolean(),
@@ -41,6 +50,7 @@ export const createChannelBindingSchema = z
     label: z.string().trim().min(1).max(120).optional(),
     teammateId: z.string().min(1).optional(),
     interactionMode: z.enum(["direct", "automated"]).default("automated"),
+    reactionLevel: channelReactionLevelSchema.default("ack"),
   })
   .refine(
     (binding) =>

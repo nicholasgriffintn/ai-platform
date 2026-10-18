@@ -45,5 +45,6 @@ export interface ResponseAuthority {
   requireApprovalFor?: ToolPermission[];
   enforceModeToolPolicy?: boolean;
   autonomyCeiling?: TeammateAutonomyLevel;
+  dryRun?: boolean;
   teammate?: TeammateRunAuthority;
 }

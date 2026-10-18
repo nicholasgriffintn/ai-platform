@@ -2,6 +2,7 @@ import { findToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schem
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { buildDryRunResponse } from "~/modules/tools/application/dry-run";
 import {
   hasStandingApproval,
   resolveToolCallDestination,
@@ -9,6 +10,7 @@ import {
 } from "~/modules/tools/application/effects";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
 import { filterToolsForPolyTurn } from "~/modules/tools/application/poly-turn-policy";
+import { buildToolReceipt } from "~/modules/tools/application/receipts";
 import type { IFunctionResponse, IRequest } from "~/types";
 
 import { resolveFunctionTool, validateFunctionArgs } from "./catalogue";
@@ -51,6 +53,28 @@ export const handleFunctions = async ({
   const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
 
   const foundFunction = resolveFunctionTool(functionName);
+  const effectClass = resolveToolCallEffectClass({
+    toolName: functionName,
+    effects: foundFunction.effects,
+    rawArguments: args,
+  });
+  const destination = resolveToolCallDestination({
+    effects: foundFunction.effects,
+    rawArguments: args,
+  });
+  const dryRunResponse = request.request?.dry_run
+    ? buildDryRunResponse({
+        toolName: functionName,
+        effectClass,
+        destination,
+        args: validateFunctionArgs(foundFunction, args),
+      })
+    : null;
+
+  if (dryRunResponse) {
+    return dryRunResponse;
+  }
+
   const permissionResult = permissionChecker.checkRequestToolAccess({
     toolName: functionName,
     mode: requestMode,
@@ -61,19 +85,12 @@ export const handleFunctions = async ({
     requireApprovalFor: request.request?.require_approval_for,
     deniedTools: request.request?.denied_tools,
     enforceModePolicy: request.request?.enforce_mode_tool_policy,
-    effectClass: resolveToolCallEffectClass({
-      toolName: functionName,
-      effects: foundFunction.effects,
-      rawArguments: args,
-    }),
+    effectClass,
     autonomyLevel: request.request?.autonomy_level,
     standingApproval: hasStandingApproval({
       approvals: request.request?.standing_approvals,
       toolName: functionName,
-      destination: resolveToolCallDestination({
-        effects: foundFunction.effects,
-        rawArguments: args,
-      }),
+      destination,
       now: Date.now(),
     }),
     toolRule: findToolRule(request.request?.tool_rules, functionName),
@@ -127,5 +144,13 @@ export const handleFunctions = async ({
     emitToolResult,
   });
 
-  return response;
+  const receipt = buildToolReceipt({
+    toolName: functionName,
+    effectClass,
+    destination,
+    response,
+    outcome: "done",
+  });
+
+  return receipt ? { ...response, data: { ...response.data, receipt } } : response;
 };

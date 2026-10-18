@@ -154,8 +154,8 @@ export function ProjectConversationPage({
         includeTools: false,
         projectId,
       },
+      surface: "project",
       allowedAssistantActionCapabilities: capabilities,
-      toolSelectionLocked: true,
       welcomeTitle: codingEnvironment
         ? codingPresentation.title
         : (project?.name ?? "Project conversation"),
@@ -205,7 +205,6 @@ export function ProjectConversationPage({
           : {}),
       },
       analyticsSource: "project",
-      hideComposerSuggestions: true,
       pendingUserQuestions: pendingQuestions,
       onToolInteraction,
     }),

@@ -6,6 +6,10 @@ import { collectResolvedToolCallIds } from "@ngriffin_uk/polychat-library-chat/a
 import type { ConversationRetention } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import {
+  collectHandoffRuns,
+  isCollapsedHandoffFollower,
+} from "@ngriffin_uk/polychat-library-chat/handoffs";
+import {
   getCompactionMessageLabel,
   getCompactionCoverageDetail,
   isCompactionLoadingMessage,
@@ -43,7 +47,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
 import { Ghost, Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { VList } from "virtua";
 
 import { CompactionStatusRow } from "../CompactionStatusRow.js";
@@ -55,6 +59,7 @@ import { StreamActivityIndicator } from "../Message/StreamActivityIndicator.js";
 import { getMessageListScrollKey } from "../messageListScroll.js";
 import { ScrollButton } from "../ScrollButton.js";
 import { ChatMessage } from "./ChatMessage/index.js";
+import { HandoffSummaryRow } from "./HandoffSummaryRow.js";
 import { useStickToBottom } from "./useStickToBottom.js";
 import { useStreamAnnouncement } from "./useStreamAnnouncement.js";
 
@@ -133,6 +138,20 @@ export const MessageList = ({
   const isTemporary = retention === "temporary";
   const messages = useMemo(() => applyToolInteractionResolutions(sourceMessages), [sourceMessages]);
   const resolvedToolCallIds = useMemo(() => collectResolvedToolCallIds(messages), [messages]);
+  const handoffRuns = useMemo(() => collectHandoffRuns(messages), [messages]);
+  const [expandedHandoffs, setExpandedHandoffs] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleHandoff = (leadMessageId: string) =>
+    setExpandedHandoffs((current) => {
+      const next = new Set(current);
+
+      if (next.has(leadMessageId)) {
+        next.delete(leadMessageId);
+      } else {
+        next.add(leadMessageId);
+      }
+
+      return next;
+    });
   const approvalToolCallIds = useMemo(() => collectApprovalToolCallIds(messages), [messages]);
   const approvalToolResponseContents = useMemo(
     () => collectApprovalToolResponseContents(messages),
@@ -200,6 +219,7 @@ export const MessageList = ({
         }))
         .filter(
           ({ message, index, compactionLabel, goalMarker }) =>
+            !isCollapsedHandoffFollower(handoffRuns, expandedHandoffs, message.id) &&
             !(
               hideInlineUserQuestions &&
               message.role === "tool" &&
@@ -218,6 +238,8 @@ export const MessageList = ({
     [
       approvalToolCallIds,
       approvalToolResponseContents,
+      handoffRuns,
+      expandedHandoffs,
       hideInlineUserQuestions,
       messages,
       resolvedToolCallIds,
@@ -322,17 +344,30 @@ export const MessageList = ({
                   goalStarted,
                 }) => {
                   const isPartialMessage = isPartialRunMessageId(message.id);
+                  const handoffRun = handoffRuns.get(message.id);
+                  const isHandoffLead = handoffRun?.leadMessageId === message.id;
+                  const isHandoffCollapsed = Boolean(
+                    handoffRun && !expandedHandoffs.has(handoffRun.leadMessageId),
+                  );
 
                   return (
                     <div key={message.id || `message-${index}`} className="pb-4">
-                      {goalMarker ? (
+                      {handoffRun && isHandoffLead ? (
+                        <HandoffSummaryRow
+                          teammateIds={handoffRun.teammateIds}
+                          messageCount={handoffRun.messageIds.length}
+                          expanded={!isHandoffCollapsed}
+                          onToggle={() => toggleHandoff(handoffRun.leadMessageId)}
+                        />
+                      ) : null}
+                      {handoffRun && isHandoffCollapsed ? null : goalMarker ? (
                         <GoalStatusRow label={goalMarker.label} objective={goalMarker.objective} />
                       ) : compactionLabel ? (
                         <CompactionStatusRow label={compactionLabel} detail={compactionDetail} />
                       ) : (
                         <ChatMessage
                           conversationId={currentConversationId}
-                          canSubmitFeedback={
+                          canReact={
                             Boolean(conversation && !conversation.isLocalOnly) && !isPartialMessage
                           }
                           message={message}

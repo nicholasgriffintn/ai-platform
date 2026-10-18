@@ -14,19 +14,7 @@ export function DelegatePanel({ conversationId }: { conversationId: string }) {
     <ConversationScopeProvider scope={scope}>
       <ArtifactWorkbenchProvider>
         <div className="relative min-h-0 flex-1 overflow-hidden">
-          <ConversationThread
-            modeConfig={{
-              agentApprovals,
-              hideModelSelector: true,
-              hideChatSettings: true,
-              hideComposerActionMenu: true,
-              hideInlineResponseControls: true,
-              hideVoiceControls: true,
-              toolSelectionLocked: true,
-              hideTextInput: true,
-              hideSubmitButton: true,
-            }}
-          />
+          <ConversationThread modeConfig={{ surface: "watch", agentApprovals }} />
         </div>
       </ArtifactWorkbenchProvider>
     </ConversationScopeProvider>

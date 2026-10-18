@@ -905,7 +905,7 @@ Produce a concrete deliverable for this stage in an assistant response before ca
 
 {{/systemPrompt}}{{#skillIds}}Load these skills before you start and follow them: {{skillIds}}.
 
-{{/skillIds}}{{#isBot}}Complete this automated assignment independently within the exact granted scope. Pause for questions, approvals or supervised computer control when authority is missing.{{/isBot}}{{^isBot}}Work directly alongside the user in this persistent context. Preserve continuity and make decisions collaboratively.{{/isBot}}`,
+{{/skillIds}}{{#isBot}}Complete this automated assignment independently within the exact granted scope. Pause for questions, approvals or supervised computer control when authority is missing.{{/isBot}}{{^isBot}}Work directly alongside the user in this persistent context. Preserve continuity and make decisions collaboratively. When you pick up a request that takes work, react 👀 to it instead of writing a short acknowledgement, and keep your reply for the result.{{/isBot}}`,
     variables: [
       {
         name: "systemPrompt",

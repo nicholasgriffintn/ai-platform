@@ -811,6 +811,7 @@ export async function invokeAssistantRecipe(
     input?: string;
     configuration?: RecipeConfiguration;
     queue?: boolean;
+    dryRun?: boolean;
     requireInstalled?: boolean;
     projectId?: string;
     installationId?: string;
@@ -958,6 +959,7 @@ export async function invokeAssistantRecipe(
         input: options.input,
         channel: options.channel,
         configuration: invocationConfiguration,
+        ...(options.dryRun ? { dryRun: true } : {}),
       }),
       priority: 5,
     });
@@ -978,6 +980,7 @@ export async function invokeAssistantRecipe(
     allowedConnectorOperations: runtime.allowedConnectorOperations,
     configuration: invocationConfiguration,
     readOnly: recipe.readOnly,
+    ...(options.dryRun ? { dryRun: true } : {}),
     taskId,
   };
 }

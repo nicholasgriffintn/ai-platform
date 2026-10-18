@@ -73,3 +73,4 @@ export * from "./Live/LiveStatusHeader.js";
 export { ResolvedToolCallsProvider, useResolvedToolCallIds } from "./Message/ResolvedToolCalls.js";
 
 export * from "./ConversationThreadsButton.js";
+export type { ThreadSurface } from "./Thread/surface-profiles.js";
