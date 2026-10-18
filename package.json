@@ -60,5 +60,5 @@
     "vite-plus": "1.1.0",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@12.12.0"
+  "packageManager": "pnpm@12.12.1"
 }
