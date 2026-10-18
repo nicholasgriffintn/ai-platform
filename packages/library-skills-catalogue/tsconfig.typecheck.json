@@ -24,6 +24,9 @@
     },
     {
       "path": "../schemas"
+    },
+    {
+      "path": "../utility-core"
     }
   ]
 }

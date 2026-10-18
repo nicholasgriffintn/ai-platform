@@ -14,6 +14,14 @@ export {
 } from "./catalogue.js";
 export { builtInSkillDocumentSources } from "./generated/documents.js";
 export {
+  blockingSkillScanFindings,
+  scanSkillDocument,
+  type SkillScanCode,
+  type SkillScanFinding,
+  type SkillScanInput,
+  type SkillScanSeverity,
+} from "./scan.js";
+export {
   agentSkillFrontmatterSchema,
   buildSkillDocument,
   MAX_USER_SKILL_DOCUMENT_BYTES,

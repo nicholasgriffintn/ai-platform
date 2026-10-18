@@ -346,6 +346,7 @@ export const handleToolCalls = async (
         requiresToolIntentVerification({
           permissions: permissionResult.permissions,
           alreadyApproved: permissionResult.approved,
+          effectClass: callEffectClass,
         })
       ) {
         const intent = await evaluateToolIntentGate({
@@ -354,8 +355,11 @@ export const handleToolCalls = async (
           completionId: completion_id,
           conversationId: req.request?.completion_id,
           request: req.request?.input,
+          trigger: req.request?.trigger,
           toolName: functionName,
           permissions: permissionResult.permissions,
+          effectClass: callEffectClass,
+          destination: callDestination,
           hasEvidenceProjector: Boolean(functionDefinition?.intentEvidence),
           evidence: functionDefinition?.intentEvidence?.(validatedFunctionArgs),
         });

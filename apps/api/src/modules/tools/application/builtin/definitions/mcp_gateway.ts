@@ -1,4 +1,5 @@
-import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { classifyOperationEffect, jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
@@ -49,10 +50,18 @@ export const mcp_call_tool: FunctionToolDescriptor = {
   type: "normal",
   permissions: ["network", "write"],
   effects: {
-    effectClass: "write",
+    effectClass: (input) =>
+      typeof input?.tool === "string" && input.tool.trim()
+        ? classifyOperationEffect(input.tool)
+        : "write",
     destination: (input) =>
       typeof input?.integration === "string" && input.integration.trim()
         ? `mcp:${input.integration.trim().toLowerCase()}`
         : undefined,
   },
+  intentEvidence: (input) => ({
+    integration: input.integration,
+    tool: input.tool,
+    argumentNames: Object.keys(isRecord(input.arguments) ? input.arguments : {}),
+  }),
 };

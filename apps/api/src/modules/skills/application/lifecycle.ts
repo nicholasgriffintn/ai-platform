@@ -15,6 +15,7 @@ import type { AuthoredSkillScope } from "~/modules/skills/infrastructure/Authore
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
+  assertSkillPassesScan,
   parseAuthoredSkillDocument,
   personalSkillScope,
   projectSkillScope,
@@ -156,6 +157,19 @@ export async function promotePersonalSkillDraft(
   skillId: string,
   input: AuthoredSkillPromotionInput,
 ): Promise<AuthoredSkillVersionedDocument> {
+  const draft = await getStoredSkillVersion(
+    context,
+    personalSkillScope(userId),
+    skillId,
+    input.revisionId,
+  );
+
+  if (!draft) {
+    throw new AssistantError("Skill revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  assertSkillPassesScan(draft, "promote", skillId);
+
   const promoted = await promoteStoredSkillDraft(
     context,
     personalSkillScope(userId),
@@ -200,6 +214,19 @@ export async function importPersonalSkill(
   input: AuthoredSkillImportInput,
 ): Promise<AuthoredSkillVersionedDocument> {
   const sourceScope = await resolveImportSourceScope(context, userId, input);
+  const source = await getStoredSkillVersion(
+    context,
+    sourceScope,
+    input.source.skillId,
+    input.source.revisionId,
+  );
+
+  if (!source) {
+    throw new AssistantError("Source skill revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  assertSkillPassesScan(source, "import", input.source.skillId);
+
   const created = await importStoredSkillRevision(
     context,
     sourceScope,
@@ -302,6 +329,19 @@ export async function promoteProjectSkillDraft(
   input: AuthoredSkillPromotionInput,
 ): Promise<AuthoredSkillVersionedDocument> {
   const { project } = await requireProjectSkillAdministration(context, projectId, skillId);
+  const draft = await getStoredSkillVersion(
+    context,
+    projectSkillScope(projectId),
+    skillId,
+    input.revisionId,
+  );
+
+  if (!draft) {
+    throw new AssistantError("Skill revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  assertSkillPassesScan(draft, "promote", skillId);
+
   const promoted = await promoteStoredSkillDraft(
     context,
     projectSkillScope(projectId),
@@ -358,6 +398,19 @@ export async function importProjectSkill(
 ): Promise<AuthoredSkillVersionedDocument> {
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
   const sourceScope = await resolveImportSourceScope(context, userId, input);
+  const source = await getStoredSkillVersion(
+    context,
+    sourceScope,
+    input.source.skillId,
+    input.source.revisionId,
+  );
+
+  if (!source) {
+    throw new AssistantError("Source skill revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  assertSkillPassesScan(source, "import", input.source.skillId);
+
   const created = await importStoredSkillRevision(
     context,
     sourceScope,

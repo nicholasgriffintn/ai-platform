@@ -1,6 +1,10 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  blockingSkillScanFindings,
   parseUserSkillDocument,
+  scanSkillDocument,
   SkillDocumentError,
+  type SkillScanInput,
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -20,6 +24,40 @@ export const projectSkillScope = (projectId: string): AuthoredSkillScope => ({
   type: "project",
   id: projectId,
 });
+
+const logger = getLogger({ prefix: "skills/scan" });
+
+export function assertSkillPassesScan(
+  document: SkillScanInput,
+  stage: "promote" | "import",
+  skillName: string,
+): void {
+  const findings = scanSkillDocument(document);
+  const blocking = blockingSkillScanFindings(findings);
+  const warnings = findings.filter((finding) => finding.severity === "warn");
+
+  if (warnings.length > 0) {
+    logger.warn(`Skill ${skillName} has scan warnings`, {
+      stage,
+      warnings: warnings.map((finding) => `${finding.location}: ${finding.message}`),
+    });
+  }
+
+  if (blocking.length === 0) {
+    return;
+  }
+
+  const verb = stage === "promote" ? "promoted" : "imported";
+
+  throw new AssistantError(
+    `Skill cannot be ${verb} until these are fixed: ${blocking
+      .map((finding) => `${finding.location}: ${finding.message}`)
+      .join("; ")}`,
+    ErrorType.PARAMS_ERROR,
+    400,
+    { findings: blocking },
+  );
+}
 
 export function parseAuthoredSkillDocument(content: string) {
   try {
