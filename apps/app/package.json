@@ -28,7 +28,7 @@
     "wrangler:dev": "pnpm run build && wrangler dev --remote"
   },
   "dependencies": {
-    "@mlc-ai/web-llm": "0.2.85",
+    "@mlc-ai/web-llm": "0.2.86",
     "@ngriffin_uk/auth-encoding": "^0.2.4",
     "@ngriffin_uk/auth-react": "^0.7.1",
     "@ngriffin_uk/polychat-component-account": "workspace:^",
