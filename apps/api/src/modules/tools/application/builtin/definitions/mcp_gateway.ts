@@ -1,9 +1,9 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { MCP_CALL_TOOL_NAME, MCP_LIST_TOOLS_NAME } from "@ngriffin_uk/polychat-schemas";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
-export const MCP_LIST_TOOLS_NAME = "mcp_list_tools";
-export const MCP_CALL_TOOL_NAME = "mcp_call_tool";
+export { MCP_CALL_TOOL_NAME, MCP_LIST_TOOLS_NAME };
 export const MCP_GATEWAY_TOOL_NAMES = [MCP_LIST_TOOLS_NAME, MCP_CALL_TOOL_NAME] as const;
 
 export const mcp_list_tools: FunctionToolDescriptor = {

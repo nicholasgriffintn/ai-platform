@@ -112,6 +112,72 @@ export const mcpToolServerConfigurationSchema = z
   })
   .strict();
 
+export const MCP_LIST_TOOLS_NAME = "mcp_list_tools";
+export const MCP_CALL_TOOL_NAME = "mcp_call_tool";
+
+export const MCP_APP_MIME_TYPE = "text/html;profile=mcp-app";
+export const MCP_APP_RENDERER = "mcp_app";
+export const MCP_APP_PROTOCOL_VERSION = "2025-06-18";
+export const MCP_APP_MAX_HTML_BYTES = 1024 * 1024;
+
+const domainListSchema = z.array(z.string().trim().min(1).max(253)).max(32);
+
+export const mcpAppCspSchema = z
+  .object({
+    connectDomains: domainListSchema.optional(),
+    resourceDomains: domainListSchema.optional(),
+    frameDomains: domainListSchema.optional(),
+    baseUriDomains: domainListSchema.optional(),
+  })
+  .partial();
+
+export const mcpAppPermissionsSchema = z
+  .object({
+    camera: z.object({}).optional(),
+    microphone: z.object({}).optional(),
+    geolocation: z.object({}).optional(),
+    clipboardWrite: z.object({}).optional(),
+  })
+  .partial();
+
+export const mcpAppUiMetaSchema = z
+  .object({
+    csp: mcpAppCspSchema.optional(),
+    permissions: mcpAppPermissionsSchema.optional(),
+    prefersBorder: z.boolean().optional(),
+    domain: z.string().optional(),
+  })
+  .partial();
+
+export const mcpAppCallToolResultSchema = z.object({
+  content: z.array(z.object({ type: z.string() }).passthrough()).default([]),
+  structuredContent: z.unknown().optional(),
+  isError: z.boolean().optional(),
+});
+
+export const mcpAppViewSchema = z.object({
+  integration: z.string().min(1),
+  tool: z.string().min(1),
+  uri: z.string().min(1),
+  html: z.string().min(1).max(MCP_APP_MAX_HTML_BYTES),
+  ui: mcpAppUiMetaSchema,
+  arguments: z.record(z.string(), z.unknown()),
+  result: mcpAppCallToolResultSchema,
+});
+
+export const mcpAppToolCallRequestSchema = z.object({
+  integration: z.string().trim().min(1).max(80),
+  tool: z.string().trim().min(1).max(200),
+  arguments: z.record(z.string(), z.unknown()).default({}),
+});
+
+export type McpAppCsp = z.infer<typeof mcpAppCspSchema>;
+export type McpAppPermissions = z.infer<typeof mcpAppPermissionsSchema>;
+export type McpAppUiMeta = z.infer<typeof mcpAppUiMetaSchema>;
+export type McpAppCallToolResult = z.infer<typeof mcpAppCallToolResultSchema>;
+export type McpAppView = z.infer<typeof mcpAppViewSchema>;
+export type McpAppToolCallRequest = z.infer<typeof mcpAppToolCallRequestSchema>;
+
 export function normaliseMcpServerLabel(value: string): string {
   return value
     .trim()

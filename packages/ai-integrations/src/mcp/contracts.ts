@@ -33,9 +33,51 @@ export const mcpToolSchema = z.object({
   description: z.string().optional(),
   inputSchema: z.record(z.string(), z.unknown()).optional(),
   annotations: mcpToolAnnotationsSchema.optional(),
+  _meta: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type McpTool = z.infer<typeof mcpToolSchema>;
+
+export const mcpResourceContentSchema = z
+  .object({
+    uri: z.string().min(1),
+    mimeType: z.string().optional(),
+    text: z.string().optional(),
+    blob: z.string().optional(),
+    _meta: z.record(z.string(), z.unknown()).optional(),
+  })
+  .passthrough();
+
+export type McpResourceContent = z.infer<typeof mcpResourceContentSchema>;
+
+export const mcpResourceReadResultSchema = z.object({
+  contents: z.array(z.unknown()).default([]),
+});
+
+const UI_RESOURCE_SCHEME = "ui://";
+
+function readMetaUi(meta: unknown): Record<string, unknown> | undefined {
+  if (!meta || typeof meta !== "object") {
+    return undefined;
+  }
+
+  const ui = (meta as Record<string, unknown>).ui;
+
+  return ui && typeof ui === "object" ? (ui as Record<string, unknown>) : undefined;
+}
+
+export function readMcpToolUiResourceUri(tool: Pick<McpTool, "_meta">): string | undefined {
+  const meta = tool._meta;
+  const nested = readMetaUi(meta)?.resourceUri;
+  const flat = meta?.["ui/resourceUri"];
+  const uri = typeof nested === "string" ? nested : typeof flat === "string" ? flat : undefined;
+
+  return uri?.startsWith(UI_RESOURCE_SCHEME) ? uri : undefined;
+}
+
+export function readMcpAppUiMeta(content: Pick<McpResourceContent, "_meta">): unknown {
+  return readMetaUi(content._meta);
+}
 
 export const mcpToolListResultSchema = z.object({
   tools: z.array(z.unknown()).default([]),

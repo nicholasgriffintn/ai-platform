@@ -172,6 +172,11 @@
       "types": "./dist/handoffs.d.ts",
       "import": "./dist/handoffs.js"
     },
+    "./mcp-apps": {
+      "polychat-source": "./src/mcp-apps.ts",
+      "types": "./dist/mcp-apps.d.ts",
+      "import": "./dist/mcp-apps.js"
+    },
     "./reactions": {
       "polychat-source": "./src/reactions.ts",
       "types": "./dist/reactions.d.ts",

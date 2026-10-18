@@ -12,6 +12,8 @@ import {
   mcpConnectionInputSchema,
   mcpConnectionSchema,
   mcpConnectionListSchema,
+  mcpAppCallToolResultSchema,
+  mcpAppToolCallRequestSchema,
   mcpOAuthCallbackQuerySchema,
   mcpOAuthStartInputSchema,
   mcpOAuthStartResponseSchema,
@@ -22,8 +24,10 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runFunctionWithOutput } from "~/modules/outputs/application/run-with-output";
+import { callMcpAppTool } from "~/modules/tools/application/mcp-app-calls";
 import {
   createMcpConnection,
   deleteMcpConnection,
@@ -193,6 +197,17 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
         return raw.redirect(mcpOAuthReturnUrl(serviceContext, connected ? "connected" : "failed"));
       },
     });
+});
+
+addRoute(app, "post", "/mcp/calls", {
+  tags: ["tools"],
+  summary: "Run a read-only MCP tool from an app view",
+  description:
+    "Lets an MCP app rendered in a conversation refresh its data. Only tools the integration marks read-only run here; anything that changes something has to go through the conversation so it can ask first.",
+  auth: true,
+  bodySchema: mcpAppToolCallRequestSchema,
+  responses: { 200: { description: "The tool result", schema: mcpAppCallToolResultSchema } },
+  handler: ({ serviceContext, body }) => callMcpAppTool(serviceContext, body),
 });
 
 export default app;

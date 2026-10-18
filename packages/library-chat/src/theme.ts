@@ -166,6 +166,10 @@ export function isDefaultThemePair(pair: ThemePair): boolean {
   return pair.light === DEFAULT_THEME_PAIR.light && pair.dark === DEFAULT_THEME_PAIR.dark;
 }
 
+export function themeAppearance(id: ThemeId): ThemeAppearance {
+  return THEMES.find((theme) => theme.id === id)?.appearance ?? "light";
+}
+
 export function resolveThemeId(
   preference: ThemePreference,
   prefersDark: boolean,

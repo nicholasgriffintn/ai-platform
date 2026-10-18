@@ -22,6 +22,7 @@ import flags from "~/modules/experiments/api/routes";
 import githubConnections from "~/modules/github/api/connections";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
+import mcpServer from "~/modules/mcp/api/routes";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
 import memorySyntheses from "~/modules/memory/api/syntheses";
 import devices from "~/modules/mobile-push/api/routes";
@@ -73,6 +74,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/responses", responses);
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
+  app.route("/mcp", mcpServer);
   app.route("/code", code);
   app.route("/jobs", jobs);
   app.route("/approvals", approvals);

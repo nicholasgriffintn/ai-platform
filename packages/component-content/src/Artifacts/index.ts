@@ -7,4 +7,5 @@ export * from "./ArtifactCallout";
 export * from "./ArtifactInlinePreview";
 export * from "./Sandbox";
 export * from "./ArtifactPanel";
+export * from "./McpAppView";
 export * from "./DocumentDiscussion.js";
