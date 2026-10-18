@@ -38,7 +38,7 @@ export function toolApprovalReason(
   mode: AgentMode,
   approvalPermissions: readonly string[],
 ): string {
-  if (policyIds.includes("tool.autonomy.floor:0")) {
+  if (policyIds.includes("tool.autonomy.floor:0") || policyIds.includes("tool.rule.floor:0")) {
     const description = FLOOR_EFFECT_DESCRIPTIONS[context.effectClass] ?? "has a lasting effect";
 
     return `Tool "${context.toolName}" ${description}, which always needs your approval`;

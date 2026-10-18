@@ -15,8 +15,8 @@ Every event is an envelope with `type`, `sequence_number`, `response_id` and `co
 - Conversation: `conversation.compacted`, `conversation.title_changed`.
 - The stored lifecycle log keeps its retention and cursor semantics and renames its types to `response.created`, `response.status_changed`, `response.retry_changed` and `response.effect`. Replay reports response statuses, never internal run statuses.
 
-The engine's agent loop still emits its internal event names into a sink. `createResponseEventProjector` in `packages/schemas` turns them into envelopes at the server-sent event writer, assigning sequence numbers and item identity, so preludes such as a compaction marker or a replayed connector approval are written through the same writer and keep the sequence continuous. The client's `createResponseStreamAssembler` consumes envelopes and produces the updates the existing hooks already understood.
+Server events are projected into envelopes in one place, which assigns sequence numbers and item identity, so preludes such as a compaction marker or a replayed connector approval keep the sequence continuous. The client's `createResponseStreamAssembler` consumes envelopes.
 
 ## Consequences
 
-One parser on the client, one serialiser on the server, and a sequence number on every event. The projector is the seam where the harness, desktop session and sandbox producers will be moved onto envelopes directly; until then they continue to reach the stream through the chat sink and are projected like everything else.
+One parser on the client, one serialiser on the server, and a sequence number on every event. Harness, desktop session and sandbox producers still reach the stream through the engine and are projected at the API edge like everything else.

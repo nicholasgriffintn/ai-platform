@@ -27,7 +27,3 @@ Fan-out cost lands on Durable Object requests rather than Worker invocations, me
 The coordinator sends to sockets the moment it appends. It must not batch behind a timer: hibernatable WebSockets let the object sleep between events, and anything held in memory rather than storage is lost when it does. Coalescing belongs on the client, where a four-hundred-millisecond window collapses a burst of events into one refetch per query.
 
 Access is decided per publish, not continuously. Someone removed from a workspace stops being in the audience on the next event, but events already delivered to their coordinator remain replayable to them until retention drops them. Token-level streaming is not on this channel: the chat SSE response still belongs to the request that asked for it, and followers see a run at message granularity.
-
-Machines are woken rather than polled. The desktop claim loop waits on its own `machine:` topic with a thirty-second fallback instead of asking every two seconds, and the API publishes when a run is queued.
-
-Credit balances and goals ride the same socket. The ledger publishes `usage.changed` to the `user` topic only when a write moves the balance, so zero-credit infrastructure events stay silent, and reservations publish when they hold or release credits. Every goal write goes through `createGoalService`, which publishes `goal.changed` to the goal owner with the conversation id the client binding needs. The balance popover and the goal panel stand their timers down while the socket is open.

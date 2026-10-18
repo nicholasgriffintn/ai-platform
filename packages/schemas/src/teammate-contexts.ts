@@ -61,49 +61,6 @@ export function parseTeammateStandingApprovals(value: unknown): TeammateStanding
   return parsed.success ? parsed.data : [];
 }
 
-export const TEAMMATE_TOOL_RULE_LEVELS = ["act", "act_if_asked", "ask", "hand_off"] as const;
-
-export const teammateToolRuleLevelSchema = z
-  .enum(TEAMMATE_TOOL_RULE_LEVELS)
-  .describe(
-    "act runs without asking; act_if_asked runs without asking only on turns the owner started; ask always asks first; hand_off never runs and leaves the step to the owner. Sends, spending, deletes, credentials and exports still ask.",
-  );
-
-export type TeammateToolRuleLevel = z.infer<typeof teammateToolRuleLevelSchema>;
-
-export const TEAMMATE_TOOL_RULE_LIMIT = 100;
-
-export const teammateToolRuleSchema = z.object({
-  toolName: z.string().trim().min(1).max(200),
-  level: teammateToolRuleLevelSchema,
-});
-
-export type TeammateToolRule = z.infer<typeof teammateToolRuleSchema>;
-
-export const teammateToolRulesSchema = z
-  .array(teammateToolRuleSchema)
-  .max(TEAMMATE_TOOL_RULE_LIMIT)
-  .refine(
-    (rules) => new Set(rules.map((rule) => rule.toolName)).size === rules.length,
-    "Each tool may have one rule",
-  );
-
-export function parseTeammateToolRules(value: unknown): TeammateToolRule[] {
-  const candidate: unknown = typeof value === "string" ? safeParseJson(value) : value;
-  const parsed = teammateToolRulesSchema.safeParse(candidate);
-
-  return parsed.success ? parsed.data : [];
-}
-
-export function findTeammateToolRule(
-  rules: readonly TeammateToolRule[] | undefined,
-  toolName: string,
-): TeammateToolRuleLevel | null {
-  const target = toolName.trim().toLowerCase();
-
-  return rules?.find((rule) => rule.toolName.trim().toLowerCase() === target)?.level ?? null;
-}
-
 export const TEAMMATE_STANDING_OFFER_STREAK = 5;
 
 export const TEAMMATE_OWNER_ABSENCE_DAYS = 7;
@@ -138,7 +95,6 @@ export const teammateContextSchema = z.object({
   autonomyLevel: teammateAutonomyLevelSchema.nullable(),
   standingApprovals: z.array(teammateStandingApprovalSchema),
   approvalStreaks: z.array(teammateApprovalStreakSchema),
-  toolRules: z.array(teammateToolRuleSchema),
   pausedUntil: z.string().nullable(),
   ownerSeenAt: z.string(),
   createdAt: z.string(),
@@ -159,10 +115,6 @@ export const updateTeammateContextStatusSchema = z.object({
 
 export const updateTeammateContextAutonomySchema = z.object({
   autonomyLevel: teammateAutonomyLevelSchema,
-});
-
-export const updateTeammateContextToolRulesSchema = z.object({
-  toolRules: teammateToolRulesSchema,
 });
 
 export const TEAMMATE_PAUSE_MAX_HOURS = 24 * 7;

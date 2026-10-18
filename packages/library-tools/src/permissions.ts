@@ -9,7 +9,7 @@ import {
   resolveAgentModeFromChatMode,
   type AgentMode,
   type TeammateAutonomyLevel,
-  type TeammateToolRuleLevel,
+  type ToolRuleLevel,
   type ToolEffectClass,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -37,7 +37,7 @@ export interface PermissionCheckInput {
   effectClass?: ToolEffectClass;
   autonomyLevel?: TeammateAutonomyLevel | null;
   standingApproval?: boolean;
-  toolRule?: TeammateToolRuleLevel | null;
+  toolRule?: ToolRuleLevel | null;
   ownerStartedRun?: boolean;
 }
 

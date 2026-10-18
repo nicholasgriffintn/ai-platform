@@ -5,6 +5,7 @@ import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
 import { searchProviderSchema } from "../search.js";
+import { toolRulesSchema } from "../tool-rules.js";
 
 export const guardrailsProviderIds = [
   "llamaguard",
@@ -113,6 +114,7 @@ export const updateUserSettingsSchema = z
     pet_travel_enabled: z.boolean().optional(),
     pet_animation_enabled: z.boolean().optional(),
     pet_model_overrides: petModelOverridesSchema.optional(),
+    tool_rules: toolRulesSchema.optional(),
     onboarding_seen: onboardingSeenSchema.optional(),
   })
   .superRefine((settings, context) => {

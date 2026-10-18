@@ -13,24 +13,13 @@ TypeSafe's Jev is a different kind of model. It takes a state and a map of typed
 Decisions are a provider category of their own, vendor neutral, with the wire contract in `packages/schemas/src/decisions.ts`. The contract adopts TypeSafe's request and answer shapes as the standard (state, question map, typed answers with probabilities and confidence) plus a `provider` field, so a second vendor or an LLM-logprob adapter can implement the same interface without callers changing.
 
 - `packages/ai-providers` owns `DecisionProvider` and the `typesafe` implementation (aliases `typesafe-ai`, `jev`). It is a thin `fetchProviderJson` client rather than the vendor SDK, credentialled through `resolveProviderApiKey` with `TYPESAFE_API_KEY` or a user's stored key. `ProviderHost.models.getAuxiliaryDecisionModel` answers whether an account has a decision model and returns `null` rather than throwing. Each caller owns the unavailable/failure fallback; safety gates may deliberately fail closed.
-- The catalogue lists `jev-latest`, `jev-preview` and `jev-1.13.0` under a new `decision` output modality, priced on input tokens only. The modality keeps them out of chat surfaces and the tier lineups; the `decision` system role in `model-lineup.ts` selects them.
-- Workers AI exposes `@cf/cloudflare/clef` and `@cf/cloudflare/clef-flash` through the same decision contract (`workers-ai`, alias `workers`). Use the host's `AI` binding, validate Clef's 64-question and 100-character ID limits before inference, and retain input-token usage under the canonical catalogue model ID. Keep Jev first in the automatic lineup, then Flash and Clef, then OpenAI GPT-6 Luna, and skip Workers AI when its binding is absent. The integration supports text and structured state; embedded image and video input remain outside the shared contract. [Cloudflare's model documentation](https://developers.cloudflare.com/workers-ai/models/clef/) defines the provider request.
+- Decision models use the `decision` output modality, which keeps them out of chat surfaces and the tier lineups; the `decision` system role in `model-lineup.ts` selects them.
+- Further vendors, such as Workers AI Clef and OpenAI, implement the same contract and validate their own limits before inference. The automatic lineup order lives in `model-lineup.ts`, not here.
 - `packages/ai-functions` exposes `decide`, `tryDecide`, `canDecide` and the `choice`/`score`/`noul` builders. `classify`, `score` and `is` route through the decision model when one resolves and fall back to `generateObject` otherwise.
 - Repeated product gates use `defineDecisionPolicy` and `evaluateDecisionPolicy`. A policy has a stable key and version, typed questions, code-owned thresholds, an explicit `shadow`, `advisory` or `live` mode and a caller-owned fallback. Its compact receipt records the recommendation, confidence, metrics, provider and model without copying the judged state or provider error.
 - Billing meters `decide` on `input_tokens` through the capability meter table, so platform-key usage lands in the ledger like every other capability.
 
-Hot paths adopt it through `tryDecide`, so they behave identically without a key:
-
-- Memory: a `worth_remembering` noul gates the LLM classifier and skips it below 0.25.
-- Guardrails: a `typesafe` `GuardrailsProvider` screens with four hazard nouls and a severity score, selectable as `guardrails_provider`.
-- Capability discovery: one Choice per batch of up to 254 capabilities ranks them semantically in a single request, and the probability is added to the keyword score.
-- Training quality: a five-level Score replaces the free-text 1–10 prompt when available.
-- Tool intent: low-confidence matches for side-effectful calls enter the existing approval path; the judgement never grants authority.
-- Recipe events: optional trigger conditions fail closed and use durable event receipts to avoid duplicate evaluation.
-- Automated channel events: independent reply and attention nouls suppress confident ambient noise while uncertainty preserves delivery.
-- Goal completion: the evidence ledger receives an independent completion judgement after deterministic failure checks; false, uncertain or unavailable judgement leaves the goal active.
-- Browser work: `use_computer check` evaluates a condition over bounded visible text while the existing computer lease remains the only control authority.
-- Evidence audit and structured Council decisions expose calibrated claim and option judgements as explicit user-facing tools.
+Callers adopt it through `tryDecide`, so they behave identically without a decision model. Memory gating, guardrails, capability ranking, tool intent, recipe and channel triage, goal completion and task kill conditions all use it this way, and a judgement never grants authority: low confidence on a side-effectful call enters the approval path rather than skipping it.
 
 Users reach it through `POST /decisions`, the `decide` tool, and a BYOK entry for `typesafe` in provider settings.
 

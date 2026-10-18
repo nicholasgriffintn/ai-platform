@@ -16,6 +16,8 @@ Give authored skills D1 identity, revision metadata and compare-and-swap draft a
 
 Runtime and ordinary project-member reads use stable revisions. Owners and administrators govern project drafts, promotion, history, rollback and imports. Promotion targets the current draft; rollback and import create revisions with lineage. Pin the stable revision for one request, but revalidate ownership, membership and enablement on every load, and persist safe revision provenance with loaded results.
 
+Short standing instructions, such as a house style, may opt in with `metadata.activation: per-message` and a body of at most 2 KB. Before each turn, one bounded decision request picks the ready per-message skills that clearly help with the current message. Their bodies are added to that turn's provider message only and never stored, so later turns choose again and prompt prefixes stay cacheable. A timeout, error or missing decision provider applies nothing, and `load_skill` still serves every skill.
+
 ## Consequences
 
-Skill loading costs a tool call and the model may ignore optional guidance. D1 and R2 writes cannot share a transaction, so failed compensation can leave unreachable objects. Versioning adds reads but makes instruction provenance and rollback possible. Legacy mutable R2-only documents are not discovered and require manual republishing.
+Skill loading costs a tool call and the model may ignore optional guidance; per-message skills avoid both for short preferences, at the cost of sending the current message to the decision provider. D1 and R2 writes cannot share a transaction, so failed compensation can leave unreachable objects. Versioning adds reads but makes instruction provenance and rollback possible. Legacy mutable R2-only documents are not discovered and require manual republishing.

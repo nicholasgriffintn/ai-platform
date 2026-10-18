@@ -1,22 +1,22 @@
-# ADR 0088: Council review gates outputs
+# ADR 0088: Judge project task work against an agreed bar
 
-Status: Implemented.
+Status: Implemented for Outputs and project tasks. Staleness sweeps and work-in-progress limits are not part of this decision.
 
 ## Problem
 
-`run_council` debates a question and ends in prose, and `audit_evidence` runs only when asked. A drafted Output can be sent or published with nothing between it and the world except an approval card, which shows the call's arguments but says nothing about whether the work is any good. Agent Prime's Agent Council showed a shape that works: independent seats, a second round in which each seat reads the others, one verdict of ship, revise or hold with a revision brief, and earlier verdicts on similar work fed back in.
+A drafted Output could be sent or published with nothing between it and the world except an approval card, which shows the call's arguments but says nothing about whether the work is any good. A project task's plan also recorded scope and steps but not what it assumed or what evidence should stop it, so work carried on until a goal stalled, and nobody checked afterwards which assumptions held.
 
 ## Decision
 
-A council review is its own operation over an Output, not a mode of the open debate.
+A **council review** is its own operation over an Output revision, not a mode of the open `run_council` debate.
 
-- Four fixed seats review the current revision: sceptic, researcher, customer and strategist, using their existing council member prompts. In round one each seat critiques independently. In round two each seat reads the others' critiques, concedes or presses its points, and votes `ship`, `revise` or `hold`. A seat that does not vote counts as `hold`.
-- The synthesiser adjudicates. It returns a verdict, a revision brief and any dissent that survived the rebuttals. It may not ship over a seat that voted revise or hold, and when its answer cannot be read the seats' votes decide.
-- The briefs from the reviewer's last three reviews of the same Output kind, in the same scope, go to the adjudicator, so a recurring weakness is named.
-- Reviews are appended to `output_review` with the Output revision they judged. They are never edited, and a changed Output shows that its latest review is for an earlier revision.
-- People ask for a review from the Output page. Teammates use the `review_output` tool. Both run through `reviewOutput`, which checks Output access.
-- A project flow stage can hand off `on_council_ship`. When its goal completes, up to three of the stage's Outputs are reviewed, and the task advances only if every review ships. Otherwise the completion waits for a person, carrying the review identifiers. A stage with no Outputs, or more than three, always waits.
+- Four fixed seats critique independently, then read each other's critiques and vote `ship`, `revise` or `hold`. A missing vote counts as `hold`.
+- The synthesiser returns a verdict, a revision brief and any surviving dissent. It cannot ship over a revise or hold vote, and when its answer cannot be read the votes decide. Briefs from the last three reviews of the same Output kind in the same scope are fed back in.
+- Reviews are appended to `output_review` against the revision they judged and never edited. People and teammates both go through `reviewOutput`, which checks Output access.
+- A flow stage can hand off `on_council_ship`: up to three of its Outputs are reviewed, and the task advances only if every review ships. Otherwise, or with no Outputs or more than three, the completion waits for a person.
+
+A project task carries **assumptions** (up to ten) and **kill conditions** (up to five) on its record rather than its locked plan, so a plan stage can write them while the task runs. After every run, each kill condition is judged independently; one at 0.8 or above blocks the task as `kill_condition_met` and surfaces it in Attention, with no hand-off or review. When the task finishes, each assumption is judged `held`, `broke` or `unknown` once and stored as its retrospective. Without a decision model, kill conditions pass and assumptions are recorded as unknown, so an unavailable judge never stops work.
 
 ## Consequences
 
-Work can be held to an explicit bar before it leaves, and the bar's reasoning is visible on the Output. A review costs about nine model calls on the auxiliary model, so it runs on request or when a stage asks for it, metered through the panel's usage path. The verdict is advice and a gate on stage hand-off only. Sending still goes through the existing approvals, and nothing here grants or removes authority.
+Work can be held to an explicit bar before it leaves and can stop on evidence agreed in advance, with the reasoning visible on the Output or task. A review costs about nine auxiliary model calls, so it runs on request or when a stage asks. Verdicts and judgements gate stage hand-off only: sending still goes through approvals, and nothing here grants or removes authority. A stop or retrospective is only as good as what the runs wrote down.

@@ -32,7 +32,6 @@ export function describePolyContext(
     standing_approvals: polyContext.standingApprovals.filter(
       (approval) => Date.parse(approval.expiresAt) > now,
     ),
-    tool_rules: polyContext.toolRules,
     paused_until:
       polyContext.pausedUntil && Date.parse(polyContext.pausedUntil) > now
         ? polyContext.pausedUntil

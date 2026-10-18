@@ -19,6 +19,7 @@ export interface ApprovalRequestData {
     toolName?: string;
   };
   approvedInARow?: number;
+  allowRuleLifts?: boolean;
   authoritativeState: ApprovalAuthoritativeState;
 }
 
@@ -105,6 +106,7 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
         }
       : {}),
     ...(approvedInARow ? { approvedInARow } : {}),
+    ...(approval?.allowRuleLifts === true ? { allowRuleLifts: true } : {}),
     authoritativeState: readAuthoritativeState(data, approval, humanInTheLoop, expiresAt),
   };
 }

@@ -1,6 +1,6 @@
 # Record release verification
 
-Leave a verification item when a change needs a human or operator to confirm behaviour that static checks cannot prove. Include visible behaviour, permissions, migrations, bindings, external configuration and failure recovery. Skip documentation-only changes and internal work already proved by automated checks.
+Most changes need no verification item. Tests, typechecks and the changeset are the record. Leave one only when a deploy needs a person to confirm behaviour on real infrastructure, credentials or devices that automated checks cannot reach, such as a new binding, a migration, an external provider or a device-only path. Keep it to the checks that remain.
 
 ## Record an item
 
@@ -23,7 +23,7 @@ Use one Markdown file per outcome under `.agents/verification/pending/`, named `
 **Stop and report if:** the observable failure condition.
 ```
 
-Write for someone who has not read the change. Name the screen or API request and expected result. Never tick a human-verification box on the user's behalf; record automated evidence separately.
+Write for someone who has not read the change. Name the screen or API request and expected result. Never tick a human-verification box on the user's behalf, and do not copy test results into the item.
 
 ## Reconstruct missing items
 

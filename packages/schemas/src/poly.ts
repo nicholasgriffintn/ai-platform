@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   teammateAutonomyLevelSchema,
   teammateStandingApprovalSchema,
-  teammateToolRuleSchema,
 } from "./teammate-contexts.js";
 
 export const POLY_CONVERSATION_TYPE = "poly";
@@ -192,7 +191,6 @@ export const polyAgendaSchema = polyAgendaListsSchema.extend({
   conversation_id: z.string().min(1),
   autonomy_level: teammateAutonomyLevelSchema,
   standing_approvals: z.array(teammateStandingApprovalSchema),
-  tool_rules: z.array(teammateToolRuleSchema),
   paused_until: z.string().nullable(),
   look_around: polyLookAroundSchema,
 });

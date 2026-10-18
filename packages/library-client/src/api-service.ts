@@ -15,7 +15,6 @@ import type {
   UpdatePolyLookAround,
   StandingApproval,
   TeammateAutonomyLevel,
-  TeammateToolRule,
   TeammateResponse,
   CreateTeammateInput,
   HireTeammateInput,
@@ -281,12 +280,6 @@ class ApiService {
     autonomyLevel: TeammateAutonomyLevel,
   ): Promise<TeammateContext> =>
     this.teammateService.updateTeammateContextAutonomy(contextId, autonomyLevel);
-
-  updateTeammateContextToolRules = (
-    contextId: string,
-    toolRules: TeammateToolRule[],
-  ): Promise<TeammateContext> =>
-    this.teammateService.updateTeammateContextToolRules(contextId, toolRules);
 
   updateTeammateContextPause = (
     contextId: string,

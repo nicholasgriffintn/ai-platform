@@ -1,6 +1,7 @@
 export * from "./openai-decisions.js";
 export * from "./teammates.js";
 export * from "./teammate-contexts.js";
+export * from "./tool-rules.js";
 export * from "./teammate-computers.js";
 export * from "./agent-modes.js";
 export * from "./tool-effects.js";

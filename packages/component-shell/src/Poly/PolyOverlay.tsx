@@ -9,7 +9,7 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} width="min(56rem, 96vw)">
       <DialogContent
-        className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0 pr-10"
+        className="flex h-[min(44rem,92dvh)] flex-col gap-0 overflow-hidden p-0"
         fullScreen={isExpanded}
       >
         <DialogDescription className="sr-only">

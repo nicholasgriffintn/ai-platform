@@ -122,7 +122,7 @@ Translate legacy typed conditions into Cedar at the compatibility boundary. Eval
 
 Retain existing stored hashes and revision numbers when reading older policies. Hash the normalised native rules for new revisions. No database migration or bulk remote write is required for this conversion.
 
-Bind approval coverage to **scope, policy hash and rule ID**. Require an unexpired exception for a block and reject coverage of evaluator failures. A changed policy hash reopens approval even when it uses the same rule ID; this deliberately tightens the earlier scope-and-ID rule in ADR 0064.
+Bind approval coverage to **scope, policy hash and rule ID**. Require an unexpired exception for a block and reject coverage of evaluator failures. A changed policy hash reopens approval even when it uses the same rule ID.
 
 ## Handle runtime and cost
 

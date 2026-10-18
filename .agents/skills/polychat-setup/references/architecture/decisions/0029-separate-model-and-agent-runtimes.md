@@ -20,7 +20,7 @@ An **agent runtime** exposes stateful sessions and owns its own loop, memory, to
 
 Authority follows the difference. An agent runtime connection executes code, so its credential is held by the desktop core and never reaches the webview, every consequential action requires explicit approval in Polychat, and no blanket standing approval exists. Polychat does not weaken whatever authentication the gateway already enforces.
 
-Endpoints are reached on loopback by default. A network address is permitted, because running a gateway on a home server and using a laptop as its surface is a real arrangement, but the person types the address; Polychat does not discover endpoints by scanning. Each endpoint is approved once, recorded and revocable in one place, and a network agent runtime requires a protected transport or a pairing secret. Egress remains allowlisted in the core, so a configured endpoint widens the allowlist by exactly itself.
+Endpoints are reached on loopback by default. A network address is permitted, because running a gateway on a home server and using a laptop as its surface is a real arrangement, but the person types the address; Polychat does not discover endpoints by scanning or seed default ones, so a runtime exists only after someone connects it. Each endpoint is approved once, recorded and revocable in one place, and a network agent runtime requires a protected transport or a pairing secret. Egress remains allowlisted in the core, so a configured endpoint widens the allowlist by exactly itself.
 
 Local tiers become a preference ordering applied to models actually discovered on the device rather than a catalogue. When none of a tier's candidates are present, the tier is empty and says so.
 

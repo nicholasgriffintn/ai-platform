@@ -12,7 +12,6 @@ import {
   updateTeammateContextAutonomySchema,
   updateTeammateContextPauseSchema,
   updateTeammateContextStatusSchema,
-  updateTeammateContextToolRulesSchema,
   updateTeammateSchema,
   upsertTeammateConnectionGrantSchema,
   type TeammateContext,
@@ -38,7 +37,6 @@ import {
   updateTeammateContextAutonomy,
   updateTeammateContextPause,
   updateTeammateContextStatus,
-  updateTeammateContextToolRules,
   upsertTeammateConnectionGrant,
 } from "~/modules/teammates/application";
 import type { IEnv } from "~/types";
@@ -55,15 +53,13 @@ const updateTeammateProjectSchema = z.object({ removed: z.boolean() });
 const updateTeammateContextSchema = updateTeammateContextStatusSchema
   .partial()
   .extend(updateTeammateContextAutonomySchema.partial().shape)
-  .extend(updateTeammateContextToolRulesSchema.partial().shape)
   .extend(updateTeammateContextPauseSchema.partial().shape)
   .refine(
     (body) =>
       body.status !== undefined ||
       body.autonomyLevel !== undefined ||
-      body.toolRules !== undefined ||
       body.pausedUntil !== undefined,
-    { message: "Change the status, autonomy level, tool rules or pause" },
+    { message: "Change the status, autonomy level or pause" },
   );
 
 defineMarketplace(app);
@@ -185,9 +181,9 @@ defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates)
 
   contexts.update({
     auth: true,
-    summary: "Change a context's lifecycle, autonomy, rules or pause",
+    summary: "Change a context's lifecycle, autonomy or pause",
     description:
-      "Sets the context status, how much it may do without asking, its per-tool rules, or when its background work resumes.",
+      "Sets the context status, how much it may do without asking, or when its background work resumes.",
     paramSchema: contextParamsSchema,
     bodySchema: updateTeammateContextSchema,
     responses: { 200: { description: "The context", schema: teammateContextSchema } },
@@ -203,14 +199,6 @@ defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates)
           serviceContext,
           params.context_id,
           body.autonomyLevel,
-        );
-      }
-
-      if (body.toolRules) {
-        updated = await updateTeammateContextToolRules(
-          serviceContext,
-          params.context_id,
-          body.toolRules,
         );
       }
 

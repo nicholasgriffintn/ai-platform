@@ -4,6 +4,7 @@ import type {
   LastModelSelection,
   ModelTier,
   PetModelOverrides,
+  ToolRule,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface User {
@@ -75,6 +76,7 @@ export interface IUserSettings {
   pet_travel_enabled: boolean;
   pet_animation_enabled: boolean;
   pet_model_overrides: PetModelOverrides;
+  tool_rules: ToolRule[];
   onboarding_seen: string[];
 }
 

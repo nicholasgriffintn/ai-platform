@@ -20,11 +20,6 @@ Unavailable or expired states block execution unless the caller provides a valid
 Providers define generation defaults, hard limits, and protocol constraints.
 Clients keep caller intent, but may only send optional settings that are explicitly supplied.
 
-## Why this merges 0035
-
-An earlier separate record on model-tier resolution duplicated this decision.
-Its intent is now covered here and no longer maintained separately.
-
 ## Consequences
 
 - Server and clients agree on the same tier result and empty/unsupported candidates remain explicit.

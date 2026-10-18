@@ -1,4 +1,4 @@
-import { findTeammateToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
+import { findToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ConversationManager } from "~/modules/conversations/application/manager";
@@ -76,7 +76,7 @@ export const handleFunctions = async ({
       }),
       now: Date.now(),
     }),
-    toolRule: findTeammateToolRule(request.request?.tool_rules, functionName),
+    toolRule: findToolRule(request.request?.tool_rules, functionName),
     ownerStartedRun: isOwnerStartedTrigger(request.request?.trigger),
   });
 

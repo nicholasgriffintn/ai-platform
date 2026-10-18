@@ -1,6 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
+  activeToolRules,
   conversationCompactedEvent,
   isAgentExecutionMode,
   type Goal,
@@ -377,6 +378,7 @@ export class ChatOrchestrator {
         conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
         permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
         options: prepared.requestOptions,
+        tool_rules: activeToolRules(userSettings?.tool_rules, chatOptions.acting_rules_suspended),
       },
       input: toolIntentRequest,
       mode: currentMode,

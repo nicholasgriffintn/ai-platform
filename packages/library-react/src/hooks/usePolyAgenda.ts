@@ -3,7 +3,6 @@ import type {
   PolyAgenda,
   TeammateAutonomyLevel,
   TeammateContext,
-  TeammateToolRule,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -61,32 +60,12 @@ function applyContextToAgenda(current: PolyAgenda | undefined, context: Teammate
   return current
     ? {
         ...current,
-        tool_rules: context.toolRules,
         paused_until:
           context.pausedUntil && Date.parse(context.pausedUntil) > Date.now()
             ? context.pausedUntil
             : null,
       }
     : current;
-}
-
-export function useSetPolyToolRules(agenda: PolyAgenda | undefined) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (toolRules: TeammateToolRule[]) => {
-      if (!agenda) {
-        throw new Error("Poly is not open yet");
-      }
-
-      return apiService.updateTeammateContextToolRules(agenda.context_id, toolRules);
-    },
-    onSuccess: (context) => {
-      queryClient.setQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY, (current) =>
-        applyContextToAgenda(current, context),
-      );
-    },
-  });
 }
 
 export function useSetPolyPause(agenda: PolyAgenda | undefined) {

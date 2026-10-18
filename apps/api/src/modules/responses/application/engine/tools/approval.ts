@@ -17,6 +17,7 @@ export function createPendingToolApprovalMessage(params: {
   platform: Platform;
   standingEligible?: boolean;
   approvedInARow?: number;
+  allowRuleLifts?: boolean;
 }): Message {
   const approvedInARow = params.standingEligible ? (params.approvedInARow ?? 0) : 0;
 
@@ -48,6 +49,7 @@ export function createPendingToolApprovalMessage(params: {
         reason: params.reason,
         standingEligible: params.standingEligible === true,
         approvedInARow,
+        allowRuleLifts: params.allowRuleLifts === true,
       },
       humanInTheLoop: pendingApproval({
         interactionId: params.toolCallId,

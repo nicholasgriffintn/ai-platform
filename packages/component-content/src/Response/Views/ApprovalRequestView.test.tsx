@@ -68,3 +68,52 @@ describe("ApprovalRequestView authority", () => {
     expect(submit).toHaveBeenCalledOnce();
   });
 });
+
+describe("ApprovalRequestView rule shortcuts", () => {
+  const actionApproval = {
+    ...pending,
+    approvalRequired: true,
+    approval: { ...pending.approval, allowRuleLifts: true },
+  };
+
+  it("approves and asks to always allow the tool", async () => {
+    const submit = vi.fn(async () => {});
+
+    render(<ApprovalRequestView embedded data={actionApproval} onToolInteraction={submit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Always allow write_document" }));
+
+    await waitFor(() => expect(submit).toHaveBeenCalledOnce());
+    expect(submit).toHaveBeenCalledWith(
+      "write_document",
+      "submitPrompt",
+      expect.objectContaining({ option: "Approve", resolution: "approved", rule: "act" }),
+    );
+  });
+
+  it("only offers always allow when a rule would stop the ask", () => {
+    render(
+      <ApprovalRequestView
+        embedded
+        data={{ ...actionApproval, approval: pending.approval }}
+        onToolInteraction={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /Always allow/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Never use write_document" })).toBeInTheDocument();
+  });
+
+  it("rejects and hands the tool back for good", async () => {
+    const submit = vi.fn(async () => {});
+
+    render(<ApprovalRequestView embedded data={actionApproval} onToolInteraction={submit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Never use write_document" }));
+
+    await waitFor(() => expect(submit).toHaveBeenCalledOnce());
+    expect(submit).toHaveBeenCalledWith(
+      "write_document",
+      "submitPrompt",
+      expect.objectContaining({ option: "Reject", resolution: "rejected", rule: "hand_off" }),
+    );
+  });
+});

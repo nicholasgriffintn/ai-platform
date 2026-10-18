@@ -55,9 +55,8 @@ bundle. The Rust core embeds the built renderer, so the renderer is built before
 
 The Linux leg also drives the packaged window through `tauri-driver` under `xvfb`, covering that the
 renderer boots, offers sign-in and cannot reach a runtime past the content security policy. That
-step reports without gating until it has proved stable; the pending verification item says when to
-make it blocking. `tauri-driver` does not reach macOS, so macOS packaged behaviour stays an operator
-check.
+step reports without gating until it has proved stable. `tauri-driver` does not reach macOS, so
+macOS packaged behaviour stays an operator check.
 
 ## Serving builds
 

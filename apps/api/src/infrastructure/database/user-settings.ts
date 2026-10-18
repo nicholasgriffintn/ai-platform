@@ -48,6 +48,7 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
     families: {},
     providers: {},
   },
+  tool_rules: [],
   onboarding_seen: [],
   tracking_enabled: 1,
   advertise_machines: 1,
@@ -122,6 +123,7 @@ export function prepareUserSettingsUpdates(
           : 0
         : null,
     pet_model_overrides: settings.pet_model_overrides ?? null,
+    tool_rules: settings.tool_rules ?? null,
     onboarding_seen: settings.onboarding_seen ?? null,
   };
 

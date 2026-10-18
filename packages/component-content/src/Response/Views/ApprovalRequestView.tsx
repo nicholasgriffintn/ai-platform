@@ -13,6 +13,8 @@ import type { ToolInteractionHandler } from "../registry";
 
 const TOOL_NAME = "request_approval";
 
+type ApprovalRule = "act" | "hand_off";
+
 interface ApprovalSubmission {
   key: string;
   option: string;
@@ -36,8 +38,14 @@ export function ApprovalRequestView({
   const isAuthoritativelyResolved = authoritativeState.status !== "pending";
   const isSubmitting = activeSubmission?.status === "submitting";
   const isAcknowledged = activeSubmission?.status === "acknowledged";
+  const ruleToolName =
+    approval.approvalRequired && approval.approval?.toolName !== TOOL_NAME
+      ? approval.approval?.toolName
+      : undefined;
+  const approveOption = options.find((option) => option.toLowerCase() === "approve");
+  const rejectOption = options.find((option) => option.toLowerCase() === "reject");
 
-  const choose = async (option: string) => {
+  const choose = async (option: string, rule?: ApprovalRule) => {
     if (isAuthoritativelyResolved || submittingRef.current || !onToolInteraction) {
       return;
     }
@@ -67,6 +75,7 @@ export function ApprovalRequestView({
               ...(standing ? { standing: true } : {}),
             }
           : {}),
+        ...(rule ? { rule } : {}),
       });
       setSubmission({ key: approval.key, option, status: "acknowledged" });
     } catch {
@@ -150,6 +159,29 @@ export function ApprovalRequestView({
               </Button>
             ))}
           </div>
+          {ruleToolName && approveOption && rejectOption ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span>Decide once:</span>
+              {approval.allowRuleLifts ? (
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  disabled={isSubmitting}
+                  onClick={() => void choose(approveOption, "act")}
+                >
+                  Always allow {ruleToolName}
+                </Button>
+              ) : null}
+              <Button
+                size="xs"
+                variant="ghost"
+                disabled={isSubmitting}
+                onClick={() => void choose(rejectOption, "hand_off")}
+              >
+                Never use {ruleToolName}
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

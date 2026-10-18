@@ -15,7 +15,6 @@ const polyContext: TeammateContext = {
   autonomyLevel: "assistant",
   standingApprovals: [],
   approvalStreaks: [],
-  toolRules: [],
   pausedUntil: null,
   ownerSeenAt: "2026-10-06T09:00:00.000Z",
   createdAt: "2026-10-05T09:00:00.000Z",
@@ -144,10 +143,6 @@ describe("admitTeammateContextAuthority with a ceiling", () => {
         expiresAt: "2026-11-16T09:00:00.000Z",
       },
     ],
-    toolRules: [
-      { toolName: "create_note", level: "act" },
-      { toolName: "web_search", level: "ask" },
-    ],
   };
 
   it("runs a read-only routine as an observer with no standing approvals or acting rules", () => {
@@ -160,10 +155,10 @@ describe("admitTeammateContextAuthority with a ceiling", () => {
 
     expect(authority.autonomyLevel).toBe("observer");
     expect(authority.standingApprovals).toEqual([]);
-    expect(authority.toolRules).toEqual([{ toolName: "web_search", level: "ask" }]);
+    expect(authority.actingRulesSuspended).toBe(true);
   });
 
-  it("keeps the owner's rules on their own turns without a ceiling", () => {
+  it("keeps acting rules on the owner's own turns without a ceiling", () => {
     const authority = admitTeammateContextAuthority({
       context: partner,
       trigger: "user",
@@ -171,6 +166,6 @@ describe("admitTeammateContextAuthority with a ceiling", () => {
     });
 
     expect(authority.autonomyLevel).toBe("partner");
-    expect(authority.toolRules).toHaveLength(2);
+    expect(authority.actingRulesSuspended).toBe(false);
   });
 });

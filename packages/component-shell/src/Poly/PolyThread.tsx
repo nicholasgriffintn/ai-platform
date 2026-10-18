@@ -95,6 +95,7 @@ export function PolyThread({
                 hideComposerSuggestions: true,
                 hideModelSelector: true,
                 isPolyThread: true,
+                focusComposerOnOpen: true,
                 forceAutoPlayResponses: polySpeaks,
                 toolSelectionLocked: true,
                 analyticsSource: "poly",

@@ -84,6 +84,7 @@ import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
 import { FooterInfo } from "./FooterInfo.js";
 import { MessageList } from "./MessageList.js";
+import { useApprovalRules } from "./useApprovalRules.js";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit.js";
 import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
 import { useGoalCommands } from "./useGoalCommands.js";
@@ -140,6 +141,7 @@ export interface ThreadModeConfig {
   hideVoiceControls?: boolean;
   petPresetSlug?: string;
   isPolyThread?: boolean;
+  focusComposerOnOpen?: boolean;
   forceAutoPlayResponses?: boolean;
   analyticsSource?: string;
   contextAttachments?: AttachmentData[];
@@ -335,6 +337,18 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   useEffect(() => {
     registerComposerFocus(() => chatInputRef.current?.focus());
   }, [registerComposerFocus]);
+
+  const focusComposerOnOpen = Boolean(modeConfig?.focusComposerOnOpen);
+
+  useEffect(() => {
+    if (!focusComposerOnOpen) {
+      return undefined;
+    }
+
+    const frame = window.requestAnimationFrame(() => chatInputRef.current?.focus());
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusComposerOnOpen]);
 
   const handleQuoteSelection = useCallback(
     (selection: ChatMessageSelection) => {
@@ -803,8 +817,11 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [apiModels, model, modeConfig?.requestOptions?.metadata?.project_id],
   );
 
+  const applyApprovalRule = useApprovalRules();
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
-    async (toolName, action, data) => {
+    async (toolName, action, interactionData) => {
+      const data = await applyApprovalRule(toolName, interactionData);
+
       trackFeatureUsage("tool_interaction", {
         tool_name: toolName,
         action: action,
@@ -897,6 +914,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
     },
     [
+      applyApprovalRule,
       currentConversationId,
       trackFeatureUsage,
       uploadInteractionFiles,

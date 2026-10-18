@@ -30,8 +30,12 @@ export const toolPolicies = {
     when { context.toolRule == "ask" };`,
   "tool.rule.act_if_asked": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.toolRule == "act_if_asked" && !context.ownerStartedRun };`,
+  "tool.rule.floor": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
+    when { ["act", "act_if_asked"].contains(context.toolRule) &&
+      ["external_send", "spend", "destructive", "credential", "data_export"].contains(context.effectClass) };`,
   "tool.approval": `permit(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.toolName == "request_approval" ||
       (!context.permissions.containsAny(context.requiredApprovalPermissions) &&
-       (!context.enforceMode || !context.permissions.containsAny(context.modeApprovalPermissions))) };`,
+       (!context.enforceMode || !context.permissions.containsAny(context.modeApprovalPermissions) ||
+        context.toolRule == "act" || (context.toolRule == "act_if_asked" && context.ownerStartedRun))) };`,
 };

@@ -1,5 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { findTeammateToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
+import { findToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -181,7 +181,7 @@ export const handleToolCalls = async (
         effects: functionDefinition?.effects,
         rawArguments: rawToolArguments,
       });
-      const permissionResult = permissionChecker.checkRequestToolAccess({
+      const permissionInput = {
         toolName: functionName,
         mode,
         user: req.user,
@@ -199,9 +199,10 @@ export const handleToolCalls = async (
           destination: callDestination,
           now: Date.now(),
         }),
-        toolRule: findTeammateToolRule(req.request?.tool_rules, functionName),
+        toolRule: findToolRule(req.request?.tool_rules, functionName),
         ownerStartedRun: isOwnerStartedTrigger(req.request?.trigger),
-      });
+      };
+      const permissionResult = permissionChecker.checkRequestToolAccess(permissionInput);
 
       if (!permissionResult.allowed) {
         recordDeterministicFailure?.();
@@ -316,6 +317,10 @@ export const handleToolCalls = async (
             toolCallId: toolCall.id,
             toolCallArguments: toolCall.arguments || toolCall.function?.arguments,
             reason: approvalReason,
+            allowRuleLifts: !permissionChecker.checkRequestToolAccess({
+              ...permissionInput,
+              toolRule: "act",
+            }).requiresApproval,
             standingEligible: isStandingApprovalEligible({
               autonomyLevel: req.request?.autonomy_level,
               conversationType: req.request?.conversation_type,

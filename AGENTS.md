@@ -16,6 +16,13 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 - Keep hosted browser sessions bound to their creator and credential source. Send sign-in values only through dedicated approval events outside model input and stored tool output.
 - Use `pnpm` for dependency updates and lockfile updates only when necessary.
 
+## Decisions, release notes and verification
+
+- **ADRs are rare.** Write one only when a decision is hard to reverse, surprising without context and the result of a real trade-off: a durable boundary, authority rule or contract that other modules depend on. Feature behaviour, defaults, thresholds, copy, migrations and fixes are not ADRs.
+- Extend or supersede the ADR that already owns a boundary instead of adding a new one. One decision per boundary, not one per pull request.
+- **Changesets are public release notes.** For a change people would notice, write a changeset with `pnpm changeset` that says what changed and how to use it. Leave out file names, ADR numbers, test evidence and operator steps.
+- **Verification records are rare too.** Add one only when a deploy needs a person to check behaviour on real infrastructure or devices that tests cannot reach. Most changes need none. See [verification](.agents/skills/polychat-setup/references/verification.md).
+
 ## Operational limits
 
 - Do not run git/PR commands unless requested by the user.

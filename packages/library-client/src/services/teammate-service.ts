@@ -10,7 +10,6 @@ import {
   type TeammateConnectionGrantListResponse,
   type UpsertTeammateConnectionGrant,
   type TeammateAutonomyLevel,
-  type TeammateToolRule,
   type TeammateContext,
   type TeammateContextScope,
   type TeammateContextStatus,
@@ -93,13 +92,6 @@ export class TeammateService {
     status: TeammateContextStatus,
   ): Promise<TeammateContext> {
     return contexts.update(contextId, { status });
-  }
-
-  updateTeammateContextToolRules(
-    contextId: string,
-    toolRules: TeammateToolRule[],
-  ): Promise<TeammateContext> {
-    return contexts.update(contextId, { toolRules });
   }
 
   updateTeammateContextPause(

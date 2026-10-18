@@ -1,6 +1,7 @@
 import type { ComputeSite } from "./compute-sites.js";
 import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
+import type { ToolRule } from "./tool-rules.js";
 import type { GuardrailsProviderId, LastModelSelection } from "./user/userSettings.js";
 
 export interface User {
@@ -75,5 +76,6 @@ export interface UserSettings {
   pet_travel_enabled?: boolean;
   pet_animation_enabled?: boolean;
   pet_model_overrides?: PetModelOverrides;
+  tool_rules?: ToolRule[];
   onboarding_seen?: string[];
 }

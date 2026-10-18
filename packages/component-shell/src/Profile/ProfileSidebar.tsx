@@ -14,6 +14,7 @@ import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab.js";
 import { ProfilePetsTab } from "./Tabs/ProfilePetsTab.js";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab.js";
 import { ProfileSandboxTab } from "./Tabs/ProfileSandboxTab.js";
+import { ProfileToolRulesTab } from "./Tabs/ProfileToolRulesTab.js";
 
 export interface ProfileSidebarItem {
   id: string;
@@ -60,6 +61,7 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     component: ProfileProvidersTab,
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
+  { id: "tool-rules", label: "Tool rules", group: ADVANCED_GROUP, component: ProfileToolRulesTab },
   { id: "channels", label: "Channels", group: ADVANCED_GROUP, component: ProfileChannelsTab },
   { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
 ];

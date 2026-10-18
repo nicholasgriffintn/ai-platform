@@ -5,7 +5,7 @@ Work › Models lets a workspace bring in models and data, train and evaluate th
 ## Configure
 
 - **Provider accounts:** anyone with the `manage_connections` action connects providers under Models › Governance: Hugging Face, AWS (Bedrock and SageMaker), Together, Fireworks, Nebius, Google Vertex, Azure AI Foundry, RunPod, Cloudflare Workers AI and any OpenAI-compatible endpoint. Training and serving run in those accounts and bill them directly. "Check before saving" shows what the credentials can read, store, train and host.
-- **Storage:** secrets are sealed with `PRIVATE_KEY` and never returned. Uploads, dataset splits, training reports and eval results live in `PRIVATE_ASSETS_BUCKET`. Presigned part and report URLs need `ASSETS_BUCKET_ACCESS_KEY_ID`, `ASSETS_BUCKET_SECRET_ACCESS_KEY`, `ACCOUNT_ID` and `PRIVATE_ASSETS_BUCKET_NAME`. Uploaded weights are published to a private repository in the workspace's Hugging Face namespace when one is connected (ADR 0070).
+- **Storage:** secrets are sealed with `PRIVATE_KEY` and never returned. Uploads, dataset splits, training reports and eval results live in `PRIVATE_ASSETS_BUCKET`. Presigned part and report URLs need `ASSETS_BUCKET_ACCESS_KEY_ID`, `ASSETS_BUCKET_SECRET_ACCESS_KEY`, `ACCOUNT_ID` and `PRIVATE_ASSETS_BUCKET_NAME`. Uploaded weights are published to a private repository in the workspace's Hugging Face namespace when one is connected.
 - **Database:** use the API's current D1 migration scripts. Inspect the migration files before running them; remote migrations require explicit authority.
 - **Cron:** the `*/15 * * * *` trigger queues `model_platform_reconcile` for every workspace with live deployments or runs. The 03:00 schedule expires approvals and queues replays.
 

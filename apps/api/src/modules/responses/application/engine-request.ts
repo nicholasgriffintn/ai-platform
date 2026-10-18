@@ -103,7 +103,7 @@ function teammateEngineFields(
           autonomy_level: teammate.autonomyLevel,
           standing_approvals: teammate.standingApprovals,
           approval_streaks: teammate.approvalStreaks,
-          tool_rules: teammate.toolRules,
+          acting_rules_suspended: teammate.actingRulesSuspended,
         }
       : {}),
     ...(teammate.computerId ? { computer_id: teammate.computerId } : {}),

@@ -21,5 +21,6 @@ Use the checked-out code and manifests as the source of truth. Read only the gui
 - Local setup stays local. Deployments and remote migrations need explicit user authority.
 - Use tracked manifests and example files; keep credentials out of tracked files and model input.
 - Keep operational guidance short and point to the owning package or application for implementation details.
-- Record only outstanding operator checks in `.agents/verification/pending/`; skip verification records for documentation-only changes.
+- Record only outstanding operator checks that tests cannot reach in `.agents/verification/pending/`. Most changes need none.
+- Write decision records only for durable boundaries; describe feature behaviour in a changeset instead. See the root `AGENTS.md`.
 - Follow the repository root `AGENTS.md` and the owning package's README.

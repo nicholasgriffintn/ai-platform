@@ -20,7 +20,6 @@ struct PolyPresenceTests {
             "conversation_id": "poly-home",
             "autonomy_level": "assistant",
             "standing_approvals": [],
-            "tool_rules": [],
             "paused_until": \(paused),
             "look_around": {"enabled": true, "timezone": "Europe/London"},
             "needs_you": [\(items(needsYou, kind: "delegation"))],

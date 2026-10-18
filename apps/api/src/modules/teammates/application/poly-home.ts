@@ -54,15 +54,12 @@ export function admitTeammateContextAuthority(params: {
       };
 
   const capped = Boolean(params.ceiling);
-  const loosened = authority.braked || capped;
 
   return {
     contextId: context.id,
     autonomyLevel: capTeammateAutonomyLevel(authority.autonomyLevel, params.ceiling),
     standingApprovals: capped ? [] : authority.standingApprovals,
     approvalStreaks: context.approvalStreaks,
-    toolRules: loosened
-      ? context.toolRules.filter((rule) => rule.level !== "act" && rule.level !== "act_if_asked")
-      : context.toolRules,
+    actingRulesSuspended: authority.braked || capped,
   };
 }

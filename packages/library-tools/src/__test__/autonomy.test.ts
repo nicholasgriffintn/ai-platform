@@ -1,4 +1,8 @@
-import type { TeammateAutonomyLevel, ToolEffectClass } from "@ngriffin_uk/polychat-schemas";
+import {
+  activeToolRules,
+  type TeammateAutonomyLevel,
+  type ToolEffectClass,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { PermissionChecker } from "../permissions.js";
@@ -126,5 +130,56 @@ describe("per-tool rules", () => {
       allowed: false,
       reason: 'Tool "call_api" is handed to you by your rules, so do this step yourself',
     });
+  });
+});
+
+describe("account rules outside a teammate", () => {
+  function inPlainChat(effectClass: ToolEffectClass, toolRule?: "act" | "ask") {
+    return checker.checkRequestToolAccess({
+      toolName: "call_api",
+      mode: "agent",
+      user: { id: 1, plan_id: "pro" },
+      toolPermissions: ["network", "write"],
+      effectClass,
+      toolRule,
+      requireApprovalFor: [],
+    });
+  }
+
+  it("lets an act rule lift a mode's own ask but never the floor", () => {
+    expect(inPlainChat("write").requiresApproval).toBe(true);
+    expect(inPlainChat("write", "act").requiresApproval).toBe(false);
+    expect(inPlainChat("external_send", "act")).toMatchObject({
+      requiresApproval: true,
+      reason: 'Tool "call_api" sends to people outside Polychat, which always needs your approval',
+    });
+  });
+
+  it("never lifts approvals a workspace requires", () => {
+    const result = checker.checkRequestToolAccess({
+      toolName: "call_api",
+      mode: "chat",
+      user: { id: 1, plan_id: "pro" },
+      toolPermissions: ["network", "write"],
+      effectClass: "write",
+      toolRule: "act",
+      requireApprovalFor: ["write"],
+    });
+
+    expect(result.requiresApproval).toBe(true);
+  });
+});
+
+describe("suspended acting rules", () => {
+  it("keeps asking and handing back but drops rules that would act on their own", () => {
+    const rules = [
+      { toolName: "create_note", level: "act" as const },
+      { toolName: "calendar", level: "act_if_asked" as const },
+      { toolName: "web_search", level: "ask" as const },
+      { toolName: "send_email", level: "hand_off" as const },
+    ];
+
+    expect(activeToolRules(rules, true).map((rule) => rule.level)).toEqual(["ask", "hand_off"]);
+    expect(activeToolRules(rules, false)).toHaveLength(4);
   });
 });

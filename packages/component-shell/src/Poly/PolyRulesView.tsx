@@ -1,34 +1,16 @@
-import { Button, FormSelect, Switch } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Switch } from "@ngriffin_uk/polychat-component-ui";
 import {
   buildPolyPauseOptions,
   useSetPolyLookAround,
   useSetPolyPause,
-  useSetPolyToolRules,
-  useTools,
 } from "@ngriffin_uk/polychat-library-react";
-import {
-  TEAMMATE_TOOL_RULE_LEVELS,
-  type PolyAgenda,
-  type TeammateToolRule,
-  type TeammateToolRuleLevel,
-} from "@ngriffin_uk/polychat-schemas";
+import type { PolyAgenda } from "@ngriffin_uk/polychat-schemas";
 import { formatClockTime, getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 
+import { ToolRulesEditor } from "../ToolRules/ToolRulesEditor.js";
 import { PolyAutonomySection } from "./PolyAutonomySection.js";
-
-const LEVEL_LABELS: Readonly<Record<TeammateToolRuleLevel, string>> = {
-  act: "Just do it",
-  act_if_asked: "Do it when I asked",
-  ask: "Ask me first",
-  hand_off: "Leave it to me",
-};
-
-const LEVEL_OPTIONS = TEAMMATE_TOOL_RULE_LEVELS.map((level) => ({
-  value: level,
-  label: LEVEL_LABELS[level],
-}));
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -40,23 +22,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function PolyRulesView({ agenda }: { agenda: PolyAgenda }) {
-  const setRules = useSetPolyToolRules(agenda);
   const setPause = useSetPolyPause(agenda);
   const setLookAround = useSetPolyLookAround();
-  const { data: tools = [] } = useTools();
-  const [newTool, setNewTool] = useState("");
-  const [newLevel, setNewLevel] = useState<TeammateToolRuleLevel>("ask");
   const [pauseOptions] = useState(() => buildPolyPauseOptions(new Date()));
-  const ruled = new Set(agenda.tool_rules.map((rule) => rule.toolName));
-  const toolOptions = tools
-    .filter((tool) => !ruled.has(tool.id))
-    .map((tool) => ({ value: tool.id, label: tool.name }));
-
-  const saveRules = (rules: TeammateToolRule[], success: string) =>
-    setRules.mutate(rules, {
-      onSuccess: () => toast.success(success),
-      onError: (error) => toast.error(getErrorMessage(error, "Poly could not take that rule")),
-    });
 
   const pause = (until: string | null) =>
     setPause.mutate(until, {
@@ -123,77 +91,7 @@ export function PolyRulesView({ agenda }: { agenda: PolyAgenda }) {
       </Section>
 
       <Section title="Rules for tools">
-        <p className="text-sm text-muted-foreground">
-          Set how Poly treats a tool, on top of its autonomy. Sending, spending, deleting,
-          credentials and exports always ask.
-        </p>
-        {agenda.tool_rules.length > 0 ? (
-          <ul className="space-y-2">
-            {agenda.tool_rules.map((rule) => (
-              <li key={rule.toolName} className="flex flex-wrap items-center gap-2">
-                <span className="min-w-0 flex-1 truncate font-mono text-xs">{rule.toolName}</span>
-                <FormSelect
-                  aria-label={`Rule for ${rule.toolName}`}
-                  fullWidth={false}
-                  value={rule.level}
-                  options={LEVEL_OPTIONS}
-                  disabled={setRules.isPending}
-                  onValueChange={(level) =>
-                    saveRules(
-                      agenda.tool_rules.map((entry) =>
-                        entry.toolName === rule.toolName ? { ...entry, level } : entry,
-                      ),
-                      `Rule for ${rule.toolName} changed`,
-                    )
-                  }
-                />
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  disabled={setRules.isPending}
-                  onClick={() =>
-                    saveRules(
-                      agenda.tool_rules.filter((entry) => entry.toolName !== rule.toolName),
-                      `Rule for ${rule.toolName} removed`,
-                    )
-                  }
-                >
-                  Remove
-                </Button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <div className="flex flex-wrap items-end gap-2">
-          <FormSelect
-            label="Tool"
-            fullWidth={false}
-            value={newTool}
-            options={toolOptions}
-            placeholder="Choose a tool"
-            onValueChange={setNewTool}
-          />
-          <FormSelect
-            label="Rule"
-            fullWidth={false}
-            value={newLevel}
-            options={LEVEL_OPTIONS}
-            onValueChange={setNewLevel}
-          />
-          <Button
-            size="sm"
-            disabled={!newTool || setRules.isPending}
-            onClick={() => {
-              saveRules(
-                [...agenda.tool_rules, { toolName: newTool, level: newLevel }],
-                `Rule for ${newTool} added`,
-              );
-              setNewTool("");
-            }}
-          >
-            Add rule
-          </Button>
-        </div>
+        <ToolRulesEditor />
       </Section>
     </div>
   );

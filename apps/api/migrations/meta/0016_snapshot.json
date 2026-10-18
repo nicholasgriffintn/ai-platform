@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d1c1ada7-951f-4977-835d-5afb9b86277d",
+  "id": "5e63dea5-cc5a-4b80-9964-1b0fc4e26a94",
   "prevId": "99fcc5ad-08ca-4e5f-8130-056e3be751d8",
   "tables": {
     "activity_record": {
@@ -9822,14 +9822,6 @@
         },
         "approval_streaks": {
           "name": "approval_streaks",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'[]'"
-        },
-        "tool_rules": {
-          "name": "tool_rules",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

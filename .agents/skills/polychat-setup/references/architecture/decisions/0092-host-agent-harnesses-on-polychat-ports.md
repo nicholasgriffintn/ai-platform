@@ -1,12 +1,10 @@
 # ADR 0092: Host agent harnesses on Polychat ports
 
-Status: Implemented in `apps/agent-worker`, `apps/sandbox-worker` and the API `agents` module; needs a deployed canary before release.
+Status: Implemented in `apps/agent-worker`, `apps/sandbox-worker` and the API `agents` module.
 
 ## Problem
 
 Every server agent was wired in by hand. Hosted Hermes had its own client, wire schema, key rotation and wake route. OpenAI Agents was a sandbox provider with its own event translator. Neither streamed: both chat providers set `supportsStreaming = false`, and the Hermes path read its run's event stream only for tool names and approvals, so replies arrived as one block at the end. Adding the Pi or OpenCode harnesses would have meant a third and fourth bespoke path, each with its own way of reaching models, tools and approvals.
-
-The three container workers also ran Sandbox SDK 0.12, which only gets fixes until 31 December 2026.
 
 ## Decision
 
@@ -19,10 +17,10 @@ A harness owns its agent loop and transcript. Polychat owns the ports every harn
 - OpenAI Agents and Bedrock Managed Agents stay remote: they speak the same agent sessions protocol, and the API streams one hosted session per turn into the same event shape.
 - Chat sees every harness as the `agent-harness` provider. Text and reasoning stream as OpenAI chunks, and tool activity uses a dedicated stream event that becomes tool parts. Chat, Work, teammates and Poly delegations all select harness agents as ordinary models.
 
-The sandbox worker moves to Sandbox SDK 1.0 in the same release. App-owned `Workspace` and `Computer` classes start their containers through `ctx.container`, pick the `code` or `browser` image per start, route egress through a `WorkspaceOutbound` entrypoint and keep caches and browser profiles with `DirectoryBackup`. The computer worker folds into it, and the old classes and 0.x backups are discarded.
+The sandbox worker owns the `Workspace` and `Computer` containers that harness tools and hosted computers run in, with egress routed through its outbound handler.
 
 ## Consequences
 
-A new harness is one adapter that implements four methods; it gets models, tools, approvals, streaming and billing without new API code. People lose hosted Hermes memory and browser sign-ins from before the migration, and the first run of each project rebuilds its dependency cache.
+A new harness is one adapter that implements four methods; it gets models, tools, approvals, streaming and billing without new API code.
 
 OpenCode is experimental and Pi is in beta, so adapters pin exact versions. Pi's alarms cap a model stream at fifteen minutes, which its capability record states. An approval that waits across a Durable Object eviction is lost with the in-memory promise; the harness retries the tool or reports it interrupted, and the person sees a fresh approval card. OpenAI Agents sessions are created per turn and run on the OpenAI key Polychat resolves for the account, outside the model port. Bedrock Managed Agents sessions run on a customer AgentCore Runtime: project chats use the workspace AWS connection, and personal chats use the Runtime and role in the person's settings with their Bedrock key. Neither falls back to platform credentials.

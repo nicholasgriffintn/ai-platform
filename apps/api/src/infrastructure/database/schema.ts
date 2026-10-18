@@ -22,7 +22,6 @@ import type {
   ModelPlatformAction,
   ModelVersionAttributes,
   TeammateApprovalStreak,
-  TeammateToolRule,
   TeammateStandingApproval,
   DATASET_COLLECTION_METHODS,
   DATASET_SHAPES,
@@ -1178,7 +1177,6 @@ export const teammateContext = sqliteTable(
       .$type<TeammateApprovalStreak[]>()
       .default([])
       .notNull(),
-    tool_rules: text({ mode: "json" }).$type<TeammateToolRule[]>().default([]).notNull(),
     paused_until: text(),
     owner_seen_at: text(),
     created_at: text()

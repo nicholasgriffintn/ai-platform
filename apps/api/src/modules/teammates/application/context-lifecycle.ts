@@ -3,7 +3,6 @@ import {
   type TeammateAutonomyLevel,
   type TeammateContext,
   type TeammateContextStatus,
-  type TeammateToolRule,
   TEAMMATE_PAUSE_MAX_HOURS,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -89,23 +88,6 @@ export async function updateTeammateContextAutonomy(
   const updated = await context.repositories
     .get(TeammateContextRepository)
     .updateAutonomyLevel(contextId, autonomyLevel);
-
-  if (!updated) {
-    throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  return updated;
-}
-
-export async function updateTeammateContextToolRules(
-  context: ServiceContext,
-  contextId: string,
-  toolRules: readonly TeammateToolRule[],
-): Promise<TeammateContext> {
-  await requireOwnedTeammateContext(context, contextId);
-  const updated = await context.repositories
-    .get(TeammateContextRepository)
-    .updateToolRules(contextId, toolRules);
 
   if (!updated) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);

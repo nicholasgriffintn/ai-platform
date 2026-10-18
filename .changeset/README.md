@@ -11,6 +11,10 @@ one its users would notice. That is what releases it: an application picked up o
 bump is versioned but never tagged. Application-only composition, tests and documentation still need
 no changeset.
 
+Changesets become the public changelogs, so write each one as a release note for the people using
+that package or application: what changed and how to use it. Leave out file names, decision records,
+test evidence and operator steps.
+
 Merging to `main` opens a `chore: version packages` pull request. Merging that applies the versions,
 writes the changelogs and publishes the qualifying application releases. See
 [releases](../.agents/skills/polychat-setup/references/operations/releases.md) for the whole loop and

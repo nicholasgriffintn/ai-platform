@@ -49,6 +49,7 @@ export * from "./hooks/useCharacterPresence.js";
 export * from "./hooks/usePetGaze.js";
 export * from "./hooks/usePetMotion.js";
 export * from "./hooks/useTeammatePresence.js";
+export * from "./hooks/useToolRules.js";
 export * from "./hooks/usePetShowreel.js";
 export * from "./hooks/usePetSwapTransition.js";
 export * from "./hooks/usePetTravel.js";
