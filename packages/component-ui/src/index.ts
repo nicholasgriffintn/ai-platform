@@ -3,6 +3,7 @@ export * from "./ThemedToaster";
 export * from "./Pet/Pet";
 export * from "./Pet/PetAccent";
 export * from "./Pet/TeammateCharacter";
+export * from "./Pet/usePetStatus";
 export * from "./ActionButtons";
 export * from "./alert";
 export * from "./badge";

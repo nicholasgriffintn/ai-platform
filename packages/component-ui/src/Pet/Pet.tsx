@@ -1,6 +1,5 @@
 import {
   type ActivePet,
-  type CharacterPresence,
   PET_SETTINGS_PATH,
   PET_SWAP_FADE_MS,
   useActivePet,
@@ -224,8 +223,4 @@ export function Pet({
       )}
     </span>
   );
-}
-
-export function usePetStatus(conversationId?: string | null): CharacterPresence["status"] {
-  return useCharacterPresence({ conversationId }).status;
 }
