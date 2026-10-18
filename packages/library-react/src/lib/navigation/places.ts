@@ -17,6 +17,7 @@ export const MODE_BASE_PATHS: Record<ProductMode, string> = {
 };
 
 export const PROFILE_PATH = "/profile";
+export const PET_SETTINGS_PATH = `${PROFILE_PATH}?tab=pets`;
 
 export const DISCOVER_PATH = "/discover";
 

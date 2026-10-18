@@ -82,3 +82,49 @@ describe("teammate autonomy", () => {
     expect(result).toMatchObject({ requiresApproval: true, approved: true });
   });
 });
+
+describe("per-tool rules", () => {
+  function withRule(
+    effectClass: ToolEffectClass,
+    toolRule: "act" | "act_if_asked" | "ask" | "hand_off",
+    ownerStartedRun = true,
+    autonomyLevel: TeammateAutonomyLevel = "assistant",
+  ) {
+    return checker.checkRequestToolAccess({
+      toolName: "call_api",
+      mode: "chat",
+      user: { id: 1, plan_id: "pro" },
+      toolPermissions: ["network", "write"],
+      effectClass,
+      autonomyLevel,
+      toolRule,
+      ownerStartedRun,
+    });
+  }
+
+  it("lets an act rule lift the assistant's ask for writes but never the floor", () => {
+    expect(withRule("write", "act")).toMatchObject({ allowed: true, requiresApproval: false });
+    expect(withRule("external_send", "act")).toMatchObject({ requiresApproval: true });
+    expect(withRule("write", "act", true, "observer")).toMatchObject({ allowed: false });
+  });
+
+  it("acts on request only on turns the owner started", () => {
+    expect(withRule("write", "act_if_asked", true)).toMatchObject({ requiresApproval: false });
+    expect(withRule("write", "act_if_asked", false)).toMatchObject({
+      requiresApproval: true,
+      reason:
+        'Your rules let "call_api" run only when you asked for it, so it needs your approval here',
+    });
+  });
+
+  it("asks for reads when told to and refuses tools handed back", () => {
+    expect(withRule("read", "ask", true, "partner")).toMatchObject({
+      allowed: true,
+      requiresApproval: true,
+    });
+    expect(withRule("read", "hand_off", true, "partner")).toMatchObject({
+      allowed: false,
+      reason: 'Tool "call_api" is handed to you by your rules, so do this step yourself',
+    });
+  });
+});

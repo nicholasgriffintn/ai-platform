@@ -8,11 +8,16 @@ import {
 import { lazy, type ReactNode, Suspense } from "react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
+import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
 import { SearchDialog } from "../Search/SearchDialog.js";
 import { SidebarPeekProvider } from "../Sidebar/SidebarPeekContext.js";
 import { ChatNavbar } from "./Navbar.js";
 
 export const MAIN_CONTENT_ID = "main-content";
+
+const PolyDock = lazy(() =>
+  import("../Poly/PolyDock.js").then((module) => ({ default: module.PolyDock })),
+);
 
 const KeyboardShortcutsHelp = lazy(() =>
   import("@ngriffin_uk/polychat-component-conversation/keyboard-shortcuts-help").then((mod) => ({
@@ -39,6 +44,7 @@ export function ProductShell({
   const showSearch = useChatStore((state) => state.showSearch);
   const setShowSearch = useChatStore((state) => state.setShowSearch);
   const { HostDialogs } = useShellHost();
+  const polyPresentation = usePolyPresentation();
 
   useKeyboardShortcuts();
 
@@ -72,6 +78,12 @@ export function ProductShell({
               {children}
             </main>
           </div>
+
+          {polyPresentation === "dock" ? (
+            <Suspense fallback={null}>
+              <PolyDock />
+            </Suspense>
+          ) : null}
         </div>
       </div>
 

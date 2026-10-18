@@ -1,8 +1,12 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
-import type { PolyAgenda, TeammateAutonomyLevel } from "@ngriffin_uk/polychat-schemas";
+import type {
+  PolyAgenda,
+  TeammateAutonomyLevel,
+  TeammateContext,
+  TeammateToolRule,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { derivePolyPresence, type PolyPresence } from "../lib/pet/poly-presence.js";
 import { liveOrPoll } from "../sync/live-or-poll.js";
 import { CORRECTIONS_QUERY_KEY } from "./useCorrections.js";
 
@@ -17,12 +21,6 @@ export function usePolyAgenda(enabled: boolean) {
     enabled,
     refetchInterval: (query) => liveOrPoll(query, AGENDA_POLL_MS, "delegation.changed"),
   });
-}
-
-export function usePolyPresence(enabled: boolean): PolyPresence | null {
-  const agenda = usePolyAgenda(enabled);
-
-  return agenda.data ? derivePolyPresence(agenda.data) : null;
 }
 
 export function useDisagreeWithPolyHandoff() {
@@ -54,6 +52,74 @@ export function useSetPolyAutonomy(agenda: PolyAgenda | undefined) {
         current && context.autonomyLevel
           ? { ...current, autonomy_level: context.autonomyLevel }
           : current,
+      );
+    },
+  });
+}
+
+function applyContextToAgenda(current: PolyAgenda | undefined, context: TeammateContext) {
+  return current
+    ? {
+        ...current,
+        tool_rules: context.toolRules,
+        paused_until:
+          context.pausedUntil && Date.parse(context.pausedUntil) > Date.now()
+            ? context.pausedUntil
+            : null,
+      }
+    : current;
+}
+
+export function useSetPolyToolRules(agenda: PolyAgenda | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (toolRules: TeammateToolRule[]) => {
+      if (!agenda) {
+        throw new Error("Poly is not open yet");
+      }
+
+      return apiService.updateTeammateContextToolRules(agenda.context_id, toolRules);
+    },
+    onSuccess: (context) => {
+      queryClient.setQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY, (current) =>
+        applyContextToAgenda(current, context),
+      );
+    },
+  });
+}
+
+export function useSetPolyPause(agenda: PolyAgenda | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (pausedUntil: string | null) => {
+      if (!agenda) {
+        throw new Error("Poly is not open yet");
+      }
+
+      return apiService.updateTeammateContextPause(agenda.context_id, pausedUntil);
+    },
+    onSuccess: (context) => {
+      queryClient.setQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY, (current) =>
+        applyContextToAgenda(current, context),
+      );
+    },
+  });
+}
+
+export function useSetPolyLookAround() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (enabled: boolean) =>
+      apiService.setPolyLookAround({
+        enabled,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
+    onSuccess: (lookAround) => {
+      queryClient.setQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY, (current) =>
+        current ? { ...current, look_around: lookAround } : current,
       );
     },
   });

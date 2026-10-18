@@ -1,4 +1,13 @@
-import { PET_CLIP_NAMES, PET_CLIPS, PET_SHEET_LAYOUT } from "@ngriffin_uk/polychat-schemas";
+import {
+  PET_CLIP_NAMES,
+  PET_CLIPS,
+  PET_SHEET_LAYOUT,
+  type PetClipName,
+} from "@ngriffin_uk/polychat-schemas";
+import { rgbDistance, type RgbColor } from "@ngriffin_uk/polychat-utility-core";
+
+const SAMPLE_SIZE = 16;
+const MAX_POSE_COLOUR_DRIFT = 90;
 
 interface Pose {
   x: number;
@@ -79,6 +88,67 @@ function poseFor(clip: string, i: number, n: number): Pose {
 export interface ComposePetSheetOptions {
   padding?: number;
   quality?: number;
+  poses?: Partial<Record<PetClipName, Blob | string>>;
+}
+
+function meanColour(image: HTMLImageElement): RgbColor | null {
+  const canvas = document.createElement("canvas");
+
+  canvas.width = SAMPLE_SIZE;
+  canvas.height = SAMPLE_SIZE;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(image, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+
+  const { data } = context.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+  const totals = [0, 0, 0];
+  let counted = 0;
+
+  for (let index = 0; index < data.length; index += 4) {
+    const isBackground =
+      data[index + 3] < 32 || (data[index] > 240 && data[index + 1] > 240 && data[index + 2] > 240);
+
+    if (isBackground) {
+      continue;
+    }
+
+    totals[0] += data[index];
+    totals[1] += data[index + 1];
+    totals[2] += data[index + 2];
+    counted += 1;
+  }
+
+  return counted === 0 ? null : [totals[0] / counted, totals[1] / counted, totals[2] / counted];
+}
+
+async function loadConsistentPoses(
+  reference: HTMLImageElement,
+  poses: ComposePetSheetOptions["poses"],
+): Promise<Partial<Record<PetClipName, HTMLImageElement>>> {
+  const referenceColour = meanColour(reference);
+  const loaded = await Promise.all(
+    Object.entries(poses ?? {}).map(async ([clip, source]) => {
+      try {
+        const image = await loadImage(source);
+        const colour = meanColour(image);
+        const consistent =
+          referenceColour !== null &&
+          colour !== null &&
+          rgbDistance(referenceColour, colour) <= MAX_POSE_COLOUR_DRIFT;
+
+        return consistent ? ([clip, image] as const) : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return Object.fromEntries(loaded.filter((entry) => entry !== null));
 }
 
 export async function composePetSheet(
@@ -86,6 +156,7 @@ export async function composePetSheet(
   options: ComposePetSheetOptions = {},
 ): Promise<Blob> {
   const image = await loadImage(source);
+  const poseImages = await loadConsistentPoses(image, options.poses);
   const { frameWidth, frameHeight, columns, rows, sheetWidth, sheetHeight } = PET_SHEET_LAYOUT;
 
   const canvas = document.createElement("canvas");
@@ -101,9 +172,6 @@ export async function composePetSheet(
 
   const padding = options.padding ?? 14;
   const box = Math.min(frameWidth, frameHeight) - padding * 2;
-  const ratio = Math.min(box / image.width, box / image.height);
-  const drawWidth = image.width * ratio;
-  const drawHeight = image.height * ratio;
   const baseline = frameHeight - padding;
 
   context.imageSmoothingQuality = "high";
@@ -114,6 +182,10 @@ export async function composePetSheet(
     }
 
     const clip = PET_CLIPS[name];
+    const rowImage = poseImages[name] ?? image;
+    const rowRatio = Math.min(box / rowImage.width, box / rowImage.height);
+    const rowWidth = rowImage.width * rowRatio;
+    const rowHeight = rowImage.height * rowRatio;
 
     for (let column = 0; column < Math.min(clip.frames, columns); column += 1) {
       const pose = poseFor(name, column, clip.frames);
@@ -125,7 +197,7 @@ export async function composePetSheet(
       context.translate(originX + pose.x, originY + pose.y);
       context.rotate((pose.rotation * Math.PI) / 180);
       context.scale(pose.scaleX, pose.scaleY);
-      context.drawImage(image, -drawWidth / 2, -drawHeight, drawWidth, drawHeight);
+      context.drawImage(rowImage, -rowWidth / 2, -rowHeight, rowWidth, rowHeight);
       context.restore();
     }
   });

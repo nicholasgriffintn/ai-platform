@@ -17,10 +17,16 @@ export interface PetSpriteClip {
   loop: boolean;
 }
 
+export interface PetSpriteFrame {
+  row: number;
+  column: number;
+}
+
 export interface PetSpriteProps {
   sheetUrl: string;
   layout: PetSpriteLayout;
   clip: PetSpriteClip;
+  frame?: PetSpriteFrame | null;
   label: string;
   size?: number;
   facing?: "left" | "right";
@@ -39,12 +45,14 @@ interface PetSpriteStyle extends CSSProperties {
   "--polychat-pet-duration": string;
   "--polychat-pet-iterations": string;
   "--polychat-pet-facing": number;
+  "--polychat-pet-column": number;
 }
 
 export function PetSprite({
   sheetUrl,
   layout,
   clip,
+  frame = null,
   label,
   size = 96,
   facing = "right",
@@ -60,24 +68,25 @@ export function PetSprite({
     "--polychat-pet-height": `${height}px`,
     "--polychat-pet-sheet-width": `${layout.columns * size}px`,
     "--polychat-pet-sheet-height": `${layout.rows * height}px`,
-    "--polychat-pet-row": clip.row,
+    "--polychat-pet-row": frame ? frame.row : clip.row,
     "--polychat-pet-frames": clip.frames,
     "--polychat-pet-duration": `${duration.toFixed(3)}s`,
     "--polychat-pet-iterations": clip.loop ? "infinite" : "1",
     "--polychat-pet-facing": facing === "left" ? -1 : 1,
+    "--polychat-pet-column": frame ? frame.column : 0,
     animationPlayState: paused ? "paused" : undefined,
     backgroundImage: `url("${sheetUrl}")`,
   };
 
   return (
     <span
-      key={`${sheetUrl}:${clip.row}`}
-      className={cn("polychat-pet", className)}
+      key={frame ? `${sheetUrl}:look:${frame.row}:${frame.column}` : `${sheetUrl}:${clip.row}`}
+      className={cn("polychat-pet", frame && "polychat-pet-held", className)}
       style={style}
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role="img"
       aria-label={label}
-      onAnimationEnd={clip.loop ? undefined : onClipEnd}
+      onAnimationEnd={clip.loop || frame ? undefined : onClipEnd}
     />
   );
 }

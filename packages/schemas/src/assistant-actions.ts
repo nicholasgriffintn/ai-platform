@@ -50,6 +50,7 @@ export const assistantActionVerbSchema = z.object({
 
 export const assistantActionItemMetadataSchema = z.object({
   teammateId: z.string().optional(),
+  characterId: z.string().optional(),
   appId: z.string().optional(),
   appKind: z.enum(["dynamic", "frontend"]).optional(),
   authType: z.enum(["github_app", "api_key", "composio"]).optional(),
@@ -741,6 +742,7 @@ export function buildAssistantActionCatalog(
         },
         metadata: {
           teammateId: teammate.id,
+          ...(teammate.characterId ? { characterId: teammate.characterId } : {}),
           category: getTeammateCapabilityCategory(teammate),
         },
       })),

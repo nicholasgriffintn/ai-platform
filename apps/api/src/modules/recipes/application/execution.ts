@@ -166,7 +166,10 @@ export async function executeRecipeInvocationChat(params: {
         user: params.user,
         anonymousUser: undefined,
         conversationType: "task",
-        authority: { trigger: "schedule" },
+        authority: {
+          trigger: "schedule",
+          ...(params.invocation.readOnly ? { autonomyCeiling: "observer" as const } : {}),
+        },
       })
     : await startResponse({
         env: params.env,

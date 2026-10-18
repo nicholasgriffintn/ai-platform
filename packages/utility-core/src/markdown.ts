@@ -106,3 +106,82 @@ export function fixMarkdown(markdown: string, isStreaming?: boolean): string {
 
   return isStreaming || isLikelyIncomplete(content) ? safeParseMarkdown(content) : content;
 }
+
+export interface MarkdownBlock {
+  kind: "heading" | "item" | "paragraph";
+  text: string;
+  start: number;
+  end: number;
+}
+
+const MARKDOWN_HEADING = /^#{1,6}\s+/;
+const MARKDOWN_LIST_ITEM = /^(?:[-*+]|\d+[.)])\s+/;
+
+export function splitMarkdownBlocks(markdown: string): MarkdownBlock[] {
+  const lines = markdown.split("\n");
+  const blocks: MarkdownBlock[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+
+    if (line.trim() === "") {
+      index += 1;
+      continue;
+    }
+
+    if (MARKDOWN_HEADING.test(line)) {
+      blocks.push({
+        kind: "heading",
+        text: line.replace(MARKDOWN_HEADING, "").trim(),
+        start: index,
+        end: index + 1,
+      });
+      index += 1;
+      continue;
+    }
+
+    const isItem = MARKDOWN_LIST_ITEM.test(line);
+    const start = index;
+
+    index += 1;
+
+    while (index < lines.length) {
+      const next = lines[index];
+
+      if (next.trim() === "" || MARKDOWN_HEADING.test(next)) {
+        break;
+      }
+
+      if (MARKDOWN_LIST_ITEM.test(next)) {
+        break;
+      }
+
+      index += 1;
+    }
+
+    blocks.push({
+      kind: isItem ? "item" : "paragraph",
+      text: lines
+        .slice(start, index)
+        .map((entry) => entry.trim())
+        .join(" ")
+        .replace(MARKDOWN_LIST_ITEM, ""),
+      start,
+      end: index,
+    });
+  }
+
+  return blocks;
+}
+
+export function removeMarkdownBlock(markdown: string, block: Pick<MarkdownBlock, "start" | "end">) {
+  const lines = markdown.split("\n");
+
+  lines.splice(block.start, block.end - block.start);
+
+  return lines
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

@@ -17,6 +17,7 @@ const teammate: TeammateResponse = {
   name: "Researcher",
   description: "",
   avatar_url: null,
+  character_id: null,
   servers: [],
   model: null,
   temperature: null,

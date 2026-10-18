@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes.js";
 import { mcpHttpsUrlSchema, mcpAllowedToolsSchema } from "./mcp.js";
+import { isPetPresetSlug } from "./pets.js";
 import { skillIdSchema } from "./skills.js";
 import { teammateKindSchema } from "./teammate-roles.js";
 import { toolIdsSchema } from "./tool-ids.js";
@@ -41,6 +42,11 @@ export const fewShotExampleSchema = z.object({
   output: z.string().meta({ description: "Example output" }),
 });
 
+export const teammateCharacterIdSchema = z
+  .string()
+  .refine(isPetPresetSlug, "Choose one of the built-in characters")
+  .meta({ description: "A built-in character that shows this teammate's state as it works" });
+
 export const createTeammateSchema = z.object({
   name: z.string().meta({ description: "Name of the teammate" }),
   kind: teammateKindSchema.optional().meta({
@@ -52,6 +58,7 @@ export const createTeammateSchema = z.object({
   }),
   description: z.string().optional().meta({ description: "Optional teammate description" }),
   avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
+  character_id: teammateCharacterIdSchema.nullable().optional(),
   servers: z
     .array(teammateMcpServerInputSchema)
     .max(10)
@@ -99,6 +106,7 @@ export const updateTeammateSchema = z
       .nullable()
       .optional()
       .meta({ description: "New avatar URL, or null to remove the existing one" }),
+    character_id: teammateCharacterIdSchema.nullable().optional(),
     servers: z
       .array(teammateMcpServerInputSchema)
       .max(10)
@@ -162,6 +170,7 @@ export const teammateResponseSchema = z.object({
   name: z.string(),
   description: z.string(),
   avatar_url: z.string().nullable(),
+  character_id: z.string().nullable().default(null),
   servers: z.array(mcpServerSchema),
   model: z.string().nullable(),
   temperature: z.number().nullable(),
@@ -200,6 +209,7 @@ export const teammateSummarySchema = z.object({
   kind: teammateKindSchema,
   description: z.string(),
   avatarUrl: z.string().nullable(),
+  characterId: z.string().nullable(),
   model: z.string().nullable(),
   modelAvailable: z.boolean(),
   mode: agentModeSchema.nullable(),

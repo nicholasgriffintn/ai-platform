@@ -41,6 +41,7 @@ function teammateSummary(overrides: Partial<TeammateSummary> & { id: string }): 
     scorecard: { good: 0, bad: 0 },
     description: "",
     avatarUrl: null,
+    characterId: null,
     model: null,
     modelAvailable: true,
     mode: null,

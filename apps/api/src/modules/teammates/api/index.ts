@@ -10,9 +10,12 @@ import {
   teammateContextSchema,
   teammateResponseSchema,
   updateTeammateContextAutonomySchema,
+  updateTeammateContextPauseSchema,
   updateTeammateContextStatusSchema,
+  updateTeammateContextToolRulesSchema,
   updateTeammateSchema,
   upsertTeammateConnectionGrantSchema,
+  type TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -33,7 +36,9 @@ import {
   restoreInheritedTeammateToProject,
   updateTeammate,
   updateTeammateContextAutonomy,
+  updateTeammateContextPause,
   updateTeammateContextStatus,
+  updateTeammateContextToolRules,
   upsertTeammateConnectionGrant,
 } from "~/modules/teammates/application";
 import type { IEnv } from "~/types";
@@ -50,9 +55,16 @@ const updateTeammateProjectSchema = z.object({ removed: z.boolean() });
 const updateTeammateContextSchema = updateTeammateContextStatusSchema
   .partial()
   .extend(updateTeammateContextAutonomySchema.partial().shape)
-  .refine((body) => body.status !== undefined || body.autonomyLevel !== undefined, {
-    message: "Change the status, the autonomy level or both",
-  });
+  .extend(updateTeammateContextToolRulesSchema.partial().shape)
+  .extend(updateTeammateContextPauseSchema.partial().shape)
+  .refine(
+    (body) =>
+      body.status !== undefined ||
+      body.autonomyLevel !== undefined ||
+      body.toolRules !== undefined ||
+      body.pausedUntil !== undefined,
+    { message: "Change the status, autonomy level, tool rules or pause" },
+  );
 
 defineMarketplace(app);
 
@@ -173,19 +185,44 @@ defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates)
 
   contexts.update({
     auth: true,
-    summary: "Change a context's lifecycle or autonomy",
-    description: "Sets the context status, how much it may do without asking, or both.",
+    summary: "Change a context's lifecycle, autonomy, rules or pause",
+    description:
+      "Sets the context status, how much it may do without asking, its per-tool rules, or when its background work resumes.",
     paramSchema: contextParamsSchema,
     bodySchema: updateTeammateContextSchema,
     responses: { 200: { description: "The context", schema: teammateContextSchema } },
     handler: async ({ serviceContext, params, body }) => {
-      const updated = body.status
-        ? await updateTeammateContextStatus(serviceContext, params.context_id, body.status)
-        : null;
+      let updated: TeammateContext | null = null;
 
-      return body.autonomyLevel
-        ? updateTeammateContextAutonomy(serviceContext, params.context_id, body.autonomyLevel)
-        : updated;
+      if (body.status) {
+        updated = await updateTeammateContextStatus(serviceContext, params.context_id, body.status);
+      }
+
+      if (body.autonomyLevel) {
+        updated = await updateTeammateContextAutonomy(
+          serviceContext,
+          params.context_id,
+          body.autonomyLevel,
+        );
+      }
+
+      if (body.toolRules) {
+        updated = await updateTeammateContextToolRules(
+          serviceContext,
+          params.context_id,
+          body.toolRules,
+        );
+      }
+
+      if (body.pausedUntil !== undefined) {
+        updated = await updateTeammateContextPause(
+          serviceContext,
+          params.context_id,
+          body.pausedUntil,
+        );
+      }
+
+      return updated;
     },
   });
 

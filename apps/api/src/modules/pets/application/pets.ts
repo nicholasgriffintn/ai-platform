@@ -9,7 +9,7 @@ import {
   PET_SHEET_MIME_TYPES,
   describePetSheetSizes,
   mapListPage,
-  matchPetSheetLayout,
+  selectPetSheetLayout,
   parsePetModelOverrides,
   removeCustomPetFromModelOverrides,
   toListPage,
@@ -18,10 +18,26 @@ import {
   type PetSheetLayout,
   type UserPet,
   type UserPetsPage,
+  PET_MANIFEST_DEFAULT_SHEET_PATH,
+  PET_MANIFEST_MAX_BYTES,
+  PET_POSE_CLIPS,
+  petLayoutIdForManifest,
+  petManifestSchema,
+  type ImportPetInput,
+  type GeneratedPetImage,
+  type GeneratedPetPoses,
+  type GeneratePetPosesInput,
+  type PetPoseClip,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, readImageDimensions } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { readImageDimensions } from "@ngriffin_uk/polychat-utility-server/image-dimensions";
+import {
+  fetchFollowingSafeRedirects,
+  readResponseBytesWithinLimit,
+  UnsafeUrlError,
+} from "@ngriffin_uk/polychat-utility-server/http";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import * as z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
@@ -32,6 +48,13 @@ import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettin
 import type { IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/pets" });
+
+const PET_IMPORT_TIMEOUT_MS = 15_000;
+
+const storedImageSchema = z.object({
+  key: z.string().min(1),
+  seed: z.number().int().nonnegative(),
+});
 
 function assertPetAuthoring(user: IUser): void {
   if (!hasProEntitlement(user)) {
@@ -107,7 +130,14 @@ function readOptionalText(
   return trimmed;
 }
 
-function assertSheetIsValid(bytes: Uint8Array): {
+function describeLayouts(layouts: readonly PetSheetLayout[]): string {
+  return layouts.map((entry) => `${entry.label} (${entry.id})`).join(" or ");
+}
+
+function assertSheetIsValid(
+  bytes: Uint8Array,
+  requestedLayoutId: string | undefined,
+): {
   mimeType: "image/png" | "image/webp";
   layout: PetSheetLayout;
 } {
@@ -117,9 +147,9 @@ function assertSheetIsValid(bytes: Uint8Array): {
     throw new AssistantError("The sheet must be a PNG or WebP image", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const layout = matchPetSheetLayout(dimensions.width, dimensions.height);
+  const selection = selectPetSheetLayout(dimensions.width, dimensions.height, requestedLayoutId);
 
-  if (!layout) {
+  if (selection.kind === "unknown-size") {
     throw new AssistantError(
       `The sheet must be ${describePetSheetSizes()} pixels, not ${dimensions.width} by ${dimensions.height}`,
       ErrorType.PARAMS_ERROR,
@@ -127,9 +157,25 @@ function assertSheetIsValid(bytes: Uint8Array): {
     );
   }
 
+  if (selection.kind === "ambiguous") {
+    throw new AssistantError(
+      `A ${dimensions.width} by ${dimensions.height} sheet could be ${describeLayouts(selection.candidates)}. Choose its layout.`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  if (selection.kind === "mismatch") {
+    throw new AssistantError(
+      `A ${dimensions.width} by ${dimensions.height} sheet must use ${describeLayouts(selection.candidates)}`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
   return {
     mimeType: dimensions.format === "png" ? "image/png" : "image/webp",
-    layout,
+    layout: selection.layout,
   };
 }
 
@@ -164,6 +210,7 @@ export async function createPet(context: ServiceContext, formData: FormData): Pr
   const name = readRequiredText(formData, "name", PET_NAME_MAX_LENGTH);
   const description = readOptionalText(formData, "description", PET_DESCRIPTION_MAX_LENGTH);
   const prompt = readOptionalText(formData, "prompt", PET_DESCRIPTION_MAX_LENGTH);
+  const layoutId = readOptionalText(formData, "layout_id", PET_NAME_MAX_LENGTH);
   const originValue = formData.get("origin");
   const origin: PetOrigin = originValue === "generated" ? "generated" : "upload";
 
@@ -181,9 +228,29 @@ export async function createPet(context: ServiceContext, formData: FormData): Pr
     );
   }
 
-  const buffer = await sheet.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  const { mimeType, layout } = assertSheetIsValid(bytes);
+  return storePetSheet(context, user, {
+    name,
+    description: description ?? null,
+    prompt: prompt ?? null,
+    origin,
+    layoutId,
+    bytes: new Uint8Array(await sheet.arrayBuffer()),
+  });
+}
+
+async function storePetSheet(
+  context: ServiceContext,
+  user: IUser,
+  input: {
+    name: string;
+    description: string | null;
+    prompt: string | null;
+    origin: PetOrigin;
+    layoutId: string | undefined;
+    bytes: Uint8Array;
+  },
+): Promise<UserPet> {
+  const { mimeType, layout } = assertSheetIsValid(input.bytes, input.layoutId);
 
   if (!PET_SHEET_MIME_TYPES.includes(mimeType)) {
     throw new AssistantError("Unsupported sheet format", ErrorType.PARAMS_ERROR, 400);
@@ -193,21 +260,88 @@ export async function createPet(context: ServiceContext, formData: FormData): Pr
   const extension = mimeType === "image/png" ? "png" : "webp";
   const sheetKey = `pets/${user.id}/${generateId()}.${extension}`;
 
-  await storage.uploadObject(sheetKey, buffer, {
+  await storage.uploadObject(sheetKey, input.bytes, {
     httpMetadata: { contentType: mimeType },
   });
 
   const record = await context.repositories.get(UserPetRepository).createUserPet({
     userId: user.id,
-    name,
-    description: description ?? null,
-    origin,
+    name: input.name,
+    description: input.description,
+    origin: input.origin,
     sheetKey,
     layoutId: layout.id,
-    prompt: prompt ?? null,
+    prompt: input.prompt,
   });
 
   return toUserPet(context, record);
+}
+
+async function fetchPublicBytes(url: URL, maxBytes: number, what: string): Promise<Uint8Array> {
+  let response: Response;
+
+  try {
+    response = await fetchFollowingSafeRedirects(url, {
+      signal: AbortSignal.timeout(PET_IMPORT_TIMEOUT_MS),
+    });
+  } catch (error) {
+    throw new AssistantError(
+      error instanceof UnsafeUrlError
+        ? `The ${what} must be on a public web address`
+        : `The ${what} could not be fetched`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new AssistantError(
+      `The ${what} returned ${response.status}`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  try {
+    return await readResponseBytesWithinLimit(response, maxBytes);
+  } catch {
+    throw new AssistantError(`The ${what} is too large`, ErrorType.PARAMS_ERROR, 400);
+  }
+}
+
+export async function importPet(context: ServiceContext, input: ImportPetInput): Promise<UserPet> {
+  const user = context.requireUser();
+
+  assertPetAuthoring(user);
+
+  const manifestUrl = new URL(input.url);
+  const manifestBytes = await fetchPublicBytes(manifestUrl, PET_MANIFEST_MAX_BYTES, "pet.json");
+  const manifest = petManifestSchema.safeParse(
+    safeParseJson(new TextDecoder().decode(manifestBytes)),
+  );
+
+  if (!manifest.success) {
+    throw new AssistantError(
+      "That address does not hold a pet.json manifest",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  const sheetUrl = new URL(
+    manifest.data.spritesheetPath ?? PET_MANIFEST_DEFAULT_SHEET_PATH,
+    manifestUrl,
+  );
+
+  return storePetSheet(context, user, {
+    name: manifest.data.displayName.slice(0, PET_NAME_MAX_LENGTH),
+    description: manifest.data.description?.slice(0, PET_DESCRIPTION_MAX_LENGTH) ?? null,
+    prompt: null,
+    origin: "upload",
+    layoutId: petLayoutIdForManifest(manifest.data),
+    bytes: await fetchPublicBytes(sheetUrl, PET_SHEET_MAX_BYTES, "sprite sheet"),
+  });
 }
 
 export async function deletePet(context: ServiceContext, petId: string): Promise<void> {
@@ -277,21 +411,35 @@ export async function readPetSheet(
   };
 }
 
-export async function generatePetImage(
+const PET_POSE_PHRASES: Readonly<Record<PetPoseClip, string>> = {
+  greet: "waving hello with one arm raised",
+  think: "head tilted, looking up, thinking hard",
+  work: "leaning forward, focused and busy",
+  speak: "mouth open mid-sentence, talking",
+  cheer: "both arms up, delighted",
+  fret: "worried and flustered, eyebrows raised",
+  doze: "eyes closed, peacefully asleep",
+};
+
+function petPrompt(prompt: string, pose?: PetPoseClip): string {
+  const base = `${getPromptText("apps/pets/style")} The character is: ${prompt}`;
+
+  return pose
+    ? `${base} Same character, same colours and outfit. Pose: ${PET_POSE_PHRASES[pose]}.`
+    : base;
+}
+
+async function drawPetImage(
   context: ServiceContext,
+  user: IUser,
   prompt: string,
-): Promise<{ image: string }> {
-  const user = context.requireUser();
-
-  assertPetAuthoring(user);
-
+  seed?: number,
+): Promise<GeneratedPetImage> {
   const result = await generateImage({
     completion_id: generateId(),
     app_url: context.env.APP_BASE_URL,
     context,
-    args: {
-      prompt: `${getPromptText("apps/pets/style")} The character is: ${prompt}`,
-    },
+    args: { prompt, ...(seed === undefined ? {} : { seed }) },
     user,
   });
 
@@ -299,7 +447,8 @@ export async function generatePetImage(
     throw new AssistantError(result.content || "Failed to generate a pet", ErrorType.UNKNOWN_ERROR);
   }
 
-  const key = (result.data as { key?: string })?.key;
+  const data = storedImageSchema.safeParse(result.data);
+  const key = data.success ? data.data.key : undefined;
 
   if (!key) {
     throw new AssistantError("The generated pet could not be stored", ErrorType.UNKNOWN_ERROR);
@@ -312,5 +461,50 @@ export async function generatePetImage(
     throw new AssistantError("The generated pet could not be read back", ErrorType.UNKNOWN_ERROR);
   }
 
-  return { image: `data:image/png;base64,${base64}` };
+  return {
+    image: `data:image/png;base64,${base64}`,
+    seed: data.success ? data.data.seed : (seed ?? 0),
+  };
+}
+
+export async function generatePetImage(
+  context: ServiceContext,
+  prompt: string,
+): Promise<GeneratedPetImage> {
+  const user = context.requireUser();
+
+  assertPetAuthoring(user);
+
+  return drawPetImage(context, user, petPrompt(prompt));
+}
+
+export async function generatePetPoses(
+  context: ServiceContext,
+  input: GeneratePetPosesInput,
+): Promise<GeneratedPetPoses> {
+  const user = context.requireUser();
+
+  assertPetAuthoring(user);
+
+  const drawn = await Promise.allSettled(
+    PET_POSE_CLIPS.map(async (pose) => {
+      const image = await drawPetImage(context, user, petPrompt(input.prompt, pose), input.seed);
+
+      return [pose, image.image] as const;
+    }),
+  );
+  const poses: GeneratedPetPoses["poses"] = {};
+
+  for (const result of drawn) {
+    if (result.status === "fulfilled") {
+      poses[result.value[0]] = result.value[1];
+    } else {
+      logger.warn("A pet pose could not be drawn, the sheet will reuse the reference", {
+        userId: user.id,
+        error: result.reason,
+      });
+    }
+  }
+
+  return { poses };
 }

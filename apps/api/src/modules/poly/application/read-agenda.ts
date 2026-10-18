@@ -18,6 +18,7 @@ import { TeammateContextRepository } from "~/modules/teammates/infrastructure/Te
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
+import { readPolyLookAround } from "./look-around";
 import { describePolyContext, markPolyOwnerSeen, requirePolyContext } from "./poly-context";
 
 const EMPTY_AGENDA: PolyAgendaLists = { needs_you: [], working_on: [], done: [], noted: [] };
@@ -109,6 +110,7 @@ export async function readPolyAgenda(context: ServiceContext): Promise<PolyAgend
 
   return {
     ...describePolyContext(polyContext),
+    look_around: await readPolyLookAround(context, polyContext),
     ...(await loadPolyAgendaForContext(
       context.repositories,
       context.requireUser().id,

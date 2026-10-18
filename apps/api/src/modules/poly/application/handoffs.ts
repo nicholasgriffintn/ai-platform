@@ -34,6 +34,7 @@ export interface RoutineHandoffInput {
   summary: string;
   resultConversationId: string;
   failed: boolean;
+  paused: boolean;
 }
 
 export interface PolyHandoff {
@@ -104,7 +105,7 @@ export async function admitRoutineHandoff(
     .map(readPolyHandoff)
     .filter((handoff) => handoff?.data.decision === "notified")
     .map((handoff) => Date.parse(handoff?.createdAt ?? ""));
-  const admission = admitPolyNotification({ urgency, notifiedAt, now });
+  const admission = admitPolyNotification({ urgency, notifiedAt, now, paused: input.paused });
   const data: PolyHandoffData = {
     sourceKind: "routine",
     sourceId: input.installationId,

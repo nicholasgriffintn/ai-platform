@@ -110,6 +110,7 @@ function input(
     summary: "Two newsletters arrived.",
     resultConversationId: "recipe_occurrence_1",
     failed: false,
+    paused: false,
     ...overrides,
   };
 }

@@ -67,6 +67,7 @@ export function buildToolRequestContext(params: {
       autonomy_level: chatOptions.autonomy_level,
       standing_approvals: chatOptions.standing_approvals,
       approval_streaks: chatOptions.approval_streaks,
+      tool_rules: chatOptions.tool_rules,
       poly: chatOptions.poly,
       input,
       model,

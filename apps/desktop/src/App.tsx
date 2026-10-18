@@ -24,6 +24,8 @@ import { type ReactNode, useCallback } from "react";
 import { DesktopShellHost } from "./DesktopShellHost";
 import { DesktopWindowEffects } from "./DesktopWindowEffects";
 import { useDesktopSession } from "./hooks/useDesktopSession";
+import { isPerchWindow } from "./infrastructure/poly-bridge";
+import { PerchWindow } from "./PerchWindow";
 import { DesktopRoutes } from "./routes";
 
 function DesktopProviders({ children }: { children: ReactNode }) {
@@ -72,6 +74,10 @@ export function App() {
   const handleSignOut = useCallback(() => {
     void signOut();
   }, [signOut]);
+
+  if (isPerchWindow()) {
+    return <DesktopProviders>{isChecking ? null : <PerchWindow />}</DesktopProviders>;
+  }
 
   return (
     <DesktopProviders>

@@ -12,6 +12,15 @@ export function formatDate(dateString: string): string {
   });
 }
 
+export function formatClockTime(dateString: string, now = new Date()): string {
+  const date = new Date(dateString);
+  const time = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+
+  return date.toDateString() === now.toDateString()
+    ? time
+    : `${date.toLocaleDateString(undefined, { weekday: "short" })} ${time}`;
+}
+
 export function isDeadlinePassed(deadline: unknown, now: Date | string = new Date()): boolean {
   const value = readOptionalString(deadline);
 

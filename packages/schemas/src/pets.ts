@@ -39,8 +39,23 @@ export const PET_CLIP_NAMES = [
 
 export type PetClipName = (typeof PET_CLIP_NAMES)[number];
 
+export const PET_EXTRA_STATE_NAMES = ["wait", "acknowledge", "listen", "review"] as const;
+
+export type PetExtraStateName = (typeof PET_EXTRA_STATE_NAMES)[number];
+
+export const PET_STATE_NAMES = [...PET_CLIP_NAMES, ...PET_EXTRA_STATE_NAMES] as const;
+
+export type PetStateName = (typeof PET_STATE_NAMES)[number];
+
+export const PET_STATE_FALLBACKS: Record<PetExtraStateName, PetClipName> = {
+  wait: "idle",
+  acknowledge: "greet",
+  listen: "think",
+  review: "think",
+};
+
 export interface PetClip {
-  name: PetClipName;
+  name: PetStateName;
   row: number;
   frames: number;
   fps: number;
@@ -61,6 +76,8 @@ export const PET_CLIPS: Record<PetClipName, PetClip> = {
   flit: { name: "flit", row: 10, frames: 8, fps: 15, loop: true },
 };
 
+export const PET_LOOK_DIRECTIONS = 16;
+
 export interface PetSheetLayout {
   id: string;
   label: string;
@@ -70,17 +87,20 @@ export interface PetSheetLayout {
   rows: number;
   sheetWidth: number;
   sheetHeight: number;
-  clips: Partial<Record<PetClipName, PetClip>>;
+  clips: Partial<Record<PetStateName, PetClip>>;
+  lookRow: number | null;
 }
 
 export const POLYCHAT_SHEET_LAYOUT_ID = "polychat-v1";
 export const CODEX_SHEET_LAYOUT_ID = "codex-v1";
+export const CODEX_V2_SHEET_LAYOUT_ID = "codex-v2";
 
 function layout(
   id: string,
   label: string,
   rows: number,
-  clips: Partial<Record<PetClipName, PetClip>>,
+  clips: Partial<Record<PetStateName, PetClip>>,
+  lookRow: number | null = null,
 ): PetSheetLayout {
   return {
     id,
@@ -92,25 +112,40 @@ function layout(
     sheetWidth: PET_FRAME_WIDTH * PET_SHEET_COLUMNS,
     sheetHeight: PET_FRAME_HEIGHT * rows,
     clips,
+    lookRow,
   };
 }
 
 export const POLYCHAT_SHEET_LAYOUT = layout(POLYCHAT_SHEET_LAYOUT_ID, "Polychat", 11, PET_CLIPS);
 
-export const CODEX_SHEET_LAYOUT = layout(CODEX_SHEET_LAYOUT_ID, "Codex", 9, {
+const CODEX_CLIPS: Partial<Record<PetStateName, PetClip>> = {
   idle: { name: "idle", row: 0, frames: 6, fps: 4, loop: true },
   flit: { name: "flit", row: 1, frames: 8, fps: 15, loop: true },
   greet: { name: "greet", row: 3, frames: 4, fps: 8, loop: false },
+  acknowledge: { name: "acknowledge", row: 3, frames: 4, fps: 8, loop: false },
   cheer: { name: "cheer", row: 4, frames: 5, fps: 12, loop: false },
   fret: { name: "fret", row: 5, frames: 8, fps: 10, loop: true },
   think: { name: "think", row: 6, frames: 6, fps: 7, loop: true },
+  wait: { name: "wait", row: 6, frames: 6, fps: 5, loop: true },
   work: { name: "work", row: 7, frames: 6, fps: 14, loop: true },
   speak: { name: "speak", row: 8, frames: 6, fps: 11, loop: true },
-});
+  review: { name: "review", row: 8, frames: 6, fps: 8, loop: true },
+};
+
+export const CODEX_SHEET_LAYOUT = layout(CODEX_SHEET_LAYOUT_ID, "Codex", 9, CODEX_CLIPS);
+
+export const CODEX_V2_SHEET_LAYOUT = layout(
+  CODEX_V2_SHEET_LAYOUT_ID,
+  "Codex with look directions",
+  11,
+  CODEX_CLIPS,
+  9,
+);
 
 export const PET_SHEET_LAYOUTS: readonly PetSheetLayout[] = [
   POLYCHAT_SHEET_LAYOUT,
   CODEX_SHEET_LAYOUT,
+  CODEX_V2_SHEET_LAYOUT,
 ];
 
 export const PET_SHEET_LAYOUT = POLYCHAT_SHEET_LAYOUT;
@@ -119,16 +154,128 @@ export function findPetSheetLayout(id: string | null | undefined): PetSheetLayou
   return PET_SHEET_LAYOUTS.find((entry) => entry.id === id) ?? POLYCHAT_SHEET_LAYOUT;
 }
 
-export function matchPetSheetLayout(width: number, height: number): PetSheetLayout | undefined {
-  return PET_SHEET_LAYOUTS.find(
+export function isPetSheetLayoutId(value: unknown): value is string {
+  return typeof value === "string" && PET_SHEET_LAYOUTS.some((entry) => entry.id === value);
+}
+
+export function matchPetSheetLayouts(width: number, height: number): PetSheetLayout[] {
+  return PET_SHEET_LAYOUTS.filter(
     (entry) => entry.sheetWidth === width && entry.sheetHeight === height,
   );
 }
 
+export type PetSheetLayoutSelection =
+  | { kind: "selected"; layout: PetSheetLayout }
+  | { kind: "unknown-size" }
+  | { kind: "ambiguous"; candidates: PetSheetLayout[] }
+  | { kind: "mismatch"; candidates: PetSheetLayout[] };
+
+export function selectPetSheetLayout(
+  width: number,
+  height: number,
+  requestedId?: string | null,
+): PetSheetLayoutSelection {
+  const candidates = matchPetSheetLayouts(width, height);
+
+  if (candidates.length === 0) {
+    return { kind: "unknown-size" };
+  }
+
+  if (requestedId) {
+    const requested = candidates.find((entry) => entry.id === requestedId);
+
+    return requested ? { kind: "selected", layout: requested } : { kind: "mismatch", candidates };
+  }
+
+  if (candidates.length > 1) {
+    return { kind: "ambiguous", candidates };
+  }
+
+  return { kind: "selected", layout: candidates[0] };
+}
+
 export function describePetSheetSizes(): string {
-  return PET_SHEET_LAYOUTS.map((entry) => `${entry.sheetWidth} by ${entry.sheetHeight}`).join(
-    " or ",
+  const sizes = new Set(
+    PET_SHEET_LAYOUTS.map((entry) => `${entry.sheetWidth} by ${entry.sheetHeight}`),
   );
+
+  return [...sizes].join(" or ");
+}
+
+export const petManifestSchema = z.object({
+  id: z.string().trim().min(1),
+  displayName: z.string().trim().min(1),
+  description: z.string().optional(),
+  spriteVersionNumber: z.union([z.literal(1), z.literal(2)]).default(1),
+  spritesheetPath: z.string().trim().min(1).optional(),
+  layoutId: z.string().trim().min(1).optional(),
+});
+
+export const PET_MANIFEST_DEFAULT_SHEET_PATH = "spritesheet.webp";
+export const PET_MANIFEST_MAX_BYTES = 64 * 1024;
+
+export const importPetSchema = z.object({
+  url: z.url().max(2048).describe("Address of a Codex or Polychat pet.json manifest"),
+});
+
+export type ImportPetInput = z.infer<typeof importPetSchema>;
+
+export type PetManifest = z.infer<typeof petManifestSchema>;
+
+export function petLayoutIdForManifest(
+  manifest: Pick<PetManifest, "spriteVersionNumber" | "layoutId">,
+): string {
+  if (manifest.layoutId && PET_SHEET_LAYOUTS.some((entry) => entry.id === manifest.layoutId)) {
+    return manifest.layoutId;
+  }
+
+  return manifest.spriteVersionNumber === 2 ? CODEX_V2_SHEET_LAYOUT_ID : CODEX_SHEET_LAYOUT_ID;
+}
+
+export function buildPetManifest(pet: {
+  id: string;
+  name: string;
+  description: string | null;
+  layoutId: string;
+}): PetManifest {
+  const codexVersion =
+    pet.layoutId === CODEX_V2_SHEET_LAYOUT_ID
+      ? 2
+      : pet.layoutId === CODEX_SHEET_LAYOUT_ID
+        ? 1
+        : null;
+
+  return {
+    id: pet.id,
+    displayName: pet.name,
+    ...(pet.description ? { description: pet.description } : {}),
+    spriteVersionNumber: codexVersion ?? 1,
+    spritesheetPath: PET_MANIFEST_DEFAULT_SHEET_PATH,
+    layoutId: pet.layoutId,
+  };
+}
+
+export interface PetLookFrame {
+  row: number;
+  column: number;
+}
+
+export function resolvePetLook(
+  sheet: PetSheetLayout,
+  angleDegrees: number | null | undefined,
+): PetLookFrame | null {
+  if (sheet.lookRow === null || angleDegrees === null || angleDegrees === undefined) {
+    return null;
+  }
+
+  const step = 360 / PET_LOOK_DIRECTIONS;
+  const normalised = ((angleDegrees % 360) + 360) % 360;
+  const index = Math.round(normalised / step) % PET_LOOK_DIRECTIONS;
+
+  return {
+    row: sheet.lookRow + Math.floor(index / sheet.columns),
+    column: index % sheet.columns,
+  };
 }
 
 export const PET_IDLE_CLIP: PetClipName = "idle";
@@ -137,12 +284,38 @@ export const PET_IDLE_FLOURISH_CLIPS: readonly PetClipName[] = ["blink", "preen"
 
 export const petClipNameSchema = z.enum(PET_CLIP_NAMES);
 
+export const petStateNameSchema = z.enum(PET_STATE_NAMES);
+
+function isPetStateName(name: string | null | undefined): name is PetStateName {
+  return typeof name === "string" && (PET_STATE_NAMES as readonly string[]).includes(name);
+}
+
+function isPetExtraStateName(name: PetStateName): name is PetExtraStateName {
+  return (PET_EXTRA_STATE_NAMES as readonly string[]).includes(name);
+}
+
 export function resolvePetClip(name: string | null | undefined): PetClip {
-  return PET_CLIPS[name as PetClipName] ?? PET_CLIPS[PET_IDLE_CLIP];
+  return resolvePetClipIn(POLYCHAT_SHEET_LAYOUT, name);
 }
 
 export function resolvePetClipIn(sheet: PetSheetLayout, name: string | null | undefined): PetClip {
-  return sheet.clips[name as PetClipName] ?? sheet.clips[PET_IDLE_CLIP] ?? PET_CLIPS[PET_IDLE_CLIP];
+  const idle = sheet.clips[PET_IDLE_CLIP] ?? PET_CLIPS[PET_IDLE_CLIP];
+
+  if (!isPetStateName(name)) {
+    return idle;
+  }
+
+  const direct = sheet.clips[name];
+
+  if (direct) {
+    return direct;
+  }
+
+  if (isPetExtraStateName(name)) {
+    return sheet.clips[PET_STATE_FALLBACKS[name]] ?? idle;
+  }
+
+  return idle;
 }
 
 export interface PetPreset {
@@ -261,6 +434,28 @@ export const generateUserPetSchema = z.object({
   description: z.string().trim().max(PET_DESCRIPTION_MAX_LENGTH).optional(),
   prompt: z.string().trim().min(1).max(PET_PROMPT_MAX_LENGTH),
 });
+
+export const PET_POSE_CLIPS = ["greet", "think", "work", "speak", "cheer", "fret", "doze"] as const;
+
+export type PetPoseClip = (typeof PET_POSE_CLIPS)[number];
+
+export const generatedPetImageSchema = z.object({
+  image: z.string(),
+  seed: z.number().int().nonnegative(),
+});
+
+export const generatePetPosesSchema = z.object({
+  prompt: z.string().trim().min(1).max(PET_PROMPT_MAX_LENGTH),
+  seed: z.number().int().nonnegative(),
+});
+
+export const generatedPetPosesSchema = z.object({
+  poses: z.partialRecord(z.enum(PET_POSE_CLIPS), z.string()),
+});
+
+export type GeneratedPetImage = z.infer<typeof generatedPetImageSchema>;
+export type GeneratePetPosesInput = z.infer<typeof generatePetPosesSchema>;
+export type GeneratedPetPoses = z.infer<typeof generatedPetPosesSchema>;
 
 export const petSelectionSchema = z.object({
   pet_source: petSourceSchema,

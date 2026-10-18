@@ -280,6 +280,11 @@ public struct CreateResponseRequest: Encodable {
         let platform: String
     }
 
+    struct Agent: Encodable {
+        let type: String
+        let id: String
+    }
+
     struct Sampling: Encodable {
         let temperature: Double?
         let topP: Double?
@@ -353,9 +358,10 @@ public struct CreateResponseRequest: Encodable {
     let idempotencyKey: String
     let responseId: String?
     let client: Client
+    let agent: Agent?
 
     enum CodingKeys: String, CodingKey {
-        case conversation, input, model, provider, environment, tools, reasoning, sampling, text, stream, store, client
+        case conversation, input, model, provider, environment, tools, reasoning, sampling, text, stream, store, client, agent
         case modelTier = "model_tier"
         case serviceTier = "service_tier"
         case idempotencyKey = "idempotency_key"
@@ -374,7 +380,8 @@ public struct CreateResponseRequest: Encodable {
         computeSite: String? = nil,
         idempotencyKey: String = UUID().uuidString,
         responseId: String? = nil,
-        connectorApprovalId: String? = nil
+        connectorApprovalId: String? = nil,
+        agentTeammateId: String? = nil
     ) {
         self.conversation = conversationId.map(ConversationReference.init)
         self.input = ConversationItem.inputItems(from: messages).map(ResponseInputItem.item)
@@ -400,6 +407,7 @@ public struct CreateResponseRequest: Encodable {
         self.idempotencyKey = idempotencyKey
         self.responseId = responseId
         self.client = Client(platform: "mobile")
+        self.agent = agentTeammateId.map { Agent(type: "teammate", id: $0) }
     }
 
     var hasMessages: Bool {

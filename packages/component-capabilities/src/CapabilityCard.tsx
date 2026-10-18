@@ -1,4 +1,10 @@
-import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  Card,
+  DropdownMenu,
+  DropdownMenuItem,
+  TeammateCharacter,
+} from "@ngriffin_uk/polychat-component-ui";
 import type {
   AssistantActionItem,
   CapabilityCatalogItem,
@@ -141,6 +147,13 @@ export function CapabilityCard({
           >
             {appIcon ? (
               appIcon
+            ) : kind === "teammate" && item.metadata?.characterId ? (
+              <TeammateCharacter
+                characterId={item.metadata.characterId}
+                teammateId={item.metadata.teammateId}
+                name={item.label}
+                size={36}
+              />
             ) : kind === "tool" ? (
               <Wrench size={18} />
             ) : kind === "skill" ? (

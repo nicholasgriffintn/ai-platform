@@ -23,6 +23,8 @@ import {
   useResponseReplay,
   useModels,
   usePetNudgeSources,
+  usePetStore,
+  useUIStore,
   usePetFollowEnabled,
   useRemoteConversationActivity,
   isModelSubmissionBlocked,
@@ -137,6 +139,7 @@ export interface ThreadModeConfig {
   hideModelSelector?: boolean;
   hideVoiceControls?: boolean;
   petPresetSlug?: string;
+  isPolyThread?: boolean;
   forceAutoPlayResponses?: boolean;
   analyticsSource?: string;
   contextAttachments?: AttachmentData[];
@@ -312,6 +315,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     isEnabled: effectiveAutoPlayResponsesEnabled,
     isStreaming: isStreamLoading || streamStarted,
   });
+
+  const setPetSpeaking = usePetStore((state) => state.setSpeaking);
+
+  useEffect(() => {
+    setPetSpeaking(isPlayingAutoResponse);
+
+    return () => setPetSpeaking(false);
+  }, [isPlayingAutoResponse, setPetSpeaking]);
 
   const handleAutoPlayToggle = useCallback(() => {
     if (autoPlayResponsesEnabled) {
@@ -899,13 +910,19 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     ],
   );
 
-  const petStatus = usePetStatus();
+  const petStatus = usePetStatus(currentConversationId);
   const petFollows = usePetFollowEnabled();
+  const polyIsOpen = useUIStore((state) => state.showPoly);
+  const setShowPoly = useUIStore((state) => state.setShowPoly);
+  const showPetPerch = petFollows && !modeConfig?.isPolyThread && !polyIsOpen;
+  const openPolyFromPet = modeConfig?.isPolyThread ? undefined : () => setShowPoly(true);
 
   usePetNudgeSources({
+    conversationId: currentConversationId,
     goalStatus: goalView?.status,
     goalStoppedReason: goalView?.stoppedReason,
     hasPendingQuestion: Boolean(modeConfig?.pendingUserQuestions),
+    hasPendingApproval: Boolean(modeConfig?.agentApprovals?.pending.length),
   });
 
   const showWelcomeScreen =
@@ -956,7 +973,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                   model={selectedModelConfig}
                   modelReady={!model || !isModelsLoading}
                   conversationState={conversationState}
+                  conversationId={currentConversationId}
                   presetSlug={modeConfig?.petPresetSlug}
+                  onActivate={openPolyFromPet}
+                  activateLabel="Ask Poly about this page"
                 />
               }
               suggestions={
@@ -992,7 +1012,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       )}
 
       <ConversationComposerDock>
-        {showWelcomeScreen || !petFollows ? null : (
+        {!showPetPerch || showWelcomeScreen ? null : (
           <PetPerch
             pet={
               <Pet
@@ -1002,7 +1022,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
                 model={selectedModelConfig}
                 modelReady={!model || !isModelsLoading}
                 conversationState={conversationState}
+                conversationId={currentConversationId}
                 presetSlug={modeConfig?.petPresetSlug}
+                onActivate={openPolyFromPet}
+                activateLabel="Ask Poly about this conversation"
               />
             }
             status={petStatus}

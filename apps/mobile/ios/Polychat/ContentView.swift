@@ -7,6 +7,7 @@ struct ContentView: View {
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var notificationManager: TaskNotificationManager
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
+    @EnvironmentObject var polyStore: PolyStore
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
@@ -14,6 +15,7 @@ struct ContentView: View {
     @State private var showingInbox = false
     @State private var outputReviewTarget: OutputReviewTarget?
     @State private var showingWork = false
+    @State private var showingPoly = false
     @State private var selectedWorkTarget: MobileWorkTarget?
     @State private var conversationLoadTask: Task<Void, Never>?
 
@@ -45,6 +47,9 @@ struct ContentView: View {
                         },
                         onShowWork: {
                             showingWork = true
+                        },
+                        onShowPoly: {
+                            showingPoly = true
                         }
                     )
                 } detail: {
@@ -67,6 +72,11 @@ struct ContentView: View {
                 }
                 .sheet(isPresented: $showingInbox) {
                     TaskInboxView()
+                }
+                .sheet(isPresented: $showingPoly) {
+                    PolyView { conversationId in
+                        openPolyItem(conversationId)
+                    }
                 }
                 .sheet(item: $outputReviewTarget) { target in
                     OutputRevisionReviewView(outputId: target.id)
@@ -97,11 +107,14 @@ struct ContentView: View {
                         await modelsStore.fetchModels()
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
                         await pushNotificationManager.enableForAuthenticatedUser()
+                        await polyStore.refresh()
+                        conversationManager.polyConversationId = polyStore.agenda?.conversationId
                         if let target = pushNotificationManager.targetToOpen {
                             openWorkTarget(target)
                         }
                     } else {
                         await pushNotificationManager.unregisterForSignedOutUser()
+                        await polyStore.reset()
                         conversationManager.reset()
                         selectedConversationID = nil
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
@@ -114,7 +127,10 @@ struct ContentView: View {
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
-                        Task { await notificationManager.refresh() }
+                        Task {
+                            await notificationManager.refresh()
+                            await polyStore.refresh()
+                        }
                     }
                 }
                 .onChange(of: pushNotificationManager.targetToOpen) { _, target in
@@ -147,6 +163,9 @@ struct ContentView: View {
                 if let outputId = OutputReviewDeepLink.outputId(from: url) {
                     outputReviewTarget = OutputReviewTarget(id: outputId)
                 }
+                if PolyDeepLink.matches(url) {
+                    showingPoly = true
+                }
             }
         }
     }
@@ -167,6 +186,14 @@ struct ContentView: View {
             } catch {
                 conversationManager.error = "Failed to start recipe: \(error.localizedDescription)"
             }
+        }
+    }
+
+    private func openPolyItem(_ conversationId: String) {
+        if conversationId == polyStore.agenda?.conversationId {
+            Task { await conversationManager.openPolyConversation(id: conversationId) }
+        } else {
+            selectedConversationID = conversationId
         }
     }
 

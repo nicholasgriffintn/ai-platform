@@ -86,6 +86,10 @@ export type ChatRunCommandKind = z.infer<typeof chatRunCommandKindSchema>;
 export const chatRunTriggerSchema = z.enum(["user", "delegation", "handle", "schedule", "channel"]);
 export type ChatRunTrigger = z.infer<typeof chatRunTriggerSchema>;
 
+export function isOwnerStartedTrigger(trigger: ChatRunTrigger | null | undefined): boolean {
+  return trigger === undefined || trigger === null || trigger === "user";
+}
+
 export const chatRunSchema = z.object({
   protocolVersion: z.literal(CHAT_RUN_PROTOCOL_VERSION),
   id: chatRunIdSchema,

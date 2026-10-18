@@ -9,6 +9,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
+import { isPolyContextPaused } from "~/modules/poly/domain/pause";
 import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
 import {
   invokeAssistantRecipe,
@@ -135,6 +136,14 @@ export class RecipeExecutionHandler implements TaskHandler {
         teammate = { id: prepared.teammate.id, invocation: routineInvocation };
         teammateContext = prepared.resolution.context;
       }
+    }
+
+    if (teammateContext && isPolyContextPaused(teammateContext, Date.now())) {
+      return {
+        status: "skipped",
+        message: "Recipe execution skipped because Poly is paused",
+        data: invocation,
+      };
     }
 
     if (teammateContext) {

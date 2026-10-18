@@ -5,6 +5,8 @@ import {
   fetchUserPet,
   fetchUserPets,
   generatePetImage,
+  generatePetPoses,
+  importUserPet,
 } from "@ngriffin_uk/polychat-library-client";
 import {
   DEFAULT_PET_PRESET_SLUG,
@@ -13,6 +15,8 @@ import {
   parsePetModelOverrides,
   resolvePetForModel,
   resolvePetSelectionForModel,
+  type GeneratedPetImage,
+  type GeneratedPetPoses,
   type ModelConfigItem,
   type PetConversationState,
   type ResolvedPet,
@@ -58,8 +62,20 @@ export function usePets(after?: string) {
     },
   });
 
-  const generateMutation = useMutation<string, Error, { prompt: string; name: string }>({
+  const generateMutation = useMutation<GeneratedPetImage, Error, { prompt: string; name: string }>({
     mutationFn: ({ prompt, name }) => generatePetImage(prompt, name),
+  });
+
+  const importMutation = useMutation<UserPet, Error, string>({
+    mutationFn: importUserPet,
+    onSuccess: (pet) => {
+      queryClient.setQueryData(PET_QUERY_KEYS.detail(pet.id), pet);
+      void queryClient.invalidateQueries({ queryKey: PET_QUERY_KEYS.all });
+    },
+  });
+
+  const posesMutation = useMutation<GeneratedPetPoses, Error, { prompt: string; seed: number }>({
+    mutationFn: ({ prompt, seed }) => generatePetPoses(prompt, seed),
   });
 
   return {
@@ -71,6 +87,10 @@ export function usePets(after?: string) {
     deletePet: deleteMutation.mutateAsync,
     isDeletingPet: deleteMutation.isPending,
     generatePet: generateMutation.mutateAsync,
+    generatePetPoses: posesMutation.mutateAsync,
+    importPet: importMutation.mutateAsync,
+    isImportingPet: importMutation.isPending,
+    isGeneratingPoses: posesMutation.isPending,
     isGeneratingPet: generateMutation.isPending,
   };
 }

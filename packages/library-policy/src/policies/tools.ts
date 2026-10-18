@@ -22,7 +22,14 @@ export const toolPolicies = {
       ["external_send", "spend", "destructive", "credential", "data_export"].contains(context.effectClass) };`,
   "tool.autonomy.assistant": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.autonomyLevel == "assistant" && context.effectClass == "write" &&
-      !context.standingApproval };`,
+      !context.standingApproval && context.toolRule != "act" &&
+      !(context.toolRule == "act_if_asked" && context.ownerStartedRun) };`,
+  "tool.rule.hand_off": `forbid(principal, action == Polychat::Action::"tool.use", resource)
+    when { context.toolRule == "hand_off" };`,
+  "tool.rule.ask": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
+    when { context.toolRule == "ask" };`,
+  "tool.rule.act_if_asked": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
+    when { context.toolRule == "act_if_asked" && !context.ownerStartedRun };`,
   "tool.approval": `permit(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.toolName == "request_approval" ||
       (!context.permissions.containsAny(context.requiredApprovalPermissions) &&

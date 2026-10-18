@@ -112,6 +112,7 @@ function toTeammateSummary(
     kind: teammate.kind,
     description: teammate.description,
     avatarUrl: teammate.avatar_url,
+    characterId: teammate.character_id,
     model: teammate.model,
     modelAvailable: teammate.model ? executableModels.has(teammate.model) : true,
     mode: teammate.mode,

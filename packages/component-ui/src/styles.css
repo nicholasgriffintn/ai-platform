@@ -521,10 +521,130 @@
     var(--polychat-pet-iterations) backwards;
 }
 
+.polychat-pet.polychat-pet-held {
+  animation: none;
+  background-position-x: calc(var(--polychat-pet-column) * var(--polychat-pet-width) * -1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .polychat-pet {
+  .polychat-pet:not(.polychat-pet-held) {
     animation: none !important;
     background-position-x: 0 !important;
+  }
+
+  .polychat-pet-held {
+    animation: none !important;
+  }
+}
+
+.polychat-poly-pointed {
+  border-radius: 0.375rem;
+  animation: polychat-poly-pointed 1.6s ease-out;
+}
+
+@keyframes polychat-poly-pointed {
+  0%,
+  60% {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--polychat-human-action) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+.polychat-pet-glance {
+  transition: transform 220ms ease-out;
+  transform: rotate(var(--polychat-pet-glance, 0deg));
+}
+
+.polychat-pet-accent {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  color: currentColor;
+}
+
+.polychat-pet-accent[data-accent="alert"] {
+  color: var(--polychat-human-action);
+  animation: polychat-pet-accent-pulse 1.4s ease-in-out infinite;
+}
+
+.polychat-pet-accent[data-accent="drop"] {
+  color: var(--polychat-active-work);
+  animation: polychat-pet-accent-drip 1.2s ease-in infinite;
+}
+
+.polychat-pet-accent[data-accent="sleep"] {
+  color: var(--polychat-text-muted);
+  animation: polychat-pet-accent-drift 2.6s ease-in-out infinite;
+}
+
+.polychat-pet-accent[data-accent="rings"] {
+  color: var(--polychat-active-work);
+  animation: polychat-pet-accent-ring 1.6s ease-out infinite;
+}
+
+.polychat-pet-accent[data-accent="spark"] {
+  color: var(--polychat-attention);
+  animation: polychat-pet-accent-spark 0.9s ease-out 2;
+}
+
+@keyframes polychat-pet-accent-pulse {
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes polychat-pet-accent-drip {
+  from {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+@keyframes polychat-pet-accent-drift {
+  50% {
+    transform: translate(2px, -5px);
+  }
+}
+
+@keyframes polychat-pet-accent-ring {
+  from {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes polychat-pet-accent-spark {
+  from {
+    transform: scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    transform: scale(1) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polychat-pet-accent {
+    animation: none !important;
+  }
+
+  .polychat-pet-glance {
+    transition: none;
   }
 }
 

@@ -17,6 +17,15 @@ describe("admitPolyNotification", () => {
     });
   });
 
+  it("keeps everything but critical handoffs quiet while paused", () => {
+    expect(
+      admitPolyNotification({ urgency: "high", notifiedAt: [], now: NOW, paused: true }),
+    ).toEqual({ admitted: false, reason: "paused" });
+    expect(
+      admitPolyNotification({ urgency: "critical", notifiedAt: [], now: NOW, paused: true }),
+    ).toEqual({ admitted: true, reason: "owner_must_act" });
+  });
+
   it("spaces high-urgency interruptions half an hour apart but lets critical ones through", () => {
     const notifiedAt = [minutesAgo(10)];
 

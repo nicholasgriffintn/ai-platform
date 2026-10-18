@@ -1,19 +1,41 @@
 import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-component-navigation";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { usePolyPresence, useTrackEvent, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  useCharacterPresence,
+  usePetStore,
+  usePolyAgenda,
+  useTrackEvent,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
+import { polyPlaceAnchor } from "@ngriffin_uk/polychat-schemas";
 import { Feather } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover.js";
+
+const ATTENTION_GLANCE_MS = 4000;
 
 export function SidebarFooter() {
   const { trackEvent } = useTrackEvent();
   const { openAssistant } = useShellHost();
   const showPoly = useUIStore((state) => state.showPoly);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const presence = usePolyPresence(isAuthenticated);
-  const hasActivity = Boolean(presence && (presence.needsYou > 0 || presence.workingOn > 0));
+  const agenda = usePolyAgenda(isAuthenticated);
+  const conversationId = agenda.data?.conversation_id;
+  const presence = useCharacterPresence({ conversationId });
+  const hasActivity = presence.state !== "idle";
+  const lookAt = usePetStore((state) => state.lookAt);
+  const previousNeedsYou = useRef(presence.needsYou);
+
+  useEffect(() => {
+    if (presence.needsYou > previousNeedsYou.current) {
+      lookAt(polyPlaceAnchor("attention"), ATTENTION_GLANCE_MS);
+    }
+
+    previousNeedsYou.current = presence.needsYou;
+  }, [lookAt, presence.needsYou]);
 
   return (
     <ControlledSidebarFooter>
@@ -40,7 +62,7 @@ export function SidebarFooter() {
           </span>
           <span className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">Ask Poly</span>
-            {presence && hasActivity ? (
+            {hasActivity ? (
               <span
                 className={cn(
                   "truncate text-xs",

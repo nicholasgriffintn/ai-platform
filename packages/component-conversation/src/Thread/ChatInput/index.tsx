@@ -7,6 +7,7 @@ import {
   useModels,
   SOURCE_QUERY_KEYS,
   useVoiceRecorder,
+  usePetStore,
   useComposerDraft,
   useConversationScope,
   useStableRandomSeed,
@@ -34,6 +35,7 @@ import {
   type ReactNode,
   forwardRef,
   useCallback,
+  useEffect,
   useId,
   useImperativeHandle,
   useLayoutEffect,
@@ -247,6 +249,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecorder({
       onTranscribe,
     });
+    const setPetListening = usePetStore((state) => state.setListening);
+
+    useEffect(() => {
+      setPetListening(isRecording);
+
+      return () => setPetListening(false);
+    }, [isRecording, setPetListening]);
     const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
     const placeholderSeed = Math.floor(useStableRandomSeed() * 12);
     const { data: apiModels } = useModels();

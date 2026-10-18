@@ -45,6 +45,7 @@ export function ComposerShell({
             {input && (
               <div
                 data-composer-input-row
+                data-poly-anchor="composer"
                 className="flex min-w-0 flex-1 cursor-text px-4 pt-3 pb-5"
                 role="presentation"
                 onMouseDown={(event) => {

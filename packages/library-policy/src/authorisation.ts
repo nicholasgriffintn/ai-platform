@@ -45,6 +45,8 @@ const toolShape = {
   effectClass: string,
   autonomyLevel: string,
   standingApproval: boolean,
+  toolRule: string,
+  ownerStartedRun: boolean,
 };
 
 const actionShapes = {

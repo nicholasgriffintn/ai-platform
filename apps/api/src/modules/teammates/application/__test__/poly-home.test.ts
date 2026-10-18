@@ -15,6 +15,8 @@ const polyContext: TeammateContext = {
   autonomyLevel: "assistant",
   standingApprovals: [],
   approvalStreaks: [],
+  toolRules: [],
+  pausedUntil: null,
   ownerSeenAt: "2026-10-06T09:00:00.000Z",
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: null,
@@ -126,5 +128,49 @@ describe("admitTeammateContextAuthority", () => {
         now: eightDaysLater,
       }),
     ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
+  });
+});
+
+describe("admitTeammateContextAuthority with a ceiling", () => {
+  const partner: TeammateContext = {
+    ...polyContext,
+    autonomyLevel: "partner",
+    ownerSeenAt: "2026-10-17T09:00:00.000Z",
+    standingApprovals: [
+      {
+        toolName: "create_note",
+        destination: "notes",
+        grantedAt: "2026-10-16T09:00:00.000Z",
+        expiresAt: "2026-11-16T09:00:00.000Z",
+      },
+    ],
+    toolRules: [
+      { toolName: "create_note", level: "act" },
+      { toolName: "web_search", level: "ask" },
+    ],
+  };
+
+  it("runs a read-only routine as an observer with no standing approvals or acting rules", () => {
+    const authority = admitTeammateContextAuthority({
+      context: partner,
+      trigger: "schedule",
+      ceiling: "observer",
+      now: Date.parse("2026-10-17T10:00:00.000Z"),
+    });
+
+    expect(authority.autonomyLevel).toBe("observer");
+    expect(authority.standingApprovals).toEqual([]);
+    expect(authority.toolRules).toEqual([{ toolName: "web_search", level: "ask" }]);
+  });
+
+  it("keeps the owner's rules on their own turns without a ceiling", () => {
+    const authority = admitTeammateContextAuthority({
+      context: partner,
+      trigger: "user",
+      now: Date.parse("2026-10-17T10:00:00.000Z"),
+    });
+
+    expect(authority.autonomyLevel).toBe("partner");
+    expect(authority.toolRules).toHaveLength(2);
   });
 });

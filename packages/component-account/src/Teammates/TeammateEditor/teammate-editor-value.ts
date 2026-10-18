@@ -29,6 +29,7 @@ export function createTeammateEditorValue(
       kind: DEFAULT_TEAMMATE_KIND,
       description: "",
       avatarUrl: "",
+      characterId: null,
       systemPrompt: "",
       examples: [],
       mode: null,
@@ -50,6 +51,7 @@ export function createTeammateEditorValue(
     kind: teammate.kind,
     description: teammate.description,
     avatarUrl: teammate.avatar_url ?? "",
+    characterId: teammate.character_id,
     systemPrompt: teammate.system_prompt ?? "",
     examples: (teammate.few_shot_examples ?? []).map((example) => ({
       id: generateId(),
@@ -81,6 +83,7 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
     kind: value.kind,
     description: value.description.trim(),
     avatar_url: value.avatarUrl.trim(),
+    character_id: value.characterId,
     model: value.model,
     temperature: value.temperature === "" ? null : value.temperature,
     max_steps: getFiniteNumberOrFallback(value.maxSteps, DEFAULT_TEAMMATE_MAX_STEPS),

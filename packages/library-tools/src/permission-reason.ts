@@ -15,6 +15,7 @@ export function toolDenialReason(
     "tool.mode.permissions.denied:0": `Tool "${context.toolName}" is blocked in ${mode} mode (${context.permissions.filter((permission) => context.modeDeniedPermissions.includes(permission)).join(", ")})`,
     "tool.mode.permissions.allowed:0": `Tool "${context.toolName}" is not compatible with ${mode} mode (${context.permissions.filter((permission) => !context.modeAllowedPermissions.includes(permission)).join(", ")})`,
     "tool.autonomy.observer:0": `Tool "${context.toolName}" would change something (${context.effectClass}), and this teammate is set to observe only`,
+    "tool.rule.hand_off:0": `Tool "${context.toolName}" is handed to you by your rules, so do this step yourself`,
   };
 
   return (
@@ -41,6 +42,14 @@ export function toolApprovalReason(
     const description = FLOOR_EFFECT_DESCRIPTIONS[context.effectClass] ?? "has a lasting effect";
 
     return `Tool "${context.toolName}" ${description}, which always needs your approval`;
+  }
+
+  if (policyIds.includes("tool.rule.ask:0")) {
+    return `Your rules say to ask before using "${context.toolName}"`;
+  }
+
+  if (policyIds.includes("tool.rule.act_if_asked:0")) {
+    return `Your rules let "${context.toolName}" run only when you asked for it, so it needs your approval here`;
   }
 
   if (policyIds.includes("tool.autonomy.assistant:0")) {

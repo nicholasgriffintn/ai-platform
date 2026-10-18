@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   teammateAutonomyLevelSchema,
   teammateStandingApprovalSchema,
+  teammateToolRuleSchema,
 } from "./teammate-contexts.js";
 
 export const POLY_CONVERSATION_TYPE = "poly";
@@ -22,6 +23,10 @@ export const polyPlaceSchema = z.enum([
   "scheduled",
   "you",
 ]);
+
+export function polyPlaceAnchor(place: z.infer<typeof polyPlaceSchema>): string {
+  return `place:${place}`;
+}
 
 export const polyUiContextSchema = z.object({
   route: z.string().max(512).optional(),
@@ -146,6 +151,23 @@ export const polyHandoffJudgementSchema = z.object({
 
 export type PolyHandoffJudgement = z.infer<typeof polyHandoffJudgementSchema>;
 
+export const POLY_LOOK_AROUND_RECIPE_ID = "poly-look-around";
+
+export const POLY_LOOK_AROUND_CRON = "30 7 * * *";
+
+export const polyLookAroundSchema = z.object({
+  enabled: z.boolean(),
+  timezone: z.string().nullable(),
+});
+
+export const updatePolyLookAroundSchema = z.object({
+  enabled: z.boolean(),
+  timezone: z.string().trim().min(1).max(120).optional(),
+});
+
+export type PolyLookAround = z.infer<typeof polyLookAroundSchema>;
+export type UpdatePolyLookAround = z.infer<typeof updatePolyLookAroundSchema>;
+
 export const polyAgendaItemSchema = z.object({
   kind: z.enum(["delegation", "goal", "approval", "question", "routine"]),
   id: z.string().min(1),
@@ -153,6 +175,7 @@ export const polyAgendaItemSchema = z.object({
   status: z.string(),
   conversation_id: z.string().min(1),
   updated_at: z.string().nullable(),
+  teammate_id: z.string().nullable().optional(),
   judgement: polyHandoffJudgementSchema.nullable().optional(),
 });
 
@@ -169,6 +192,9 @@ export const polyAgendaSchema = polyAgendaListsSchema.extend({
   conversation_id: z.string().min(1),
   autonomy_level: teammateAutonomyLevelSchema,
   standing_approvals: z.array(teammateStandingApprovalSchema),
+  tool_rules: z.array(teammateToolRuleSchema),
+  paused_until: z.string().nullable(),
+  look_around: polyLookAroundSchema,
 });
 
 export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;

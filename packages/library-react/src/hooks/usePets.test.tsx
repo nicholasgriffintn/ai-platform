@@ -21,6 +21,8 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
   fetchUserPet: vi.fn(),
   fetchUserPets: mocks.fetchUserPets,
   generatePetImage: vi.fn(),
+  generatePetPoses: vi.fn(),
+  importUserPet: vi.fn(),
 }));
 
 describe("useActivePet", () => {

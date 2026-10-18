@@ -2,12 +2,15 @@ import {
   errorResponseSchema,
   polyAgendaSchema,
   polyHandoffDisagreementSchema,
+  polyLookAroundSchema,
+  updatePolyLookAroundSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { disagreeWithPolyHandoff } from "~/modules/poly/application/handoff-disagreement";
+import { setPolyLookAround } from "~/modules/poly/application/look-around";
 import { readPolyAgenda } from "~/modules/poly/application/read-agenda";
 
 const app = new Hono();
@@ -39,6 +42,20 @@ addRoute(app, "post", "/handoffs/:handoff_id/disagree", {
   },
   handler: async ({ serviceContext, params }) =>
     disagreeWithPolyHandoff(serviceContext, params.handoff_id),
+});
+
+addRoute(app, "patch", "/look-around", {
+  tags: ["poly"],
+  summary: "Turn Poly's daily look around on or off",
+  description:
+    "Installs or removes Poly's read-only daily pass over your connected sources. It only reads and drafts, whatever Poly's autonomy is set to.",
+  auth: true,
+  bodySchema: updatePolyLookAroundSchema,
+  responses: {
+    200: { description: "Whether Poly looks around", schema: polyLookAroundSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, body }) => setPolyLookAround(serviceContext, body),
 });
 
 export default app;

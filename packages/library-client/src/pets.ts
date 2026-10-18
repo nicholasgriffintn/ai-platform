@@ -1,5 +1,12 @@
-import type { PetOrigin, UserPet, UserPetsPage } from "@ngriffin_uk/polychat-schemas";
+import type {
+  GeneratedPetImage,
+  GeneratedPetPoses,
+  PetOrigin,
+  UserPet,
+  UserPetsPage,
+} from "@ngriffin_uk/polychat-schemas";
 
+import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { requestJson, resource } from "./resource.js";
 
 const pets = resource<UserPet>("/pets");
@@ -17,6 +24,7 @@ export interface CreateUserPetInput {
   description?: string;
   prompt?: string;
   origin: PetOrigin;
+  layoutId: string;
   sheet: Blob;
   filename: string;
 }
@@ -26,6 +34,7 @@ export function createUserPet(input: CreateUserPetInput): Promise<UserPet> {
 
   formData.append("name", input.name);
   formData.append("origin", input.origin);
+  formData.append("layout_id", input.layoutId);
   formData.append("sheet", input.sheet, input.filename);
 
   if (input.description) {
@@ -39,12 +48,24 @@ export function createUserPet(input: CreateUserPetInput): Promise<UserPet> {
   return requestJson<UserPet>(pets.path, "POST", formData);
 }
 
+export function importUserPet(url: string): Promise<UserPet> {
+  return pets.collectionAction<UserPet>("import", { url });
+}
+
+export async function fetchUserPetSheet(petId: string): Promise<Blob> {
+  const response = await fetchApiOrThrow(`${pets.path}/${encodeURIComponent(petId)}/sheet`);
+
+  return response.blob();
+}
+
 export function deleteUserPet(petId: string): Promise<void> {
   return pets.delete(petId);
 }
 
-export async function generatePetImage(prompt: string, name: string): Promise<string> {
-  const { image } = await pets.collectionAction<{ image: string }>("generate", { name, prompt });
+export function generatePetImage(prompt: string, name: string): Promise<GeneratedPetImage> {
+  return pets.collectionAction<GeneratedPetImage>("generate", { name, prompt });
+}
 
-  return image;
+export function generatePetPoses(prompt: string, seed: number): Promise<GeneratedPetPoses> {
+  return pets.collectionAction<GeneratedPetPoses>("poses", { prompt, seed });
 }

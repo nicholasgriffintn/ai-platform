@@ -10,14 +10,19 @@ export const POLY_NOTIFICATION_BUDGET = {
 
 export interface NotificationAdmission {
   admitted: boolean;
-  reason: "owner_must_act" | "not_urgent" | "daily_cap" | "spacing";
+  reason: "owner_must_act" | "not_urgent" | "daily_cap" | "spacing" | "paused";
 }
 
 export function admitPolyNotification(params: {
   urgency: PolyHandoffUrgency;
   notifiedAt: readonly number[];
   now: number;
+  paused?: boolean;
 }): NotificationAdmission {
+  if (params.paused && params.urgency !== "critical") {
+    return { admitted: false, reason: "paused" };
+  }
+
   if (params.urgency !== "critical" && params.urgency !== "high") {
     return { admitted: false, reason: "not_urgent" };
   }

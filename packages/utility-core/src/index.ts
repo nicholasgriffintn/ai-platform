@@ -12,6 +12,7 @@ export * from "./delay.js";
 export * from "./errors.js";
 export * from "./geo.js";
 export * from "./ids.js";
+export * from "./image-dimensions.js";
 export * from "./jpeg.js";
 export * from "./json.js";
 export * from "./markdown.js";

@@ -6,6 +6,7 @@ import type {
   EngineRequest,
   ResponseSettings,
   TeammateApprovalStreak,
+  TeammateToolRule,
   TeammateAutonomyLevel,
   TeammateRunConfiguration,
   TeammateStandingApproval,
@@ -32,6 +33,7 @@ export interface TeammateRunAuthority {
   autonomyLevel?: TeammateAutonomyLevel | null;
   standingApprovals?: TeammateStandingApproval[];
   approvalStreaks?: TeammateApprovalStreak[];
+  toolRules?: TeammateToolRule[];
   computerId?: string;
   delegationId?: string;
 }
@@ -43,5 +45,6 @@ export interface ResponseAuthority {
   commandPayload?: Record<string, unknown>;
   requireApprovalFor?: ToolPermission[];
   enforceModeToolPolicy?: boolean;
+  autonomyCeiling?: TeammateAutonomyLevel;
   teammate?: TeammateRunAuthority;
 }

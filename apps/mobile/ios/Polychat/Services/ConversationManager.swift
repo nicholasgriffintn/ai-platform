@@ -4,6 +4,7 @@ import Combine
 @MainActor
 class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
+    var polyConversationId: String?
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
     @Published var isLoading: Bool = false
@@ -98,6 +99,21 @@ class ConversationManager: ObservableObject {
         await loadConversationMessages(conversation)
     }
     
+    func openPolyConversation(id conversationId: String) async {
+        polyConversationId = conversationId
+
+        let conversation = conversations.first(where: { $0.id == conversationId }) ?? Conversation(
+            id: conversationId,
+            title: "Poly",
+            messages: [],
+            createdAt: Date(),
+            isLoadedFromAPI: true,
+            messageCount: 0
+        )
+
+        await loadConversationMessages(conversation)
+    }
+
     func loadConversationMessages(_ conversation: Conversation) async {
         guard !Task.isCancelled else {
             return
@@ -730,7 +746,10 @@ class ConversationManager: ObservableObject {
                 settings: settings,
                 idempotencyKey: commandId,
                 modelTier: requestedModelTier,
-                computeSite: computeSite
+                computeSite: computeSite,
+                agentTeammateId: conversationId == polyConversationId
+                    ? PolyStore.teammateId
+                    : nil
             )
 
             var streamedReasoning = ""

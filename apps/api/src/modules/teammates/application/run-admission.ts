@@ -300,6 +300,7 @@ export async function enqueueTeammateRun({
           ? admitTeammateContextAuthority({
               context: preparedInvocation.resolution.context,
               trigger: authority.trigger,
+              ceiling: authority.autonomyCeiling,
               now: Date.now(),
             })
           : {}),

@@ -107,11 +107,6 @@
       "types": "./dist/internal-service-auth.d.ts",
       "import": "./dist/internal-service-auth.js"
     },
-    "./image-dimensions": {
-      "polychat-source": "./src/image-dimensions.ts",
-      "types": "./dist/image-dimensions.d.ts",
-      "import": "./dist/image-dimensions.js"
-    },
     "./json": {
       "polychat-source": "./src/json.ts",
       "types": "./dist/json.d.ts",

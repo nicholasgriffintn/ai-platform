@@ -8,19 +8,35 @@ const GOAL_NUDGE_ID = "goal-stopped";
 const QUESTION_NUDGE_ID = "pending-question";
 
 export interface PetNudgeSources {
+  conversationId?: string | null;
   goalStatus?: string | null;
   goalStoppedReason?: string | null;
   hasPendingQuestion?: boolean;
+  hasPendingApproval?: boolean;
 }
 
 export function usePetNudgeSources({
+  conversationId,
   goalStatus,
   goalStoppedReason,
   hasPendingQuestion = false,
+  hasPendingApproval = false,
 }: PetNudgeSources): void {
   const usageLimits = useUsageStore((state) => state.usageLimits);
   const pushNudge = usePetStore((state) => state.pushNudge);
   const retractNudge = usePetStore((state) => state.retractNudge);
+  const setReviewing = usePetStore((state) => state.setReviewing);
+  const reviewing = hasPendingQuestion || hasPendingApproval;
+
+  useEffect(() => {
+    if (!conversationId) {
+      return undefined;
+    }
+
+    setReviewing(conversationId, reviewing);
+
+    return () => setReviewing(conversationId, false);
+  }, [conversationId, reviewing, setReviewing]);
 
   useEffect(() => {
     const credits = usageLimits?.credits;

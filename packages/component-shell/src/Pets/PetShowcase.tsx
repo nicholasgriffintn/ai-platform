@@ -1,5 +1,10 @@
 import { ButtonLink, PetPreview } from "@ngriffin_uk/polychat-component-ui";
-import { type PetLoreEntry, PET_FLOCK, PET_STRAYS } from "@ngriffin_uk/polychat-library-react";
+import {
+  type PetLoreEntry,
+  PET_FLOCK,
+  PET_SETTINGS_PATH,
+  PET_STRAYS,
+} from "@ngriffin_uk/polychat-library-react";
 
 function TraitList({ traits }: { traits: PetLoreEntry["traits"] }) {
   return (
@@ -35,7 +40,7 @@ export function PetShowcase() {
           that used to be logos, and a few strays that turned up on their own.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
-          <ButtonLink href="/profile?tab=pets">Choose yours</ButtonLink>
+          <ButtonLink href={PET_SETTINGS_PATH}>Choose yours</ButtonLink>
           <ButtonLink variant="outline" href="/chat">
             Back to chat
           </ButtonLink>
@@ -122,7 +127,7 @@ export function PetShowcase() {
           draw it, then keep it in your library.
         </p>
         <div className="mt-4">
-          <ButtonLink href="/profile?tab=pets">Open pet settings</ButtonLink>
+          <ButtonLink href={PET_SETTINGS_PATH}>Open pet settings</ButtonLink>
         </div>
       </footer>
     </div>

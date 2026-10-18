@@ -1,3 +1,5 @@
+import { POLY_LOOK_AROUND_RECIPE_ID } from "@ngriffin_uk/polychat-schemas";
+
 import type { CatalogRecipe } from "./shared";
 import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
 
@@ -149,6 +151,99 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
         label: "Leave out",
         type: "textarea",
         placeholder: "Repositories, channels, senders, or labels that never need your reply",
+      },
+    ],
+  },
+  {
+    id: POLY_LOOK_AROUND_RECIPE_ID,
+    title: "Poly Looks Around",
+    summary: "Once a day, Poly reads your connected sources and notes what you should know.",
+    description:
+      "A read-only daily pass by Poly over your connected mail, calendar and work sources. It notes anything new, slipping or waiting on you in the Poly agenda, tells you only when something is urgent, and never sends, changes or deletes anything.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    readOnly: true,
+    enabledTools: [RECIPE_CONNECTOR_TOOL],
+    connectorPolicy: { access: "read" },
+    integrations: [
+      {
+        id: "gmail",
+        providerId: "gmail",
+        name: "Gmail",
+        description: "Reads recent mail when Gmail is connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GMAIL_FETCH_EMAILS"],
+      },
+      {
+        id: "outlook",
+        providerId: "outlook",
+        name: "Outlook",
+        description: "Reads recent mail and upcoming events when Outlook is connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["OUTLOOK_SEARCH_MESSAGES", "OUTLOOK_GET_CALENDAR_VIEW"],
+      },
+      {
+        id: "googlecalendar",
+        providerId: "googlecalendar",
+        name: "Google Calendar",
+        description: "Reads upcoming events when Google Calendar is connected.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GOOGLECALENDAR_EVENTS_LIST"],
+      },
+      {
+        id: "github",
+        providerId: "github",
+        name: "GitHub",
+        description: "Reads review requests, assigned work and mentions.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["GITHUB_SEARCH_ISSUES_AND_PULL_REQUESTS"],
+      },
+      {
+        id: "slack",
+        providerId: "slack",
+        name: "Slack",
+        description: "Reads recent mentions and direct messages.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["SLACK_SEARCH_MESSAGES"],
+      },
+      {
+        id: "linear",
+        providerId: "linear",
+        name: "Linear",
+        description: "Reads unfinished issues assigned to you.",
+        requiresConnection: true,
+        connectionGroup: "sources",
+        operationIds: ["LINEAR_LIST_LINEAR_ISSUES"],
+      },
+    ],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Daily look around",
+        description: "Poly takes one read-only look each morning.",
+      },
+    ],
+    actions: [
+      "Read the last day of every connected source, as you",
+      "Keep only what is new, changing, slipping or waiting on you, and drop anything you already handled",
+      "Write at most five short notes, each with its source link and why it matters, most urgent first",
+      "Say plainly which sources could not be read, and never send, reply, change or delete anything",
+    ],
+    setupPrompt:
+      "Set up Poly Looks Around. Use every connected source unless I say otherwise and take one read-only look each morning. Never send, reply, change or delete anything.",
+    configurationFields: [
+      preferredConnectorsField,
+      {
+        key: "ignore",
+        label: "Leave out",
+        type: "textarea",
+        placeholder: "Senders, channels, repositories or calendars Poly should skip",
       },
     ],
   },

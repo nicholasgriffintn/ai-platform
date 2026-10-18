@@ -77,3 +77,9 @@ export function hexToOklch(value: string): OklchColor | null {
 
   return { lightness, chroma, hue };
 }
+
+export type RgbColor = readonly [number, number, number];
+
+export function rgbDistance(left: RgbColor, right: RgbColor): number {
+  return Math.hypot(left[0] - right[0], left[1] - right[1], left[2] - right[2]);
+}

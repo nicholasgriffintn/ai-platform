@@ -14,6 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
 
+import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
 import { useShellHost } from "./ShellHostContext.js";
 
 const PolyOverlay = lazy(() =>
@@ -42,7 +43,8 @@ const BrowserModelConsentDialog = lazy(() =>
 
 export function ShellDialogs() {
   const host = useShellHost();
-  const { showPoly, setShowPoly, projectPicker, closeProjectPicker } = useUIStore();
+  const { setShowPoly, projectPicker, closeProjectPicker } = useUIStore();
+  const polyPresentation = usePolyPresentation();
   const { isAuthenticated } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
   const {
@@ -103,7 +105,7 @@ export function ShellDialogs() {
 
   return (
     <>
-      {showPoly && (
+      {polyPresentation === "window" && (
         <Suspense fallback={null}>
           <PolyOverlay open onClose={() => setShowPoly(false)} />
         </Suspense>

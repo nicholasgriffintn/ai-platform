@@ -11,8 +11,11 @@ import type {
   DeviceAuthorisationDecision,
   PolyAgenda,
   PolyHandoffDisagreement,
+  PolyLookAround,
+  UpdatePolyLookAround,
   StandingApproval,
   TeammateAutonomyLevel,
+  TeammateToolRule,
   TeammateResponse,
   CreateTeammateInput,
   HireTeammateInput,
@@ -243,6 +246,9 @@ class ApiService {
   disagreeWithPolyHandoff = (handoffId: string): Promise<PolyHandoffDisagreement> =>
     this.polyService.disagreeWithPolyHandoff(handoffId);
 
+  setPolyLookAround = (input: UpdatePolyLookAround): Promise<PolyLookAround> =>
+    this.polyService.setPolyLookAround(input);
+
   grantPolyStandingApproval = (interactionId: string): Promise<StandingApproval> =>
     this.polyService.grantPolyStandingApproval(interactionId);
 
@@ -275,6 +281,18 @@ class ApiService {
     autonomyLevel: TeammateAutonomyLevel,
   ): Promise<TeammateContext> =>
     this.teammateService.updateTeammateContextAutonomy(contextId, autonomyLevel);
+
+  updateTeammateContextToolRules = (
+    contextId: string,
+    toolRules: TeammateToolRule[],
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextToolRules(contextId, toolRules);
+
+  updateTeammateContextPause = (
+    contextId: string,
+    pausedUntil: string | null,
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextPause(contextId, pausedUntil);
 
   updateTeammateContextStatus = (
     contextId: string,

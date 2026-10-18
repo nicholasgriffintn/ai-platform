@@ -1,7 +1,10 @@
 import {
   standingApprovalId,
   standingApprovalSchema,
+  polyLookAroundSchema,
   type PolyAgenda,
+  type PolyLookAround,
+  type UpdatePolyLookAround,
   type PolyHandoffDisagreement,
   type StandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
@@ -37,6 +40,12 @@ export class PolyService {
     }
 
     return returnFetchedData<PolyHandoffDisagreement>(response);
+  }
+
+  async setPolyLookAround(input: UpdatePolyLookAround): Promise<PolyLookAround> {
+    return polyLookAroundSchema.parse(
+      await requestJson<unknown>("/poly/look-around", "PATCH", input),
+    );
   }
 
   async grantPolyStandingApproval(interactionId: string): Promise<StandingApproval> {

@@ -58,6 +58,7 @@ function teammate(overrides: Partial<TeammateResponse>): TeammateResponse {
     name: "Researcher",
     description: "Digs through sources.",
     avatar_url: null,
+    character_id: null,
     servers: [],
     model: null,
     temperature: null,

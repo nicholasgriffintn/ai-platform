@@ -6,11 +6,12 @@ import {
   teammateKindSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { TeammateCharacterPicker } from "./TeammateCharacterPicker";
 import { TeammateEditorSection } from "./TeammateEditorSection";
 import type { TeammateEditorChange, TeammateEditorValue } from "./types";
 
 export interface IdentitySectionProps {
-  value: Pick<TeammateEditorValue, "name" | "kind" | "description" | "avatarUrl">;
+  value: Pick<TeammateEditorValue, "name" | "kind" | "description" | "avatarUrl" | "characterId">;
   disabled: boolean;
   onChange: TeammateEditorChange;
 }
@@ -52,13 +53,18 @@ export function IdentitySection({ value, disabled, onChange }: IdentitySectionPr
         description="Shown next to the teammate in chat and in the library."
         onChange={(event) => onChange({ description: event.target.value })}
       />
+      <TeammateCharacterPicker
+        value={value.characterId}
+        disabled={disabled}
+        onChange={(characterId) => onChange({ characterId })}
+      />
       <FormInput
         label="Avatar URL"
         type="url"
         value={value.avatarUrl}
         disabled={disabled}
         placeholder="https://example.com/avatar.png"
-        description="Optional. Falls back to the teammate's initial."
+        description="Optional. Used where no character is chosen, then the teammate's initial."
         onChange={(event) => onChange({ avatarUrl: event.target.value })}
       />
       <p className="text-xs text-muted-foreground">{TEAMMATE_PERMISSIONS_SENTENCE}</p>

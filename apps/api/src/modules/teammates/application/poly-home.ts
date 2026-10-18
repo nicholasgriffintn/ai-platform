@@ -1,6 +1,9 @@
 import {
+  capTeammateAutonomyLevel,
+  isOwnerStartedTrigger,
   isPolyTeammateId,
   type ChatRunTrigger,
+  type TeammateAutonomyLevel,
   type TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -32,6 +35,7 @@ export function requirePolyHomeRun(
 export function admitTeammateContextAuthority(params: {
   context: TeammateContext;
   trigger: ChatRunTrigger | undefined;
+  ceiling?: TeammateAutonomyLevel;
   now: number;
 }) {
   const { context } = params;
@@ -40,15 +44,25 @@ export function admitTeammateContextAuthority(params: {
         autonomyLevel: context.autonomyLevel,
         standingApprovals: context.standingApprovals,
         ownerSeenAt: context.ownerSeenAt,
-        ownerStartedRun: params.trigger === undefined || params.trigger === "user",
+        ownerStartedRun: isOwnerStartedTrigger(params.trigger),
         now: params.now,
       })
-    : { autonomyLevel: context.autonomyLevel, standingApprovals: context.standingApprovals };
+    : {
+        autonomyLevel: context.autonomyLevel,
+        standingApprovals: context.standingApprovals,
+        braked: false,
+      };
+
+  const capped = Boolean(params.ceiling);
+  const loosened = authority.braked || capped;
 
   return {
     contextId: context.id,
-    autonomyLevel: authority.autonomyLevel,
-    standingApprovals: authority.standingApprovals,
+    autonomyLevel: capTeammateAutonomyLevel(authority.autonomyLevel, params.ceiling),
+    standingApprovals: capped ? [] : authority.standingApprovals,
     approvalStreaks: context.approvalStreaks,
+    toolRules: loosened
+      ? context.toolRules.filter((rule) => rule.level !== "act" && rule.level !== "act_if_asked")
+      : context.toolRules,
   };
 }

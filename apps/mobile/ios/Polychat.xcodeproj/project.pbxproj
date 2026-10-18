@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7A11000F2F00000000000001 /* PolychatWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7A1100012F00000000000001 /* PolychatWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		7A11000C2F00000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6433D1E42E1F37C6000E4A43 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A1100052F00000000000001;
+			remoteInfo = PolychatWidgets;
+		};
 		6433D1FE2E1F37C7000E4A43 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 6433D1E42E1F37C6000E4A43 /* Project object */;
@@ -23,10 +34,25 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		7A11000E2F00000000000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7A11000F2F00000000000001 /* PolychatWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		6433D1EC2E1F37C6000E4A43 /* Polychat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Polychat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6433D1FD2E1F37C7000E4A43 /* PolychatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PolychatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6433D2072E1F37C7000E4A43 /* PolychatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PolychatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A1100012F00000000000001 /* PolychatWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PolychatWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +62,13 @@
 				Info.plist,
 			);
 			target = 6433D1EB2E1F37C6000E4A43 /* Polychat */;
+		};
+		7A1100042F00000000000001 /* Exceptions for "PolychatWidgets" folder in "PolychatWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7A1100052F00000000000001 /* PolychatWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -56,6 +89,19 @@
 		6433D20A2E1F37C7000E4A43 /* PolychatUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PolychatUITests;
+			sourceTree = "<group>";
+		};
+		7A1100022F00000000000001 /* PolychatWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7A1100042F00000000000001 /* Exceptions for "PolychatWidgets" folder in "PolychatWidgets" target */,
+			);
+			path = PolychatWidgets;
+			sourceTree = "<group>";
+		};
+		7A1100032F00000000000001 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +128,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A1100072F00000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -89,6 +142,8 @@
 			isa = PBXGroup;
 			children = (
 				6433D1EE2E1F37C6000E4A43 /* Polychat */,
+				7A1100032F00000000000001 /* Shared */,
+				7A1100022F00000000000001 /* PolychatWidgets */,
 				6433D2002E1F37C7000E4A43 /* PolychatTests */,
 				6433D20A2E1F37C7000E4A43 /* PolychatUITests */,
 				6433D1ED2E1F37C6000E4A43 /* Products */,
@@ -101,6 +156,7 @@
 				6433D1EC2E1F37C6000E4A43 /* Polychat.app */,
 				6433D1FD2E1F37C7000E4A43 /* PolychatTests.xctest */,
 				6433D2072E1F37C7000E4A43 /* PolychatUITests.xctest */,
+				7A1100012F00000000000001 /* PolychatWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,13 +171,16 @@
 				6433D1E82E1F37C6000E4A43 /* Sources */,
 				6433D1E92E1F37C6000E4A43 /* Frameworks */,
 				6433D1EA2E1F37C6000E4A43 /* Resources */,
+				7A11000E2F00000000000001 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7A11000D2F00000000000001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6433D1EE2E1F37C6000E4A43 /* Polychat */,
+				7A1100032F00000000000001 /* Shared */,
 			);
 			name = Polychat;
 			packageProductDependencies = (
@@ -176,6 +235,29 @@
 			productReference = 6433D2072E1F37C7000E4A43 /* PolychatUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		7A1100052F00000000000001 /* PolychatWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A1100092F00000000000001 /* Build configuration list for PBXNativeTarget "PolychatWidgets" */;
+			buildPhases = (
+				7A1100062F00000000000001 /* Sources */,
+				7A1100072F00000000000001 /* Frameworks */,
+				7A1100082F00000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7A1100022F00000000000001 /* PolychatWidgets */,
+				7A1100032F00000000000001 /* Shared */,
+			);
+			name = PolychatWidgets;
+			packageProductDependencies = (
+			);
+			productName = PolychatWidgets;
+			productReference = 7A1100012F00000000000001 /* PolychatWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -197,6 +279,9 @@
 						CreatedOnToolsVersion = 16.2;
 						TestTargetID = 6433D1EB2E1F37C6000E4A43;
 					};
+					7A1100052F00000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+					};
 				};
 			};
 			buildConfigurationList = 6433D1E72E1F37C6000E4A43 /* Build configuration list for PBXProject "Polychat" */;
@@ -216,6 +301,7 @@
 				6433D1EB2E1F37C6000E4A43 /* Polychat */,
 				6433D1FC2E1F37C7000E4A43 /* PolychatTests */,
 				6433D2062E1F37C7000E4A43 /* PolychatUITests */,
+				7A1100052F00000000000001 /* PolychatWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -236,6 +322,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6433D2052E1F37C7000E4A43 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A1100082F00000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,6 +359,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A1100062F00000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -278,6 +378,11 @@
 			isa = PBXTargetDependency;
 			target = 6433D1EB2E1F37C6000E4A43 /* Polychat */;
 			targetProxy = 6433D2082E1F37C7000E4A43 /* PBXContainerItemProxy */;
+		};
+		7A11000D2F00000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7A1100052F00000000000001 /* PolychatWidgets */;
+			targetProxy = 7A11000C2F00000000000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -556,6 +661,64 @@
 			};
 			name = Release;
 		};
+		7A11000A2F00000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JA9F67V6P5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PolychatWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Poly;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.polychat-app.app.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7A11000B2F00000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JA9F67V6P5;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PolychatWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Poly;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.polychat-app.app.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -591,6 +754,15 @@
 			buildConfigurations = (
 				6433D2182E1F37C7000E4A43 /* Debug */,
 				6433D2192E1F37C7000E4A43 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7A1100092F00000000000001 /* Build configuration list for PBXNativeTarget "PolychatWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A11000A2F00000000000001 /* Debug */,
+				7A11000B2F00000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

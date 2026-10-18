@@ -26,6 +26,7 @@ export interface CreateTeammateRecord {
   name: string;
   description: string;
   avatarUrl: string | null;
+  characterId?: string | null;
   servers?: TeammateMcpServer[];
   model?: string | null;
   temperature?: number | null;
@@ -70,6 +71,7 @@ export class TeammateRepository extends BaseRepository {
         name: record.name,
         description: record.description,
         avatar_url: record.avatarUrl ?? null,
+        character_id: record.characterId ?? null,
         servers: record.servers ?? null,
         model: record.model ?? null,
         temperature:
@@ -225,6 +227,7 @@ export class TeammateRepository extends BaseRepository {
       name: string;
       description: string;
       avatar_url: string | null;
+      character_id: string | null;
       servers: TeammateMcpServer[];
       model: string;
       temperature: number | null;
@@ -242,6 +245,7 @@ export class TeammateRepository extends BaseRepository {
       "name",
       "description",
       "avatar_url",
+      "character_id",
       "servers",
       "model",
       "temperature",

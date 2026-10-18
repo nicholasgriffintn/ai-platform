@@ -1,4 +1,8 @@
 import {
+  generatedPetImageSchema,
+  generatedPetPosesSchema,
+  generatePetPosesSchema,
+  importPetSchema,
   generateUserPetSchema,
   userPetSchema,
   userPetsQuerySchema,
@@ -14,7 +18,9 @@ import {
   createPet,
   deletePet,
   generatePetImage,
+  generatePetPoses,
   getPet,
+  importPet,
   listPets,
   readPetSheet,
 } from "~/modules/pets/application/pets";
@@ -57,9 +63,28 @@ defineResource(app, { idParam: "pet_id", tags: ["pets"] }, (pets) => {
       description: "Generates a mascot image from a description, ready to compose into a sheet.",
       bodySchema: generateUserPetSchema,
       responses: {
-        200: { description: "The generated image", schema: z.object({ image: z.string() }) },
+        200: { description: "The generated image and its seed", schema: generatedPetImageSchema },
       },
       handler: ({ body, serviceContext }) => generatePetImage(serviceContext, body.prompt),
+    })
+    .collectionAction("import", {
+      auth: true,
+      summary: "Import a pet from a pet.json address",
+      description:
+        "Fetches a Codex or Polychat pet.json manifest and the sprite sheet beside it from a public address and keeps them as your pet.",
+      bodySchema: importPetSchema,
+      responses: { 201: { description: "The pet", schema: userPetSchema } },
+      handler: async ({ body, raw, serviceContext }) =>
+        ResponseFactory.success(raw, await importPet(serviceContext, body), 201),
+    })
+    .collectionAction("poses", {
+      auth: true,
+      summary: "Draw a generated pet in each pose",
+      description:
+        "Redraws a generated pet in the greet, think, work, speak, cheer, fret and doze poses with the same seed, so each row of its sheet shows a real expression. Poses that fail are left out.",
+      bodySchema: generatePetPosesSchema,
+      responses: { 200: { description: "Pose images by clip", schema: generatedPetPosesSchema } },
+      handler: ({ body, serviceContext }) => generatePetPoses(serviceContext, body),
     })
     .read({
       auth: true,

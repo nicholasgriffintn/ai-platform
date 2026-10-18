@@ -1,6 +1,7 @@
 import {
   FormDialog,
   FormInput,
+  FormSelect,
   SingleFileUploader,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
@@ -8,13 +9,41 @@ import {
   describePetSheetSizes,
   PET_DESCRIPTION_MAX_LENGTH,
   PET_SHEET_MAX_BYTES,
+  selectPetSheetLayout,
+  type PetSheetLayoutSelection,
 } from "@ngriffin_uk/polychat-schemas";
+import { readImageDimensions } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 export interface PetUploadSubmission {
   name: string;
   description: string;
+  layoutId: string;
   sheet: File;
+}
+
+async function readSheetSelection(file: File): Promise<PetSheetLayoutSelection> {
+  const dimensions = readImageDimensions(new Uint8Array(await file.arrayBuffer()));
+
+  return dimensions
+    ? selectPetSheetLayout(dimensions.width, dimensions.height)
+    : { kind: "unknown-size" };
+}
+
+function sheetHint(selection: PetSheetLayoutSelection | null): string | null {
+  if (!selection) {
+    return null;
+  }
+
+  if (selection.kind === "unknown-size") {
+    return `That sheet is not ${describePetSheetSizes()} pixels.`;
+  }
+
+  if (selection.kind === "ambiguous") {
+    return "Two layouts share this size. Pick the one the sheet was drawn for.";
+  }
+
+  return null;
 }
 
 export interface PetUploadDialogProps {
@@ -37,6 +66,8 @@ export function PetUploadDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sheet, setSheet] = useState<File | null>(null);
+  const [selection, setSelection] = useState<PetSheetLayoutSelection | null>(null);
+  const [layoutId, setLayoutId] = useState("");
   const [prevOpen, setPrevOpen] = useState(open);
 
   if (prevOpen !== open) {
@@ -46,8 +77,20 @@ export function PetUploadDialog({
       setName("");
       setDescription("");
       setSheet(null);
+      setSelection(null);
+      setLayoutId("");
     }
   }
+
+  const chooseSheetLayout = async (file: File) => {
+    const nextSelection = await readSheetSelection(file);
+
+    setSelection(nextSelection);
+    setLayoutId(nextSelection.kind === "selected" ? nextSelection.layout.id : "");
+  };
+
+  const candidates = selection?.kind === "ambiguous" ? selection.candidates : [];
+  const hint = sheetHint(selection);
 
   return (
     <FormDialog
@@ -57,13 +100,13 @@ export function PetUploadDialog({
       description="Add an animated companion of your own."
       submitText="Upload"
       isLoading={isSaving}
-      submitDisabled={!sheet || name.trim().length === 0}
+      submitDisabled={!sheet || !layoutId || name.trim().length === 0}
       onSubmit={() => {
-        if (!sheet) {
+        if (!sheet || !layoutId) {
           return;
         }
 
-        onSubmit({ name: name.trim(), description: description.trim(), sheet });
+        onSubmit({ name: name.trim(), description: description.trim(), layoutId, sheet });
       }}
     >
       <div className="space-y-2">
@@ -113,12 +156,35 @@ export function PetUploadDialog({
           onFilesChange={(files) => {
             const next = files[0]?.file;
 
-            setSheet(next instanceof File ? next : null);
+            const file = next instanceof File ? next : null;
+
+            setSheet(file);
+            setSelection(null);
+            setLayoutId("");
+
+            if (file) {
+              void chooseSheetLayout(file);
+            }
           }}
         />
+        {candidates.length > 0 ? (
+          <FormSelect
+            id="pet_upload_layout"
+            name="pet_upload_layout"
+            label="Sheet layout"
+            options={candidates.map((candidate) => ({
+              value: candidate.id,
+              label: candidate.label,
+            }))}
+            value={layoutId}
+            placeholder="Choose a layout"
+            onValueChange={setLayoutId}
+          />
+        ) : null}
+        {hint ? <p className="text-xs text-human-action">{hint}</p> : null}
         <p className="text-xs text-muted-foreground">
           Eight columns of 192 by 208 frames, one row per animation. Polychat sheets have eleven
-          rows; Codex sheets have nine and reuse the rows they share.
+          rows. Codex sheets have nine, or eleven when they add look directions.
         </p>
       </div>
 

@@ -56,6 +56,7 @@ function delegationItem(delegation: Delegation): PolyAgendaItem {
     status: delegation.state,
     conversation_id: delegation.childConversationId,
     updated_at: delegation.updatedAt ?? delegation.createdAt,
+    teammate_id: delegation.teammateId,
   };
 }
 

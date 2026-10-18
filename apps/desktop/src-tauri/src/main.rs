@@ -11,6 +11,7 @@ mod lines;
 mod link;
 mod links;
 mod model_runner;
+mod poly;
 mod programs;
 mod runs;
 mod secrets;
@@ -759,6 +760,21 @@ fn set_attention_badge(count: u32, app: tauri::AppHandle) {
 }
 
 #[tauri::command]
+fn set_poly_presence(status: String, needs_you: u32, app: tauri::AppHandle) -> Result<(), String> {
+    poly::show_presence(&app, &status, needs_you).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn set_poly_perch(visible: bool, app: tauri::AppHandle) -> Result<(), String> {
+    poly::set_perch(&app, visible).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn open_poly_window(app: tauri::AppHandle) {
+    poly::open_poly(&app);
+}
+
+#[tauri::command]
 fn cancel_model_run(run_id: String, registry: State<'_, RunRegistry>) {
     registry.cancel(&run_id);
 }
@@ -819,7 +835,14 @@ fn main() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
+            poly::install_tray(app.handle())?;
+
+            if let Err(error) = poly::register_quick_ask(app.handle()) {
+                eprintln!("Poly could not claim its shortcut: {error}");
+            }
+
             let opened = app.handle().clone();
 
             app.deep_link().on_open_url(move |event| {
@@ -880,7 +903,10 @@ fn main() {
             cancel_model_run,
             cancel_agent_process_run,
             announce_attention,
-            set_attention_badge
+            set_attention_badge,
+            set_poly_presence,
+            set_poly_perch,
+            open_poly_window
         ])
         .build(context)
         .expect("Polychat desktop failed to start")

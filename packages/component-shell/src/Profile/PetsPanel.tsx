@@ -1,6 +1,7 @@
 import {
   PetGenerateDialog,
   type PetGenerateSubmission,
+  PetImportDialog,
   PetSettings,
   type PetSettingsOption,
   PetUploadDialog,
@@ -21,12 +22,16 @@ import {
   EMPTY_PET_MODEL_OVERRIDES,
   PET_PRESETS,
   PET_SHEET_MAX_BYTES,
+  POLYCHAT_SHEET_LAYOUT_ID,
   findPetSheetLayout,
   parsePetModelOverrides,
   resolvePetPreset,
+  type GeneratedPetImage,
   type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useMemo, useState } from "react";
+
+import { usePetPackages } from "./usePetPackages.js";
 
 const MAX_MEBIBYTES = Math.round(PET_SHEET_MAX_BYTES / 1024 / 1024);
 
@@ -52,7 +57,12 @@ export function PetsPanel() {
     isDeletingPet,
     generatePet,
     isGeneratingPet,
+    generatePetPoses,
+    isGeneratingPoses,
+    importPet,
+    isImportingPet,
   } = usePets(petPages.cursor);
+  const packages = usePetPackages(importPet);
   const { data: models = {} } = useModels();
 
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +70,7 @@ export function PetsPanel() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<GeneratedPetImage | null>(null);
 
   const canAuthor = user?.plan_id === "pro";
   const modelTargets = useMemo(() => getPetModelTargetOptions(models), [models]);
@@ -186,6 +196,7 @@ export function PetsPanel() {
           name: submission.name,
           description: submission.description || undefined,
           origin: "upload",
+          layoutId: submission.layoutId,
           sheet: submission.sheet,
           filename: submission.sheet.name,
         });
@@ -221,13 +232,18 @@ export function PetsPanel() {
       setGenerateError(null);
 
       try {
-        const sheet = await composePetSheet(previewImage);
+        const { poses } = await generatePetPoses({
+          prompt: submission.prompt,
+          seed: previewImage.seed,
+        });
+        const sheet = await composePetSheet(previewImage.image, { poses });
 
         await createPet({
           name: submission.name,
           description: submission.description || undefined,
           prompt: submission.prompt,
           origin: "generated",
+          layoutId: POLYCHAT_SHEET_LAYOUT_ID,
           sheet,
           filename: "pet.webp",
         });
@@ -237,7 +253,7 @@ export function PetsPanel() {
         setGenerateError(messageFrom(saveError, "The pet could not be saved."));
       }
     },
-    [createPet, petPages, previewImage],
+    [createPet, generatePetPoses, petPages, previewImage],
   );
 
   return (
@@ -254,7 +270,7 @@ export function PetsPanel() {
         hasPreviousCustomPets={petPages.hasPrevious}
         hasNextCustomPets={Boolean(nextPetsCursor)}
         isBusy={isCreatingPet || isDeletingPet || isGeneratingPet || isUpdatingUserSettings}
-        error={error}
+        error={error ?? packages.exportError}
         onSelect={(option) => void handleSelect(option)}
         onTravelChange={(enabled) => void handleTravelChange(enabled)}
         onAnimationChange={(enabled) => void handleAnimationChange(enabled)}
@@ -262,6 +278,14 @@ export function PetsPanel() {
         onPreviousCustomPets={petPages.previous}
         onNextCustomPets={() => petPages.next(nextPetsCursor)}
         onDelete={(option) => void handleDelete(option)}
+        onExport={(option) => {
+          const pet = visibleCustomPets.find((entry) => entry.id === option.id);
+
+          if (pet) {
+            void packages.exportPet(pet);
+          }
+        }}
+        onImport={() => packages.openImport(true)}
         onUpload={() => setIsUploadOpen(true)}
         onGenerate={() => setIsGenerateOpen(true)}
         renderPreview={(option, size = 64) => {
@@ -292,17 +316,25 @@ export function PetsPanel() {
         onSubmit={(submission) => void handleUpload(submission)}
       />
 
+      <PetImportDialog
+        open={packages.isImportOpen}
+        isImporting={isImportingPet}
+        error={packages.importError}
+        onOpenChange={packages.openImport}
+        onSubmit={(url) => void packages.submitImport(url, petPages.reset)}
+      />
+
       <PetGenerateDialog
         open={isGenerateOpen}
         isGenerating={isGeneratingPet}
-        isSaving={isCreatingPet}
+        isSaving={isCreatingPet || isGeneratingPoses}
         hasPreview={previewImage !== null}
         error={generateError}
         suggestions={GENERATE_SUGGESTIONS}
         preview={
           previewImage ? (
             <img
-              src={previewImage}
+              src={previewImage.image}
               alt="The pet Polychat drew"
               className="h-24 w-24 object-contain"
             />

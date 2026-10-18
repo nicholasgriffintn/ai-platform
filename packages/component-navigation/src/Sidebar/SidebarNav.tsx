@@ -37,6 +37,7 @@ export function SidebarNavSection({ children, title }: { children: ReactNode; ti
 }
 
 export function SidebarNavLink({
+  anchor,
   children,
   count = 0,
   countLabel,
@@ -45,6 +46,7 @@ export function SidebarNavLink({
   icon,
   onClick,
 }: {
+  anchor?: string;
   children: ReactNode;
   count?: number;
   countLabel?: string;
@@ -55,7 +57,13 @@ export function SidebarNavLink({
 }) {
   return (
     <NavLink href={href} end={end} className={sidebarNavLinkClass} onClick={onClick}>
-      {icon}
+      {anchor ? (
+        <span data-poly-anchor={anchor} className="inline-flex">
+          {icon}
+        </span>
+      ) : (
+        icon
+      )}
       <span className="min-w-0 flex-1 truncate">{children}</span>
       <SidebarCountBadge count={count} label={countLabel ?? `${count} waiting`} />
     </NavLink>

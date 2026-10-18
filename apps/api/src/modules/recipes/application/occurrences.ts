@@ -13,6 +13,7 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { sendPolyNotificationToChannels } from "~/modules/poly/application/channel-delivery";
 import { admitRoutineHandoff } from "~/modules/poly/application/handoffs";
+import { isPolyContextPaused } from "~/modules/poly/domain/pause";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -143,6 +144,7 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
       summary,
       resultConversationId: params.conversationId,
       failed: Boolean(params.failure),
+      paused: isPolyContextPaused(currentContext, Date.now()),
     });
 
     if (decision === "noted") {

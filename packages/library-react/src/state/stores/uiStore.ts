@@ -16,6 +16,12 @@ function initialIsMobile(): boolean {
 
 export type ProjectPickerDestination = "chat" | "canvas";
 
+export type PolyLayout = "dock" | "window";
+
+export const POLY_DOCK_MIN_WIDTH = 340;
+export const POLY_DOCK_MAX_WIDTH = 720;
+export const POLY_DOCK_DEFAULT_WIDTH = 420;
+
 export interface UIStore {
   isMobile: boolean;
   setIsMobile: (isMobile: boolean) => void;
@@ -29,6 +35,12 @@ export interface UIStore {
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
   showPoly: boolean;
   setShowPoly: (showPoly: boolean) => void;
+  polyLayout: PolyLayout;
+  setPolyLayout: (polyLayout: PolyLayout) => void;
+  polyDockWidth: number;
+  setPolyDockWidth: (width: number) => void;
+  polySpeaks: boolean;
+  setPolySpeaks: (polySpeaks: boolean) => void;
   projectPicker: ProjectPickerDestination | null;
   openProjectPicker: (destination: ProjectPickerDestination) => void;
   closeProjectPicker: () => void;
@@ -57,6 +69,17 @@ export const useUIStore = create<UIStore>()(
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
       showPoly: false,
       setShowPoly: (showPoly) => set({ showPoly }),
+      polyLayout: "dock",
+      setPolyLayout: (polyLayout) => set({ polyLayout }),
+      polyDockWidth: POLY_DOCK_DEFAULT_WIDTH,
+      setPolyDockWidth: (width) =>
+        set({
+          polyDockWidth: Math.round(
+            Math.min(POLY_DOCK_MAX_WIDTH, Math.max(POLY_DOCK_MIN_WIDTH, width)),
+          ),
+        }),
+      polySpeaks: false,
+      setPolySpeaks: (polySpeaks) => set({ polySpeaks }),
       projectPicker: null,
       openProjectPicker: (destination) => set({ projectPicker: destination }),
       closeProjectPicker: () => set({ projectPicker: null }),

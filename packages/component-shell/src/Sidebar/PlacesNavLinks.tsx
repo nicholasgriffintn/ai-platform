@@ -4,6 +4,7 @@ import {
   type ProductMode,
   useTaskAttention,
 } from "@ngriffin_uk/polychat-library-react";
+import { polyPlaceAnchor } from "@ngriffin_uk/polychat-schemas";
 import {
   BellRing,
   CalendarClock,
@@ -27,6 +28,7 @@ export function PlacesNavLinks({
   return (
     <>
       <SidebarNavLink
+        anchor={polyPlaceAnchor("attention")}
         href={places.attention}
         icon={<BellRing size={16} />}
         count={unread}
@@ -35,26 +37,52 @@ export function PlacesNavLinks({
       >
         Attention
       </SidebarNavLink>
-      <SidebarNavLink href={places.canvas} icon={<Palette size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        anchor={polyPlaceAnchor("canvas")}
+        href={places.canvas}
+        icon={<Palette size={16} />}
+        onClick={onNavigate}
+      >
         Canvas
       </SidebarNavLink>
-      <SidebarNavLink href={places.sites} icon={<LayoutTemplate size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        anchor={polyPlaceAnchor("sites")}
+        href={places.sites}
+        icon={<LayoutTemplate size={16} />}
+        onClick={onNavigate}
+      >
         Sites
       </SidebarNavLink>
-      <SidebarNavLink href={places.files} icon={<FolderOpen size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        anchor={polyPlaceAnchor("files")}
+        href={places.files}
+        icon={<FolderOpen size={16} />}
+        onClick={onNavigate}
+      >
         Files
       </SidebarNavLink>
-      <SidebarNavLink href={places.teammates} icon={<UsersRound size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        anchor={polyPlaceAnchor("teammates")}
+        href={places.teammates}
+        icon={<UsersRound size={16} />}
+        onClick={onNavigate}
+      >
         Teammates
       </SidebarNavLink>
       <SidebarNavLink
+        anchor={polyPlaceAnchor("scheduled")}
         href={places.scheduled}
         icon={<CalendarClock size={16} />}
         onClick={onNavigate}
       >
         Scheduled
       </SidebarNavLink>
-      <SidebarNavLink href={places.plugins} icon={<Plug size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        anchor={polyPlaceAnchor("plugins")}
+        href={places.plugins}
+        icon={<Plug size={16} />}
+        onClick={onNavigate}
+      >
         Plugins
       </SidebarNavLink>
     </>

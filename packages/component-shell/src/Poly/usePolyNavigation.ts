@@ -7,6 +7,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
+import { usePolyPointing } from "./usePolyPointing.js";
+
 export function usePolyNavigation(
   conversation: ReturnType<typeof useChat>["data"],
   conversationId: string | undefined,
@@ -16,6 +18,7 @@ export function usePolyNavigation(
   const initialConversationId = useRef(conversationId);
   const historyLoaded = useRef(!conversationId);
   const handledMessageIds = useRef(new Set<string>());
+  const point = usePolyPointing();
 
   useEffect(() => {
     if (!conversation) {
@@ -49,8 +52,8 @@ export function usePolyNavigation(
       const target = readPolyNavigationTarget(message.data);
 
       if (target) {
-        onNavigate(getPolyNavigationHref(target));
+        void point(target).then(() => onNavigate(getPolyNavigationHref(target)));
       }
     }
-  }, [conversation, conversationId, onNavigate, queryClient]);
+  }, [conversation, conversationId, onNavigate, point, queryClient]);
 }

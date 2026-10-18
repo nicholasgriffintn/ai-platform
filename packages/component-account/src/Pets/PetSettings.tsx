@@ -1,6 +1,6 @@
 import { Button, Switch, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import type { PetModelOverrides, PetSheetLayout, PetSource } from "@ngriffin_uk/polychat-schemas";
-import { ArrowRight, Sparkles, Trash2, Upload } from "lucide-react";
+import { ArrowRight, Download, Link2, Sparkles, Trash2, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { SettingsSection } from "../SettingsSection";
@@ -38,6 +38,8 @@ export interface PetSettingsProps {
   onPreviousCustomPets: () => void;
   onNextCustomPets: () => void;
   onDelete: (option: PetSettingsOption) => void;
+  onExport: (option: PetSettingsOption) => void;
+  onImport: () => void;
   onUpload: () => void;
   onGenerate: () => void;
 }
@@ -63,6 +65,8 @@ export function PetSettings({
   onPreviousCustomPets,
   onNextCustomPets,
   onDelete,
+  onExport,
+  onImport,
   onUpload,
   onGenerate,
 }: PetSettingsProps) {
@@ -83,6 +87,15 @@ export function PetSettings({
             >
               <Upload className="mr-2 h-4 w-4" />
               Upload a pet
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isBusy || !canAuthor}
+              onClick={onImport}
+            >
+              <Link2 className="mr-2 h-4 w-4" />
+              Import a link
             </Button>
             <Button
               type="button"
@@ -128,17 +141,29 @@ export function PetSettings({
                   ) : null}
                 </button>
                 {option.canDelete ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1 right-1"
-                    aria-label={`Delete ${option.name}`}
-                    disabled={isBusy}
-                    onClick={() => onDelete(option)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="absolute top-1 right-1 flex">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Download ${option.name} as a pet.json package`}
+                      title="Download pet.json and sheet"
+                      disabled={isBusy}
+                      onClick={() => onExport(option)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete ${option.name}`}
+                      disabled={isBusy}
+                      onClick={() => onDelete(option)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 ) : null}
               </li>
             );

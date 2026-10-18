@@ -1191,6 +1191,10 @@ export const assistantRecipeSchema = z.object({
   invocationContext: z
     .object({ instructions: z.string(), windowHoursKey: z.string().optional() })
     .optional(),
+  readOnly: z
+    .boolean()
+    .optional()
+    .describe("Runs as a teammate routine only read and draft, whatever the teammate's dial says"),
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
 
@@ -1512,6 +1516,7 @@ export const recipeInvocationResponseSchema = z.object({
   allowedConnectorProviders: z.array(recipeConnectorProviderSchema).default([]),
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
   configuration: recipeConfigurationSchema,
+  readOnly: z.boolean().optional(),
   taskId: z.string().optional(),
 });
 

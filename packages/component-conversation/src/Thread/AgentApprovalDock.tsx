@@ -17,7 +17,7 @@ export function AgentApprovalDock({ pending, resolve }: ConversationAgentApprova
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-poly-anchor="approval">
       {pending.map((entry) => (
         <AgentApprovalCard
           key={entry.approval.requestId}

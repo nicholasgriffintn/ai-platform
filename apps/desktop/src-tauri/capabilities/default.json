@@ -1,6 +1,11 @@
 {
   "identifier": "default",
-  "description": "The only permissions the Polychat window holds. Network egress, storage and secrets stay in Rust commands rather than webview capabilities. Setting the window title lets the renderer name the place you are in.",
-  "windows": ["main"],
-  "permissions": ["core:default", "core:window:allow-set-title", "dialog:default"]
+  "description": "The only permissions the Polychat windows hold. Network egress, storage and secrets stay in Rust commands rather than webview capabilities. Setting the window title lets the renderer name the place you are in; the perch window only shows Poly and asks the app to open it.",
+  "windows": ["main", "perch"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-title",
+    "dialog:default",
+    "core:window:allow-start-dragging"
+  ]
 }

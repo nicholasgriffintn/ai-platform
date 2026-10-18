@@ -24,6 +24,7 @@ export interface TeammateEditorValue {
   kind: TeammateKind;
   description: string;
   avatarUrl: string;
+  characterId: string | null;
   systemPrompt: string;
   examples: TeammateEditorExample[];
   mode: AgentMode | null;

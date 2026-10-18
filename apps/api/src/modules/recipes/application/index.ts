@@ -895,6 +895,7 @@ export async function invokeAssistantRecipe(
       allowedConnectorProviders: runtime.allowedConnectorProviders,
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
+      readOnly: recipe.readOnly,
     };
   }
 
@@ -913,6 +914,7 @@ export async function invokeAssistantRecipe(
       allowedConnectorProviders: runtime.allowedConnectorProviders,
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
+      readOnly: recipe.readOnly,
     };
   }
 
@@ -931,6 +933,7 @@ export async function invokeAssistantRecipe(
       allowedConnectorProviders: runtime.allowedConnectorProviders,
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
+      readOnly: recipe.readOnly,
     };
   }
 
@@ -974,6 +977,7 @@ export async function invokeAssistantRecipe(
     allowedConnectorProviders: runtime.allowedConnectorProviders,
     allowedConnectorOperations: runtime.allowedConnectorOperations,
     configuration: invocationConfiguration,
+    readOnly: recipe.readOnly,
     taskId,
   };
 }

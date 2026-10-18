@@ -76,6 +76,27 @@ final class APIClient: ObservableObject {
         try await send(path: "/notifications", method: "GET")
     }
 
+    func fetchPolyAgenda() async throws -> PolyAgenda {
+        try await send(path: "/poly/agenda", method: "GET")
+    }
+
+    func setPolyPause(contextId: String, until: Date?) async throws {
+        let formatter = ISO8601DateFormatter()
+        let _: PolyContextResponse = try await send(
+            path: "/teammates/contexts/\(contextId)",
+            method: "PATCH",
+            body: PolyPauseRequest(pausedUntil: until.map { formatter.string(from: $0) })
+        )
+    }
+
+    func setPolyLookAround(enabled: Bool) async throws -> PolyLookAround {
+        try await send(
+            path: "/poly/look-around",
+            method: "PATCH",
+            body: PolyLookAroundRequest(enabled: enabled, timezone: TimeZone.current.identifier)
+        )
+    }
+
     func fetchTaskNotificationSettings() async throws -> TaskNotificationSettings {
         try await send(path: "/notifications/settings", method: "GET")
     }
@@ -138,7 +159,8 @@ final class APIClient: ObservableObject {
         settings: ChatSettings? = nil,
         idempotencyKey: String = UUID().uuidString,
         modelTier: String? = nil,
-        computeSite: String = "hosted"
+        computeSite: String = "hosted",
+        agentTeammateId: String? = nil
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = CreateResponseRequest(
             messages: messages,
@@ -150,7 +172,8 @@ final class APIClient: ObservableObject {
             stream: true,
             modelTier: modelTier,
             computeSite: computeSite,
-            idempotencyKey: idempotencyKey
+            idempotencyKey: idempotencyKey,
+            agentTeammateId: agentTeammateId
         )
         guard requestBody.hasMessages else {
             return AsyncThrowingStream { continuation in

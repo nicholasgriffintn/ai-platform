@@ -160,6 +160,7 @@ describe("teammate editor", () => {
     name: "Researcher",
     description: "Finds things",
     avatar_url: null,
+    character_id: null,
     servers: [],
     model: null,
     temperature: null,

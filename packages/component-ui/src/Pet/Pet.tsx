@@ -1,34 +1,41 @@
 import {
-  usePetPresence,
   type ActivePet,
-  useActivePet,
+  type CharacterPresence,
+  PET_SETTINGS_PATH,
   PET_SWAP_FADE_MS,
-  usePetSwapTransition,
+  useActivePet,
+  useCharacterPresence,
   usePetAnimationEnabled,
   usePetFollowEnabled,
-  usePetTravel,
+  usePetGaze,
+  usePetMotion,
   usePetStore,
+  usePetSwapTransition,
+  usePetTravel,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   PET_IDLE_FLOURISH_CLIPS,
   type ModelConfigItem,
   type PetConversationState,
-  type PetClipName,
+  type PetStateName,
   resolvePet,
   resolvePetClipIn,
+  resolvePetLook,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMediaQuery } from "@ngriffin_uk/polychat-utility-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Link } from "../Link";
 import { PetBubble } from "../PetBubble";
 import { PetSprite } from "../PetSprite";
 import { cn } from "../utils";
+import { PetAccent } from "./PetAccent";
 
 const FLOURISH_MIN_MS = 7000;
 const FLOURISH_SPREAD_MS = 9000;
-const PET_SETTINGS_HREF = "/profile?tab=pets";
+const GLANCE_TILT_DEGREES = 8;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const GAZE_STATES: ReadonlySet<PetStateName> = new Set(["idle", "wait", "review", "listen"]);
 
 export interface PetProps {
   size?: number;
@@ -38,7 +45,23 @@ export interface PetProps {
   model?: Pick<ModelConfigItem, "family" | "provider">;
   modelReady?: boolean;
   conversationState?: PetConversationState;
+  conversationId?: string | null;
   presetSlug?: string;
+  href?: string | null;
+  onActivate?: () => void;
+  activateLabel?: string;
+  showNudges?: boolean;
+  label?: string;
+}
+
+interface GlanceStyle extends CSSProperties {
+  "--polychat-pet-glance": string;
+}
+
+function glanceTilt(angle: number): number {
+  const vertical = Math.cos((angle * Math.PI) / 180);
+
+  return -vertical * GLANCE_TILT_DEGREES;
 }
 
 export function Pet({
@@ -49,7 +72,13 @@ export function Pet({
   model,
   modelReady = true,
   conversationState,
+  conversationId,
   presetSlug,
+  href = PET_SETTINGS_PATH,
+  onActivate,
+  activateLabel,
+  showNudges = true,
+  label,
 }: PetProps) {
   const selectedPet = useActivePet(model, modelReady, conversationState);
   const presetPet = useMemo<ActivePet | null>(
@@ -60,7 +89,7 @@ export function Pet({
     [presetSlug],
   );
   const activePet = presetPet ?? selectedPet;
-  const presence = usePetPresence();
+  const presence = useCharacterPresence({ conversationId });
   const follows = usePetFollowEnabled();
   const animationEnabled = usePetAnimationEnabled();
   const prefersReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
@@ -72,24 +101,27 @@ export function Pet({
   );
   const shouldAnimate = animationEnabled && !prefersReducedMotion;
   const isTravelling = usePetTravel(follows && shouldAnimate);
+  const shown = usePetMotion(presence.state);
+  const frameRef = useRef<HTMLSpanElement | null>(null);
+  const gaze = usePetGaze(frameRef, shouldAnimate && GAZE_STATES.has(shown));
 
-  const nudge = usePetStore((state) => state.nudges[0] ?? null);
+  const nudge = usePetStore((state) => (showNudges ? (state.nudges[0] ?? null) : null));
   const dismissNudge = usePetStore((state) => state.dismissNudge);
 
-  const [flourish, setFlourish] = useState<PetClipName | null>(null);
+  const [flourish, setFlourish] = useState<PetStateName | null>(null);
   const [isHinting, setIsHinting] = useState(false);
-  const [previousPresenceClip, setPreviousPresenceClip] = useState(presence.clip);
+  const [previousShown, setPreviousShown] = useState(shown);
 
-  if (previousPresenceClip !== presence.clip) {
-    setPreviousPresenceClip(presence.clip);
+  if (previousShown !== shown) {
+    setPreviousShown(shown);
 
-    if (presence.clip !== "idle" && flourish !== null) {
+    if (shown !== "idle" && flourish !== null) {
       setFlourish(null);
     }
   }
 
   useEffect(() => {
-    if (!pet.isReady || !shouldAnimate || presence.clip !== "idle" || flourish !== null) {
+    if (!pet.isReady || !shouldAnimate || shown !== "idle" || flourish !== null || gaze) {
       return undefined;
     }
 
@@ -103,19 +135,42 @@ export function Pet({
     );
 
     return () => window.clearTimeout(timeout);
-  }, [shouldAnimate, pet.isReady, presence.clip, flourish]);
+  }, [shouldAnimate, pet.isReady, shown, flourish, gaze]);
 
   const handleClipEnd = useCallback(() => setFlourish(null), []);
 
   const clip = resolvePetClipIn(
     pet.layout,
-    shouldAnimate ? (isTravelling ? "flit" : (flourish ?? presence.clip)) : "idle",
+    shouldAnimate ? (isTravelling ? "flit" : (flourish ?? shown)) : "idle",
   );
+  const look = gaze && !isTravelling && !flourish ? resolvePetLook(pet.layout, gaze.angle) : null;
+  const glance = gaze && !look && !isTravelling ? glanceTilt(gaze.angle) : 0;
+  const faces = gaze && !look ? gaze.facing : facing;
+  const glanceStyle: GlanceStyle = { "--polychat-pet-glance": `${glance}deg` };
   const showHint = nudge === null && isHinting;
+  const accessibleName = label ?? `${pet.name}. ${presence.status}`;
 
   if (!activePet.isReady || !pet.isReady) {
     return null;
   }
+
+  const sprite = (
+    <span ref={frameRef} className="polychat-pet-glance relative inline-flex" style={glanceStyle}>
+      <PetSprite
+        sheetUrl={pet.sheetUrl}
+        layout={pet.layout}
+        clip={clip}
+        frame={look}
+        label=""
+        size={size}
+        facing={faces}
+        paused={!shouldAnimate}
+        className={cn("polychat-pet-perched", isTravelling && "polychat-pet-arriving", className)}
+        onClipEnd={handleClipEnd}
+      />
+      <PetAccent accent={presence.accent} size={size} />
+    </span>
+  );
 
   return (
     <span
@@ -140,29 +195,37 @@ export function Pet({
 
       {showHint ? <PetBubble placement={placement}>{presence.status}</PetBubble> : null}
 
-      <Link
-        href={PET_SETTINGS_HREF}
-        className="inline-flex cursor-pointer rounded-md leading-none"
-        aria-label={`${pet.name}. ${presence.status}. Open pet settings`}
-        onFocus={() => setIsHinting(true)}
-        onBlur={() => setIsHinting(false)}
-      >
-        <PetSprite
-          sheetUrl={pet.sheetUrl}
-          layout={pet.layout}
-          clip={clip}
-          label=""
-          size={size}
-          facing={facing}
-          paused={!shouldAnimate}
-          className={cn("polychat-pet-perched", isTravelling && "polychat-pet-arriving", className)}
-          onClipEnd={handleClipEnd}
-        />
-      </Link>
+      {onActivate ? (
+        <button
+          type="button"
+          className="inline-flex cursor-pointer rounded-md leading-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-label={activateLabel ? `${accessibleName}. ${activateLabel}` : accessibleName}
+          onClick={onActivate}
+          onFocus={() => setIsHinting(true)}
+          onBlur={() => setIsHinting(false)}
+        >
+          {sprite}
+        </button>
+      ) : href ? (
+        <Link
+          href={href}
+          className="inline-flex cursor-pointer rounded-md leading-none"
+          aria-label={`${accessibleName}. Open pet settings`}
+          onFocus={() => setIsHinting(true)}
+          onBlur={() => setIsHinting(false)}
+        >
+          {sprite}
+        </Link>
+      ) : (
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+        <span role="img" aria-label={accessibleName} className="inline-flex leading-none">
+          {sprite}
+        </span>
+      )}
     </span>
   );
 }
 
-export function usePetStatus(): string {
-  return usePetPresence().status;
+export function usePetStatus(conversationId?: string | null): CharacterPresence["status"] {
+  return useCharacterPresence({ conversationId }).status;
 }

@@ -59,6 +59,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
     <section
       className="space-y-3 rounded-lg border border-attention/45 bg-attention/12 p-3 text-sm"
       aria-label="Connector action approval"
+      data-poly-anchor="approval"
     >
       <div className="flex items-start gap-2">
         {displayState === "approved" || displayState === "consumed" ? (

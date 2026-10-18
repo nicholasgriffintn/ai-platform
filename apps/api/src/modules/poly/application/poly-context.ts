@@ -23,7 +23,7 @@ export function requirePolyContext(context: ServiceContext): Promise<TeammateCon
 export function describePolyContext(
   polyContext: TeammateContext,
   now = Date.now(),
-): Omit<PolyAgenda, keyof PolyAgendaLists> {
+): Omit<PolyAgenda, keyof PolyAgendaLists | "look_around"> {
   return {
     teammate_id: POLY_TEAMMATE_ID,
     context_id: polyContext.id,
@@ -32,6 +32,11 @@ export function describePolyContext(
     standing_approvals: polyContext.standingApprovals.filter(
       (approval) => Date.parse(approval.expiresAt) > now,
     ),
+    tool_rules: polyContext.toolRules,
+    paused_until:
+      polyContext.pausedUntil && Date.parse(polyContext.pausedUntil) > now
+        ? polyContext.pausedUntil
+        : null,
   };
 }
 

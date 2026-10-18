@@ -72,6 +72,7 @@ export async function createTeammate(
     name: params.name,
     description: params.description ?? "",
     avatarUrl: params.avatar_url || null,
+    characterId: params.character_id ?? null,
     servers: params.servers || [],
     model: params.model,
     temperature: params.temperature,

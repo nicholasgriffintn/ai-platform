@@ -9,6 +9,7 @@ import {
   resolveAgentModeFromChatMode,
   type AgentMode,
   type TeammateAutonomyLevel,
+  type TeammateToolRuleLevel,
   type ToolEffectClass,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -36,6 +37,8 @@ export interface PermissionCheckInput {
   effectClass?: ToolEffectClass;
   autonomyLevel?: TeammateAutonomyLevel | null;
   standingApproval?: boolean;
+  toolRule?: TeammateToolRuleLevel | null;
+  ownerStartedRun?: boolean;
 }
 
 export interface RequestPermissionCheckInput extends PermissionCheckInput {
@@ -123,6 +126,8 @@ function buildToolPolicyContext(input: PermissionCheckInput): {
       effectClass: input.effectClass ?? "",
       autonomyLevel: input.autonomyLevel ?? "",
       standingApproval: input.standingApproval ?? false,
+      toolRule: input.toolRule ?? "",
+      ownerStartedRun: input.ownerStartedRun ?? true,
     },
   };
 }

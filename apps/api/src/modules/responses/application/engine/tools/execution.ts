@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { findTeammateToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -198,6 +199,8 @@ export const handleToolCalls = async (
           destination: callDestination,
           now: Date.now(),
         }),
+        toolRule: findTeammateToolRule(req.request?.tool_rules, functionName),
+        ownerStartedRun: isOwnerStartedTrigger(req.request?.trigger),
       });
 
       if (!permissionResult.allowed) {

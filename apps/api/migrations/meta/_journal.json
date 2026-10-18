@@ -113,6 +113,13 @@
       "when": 1791941031710,
       "tag": "0015_webhook_endpoints",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1792275200131,
+      "tag": "0016_poly_presence",
+      "breakpoints": true
     }
   ]
 }

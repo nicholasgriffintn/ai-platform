@@ -3,6 +3,7 @@ import SwiftUI
 struct ConversationListView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @EnvironmentObject var conversationManager: ConversationManager
+    @EnvironmentObject var polyStore: PolyStore
     @Binding var selectedConversationID: String?
     @State private var searchText = ""
     @State private var conversationPendingDeletion: Conversation?
@@ -11,6 +12,7 @@ struct ConversationListView: View {
     let onShowSettings: () -> Void
     let onShowRecipes: () -> Void
     let onShowInbox: () -> Void
+    let onShowPoly: () -> Void
     let onShowWork: () -> Void
 
     init(
@@ -18,12 +20,14 @@ struct ConversationListView: View {
         onShowSettings: @escaping () -> Void = {},
         onShowRecipes: @escaping () -> Void = {},
         onShowInbox: @escaping () -> Void = {},
-        onShowWork: @escaping () -> Void = {}
+        onShowWork: @escaping () -> Void = {},
+        onShowPoly: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
         self.onShowRecipes = onShowRecipes
         self.onShowInbox = onShowInbox
+        self.onShowPoly = onShowPoly
         self.onShowWork = onShowWork
     }
 
@@ -125,6 +129,13 @@ struct ConversationListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 PolychatLogoView(size: 28)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: onShowPoly) {
+                    PolyGlyph(mood: polyStore.presence.mood.rawValue, size: 24)
+                }
+                .accessibilityLabel("Poly. \(polyStore.presence.status)")
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -324,6 +335,7 @@ struct ConversationRow: View {
         )
             .environmentObject(authManager)
             .environmentObject(conversationManager)
+            .environmentObject(PolyStore())
     } detail: {
         if conversationManager.currentConversation != nil {
             ChatView()
