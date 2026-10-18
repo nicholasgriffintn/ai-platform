@@ -15,7 +15,6 @@ import type { AuthoredSkillScope } from "~/modules/skills/infrastructure/Authore
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
-  assertSkillPassesScan,
   parseAuthoredSkillDocument,
   personalSkillScope,
   projectSkillScope,
@@ -31,6 +30,7 @@ import {
   rollbackStoredSkill,
   saveStoredSkillDraft,
 } from "./persistence";
+import { assertSkillPassesScan } from "./scan-gate";
 
 function projectSkillAudit(
   workspaceId: string,
@@ -168,7 +168,7 @@ export async function promotePersonalSkillDraft(
     throw new AssistantError("Skill revision not found", ErrorType.NOT_FOUND, 404);
   }
 
-  assertSkillPassesScan(draft, "promote", skillId);
+  assertSkillPassesScan(draft, "promote");
 
   const promoted = await promoteStoredSkillDraft(
     context,
@@ -225,7 +225,7 @@ export async function importPersonalSkill(
     throw new AssistantError("Source skill revision not found", ErrorType.NOT_FOUND, 404);
   }
 
-  assertSkillPassesScan(source, "import", input.source.skillId);
+  assertSkillPassesScan(source, "import");
 
   const created = await importStoredSkillRevision(
     context,
@@ -340,7 +340,7 @@ export async function promoteProjectSkillDraft(
     throw new AssistantError("Skill revision not found", ErrorType.NOT_FOUND, 404);
   }
 
-  assertSkillPassesScan(draft, "promote", skillId);
+  assertSkillPassesScan(draft, "promote");
 
   const promoted = await promoteStoredSkillDraft(
     context,
@@ -409,7 +409,7 @@ export async function importProjectSkill(
     throw new AssistantError("Source skill revision not found", ErrorType.NOT_FOUND, 404);
   }
 
-  assertSkillPassesScan(source, "import", input.source.skillId);
+  assertSkillPassesScan(source, "import");
 
   const created = await importStoredSkillRevision(
     context,
