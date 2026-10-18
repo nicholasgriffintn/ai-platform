@@ -4,6 +4,7 @@ import {
   type FormattedMcpToolResult,
   type McpTool,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { requireToolEffects, type ToolEffectHints } from "@ngriffin_uk/polychat-library-tools";
 import { modelAcceptsImageInput } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
@@ -16,6 +17,7 @@ import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import {
   findMcpGatewayServer,
+  listMcpGatewayTools,
   openMcpGatewaySession,
   readMcpGatewayServers,
 } from "~/modules/tools/application/mcp-gateway-servers";
@@ -106,9 +108,7 @@ export const mcp_list_tools: ApiToolDefinition = {
         readIntegration(args),
       );
       const session = await openMcpGatewaySession(serviceContext, server);
-      const tools = (await session.client.listTools()).filter(
-        (tool) => !session.allowedTools || session.allowedTools.has(tool.name),
-      );
+      const tools = await listMcpGatewayTools(serviceContext, session);
       const shown = tools.slice(0, MAX_LISTED_TOOLS);
       const header = `${server.label} offers ${tools.length} tool${tools.length === 1 ? "" : "s"}${
         shown.length < tools.length ? ` (showing ${shown.length})` : ""
@@ -126,8 +126,39 @@ export const mcp_list_tools: ApiToolDefinition = {
   },
 };
 
+async function readMcpToolHints(
+  args: unknown,
+  request: IRequest,
+): Promise<ToolEffectHints | undefined> {
+  const toolName = isRecord(args) && typeof args.tool === "string" ? args.tool.trim() : "";
+
+  if (!toolName) {
+    return undefined;
+  }
+
+  const serviceContext = resolveServiceContext(request);
+  const server = findMcpGatewayServer(
+    readMcpGatewayServers(request.request?.tool_options?.mcp_servers),
+    readIntegration(args),
+  );
+  const session = await openMcpGatewaySession(serviceContext, server);
+  const annotations = (await listMcpGatewayTools(serviceContext, session)).find(
+    (tool) => tool.name === toolName,
+  )?.annotations;
+
+  if (!annotations) {
+    return undefined;
+  }
+
+  return { readOnly: annotations.readOnlyHint, destructive: annotations.destructiveHint };
+}
+
 export const mcp_call_tool: ApiToolDefinition = {
   ...mcp_call_toolDescriptor,
+  effects: {
+    ...requireToolEffects(MCP_CALL_TOOL_NAME, mcp_call_toolDescriptor.effects),
+    hints: readMcpToolHints,
+  },
   execute: async (args, context) => {
     const toolName = isRecord(args) && typeof args.tool === "string" ? args.tool.trim() : "";
     const toolArguments = isRecord(args) && isRecord(args.arguments) ? args.arguments : {};

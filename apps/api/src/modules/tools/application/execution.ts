@@ -3,11 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { buildDryRunResponse } from "~/modules/tools/application/dry-run";
-import {
-  hasStandingApproval,
-  resolveToolCallDestination,
-  resolveToolCallEffectClass,
-} from "~/modules/tools/application/effects";
+import { hasStandingApproval, resolveToolCallEffects } from "~/modules/tools/application/effects";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
 import { filterToolsForPolyTurn } from "~/modules/tools/application/poly-turn-policy";
 import { buildToolReceipt } from "~/modules/tools/application/receipts";
@@ -53,14 +49,11 @@ export const handleFunctions = async ({
   const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
 
   const foundFunction = resolveFunctionTool(functionName);
-  const effectClass = resolveToolCallEffectClass({
+  const { effectClass, destination } = await resolveToolCallEffects({
     toolName: functionName,
     effects: foundFunction.effects,
     rawArguments: args,
-  });
-  const destination = resolveToolCallDestination({
-    effects: foundFunction.effects,
-    rawArguments: args,
+    request,
   });
   const dryRunResponse = request.request?.dry_run
     ? buildDryRunResponse({

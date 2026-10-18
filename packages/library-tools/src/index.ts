@@ -14,13 +14,15 @@ export {
   updatePlanToolDeclaration,
 } from "./control-tools.js";
 export {
+  effectClassFromToolHints,
   requireToolEffects,
   resolveToolDestination,
   resolveToolEffectClass,
+  resolveToolEffectClassWithHints,
+  type ToolEffectHints,
   type ToolEffects,
 } from "./effects.js";
 export { ToolError, isToolError, type ToolErrorCode, type ToolValidationIssue } from "./errors.js";
-export { classifyOperationEffect } from "./operation-effects.js";
 export { flattenObjectRootSchema, toToolInputJsonSchema } from "./json-schema.js";
 export { jsonSchemaToZod } from "./json-schema-to-zod.js";
 export {

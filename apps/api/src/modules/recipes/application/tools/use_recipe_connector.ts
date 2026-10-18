@@ -4,6 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
+import { requireToolEffects, type ToolEffectHints } from "@ngriffin_uk/polychat-library-tools";
 import {
   recipeConnectorProviderSchema,
   teammateRunConfigurationSchema,
@@ -16,6 +17,7 @@ import {
   retainComposioConnectorSession,
   resolveComposioRunAccount,
 } from "~/modules/connectors/application/composio-run";
+import { getRecipeConnectorAdapter } from "~/modules/connectors/application/connector-adapters";
 import { authoriseConnectorOperation } from "~/modules/connectors/application/operation-approvals";
 import {
   discoverRecipeConnectorTools,
@@ -83,8 +85,28 @@ function buildConnectorToolError(params: {
   };
 }
 
+function readConnectorOperationHints(input: unknown): ToolEffectHints | undefined {
+  const provider = recipeConnectorProviderSchema.safeParse(isRecord(input) ? input.provider : null);
+
+  if (!provider.success || !isRecord(input) || typeof input.operation !== "string") {
+    return undefined;
+  }
+
+  const operation = getRecipeConnectorAdapter(provider.data)?.provider.operations.find(
+    (candidate) => candidate.id === input.operation,
+  );
+
+  return operation
+    ? { readOnly: operation.readOnly, destructive: operation.destructive }
+    : undefined;
+}
+
 export const use_recipe_connector: ApiToolDefinition = {
   ...use_recipe_connectorDescriptor,
+  effects: {
+    ...requireToolEffects("use_recipe_connector", use_recipe_connectorDescriptor.effects),
+    hints: readConnectorOperationHints,
+  },
   execute: async (args, context) => {
     const request = context.request;
 

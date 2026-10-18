@@ -1,4 +1,4 @@
-import { McpHttpClient } from "@ngriffin_uk/polychat-ai-integrations";
+import { McpHttpClient, type McpTool } from "@ngriffin_uk/polychat-ai-integrations";
 import { normaliseMcpServerLabel } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cache";
@@ -97,6 +97,20 @@ export function openMcpGatewaySession(
         allowedTools: access.allowedTools ? new Set(access.allowedTools) : null,
       };
     },
+  );
+}
+
+export function listMcpGatewayTools(
+  context: ServiceContext,
+  session: McpGatewaySession,
+): Promise<McpTool[]> {
+  return memoizeRequest(
+    context.requestCache,
+    `mcp-gateway-tools:${session.server.label}:${session.server.url}`,
+    async () =>
+      (await session.client.listTools()).filter(
+        (tool) => !session.allowedTools || session.allowedTools.has(tool.name),
+      ),
   );
 }
 

@@ -1,5 +1,5 @@
 import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "@ngriffin_uk/polychat-ai-integrations";
-import { classifyOperationEffect, jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   recipeConnectorProviderSchema,
   type RecipeConnectorProvider,
@@ -55,10 +55,7 @@ export const use_recipe_connector: FunctionToolDescriptor = {
   type: "premium",
   permissions: ["network", "read", "write"],
   effects: {
-    effectClass: (input) =>
-      typeof input.operation === "string" && input.operation.trim()
-        ? classifyOperationEffect(input.operation)
-        : "read",
+    effectClass: (input) => (input.operation ? "write" : "read"),
     destination: (input) => input.provider,
   },
   intentEvidence: (input) => ({

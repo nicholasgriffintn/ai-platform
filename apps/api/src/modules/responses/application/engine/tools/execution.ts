@@ -34,8 +34,7 @@ import {
 import {
   hasStandingApproval,
   isStandingApprovalEligible,
-  resolveToolCallDestination,
-  resolveToolCallEffectClass,
+  resolveToolCallEffects,
 } from "~/modules/tools/application/effects";
 import { handleFunctions } from "~/modules/tools/application/execution";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
@@ -172,15 +171,13 @@ export const handleToolCalls = async (
         functionName === "memory" ? null : resolveFunctionTool(functionName);
 
       const rawToolArguments = toolCall.function?.arguments ?? toolCall.arguments;
-      const callEffectClass = resolveToolCallEffectClass({
-        toolName: functionName,
-        effects: functionDefinition?.effects,
-        rawArguments: rawToolArguments,
-      });
-      const callDestination = resolveToolCallDestination({
-        effects: functionDefinition?.effects,
-        rawArguments: rawToolArguments,
-      });
+      const { effectClass: callEffectClass, destination: callDestination } =
+        await resolveToolCallEffects({
+          toolName: functionName,
+          effects: functionDefinition?.effects,
+          rawArguments: rawToolArguments,
+          request: req,
+        });
       const permissionInput = {
         toolName: functionName,
         mode,
