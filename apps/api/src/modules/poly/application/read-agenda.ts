@@ -95,6 +95,7 @@ async function loadPolyAgendaForContext(
         id: handoff.id,
         title: handoff.title,
         reason: handoff.data.reason,
+        sourceKind: handoff.data.sourceKind,
         resultConversationId: handoff.data.resultConversationId,
         createdAt: handoff.createdAt,
         judgement: readHandoffJudgement(handoff.data.receipt),

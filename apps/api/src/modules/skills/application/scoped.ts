@@ -33,6 +33,8 @@ import {
   updatePersonalSkill,
   updateProjectSkill,
 } from "./index";
+import { personalSkillScope, projectSkillScope } from "./management-policy";
+import { getSkillOutcomes } from "./outcomes";
 
 export interface SkillScope {
   context: ServiceContext;
@@ -66,6 +68,16 @@ export function getScopedSkill({ context, user, projectId }: SkillScope, skillId
   return projectId
     ? getProjectSkill(context, projectId, skillId)
     : getPersonalSkill(context, user.id, skillId);
+}
+
+export async function getScopedSkillOutcomes(scope: SkillScope, skillId: string) {
+  await getScopedSkill(scope, skillId);
+
+  return getSkillOutcomes(
+    scope.context,
+    scope.projectId ? projectSkillScope(scope.projectId) : personalSkillScope(scope.user.id),
+    skillId,
+  );
 }
 
 export function updateScopedSkill(

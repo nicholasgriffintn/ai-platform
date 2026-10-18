@@ -235,6 +235,31 @@ export const loadSkillInputSchema = z.object({
     .describe("Optional relative resource path from the skill to load instead of SKILL.md."),
 });
 
+export const SKILL_HARVEST_TASK_TYPE = "skill_harvest";
+export const SKILL_OUTCOME_REVIEW_TASK_TYPE = "skill_outcome_review";
+
+export const SKILL_USE_ACTIVATIONS = ["load", "per_message"] as const;
+export const skillUseActivationSchema = z.enum(SKILL_USE_ACTIVATIONS);
+
+export const SKILL_OUTCOME_VERDICTS = ["new", "healthy", "unused", "struggling"] as const;
+export const skillOutcomeVerdictSchema = z.enum(SKILL_OUTCOME_VERDICTS);
+
+export const skillOutcomeSummarySchema = z.object({
+  skillId: skillIdSchema,
+  usesTotal: z.number().int().nonnegative(),
+  usesInWindow: z.number().int().nonnegative(),
+  windowDays: z.number().int().positive(),
+  lastUsedAt: z.string().nullable(),
+  thumbsUp: z.number().int().nonnegative(),
+  thumbsDown: z.number().int().nonnegative(),
+  corrections: z.number().int().nonnegative(),
+  verdict: skillOutcomeVerdictSchema,
+});
+
+export type SkillUseActivation = z.infer<typeof skillUseActivationSchema>;
+export type SkillOutcomeVerdict = z.infer<typeof skillOutcomeVerdictSchema>;
+export type SkillOutcomeSummary = z.infer<typeof skillOutcomeSummarySchema>;
+
 export type SkillCategory = z.infer<typeof skillCategorySchema>;
 export type SkillRequirement = z.infer<typeof skillRequirementSchema>;
 export type SkillSource = z.infer<typeof skillSourceSchema>;

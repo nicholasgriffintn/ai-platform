@@ -125,8 +125,12 @@ export const polyHandoffDecisionSchema = z.enum(["notified", "noted"]);
 
 export const POLY_HANDOFF_CAPABILITY_ID = "poly.handoffs";
 
+export const POLY_HANDOFF_SOURCE_KINDS = ["routine", "skill_draft", "skill_review"] as const;
+export const polyHandoffSourceKindSchema = z.enum(POLY_HANDOFF_SOURCE_KINDS);
+export type PolyHandoffSourceKind = z.infer<typeof polyHandoffSourceKindSchema>;
+
 export const polyHandoffDataSchema = z.object({
-  sourceKind: z.literal("routine"),
+  sourceKind: polyHandoffSourceKindSchema,
   sourceId: z.string().min(1),
   resultConversationId: z.string().min(1).nullable(),
   urgency: polyHandoffUrgencySchema,
@@ -168,7 +172,7 @@ export type PolyLookAround = z.infer<typeof polyLookAroundSchema>;
 export type UpdatePolyLookAround = z.infer<typeof updatePolyLookAroundSchema>;
 
 export const polyAgendaItemSchema = z.object({
-  kind: z.enum(["delegation", "goal", "approval", "question", "routine"]),
+  kind: z.enum(["delegation", "goal", "approval", "question", "routine", "skill"]),
   id: z.string().min(1),
   title: z.string(),
   status: z.string(),

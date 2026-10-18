@@ -716,6 +716,23 @@ export class MessageRepository extends BaseRepository {
     return Array.isArray(result) ? result : [];
   }
 
+  public async listReactedAssistantMessagesForRuns(
+    runIds: readonly string[],
+  ): Promise<{ run_id: string; data: string | null }[]> {
+    if (runIds.length === 0) {
+      return [];
+    }
+
+    return this.selectInChunks(runIds, (chunk) =>
+      this.runQuery<{ run_id: string; data: string | null }>(
+        `SELECT run_id, data FROM message
+         WHERE run_id IN (${chunk.map(() => "?").join(", ")})
+           AND role = 'assistant' AND data LIKE '%"reactions"%'`,
+        [...chunk],
+      ),
+    );
+  }
+
   public async archiveMessages(conversationId: string, messageIds: string[]): Promise<void> {
     if (messageIds.length === 0) {
       return;

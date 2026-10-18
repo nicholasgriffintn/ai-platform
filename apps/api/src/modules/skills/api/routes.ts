@@ -13,6 +13,7 @@ import {
   setSkillEnabledSchema,
   skillAvailabilitySchema,
   skillIdSchema,
+  skillOutcomeSummarySchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -32,6 +33,7 @@ import {
   deleteScopedSkill,
   getScopedSkill,
   getScopedSkillHistory,
+  getScopedSkillOutcomes,
   getScopedSkillRevision,
   importScopedSkill,
   listScopedSkills,
@@ -43,6 +45,11 @@ import {
 
 const app = new Hono();
 const skillParamsSchema = z.object({ skill_id: skillIdSchema });
+
+function notFound(message: string): never {
+  throw new AssistantError(message, ErrorType.NOT_FOUND, 404);
+}
+
 const documentParamsSchema = z.object({ document_id: skillIdSchema });
 const revisionParamsSchema = documentParamsSchema.extend({ revision_id: z.string().min(1) });
 
@@ -71,6 +78,24 @@ defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
     });
 
   const documents = skills.collection("documents", "document_id");
+
+  documents.singleton("outcomes").read({
+    auth: true,
+    summary: "How an authored skill is doing",
+    description:
+      "Uses, replies marked up or down and corrections in the conversations that used it, with a verdict.",
+    paramSchema: documentParamsSchema,
+    querySchema: projectScopeQuerySchema,
+    responses: {
+      200: { description: "Outcomes", schema: skillOutcomeSummarySchema },
+      404: { description: "Skill not found", schema: errorResponseSchema },
+    },
+    handler: async ({ params, query, serviceContext, user }) =>
+      (await getScopedSkillOutcomes(
+        { context: serviceContext, user, projectId: query.project_id },
+        params.document_id,
+      )) ?? notFound("Skill not found"),
+  });
 
   documents
     .list({
