@@ -9,6 +9,7 @@ export default [
     route("teammates", "pages/chat/teammates.tsx"),
     route("groups/:conversationId", "pages/chat/group.tsx"),
     route("teammates/:teammateId/settings", "pages/chat/teammate-settings.tsx"),
+    route("teammates/:teammateId/context", "pages/chat/teammate-context.tsx"),
     route("teammates/:teammateId", "pages/chat/teammate.tsx"),
     route("plugins", "pages/chat/plugins.tsx"),
     route("scheduled", "pages/chat/scheduled.tsx"),
@@ -38,6 +39,10 @@ export default [
     route(
       ":workspaceId/projects/:projectId/teammates/:teammateId/settings",
       "pages/work/project-teammate-settings.tsx",
+    ),
+    route(
+      ":workspaceId/projects/:projectId/teammates/:teammateId/context",
+      "pages/work/project-teammate-context.tsx",
     ),
     route(
       ":workspaceId/projects/:projectId/teammates/:teammateId",

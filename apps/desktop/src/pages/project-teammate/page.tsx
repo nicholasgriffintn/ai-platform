@@ -11,7 +11,6 @@ export default function DesktopProjectTeammatePage() {
       teammateId={teammateId}
       teammatesPath={teammatesPath}
       backPath={teammatesPath}
-      backLabel="Back to teammates"
       projectId={projectId}
     />
   );

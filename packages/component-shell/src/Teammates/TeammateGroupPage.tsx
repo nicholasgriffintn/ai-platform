@@ -1,10 +1,8 @@
-import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
-import { BackLink, Card, cn, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { ConversationSurface } from "@ngriffin_uk/polychat-component-conversation";
 import {
-  ArtifactWorkbenchProvider,
   ComposerDraftProvider,
   ConversationScopeProvider,
+  useChat,
   useConversationAgentApprovals,
   useLocalComposerDraft,
   useLocalConversationScope,
@@ -13,8 +11,12 @@ import {
   useTeammates,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ResponseAgent, TeammateGroup, TeammateResponse } from "@ngriffin_uk/polychat-schemas";
+import { formatConjunctionList } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 
+import { ConversationWorkbenchLayout } from "../Conversations/ConversationWorkbenchLayout.js";
+import { ProductModeHeader } from "../Header/ProductModeHeader.js";
+import { TeammatePageState } from "./TeammatePageState.js";
 import { TeammateStack } from "./TeammateStack.js";
 import { useTeammateLiveMode } from "./useTeammateLiveMode.js";
 
@@ -29,10 +31,11 @@ function GroupConversation({
 }) {
   const agentApprovals = useConversationAgentApprovals(conversationId);
   const liveMode = useTeammateLiveMode(group.name);
-  const names = members.map((member) => member.name).join(", ");
+  const names = formatConjunctionList(members.map((member) => member.name));
 
   return (
-    <ConversationThread
+    <ConversationSurface
+      header={null}
       modeConfig={{
         surface: "group",
         agentApprovals,
@@ -71,15 +74,11 @@ function GroupThread({
   return (
     <ConversationScopeProvider scope={scope}>
       <ComposerDraftProvider draft={draft}>
-        <ArtifactWorkbenchProvider>
-          <div className="relative min-h-0 flex-1 overflow-hidden">
-            <GroupConversation
-              group={group}
-              members={members}
-              conversationId={scope.currentConversationId ?? group.conversationId}
-            />
-          </div>
-        </ArtifactWorkbenchProvider>
+        <GroupConversation
+          group={group}
+          members={members}
+          conversationId={scope.currentConversationId ?? group.conversationId}
+        />
       </ComposerDraftProvider>
     </ConversationScopeProvider>
   );
@@ -88,79 +87,56 @@ function GroupThread({
 export function TeammateGroupPage({
   conversationId,
   backPath,
-  backLabel,
 }: {
   conversationId: string;
   backPath: string;
-  backLabel: string;
 }) {
-  const { groups, isLoading } = useTeammateGroups();
-  const { teammates } = useTeammates();
-  const selectedTeammateId = useChatStore((state) => state.selectedTeammateId);
-  const chatMode = useChatStore((state) => state.chatMode);
-  const setSelectedTeammateId = useChatStore((state) => state.setSelectedTeammateId);
-  const setChatMode = useChatStore((state) => state.setChatMode);
+  const { groups, isLoading, error, refetch } = useTeammateGroups();
   const group = groups.find((candidate) => candidate.conversationId === conversationId);
 
-  useMarkRosterThreadRead(conversationId);
+  return (
+    <TeammatePageState
+      noun="group"
+      isLoading={isLoading}
+      error={error}
+      isFound={Boolean(group)}
+      backPath={backPath}
+      onRetry={() => void refetch()}
+    >
+      {group ? <GroupHome group={group} /> : null}
+    </TeammatePageState>
+  );
+}
 
-  if (isLoading) {
-    return <FormLoadingSkeleton />;
-  }
-
-  if (!group) {
-    return (
-      <div className="mx-auto max-w-xl px-6">
-        <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-foreground">Group unavailable</h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            This group no longer exists, or it is not yours to open.
-          </p>
-          <BackLink href={backPath} label={backLabel} />
-        </Card>
-      </div>
-    );
-  }
-
+function GroupHome({ group }: { group: TeammateGroup }) {
+  const { teammates } = useTeammates();
+  const { data: conversation } = useChat(group.conversationId);
   const members = group.teammateIds.flatMap((teammateId) => {
     const member = teammates.find((teammate) => teammate.id === teammateId);
 
     return member ? [member] : [];
   });
-  const recipientId =
-    chatMode === "agent" && selectedTeammateId && group.teammateIds.includes(selectedTeammateId)
-      ? selectedTeammateId
-      : group.teammateIds[0];
+
+  useMarkRosterThreadRead(group.conversationId);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-2.5">
-        <TeammateStack members={members} size={28} />
-        <h1 className="min-w-0 truncate text-sm font-semibold text-foreground">{group.name}</h1>
-        <fieldset className="ml-auto flex flex-wrap gap-1">
-          <legend className="sr-only">Reply goes to</legend>
-          {members.map((member) => (
-            <button
-              key={member.id}
-              type="button"
-              aria-pressed={member.id === recipientId}
-              onClick={() => {
-                setSelectedTeammateId(member.id);
-                setChatMode("agent");
-              }}
-              className={cn(
-                "cursor-pointer rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                member.id === recipientId
-                  ? "border-active-work/40 bg-active-work/10 text-foreground"
-                  : "border-border text-muted-foreground hover:text-foreground",
-              )}
-            >
-              @{member.name}
-            </button>
-          ))}
-        </fieldset>
-      </header>
+    <ConversationWorkbenchLayout
+      conversationId={group.conversationId}
+      conversationMessages={conversation?.messages}
+      renderHeader={(actions) => (
+        <ProductModeHeader
+          showProductModeSwitch={false}
+          context={
+            <div className="flex min-w-0 items-center gap-2">
+              <TeammateStack members={members} size={22} />
+              <h1 className="truncate text-sm font-medium text-foreground">{group.name}</h1>
+            </div>
+          }
+          actions={actions}
+        />
+      )}
+    >
       <GroupThread key={group.conversationId} group={group} members={members} />
-    </div>
+    </ConversationWorkbenchLayout>
   );
 }

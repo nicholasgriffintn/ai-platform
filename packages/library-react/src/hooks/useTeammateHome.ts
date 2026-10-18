@@ -8,6 +8,7 @@ export interface TeammateHome {
   context: TeammateContext | undefined;
   isLoading: boolean;
   error: Error | null;
+  retry: () => void;
   updateStatus: ReturnType<typeof useTeammateContexts>["updateStatus"];
 }
 
@@ -17,7 +18,7 @@ function matchesScope(context: TeammateContext, scope: TeammateContextScope): bo
 
 export function useTeammateHome(teammateId: string, projectId?: string): TeammateHome {
   const userId = useChatStore((state) => state.user?.id);
-  const { contexts, isLoading, isFetched, error, ensure, updateStatus } =
+  const { contexts, isLoading, isFetched, error, ensure, updateStatus, refetch } =
     useTeammateContexts(teammateId);
   const scope = useMemo<TeammateContextScope | null>(
     () =>
@@ -43,6 +44,10 @@ export function useTeammateHome(teammateId: string, projectId?: string): Teammat
     context,
     isLoading: isLoading || ensure.isPending,
     error: error ?? ensure.error,
+    retry: () => {
+      ensure.reset();
+      void refetch();
+    },
     updateStatus,
   };
 }

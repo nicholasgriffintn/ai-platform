@@ -23,23 +23,28 @@ import { useConversationWorkbenchContext } from "./useConversationWorkbenchConte
 
 const CHAT_WORKBENCH_LAYOUT_KEY = "polychat:chat-workbench";
 
+interface ConversationWorkbenchLayoutProps {
+  conversationId?: string | null;
+  conversationMessages?: Message[];
+  renderHeader: (actions: ReactNode) => ReactNode;
+  contextRail?: ReactNode;
+  children: ReactNode;
+}
+
 export function ConversationWorkbenchLayout({
   conversationId,
   conversationMessages,
   renderHeader,
+  contextRail,
   children,
-}: {
-  conversationId?: string | null;
-  conversationMessages?: Message[];
-  renderHeader: (actions: ReactNode) => ReactNode;
-  children: ReactNode;
-}) {
+}: ConversationWorkbenchLayoutProps) {
   return (
     <ArtifactWorkbenchProvider>
       <ConversationWorkbenchLayoutInner
         conversationId={conversationId}
         conversationMessages={conversationMessages}
         renderHeader={renderHeader}
+        contextRail={contextRail}
       >
         {children}
       </ConversationWorkbenchLayoutInner>
@@ -51,13 +56,9 @@ function ConversationWorkbenchLayoutInner({
   conversationId,
   conversationMessages,
   renderHeader,
+  contextRail,
   children,
-}: {
-  conversationId?: string | null;
-  conversationMessages?: Message[];
-  renderHeader: (actions: ReactNode) => ReactNode;
-  children: ReactNode;
-}) {
+}: ConversationWorkbenchLayoutProps) {
   const layout = useProjectWorkbenchLayout(CHAT_WORKBENCH_LAYOUT_KEY);
   const workbench = useConversationWorkbenchContext(conversationId ?? undefined);
   const artifact = useArtifactWorkbench();
@@ -94,7 +95,9 @@ function ConversationWorkbenchLayoutInner({
       conversation={children}
       context={
         conversationId ? (
-          <ConversationContextRail conversationId={conversationId} workbench={workbench} />
+          <ConversationContextRail conversationId={conversationId} workbench={workbench}>
+            {contextRail}
+          </ConversationContextRail>
         ) : null
       }
       contextLabel={workbench.usageLabel}

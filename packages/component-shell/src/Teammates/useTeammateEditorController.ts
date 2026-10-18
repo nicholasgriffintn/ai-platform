@@ -46,6 +46,7 @@ export interface TeammateEditorController {
   isLoading: boolean;
   isLoadingCapabilities: boolean;
   loadError: Error | null;
+  retryLoad: () => void;
   canManage: boolean;
   cannotManageReason?: string;
   ownerLabel: string;
@@ -181,6 +182,9 @@ export function useTeammateEditorController({
     isLoading: (!isCreate && teammateQuery.isLoading) || modelsQuery.isLoading,
     isLoadingCapabilities: toolsQuery.isLoading || catalogQuery.isLoading,
     loadError: teammateQuery.error,
+    retryLoad: () => {
+      void teammateQuery.refetch();
+    },
     canManage: permission.canManage,
     cannotManageReason: permission.reason,
     ownerLabel: permission.ownerLabel,

@@ -1,24 +1,16 @@
 import { Button, FormRadioGroup } from "@ngriffin_uk/polychat-component-ui";
-import { usePolyStandingApprovals, useSetPolyAutonomy } from "@ngriffin_uk/polychat-library-react";
 import {
-  TEAMMATE_AUTONOMY_LEVELS,
-  type PolyAgenda,
-  type TeammateAutonomyLevel,
-} from "@ngriffin_uk/polychat-schemas";
+  TEAMMATE_AUTONOMY_COPY,
+  usePolyStandingApprovals,
+  useSetPolyAutonomy,
+} from "@ngriffin_uk/polychat-library-react";
+import { TEAMMATE_AUTONOMY_LEVELS, type PolyAgenda } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { toast } from "sonner";
 
-const AUTONOMY_COPY: Readonly<
-  Record<TeammateAutonomyLevel, { label: string; description: string }>
-> = {
-  observer: { label: "Observer", description: "Reads and drafts, changes nothing." },
-  assistant: { label: "Assistant", description: "Asks before it writes anything." },
-  partner: { label: "Partner", description: "Writes within its grants." },
-};
-
 const AUTONOMY_OPTIONS = TEAMMATE_AUTONOMY_LEVELS.map((level) => ({
   value: level,
-  ...AUTONOMY_COPY[level],
+  ...TEAMMATE_AUTONOMY_COPY[level],
 }));
 
 export function PolyAutonomySection({ agenda }: { agenda: PolyAgenda }) {

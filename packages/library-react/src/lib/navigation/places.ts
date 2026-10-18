@@ -51,6 +51,12 @@ export function getTeammateGroupPath(conversationId: string): string {
   return `${MODE_BASE_PATHS.chat}/groups/${encodeURIComponent(conversationId)}`;
 }
 
+const TEAMMATE_THREAD_PATH = /^\/chat\/(?:teammates|groups)\/[^/]+\/?$/u;
+
+export function isTeammateThreadPath(pathname: string): boolean {
+  return TEAMMATE_THREAD_PATH.test(pathname);
+}
+
 export function getProductMode(pathname: string): ProductMode {
   return pathname === MODE_BASE_PATHS.work || pathname.startsWith(`${MODE_BASE_PATHS.work}/`)
     ? "work"

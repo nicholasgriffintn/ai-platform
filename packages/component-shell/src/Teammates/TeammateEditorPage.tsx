@@ -1,10 +1,9 @@
 import { TeammateEditor, ConfirmDeleteModal } from "@ngriffin_uk/polychat-component-account";
-import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-component-ui";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { NEW_TEAMMATE_ID, useMcpConnections } from "@ngriffin_uk/polychat-library-react";
 
-import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
 import { getTeammatePagePaths, TeammatePageHeader } from "./TeammatePageHeader.js";
+import { TeammatePageState } from "./TeammatePageState.js";
 import { useTeammateEditorController } from "./useTeammateEditorController.js";
 
 export interface TeammateEditorPageProps {
@@ -33,75 +32,55 @@ export function TeammateEditorPage({
     workspaceId,
   });
 
-  if (controller.isLoading) {
-    return <FormLoadingSkeleton />;
-  }
-
-  if (isAuthenticationError(controller.loadError)) {
-    return (
-      <SignInEmptyState
-        title="Sign in to configure teammates"
-        message="Sign in to build teammates and share them with a workspace."
-        className="mx-4 my-8 min-h-[300px]"
-      />
-    );
-  }
-
-  if (controller.loadError || (teammateId !== NEW_TEAMMATE_ID && !controller.teammate)) {
-    return (
-      <div className="mx-auto max-w-xl px-6">
-        <Card className="p-8 text-center shadow-none">
-          <h1 className="text-2xl font-bold text-foreground">Teammate unavailable</h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            This teammate no longer exists, or it is not yours to open.
-          </p>
-          <BackLink href={backPath} label={backLabel} />
-        </Card>
-      </div>
-    );
-  }
-
   const pagePaths = getTeammatePagePaths(teammatesPath, teammateId);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 md:px-10">
-      <TeammatePageHeader
-        backPath={backPath}
-        backLabel={backLabel}
-        teammateName={controller.teammate ? controller.teammate.name : "New teammate"}
-        settingsPath={pagePaths.settingsPath}
-        homePath={controller.teammate ? pagePaths.homePath : undefined}
-        activeSection="configuration"
-        description="Define what this teammate is, how it behaves, and what it can use."
-      />
-
-      <TeammateEditor
-        mcpConnections={mcpConnections.query.data}
-        teammate={controller.teammate}
-        models={controller.models}
-        tools={controller.tools}
-        skills={controller.skills}
-        isLoadingCapabilities={controller.isLoadingCapabilities}
-        canManage={controller.canManage}
-        cannotManageReason={controller.cannotManageReason}
-        isSaving={controller.isSaving}
-        error={controller.saveError}
-        ownerLabel={controller.ownerLabel}
-        publish={controller.publish}
-        onSubmit={controller.submit}
-        onCancel={controller.cancel}
-        onDelete={controller.requestDelete}
-      />
-
-      {controller.teammate && (
-        <ConfirmDeleteModal
-          isOpen={controller.deleteRequested}
-          onClose={controller.cancelDelete}
-          onConfirm={controller.confirmDelete}
-          teammateName={controller.teammate.name}
-          isDeleting={controller.isDeleting}
+    <TeammatePageState
+      noun="teammate"
+      isLoading={controller.isLoading}
+      error={controller.loadError}
+      isFound={teammateId === NEW_TEAMMATE_ID || Boolean(controller.teammate)}
+      backPath={backPath}
+      onRetry={controller.retryLoad}
+    >
+      <PageShell.Content className="max-w-6xl">
+        <TeammatePageHeader
+          backPath={backPath}
+          backLabel={backLabel}
+          teammateName={controller.teammate ? controller.teammate.name : "New teammate"}
+          paths={controller.teammate ? pagePaths : { settingsPath: pagePaths.settingsPath }}
+          activeSection="configuration"
+          description="Define what this teammate is, how it behaves, and what it can use."
         />
-      )}
-    </div>
+
+        <TeammateEditor
+          mcpConnections={mcpConnections.query.data}
+          teammate={controller.teammate}
+          models={controller.models}
+          tools={controller.tools}
+          skills={controller.skills}
+          isLoadingCapabilities={controller.isLoadingCapabilities}
+          canManage={controller.canManage}
+          cannotManageReason={controller.cannotManageReason}
+          isSaving={controller.isSaving}
+          error={controller.saveError}
+          ownerLabel={controller.ownerLabel}
+          publish={controller.publish}
+          onSubmit={controller.submit}
+          onCancel={controller.cancel}
+          onDelete={controller.requestDelete}
+        />
+
+        {controller.teammate && (
+          <ConfirmDeleteModal
+            isOpen={controller.deleteRequested}
+            onClose={controller.cancelDelete}
+            onConfirm={controller.confirmDelete}
+            teammateName={controller.teammate.name}
+            isDeleting={controller.isDeleting}
+          />
+        )}
+      </PageShell.Content>
+    </TeammatePageState>
   );
 }

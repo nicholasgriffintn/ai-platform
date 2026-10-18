@@ -1,14 +1,12 @@
 import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
-import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useChat, useComposerPrefill } from "@ngriffin_uk/polychat-library-react";
 import { useMemo } from "react";
 import { useParams } from "react-router";
 
-import { ChatSidebar } from "../Chat/ChatSidebar.js";
 import { ConversationWorkbenchLayout } from "../Conversations/ConversationWorkbenchLayout.js";
 import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
-import { PageShell } from "../Shell/PageShell.js";
+import { ChatConversationShell } from "../Shell/ChatConversationShell.js";
 import { HomeConversationThread } from "./HomeConversationThread.js";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig.js";
 
@@ -29,12 +27,7 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
   useComposerPrefill();
 
   return (
-    <PageShell
-      sidebarContent={<ChatSidebar />}
-      fullBleed
-      displayNavBar={false}
-      headerContent={<PageTitle title="Conversation" className="sr-only" />}
-    >
+    <ChatConversationShell title="Conversation">
       <ConversationWorkbenchLayout
         conversationId={currentConversationId}
         conversationMessages={currentConversation?.messages}
@@ -47,6 +40,6 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
       >
         <HomeConversationThread urlModeConfig={modeConfig} />
       </ConversationWorkbenchLayout>
-    </PageShell>
+    </ChatConversationShell>
   );
 }

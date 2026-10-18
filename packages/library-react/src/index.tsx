@@ -53,6 +53,7 @@ export * from "./hooks/useTeammateHome.js";
 export * from "./hooks/useTeammateGroups.js";
 export * from "./hooks/useTeammateRoster.js";
 export * from "./lib/teammates/roster.js";
+export * from "./lib/teammates/autonomy-copy.js";
 export * from "./hooks/useToolRules.js";
 export * from "./hooks/usePetShowreel.js";
 export * from "./hooks/usePetSwapTransition.js";

@@ -3,14 +3,12 @@ import {
   type ThreadModeConfig,
   useConversationLaunchModeConfig,
 } from "@ngriffin_uk/polychat-component-conversation";
-import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useChat } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
-import { ChatSidebar } from "../Chat/ChatSidebar.js";
 import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
 import { ConversationThreadNavigation } from "../Header/ConversationThreadNavigation.js";
-import { PageShell } from "../Shell/PageShell.js";
+import { ChatConversationShell } from "../Shell/ChatConversationShell.js";
 import { ConversationWorkbenchLayout } from "./ConversationWorkbenchLayout.js";
 interface ConversationPageProps {
   embedded?: boolean;
@@ -66,13 +64,8 @@ export function ConversationPage({
   );
 
   return (
-    <PageShell
-      sidebarContent={sidebarContent ?? <ChatSidebar />}
-      fullBleed
-      displayNavBar={false}
-      headerContent={<PageTitle title={title} className="sr-only" />}
-    >
+    <ChatConversationShell title={title} sidebarContent={sidebarContent}>
       {content}
-    </PageShell>
+    </ChatConversationShell>
   );
 }

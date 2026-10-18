@@ -1,6 +1,5 @@
-import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
+import { ConversationSurface } from "@ngriffin_uk/polychat-component-conversation";
 import {
-  ArtifactWorkbenchProvider,
   ComposerDraftProvider,
   ConversationScopeProvider,
   useConversationAgentApprovals,
@@ -28,7 +27,8 @@ function TeammateConversation({
   const placeholder = `Message ${teammate.name}…`;
 
   return (
-    <ConversationThread
+    <ConversationSurface
+      header={null}
       modeConfig={{
         surface: "teammate",
         agentApprovals,
@@ -65,15 +65,11 @@ export function TeammateThread({
   return (
     <ConversationScopeProvider scope={scope}>
       <ComposerDraftProvider draft={draft}>
-        <ArtifactWorkbenchProvider>
-          <div className="relative min-h-0 flex-1 overflow-hidden">
-            <TeammateConversation
-              teammate={teammate}
-              conversationId={scope.currentConversationId ?? conversationId}
-              projectId={projectId}
-            />
-          </div>
-        </ArtifactWorkbenchProvider>
+        <TeammateConversation
+          teammate={teammate}
+          conversationId={scope.currentConversationId ?? conversationId}
+          projectId={projectId}
+        />
       </ComposerDraftProvider>
     </ConversationScopeProvider>
   );
