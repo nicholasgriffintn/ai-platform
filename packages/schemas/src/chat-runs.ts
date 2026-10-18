@@ -103,6 +103,7 @@ export const chatRunSchema = z.object({
   interactionKind: chatRunInteractionKindSchema.nullable().optional(),
   teammateContextId: z.string().min(1).nullable().optional(),
   computerId: z.string().min(1).nullable().optional(),
+  recipeInstallationId: z.string().min(1).nullable().optional(),
   resolvedConfiguration: z.record(z.string(), z.unknown()).nullable().optional(),
   attempt: z.number().int().positive(),
   createdAt: z.string(),

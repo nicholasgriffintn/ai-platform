@@ -49,6 +49,12 @@ export interface ChatRunUsageEventSummaryRow {
   input_tokens: number;
 }
 
+export interface RunSpendSummaryRow {
+  credit_micros: number;
+  cost_micros: number;
+  run_count: number;
+}
+
 export interface ListUsageEventsParams {
   userId: number;
   period: string;
@@ -316,6 +322,41 @@ export class UsageEventRepository extends BaseRepository {
 			 GROUP BY resource, unit`,
       [`${day}T00:00:00.000Z`, `${day}T23:59:59.999Z`],
     );
+  }
+
+  async summariseRunSpend(params: {
+    period: string;
+    teammateContextId?: string;
+    recipeInstallationId?: string;
+  }): Promise<RunSpendSummaryRow> {
+    const conditions: string[] = [];
+    const bindings: unknown[] = [params.period];
+
+    if (params.teammateContextId) {
+      conditions.push("r.teammate_context_id = ?");
+      bindings.push(params.teammateContextId);
+    }
+
+    if (params.recipeInstallationId) {
+      conditions.push("r.recipe_installation_id = ?");
+      bindings.push(params.recipeInstallationId);
+    }
+
+    if (conditions.length === 0) {
+      return { credit_micros: 0, cost_micros: 0, run_count: 0 };
+    }
+
+    const rows = await this.runQuery<RunSpendSummaryRow>(
+      `SELECT COALESCE(SUM(ue.credit_micros), 0) AS credit_micros,
+              COALESCE(SUM(ue.cost_micros), 0) AS cost_micros,
+              COUNT(DISTINCT ue.run_id) AS run_count
+       FROM usage_event ue
+       JOIN conversation_run r ON r.id = ue.run_id
+       WHERE ue.period = ? AND (${conditions.join(" OR ")})`,
+      bindings,
+    );
+
+    return rows[0] ?? { credit_micros: 0, cost_micros: 0, run_count: 0 };
   }
 
   async summariseChatRuns(runIds: readonly string[]): Promise<ChatRunUsageEventSummaryRow[]> {

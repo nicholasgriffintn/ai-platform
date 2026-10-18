@@ -8,12 +8,14 @@ import {
   listSchema,
   publishTeammateToWorkspaceSchema,
   recordTeammateFeedbackSchema,
+  spendLedgerSchema,
   teammateConnectionGrantListResponseSchema,
   teammateConnectionGrantSchema,
   teammateContextSchema,
   teammateGroupSchema,
   teammateResponseSchema,
   updateTeammateContextAutonomySchema,
+  updateTeammateContextBudgetSchema,
   updateTeammateContextPauseSchema,
   updateTeammateContextStatusSchema,
   updateTeammateSchema,
@@ -42,6 +44,8 @@ import {
   restoreInheritedTeammateToProject,
   updateTeammate,
   updateTeammateContextAutonomy,
+  getTeammateContextSpend,
+  updateTeammateContextBudget,
   updateTeammateContextPause,
   updateTeammateContextStatus,
   upsertTeammateConnectionGrant,
@@ -61,12 +65,14 @@ const updateTeammateContextSchema = updateTeammateContextStatusSchema
   .partial()
   .extend(updateTeammateContextAutonomySchema.partial().shape)
   .extend(updateTeammateContextPauseSchema.partial().shape)
+  .extend(updateTeammateContextBudgetSchema.partial().shape)
   .refine(
     (body) =>
       body.status !== undefined ||
       body.autonomyLevel !== undefined ||
-      body.pausedUntil !== undefined,
-    { message: "Change the status, autonomy level or pause" },
+      body.pausedUntil !== undefined ||
+      body.monthlyCreditCapMicros !== undefined,
+    { message: "Change the status, autonomy level, pause or monthly budget" },
   );
 
 defineMarketplace(app);
@@ -231,9 +237,9 @@ defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates)
 
   contexts.update({
     auth: true,
-    summary: "Change a context's lifecycle, autonomy or pause",
+    summary: "Change a context's lifecycle, autonomy, pause or budget",
     description:
-      "Sets the context status, how much it may do without asking, or when its background work resumes.",
+      "Sets the context status, how much it may do without asking, when its background work resumes, or how many credits it may spend a month.",
     paramSchema: contextParamsSchema,
     bodySchema: updateTeammateContextSchema,
     responses: { 200: { description: "The context", schema: teammateContextSchema } },
@@ -260,8 +266,26 @@ defineResource(app, { idParam: "teammate_id", tags: ["teammates"] }, (teammates)
         );
       }
 
+      if (body.monthlyCreditCapMicros !== undefined) {
+        updated = await updateTeammateContextBudget(
+          serviceContext,
+          params.context_id,
+          body.monthlyCreditCapMicros,
+        );
+      }
+
       return updated;
     },
+  });
+
+  contexts.singleton("spend").read({
+    auth: true,
+    summary: "Read what a context has spent this month",
+    description: "Credits used by runs under this context in the current period, against its cap.",
+    paramSchema: contextParamsSchema,
+    responses: { 200: { description: "Spend this period", schema: spendLedgerSchema } },
+    handler: ({ serviceContext, params }) =>
+      getTeammateContextSpend(serviceContext, params.context_id),
   });
 
   contexts

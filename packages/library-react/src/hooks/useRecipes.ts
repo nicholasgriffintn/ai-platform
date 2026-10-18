@@ -1,5 +1,6 @@
 import {
   deleteRecipeInstallation,
+  getRecipeInstallationSpend,
   installAssistantRecipe,
   invokeAssistantRecipe,
   listAssistantRecipes,
@@ -134,6 +135,18 @@ export function useRecipeInstallations(
   };
 }
 
+export const recipeInstallationSpendQueryKey = (installationId: string) =>
+  ["recipe-installation-spend", installationId] as const;
+
+export function useRecipeInstallationSpend(installationId: string | undefined) {
+  return useQuery({
+    queryKey: recipeInstallationSpendQueryKey(installationId ?? ""),
+    queryFn: () => getRecipeInstallationSpend(installationId ?? ""),
+    enabled: Boolean(installationId),
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useUpdateRecipeInstallation() {
   const queryClient = useQueryClient();
 
@@ -147,6 +160,9 @@ export function useUpdateRecipeInstallation() {
     }) => updateRecipeInstallation(installationId, update),
     onSuccess: (installation) => {
       upsertRecipeInstallation(queryClient, installation);
+      void queryClient.invalidateQueries({
+        queryKey: recipeInstallationSpendQueryKey(installation.id),
+      });
       void queryClient.invalidateQueries({ queryKey: RECIPE_INSTALLATIONS_QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: ASSISTANT_RECIPES_QUERY_KEY });
     },

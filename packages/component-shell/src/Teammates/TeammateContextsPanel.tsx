@@ -9,6 +9,7 @@ import { TeammateComputerPanel } from "./TeammateComputerPanel.js";
 import { TeammateConnectionGrantsPanel } from "./TeammateConnectionGrantsPanel.js";
 import { TeammateMemoryPanel } from "./TeammateMemoryPanel.js";
 import { TeammateRoutinesPanel } from "./TeammateRoutinesPanel.js";
+import { TeammateSpendPanel } from "./TeammateSpendPanel.js";
 
 export function TeammateContextsPanel({
   teammateId,
@@ -144,6 +145,7 @@ export function TeammateContextsPanel({
                     { id: "memory", label: "Memory" },
                     { id: "connections", label: "Connections" },
                     { id: "routines", label: "Routines" },
+                    { id: "spend", label: "Spend" },
                     { id: "computer", label: "Computer" },
                   ]}
                 />
@@ -157,6 +159,9 @@ export function TeammateContextsPanel({
                 </div>
                 <div id="routines" className="min-w-0 scroll-mt-6">
                   <TeammateRoutinesPanel contextId={current.id} projectId={projectId} />
+                </div>
+                <div id="spend" className="min-w-0 scroll-mt-6">
+                  <TeammateSpendPanel contextId={current.id} />
                 </div>
                 <div id="computer" className="min-w-0 scroll-mt-6">
                   <TeammateComputerPanel contextId={current.id} />

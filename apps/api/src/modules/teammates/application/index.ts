@@ -5,6 +5,7 @@ export * from "./workspace-defaults";
 export * from "./listing";
 export * from "./platform-teammates";
 export * from "./run-admission";
+export * from "./budget";
 export * from "./contexts";
 export * from "./context-lifecycle";
 export * from "./execution";
