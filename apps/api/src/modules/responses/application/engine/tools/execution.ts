@@ -1,7 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { findToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -26,6 +25,7 @@ import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/modules/responses/application/engine/tools/tool-responses";
+import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
 import {
   resolveFunctionTool,
   resolveToolRepeatLimit,
@@ -158,7 +158,7 @@ export const handleToolCalls = async (
 
       if (
         req.request?.enabled_tools &&
-        !hasAnyEnabledTool(req.request.enabled_tools, functionName)
+        !resolveEnabledFunctionToolNames(req.request.enabled_tools, req.user).has(functionName)
       ) {
         throw new AssistantError(
           `Tool "${functionName}" was not enabled for this run`,
