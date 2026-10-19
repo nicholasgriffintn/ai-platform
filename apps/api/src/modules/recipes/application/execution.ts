@@ -23,6 +23,8 @@ import { enqueueTeammateRun } from "~/modules/teammates/application/run-admissio
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
 
+import { assertRecipeInstallationWithinBudget } from "./installation-budget";
+
 const logger = getLogger({ prefix: "services/apps/recipes/execution" });
 
 function buildRecipeExecutionOptions(params: {
@@ -133,6 +135,14 @@ export async function executeRecipeInvocationChat(params: {
   conversationId: string;
   response: CreateChatCompletionsResponse;
 }> {
+  if (params.invocation.installationId) {
+    await assertRecipeInstallationWithinBudget({
+      context: params.context,
+      userId: params.user.id,
+      installationId: params.invocation.installationId,
+    });
+  }
+
   const conversationId = params.conversationId ?? `recipe_${generateId()}`;
   const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
   const request: ResponseCommand = {

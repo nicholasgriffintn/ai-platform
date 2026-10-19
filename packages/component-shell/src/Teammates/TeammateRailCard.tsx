@@ -4,6 +4,7 @@ import {
   useRecipeInstallations,
   useTeammateComputer,
   useTeammateConnectionGrants,
+  useTeammateContextSpend,
   useTeammatePresence,
 } from "@ngriffin_uk/polychat-library-react";
 import type { TeammateContext } from "@ngriffin_uk/polychat-schemas";
@@ -11,6 +12,7 @@ import { formatClockTime } from "@ngriffin_uk/polychat-utility-core";
 import {
   Activity,
   CalendarClock,
+  Coins,
   Monitor,
   PauseCircle,
   Plug,
@@ -19,6 +21,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { describeSpend, spendStateCopy } from "./SpendCapControl.js";
+
 const RAIL_LINK_CLASS =
   "block rounded-md no-underline transition-colors hover:bg-selection hover:!no-underline";
 
@@ -26,10 +30,20 @@ function countLabel(count: number, one: string, many: string): string {
   return count === 0 ? `No ${many}` : `${count} ${count === 1 ? one : many}`;
 }
 
-function LinkedFact({ href, icon, label }: { href: string; icon: LucideIcon; label: string }) {
+function LinkedFact({
+  href,
+  icon,
+  label,
+  title,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  title?: string;
+}) {
   return (
     <NavLink href={href} className={RAIL_LINK_CLASS}>
-      <WorkbenchFact icon={icon} label={label} />
+      <WorkbenchFact icon={icon} label={label} title={title} />
     </NavLink>
   );
 }
@@ -63,6 +77,7 @@ export function TeammateRailCard({
   const installations = useRecipeInstallations(projectId);
   const { grants } = useTeammateConnectionGrants(context.id);
   const { data: computer } = useTeammateComputer(context.id);
+  const spend = useTeammateContextSpend(context.id);
   const routines = (installations.data?.installations ?? []).filter(
     (installation) => installation.teammateContextId === context.id,
   );
@@ -105,6 +120,14 @@ export function TeammateRailCard({
           icon={Plug}
           label={countLabel(grants.length, "connection", "connections")}
         />
+        {spend.data ? (
+          <LinkedFact
+            href={`${contextPath}#spend`}
+            icon={Coins}
+            label={describeSpend(spend.data)}
+            title={spendStateCopy(spend.data) ?? undefined}
+          />
+        ) : null}
         <LinkedFact
           href={`${contextPath}#computer`}
           icon={Monitor}

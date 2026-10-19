@@ -19,6 +19,8 @@ vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
+import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 
 import { executeRecipeInvocationChat } from "../execution";
 import { createRecipeMessageUrl } from "../runtime";
@@ -39,6 +41,9 @@ describe("executeRecipeInvocationChat", () => {
     plan_id: "pro",
   } as IUser;
   const updateConversation = vi.fn();
+  const getTemplateById = vi.fn();
+  const updateTemplate = vi.fn();
+  const summariseRunSpend = vi.fn();
   const context = {
     env,
     user,
@@ -49,6 +54,8 @@ describe("executeRecipeInvocationChat", () => {
           updateConversation,
         },
       ],
+      [TemplateRepository, { getTemplateById, updateTemplate }],
+      [UsageEventRepository, { summariseRunSpend }],
     ]),
   } as any;
   const invocation: RecipeInvocationResponse = {
@@ -71,6 +78,9 @@ describe("executeRecipeInvocationChat", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     updateConversation.mockResolvedValue({});
+    getTemplateById.mockResolvedValue(null);
+    updateTemplate.mockResolvedValue({});
+    summariseRunSpend.mockResolvedValue({ credit_micros: 0, cost_micros: 0, run_count: 0 });
     mocks.generateId.mockReturnValue("generated-id");
     mocks.startResponse.mockResolvedValue({
       id: "recipe_generated-id",

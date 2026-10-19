@@ -96,6 +96,7 @@ export const teammateContextSchema = z.object({
   standingApprovals: z.array(teammateStandingApprovalSchema),
   approvalStreaks: z.array(teammateApprovalStreakSchema),
   pausedUntil: z.string().nullable(),
+  monthlyCreditCapMicros: z.number().int().nonnegative().nullable(),
   ownerSeenAt: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
@@ -124,6 +125,15 @@ export const updateTeammateContextPauseSchema = z.object({
     .datetime()
     .nullable()
     .describe("When the pause ends, at most a week ahead, or null to resume now"),
+});
+
+export const updateTeammateContextBudgetSchema = z.object({
+  monthlyCreditCapMicros: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .describe("Credits this context may spend per calendar month, in micros, or null for no cap"),
 });
 
 export const teammateConnectionGrantSchema = z.object({

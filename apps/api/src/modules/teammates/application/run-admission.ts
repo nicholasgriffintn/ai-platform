@@ -31,6 +31,7 @@ import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatP
 import type { IEnv, IUser } from "~/types";
 
 import { requireTeammateAccess } from "./access";
+import { assertTeammateContextWithinBudget } from "./budget";
 import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
@@ -126,6 +127,10 @@ export async function enqueueTeammateRun({
   const teammate =
     preparedInvocation?.teammate ??
     (await requireTeammateAccess(serviceContext, teammateId, "read", user?.id));
+
+  if (preparedInvocation?.resolution.context && !continuationRun) {
+    await assertTeammateContextWithinBudget(serviceContext, preparedInvocation.resolution.context);
+  }
 
   if (isPolyTeammateId(teammateId)) {
     requirePolyHomeRun(preparedInvocation?.resolution, body.conversationId);
