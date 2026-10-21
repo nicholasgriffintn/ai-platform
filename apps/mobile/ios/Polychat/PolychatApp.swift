@@ -10,7 +10,8 @@ struct PolychatApp: App {
     @StateObject private var notificationManager = TaskNotificationManager()
     @StateObject private var pushNotificationManager = PushNotificationManager.shared
     @StateObject private var polyStore = PolyStore()
-    
+    @StateObject private var teammatesStore = TeammatesStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -21,6 +22,7 @@ struct PolychatApp: App {
                 .environmentObject(notificationManager)
                 .environmentObject(pushNotificationManager)
                 .environmentObject(polyStore)
+                .environmentObject(teammatesStore)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)
                     conversationManager.configure(apiClient: apiClient, modelsStore: modelsStore)

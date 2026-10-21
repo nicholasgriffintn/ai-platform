@@ -4,7 +4,7 @@ import Combine
 @MainActor
 class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
-    var polyConversationId: String?
+    private(set) var teammateIdsByConversation: [String: String] = [:]
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
     @Published var isLoading: Bool = false
@@ -35,6 +35,7 @@ class ConversationManager: ObservableObject {
     func reset() {
         currentConversation = nil
         conversations = []
+        teammateIdsByConversation = [:]
         selectedModelId = nil
         isLoading = false
         loadingConversationID = nil
@@ -117,12 +118,16 @@ class ConversationManager: ObservableObject {
         await loadConversationMessages(conversation)
     }
     
-    func openPolyConversation(id conversationId: String) async {
-        polyConversationId = conversationId
+    func bindTeammates(_ teammateIds: [String: String]) {
+        teammateIdsByConversation.merge(teammateIds) { _, latest in latest }
+    }
+
+    func openTeammateConversation(id conversationId: String, teammateId: String, title: String) async {
+        bindTeammates([conversationId: teammateId])
 
         let conversation = conversations.first(where: { $0.id == conversationId }) ?? Conversation(
             id: conversationId,
-            title: "Poly",
+            title: title,
             messages: [],
             createdAt: Date(),
             isLoadedFromAPI: true,
@@ -488,6 +493,17 @@ class ConversationManager: ObservableObject {
         return newConversation
     }
     
+    func startTeammateConversation(teammateId: String, title: String) -> Conversation {
+        var conversation = startNewConversation()
+        conversation.title = title
+        bindTeammates([conversation.id: teammateId])
+        currentConversation = conversation
+        if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
+            conversations[index] = conversation
+        }
+        return conversation
+    }
+
     func addMessage(_ message: ChatMessage, settings: ChatSettings? = nil) async throws {
         guard var conversation = currentConversation else {
             throw NSError(domain: "com.polychat.app", code: 3,
@@ -765,9 +781,7 @@ class ConversationManager: ObservableObject {
                 idempotencyKey: commandId,
                 modelTier: requestedModelTier,
                 computeSite: computeSite,
-                agentTeammateId: conversationId == polyConversationId
-                    ? PolyStore.teammateId
-                    : nil
+                agentTeammateId: teammateIdsByConversation[conversationId]
             )
 
             var streamedReasoning = ""
