@@ -30,6 +30,8 @@ const storedRecipeInstallationDataSchema = z.object({
   configuration: recipeConfigurationSchema.optional(),
   scheduleState: scheduleStateSchema.optional(),
   teammateContextId: z.string().min(1).optional(),
+  monthlyCreditCapMicros: z.number().int().positive().optional(),
+  pausedReason: z.enum(["person", "budget"]).optional(),
 });
 
 export interface StoredRecipeInstallationData {
@@ -39,6 +41,8 @@ export interface StoredRecipeInstallationData {
   configuration?: RecipeConfiguration;
   scheduleState?: RecipeScheduleState;
   teammateContextId?: string;
+  monthlyCreditCapMicros?: number;
+  pausedReason?: "person" | "budget";
 }
 
 export function parseStoredRecipeInstallationData(

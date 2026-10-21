@@ -127,6 +127,13 @@
       "when": 1792330345643,
       "tag": "0017_poly_flock",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1792361759809,
+      "tag": "0018_spend_caps",
+      "breakpoints": true
     }
   ]
 }
