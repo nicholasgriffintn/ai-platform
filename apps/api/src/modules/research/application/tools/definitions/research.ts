@@ -44,6 +44,11 @@ export const research: FunctionToolDescriptor = {
         enum: ["parallel", "exa"],
         description: "Research provider. Defaults to parallel.",
       },
+      use_sources: {
+        type: "boolean",
+        description:
+          "Also search the person's own Sources and synced connected accounts for the brief, and return those passages beside the web findings. They are never sent to the research provider. Defaults to true.",
+      },
     },
     required: ["input"],
     additionalProperties: false,

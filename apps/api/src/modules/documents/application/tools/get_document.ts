@@ -1,7 +1,7 @@
 import { DOCUMENT_READ_TOOL_NAME, type ReadDocumentInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { requireDocument } from "~/modules/documents/application/access";
+import { readWorkOutput } from "~/modules/documents/application/work-outputs";
 import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -21,13 +21,13 @@ export const get_document: ApiToolDefinition = {
       );
     }
 
-    const { output, body } = await requireDocument(
+    const file = await readWorkOutput(
       context,
       user.id,
       input.outputId,
-      false,
       resolveRequestProjectId(toolContext.request),
     );
+    const { output, text } = file;
     const comment = input.commentId
       ? await context.repositories
           .get(DocumentCommentRepository)
@@ -41,12 +41,13 @@ export const get_document: ApiToolDefinition = {
     return {
       status: "success",
       name: DOCUMENT_READ_TOOL_NAME,
-      content: `${output.title}, revision ${output.revision}\n\n${body}${comment ? `\n\nComment ${comment.id}: ${comment.body}` : ""}`,
+      content: `${output.title} (${file.kind}), revision ${output.revision}\n\n${text}${comment ? `\n\nComment ${comment.id}: ${comment.body}` : ""}`,
       data: {
         outputId: output.id,
+        kind: file.kind,
         title: output.title,
         revision: output.revision,
-        body,
+        ...(file.kind === "document" ? { body: text } : { content: file.content }),
         comment,
       },
     };

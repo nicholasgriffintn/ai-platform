@@ -1,6 +1,7 @@
 import {
   createOutputShare,
   describeOutputDocument,
+  exportOutputContent,
   formatOutputDocument,
   getOutput,
   getOutputHistory,
@@ -142,6 +143,12 @@ export function useDescribeDocument() {
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(outputId) }),
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(outputId) }),
       ]),
+  });
+}
+
+export function useExportOutput() {
+  return useMutation({
+    mutationFn: ({ outputId }: { outputId: string }) => exportOutputContent(outputId),
   });
 }
 

@@ -1,7 +1,9 @@
 import { ResearchReport } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useResearchStatus } from "@ngriffin_uk/polychat-library-react";
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
-import { normalizeStatus } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, normalizeStatus } from "@ngriffin_uk/polychat-utility-core";
+
+import { DocumentSearchView } from "./DocumentSearchView.js";
 
 const providerLabels: Record<string, string> = {
   parallel: "Parallel",
@@ -109,24 +111,40 @@ export function ResearchView({ data, embedded }: { data: any; embedded: boolean 
 
   const shouldShowPollingNotice = isInProgress && !output;
 
+  const ownSources = isRecord(data.ownSources) ? data.ownSources : null;
+
   return (
-    <ResearchReport
-      providerLabel={providerLabel}
-      providerWarning={providerWarning}
-      run={run}
-      output={output}
-      warnings={warnings}
-      normalizedStatus={normalizedStatus}
-      lastUpdatedAt={lastUpdatedAt}
-      errorMessage={combinedError}
-      isPolling={shouldShowPollingNotice && !combinedError}
-      embedded={embedded}
-      runId={runId}
-      onContinueConversation={
-        data.completion_id
-          ? () => window.open(`/?completion_id=${data.completion_id}`, "_blank")
-          : undefined
-      }
-    />
+    <div className="flex flex-col gap-4">
+      <ResearchReport
+        providerLabel={providerLabel}
+        providerWarning={providerWarning}
+        run={run}
+        output={output}
+        warnings={warnings}
+        normalizedStatus={normalizedStatus}
+        lastUpdatedAt={lastUpdatedAt}
+        errorMessage={combinedError}
+        isPolling={shouldShowPollingNotice && !combinedError}
+        embedded={embedded}
+        runId={runId}
+        onContinueConversation={
+          data.completion_id
+            ? () => window.open(`/?completion_id=${data.completion_id}`, "_blank")
+            : undefined
+        }
+      />
+      {ownSources ? (
+        <section aria-label="From your Sources" className="flex flex-col gap-2">
+          <h4 className="text-sm font-medium text-foreground">From your Sources</h4>
+          {typeof ownSources.error === "string" ? (
+            <p className="text-sm text-muted-foreground">
+              Your Sources could not be searched: {ownSources.error}
+            </p>
+          ) : (
+            <DocumentSearchView data={ownSources} />
+          )}
+        </section>
+      ) : null}
+    </div>
   );
 }

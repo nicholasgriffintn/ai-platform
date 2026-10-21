@@ -142,6 +142,7 @@ export * from "./models.js";
 export * from "./providers.js";
 export * from "./navigation.js";
 export * from "./outputs.js";
+export * from "./work-outputs.js";
 export * from "./ocr.js";
 export * from "./jobs.js";
 export * from "./ocr-batch.js";

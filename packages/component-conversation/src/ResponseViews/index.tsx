@@ -20,6 +20,7 @@ import { EvidenceAuditView } from "./EvidenceAuditView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
 import { SandboxView } from "./SandboxView.js";
+import { WorkOutputMessageView } from "./WorkOutputMessageView.js";
 
 export { BrowserAuthenticationForm } from "./BrowserAuthenticationForm.js";
 
@@ -33,6 +34,7 @@ export {
   ProjectTaskListView,
   ResearchView,
   SandboxView,
+  WorkOutputMessageView,
 };
 
 export type { DelegationFeedbackVerdict } from "./DelegationCard.js";
@@ -62,6 +64,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
+  work_output: ({ data }) => <WorkOutputMessageView data={data} />,
   delegation_card: ({ data, onToolInteraction }) => {
     const parsed = delegationCardDataSchema.safeParse(data);
 

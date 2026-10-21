@@ -1,4 +1,4 @@
-import { DocumentMetadataPanel } from "@ngriffin_uk/polychat-component-content";
+import { DocumentMetadataPanel, isWorkOutputKind } from "@ngriffin_uk/polychat-component-content";
 import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   OutputCardGrid,
@@ -29,6 +29,7 @@ import { ResponseRenderer } from "../Content/ResponseRenderer.js";
 import { DocumentOutputWorkbench } from "./DocumentOutputWorkbench.js";
 import { OutputCouncilReviews } from "./OutputCouncilReviews.js";
 import { useOutputSharing } from "./useOutputSharing.js";
+import { WorkOutputWorkbench } from "./WorkOutputWorkbench.js";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
   const sharing = useOutputSharing();
@@ -89,10 +90,12 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
           errorMessage={sharing.error?.outputId === output.id ? sharing.error.message : undefined}
           onShare={() => void sharing.copy(output.id)}
         />
-        {documentBody === null ? (
-          <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
-        ) : (
+        {documentBody !== null ? (
           <DocumentOutputWorkbench key={output.id} output={output} body={documentBody} />
+        ) : isWorkOutputKind(output.kind) ? (
+          <WorkOutputWorkbench key={output.id} output={output} />
+        ) : (
+          <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
         )}
         {documentBody !== null ? (
           <DocumentMetadataPanel
