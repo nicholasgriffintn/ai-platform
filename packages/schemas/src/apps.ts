@@ -1382,6 +1382,8 @@ export const recipeInstallationSchema = z.object({
   triggers: z.array(recipeInstallationTriggerSchema),
   configuration: recipeConfigurationSchema,
   teammateContextId: z.string().min(1).nullable().optional(),
+  monthlyCreditCapMicros: z.number().int().positive().nullable().optional(),
+  pausedReason: z.enum(["person", "budget"]).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -1401,6 +1403,7 @@ export const recipeInstallationUpdateRequestSchema = z.object({
   triggers: z.array(recipeInstallationTriggerSchema).optional(),
   configuration: recipeConfigurationRecordSchema.optional(),
   teammateContextId: z.string().min(1).nullable().optional(),
+  monthlyCreditCapMicros: z.number().int().positive().nullable().optional(),
 });
 
 export const recipeComposioTriggerCreateRequestSchema = z.object({

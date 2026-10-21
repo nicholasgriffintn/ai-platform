@@ -1,4 +1,4 @@
-FROM docker.io/cloudflare/sandbox:1.0.0 AS sandbox
+FROM docker.io/cloudflare/sandbox:1.0.1 AS sandbox
 
 FROM docker.io/library/debian:trixie-slim
 

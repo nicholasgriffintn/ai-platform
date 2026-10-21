@@ -3,6 +3,7 @@ export * from "./credit-state.js";
 export * from "./model-price-drift.js";
 export * from "./provider-billable-units.js";
 export * from "./plans.js";
+export * from "./spend-cap.js";
 export * from "./stripe-checkout.js";
 export * from "./stripe-errors.js";
 export * from "./subscription.js";

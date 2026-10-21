@@ -11,6 +11,7 @@ import {
   recipeInstallRequestSchema,
   recipeInvocationRequestSchema,
   recipeInvocationResponseSchema,
+  spendLedgerSchema,
   installationTriggerListSchema,
   updateInstallationTriggerRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -31,6 +32,7 @@ import {
   updateRecipeInstallation,
 } from "../application";
 import { listRecipeComposioTriggerTypes } from "../application/composio-triggers";
+import { getRecipeInstallationSpend } from "../application/installation-budget";
 import {
   createRecipeTrigger,
   deleteRecipeTrigger,
@@ -180,6 +182,22 @@ defineResource(app, { idParam: "recipe_id", tags: ["recipes"] }, (recipes) => {
           ? { deleted: true }
           : notFound("Recipe installation not found"),
     });
+
+  installations.singleton("spend").read({
+    auth: true,
+    summary: "Read what an installed recipe has spent this month",
+    paramSchema: installationParamsSchema,
+    responses: {
+      200: { description: "Spend this period", schema: spendLedgerSchema },
+      404: { description: "Installation not found", schema: errorResponseSchema },
+    },
+    handler: async ({ params, serviceContext, user }) =>
+      (await getRecipeInstallationSpend({
+        context: serviceContext,
+        userId: user.id,
+        installationId: params.installation_id,
+      })) ?? notFound("Recipe installation not found"),
+  });
 
   installations.sub("trigger_types", "trigger_type_id").list({
     auth: true,

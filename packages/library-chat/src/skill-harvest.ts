@@ -1,3 +1,5 @@
+import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
+
 import { readMessageReactions } from "./reactions.js";
 
 export const SKILL_HARVEST_MIN_TOOL_CALLS = 5;
@@ -43,19 +45,9 @@ function clip(text: string): string {
 
 function argumentNames(rawArguments: unknown): string[] {
   const parsed =
-    typeof rawArguments === "string"
-      ? (() => {
-          try {
-            return JSON.parse(rawArguments) as unknown;
-          } catch {
-            return null;
-          }
-        })()
-      : rawArguments;
+    typeof rawArguments === "string" ? safeParseJson<unknown>(rawArguments) : rawArguments;
 
-  return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-    ? Object.keys(parsed).slice(0, 12)
-    : [];
+  return isRecord(parsed) ? Object.keys(parsed).slice(0, 12) : [];
 }
 
 export function wasThumbedDown(messages: readonly HarvestableMessage[]): boolean {

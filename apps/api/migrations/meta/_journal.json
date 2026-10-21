@@ -131,8 +131,15 @@
     {
       "idx": 18,
       "version": "6",
-      "when": 1792363770219,
-      "tag": "0018_skill_use",
+      "when": 1792361759809,
+      "tag": "0018_spend_caps",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1792622739053,
+      "tag": "0019_skill_use",
       "breakpoints": true
     }
   ]

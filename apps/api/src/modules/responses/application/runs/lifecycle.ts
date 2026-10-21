@@ -54,6 +54,12 @@ function readStageId(options: CoreChatOptions): string | null {
     : null;
 }
 
+function readRecipeInstallationId(options: CoreChatOptions): string | null {
+  const installationId = options.options?.recipe?.installationId;
+
+  return typeof installationId === "string" && installationId.trim() ? installationId : null;
+}
+
 async function commandDigest(options: CoreChatOptions, runId?: string): Promise<string> {
   return sha256Hex(
     canonicalJson({
@@ -180,6 +186,9 @@ async function buildRunCommand(
     ...(options.trigger ? { trigger: options.trigger } : {}),
     ...(options.teammate_context_id ? { teammateContextId: options.teammate_context_id } : {}),
     ...(options.computer_id ? { computerId: options.computer_id } : {}),
+    ...(readRecipeInstallationId(options)
+      ? { recipeInstallationId: readRecipeInstallationId(options) }
+      : {}),
     ...(options.delegation_id ? { delegationId: options.delegation_id } : {}),
     ...(options.resolved_configuration
       ? { resolvedConfiguration: options.resolved_configuration }

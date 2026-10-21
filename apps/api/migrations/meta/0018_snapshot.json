@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "09adf380-a634-49db-a104-083841990e6f",
+  "id": "c045cb1e-c894-4666-b6a6-05a6ec6f30c1",
   "prevId": "85fc11e7-3a05-469a-b2a6-f48051e6afd2",
   "tables": {
     "activity_record": {
@@ -1902,6 +1902,13 @@
         },
         "computer_id": {
           "name": "computer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "recipe_installation_id": {
+          "name": "recipe_installation_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -9176,94 +9183,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "skill_use": {
-      "name": "skill_use",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "skill_id": {
-          "name": "skill_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision_id": {
-          "name": "revision_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "run_id": {
-          "name": "run_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "activation": {
-          "name": "activation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "used_at": {
-          "name": "used_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "skill_use_skill_used_idx": {
-          "name": "skill_use_skill_used_idx",
-          "columns": ["skill_id", "used_at"],
-          "isUnique": false
-        },
-        "skill_use_run_idx": {
-          "name": "skill_use_run_idx",
-          "columns": ["run_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "skill_use_user_id_user_id_fk": {
-          "name": "skill_use_user_id_user_id_fk",
-          "tableFrom": "skill_use",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "source_knowledge_sync": {
       "name": "source_knowledge_sync",
       "columns": {
@@ -9927,6 +9846,13 @@
         "paused_until": {
           "name": "paused_until",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "monthly_credit_cap_micros": {
+          "name": "monthly_credit_cap_micros",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
