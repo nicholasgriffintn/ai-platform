@@ -22,4 +22,4 @@ Agent2Agent follows the same rule. Each teammate publishes an agent card and a `
 
 ## Consequences
 
-Any MCP server that follows the Apps extension renders in Polychat with no Polychat-specific work, and Polychat's own tools can gain views later without reopening the authority question. Views cannot drive writes, which rules out some interactions until an approval can be raised from a view, a later decision that would need to supersede this one. The server is stateless and serves JSON only, so hosts that require server-sent streams will not connect yet.
+Any MCP server that follows the Apps extension renders in Polychat with no Polychat-specific work, and Polychat's own tools can gain views later without reopening the authority question. Views cannot drive writes, which rules out some interactions until an approval can be raised from a view, a later decision that would need to supersede this one. The server is stateless: it answers each POST as JSON, or as an event stream for clients that accept only that, and it sends no server-initiated messages.

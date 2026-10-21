@@ -5,6 +5,7 @@ import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 
 import { handleMcpServerMessage } from "../application/server";
+import { prefersEventStream, toEventStreamResponse } from "../application/transport";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("mcp");
@@ -25,24 +26,31 @@ addRoute(app, "post", "/", {
   handler: async ({ serviceContext, body, raw }) => {
     routeLogger.info("MCP server request", { batch: Array.isArray(body) });
 
-    if (Array.isArray(body)) {
-      const responses = (
-        await Promise.all(body.map((message) => handleMcpServerMessage(serviceContext, message)))
-      ).filter((response) => response !== null);
+    const messages = Array.isArray(body) ? body : [body];
+    const responses = (
+      await Promise.all(messages.map((message) => handleMcpServerMessage(serviceContext, message)))
+    ).filter((response) => response !== null);
 
-      return responses.length === 0 ? raw.body(null, 202) : responses;
+    if (responses.length === 0) {
+      return raw.body(null, 202);
     }
 
-    const response = await handleMcpServerMessage(serviceContext, body);
+    if (prefersEventStream(raw.req.header("accept") ?? null)) {
+      return toEventStreamResponse(responses);
+    }
 
-    return response ?? raw.body(null, 202);
+    return Array.isArray(body) ? responses : responses[0];
   },
 });
 
 app.get("/", (context) =>
   context.json(
-    { error: "This MCP server does not stream server events; send JSON-RPC requests with POST." },
+    {
+      error:
+        "This MCP server sends no server-initiated messages. POST JSON-RPC requests; responses come as JSON or, if you only accept text/event-stream, as an event stream.",
+    },
     405,
+    { Allow: "POST" },
   ),
 );
 
