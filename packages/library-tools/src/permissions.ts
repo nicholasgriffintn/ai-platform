@@ -34,6 +34,7 @@ export interface PermissionCheckInput {
   toolPermissions?: string[];
   requireApprovalFor?: readonly ToolPermission[];
   deniedTools?: readonly string[];
+  settingsDisabledTools?: readonly string[];
   effectClass?: ToolEffectClass;
   autonomyLevel?: TeammateAutonomyLevel | null;
   standingApproval?: boolean;
@@ -117,6 +118,7 @@ function buildToolPolicyContext(input: PermissionCheckInput): {
       enforceMode: input.enforceModePolicy !== false,
       permissions,
       deniedTools: [...(input.deniedTools ?? [])],
+      settingsDisabledTools: [...(input.settingsDisabledTools ?? [])],
       modeDeniedTools: config.deniedTools,
       modeAllowedTools: config.allowedTools,
       modeDeniedPermissions: config.deniedPermissions,

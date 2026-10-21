@@ -73,6 +73,8 @@ import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/p
 import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
+  resolveSettingsDisabledToolNames,
+  withoutSettingsDisabledTools,
 } from "~/modules/tools/application/availability";
 import {
   mergeNativeMcpToolNames,
@@ -134,6 +136,7 @@ export interface PreparedRequest {
   permissionMode?: PermissionMode;
   isProUser: boolean;
   enabledTools: string[];
+  settingsDisabledTools: string[];
   activeGoal: Goal | null;
   toolOptions?: ChatHostedToolSettings;
   requestOptions: CoreChatOptions["options"];
@@ -232,6 +235,25 @@ export class RequestPreparer {
       grantedToolNames: resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools,
       toolSelectionMode: scope.options.tool_selection_mode,
       user: scope.user,
+    });
+  }
+
+  private resolveSettingsDisabledTools(
+    scope: RequestScope,
+    userSettings: IUserSettings | null,
+    hasFixedToolScope: boolean,
+  ): string[] {
+    if (hasFixedToolScope) {
+      return [];
+    }
+
+    return resolveSettingsDisabledToolNames({
+      userSettings,
+      explicitToolNames: [
+        ...(scope.options.enabled_tools ?? []),
+        ...(scope.projectContext?.enabledTools ?? []),
+        ...(resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools ?? []),
+      ],
     });
   }
 
@@ -451,9 +473,16 @@ export class RequestPreparer {
       skillScopePromise,
       scopedSkillCatalogPromise,
     ]);
-    const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
       isRecipeExecutionRequest(scope.options) || scope.hasFixedProjectTaskTools;
+    const settingsDisabledTools = this.resolveSettingsDisabledTools(
+      scope,
+      userSettings,
+      hasFixedToolScope,
+    );
+    const requestTools = this.resolveRequestTools(scope);
+    const enabledTools =
+      requestTools && withoutSettingsDisabledTools(requestTools, settingsDisabledTools);
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(
@@ -547,6 +576,8 @@ export class RequestPreparer {
       }),
     });
 
+    preparedTools = withoutSettingsDisabledTools(preparedTools, settingsDisabledTools);
+
     if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
       toolIntentRequest = resolveToolIntentRequest(
         await conversationManager.get(completionId),
@@ -591,6 +622,7 @@ export class RequestPreparer {
       permissionMode,
       isProUser: scope.isProUser,
       enabledTools: preparedTools,
+      settingsDisabledTools,
       activeGoal,
       toolOptions,
       requestOptions: scope.options.options,
