@@ -21,11 +21,13 @@ import { recordSkillProposal } from "~/modules/poly/application/skill-proposals"
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import type { IUser } from "~/types";
 
 import { getSkillDefinition } from "./catalog";
 import { personalSkillScope, projectSkillScope } from "./management-policy";
 import { createStoredSkill, getStoredSkill } from "./persistence";
+import { requestSkillReplay } from "./replay";
 
 const MAX_NAME_ATTEMPTS = 5;
 
@@ -176,6 +178,18 @@ export async function harvestSkillFromRun(
     },
     { personalEnabled: false },
   );
+
+  const drafted = await context.repositories
+    .get(AuthoredSkillRepository)
+    .getByScopeAndName(scope, name);
+
+  if (drafted) {
+    await requestSkillReplay(context, input.user.id, {
+      skillId: drafted.id,
+      revisionId: drafted.draftRevisionId,
+      runs: [{ runId: input.runId, conversationId: input.conversationId }],
+    });
+  }
 
   await recordSkillProposal(context, {
     userId: input.user.id,

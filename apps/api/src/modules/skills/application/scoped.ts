@@ -5,8 +5,10 @@ import type {
   AuthoredSkillPromotionInput,
   AuthoredSkillRollbackInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import type { IUser } from "~/types";
 
 import {
@@ -35,6 +37,7 @@ import {
 } from "./index";
 import { personalSkillScope, projectSkillScope } from "./management-policy";
 import { getSkillOutcomes } from "./outcomes";
+import { readSkillReplay, requestSkillReplay } from "./replay";
 
 export interface SkillScope {
   context: ServiceContext;
@@ -78,6 +81,49 @@ export async function getScopedSkillOutcomes(scope: SkillScope, skillId: string)
     scope.projectId ? projectSkillScope(scope.projectId) : personalSkillScope(scope.user.id),
     skillId,
   );
+}
+
+async function requireScopedSkillRecord(scope: SkillScope, skillName: string) {
+  const record = await scope.context.repositories
+    .get(AuthoredSkillRepository)
+    .getByScopeAndName(
+      scope.projectId ? projectSkillScope(scope.projectId) : personalSkillScope(scope.user.id),
+      skillName,
+    );
+
+  if (!record) {
+    throw new AssistantError("Skill not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  return record;
+}
+
+export async function getScopedSkillReplay(
+  scope: SkillScope,
+  skillName: string,
+  revisionId: string,
+) {
+  await getScopedSkillRevision(scope, skillName, revisionId);
+
+  const record = await requireScopedSkillRecord(scope, skillName);
+
+  return readSkillReplay(scope.context, record.id, revisionId);
+}
+
+export async function startScopedSkillReplay(
+  scope: SkillScope,
+  skillName: string,
+  revisionId: string,
+) {
+  const revision = await getScopedSkillRevision(scope, skillName, revisionId);
+
+  if (!revision) {
+    throw new AssistantError("Revision not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const record = await requireScopedSkillRecord(scope, skillName);
+
+  return requestSkillReplay(scope.context, scope.user.id, { skillId: record.id, revisionId });
 }
 
 export function updateScopedSkill(
