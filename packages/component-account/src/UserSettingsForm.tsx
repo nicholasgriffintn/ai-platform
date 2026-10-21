@@ -8,7 +8,12 @@ import {
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
-import { computeSiteSchema, modelTierSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  computeSiteSchema,
+  modelTierSchema,
+  responseStyleSchema,
+  type ResponseStyleSettings,
+} from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 import { BedrockManagedAgentSettings } from "./BedrockManagedAgentSettings";
@@ -86,6 +91,51 @@ const SEARCH_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "cloudflare-ai-search", label: "Cloudflare Knowledge Search" },
 ];
 
+const RESPONSE_LEVEL_OPTIONS: FormSelectOption[] = [
+  { value: "default", label: "Default" },
+  { value: "more", label: "More" },
+  { value: "less", label: "Less" },
+];
+
+const RESPONSE_STYLE_CONTROLS: {
+  key: keyof ResponseStyleSettings;
+  label: string;
+  options: FormSelectOption[];
+}[] = [
+  {
+    key: "tone",
+    label: "Base style and tone",
+    options: [
+      { value: "default", label: "Default" },
+      { value: "professional", label: "Professional" },
+      { value: "friendly", label: "Friendly" },
+      { value: "candid", label: "Candid" },
+      { value: "quirky", label: "Quirky" },
+      { value: "efficient", label: "Efficient" },
+      { value: "nerdy", label: "Nerdy" },
+      { value: "cynical", label: "Cynical" },
+    ],
+  },
+  { key: "warmth", label: "Warmth", options: RESPONSE_LEVEL_OPTIONS },
+  { key: "enthusiasm", label: "Enthusiasm", options: RESPONSE_LEVEL_OPTIONS },
+  { key: "emoji", label: "Emoji", options: RESPONSE_LEVEL_OPTIONS },
+  { key: "formatting", label: "Headers and lists", options: RESPONSE_LEVEL_OPTIONS },
+];
+
+const CAPABILITY_SWITCHES = [
+  {
+    key: "web_search_enabled",
+    label: "Web search",
+    description: "Let Polychat search the web on its own when an answer needs current information.",
+  },
+  {
+    key: "source_search_enabled",
+    label: "Documents and connected apps",
+    description:
+      "Let Polychat look through your documents and use your connected apps on its own when they could help.",
+  },
+] as const;
+
 export const USER_SETTINGS_FORM_ID = "user-settings-form";
 
 export interface UserSettingsFormProps {
@@ -136,6 +186,22 @@ export function UserSettingsForm({
         setting_name: name,
         has_value: value.trim().length > 0 ? "true" : "false",
       },
+    });
+  };
+
+  const handleResponseStyleChange = (key: keyof ResponseStyleSettings, value: string) => {
+    const parsed = responseStyleSchema.safeParse({ ...formData.response_style, [key]: value });
+
+    if (!parsed.success) {
+      return;
+    }
+
+    updateFormData({ response_style: parsed.data });
+
+    analytics.track({
+      name: "response_style_changed",
+      category: "ui_interaction",
+      properties: { control: key, value },
     });
   };
 
@@ -264,33 +330,98 @@ export function UserSettingsForm({
             />
           </div>
 
-          <div>
-            <label htmlFor="traits" className="mb-1 block text-sm font-medium text-foreground">
-              Personal Traits
-            </label>
-            <Textarea
-              id="traits"
-              name="traits"
-              value={formData.traits}
-              onChange={handleChange}
-              placeholder="Describe the traits or personality that the AI should have"
-              rows={4}
-            />
+          <div className="divide-y divide-border rounded-lg border border-border">
+            {RESPONSE_STYLE_CONTROLS.map((control) => (
+              <div key={control.key} className="flex items-center justify-between gap-4 px-3 py-2">
+                <label
+                  htmlFor={`response_style_${control.key}`}
+                  className="text-sm font-medium text-foreground"
+                >
+                  {control.label}
+                </label>
+                <FormSelect
+                  id={`response_style_${control.key}`}
+                  value={formData.response_style?.[control.key] ?? "default"}
+                  options={control.options}
+                  fullWidth={false}
+                  onValueChange={(value) => handleResponseStyleChange(control.key, value)}
+                />
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label htmlFor="preferences" className="mb-1 block text-sm font-medium text-foreground">
-              Preferences
-            </label>
-            <Textarea
-              id="preferences"
-              name="preferences"
-              value={formData.preferences}
-              onChange={handleChange}
-              placeholder="Your preferences for chat interactions"
-              rows={4}
-            />
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Custom instructions</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Added on top of the style above. Use them for anything the controls do not cover.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="traits" className="mb-1 block text-sm font-medium text-foreground">
+                Personal Traits
+              </label>
+              <Textarea
+                id="traits"
+                name="traits"
+                value={formData.traits}
+                onChange={handleChange}
+                placeholder="Describe the traits or personality that the AI should have"
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="preferences"
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                Preferences
+              </label>
+              <Textarea
+                id="preferences"
+                name="preferences"
+                value={formData.preferences}
+                onChange={handleChange}
+                placeholder="Your preferences for chat interactions"
+                rows={4}
+              />
+            </div>
           </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Capabilities">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Turning these off stops Polychat reaching for them by itself. Tools you, a project or a
+            teammate choose explicitly still work.
+          </p>
+          {CAPABILITY_SWITCHES.map((capability) => (
+            <div key={capability.key}>
+              <label
+                htmlFor={capability.key}
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                {capability.label}
+              </label>
+              <Switch
+                id={capability.key}
+                checked={formData[capability.key] ?? true}
+                onChange={(e) => {
+                  updateFormData({ [capability.key]: e.target.checked });
+
+                  analytics.track({
+                    name: "capability_setting_changed",
+                    category: "ui_interaction",
+                    properties: { setting_name: capability.key, enabled: String(e.target.checked) },
+                  });
+                }}
+              />
+              <p className="text-sm text-muted-foreground">{capability.description}</p>
+            </div>
+          ))}
         </div>
       </SettingsSection>
 
@@ -652,7 +783,8 @@ export function UserSettingsForm({
               }
             />
             <p className="text-sm text-muted-foreground">
-              Allow Polychat to save and use your chat history when responding.
+              Allow Polychat to save and use your chat history when responding, including searching
+              your earlier chats.
             </p>
           </div>
         </div>

@@ -84,6 +84,7 @@ export const handleFunctions = async ({
     approvedTools: request.request?.approved_tools,
     requireApprovalFor: request.request?.require_approval_for,
     deniedTools: request.request?.denied_tools,
+    settingsDisabledTools: request.request?.settings_disabled_tools,
     enforceModePolicy: request.request?.enforce_mode_tool_policy,
     effectClass,
     autonomyLevel: request.request?.autonomy_level,

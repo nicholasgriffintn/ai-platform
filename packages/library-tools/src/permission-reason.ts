@@ -10,6 +10,7 @@ export function toolDenialReason(
     "tool.premium:0": "This tool requires a premium subscription",
     "tool.byok:0": "This tool requires a signed-in user",
     "tool.teammate:0": `Tool "${context.toolName}" is not available to this teammate`,
+    "tool.settings.disabled:0": `Tool "${context.toolName}" is turned off in the user's settings`,
     "tool.mode.denied:0": `Tool "${context.toolName}" is not allowed in ${mode} mode`,
     "tool.mode.enabled:0": `Tool "${context.toolName}" is not enabled in ${mode} mode`,
     "tool.mode.permissions.denied:0": `Tool "${context.toolName}" is blocked in ${mode} mode (${context.permissions.filter((permission) => context.modeDeniedPermissions.includes(permission)).join(", ")})`,

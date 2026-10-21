@@ -380,6 +380,7 @@ export class ChatOrchestrator {
         permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
         options: prepared.requestOptions,
         tool_rules: activeToolRules(userSettings?.tool_rules, chatOptions.acting_rules_suspended),
+        settings_disabled_tools: prepared.settingsDisabledTools,
       },
       input: toolIntentRequest,
       mode: currentMode,
@@ -437,6 +438,7 @@ export class ChatOrchestrator {
         ...chatOptions,
         ...(approvalReplay ? { approved_tools: [] } : {}),
         permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
+        settings_disabled_tools: prepared.settingsDisabledTools,
       },
       prepared: {
         ...prepared,

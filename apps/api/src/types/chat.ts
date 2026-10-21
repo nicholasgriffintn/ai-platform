@@ -75,6 +75,7 @@ export interface IBody {
   tool_permissions_map?: Record<string, string[]>;
   require_approval_for?: ToolPermission[];
   denied_tools?: string[];
+  settings_disabled_tools?: string[];
   verbosity?: VerbosityLevel;
   role?: ChatRole;
   run_id?: string;
@@ -109,6 +110,7 @@ export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "e
   approval_streaks?: TeammateApprovalStreak[];
   tool_rules?: ToolRule[];
   acting_rules_suspended?: boolean;
+  settings_disabled_tools?: string[];
 };
 
 export type ChatCompletionParametersWithModel = ChatCompletionParameters;

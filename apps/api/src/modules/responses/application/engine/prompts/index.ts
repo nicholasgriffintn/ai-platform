@@ -179,6 +179,7 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
         userInformationTool: USER_INFORMATION_TOOL_NAME,
         userTraits: userSettings?.traits || null,
         userPreferences: userSettings?.preferences || null,
+        styleChoices: userSettings?.response_style ?? null,
         poly: Boolean(request.poly),
       }),
     );

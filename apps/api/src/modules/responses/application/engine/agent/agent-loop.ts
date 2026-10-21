@@ -69,6 +69,7 @@ import { isSuccessfulToolStatus } from "~/modules/responses/application/engine/t
 import { emitCompleteToolInput } from "~/modules/responses/application/engine/tools/events";
 import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
 import { createProviderRetryBudget } from "~/modules/responses/domain/provider-retry";
+import { withoutSettingsDisabledTools } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
 import type {
@@ -842,7 +843,10 @@ export async function runAgentLoop(
         context.state.finalAnswerNotice ??= REPEATED_TOOL_CALL_NOTICE;
       }
 
-      const activatedToolNames = getResponseScopedCapabilityToolNames(toolResults);
+      const activatedToolNames = withoutSettingsDisabledTools(
+        getResponseScopedCapabilityToolNames(toolResults),
+        context.shared.toolRequestContext.request?.settings_disabled_tools ?? [],
+      );
 
       for (const toolName of activatedToolNames) {
         context.state.enabledToolNames.add(toolName);

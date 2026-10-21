@@ -190,6 +190,7 @@ export const handleToolCalls = async (
         approvedTools: req.request?.approved_tools,
         requireApprovalFor: req.request?.require_approval_for,
         deniedTools: req.request?.denied_tools,
+        settingsDisabledTools: req.request?.settings_disabled_tools,
         enforceModePolicy: req.request?.enforce_mode_tool_policy,
         effectClass: callEffectClass,
         autonomyLevel: req.request?.autonomy_level,

@@ -6,6 +6,8 @@ export const toolPolicies = {
     when { context.toolType == "byok" && !context.signedIn };`,
   "tool.teammate": `forbid(principal, action == Polychat::Action::"tool.use", resource)
     when { context.deniedTools.contains(context.toolName) };`,
+  "tool.settings.disabled": `forbid(principal, action == Polychat::Action::"tool.use", resource)
+    when { context.settingsDisabledTools.contains(context.toolName) };`,
   "tool.mode.denied": `forbid(principal, action == Polychat::Action::"tool.use", resource)
     when { context.enforceMode && context.modeDeniedTools.contains(context.toolName) };`,
   "tool.mode.enabled": `forbid(principal, action == Polychat::Action::"tool.use", resource)

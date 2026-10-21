@@ -1,6 +1,7 @@
 import type { ComputeSite } from "./compute-sites.js";
 import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
+import type { ResponseStyleSettings } from "./response-style.js";
 import type { ToolRule } from "./tool-rules.js";
 import type { GuardrailsProviderId, LastModelSelection } from "./user/userSettings.js";
 
@@ -40,6 +41,7 @@ export interface UserSettings {
   job_role: string;
   traits: string;
   preferences: string;
+  response_style?: ResponseStyleSettings;
   tracking_enabled?: boolean;
   advertise_machines?: boolean;
   guardrails_enabled?: boolean;
@@ -60,6 +62,8 @@ export interface UserSettings {
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
   temporary_chats_default?: boolean;
+  web_search_enabled?: boolean;
+  source_search_enabled?: boolean;
   memory_provider?: string;
   transcription_provider?: string;
   transcription_model?: string;
