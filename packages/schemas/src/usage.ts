@@ -144,6 +144,22 @@ export const USAGE_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export const usagePeriodSchema = z.string().regex(USAGE_PERIOD_PATTERN);
 
+export const SPEND_STATES = ["uncapped", "ok", "near", "reached"] as const;
+export const spendStateSchema = z.enum(SPEND_STATES);
+export type SpendState = z.infer<typeof spendStateSchema>;
+
+export const spendLedgerSchema = z.object({
+  period: z.string().regex(/^\d{4}-\d{2}$/),
+  creditMicros: z.number().int().nonnegative(),
+  costMicros: z.number().int().nonnegative(),
+  runCount: z.number().int().nonnegative(),
+  capCreditMicros: z.number().int().positive().nullable(),
+  state: spendStateSchema,
+  resetsAt: z.string(),
+});
+
+export type SpendLedger = z.infer<typeof spendLedgerSchema>;
+
 export function usagePeriodFromDate(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);
 }

@@ -7,6 +7,8 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 
+import { RoutineSpendControl } from "./RoutineSpendControl.js";
+
 export function TeammateRoutinesPanel({
   contextId,
   projectId,
@@ -49,35 +51,43 @@ export function TeammateRoutinesPanel({
             Boolean(installation.teammateContextId) && installation.teammateContextId !== contextId;
 
           return (
-            <label
-              key={installation.id}
-              htmlFor={`routine-${installation.id}`}
-              className="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
-            >
-              <Checkbox
-                id={`routine-${installation.id}`}
-                checked={checked}
-                disabled={update.isPending || assignedElsewhere}
-                onCheckedChange={(next) =>
-                  update.mutate({
-                    installationId: installation.id,
-                    update: { teammateContextId: next === true ? contextId : null },
-                  })
-                }
-              />
-              <span>
-                <span className="block text-sm font-medium text-foreground">
-                  {recipeTitleById.get(installation.recipeId) ?? installation.recipeId}
+            <div key={installation.id} className="rounded-lg border p-3">
+              <label
+                htmlFor={`routine-${installation.id}`}
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <Checkbox
+                  id={`routine-${installation.id}`}
+                  checked={checked}
+                  disabled={update.isPending || assignedElsewhere}
+                  onCheckedChange={(next) =>
+                    update.mutate({
+                      installationId: installation.id,
+                      update: { teammateContextId: next === true ? contextId : null },
+                    })
+                  }
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">
+                    {recipeTitleById.get(installation.recipeId) ?? installation.recipeId}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {assignedElsewhere
+                      ? "Assigned to another teammate context"
+                      : installation.pausedReason === "budget"
+                        ? "Paused: monthly budget reached"
+                        : checked
+                          ? "Runs as this teammate"
+                          : "Runs as a generic recipe"}
+                  </span>
                 </span>
-                <span className="block text-xs text-muted-foreground">
-                  {assignedElsewhere
-                    ? "Assigned to another teammate context"
-                    : checked
-                      ? "Runs as this teammate"
-                      : "Runs as a generic recipe"}
-                </span>
-              </span>
-            </label>
+              </label>
+              {checked ? (
+                <div className="mt-3 border-t pt-3">
+                  <RoutineSpendControl installationId={installation.id} />
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </div>
