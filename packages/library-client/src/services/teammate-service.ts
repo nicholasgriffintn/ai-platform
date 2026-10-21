@@ -21,6 +21,7 @@ import {
   type CreateTeammateGroupInput,
   type TeammateGroup,
   type TeammateRosterEntry,
+  type SpendLedger,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { requestJson, resource, withQuery, type ResourceQuery } from "../resource.js";
@@ -104,6 +105,17 @@ export class TeammateService {
     pausedUntil: string | null,
   ): Promise<TeammateContext> {
     return contexts.update(contextId, { pausedUntil });
+  }
+
+  updateTeammateContextBudget(
+    contextId: string,
+    monthlyCreditCapMicros: number | null,
+  ): Promise<TeammateContext> {
+    return contexts.update(contextId, { monthlyCreditCapMicros });
+  }
+
+  getTeammateContextSpend(contextId: string): Promise<SpendLedger> {
+    return contexts.singleton<SpendLedger>(contextId, "spend").get();
   }
 
   listTeammateConnectionGrants(contextId: string): Promise<TeammateConnectionGrantListResponse> {

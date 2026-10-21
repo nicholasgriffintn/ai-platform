@@ -61,6 +61,7 @@ export interface AcceptRunCommandParams {
   trigger?: ChatRunTrigger;
   teammateContextId?: string | null;
   computerId?: string | null;
+  recipeInstallationId?: string | null;
   delegationId?: string;
   resolvedConfiguration?: Record<string, unknown> | null;
 }
@@ -121,6 +122,7 @@ function formatRun(row: ConversationRunRow): ChatRun {
     interactionKind: row.interaction_kind,
     teammateContextId: row.teammate_context_id,
     computerId: row.computer_id,
+    recipeInstallationId: row.recipe_installation_id ?? null,
     resolvedConfiguration: row.resolved_configuration_json
       ? safeParseRunConfiguration(row.resolved_configuration_json)
       : null,
@@ -440,9 +442,9 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const runStatement = this.env.DB.prepare(
       `INSERT INTO conversation_run (
          id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
-         teammate_context_id, computer_id, resolved_configuration_json,
+         teammate_context_id, computer_id, recipe_installation_id, resolved_configuration_json,
          status, attempt, event_sequence, trigger, created_at, updated_at
-       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
+       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
        WHERE ? IS NULL OR EXISTS (
          SELECT 1 FROM delegation WHERE id = ? AND state = 'running'
        )
@@ -456,6 +458,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.userId,
       params.teammateContextId ?? null,
       params.computerId ?? null,
+      params.recipeInstallationId ?? null,
       params.resolvedConfiguration ? JSON.stringify(params.resolvedConfiguration) : null,
       params.trigger ?? "user",
       now,

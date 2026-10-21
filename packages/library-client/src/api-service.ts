@@ -31,6 +31,7 @@ import type {
   UpsertTeammateConnectionGrant,
   TeammateContext,
   TeammateContextScope,
+  SpendLedger,
   TeammateComputer,
   TeammateComputerAction,
   MemoryDocument,
@@ -302,6 +303,15 @@ class ApiService {
     pausedUntil: string | null,
   ): Promise<TeammateContext> =>
     this.teammateService.updateTeammateContextPause(contextId, pausedUntil);
+
+  updateTeammateContextBudget = (
+    contextId: string,
+    monthlyCreditCapMicros: number | null,
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextBudget(contextId, monthlyCreditCapMicros);
+
+  getTeammateContextSpend = (contextId: string): Promise<SpendLedger> =>
+    this.teammateService.getTeammateContextSpend(contextId);
 
   updateTeammateContextStatus = (
     contextId: string,

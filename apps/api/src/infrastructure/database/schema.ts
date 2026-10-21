@@ -1181,6 +1181,7 @@ export const teammateContext = sqliteTable(
       .default([])
       .notNull(),
     paused_until: text(),
+    monthly_credit_cap_micros: integer(),
     owner_seen_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
@@ -1344,6 +1345,7 @@ export const conversationRun = sqliteTable(
     computer_id: text().references(() => teammateContext.computer_id, {
       onDelete: "set null",
     }),
+    recipe_installation_id: text(),
     trigger: text({
       enum: ["user", "delegation", "handle", "schedule", "channel"],
     })
