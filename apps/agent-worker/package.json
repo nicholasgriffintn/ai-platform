@@ -19,7 +19,7 @@
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
     "@opencode/plugin": "2.0.27",
     "@opencode/sdk": "2.0.27",
-    "agents": "0.28.0",
+    "agents": "0.28.1",
     "zod": "catalog:"
   },
   "devDependencies": {
