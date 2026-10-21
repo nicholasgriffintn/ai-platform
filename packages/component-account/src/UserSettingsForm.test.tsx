@@ -158,6 +158,40 @@ describe("user settings form", () => {
       expect.objectContaining({ nickname: "Sam", search_provider: "parallel" }),
     );
   });
+
+  it("builds instructions from the style controls and reveals them for editing", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <UserSettingsForm
+        {...formProps}
+        onSave={onSave}
+        userSettings={{ ...savedSettings, traits: "", preferences: "" }}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Personal Traits")).toBeNull();
+
+    fireEvent.click(screen.getByLabelText("Base style and tone"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Cynical" }));
+    fireEvent.click(screen.getByLabelText("Emoji"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Less" }));
+    fireEvent.click(screen.getByRole("button", { name: "Customise instructions" }));
+
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Personal Traits").value).toContain(
+      "sceptical",
+    );
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Preferences").value).toContain("emoji");
+
+    fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0][0]).toMatchObject({
+      traits: expect.stringContaining("sceptical"),
+      preferences: expect.stringContaining("emoji"),
+    });
+  });
+
   it("saves a DynamoDB configuration and removes inactive fields when switching away", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
 

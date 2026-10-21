@@ -13,6 +13,13 @@ import { type FormEvent, type ReactNode, useState } from "react";
 
 import { BedrockManagedAgentSettings } from "./BedrockManagedAgentSettings";
 import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
+import {
+  buildResponseStyleInstructions,
+  DEFAULT_RESPONSE_STYLE_OPTIONS,
+  matchResponseStyleOptions,
+  RESPONSE_STYLE_CONTROLS,
+  type ResponseStyleControlKey,
+} from "./response-style";
 import { SettingsSection } from "./SettingsSection";
 import {
   getSpeechModelOptions,
@@ -115,6 +122,7 @@ export function UserSettingsForm({
   const { formData, updateFormData: updateDraft } = useUserSettingsForm(userSettings);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [isCustomisingResponseStyle, setIsCustomisingResponseStyle] = useState(false);
 
   const updateFormData = (patch: Partial<typeof formData>) => {
     setSaveSuccess(false);
@@ -137,6 +145,31 @@ export function UserSettingsForm({
         has_value: value.trim().length > 0 ? "true" : "false",
       },
     });
+  };
+
+  const matchedResponseStyle = matchResponseStyleOptions(formData.traits, formData.preferences);
+  const showCustomInstructions = isCustomisingResponseStyle || !matchedResponseStyle;
+
+  const handleResponseStyleChange = (key: ResponseStyleControlKey, value: string) => {
+    updateFormData(
+      buildResponseStyleInstructions({
+        ...(matchedResponseStyle ?? DEFAULT_RESPONSE_STYLE_OPTIONS),
+        [key]: value,
+      }),
+    );
+
+    analytics.track({
+      name: "response_style_changed",
+      category: "ui_interaction",
+      properties: { control: key, value },
+    });
+  };
+
+  const handleUseResponseStyleControls = () => {
+    setIsCustomisingResponseStyle(false);
+    updateFormData(
+      buildResponseStyleInstructions(matchedResponseStyle ?? DEFAULT_RESPONSE_STYLE_OPTIONS),
+    );
   };
 
   const handleTranscriptionProviderChange = (value: string) => {
@@ -264,33 +297,93 @@ export function UserSettingsForm({
             />
           </div>
 
-          <div>
-            <label htmlFor="traits" className="mb-1 block text-sm font-medium text-foreground">
-              Personal Traits
-            </label>
-            <Textarea
-              id="traits"
-              name="traits"
-              value={formData.traits}
-              onChange={handleChange}
-              placeholder="Describe the traits or personality that the AI should have"
-              rows={4}
-            />
-          </div>
+          {showCustomInstructions ? (
+            <>
+              <div>
+                <label htmlFor="traits" className="mb-1 block text-sm font-medium text-foreground">
+                  Personal Traits
+                </label>
+                <Textarea
+                  id="traits"
+                  name="traits"
+                  value={formData.traits}
+                  onChange={handleChange}
+                  placeholder="Describe the traits or personality that the AI should have"
+                  rows={4}
+                />
+              </div>
 
-          <div>
-            <label htmlFor="preferences" className="mb-1 block text-sm font-medium text-foreground">
-              Preferences
-            </label>
-            <Textarea
-              id="preferences"
-              name="preferences"
-              value={formData.preferences}
-              onChange={handleChange}
-              placeholder="Your preferences for chat interactions"
-              rows={4}
-            />
-          </div>
+              <div>
+                <label
+                  htmlFor="preferences"
+                  className="mb-1 block text-sm font-medium text-foreground"
+                >
+                  Preferences
+                </label>
+                <Textarea
+                  id="preferences"
+                  name="preferences"
+                  value={formData.preferences}
+                  onChange={handleChange}
+                  placeholder="Your preferences for chat interactions"
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Switching back to the style controls replaces these instructions.
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUseResponseStyleControls}
+                >
+                  Use style controls
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="divide-y divide-border rounded-lg border border-border">
+                {RESPONSE_STYLE_CONTROLS.map((control) => (
+                  <div
+                    key={control.key}
+                    className="flex items-center justify-between gap-4 px-3 py-2"
+                  >
+                    <label
+                      htmlFor={`response_style_${control.key}`}
+                      className="text-sm font-medium text-foreground"
+                    >
+                      {control.label}
+                    </label>
+                    <FormSelect
+                      id={`response_style_${control.key}`}
+                      value={matchedResponseStyle?.[control.key] ?? "default"}
+                      options={control.choices}
+                      fullWidth={false}
+                      onValueChange={(value) => handleResponseStyleChange(control.key, value)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Prefer to write your own instructions?
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCustomisingResponseStyle(true)}
+                >
+                  Customise instructions
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </SettingsSection>
 
