@@ -1,9 +1,12 @@
 import {
   MCP_APP_PROTOCOL_VERSION,
+  jsonRpcRequestSchema,
   type McpAppCallToolResult,
   type McpAppCsp,
+  type JsonRpcRequest,
   type McpAppPermissions,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const MCP_APP_SANDBOX = "allow-scripts allow-forms";
 
@@ -11,15 +14,19 @@ const JSON_RPC_METHOD_NOT_FOUND = -32601;
 const JSON_RPC_INVALID_PARAMS = -32602;
 const JSON_RPC_INTERNAL_ERROR = -32603;
 
-const PERMISSION_ALLOW: Record<keyof McpAppPermissions, string> = {
-  camera: "camera",
-  microphone: "microphone",
-  geolocation: "geolocation",
-  clipboardWrite: "clipboard-write",
-};
+const PERMISSION_FEATURES: readonly (readonly [keyof McpAppPermissions, string])[] = [
+  ["camera", "camera"],
+  ["microphone", "microphone"],
+  ["geolocation", "geolocation"],
+  ["clipboardWrite", "clipboard-write"],
+];
+
+const CSP_SOURCE_PATTERN = /^(?:https|wss):\/\/(?:\*\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::\d{1,5})?$/i;
 
 function sources(domains: readonly string[] | undefined, fallback: string): string {
-  return domains && domains.length > 0 ? domains.join(" ") : fallback;
+  const allowed = (domains ?? []).filter((domain) => CSP_SOURCE_PATTERN.test(domain));
+
+  return allowed.length > 0 ? allowed.join(" ") : fallback;
 }
 
 export function buildMcpAppCsp(csp: McpAppCsp | undefined): string {
@@ -40,43 +47,17 @@ export function buildMcpAppCsp(csp: McpAppCsp | undefined): string {
 }
 
 export function buildMcpAppAllow(permissions: McpAppPermissions | undefined): string {
-  return Object.entries(PERMISSION_ALLOW)
-    .filter(([key]) => permissions?.[key as keyof McpAppPermissions] !== undefined)
+  return PERMISSION_FEATURES.filter(([key]) => permissions?.[key] !== undefined)
     .map(([, feature]) => feature)
     .join("; ");
 }
 
 export function buildMcpAppDocument(html: string, csp: McpAppCsp | undefined): string {
-  const policy = `<meta http-equiv="Content-Security-Policy" content="${buildMcpAppCsp(csp)}">`;
-  const headStart = html.search(/<head[^>]*>/i);
-
-  if (headStart === -1) {
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8" />${policy}</head><body style="margin:0">${html}</body></html>`;
-  }
-
-  const headEnd = html.indexOf(">", headStart) + 1;
-
-  return `${html.slice(0, headEnd)}${policy}${html.slice(headEnd)}`;
-}
-
-interface JsonRpcRequest {
-  jsonrpc: "2.0";
-  id?: number | string | null;
-  method: string;
-  params?: unknown;
-}
-
-function isJsonRpcRequest(value: unknown): value is JsonRpcRequest {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    (value as JsonRpcRequest).jsonrpc === "2.0" &&
-    typeof (value as JsonRpcRequest).method === "string"
-  );
+  return `<!DOCTYPE html><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="${buildMcpAppCsp(csp)}">${html}`;
 }
 
 function readParams(params: unknown): Record<string, unknown> {
-  return typeof params === "object" && params !== null ? (params as Record<string, unknown>) : {};
+  return isRecord(params) ? params : {};
 }
 
 export interface McpAppHostCallbacks {
@@ -153,10 +134,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
     },
     "ui/message": ({ id, params }) => {
       const content = readParams(params).content;
-      const text =
-        typeof content === "object" && content !== null
-          ? (content as { text?: unknown }).text
-          : undefined;
+      const text = isRecord(content) ? content.text : undefined;
 
       if (typeof text !== "string" || !text.trim()) {
         fail(id, JSON_RPC_INVALID_PARAMS, "ui/message needs text content");
@@ -202,19 +180,24 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
   return {
     initialised: () => initialised,
     receive: async (message) => {
-      if (!isJsonRpcRequest(message)) {
+      const parsed = jsonRpcRequestSchema.safeParse(message);
+
+      if (!parsed.success) {
         return;
       }
 
-      const handler = handlers[message.method];
+      const request = parsed.data;
+      const handler = Object.hasOwn(handlers, request.method)
+        ? handlers[request.method]
+        : undefined;
 
       if (!handler) {
-        fail(message.id, JSON_RPC_METHOD_NOT_FOUND, `${message.method} is not supported here`);
+        fail(request.id, JSON_RPC_METHOD_NOT_FOUND, `${request.method} is not supported here`);
 
         return;
       }
 
-      await handler(message);
+      await handler(request);
     },
   };
 }

@@ -1,10 +1,12 @@
+import { jsonRpcRequestSchema } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import {
   dispatchJsonRpc,
   JSON_RPC_ERRORS,
   JsonRpcError,
-  jsonRpcRequestSchema,
   MCP_SERVER_PROTOCOL_VERSION,
   type JsonRpcResponse,
 } from "./protocol";
@@ -13,8 +15,7 @@ import { callMcpServerTool, listMcpServerTools } from "./tools";
 export const MCP_SERVER_INFO = { name: "polychat", version: "1.0.0" } as const;
 
 function readCallParams(params: unknown): { name: string; arguments: unknown } {
-  const record =
-    typeof params === "object" && params !== null ? (params as Record<string, unknown>) : {};
+  const record = isRecord(params) ? params : {};
 
   if (typeof record.name !== "string" || !record.name) {
     throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, "tools/call needs a tool name");

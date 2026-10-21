@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 export const MCP_PROTOCOL_VERSION = "2025-06-18";
@@ -57,13 +58,7 @@ export const mcpResourceReadResultSchema = z.object({
 const UI_RESOURCE_SCHEME = "ui://";
 
 function readMetaUi(meta: unknown): Record<string, unknown> | undefined {
-  if (!meta || typeof meta !== "object") {
-    return undefined;
-  }
-
-  const ui = (meta as Record<string, unknown>).ui;
-
-  return ui && typeof ui === "object" ? (ui as Record<string, unknown>) : undefined;
+  return isRecord(meta) && isRecord(meta.ui) ? meta.ui : undefined;
 }
 
 export function readMcpToolUiResourceUri(tool: Pick<McpTool, "_meta">): string | undefined {

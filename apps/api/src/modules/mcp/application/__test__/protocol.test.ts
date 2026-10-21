@@ -19,6 +19,9 @@ describe("dispatchJsonRpc", () => {
       dispatchJsonRpc({ jsonrpc: "2.0", id: "x", method: "missing" }, handlers),
     ).resolves.toMatchObject({ id: "x", error: { code: JSON_RPC_ERRORS.methodNotFound } });
     await expect(
+      dispatchJsonRpc({ jsonrpc: "2.0", id: 3, method: "constructor" }, handlers),
+    ).resolves.toMatchObject({ id: 3, error: { code: JSON_RPC_ERRORS.methodNotFound } });
+    await expect(
       dispatchJsonRpc({ jsonrpc: "2.0", id: 2, method: "boom" }, handlers),
     ).resolves.toMatchObject({
       id: 2,

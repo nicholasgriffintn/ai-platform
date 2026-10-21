@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { buildMcpAppAllow, buildMcpAppCsp, createMcpAppHostBridge } from "./mcp-apps.js";
+import {
+  buildMcpAppAllow,
+  buildMcpAppCsp,
+  buildMcpAppDocument,
+  createMcpAppHostBridge,
+} from "./mcp-apps.js";
 
 function bridge() {
   const posted: Record<string, unknown>[] = [];
@@ -83,5 +88,34 @@ describe("MCP app host bridge", () => {
     );
     expect(buildMcpAppAllow({ clipboardWrite: {}, camera: {} })).toBe("camera; clipboard-write");
     expect(buildMcpAppAllow(undefined)).toBe("");
+  });
+
+  it("ignores declared sources that would widen or rewrite the policy", () => {
+    const policy = buildMcpAppCsp({
+      connectDomains: ["*", "'unsafe-eval'", "https://x.test; script-src *", "https://*.ok.test"],
+    });
+
+    expect(policy).toContain("connect-src https://*.ok.test;");
+    expect(policy).not.toContain("unsafe-eval");
+    expect(policy).not.toContain("x.test");
+  });
+
+  it("puts the policy ahead of any markup the app sends", () => {
+    for (const html of ["<header>hi</header><script>1</script>", "<html><head></head></html>"]) {
+      const document = buildMcpAppDocument(html, undefined);
+
+      expect(document.indexOf("Content-Security-Policy")).toBeLessThan(document.indexOf(html));
+      expect(document.startsWith("<!DOCTYPE html>")).toBe(true);
+    }
+  });
+
+  it("does not dispatch to inherited object methods", async () => {
+    const { host, posted } = bridge();
+
+    await host.receive({ jsonrpc: "2.0", id: 9, method: "constructor" });
+
+    expect(posted).toContainEqual(
+      expect.objectContaining({ id: 9, error: expect.objectContaining({ code: -32601 }) }),
+    );
   });
 });

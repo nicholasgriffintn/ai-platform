@@ -1,4 +1,4 @@
-import z from "zod/v4";
+import type { JsonRpcRequest } from "@ngriffin_uk/polychat-schemas";
 
 export const MCP_SERVER_PROTOCOL_VERSION = "2025-06-18";
 
@@ -9,15 +9,6 @@ export const JSON_RPC_ERRORS = {
   invalidParams: -32602,
   internal: -32603,
 } as const;
-
-export const jsonRpcRequestSchema = z.object({
-  jsonrpc: z.literal("2.0"),
-  id: z.union([z.number(), z.string()]).nullable().optional(),
-  method: z.string().min(1),
-  params: z.unknown().optional(),
-});
-
-export type JsonRpcRequest = z.infer<typeof jsonRpcRequestSchema>;
 
 export interface JsonRpcResponse {
   jsonrpc: "2.0";
@@ -47,7 +38,7 @@ export async function dispatchJsonRpc(
   request: JsonRpcRequest,
   handlers: Readonly<Record<string, JsonRpcMethodHandler>>,
 ): Promise<JsonRpcResponse | null> {
-  const handler = handlers[request.method];
+  const handler = Object.hasOwn(handlers, request.method) ? handlers[request.method] : undefined;
   const id = request.id ?? null;
 
   if (isJsonRpcNotification(request)) {
