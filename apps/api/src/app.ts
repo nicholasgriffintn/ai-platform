@@ -1,5 +1,6 @@
 import type { Hono } from "hono";
 
+import a2a from "~/modules/a2a/api/routes";
 import account from "~/modules/account/api/routes";
 import activity from "~/modules/activity/api/routes";
 import admin from "~/modules/admin/api/routes";
@@ -75,6 +76,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
   app.route("/mcp", mcpServer);
+  app.route("/a2a", a2a);
   app.route("/code", code);
   app.route("/jobs", jobs);
   app.route("/approvals", approvals);

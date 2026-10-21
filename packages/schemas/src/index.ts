@@ -1,4 +1,5 @@
 export * from "./openai-decisions.js";
+export * from "./a2a.js";
 export * from "./teammates.js";
 export * from "./teammate-contexts.js";
 export * from "./teammate-groups.js";

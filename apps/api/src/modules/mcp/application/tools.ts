@@ -10,9 +10,8 @@ import {
   resolveInstalledAssistantRecipe,
 } from "~/modules/recipes/application";
 import { executeRecipeInvocationChat } from "~/modules/recipes/application/execution";
-import { ensureTeammateContext } from "~/modules/teammates/application/contexts";
+import { messageTeammateFromOutside } from "~/modules/teammates/application/external-message";
 import { listScopedTeammateSummaries } from "~/modules/teammates/application/listing";
-import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 
 import { JSON_RPC_ERRORS, JsonRpcError } from "./protocol";
 
@@ -72,34 +71,9 @@ const messageTeammate = defineServerTool({
     message: z.string().trim().min(1).max(8_000),
   }),
   run: async (context, input) => {
-    const user = context.requireUser();
-    const teammateContext = await ensureTeammateContext(context, input.teammateId, {
-      type: "personal",
-      id: String(user.id),
-    });
-    const response = await enqueueTeammateRun({
-      env: context.env,
-      context,
-      body: {
-        conversationId: teammateContext.homeConversationId,
-        messages: [{ role: "user", content: input.message }],
-        stream: false,
-        store: true,
-      },
-      teammateId: input.teammateId,
-      user,
-      anonymousUser: undefined,
-      authority: { trigger: "channel" },
-    });
-    const notification = extractChatCompletionNotification(response, {
-      streamingMessage: "The teammate is working on it and will reply in Polychat.",
-      fallback: "The teammate is working on it and will reply in Polychat.",
-    });
+    const reply = await messageTeammateFromOutside(context, input.teammateId, input.message);
 
-    return {
-      text: notification.body,
-      structured: { conversationId: teammateContext.homeConversationId },
-    };
+    return { text: reply.text, structured: { conversationId: reply.conversationId } };
   },
 });
 
