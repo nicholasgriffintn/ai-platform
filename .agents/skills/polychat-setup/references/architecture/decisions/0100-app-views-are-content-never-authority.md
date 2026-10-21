@@ -1,6 +1,6 @@
 # ADR 0100: App views are content, never authority
 
-Status: Implemented for MCP tools rendered in conversations and for the Polychat MCP server.
+Status: Implemented for MCP tools rendered in conversations, the Polychat MCP server and teammate A2A endpoints.
 
 ## Problem
 
@@ -17,6 +17,8 @@ An app view is rendered content. Its HTML runs in a frame with `allow-scripts al
 - The resource is fetched and attached by the API when the tool result is produced, so the view never fetches it itself and the client never speaks to the integration directly.
 
 The MCP server exposes a short list of Polychat's own operations under the key owner's authority. Runs it starts are admitted with the `channel` trigger, so a never-standing effect asks in Polychat Attention rather than running because a remote host said so. The remote host only sees the receipt.
+
+Agent2Agent follows the same rule. Each teammate publishes an agent card and a `message/send` endpoint to its owner's API key only, and a message from another agent becomes a `channel` run in the teammate's own conversation, never a grant of anything the teammate would otherwise ask for.
 
 ## Consequences
 
