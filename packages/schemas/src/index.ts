@@ -1,5 +1,6 @@
 export * from "./openai-decisions.js";
 export * from "./teammates.js";
+export * from "./teammate-trust-check.js";
 export * from "./teammate-contexts.js";
 export * from "./teammate-groups.js";
 export * from "./tool-rules.js";

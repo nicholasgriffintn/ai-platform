@@ -21,6 +21,7 @@ import {
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
 import { listSchema } from "./platform/list.js";
+import { TEAMMATE_TRUST_CHECK_TASK_TYPE } from "./teammate-trust-check.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -66,6 +67,7 @@ export const TASK_TYPES = [
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  TEAMMATE_TRUST_CHECK_TASK_TYPE,
   CONVERSATION_TITLE_TASK_TYPE,
   QUEUED_CHAT_MESSAGE_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
