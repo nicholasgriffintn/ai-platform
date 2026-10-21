@@ -10,6 +10,7 @@ import {
   desktopRuntimeReadinessSchema,
   desktopSessionTokenSchema,
   desktopStreamEventSchema,
+  desktopToolResultSchema,
   agentDirectorySchema,
   agentThreadBindingSchema,
   agentToolStateSchema,
@@ -212,6 +213,8 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   },
   listAgentDirectories: async () =>
     agentDirectorySchema.array().parse(await invoke("list_agent_directories")),
+  runLocalTool: async (request) =>
+    desktopToolResultSchema.parse(await invoke("run_local_tool", { request })),
   pickAgentDirectory: async () =>
     z
       .string()

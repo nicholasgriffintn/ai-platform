@@ -25,6 +25,7 @@ type MachineRunnerBackend = Pick<
   | "pickAgentDirectory"
   | "saveAgentDirectory"
   | "probeAgentTool"
+  | "runLocalTool"
 >;
 
 async function executeClaim(
@@ -126,6 +127,14 @@ async function executeClaim(
           requireBinding: true,
         },
       });
+      state = "completed";
+    } else if ("kind" in claim.request && claim.request.kind === "tool") {
+      const result = await backend.runLocalTool({
+        directoryId: claim.request.directoryId,
+        input: claim.request.input,
+      });
+
+      pendingText = JSON.stringify(result);
       state = "completed";
     } else if ("vendor" in claim.request) {
       const modelRequest = claim.request;

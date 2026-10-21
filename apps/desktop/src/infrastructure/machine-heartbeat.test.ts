@@ -50,6 +50,16 @@ describe("machine heartbeat", () => {
       agentSupportsSessions: vi
         .fn()
         .mockImplementation((vendor: string) => Promise.resolve(vendor === "codex")),
+      listAgentDirectories: vi.fn().mockResolvedValue([
+        {
+          id: "directory-1",
+          path: "/Users/someone/Notes",
+          label: "Notes",
+          approvedAt: "2026-09-07T08:00:00.000Z",
+          lastUsedAt: null,
+          isGitRepo: false,
+        },
+      ]),
     } as unknown as ConnectedDesktopBackend;
 
     const payload = await buildMachineHeartbeatPayload(backend, diagnostics);
@@ -58,7 +68,11 @@ describe("machine heartbeat", () => {
     expect(payload).toMatchObject({
       machineId: "machine-1",
       platform: "macos",
-      capabilities: ["model-run", "model-relay", "agent-run"],
+      capabilities: ["model-run", "model-relay", "agent-run", "local-tools"],
+    });
+    expect(payload.runtimes).toContainEqual({
+      kind: "local-tools",
+      directories: [{ id: "directory-1", label: "Notes" }],
     });
     expect(payload.runtimes).toContainEqual(
       expect.objectContaining({
@@ -78,6 +92,7 @@ describe("machine heartbeat", () => {
     );
     expect(serialised).not.toContain("127.0.0.1");
     expect(serialised).not.toContain("11434");
+    expect(serialised).not.toContain("/Users/someone");
   });
 
   it("runs immediately, avoids overlapping heartbeats and re-runs after a pending trigger", async () => {

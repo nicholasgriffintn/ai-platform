@@ -10,6 +10,7 @@ mod encoding;
 mod lines;
 mod link;
 mod links;
+mod local_tools;
 mod model_runner;
 mod poly;
 mod programs;
@@ -611,6 +612,24 @@ async fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, S
 }
 
 #[tauri::command]
+async fn run_local_tool(
+    request: local_tools::LocalToolRequest,
+    directories: State<'_, DirectoryGrants>,
+    store: State<'_, Store>,
+) -> Result<local_tools::LocalToolResult, String> {
+    let result = local_tools::run_local_tool(&directories, &request)
+        .map_err(|refusal| refusal.describe())?;
+    let used_at = timestamp();
+
+    directories
+        .touch(&request.directory_id, used_at.clone())
+        .map_err(|cause| format!("{cause:?}"))?;
+    store.mark_agent_directory_used(&request.directory_id, &used_at)?;
+
+    Ok(result)
+}
+
+#[tauri::command]
 fn revoke_agent_directory(
     directory_id: String,
     directories: State<'_, DirectoryGrants>,
@@ -890,6 +909,7 @@ fn main() {
             save_agent_directory,
             pick_agent_directory,
             revoke_agent_directory,
+            run_local_tool,
             read_agent_thread,
             save_agent_thread,
             forget_agent_thread,

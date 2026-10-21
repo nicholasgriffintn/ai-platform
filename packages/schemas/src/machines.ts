@@ -13,8 +13,23 @@ export const MACHINE_ONLINE_WINDOW_MS = 5 * 60_000;
 export const machinePlatformSchema = z.enum(["macos", "windows", "linux"]);
 export type MachinePlatform = z.infer<typeof machinePlatformSchema>;
 
-export const machineCapabilitySchema = z.enum(["model-run", "agent-run", "handoff", "model-relay"]);
+export const machineCapabilitySchema = z.enum([
+  "model-run",
+  "agent-run",
+  "handoff",
+  "model-relay",
+  "local-tools",
+]);
 export type MachineCapability = z.infer<typeof machineCapabilitySchema>;
+
+export const machineDirectorySchema = z
+  .object({
+    id: z.string().trim().min(1).max(128),
+    label: z.string().trim().min(1).max(120),
+  })
+  .strict();
+
+export type MachineDirectory = z.infer<typeof machineDirectorySchema>;
 
 export const machineModelSchema = z
   .object({
@@ -49,7 +64,20 @@ export const machineModelRuntimeSchema = z
   })
   .strict();
 
-export const machineRuntimeSchema = z.union([machineModelRuntimeSchema, machineAgentRuntimeSchema]);
+export const machineLocalToolsRuntimeSchema = z
+  .object({
+    kind: z.literal("local-tools"),
+    directories: z.array(machineDirectorySchema).max(32),
+  })
+  .strict();
+
+export type MachineLocalToolsRuntime = z.infer<typeof machineLocalToolsRuntimeSchema>;
+
+export const machineRuntimeSchema = z.union([
+  machineModelRuntimeSchema,
+  machineAgentRuntimeSchema,
+  machineLocalToolsRuntimeSchema,
+]);
 export type MachineRuntime = z.infer<typeof machineRuntimeSchema>;
 
 export const machineHeartbeatSchema = z
@@ -59,7 +87,7 @@ export const machineHeartbeatSchema = z
     platform: machinePlatformSchema,
     appVersion: z.string().trim().min(1).max(64),
     runtimes: z.array(machineRuntimeSchema).max(32),
-    capabilities: z.array(machineCapabilitySchema).max(4),
+    capabilities: z.array(machineCapabilitySchema).max(5),
   })
   .strict();
 

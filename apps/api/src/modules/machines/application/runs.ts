@@ -29,6 +29,14 @@ export async function callMachineRun(
   if (path === "/create") {
     const input = machineRunRequestSchema.parse(body);
     const runtimeAvailable = machine.runtimes.some((runtime) => {
+      if ("kind" in input && input.kind === "tool") {
+        return (
+          runtime.kind === "local-tools" &&
+          runtime.directories.some((directory) => directory.id === input.directoryId) &&
+          machine.capabilities.includes("local-tools")
+        );
+      }
+
       if ("kind" in input && input.kind === "agent") {
         return (
           runtime.kind === "agent" &&
@@ -51,7 +59,9 @@ export async function callMachineRun(
 
     if (!isMachineOnline(machine) || !runtimeAvailable) {
       throw new AssistantError(
-        "The model is not available on this machine.",
+        "kind" in input && input.kind === "tool"
+          ? "That folder is not available on this machine right now."
+          : "The model is not available on this machine.",
         ErrorType.PARAMS_ERROR,
       );
     }

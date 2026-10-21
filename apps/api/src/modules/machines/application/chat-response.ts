@@ -1,34 +1,31 @@
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import {
   agentRuntimeVendorSchema,
-  machineRunSnapshotSchema,
   machineRunRequestSchema,
   modelRuntimeVendorSchema,
   teammateRunConfigurationSchema,
+  type MachineRunMessages,
   type MachineRunRequest,
-  type MachineRunSnapshot,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import {
-  abortableDelay,
   encodeServerSentEvent,
   encodeServerSentEventDone,
   generateId,
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import type { ChatCompletionParameters } from "~/types";
 
+import {
+  MACHINE_RUN_MAX_DURATION_MS,
+  parseMachineSnapshot,
+  pollMachineRun,
+} from "./machine-run-polling";
 import { callMachineRun } from "./runs";
 
-const MACHINE_RUN_POLL_INTERVAL_MS = 1000;
-const MACHINE_RUN_MAX_DURATION_MS = 10 * 60 * 1000;
-
-function machineMessages(
-  messages: ChatCompletionParameters["messages"],
-): MachineRunRequest["messages"] {
+function machineMessages(messages: ChatCompletionParameters["messages"]): MachineRunMessages {
   return (messages ?? []).flatMap((message) => {
     if (message.role !== "system" && message.role !== "user" && message.role !== "assistant") {
       return [];
@@ -38,18 +35,6 @@ function machineMessages(
 
     return content ? [{ role: message.role, content }] : [];
   });
-}
-
-async function parseMachineSnapshot(response: Response) {
-  if (!response.ok) {
-    throw new AssistantError(
-      `Machine execution failed (${response.status})`,
-      ErrorType.PROVIDER_ERROR,
-      response.status,
-    );
-  }
-
-  return machineRunSnapshotSchema.parse(await response.json());
 }
 
 async function machineRunDeadline(params: ChatCompletionParameters): Promise<number> {
@@ -158,53 +143,4 @@ export async function executeMachineChatResponse(
       }
     },
   });
-}
-
-async function pollMachineRun(
-  context: ServiceContext,
-  machineId: string,
-  machineRunId: string,
-  created: MachineRunSnapshot,
-  deadline: number,
-  onText: (text: string) => void,
-): Promise<string> {
-  let snapshot = created;
-
-  onText(snapshot.text);
-
-  while (snapshot.state === "pending" || snapshot.state === "running") {
-    if (Date.now() >= deadline) {
-      await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);
-      throw new AssistantError(
-        "Machine execution exceeded its deadline",
-        ErrorType.PROVIDER_ERROR,
-        504,
-      );
-    }
-
-    const runId = context.executionRunId;
-    const run = runId
-      ? await context.repositories.get(ConversationRunRepository).getById(runId)
-      : null;
-
-    if (run?.cancellationRequestedAt || run?.status === "cancelled") {
-      await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);
-      throw new AssistantError("Machine execution was cancelled", ErrorType.CONFLICT_ERROR, 409);
-    }
-
-    await abortableDelay(MACHINE_RUN_POLL_INTERVAL_MS);
-    snapshot = await parseMachineSnapshot(
-      await callMachineRun(context, machineId, `/read/${machineRunId}`),
-    );
-    onText(snapshot.text);
-  }
-
-  if (snapshot.state !== "completed") {
-    throw new AssistantError(
-      snapshot.error ?? "Machine execution did not complete",
-      ErrorType.PROVIDER_ERROR,
-    );
-  }
-
-  return snapshot.text;
 }

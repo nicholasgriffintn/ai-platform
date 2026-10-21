@@ -29,6 +29,7 @@ import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
 import { create_video } from "~/modules/generate/application/tools/video";
 import { complete_goal, set_goal } from "~/modules/goals/application/tools/goal";
+import { DESKTOP_FUNCTION_TOOLS } from "~/modules/machines/application/tools/desktop";
 import {
   read_memory_document,
   search_memories,
@@ -118,6 +119,7 @@ registerTools([
   get_recipe,
   configure_recipe,
   trigger_recipe,
+  ...DESKTOP_FUNCTION_TOOLS,
   get_task_status,
   create_task,
   get_task,
