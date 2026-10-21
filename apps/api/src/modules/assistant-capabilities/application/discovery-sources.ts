@@ -78,6 +78,7 @@ export async function loadCapabilityDiscoverySources(
       toolType: tool.type,
       toolPermissions: tool.permissions,
       requireApprovalFor: request.request?.require_approval_for,
+      settingsDisabledTools: request.request?.settings_disabled_tools,
       enforceModePolicy: request.request?.enforce_mode_tool_policy,
     }),
   }));

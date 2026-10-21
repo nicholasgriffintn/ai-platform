@@ -91,6 +91,7 @@ export function buildToolRequestContext(params: {
       tool_permissions_map: buildToolPermissionsMap(chatOptions.tools),
       require_approval_for: chatOptions.require_approval_for,
       denied_tools: chatOptions.denied_tools,
+      settings_disabled_tools: chatOptions.settings_disabled_tools,
       options: chatOptions.options || {},
       enforce_mode_tool_policy: chatOptions.enforce_mode_tool_policy,
     },

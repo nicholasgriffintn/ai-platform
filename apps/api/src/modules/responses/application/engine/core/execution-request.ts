@@ -103,6 +103,7 @@ class ChatExecutionRequest {
       enabled_tools: this.enabledTools,
       approved_tools: chatOptions.approved_tools ?? [],
       require_approval_for: chatOptions.require_approval_for,
+      settings_disabled_tools: chatOptions.settings_disabled_tools,
       enforce_mode_tool_policy: chatOptions.enforce_mode_tool_policy,
       tools: chatOptions.tools,
       parallel_tool_calls: chatOptions.parallel_tool_calls,

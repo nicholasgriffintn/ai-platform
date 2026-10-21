@@ -5,6 +5,7 @@ import {
   lastModelSelectionSchema,
   onboardingSeenSchema,
   parsePetModelOverrides,
+  parseResponseStyle,
   parseToolRules,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -293,6 +294,8 @@ export class UserSettingsRepository extends BaseRepository {
       memories_save_enabled: Boolean(result.memories_save_enabled),
       memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
       temporary_chats_default: Boolean(result.temporary_chats_default),
+      web_search_enabled: result.web_search_enabled !== 0,
+      source_search_enabled: result.source_search_enabled !== 0,
       pet_travel_enabled: Boolean(result.pet_travel_enabled),
       pet_animation_enabled: Boolean(result.pet_animation_enabled),
       pet_model_overrides: parsePetModelOverrides(
@@ -300,6 +303,7 @@ export class UserSettingsRepository extends BaseRepository {
           ? safeParseJson(result.pet_model_overrides)
           : result.pet_model_overrides,
       ),
+      response_style: parseResponseStyle(result.response_style),
       tool_rules: parseToolRules(result.tool_rules),
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
       last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,

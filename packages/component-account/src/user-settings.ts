@@ -5,7 +5,9 @@ import {
   guardrailsProviderIds,
   type GuardrailsProviderId,
   type ModelTier,
+  parseResponseStyle,
   type PetModelOverrides,
+  type ResponseStyleSettings,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveSpeechSettings, resolveTranscriptionSettings } from "./transcription-settings";
@@ -22,6 +24,7 @@ export interface UserSettings {
   job_role: string;
   traits: string;
   preferences: string;
+  response_style?: ResponseStyleSettings;
   tracking_enabled?: boolean;
   advertise_machines?: boolean;
   guardrails_enabled?: boolean;
@@ -42,6 +45,8 @@ export interface UserSettings {
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
   temporary_chats_default?: boolean;
+  web_search_enabled?: boolean;
+  source_search_enabled?: boolean;
   memory_provider?: string;
   transcription_provider?: string;
   transcription_model?: string;
@@ -116,6 +121,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     job_role: userSettings?.job_role || "",
     traits: userSettings?.traits || "",
     preferences: userSettings?.preferences || "",
+    response_style: parseResponseStyle(userSettings?.response_style),
     guardrails_enabled: userSettings?.guardrails_enabled ?? DEFAULT_GUARDRAILS_ENABLED,
     guardrails_provider: userSettings?.guardrails_provider || DEFAULT_GUARDRAILS_PROVIDER,
     bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",
@@ -139,6 +145,8 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     memories_save_enabled: userSettings?.memories_save_enabled || false,
     memories_chat_history_enabled: userSettings?.memories_chat_history_enabled || false,
     temporary_chats_default: userSettings?.temporary_chats_default || false,
+    web_search_enabled: userSettings?.web_search_enabled ?? true,
+    source_search_enabled: userSettings?.source_search_enabled ?? true,
     memory_provider: userSettings?.memory_provider || "built-in",
     tracking_enabled: userSettings?.tracking_enabled ?? true,
     advertise_machines: userSettings?.advertise_machines ?? true,

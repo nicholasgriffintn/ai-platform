@@ -36,6 +36,7 @@ const toolShape = {
   enforceMode: boolean,
   permissions: strings,
   deniedTools: strings,
+  settingsDisabledTools: strings,
   modeDeniedTools: strings,
   modeAllowedTools: strings,
   modeDeniedPermissions: strings,

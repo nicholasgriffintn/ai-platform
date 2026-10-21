@@ -52,6 +52,7 @@ export {
   type PromptMemoryPolicy,
   type ResolvePromptCapabilityArgs,
   type ResponseStyle,
+  type ResponseStyleChoices,
   type ResponseStyleOptions,
   type SandboxContextInput,
   type SandboxControllerPromptOptions,
