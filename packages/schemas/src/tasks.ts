@@ -21,7 +21,11 @@ import {
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
 import { listSchema } from "./platform/list.js";
-import { SKILL_HARVEST_TASK_TYPE, SKILL_OUTCOME_REVIEW_TASK_TYPE } from "./skills.js";
+import {
+  SKILL_HARVEST_TASK_TYPE,
+  SKILL_OUTCOME_REVIEW_TASK_TYPE,
+  SKILL_REPLAY_TASK_TYPE,
+} from "./skills.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -69,6 +73,7 @@ export const TASK_TYPES = [
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
   SKILL_HARVEST_TASK_TYPE,
   SKILL_OUTCOME_REVIEW_TASK_TYPE,
+  SKILL_REPLAY_TASK_TYPE,
   CONVERSATION_TITLE_TASK_TYPE,
   QUEUED_CHAT_MESSAGE_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,

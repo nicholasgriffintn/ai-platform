@@ -389,6 +389,33 @@ export class AuthoredSkillRepository extends BaseRepository {
     return record ? mapRevision(record) : null;
   }
 
+  async getRevisionReplay(skillId: string, revisionId: string): Promise<unknown> {
+    const [record] = await this.database
+      .select({ content: resourceRevision.content })
+      .from(resourceRevision)
+      .where(and(eq(resourceRevision.id, revisionId), eq(resourceRevision.skill_id, skillId)))
+      .limit(1);
+
+    return record?.content?.replay ?? null;
+  }
+
+  async setRevisionReplay(
+    skillId: string,
+    revisionId: string,
+    replay: Record<string, unknown>,
+  ): Promise<void> {
+    await this.database
+      .update(resourceRevision)
+      .set({ content: { replay } })
+      .where(
+        and(
+          eq(resourceRevision.resource_type, "skill"),
+          eq(resourceRevision.id, revisionId),
+          eq(resourceRevision.skill_id, skillId),
+        ),
+      );
+  }
+
   async getRevisionByOrdinal(
     skillId: string,
     revision: number,

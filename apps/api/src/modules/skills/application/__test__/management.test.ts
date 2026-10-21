@@ -302,6 +302,7 @@ function createAuthoredSkillsRepository() {
     getRevision,
     getRevisionForSkill,
     getRevisionByStorageKey,
+    getRevisionReplay: async () => null,
     listByScope,
     listRevisions,
     promoteDraft,

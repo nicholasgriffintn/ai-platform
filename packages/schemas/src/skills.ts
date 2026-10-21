@@ -204,12 +204,16 @@ export const authoredSkillHistoryResponseSchema = z.object({
   revisions: z.array(authoredSkillRevisionSchema),
 });
 
-export const authoredSkillPromotionInputSchema = z.object({
+const authoredSkillRevisionTargetSchema = z.object({
   revisionId: z.string().min(1),
   expectedStateVersion: z.number().int().positive(),
 });
 
-export const authoredSkillRollbackInputSchema = authoredSkillPromotionInputSchema.extend({
+export const authoredSkillPromotionInputSchema = authoredSkillRevisionTargetSchema.extend({
+  acceptReplayRegression: z.boolean().optional(),
+});
+
+export const authoredSkillRollbackInputSchema = authoredSkillRevisionTargetSchema.extend({
   changeNote: authoredSkillChangeNoteSchema.optional(),
 });
 
@@ -237,6 +241,50 @@ export const loadSkillInputSchema = z.object({
 
 export const SKILL_HARVEST_TASK_TYPE = "skill_harvest";
 export const SKILL_OUTCOME_REVIEW_TASK_TYPE = "skill_outcome_review";
+export const SKILL_REPLAY_TASK_TYPE = "skill_replay";
+
+export const SKILL_REPLAY_MAX_CASES = 3;
+export const SKILL_REPLAY_VERDICTS = ["better", "same", "worse"] as const;
+export const skillReplayVerdictSchema = z.enum(SKILL_REPLAY_VERDICTS);
+export const SKILL_REPLAY_STATUSES = [
+  "running",
+  "passed",
+  "regressed",
+  "no_history",
+  "failed",
+] as const;
+export const skillReplayStatusSchema = z.enum(SKILL_REPLAY_STATUSES);
+
+export const skillReplayCaseSchema = z.object({
+  runId: z.string(),
+  request: z.string(),
+  verdict: skillReplayVerdictSchema,
+  reason: z.string(),
+});
+
+export const skillReplayReportSchema = z.object({
+  revisionId: z.string(),
+  status: skillReplayStatusSchema,
+  cases: z.array(skillReplayCaseSchema),
+  startedAt: z.string(),
+  finishedAt: z.string().nullable(),
+  error: z.string().nullable(),
+});
+
+export const skillReplayTaskSchema = z.object({
+  skillId: z.string().min(1),
+  revisionId: z.string().min(1),
+  runs: z
+    .array(z.object({ runId: z.string().min(1), conversationId: z.string().min(1) }))
+    .max(SKILL_REPLAY_MAX_CASES)
+    .optional(),
+});
+
+export type SkillReplayVerdict = z.infer<typeof skillReplayVerdictSchema>;
+export type SkillReplayStatus = z.infer<typeof skillReplayStatusSchema>;
+export type SkillReplayCase = z.infer<typeof skillReplayCaseSchema>;
+export type SkillReplayReport = z.infer<typeof skillReplayReportSchema>;
+export type SkillReplayTask = z.infer<typeof skillReplayTaskSchema>;
 
 export const SKILL_USE_ACTIVATIONS = ["load", "per_message"] as const;
 export const skillUseActivationSchema = z.enum(SKILL_USE_ACTIVATIONS);

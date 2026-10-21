@@ -14,6 +14,7 @@ import {
   skillAvailabilitySchema,
   skillIdSchema,
   skillOutcomeSummarySchema,
+  skillReplayReportSchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -34,6 +35,8 @@ import {
   getScopedSkill,
   getScopedSkillHistory,
   getScopedSkillOutcomes,
+  getScopedSkillReplay,
+  startScopedSkillReplay,
   getScopedSkillRevision,
   importScopedSkill,
   listScopedSkills,
@@ -96,6 +99,43 @@ defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
         params.document_id,
       )) ?? notFound("Skill not found"),
   });
+
+  const replayQuerySchema = projectScopeQuerySchema.extend({ revision_id: z.string().min(1) });
+
+  documents
+    .singleton("replay")
+    .read({
+      auth: true,
+      summary: "Read a draft's replay",
+      description:
+        "How a skill revision did when replayed, with every external effect simulated, against recent requests that used the skill.",
+      paramSchema: documentParamsSchema,
+      querySchema: replayQuerySchema,
+      responses: {
+        200: { description: "Replay report", schema: skillReplayReportSchema.nullable() },
+      },
+      handler: ({ params, query, serviceContext, user }) =>
+        getScopedSkillReplay(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          query.revision_id,
+        ),
+    })
+    .create({
+      auth: true,
+      summary: "Replay a draft before promoting it",
+      description:
+        "Queues a dry-run replay of the revision against up to three recent requests that used the skill. Promotion is refused while it runs, and when it makes any request worse unless acceptReplayRegression is set.",
+      paramSchema: documentParamsSchema,
+      querySchema: replayQuerySchema,
+      responses: { 200: { description: "Replay report", schema: skillReplayReportSchema } },
+      handler: ({ params, query, serviceContext, user }) =>
+        startScopedSkillReplay(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          query.revision_id,
+        ),
+    });
 
   documents
     .list({
