@@ -32,6 +32,7 @@ function formatContext(row: TeammateContextRow): TeammateContext {
     standingApprovals: parseTeammateStandingApprovals(row.standing_approvals),
     approvalStreaks: parseTeammateApprovalStreaks(row.approval_streaks),
     pausedUntil: row.paused_until ?? null,
+    monthlyCreditCapMicros: row.monthly_credit_cap_micros ?? null,
     ownerSeenAt: row.owner_seen_at ?? row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -285,6 +286,18 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     await this.executeRun(
       "UPDATE teammate_context SET paused_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [pausedUntil, id],
+    );
+
+    return this.getById(id);
+  }
+
+  async updateMonthlyCreditCap(
+    id: string,
+    monthlyCreditCapMicros: number | null,
+  ): Promise<TeammateContext | null> {
+    await this.executeRun(
+      "UPDATE teammate_context SET monthly_credit_cap_micros = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [monthlyCreditCapMicros, id],
     );
 
     return this.getById(id);

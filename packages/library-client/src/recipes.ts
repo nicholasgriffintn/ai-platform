@@ -9,6 +9,7 @@ import type {
   RecipeInstallationUpdateRequest,
   RecipeInstallationsResponse,
   ListPage,
+  SpendLedger,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
@@ -84,6 +85,12 @@ export async function listRecipeInstallations(
       project_id: projectId,
     }),
   };
+}
+
+export function getRecipeInstallationSpend(installationId: string): Promise<SpendLedger> {
+  return resource<InstalledRecipe>("/recipes/installations")
+    .singleton<SpendLedger>(installationId, "spend")
+    .get();
 }
 
 export async function updateRecipeInstallation(

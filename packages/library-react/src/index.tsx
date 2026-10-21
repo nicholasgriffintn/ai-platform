@@ -97,6 +97,7 @@ export * from "./hooks/useTeammateFilters.js";
 export * from "./hooks/useTeammateToolDefaults.js";
 export * from "./hooks/useTeammates.js";
 export * from "./hooks/useTeammateContexts.js";
+export * from "./hooks/useTeammateContextSpend.js";
 export * from "./hooks/useTeammateContextMemory.js";
 export * from "./hooks/useTeammateConnectionGrants.js";
 export * from "./hooks/useTeammateComputer.js";
