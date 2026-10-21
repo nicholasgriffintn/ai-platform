@@ -5,6 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { Computer } from "./modules/computer/computer";
+import type { Forecaster } from "./modules/forecaster/forecaster";
 import type { Workspace } from "./modules/sandbox/infrastructure/workspace";
 
 export type TaskParams = SandboxWorkerExecuteRequest;
@@ -20,6 +21,7 @@ export interface Env {
   APP_BASE_URL?: string;
   WORKSPACE: DurableObjectNamespace<Workspace>;
   COMPUTER: DurableObjectNamespace<Computer>;
+  FORECASTER: DurableObjectNamespace<Forecaster>;
   COMPUTER_SCREEN_HOST?: string;
   COMPUTER_SCREEN_SECRET?: string;
   BACKUP_BUCKET: R2Bucket;

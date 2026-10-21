@@ -7,6 +7,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "capture_screenshot",
     "extract_content",
     "extract_text_from_document",
+    "forecast_time_series",
     "get_weather",
     "research",
     "web_search",

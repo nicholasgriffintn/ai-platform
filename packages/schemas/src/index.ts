@@ -175,6 +175,7 @@ export * from "./search.js";
 export * from "./cloudflare-search.js";
 export * from "./decisions.js";
 export * from "./decision-experiences.js";
+export * from "./forecasting.js";
 export * from "./evidence.js";
 export * from "./shared-teammates.js";
 export * from "./teammate-roles.js";

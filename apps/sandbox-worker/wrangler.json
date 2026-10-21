@@ -72,6 +72,16 @@
           "build_context": "./computer"
         }
       }
+    },
+    {
+      "class_name": "Forecaster",
+      "scheduling_policy": "durable_object",
+      "images": {
+        "forecaster": {
+          "dockerfile": "./forecaster/Dockerfile",
+          "build_context": "./forecaster"
+        }
+      }
     }
   ],
   "durable_objects": {
@@ -83,6 +93,10 @@
       {
         "class_name": "Computer",
         "name": "COMPUTER"
+      },
+      {
+        "class_name": "Forecaster",
+        "name": "FORECASTER"
       }
     ]
   },
@@ -95,6 +109,10 @@
       "tag": "v2",
       "new_sqlite_classes": ["Workspace", "Computer"],
       "deleted_classes": ["Sandbox"]
+    },
+    {
+      "tag": "v3",
+      "new_sqlite_classes": ["Forecaster"]
     }
   ]
 }

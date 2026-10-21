@@ -6,6 +6,16 @@ export function reverseCopy<T>(values: readonly T[]): T[] {
   return [...values].reverse();
 }
 
+export function lastIndexWhere<T>(values: readonly T[], predicate: (value: T) => boolean): number {
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    if (predicate(values[index])) {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
 export function hashSeed(seed: string): number {
   let hash = 2166136261;
 

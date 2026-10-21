@@ -1,5 +1,10 @@
 import type { CatalogRecipe } from "./shared";
-import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
+import {
+  FORECAST_TOOL,
+  RECIPE_CONNECTOR_TOOL,
+  preferredConnectorsField,
+  reviewInstructionsField,
+} from "./shared";
 
 export const configuredComposioRecipes: CatalogRecipe[] = [
   {
@@ -11,7 +16,7 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
     kind: "integrate",
     category: "Productivity",
     featured: false,
-    enabledTools: [RECIPE_CONNECTOR_TOOL],
+    enabledTools: [RECIPE_CONNECTOR_TOOL, FORECAST_TOOL],
     integrations: [
       {
         id: "metabase",
@@ -86,9 +91,10 @@ export const configuredComposioRecipes: CatalogRecipe[] = [
       "Discover relevant dashboards, sites, projects, and saved questions",
       "Run read-only queries against the connected analytics platforms",
       "Explain results with source links, query context, and metric definitions",
+      "Forecast metrics ahead with probabilistic ranges when asked where a number is heading",
     ],
     setupPrompt:
-      "Set up the Analytics Insights recipe. Use the connected analytics services and ask which sites, dashboards, projects, metrics, and reporting cadence matter. For PostHog, use the saved region and project ID and keep HogQL queries read-only and bounded. Explain query assumptions and metric definitions, and do not create, update, or delete analytics content in this recipe.",
+      "Set up the Analytics Insights recipe. Use the connected analytics services and ask which sites, dashboards, projects, metrics, and reporting cadence matter. For PostHog, use the saved region and project ID and keep HogQL queries read-only and bounded. Explain query assumptions and metric definitions, and do not create, update, or delete analytics content in this recipe. When someone asks where a metric is heading, query an evenly spaced time series and pass it to forecast_time_series rather than estimating, and report the range as well as the median.",
     configurationFields: [
       preferredConnectorsField,
       {

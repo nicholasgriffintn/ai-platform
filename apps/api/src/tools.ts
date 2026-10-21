@@ -21,6 +21,7 @@ import { write_document } from "~/modules/documents/application/tools/write_docu
 import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
 import { analyse_article } from "~/modules/experiences/application/tools/analyse_article";
+import { forecast_time_series } from "~/modules/experiences/application/tools/forecast_time_series";
 import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
 import { process_recording } from "~/modules/experiences/application/tools/process_recording";
 import { run_prediction } from "~/modules/experiences/application/tools/run_prediction";
@@ -80,6 +81,7 @@ registerTools([
   calculate,
   get_user_information,
   get_weather,
+  forecast_time_series,
   grade_writing,
   decide,
   audit_evidence,

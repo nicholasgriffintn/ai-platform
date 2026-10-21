@@ -56,6 +56,11 @@ const CharadesApp = lazy(async () => {
 
   return { default: module.CharadesApp };
 });
+const ForecastsApp = lazy(async () => {
+  const module = await import("./Forecasts/ForecastsApp.js");
+
+  return { default: module.ForecastsApp };
+});
 const PhotoSorterApp = lazy(async () => {
   const module = await import("./PhotoSorter/PhotoSorterApp.js");
 
@@ -138,6 +143,10 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
 
   if (runtime === "charades") {
     return <CharadesApp />;
+  }
+
+  if (runtime === "forecasts") {
+    return <ForecastsApp projectId={projectId} />;
   }
 
   if (runtime === "photo-sorter") {

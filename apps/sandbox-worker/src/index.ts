@@ -10,6 +10,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import { handleComputerTraffic } from "./modules/computer/routes";
+import { handleForecasterTraffic } from "./modules/forecaster/routes";
 import { executeSandboxTask } from "./modules/sandbox/application";
 import { verifySandboxJwt } from "./modules/sandbox/infrastructure/auth";
 import { handleSandboxPreviewRequest } from "./modules/sandbox/infrastructure/preview-gateway";
@@ -80,6 +81,12 @@ export default {
 
     if (computerResponse) {
       return computerResponse;
+    }
+
+    const forecasterResponse = await handleForecasterTraffic(request, env);
+
+    if (forecasterResponse) {
+      return forecasterResponse;
     }
 
     const url = new URL(request.url);
@@ -378,5 +385,6 @@ export default {
 
 export { DirectoryBackupGateway } from "@cloudflare/sandbox";
 export { Computer } from "./modules/computer/computer";
+export { Forecaster } from "./modules/forecaster/forecaster";
 export { Workspace } from "./modules/sandbox/infrastructure/workspace";
 export { WorkspaceOutbound } from "./modules/sandbox/infrastructure/workspace-outbound";
