@@ -26,6 +26,7 @@ export interface ProviderGenerationContext {
   model: string;
   traceId: string;
   spanId?: string;
+  parentSpanId?: string;
   sessionId?: string;
   spanName?: string;
   request?: ChatCompletionParameters;
@@ -61,6 +62,7 @@ function baseSignal(
     userTrackingEnabled: request?.analyticsTrackingEnabled,
     traceId: context.traceId,
     spanId: context.spanId,
+    parentSpanId: context.parentSpanId,
     sessionId: context.sessionId,
     spanName: context.spanName,
     model: context.model,

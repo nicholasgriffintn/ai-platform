@@ -1,5 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
+  chatRunSpanId,
   createMetricsRecorder,
   getLogger,
   type MetricsRecorder,
@@ -50,11 +51,13 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
     ): Promise<T> {
       const request = isChatRequest(metrics.request) ? metrics.request : undefined;
       const completionId = readStringField(request, "completion_id") ?? metrics.completion_id;
+      const runId = readStringField(request, "run_id");
       const context: ProviderGenerationContext = {
         provider: metrics.provider,
         model: metrics.model,
-        traceId: readStringField(request, "run_id") ?? completionId ?? generateId(),
+        traceId: runId ?? completionId ?? generateId(),
         spanId: generateId(),
+        ...(runId ? { parentSpanId: chatRunSpanId(runId) } : {}),
         sessionId: completionId,
         spanName: CHAT_COMPLETION_SPAN_NAME,
         request,

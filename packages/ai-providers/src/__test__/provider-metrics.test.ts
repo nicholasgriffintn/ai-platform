@@ -16,6 +16,7 @@ function telemetryStub(signals: AiGenerationSignal[]): Telemetry {
     startSpan: () => {
       throw new Error("not used");
     },
+    recordSpan: () => {},
     flush: async () => {},
   };
 }

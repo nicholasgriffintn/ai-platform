@@ -43,6 +43,7 @@ import { buildChatRunCommandPayload } from "./command-payload";
 import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
+import { recordChatRunTrace } from "./run-trace";
 import { settleTeammateRun } from "./teammate-settlement";
 
 const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
@@ -219,6 +220,11 @@ export class ChatRunLifecycle {
 
   private async announce(run: ChatRun): Promise<void> {
     const publisher = withoutOrigin(this.serviceContext ?? { env: this.env });
+    const env = this.serviceContext?.env ?? this.env;
+
+    if (env) {
+      recordChatRunTrace(env, run, this.serviceContext?.executionCtx);
+    }
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });

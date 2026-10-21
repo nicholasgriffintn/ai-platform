@@ -70,6 +70,12 @@ export function formatRelativeTime(dateString: string, now = new Date()): string
   return "just now";
 }
 
+export function parseTimestampMs(value: string | null | undefined): number | null {
+  const parsed = value ? Date.parse(value) : Number.NaN;
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function epochSecondsToIso(value: unknown): string | null {
   const seconds =
     typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN;

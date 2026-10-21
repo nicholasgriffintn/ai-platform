@@ -42,6 +42,7 @@ export type {
   TrainingExampleSignal,
 } from "./types.js";
 export { createSpanId, createTraceId } from "./ids.js";
+export * from "./gen-ai-spans.js";
 export {
   createMetricsRecorder,
   createWorkerMetricsRecorder,
@@ -65,10 +66,12 @@ export {
 } from "./embedding.js";
 export {
   getBeaconAnalyticsConfig,
+  getOtlpExportConfig,
   getPostHogAnalyticsConfig,
   getPostHogFeedbackConfig,
   shouldCaptureAiObservability,
   type BeaconAnalyticsConfig,
+  type OtlpExportConfig,
   type PostHogAnalyticsConfig,
   type PostHogFeedbackConfig,
 } from "./config.js";

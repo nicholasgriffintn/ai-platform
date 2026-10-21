@@ -173,6 +173,9 @@ export type TelemetryEnv = {
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
   BEACON_SITE_ID?: string;
+  OTEL_EXPORTER_OTLP_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_HEADERS?: string;
+  OTEL_SERVICE_NAME?: string;
   ENV?: string;
 };
 

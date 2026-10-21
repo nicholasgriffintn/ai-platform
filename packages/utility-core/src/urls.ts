@@ -95,6 +95,14 @@ export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): b
   }
 }
 
+export function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export function encodePathSegments(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }
