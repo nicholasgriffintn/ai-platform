@@ -28,6 +28,7 @@ export type AvailableFunctionsSource = Pick<
   | "trigger"
   | "require_approval_for"
   | "denied_tools"
+  | "settings_disabled_tools"
   | "enforce_mode_tool_policy"
 >;
 
@@ -63,6 +64,7 @@ export function resolveAvailableFunctions(
           toolPermissions: func.permissions,
           requireApprovalFor: params.require_approval_for,
           deniedTools: params.denied_tools,
+          settingsDisabledTools: params.settings_disabled_tools,
           enforceModePolicy: params.enforce_mode_tool_policy,
         }).allowed,
     );

@@ -37,10 +37,19 @@ export interface ResponseStyle {
   preferences: string;
 }
 
+export interface ResponseStyleChoices {
+  tone?: string;
+  warmth?: string;
+  enthusiasm?: string;
+  emoji?: string;
+  formatting?: string;
+}
+
 export interface ResponseStyleOptions {
   verbosity?: string;
   userTraits?: string | null;
   userPreferences?: string | null;
+  styleChoices?: ResponseStyleChoices | null;
   isCoding?: boolean;
   isTeammate?: boolean;
   simulatedThinking?: boolean;
@@ -244,10 +253,24 @@ export function buildResponseStyleSection({ traits, preferences }: ResponseStyle
   })}\n\n`;
 }
 
+function getStyleChoiceText(
+  control: keyof ResponseStyleChoices,
+  choices: ResponseStyleChoices | null | undefined,
+): string | null {
+  const value = choices?.[control];
+
+  if (!value || value === "default") {
+    return null;
+  }
+
+  return tryGetPrompt(`chat/response-style/${control}/${value}`)?.text ?? null;
+}
+
 export function getResponseStyle({
   verbosity,
   userTraits,
   userPreferences,
+  styleChoices,
   isCoding = false,
   isTeammate = false,
   simulatedThinking = false,
@@ -264,7 +287,15 @@ export function getResponseStyle({
   }
 
   const normalizedVerbosity = verbosity === "low" || verbosity === "high" ? verbosity : "medium";
-  const traits = userTraits || getPromptText("chat/response-style/default-traits");
+  const toneTraits = getStyleChoiceText("tone", styleChoices);
+  const traits = [
+    toneTraits ?? (userTraits ? null : getPromptText("chat/response-style/default-traits")),
+    getStyleChoiceText("warmth", styleChoices),
+    getStyleChoiceText("enthusiasm", styleChoices),
+    userTraits,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const preferences = [
     getPromptText("chat/response-style/preference/direct"),
     getPromptText("chat/response-style/preference/length"),
@@ -276,6 +307,14 @@ export function getResponseStyle({
 
     if (isCoding) {
       preferences.push(getPromptText("chat/response-style/preference/simulated-thinking-coding"));
+    }
+  }
+
+  for (const control of ["emoji", "formatting"] as const) {
+    const choice = getStyleChoiceText(control, styleChoices);
+
+    if (choice) {
+      preferences.push(choice);
     }
   }
 
@@ -487,6 +526,7 @@ export interface StandardChatPromptOptions {
   userInformationTool?: string;
   userTraits?: string | null;
   userPreferences?: string | null;
+  styleChoices?: ResponseStyleChoices | null;
   platform?: string | null;
   poly?: boolean;
 }
@@ -511,6 +551,7 @@ export function buildStandardChatPrompt({
   userInformationTool,
   userTraits,
   userPreferences,
+  styleChoices,
   platform,
   poly,
 }: StandardChatPromptOptions): string {
@@ -525,6 +566,7 @@ export function buildStandardChatPrompt({
     verbosity,
     userTraits,
     userPreferences,
+    styleChoices,
     isCoding,
     isTeammate,
     simulatedThinking: capabilities.simulatedThinking,
