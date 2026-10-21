@@ -8,6 +8,8 @@ import { TEAMMATE_AUTONOMY_LEVELS, type PolyAgenda } from "@ngriffin_uk/polychat
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { toast } from "sonner";
 
+import { PolyMonthReport } from "./PolyMonthReport.js";
+
 const AUTONOMY_OPTIONS = TEAMMATE_AUTONOMY_LEVELS.map((level) => ({
   value: level,
   ...TEAMMATE_AUTONOMY_COPY[level],
@@ -56,6 +58,7 @@ export function PolyAutonomySection({ agenda }: { agenda: PolyAgenda }) {
           ))}
         </ul>
       ) : null}
+      <PolyMonthReport />
     </div>
   );
 }

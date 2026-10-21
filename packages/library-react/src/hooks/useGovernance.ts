@@ -7,6 +7,7 @@ import {
   listProjectStarters,
   listWorkspaceAudit,
   listWorkspaceTemplates,
+  readGovernanceReport,
   removeWorkspaceMember,
   transferWorkspaceOwnership,
   updateWorkspaceMember,
@@ -19,6 +20,14 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { projectQueryKey, workspaceQueryKey, WORKSPACES_QUERY_KEY } from "./useWorkspaces.js";
+
+export function useGovernanceReport(period: string, enabled = true) {
+  return useQuery({
+    queryKey: ["governance-report", period],
+    queryFn: () => readGovernanceReport(period),
+    enabled,
+  });
+}
 
 export function useWorkspaceAudit(workspaceId: string, enabled = true) {
   return useQuery({

@@ -1,12 +1,14 @@
-import type {
-  CreateTemplateInput,
-  ListPage,
-  ProjectDetail,
-  ProjectStarterSummary,
-  Template,
-  WorkspaceAuditRecord,
-  WorkspaceDetail,
-  WorkspaceRole,
+import {
+  governanceReportSchema,
+  type GovernanceReport,
+  type CreateTemplateInput,
+  type ListPage,
+  type ProjectDetail,
+  type ProjectStarterSummary,
+  type Template,
+  type WorkspaceAuditRecord,
+  type WorkspaceDetail,
+  type WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
@@ -22,6 +24,12 @@ async function request<T>(path: string, init: { method?: string; body?: object }
   });
 
   return returnFetchedData<T>(response);
+}
+
+export async function readGovernanceReport(period: string): Promise<GovernanceReport> {
+  return governanceReportSchema.parse(
+    await request<unknown>(`/governance/reports/${encodeURIComponent(period)}`),
+  );
 }
 
 export function listWorkspaceAudit(workspaceId: string): Promise<WorkspaceAuditRecord[]> {
