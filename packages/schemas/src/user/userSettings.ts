@@ -4,6 +4,7 @@ import { bedrockManagedAgentTargetSchema } from "../bedrock-managed-agents.js";
 import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
+import { responseStyleSchema } from "../response-style.js";
 import { searchProviderSchema } from "../search.js";
 import { toolRulesSchema } from "../tool-rules.js";
 
@@ -78,6 +79,7 @@ export const updateUserSettingsSchema = z
     job_role: z.string().nullable().optional(),
     traits: z.string().nullable().optional(),
     preferences: z.string().nullable().optional(),
+    response_style: responseStyleSchema.optional(),
     tracking_enabled: z.boolean().optional(),
     advertise_machines: z.boolean().optional(),
     guardrails_enabled: z.boolean().optional(),

@@ -4,6 +4,7 @@ import type {
   LastModelSelection,
   ModelTier,
   PetModelOverrides,
+  ResponseStyleSettings,
   ToolRule,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -55,6 +56,7 @@ export interface IUserSettings {
   job_role: string | null;
   traits: string | null;
   preferences: string | null;
+  response_style: ResponseStyleSettings;
   memories_save_enabled: boolean;
   memories_chat_history_enabled: boolean;
   temporary_chats_default: boolean;

@@ -5,7 +5,9 @@ import {
   guardrailsProviderIds,
   type GuardrailsProviderId,
   type ModelTier,
+  parseResponseStyle,
   type PetModelOverrides,
+  type ResponseStyleSettings,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveSpeechSettings, resolveTranscriptionSettings } from "./transcription-settings";
@@ -22,6 +24,7 @@ export interface UserSettings {
   job_role: string;
   traits: string;
   preferences: string;
+  response_style?: ResponseStyleSettings;
   tracking_enabled?: boolean;
   advertise_machines?: boolean;
   guardrails_enabled?: boolean;
@@ -116,6 +119,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     job_role: userSettings?.job_role || "",
     traits: userSettings?.traits || "",
     preferences: userSettings?.preferences || "",
+    response_style: parseResponseStyle(userSettings?.response_style),
     guardrails_enabled: userSettings?.guardrails_enabled ?? DEFAULT_GUARDRAILS_ENABLED,
     guardrails_provider: userSettings?.guardrails_provider || DEFAULT_GUARDRAILS_PROVIDER,
     bedrock_guardrail_id: userSettings?.bedrock_guardrail_id || "",

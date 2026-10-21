@@ -11,6 +11,7 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   job_role: null,
   traits: null,
   preferences: null,
+  response_style: null,
   guardrails_enabled: 0,
   guardrails_provider: "llamaguard",
   bedrock_guardrail_id: null,
@@ -62,6 +63,7 @@ export function prepareUserSettingsUpdates(
     job_role: settings.job_role ?? null,
     traits: settings.traits ?? null,
     preferences: settings.preferences ?? null,
+    response_style: settings.response_style ?? null,
     tracking_enabled:
       settings.tracking_enabled !== undefined ? (settings.tracking_enabled ? 1 : 0) : null,
     advertise_machines:

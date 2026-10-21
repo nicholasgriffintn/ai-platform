@@ -5,6 +5,7 @@ import {
   lastModelSelectionSchema,
   onboardingSeenSchema,
   parsePetModelOverrides,
+  parseResponseStyle,
   parseToolRules,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -300,6 +301,7 @@ export class UserSettingsRepository extends BaseRepository {
           ? safeParseJson(result.pet_model_overrides)
           : result.pet_model_overrides,
       ),
+      response_style: parseResponseStyle(result.response_style),
       tool_rules: parseToolRules(result.tool_rules),
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
       last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,
