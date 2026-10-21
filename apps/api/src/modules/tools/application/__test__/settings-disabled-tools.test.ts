@@ -19,15 +19,21 @@ describe("tools turned off in settings", () => {
         },
         explicitToolNames: [],
       }),
-    ).toEqual(["web_search", "research", "search_documents", "use_recipe_connector"]);
+    ).toEqual([
+      "web_search",
+      "search_grounding",
+      "research",
+      "search_documents",
+      "use_recipe_connector",
+    ]);
   });
 
   it("keeps tools that were asked for explicitly", () => {
     expect(
       resolveSettingsDisabledToolNames({
         userSettings: { web_search_enabled: false },
-        explicitToolNames: ["web_search", "search_conversations"],
+        explicitToolNames: ["search_grounding", "search_conversations"],
       }),
-    ).toEqual(["research"]);
+    ).toEqual(["web_search", "research"]);
   });
 });

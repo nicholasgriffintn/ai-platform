@@ -18,7 +18,7 @@ const AMBIENT_FUNCTION_TOOLS = [
   USER_INFORMATION_TOOL_NAME,
 ] as const;
 
-const WEB_SEARCH_TOOLS = ["web_search", "research"] as const;
+const WEB_SEARCH_TOOLS = ["web_search", "search_grounding", "research"] as const;
 const SOURCE_SEARCH_TOOLS = ["search_documents", "use_recipe_connector"] as const;
 const CHAT_HISTORY_TOOLS = ["search_conversations"] as const;
 
@@ -29,10 +29,6 @@ type CapabilitySettings = Partial<
   >
 >;
 
-/**
- * Tools the person turned off for automatic use. Tools the person, project, teammate or recipe
- * asked for explicitly stay available, so the settings only stop the model reaching for them.
- */
 export function resolveSettingsDisabledToolNames(params: {
   userSettings: CapabilitySettings | null | undefined;
   explicitToolNames: readonly string[];
@@ -46,6 +42,13 @@ export function resolveSettingsDisabledToolNames(params: {
   ];
 
   return disabled.filter((toolName) => !explicit.has(toolName));
+}
+
+export function withoutSettingsDisabledTools(
+  toolNames: readonly string[],
+  settingsDisabledTools: readonly string[],
+): string[] {
+  return toolNames.filter((toolName) => !settingsDisabledTools.includes(toolName));
 }
 
 function withAmbientTools(toolNames: readonly string[]): string[] {

@@ -110,7 +110,6 @@ export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "e
   approval_streaks?: TeammateApprovalStreak[];
   tool_rules?: ToolRule[];
   acting_rules_suspended?: boolean;
-  /** Derived from the person's settings on the server; never read from a request body. */
   settings_disabled_tools?: string[];
 };
 

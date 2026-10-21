@@ -74,6 +74,7 @@ import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
   resolveSettingsDisabledToolNames,
+  withoutSettingsDisabledTools,
 } from "~/modules/tools/application/availability";
 import {
   mergeNativeMcpToolNames,
@@ -472,9 +473,16 @@ export class RequestPreparer {
       skillScopePromise,
       scopedSkillCatalogPromise,
     ]);
-    const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
       isRecipeExecutionRequest(scope.options) || scope.hasFixedProjectTaskTools;
+    const settingsDisabledTools = this.resolveSettingsDisabledTools(
+      scope,
+      userSettings,
+      hasFixedToolScope,
+    );
+    const requestTools = this.resolveRequestTools(scope);
+    const enabledTools =
+      requestTools && withoutSettingsDisabledTools(requestTools, settingsDisabledTools);
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(
@@ -568,6 +576,8 @@ export class RequestPreparer {
       }),
     });
 
+    preparedTools = withoutSettingsDisabledTools(preparedTools, settingsDisabledTools);
+
     if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
       toolIntentRequest = resolveToolIntentRequest(
         await conversationManager.get(completionId),
@@ -612,11 +622,7 @@ export class RequestPreparer {
       permissionMode,
       isProUser: scope.isProUser,
       enabledTools: preparedTools,
-      settingsDisabledTools: this.resolveSettingsDisabledTools(
-        scope,
-        userSettings,
-        hasFixedToolScope,
-      ),
+      settingsDisabledTools,
       activeGoal,
       toolOptions,
       requestOptions: scope.options.options,
