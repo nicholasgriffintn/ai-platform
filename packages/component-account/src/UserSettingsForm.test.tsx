@@ -178,6 +178,23 @@ describe("user settings form", () => {
     });
   });
 
+  it("saves capability switches turned off", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+
+    render(<UserSettingsForm {...formProps} onSave={onSave} userSettings={savedSettings} />);
+
+    expect(screen.getByLabelText<HTMLInputElement>("Web search").checked).toBe(true);
+
+    fireEvent.click(screen.getByLabelText("Web search"));
+    fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0][0]).toMatchObject({
+      web_search_enabled: false,
+      source_search_enabled: true,
+    });
+  });
+
   it("saves a DynamoDB configuration and removes inactive fields when switching away", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
 

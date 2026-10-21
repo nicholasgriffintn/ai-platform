@@ -100,6 +100,8 @@ export const updateUserSettingsSchema = z
     memories_save_enabled: z.boolean().optional(),
     memories_chat_history_enabled: z.boolean().optional(),
     temporary_chats_default: z.boolean().optional(),
+    web_search_enabled: z.boolean().optional(),
+    source_search_enabled: z.boolean().optional(),
     memory_provider: z.enum(["built-in", "hindsight", "honcho"]).optional(),
     transcription_provider: z.string().optional(),
     transcription_model: z.string().optional(),

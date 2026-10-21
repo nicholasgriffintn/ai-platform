@@ -30,6 +30,8 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   memories_save_enabled: 0,
   memories_chat_history_enabled: 0,
   temporary_chats_default: 0,
+  web_search_enabled: 1,
+  source_search_enabled: 1,
   memory_provider: "built-in",
   transcription_provider: "workers",
   transcription_model: "whisper",
@@ -100,6 +102,14 @@ export function prepareUserSettingsUpdates(
     temporary_chats_default:
       settings.temporary_chats_default !== undefined
         ? settings.temporary_chats_default
+          ? 1
+          : 0
+        : null,
+    web_search_enabled:
+      settings.web_search_enabled !== undefined ? (settings.web_search_enabled ? 1 : 0) : null,
+    source_search_enabled:
+      settings.source_search_enabled !== undefined
+        ? settings.source_search_enabled
           ? 1
           : 0
         : null,

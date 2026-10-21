@@ -62,6 +62,8 @@ export interface UserSettings {
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
   temporary_chats_default?: boolean;
+  web_search_enabled?: boolean;
+  source_search_enabled?: boolean;
   memory_provider?: string;
   transcription_provider?: string;
   transcription_model?: string;

@@ -294,6 +294,8 @@ export class UserSettingsRepository extends BaseRepository {
       memories_save_enabled: Boolean(result.memories_save_enabled),
       memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
       temporary_chats_default: Boolean(result.temporary_chats_default),
+      web_search_enabled: result.web_search_enabled !== 0,
+      source_search_enabled: result.source_search_enabled !== 0,
       pet_travel_enabled: Boolean(result.pet_travel_enabled),
       pet_animation_enabled: Boolean(result.pet_animation_enabled),
       pet_model_overrides: parsePetModelOverrides(

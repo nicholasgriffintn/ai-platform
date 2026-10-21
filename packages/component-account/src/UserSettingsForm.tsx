@@ -122,6 +122,20 @@ const RESPONSE_STYLE_CONTROLS: {
   { key: "formatting", label: "Headers and lists", options: RESPONSE_LEVEL_OPTIONS },
 ];
 
+const CAPABILITY_SWITCHES = [
+  {
+    key: "web_search_enabled",
+    label: "Web search",
+    description: "Let Polychat search the web on its own when an answer needs current information.",
+  },
+  {
+    key: "source_search_enabled",
+    label: "Documents and connected apps",
+    description:
+      "Let Polychat look through your documents and use your connected apps on its own when they could help.",
+  },
+] as const;
+
 export const USER_SETTINGS_FORM_ID = "user-settings-form";
 
 export interface UserSettingsFormProps {
@@ -375,6 +389,39 @@ export function UserSettingsForm({
               />
             </div>
           </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Capabilities">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Turning these off stops Polychat reaching for them by itself. Tools you, a project or a
+            teammate choose explicitly still work.
+          </p>
+          {CAPABILITY_SWITCHES.map((capability) => (
+            <div key={capability.key}>
+              <label
+                htmlFor={capability.key}
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                {capability.label}
+              </label>
+              <Switch
+                id={capability.key}
+                checked={formData[capability.key] ?? true}
+                onChange={(e) => {
+                  updateFormData({ [capability.key]: e.target.checked });
+
+                  analytics.track({
+                    name: "capability_setting_changed",
+                    category: "ui_interaction",
+                    properties: { setting_name: capability.key, enabled: String(e.target.checked) },
+                  });
+                }}
+              />
+              <p className="text-sm text-muted-foreground">{capability.description}</p>
+            </div>
+          ))}
         </div>
       </SettingsSection>
 
@@ -736,7 +783,8 @@ export function UserSettingsForm({
               }
             />
             <p className="text-sm text-muted-foreground">
-              Allow Polychat to save and use your chat history when responding.
+              Allow Polychat to save and use your chat history when responding, including searching
+              your earlier chats.
             </p>
           </div>
         </div>

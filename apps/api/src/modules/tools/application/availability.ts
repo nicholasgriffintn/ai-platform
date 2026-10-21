@@ -8,7 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
-import type { IUser } from "~/types";
+import type { IUser, IUserSettings } from "~/types";
 
 const DISCOVERY_FUNCTION_TOOLS = [CAPABILITY_DISCOVERY_TOOL_NAME, SKILL_LOAD_TOOL_NAME] as const;
 const SIGNED_IN_FUNCTION_TOOLS = ["web_search", "search_conversations"] as const;
@@ -17,6 +17,36 @@ const AMBIENT_FUNCTION_TOOLS = [
   CALCULATOR_TOOL_NAME,
   USER_INFORMATION_TOOL_NAME,
 ] as const;
+
+const WEB_SEARCH_TOOLS = ["web_search", "research"] as const;
+const SOURCE_SEARCH_TOOLS = ["search_documents", "use_recipe_connector"] as const;
+const CHAT_HISTORY_TOOLS = ["search_conversations"] as const;
+
+type CapabilitySettings = Partial<
+  Pick<
+    IUserSettings,
+    "web_search_enabled" | "source_search_enabled" | "memories_chat_history_enabled"
+  >
+>;
+
+/**
+ * Tools the person turned off for automatic use. Tools the person, project, teammate or recipe
+ * asked for explicitly stay available, so the settings only stop the model reaching for them.
+ */
+export function resolveSettingsDisabledToolNames(params: {
+  userSettings: CapabilitySettings | null | undefined;
+  explicitToolNames: readonly string[];
+}): string[] {
+  const { userSettings, explicitToolNames } = params;
+  const explicit = new Set(explicitToolNames);
+  const disabled = [
+    ...(userSettings?.web_search_enabled === false ? WEB_SEARCH_TOOLS : []),
+    ...(userSettings?.source_search_enabled === false ? SOURCE_SEARCH_TOOLS : []),
+    ...(userSettings?.memories_chat_history_enabled === true ? [] : CHAT_HISTORY_TOOLS),
+  ];
+
+  return disabled.filter((toolName) => !explicit.has(toolName));
+}
 
 function withAmbientTools(toolNames: readonly string[]): string[] {
   return [...new Set([...toolNames, ...AMBIENT_FUNCTION_TOOLS])];
