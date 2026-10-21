@@ -1,4 +1,9 @@
-import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
+import {
+  isPrivateHostname,
+  listHtmlComments,
+  listHtmlTags,
+  trimTrailingCharacters,
+} from "@ngriffin_uk/polychat-utility-core";
 
 export type SkillScanSeverity = "block" | "warn";
 
@@ -56,9 +61,8 @@ const SECRET_PATTERNS: readonly RegExp[] = [
 ];
 
 const HIDDEN_CHARACTER_PATTERN = /[​-‏⁠-⁤﻿‪-‮⁦-⁩]|[\u{E0000}-\u{E007F}]/u;
-const HIDDEN_MARKUP_PATTERN =
-  /<[^>]+(?:display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0|\bhidden\b|aria-hidden\s*=\s*["']?true)[^>]*>/i;
-const HTML_COMMENT_PATTERN = /<!--([\s\S]*?)-->/g;
+const HIDDEN_ATTRIBUTE_PATTERN =
+  /display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0|\bhidden\b|aria-hidden\s*=\s*["']?true/i;
 const IMPERATIVE_COMMENT_PATTERN =
   /\b(you must|always|never|ignore|send|forward|upload|delete|do not tell)\b/i;
 const URL_PATTERN = /\bhttps?:\/\/[^\s<>"')\]]+/gi;
@@ -112,28 +116,26 @@ function scanHiddenText(text: string, location: string): SkillScanFinding[] {
     });
   }
 
-  const hiddenMarkup = HIDDEN_MARKUP_PATTERN.exec(text);
+  const hiddenMarkup = listHtmlTags(text).find((tag) => HIDDEN_ATTRIBUTE_PATTERN.test(tag.body));
 
-  if (hiddenMarkup && hiddenMarkup.index !== undefined) {
+  if (hiddenMarkup) {
     findings.push({
       code: "hidden_text",
       severity: "block",
       location,
       message: "Contains markup styled to be invisible to a reader",
-      excerpt: excerpt(text, hiddenMarkup.index, hiddenMarkup[0].length),
+      excerpt: excerpt(text, hiddenMarkup.index, hiddenMarkup.length),
     });
   }
 
-  for (const comment of text.matchAll(HTML_COMMENT_PATTERN)) {
-    const body = comment[1] ?? "";
-
-    if (IMPERATIVE_COMMENT_PATTERN.test(body) && comment.index !== undefined) {
+  for (const comment of listHtmlComments(text)) {
+    if (IMPERATIVE_COMMENT_PATTERN.test(comment.body)) {
       findings.push({
         code: "hidden_text",
         severity: "block",
         location,
         message: "Contains an HTML comment carrying instructions a reader would not see",
-        excerpt: excerpt(text, comment.index, comment[0].length),
+        excerpt: excerpt(text, comment.index, comment.length),
       });
       break;
     }
@@ -147,7 +149,7 @@ function scanUrls(text: string, location: string): SkillScanFinding[] {
   const seen = new Set<string>();
 
   for (const match of text.matchAll(URL_PATTERN)) {
-    const raw = match[0].replace(/[.,;:!?]+$/, "");
+    const raw = trimTrailingCharacters(match[0], ".,;:!?");
 
     if (seen.has(raw)) {
       continue;
