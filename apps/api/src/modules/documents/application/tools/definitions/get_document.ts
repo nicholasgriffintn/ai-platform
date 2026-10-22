@@ -5,7 +5,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 export const get_document: FunctionToolDescriptor = {
   name: DOCUMENT_READ_TOOL_NAME,
   description:
-    "Read a saved document, including its current revision. Use it before revising an existing document. Pass commentId to retrieve the exact discussion request attached to a project task.",
+    "Read a saved document, deck or sheet, including its current revision. Use it before revising one with write_document, write_deck or write_sheet. Pass commentId to retrieve the exact discussion request attached to a project task.",
   type: "normal",
   permissions: ["read"],
   effects: { effectClass: "read" },

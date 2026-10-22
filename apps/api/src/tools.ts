@@ -17,6 +17,7 @@ import { delegate } from "~/modules/delegations/application/tools/delegate";
 import { messageParent } from "~/modules/delegations/application/tools/message-parent";
 import { get_document } from "~/modules/documents/application/tools/get_document";
 import { grade_writing } from "~/modules/documents/application/tools/grade_writing";
+import { write_deck, write_sheet } from "~/modules/documents/application/tools/work_outputs";
 import { write_document } from "~/modules/documents/application/tools/write_document";
 import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
@@ -92,6 +93,8 @@ registerTools([
   apply_edit_completion,
   web_search,
   write_document,
+  write_deck,
+  write_sheet,
   get_document,
   create_qr_code,
   search_pashi_tools,

@@ -1,7 +1,10 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
+import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
+import { describeOwnSources, findOwnSources } from "~/modules/research/application/grounding";
 import { handleResearchTask, startResearchTask } from "~/modules/research/application/task";
+import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ResearchOptions } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -32,6 +35,7 @@ const researchArgsSchema = z.object({
   format: z.enum(RESEARCH_FORMATS).default("report"),
   output_description: z.string().trim().optional(),
   provider: z.enum(["parallel", "exa"]).default("parallel"),
+  use_sources: z.boolean().default(true),
 });
 
 type ResearchArgs = z.infer<typeof researchArgsSchema>;
@@ -73,34 +77,52 @@ export const research: ApiToolDefinition = {
     const parsed = parseResearchArgs(args);
     const options = researchOptionsFor(parsed);
     const shouldWait = req.request?.platform !== "tool-run";
+    const grounding =
+      parsed.use_sources && req.user
+        ? findOwnSources(
+            resolveServiceContext(req),
+            parsed.input,
+            resolveRequestProjectId(req) ?? undefined,
+          )
+        : Promise.resolve(null);
 
     if (shouldWait) {
-      const response = await handleResearchTask({
-        env: req.env,
-        user: req.user,
-        input: parsed.input,
-        provider: parsed.provider,
-        options,
-      });
+      const [response, ownSources] = await Promise.all([
+        handleResearchTask({
+          env: req.env,
+          user: req.user,
+          input: parsed.input,
+          provider: parsed.provider,
+          options,
+        }),
+        grounding,
+      ]);
 
       return {
         name: "research",
         status: response.status,
-        content: response.content,
+        content:
+          ownSources && typeof response.content === "string"
+            ? `${response.content}\n\n${describeOwnSources(ownSources)}`
+            : response.content,
         data: {
           ...response.data,
+          ...(ownSources ? { ownSources } : {}),
           completion_id,
         },
       };
     }
 
-    const handle = await startResearchTask({
-      env: req.env,
-      user: req.user,
-      input: parsed.input,
-      provider: parsed.provider,
-      options,
-    });
+    const [handle, ownSources] = await Promise.all([
+      startResearchTask({
+        env: req.env,
+        user: req.user,
+        input: parsed.input,
+        provider: parsed.provider,
+        options,
+      }),
+      grounding,
+    ]);
 
     const runId =
       "run_id" in handle.run
@@ -112,8 +134,11 @@ export const research: ApiToolDefinition = {
     return {
       name: "research",
       status: "in_progress",
-      content: "Research task started",
+      content: ownSources
+        ? `Research task started.\n\n${describeOwnSources(ownSources)}`
+        : "Research task started",
       data: {
+        ...(ownSources ? { ownSources } : {}),
         provider: handle.provider,
         run: handle.run,
         options,

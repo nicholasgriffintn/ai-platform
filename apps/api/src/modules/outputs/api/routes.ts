@@ -5,8 +5,6 @@ import {
   createOutputShareSchema,
   describeDocumentInputSchema,
   describeDocumentResponseSchema,
-  DOCUMENT_OUTPUT_KIND,
-  documentExportFilename,
   formatDocumentInputSchema,
   formatDocumentResponseSchema,
   outputHistoryResponseSchema,
@@ -15,7 +13,6 @@ import {
   outputSchema,
   outputShareDeliverySchema,
   outputShareListResponseSchema,
-  readDocumentBody,
   restoreOutputRevisionSchema,
   sharedOutputSchema,
   applyDocumentEditSchema,
@@ -31,6 +28,11 @@ import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storag
 import { defineDocumentCollaboration } from "~/modules/documents/api/collaboration";
 import { formatDocument, redescribeDocument } from "~/modules/documents/application";
 import { applyDocumentEdit } from "~/modules/documents/application/selection-edits";
+import {
+  exportWorkOutput,
+  isExportableWorkOutputKind,
+} from "~/modules/documents/application/work-output-exports";
+import { readWorkOutput } from "~/modules/documents/application/work-outputs";
 import {
   createOutput,
   createOutputShare,
@@ -175,22 +177,21 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
         .get(OutputRepository)
         .getOutput(params.output_id);
 
-      if (record?.kind === DOCUMENT_OUTPUT_KIND && !record.storage_key) {
+      if (record && isExportableWorkOutputKind(record.kind) && !record.storage_key) {
         if (!user) {
           throw new AssistantError("Authentication required", ErrorType.AUTHENTICATION_ERROR, 401);
         }
 
-        const output = await getOutput(serviceContext, user.id, params.output_id);
-        const body = readDocumentBody(output.content);
+        const exported = exportWorkOutput(
+          await readWorkOutput(serviceContext, user.id, params.output_id),
+        );
 
-        if (body !== null) {
-          return new Response(body, {
-            headers: {
-              "content-type": "text/markdown; charset=utf-8",
-              "content-disposition": `attachment; filename="${documentExportFilename(output.title)}"`,
-            },
-          });
-        }
+        return new Response(exported.body, {
+          headers: {
+            "content-type": exported.contentType,
+            "content-disposition": `attachment; filename="${exported.filename}"`,
+          },
+        });
       }
 
       const file = await readPrivateFile({

@@ -71,3 +71,17 @@ export function csvRecordsToObjects(header: readonly string[], records: readonly
     .filter((record) => record.some((value) => value !== ""))
     .map((record) => Object.fromEntries(header.map((name, index) => [name, record[index] ?? ""])));
 }
+
+const SPREADSHEET_FORMULA_PREFIXES = new Set(["=", "+", "-", "@", "\t", "\r"]);
+
+export function guardSpreadsheetFormula(value: string): string {
+  return SPREADSHEET_FORMULA_PREFIXES.has(value.charAt(0)) ? `'${value}` : value;
+}
+
+function formatCsvField(value: string): string {
+  return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+}
+
+export function formatCsv(rows: readonly (readonly string[])[]): string {
+  return rows.map((row) => row.map(formatCsvField).join(",")).join("\r\n");
+}
