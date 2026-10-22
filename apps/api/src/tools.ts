@@ -23,6 +23,7 @@ import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
 import { analyse_article } from "~/modules/experiences/application/tools/analyse_article";
 import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
+import { extract_values } from "~/modules/extractions/application/tools/extract_values";
 import { create_image } from "~/modules/generate/application/tools/image";
 import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
@@ -85,6 +86,7 @@ registerTools([
   get_weather,
   grade_writing,
   decide,
+  extract_values,
   audit_evidence,
   build_site,
   create_video,

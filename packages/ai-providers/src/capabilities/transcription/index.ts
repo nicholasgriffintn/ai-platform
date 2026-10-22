@@ -12,6 +12,7 @@ export interface TranscriptionRequest {
   model?: string;
   language?: string;
   timestamps?: boolean;
+  vocabulary?: string[];
 }
 
 export interface TranscriptionResult {

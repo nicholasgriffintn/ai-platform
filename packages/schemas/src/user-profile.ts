@@ -1,3 +1,4 @@
+import type { SavedSpeechVoice } from "./audio.js";
 import type { ComputeSite } from "./compute-sites.js";
 import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
@@ -67,8 +68,11 @@ export interface UserSettings {
   memory_provider?: string;
   transcription_provider?: string;
   transcription_model?: string;
+  transcription_vocabulary?: string[];
   speech_provider?: string;
   speech_model?: string;
+  speech_expressiveness?: number | null;
+  speech_voices?: SavedSpeechVoice[];
   search_provider?: string;
   sandbox_model?: string;
   default_model_tier?: ModelTier | null;

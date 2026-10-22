@@ -1,69 +1,14 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { RefreshCw, Trash2, Upload } from "lucide-react";
-import { type DragEvent, type ReactNode, useRef, useState } from "react";
 
+import { FileDropTarget } from "../FileDropTarget.js";
 import { PileEditor } from "./PileEditor.js";
 import { Polaroid } from "./Polaroid.js";
 import { placedPileId, usePhotoSorter } from "./usePhotoSorter.js";
 
-function DropTarget({
-  onFiles,
-  className,
-  children,
-}: {
-  onFiles: (files: File[]) => void;
-  className?: string;
-  children: ReactNode;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const drop = (event: DragEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    setDragging(false);
-    onFiles(Array.from(event.dataTransfer.files));
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={drop}
-        className={cn(
-          "w-full rounded-2xl border-2 border-dashed transition-colors duration-200",
-          dragging
-            ? "border-accent-amber bg-accent-amber/8"
-            : "border-border hover:border-accent-amber/60",
-          className,
-        )}
-      >
-        {children}
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="sr-only"
-        aria-label="Choose images to sort"
-        tabIndex={-1}
-        onChange={(event) => {
-          onFiles(Array.from(event.target.files ?? []));
-          event.target.value = "";
-        }}
-      />
-    </>
-  );
-}
-
 function EmptyTable({ onFiles }: { onFiles: (files: File[]) => void }) {
   return (
-    <DropTarget onFiles={onFiles} className="px-6 py-16">
+    <FileDropTarget onFiles={onFiles} label="Choose images to sort" className="px-6 py-16">
       <div className="relative mx-auto mb-8 h-28 w-28" aria-hidden>
         {[-9, 4, -2].map((tilt, index) => (
           <span
@@ -80,7 +25,7 @@ function EmptyTable({ onFiles }: { onFiles: (files: File[]) => void }) {
         Drop up to 80 images or click to choose. Each one develops as Clef Omni decides where it
         goes, and anything it is unsure of waits for you.
       </p>
-    </DropTarget>
+    </FileDropTarget>
   );
 }
 
@@ -114,11 +59,15 @@ export function PhotoSorterApp() {
         <>
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
-              <DropTarget onFiles={sorter.addFiles} className="flex-1 px-4 py-3">
+              <FileDropTarget
+                onFiles={sorter.addFiles}
+                label="Choose images to sort"
+                className="flex-1 px-4 py-3"
+              >
                 <span className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Upload size={15} /> Add more to the pile
                 </span>
-              </DropTarget>
+              </FileDropTarget>
               <Button
                 variant="ghost"
                 icon={<RefreshCw size={15} />}

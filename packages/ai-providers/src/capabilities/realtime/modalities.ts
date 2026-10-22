@@ -3,7 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 export const REALTIME_MODALITIES = ["text", "audio", "image", "video"] as const;
 export type RealtimeModality = (typeof REALTIME_MODALITIES)[number];
 
-export const REALTIME_TRANSPORTS = ["webrtc", "websocket"] as const;
+export const REALTIME_TRANSPORTS = ["webrtc", "websocket", "livekit"] as const;
 export type RealtimeTransport = (typeof REALTIME_TRANSPORTS)[number];
 
 function isRealtimeModality(value: string): value is RealtimeModality {

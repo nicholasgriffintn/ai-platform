@@ -351,7 +351,23 @@
         "supportsStreaming": true,
         "supportsAudio": true,
         "supportsRealtimeSession": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "costPerAudioSecond": 0.000133
+      }
+    },
+    "voxtral-voice-agent": {
+      "model": "voxtral/voxtral-voice-agent",
+      "matchingModel": "voxtral-voice-agent",
+      "overrides": {
+        "lastUpdated": "October 20, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
+        "costPerAudioSecond": 0.000667,
+        "supportsStreaming": true,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true
       }
     },
     "mistral-embed": {

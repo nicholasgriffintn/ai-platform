@@ -25,6 +25,10 @@ const image = await ai.image({ prompt: "a parrot on a perch", env, user });
 
 `defineFunctions` turns a map of `{ name: { input shape, output shape } }` into typed callables backed by `generateObject`. `template` gives a tagged template that renders into `generateText`. Media functions route to the provider named on the request, then to the host default for that category.
 
+## Extractions
+
+`extractFields` sends a state, optional images and a map of typed fields to the account's extraction model (Workers AI Clairic when the `extraction` system role resolves one) and returns answers typed by field name. `tryExtractFields` returns `null` when no extraction model is available. Let code do multi-step arithmetic on the values rather than asking the model for it.
+
 ## Decisions
 
 `decide` sends a state and a map of typed questions to the account's decision model (Jev, then Workers AI Clef Flash or Clef, then OpenAI GPT-6 Luna when `getAuxiliaryDecisionModel` resolves one) and returns answers typed by question id. `tryDecide` returns `null` instead of throwing when no decision model is available, which is how hot paths gate work without depending on provider availability. `choice`, `score` and `noul` build questions.

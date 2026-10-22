@@ -1,5 +1,8 @@
 import {
   apiResponseSchema,
+  createSpeechVoiceFormSchema,
+  speechVoiceListResponseSchema,
+  speechVoiceResponseSchema,
   textToSpeechSchema,
   transcribeFormSchema,
   transcribeQuerySchema,
@@ -8,12 +11,21 @@ import {
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
+import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkSpeechAccess } from "~/modules/audio/application/access";
-import { handleTextToSpeech } from "~/modules/audio/application/speech";
+import {
+  defaultSpeechModelsByProvider,
+  handleTextToSpeech,
+} from "~/modules/audio/application/speech";
 import { handleTranscribe } from "~/modules/audio/application/transcribe";
+import {
+  createSpeechVoice,
+  deleteSpeechVoice,
+  listSpeechVoices,
+} from "~/modules/audio/application/voices";
 
 const app = new Hono();
 
@@ -99,11 +111,71 @@ addRoute(app, "post", "/speech", {
       voice_id: body.voice_id,
       ref_audio: body.ref_audio,
       response_format: body.response_format,
+      expressiveness: body.expressiveness,
       user,
       context: serviceContext,
     });
 
     return { response };
+  },
+});
+
+addRoute(app, "get", "/voices", {
+  tags: ["audio"],
+  summary: "List saved voices",
+  description: "Lists the speech voices you saved from your own recordings.",
+  auth: true,
+  responses: {
+    200: { description: "Saved voices", schema: speechVoiceListResponseSchema },
+  },
+  handler: async ({ serviceContext, user }) => ({
+    voices: await listSpeechVoices(serviceContext.env, user),
+  }),
+});
+
+addRoute(app, "post", "/voices", {
+  tags: ["audio"],
+  summary: "Save a voice",
+  description:
+    "Clones a voice from an MP3 or WAV recording and saves it for speech. Confirm the voice is yours or you have permission to use it.",
+  auth: true,
+  formSchema: createSpeechVoiceFormSchema,
+  responses: {
+    200: { description: "Saved voice", schema: speechVoiceResponseSchema },
+    400: { description: "Bad request or validation error", schema: errorResponseSchema },
+  },
+  handler: async ({ raw, serviceContext, user }) => {
+    const form = createSpeechVoiceFormSchema.parse(raw.req.valid("form" as never));
+
+    return {
+      voice: await createSpeechVoice({
+        env: serviceContext.env,
+        user,
+        name: form.name,
+        sample: form.sample,
+      }),
+    };
+  },
+});
+
+addRoute(app, "delete", "/voices/:voice_id", {
+  tags: ["audio"],
+  summary: "Delete a saved voice",
+  auth: true,
+  paramSchema: z.object({ voice_id: z.string().min(1).max(128) }),
+  responses: {
+    200: { description: "Deleted", schema: z.object({ deleted: z.literal(true) }) },
+    404: { description: "Voice not found", schema: errorResponseSchema },
+  },
+  handler: async ({ params, serviceContext, user }) => {
+    await deleteSpeechVoice({
+      env: serviceContext.env,
+      user,
+      voiceId: params.voice_id,
+      defaultVoice: defaultSpeechModelsByProvider.mistral,
+    });
+
+    return { deleted: true as const };
   },
 });
 

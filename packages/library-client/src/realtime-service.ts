@@ -45,6 +45,7 @@ export function buildRealtimeSessionPath(options: CreateRealtimeSessionOptions):
   appendParam(params, "voice", options.voice);
   appendParam(params, "instructions", options.instructions);
   appendParam(params, "delay", options.delay);
+  appendParam(params, "speakers", options.speakerLabels ? "true" : undefined);
   appendModalities(params, "input_modalities", options.inputModalities);
   appendModalities(params, "output_modalities", options.outputModalities);
 

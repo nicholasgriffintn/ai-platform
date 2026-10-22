@@ -14,13 +14,19 @@ const timedWordSchema = z.object({
   speaker: speakerSchema,
 });
 
-const timedSegmentSchema = z.object({
-  start: z.number(),
-  end: z.number(),
-  text: z.string(),
-  speaker: speakerSchema,
-  words: z.array(timedWordSchema).optional(),
-});
+const timedSegmentSchema = z
+  .object({
+    start: z.number(),
+    end: z.number(),
+    text: z.string(),
+    speaker: speakerSchema,
+    speaker_id: speakerSchema,
+    words: z.array(timedWordSchema).optional(),
+  })
+  .transform(({ speaker_id, ...segment }) => ({
+    ...segment,
+    speaker: segment.speaker ?? speaker_id,
+  }));
 
 const segmentedTranscriptSchema = z.object({
   text: z.string().optional(),

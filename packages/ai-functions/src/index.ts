@@ -3,6 +3,7 @@ import type { ProviderRuntime } from "@ngriffin_uk/polychat-ai-providers";
 import { createAi, type Ai } from "./ai.js";
 import { createDecisionPolicyFunctions, type DecisionPolicyFunctions } from "./decision-policy.js";
 import { createDecisionFunctions, type DecisionFunctions } from "./decisions.js";
+import { createExtractionFunctions, type ExtractionFunctions } from "./extractions.js";
 import { createMediaFunctions, type MediaFunctions } from "./media.js";
 import { createRerankingFunctions, type RerankingFunctions } from "./reranking.js";
 import { createRetrievalFunctions, type RetrievalFunctions } from "./retrieval.js";
@@ -12,6 +13,7 @@ import type { CompletionRequest } from "./types.js";
 export type AiFunctions = Ai &
   DecisionFunctions &
   DecisionPolicyFunctions &
+  ExtractionFunctions &
   TextFunctions &
   MediaFunctions &
   RetrievalFunctions &
@@ -29,6 +31,7 @@ export function createAiFunctions(runtime: ProviderRuntime): AiFunctions {
     ...ai,
     ...decisions,
     ...createDecisionPolicyFunctions(decisions),
+    ...createExtractionFunctions(runtime),
     ...createTextFunctions(ai, decisions),
     ...createMediaFunctions(runtime),
     ...createRetrievalFunctions(runtime),
@@ -86,6 +89,14 @@ export {
   type DecisionScope,
   type DecisionTarget,
 } from "./decisions.js";
+export {
+  createExtractionFunctions,
+  type ExtractFieldsRequest,
+  type ExtractFieldsResult,
+  type ExtractionFunctions,
+  type ExtractionScope,
+  type ExtractionTarget,
+} from "./extractions.js";
 export { createMediaFunctions, type MediaFunctions, type MediaRoutingOptions } from "./media.js";
 export { choice, noul, score } from "./questions.js";
 export {

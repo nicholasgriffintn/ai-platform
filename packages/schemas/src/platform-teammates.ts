@@ -252,6 +252,7 @@ export const POLY_TEAMMATE: PlatformTeammate = {
     "web_search",
     "research",
     "decide",
+    "extract_values",
     "ask_user",
     "request_approval",
     "discover_capabilities",

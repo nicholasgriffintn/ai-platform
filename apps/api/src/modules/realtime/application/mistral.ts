@@ -10,9 +10,14 @@ import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
-import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";
+import {
+  buildMistralSessionUpdateMessage,
+  isMistralSessionCreatedMessage,
+  toMistralUpstreamMessage,
+} from "./mistralProtocol";
 import {
   createRealtimeProxyHandshakeFailure,
   createRealtimeProxySessionEnd,
@@ -162,9 +167,11 @@ export async function createMistralRealtimeProxyResponse({
   user,
   model,
   onSessionEnd,
+  speakerLabels = false,
 }: {
   context: Context;
   delay?: RealtimeTranscriptionDelay;
+  speakerLabels?: boolean;
   env: IEnv;
   user: IUser;
   model?: string;
@@ -219,6 +226,7 @@ export async function createMistralRealtimeProxyResponse({
   serverSocket.accept();
   upstreamResponse.webSocket.accept();
 
+  const userSettings = await new UserSettingsRepository(env).getUserSettings(user.id);
   const audioFormat = provider.buildAudioFormat ? provider.buildAudioFormat() : undefined;
   const targetStreamingDelayMs = provider.getTranscriptionDelay
     ? getMistralTargetStreamingDelayMs(
@@ -235,12 +243,11 @@ export async function createMistralRealtimeProxyResponse({
     client: serverSocket,
     onSessionEnd,
     upstream: upstreamResponse.webSocket,
-    sessionUpdateMessage: JSON.stringify({
-      type: "session.update",
-      session: {
-        audio_format: audioFormat,
-        ...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
-      },
+    sessionUpdateMessage: buildMistralSessionUpdateMessage({
+      audioFormat,
+      speakerLabels,
+      targetStreamingDelayMs,
+      vocabulary: userSettings?.transcription_vocabulary ?? [],
     }),
     maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
   });

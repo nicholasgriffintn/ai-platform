@@ -164,3 +164,32 @@ describe("Clef decision contracts", () => {
     expect(values.maxTokens).toBe(0);
   });
 });
+
+describe("Clairic extraction contract", () => {
+  it("keeps Clairic out of chat when upstream advertises text generation", () => {
+    const values = buildUpdateValues(
+      {
+        id: "@cf/cloudflare/clairic",
+        name: "Clairic",
+        temperature: true,
+        tool_call: true,
+        attachment: true,
+        modalities: { input: ["text", "image"], output: ["text"] },
+        limit: { context: 65536, output: 4096 },
+      },
+      {
+        modelKey: "@cf/cloudflare/clairic",
+        existingMatchingModel: "@cf/cloudflare/clairic",
+        allowMatchingModelUpdate: false,
+        isNewEntry: false,
+        includeProvider: false,
+        provider: "workers-ai",
+      },
+    );
+
+    expect(values.modalities).toEqual({ input: ["text", "image"], output: ["extraction"] });
+    expect(values.supportsToolCalls).toBe(false);
+    expect(values.costPer1kOutputTokens).toBe(0);
+    expect(values.maxTokens).toBe(0);
+  });
+});

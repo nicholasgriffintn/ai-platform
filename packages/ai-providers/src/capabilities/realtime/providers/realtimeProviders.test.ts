@@ -8,6 +8,7 @@ import { CartesiaRealtimeProvider } from "./CartesiaRealtimeProvider.js";
 import { ElevenLabsRealtimeProvider } from "./ElevenLabsRealtimeProvider.js";
 import { GoogleRealtimeProvider } from "./GoogleRealtimeProvider.js";
 import { MistralRealtimeProvider } from "./MistralRealtimeProvider.js";
+import { MistralVoiceAgentProvider } from "./MistralVoiceAgentProvider.js";
 import { OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider.js";
 
 const mocks = vi.hoisted(() => ({
@@ -293,6 +294,7 @@ describe("realtime provider session contracts", () => {
       provider.createSession(
         createRequest("transcription", {
           delay: "medium",
+          speakerLabels: true,
         }),
       ),
     ).resolves.toEqual({
@@ -301,12 +303,50 @@ describe("realtime provider session contracts", () => {
       type: "transcription",
       provider: "mistral",
       transport: "websocket",
-      url: "wss://api.polychat.test/realtime/transcription?delay=medium&grant=grant-fixture&model=voxtral-mini-transcribe-realtime-2602&provider=mistral&session_id=session-fixture-id",
+      url: "wss://api.polychat.test/realtime/transcription?delay=medium&speakers=true&grant=grant-fixture&model=voxtral-mini-transcribe-realtime-3-0&provider=mistral&session_id=session-fixture-id",
       proxy_grant_expires_at: 1_788_172_200,
       audio_format: { encoding: "pcm_s16le", sample_rate: 16000 },
       input_audio_format: "pcm_s16le",
-      input_audio_transcription: { model: "voxtral-mini-transcribe-realtime-2602" },
-      target_streaming_delay_ms: 1000,
+      input_audio_transcription: { model: "voxtral-mini-transcribe-realtime-3-0" },
+      audio: { input: { turn_detection: null } },
+      target_streaming_delay_ms: 800,
+    });
+  });
+
+  it("creates a hosted Mistral voice agent session for LiveKit", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        id: "voice-session-1",
+        participant_token: "participant-token",
+        server_url: "wss://voice.mistral.test",
+        created_at: "2026-10-22T10:00:00Z",
+        expires_at: "2026-10-22T10:10:00Z",
+      }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const session = await new MistralVoiceAgentProvider(runtime).createSession(
+      createRequest("realtime", { vocabulary: ["Polychat"], voice: "voice_447" }),
+    );
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+
+    expect(url).toBe("https://api.mistral.ai/v1/audio/sessions");
+    expect(JSON.parse(String(init?.body))).toMatchObject({
+      stt: {
+        model: "voxtral-mini-transcribe-realtime-3",
+        context_bias: ["Polychat"],
+        turn_detection: {},
+      },
+      tts: { model: "voxtral-mini-tts-3", voice_id: "voice_447" },
+      tools: [{ type: "web_search" }],
+    });
+    expect(session).toMatchObject({
+      id: "voice-session-1",
+      provider: "mistral-voice",
+      transport: "livekit",
+      url: "wss://voice.mistral.test",
+      client_secret: { value: "participant-token", expires_at: 1_792_663_800 },
     });
   });
 

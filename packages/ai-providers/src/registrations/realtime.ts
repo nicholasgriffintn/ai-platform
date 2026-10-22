@@ -5,6 +5,7 @@ import {
   GoogleRealtimeProvider,
   GreenPtRealtimeProvider,
   MistralRealtimeProvider,
+  MistralVoiceAgentProvider,
   OpenAIRealtimeProvider,
 } from "../capabilities/realtime/providers/index.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
@@ -32,6 +33,11 @@ function realtimeProviders(runtime: ProviderRuntime): AiProviderRegistration<Rea
       aliases: ["voxtral"],
       create: () => new MistralRealtimeProvider(runtime),
       metadata: { vendor: "Mistral", categories: ["realtime"], tags: ["transcription"] },
+    },
+    {
+      name: "mistral-voice",
+      create: () => new MistralVoiceAgentProvider(runtime),
+      metadata: { vendor: "Mistral", categories: ["realtime"], tags: ["livekit", "voice"] },
     },
     {
       name: "elevenlabs",

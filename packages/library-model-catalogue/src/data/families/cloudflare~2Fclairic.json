@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "contextWindow": 65536,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "extraction"
+      ]
+    },
+    "strengths": [
+      "extraction",
+      "analysis",
+      "vision"
+    ],
+    "releaseDate": "October 19, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Cloudflare Clairic extraction models return typed values read, computed, estimated or forecast from text and images, each with a confidence.",
+  "models": {
+    "clairic": {
+      "defaults": {
+        "name": "Clairic",
+        "description": "Cloudflare’s System One extraction model. Returns spans, numbers, dates, durations, lists, estimates and forecasts with p_null, confidence and 80% intervals in one pass."
+      }
+    }
+  }
+}

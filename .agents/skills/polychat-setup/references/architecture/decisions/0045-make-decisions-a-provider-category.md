@@ -30,3 +30,5 @@ Judgements that gate other work are now cheap enough to run on every event and c
 Jev is English-first and text-only, and a request is capped at 64k tokens with 32k for state plus the longest question, so callers trim long histories before asking. The Vercel AI Gateway catalogue sync also imports `typesafe-ai/jev` as a text model; it is not a chat model and should not be selected as one.
 
 Model routing by prompt is explicitly out of scope: the tier lineup replaced prompt scoring and this category does not reopen that decision.
+
+Extraction models follow the same shape as a sibling category. `extraction` is its own provider category and output modality, with the wire contract in `packages/schemas/src/extractions.ts` adopting Cloudflare Clairic's state, typed field map and typed answers plus a `provider` field. It has its own `extraction` system role, stays out of chat surfaces and tier lineups, and is metered on `input_tokens`. Extracted values are evidence in the same way as decisions: a caller that acts on them checks `confidence`, `p_null` or the interval first and revalidates anything consequential.

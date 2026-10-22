@@ -108,6 +108,7 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
     modality:
       | "guardrails"
       | "decision"
+      | "extraction"
       | "ocr"
       | "image"
       | "video"
@@ -237,6 +238,10 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
 
       if (role === "decision") {
         return resolveModalityRole(env, "decision", "decision");
+      }
+
+      if (role === "extraction") {
+        return resolveModalityRole(env, "extraction", "extraction");
       }
 
       if (role === "reranking") {

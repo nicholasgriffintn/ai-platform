@@ -8,8 +8,20 @@ const CLEF_DECISION_CONTRACT = {
   costPer1kOutputTokens: 0,
 };
 
+const CLAIRIC_EXTRACTION_CONTRACT = {
+  contextWindow: 65536,
+  maxTokens: 0,
+  modalities: { input: ["text", "image"], output: ["extraction"] },
+  supportsToolCalls: false,
+  supportsAttachments: true,
+  supportsTemperature: false,
+  costPer1kInputTokens: 0.0001,
+  costPer1kOutputTokens: 0,
+};
+
 const MODEL_CONTRACT_OVERRIDES = {
   "workers-ai": {
+    "@cf/cloudflare/clairic": CLAIRIC_EXTRACTION_CONTRACT,
     "@cf/cloudflare/clef": { ...CLEF_DECISION_CONTRACT, costPer1kInputTokens: 0.00024 },
     "@cf/cloudflare/clef-flash": { ...CLEF_DECISION_CONTRACT, costPer1kInputTokens: 0.000038 },
     "@cf/cloudflare/clef-omni": {

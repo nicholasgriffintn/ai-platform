@@ -13,6 +13,7 @@ import type { ProviderHost } from "./host.js";
 import type { ProviderRegistry } from "./registry.js";
 import type { ProviderRegistration } from "./types.js";
 import type { DecisionProvider } from "./types/decision.js";
+import type { ExtractionProvider } from "./types/extraction.js";
 import type { GuardrailsProvider } from "./types/guardrails.js";
 import type { RerankingProvider } from "./types/reranking.js";
 import type { ResearchProvider } from "./types/research.js";
@@ -23,6 +24,7 @@ export type AiProviderMap = {
   batch: BatchProvider;
   chat: AIProvider;
   decision: DecisionProvider;
+  extraction: ExtractionProvider;
   guardrails: GuardrailsProvider;
   image: ImageProvider;
   music: MusicProvider;

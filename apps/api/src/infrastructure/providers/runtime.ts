@@ -4,7 +4,9 @@ import { providerHost } from "./host";
 import { providerLibrary } from "./library";
 
 export const providerRuntime: ProviderRuntime = {
-  host: providerHost,
+  get host() {
+    return providerHost;
+  },
   get providers() {
     return providerLibrary;
   },

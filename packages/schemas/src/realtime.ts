@@ -4,11 +4,12 @@ export const realtimeProviderIds = [
   "openai",
   "google-ai-studio",
   "mistral",
+  "mistral-voice",
   "elevenlabs",
   "cartesia",
   "greenpt",
 ] as const;
-export const realtimeTransports = ["webrtc", "websocket"] as const;
+export const realtimeTransports = ["webrtc", "websocket", "livekit"] as const;
 export const realtimeSessionTypes = ["realtime", "translation", "transcription"] as const;
 export const realtimeLiveSessionTypes = ["realtime", "transcription"] as const;
 export const realtimeModalities = ["text", "audio", "image", "video"] as const;
@@ -38,6 +39,7 @@ export const realtimeProxyGrantQuerySchema = z.object({
   language: z.string().trim().min(1).optional(),
   instructions: z.string().trim().min(1).max(4000).optional(),
   voice: z.string().trim().min(1).max(64).optional(),
+  speakers: z.literal("true").optional(),
 });
 
 export const realtimeSessionResponseSchema = z
@@ -47,7 +49,7 @@ export const realtimeSessionResponseSchema = z
     type: z.string().optional(),
     max_session_seconds: z.number().optional(),
     provider: z.string().optional(),
-    transport: z.enum(["webrtc", "websocket"]).optional(),
+    transport: realtimeTransportSchema.optional(),
     protocol: z.string().optional(),
     url: z.string().url().optional(),
     model: z.string().optional(),

@@ -7,11 +7,15 @@ import {
   parsePetModelOverrides,
   parseResponseStyle,
   parseToolRules,
+  savedSpeechVoiceSchema,
+  speechExpressivenessSchema,
+  transcriptionVocabularyTermSchema,
+  type SavedSpeechVoice,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { parseJsonArrayColumn, safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -251,6 +255,20 @@ export class UserSettingsRepository extends BaseRepository {
       return;
     }
 
+    await this.patchPreferences(userId, patch);
+  }
+
+  public async replaceSpeechVoices(userId: number, voices: SavedSpeechVoice[]): Promise<void> {
+    await this.patchPreferences(userId, {
+      expression: "json_set(payload, ?, json(?))",
+      values: ["$.speech_voices", JSON.stringify(voices)],
+    });
+  }
+
+  private async patchPreferences(
+    userId: number,
+    patch: { expression: string; values: string[] },
+  ): Promise<void> {
     await this.executeBatch([
       this.env.DB.prepare(
         `INSERT INTO scoped_configuration (kind, id, user_id, payload)
@@ -285,6 +303,7 @@ export class UserSettingsRepository extends BaseRepository {
         ? safeParseJson(result.onboarding_seen)
         : result.onboarding_seen,
     );
+    const speechExpressiveness = speechExpressivenessSchema.safeParse(result.speech_expressiveness);
 
     return {
       ...result,
@@ -304,6 +323,11 @@ export class UserSettingsRepository extends BaseRepository {
           : result.pet_model_overrides,
       ),
       response_style: parseResponseStyle(result.response_style),
+      transcription_vocabulary:
+        parseJsonArrayColumn(result.transcription_vocabulary, transcriptionVocabularyTermSchema) ??
+        [],
+      speech_expressiveness: speechExpressiveness.success ? speechExpressiveness.data : null,
+      speech_voices: parseJsonArrayColumn(result.speech_voices, savedSpeechVoiceSchema) ?? [],
       tool_rules: parseToolRules(result.tool_rules),
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
       last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,

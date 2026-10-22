@@ -31,6 +31,11 @@ const PhotoSorterApp = lazy(async () => {
 
   return { default: module.PhotoSorterApp };
 });
+const PaperworkApp = lazy(async () => {
+  const module = await import("./Paperwork/PaperworkApp.js");
+
+  return { default: module.PaperworkApp };
+});
 const TwentyQuestionsApp = lazy(async () => {
   const module = await import("./TwentyQuestions/TwentyQuestionsApp.js");
 
@@ -74,6 +79,10 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
 
   if (runtime === "photo-sorter") {
     return <PhotoSorterApp />;
+  }
+
+  if (runtime === "paperwork") {
+    return <PaperworkApp />;
   }
 
   if (runtime === "benchmarks") {

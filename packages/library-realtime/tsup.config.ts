@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/live-providers.ts",
+    "src/livekit.ts",
     "src/audio.ts",
     "src/audio-commit-gate.ts",
     "src/audio-levels.ts",

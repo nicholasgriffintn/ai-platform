@@ -68,12 +68,13 @@ export function getFirstReadyRealtimeTranscriptionProviderOption(
 }
 
 export function getRealtimeLiveProviderIdForModel(
-  model?: { provider?: string; supportsRealtimeSession?: boolean } | null,
+  model?: { matchingModel?: string; provider?: string; supportsRealtimeSession?: boolean } | null,
   options: RealtimeLiveProviderOption[] = [],
 ): RealtimeLiveProviderId | undefined {
-  const provider = model?.provider
-    ? getRealtimeLiveProviderOption(model.provider, options)
-    : undefined;
+  const provider =
+    options.find(
+      (option) => model?.matchingModel && option.defaultModelId === model.matchingModel,
+    ) ?? (model?.provider ? getRealtimeLiveProviderOption(model.provider, options) : undefined);
 
   if (!model?.supportsRealtimeSession || provider?.readiness !== "ready") {
     return undefined;

@@ -13,7 +13,22 @@ export interface AudioSynthesisRequest {
   locale?: string;
   refAudio?: string;
   responseFormat?: AudioResponseFormat;
+  expressiveness?: number;
   metadata?: Record<string, unknown>;
+}
+
+export interface AudioVoiceCreateRequest {
+  env: ProviderEnv;
+  user: ProviderUser;
+  name: string;
+  sample: Blob;
+  sampleFilename: string;
+}
+
+export interface AudioVoiceDeleteRequest {
+  env: ProviderEnv;
+  user: ProviderUser;
+  voiceId: string;
 }
 
 export interface AudioSynthesisResult {
@@ -30,4 +45,8 @@ export interface AudioSynthesisResult {
 export interface AudioProvider {
   name: string;
   synthesize(request: AudioSynthesisRequest): Promise<AudioSynthesisResult>;
+  createVoice?(request: AudioVoiceCreateRequest): Promise<{ id: string }>;
+  deleteVoice?(request: AudioVoiceDeleteRequest): Promise<void>;
 }
+
+export { isMistralPresetVoiceId } from "./providers/MistralAudioProvider.js";

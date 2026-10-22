@@ -379,6 +379,7 @@ export const projectExperienceRuntimeSchema = z.enum([
   "benchmarks",
   "charades",
   "notes",
+  "paperwork",
   "photo-sorter",
   "sites",
   "strudel",
