@@ -1,3 +1,4 @@
+import { safeDecodeURIComponent } from "@ngriffin_uk/polychat-utility-core";
 import { readBooleanEnv, readEnvString } from "@ngriffin_uk/polychat-utility-server/env";
 import { normaliseHttpOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 
@@ -41,6 +42,60 @@ export function getPostHogFeedbackConfig(env: TelemetryEnv): PostHogFeedbackConf
   const surveyId = readEnvString(env.POSTHOG_FEEDBACK_SURVEY_ID);
 
   return surveyId ? { surveyId } : null;
+}
+
+export type OtlpExportConfig = {
+  endpoint: string;
+  headers: Record<string, string>;
+  serviceName: string;
+  environment: string | null;
+};
+
+const DEFAULT_OTLP_SERVICE_NAME = "polychat-api";
+
+function parseOtlpHeaders(value: string | null): Record<string, string> {
+  if (!value) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    value.split(",").flatMap((pair) => {
+      const separator = pair.indexOf("=");
+      const key = separator > 0 ? pair.slice(0, separator).trim() : "";
+      const headerValue = separator > 0 ? pair.slice(separator + 1).trim() : "";
+
+      return key && headerValue
+        ? [[safeDecodeURIComponent(key), safeDecodeURIComponent(headerValue)]]
+        : [];
+    }),
+  );
+}
+
+export function getOtlpExportConfig(env: TelemetryEnv): OtlpExportConfig | null {
+  const endpoint = readEnvString(env.OTEL_EXPORTER_OTLP_ENDPOINT);
+
+  if (!endpoint) {
+    return null;
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return null;
+  }
+
+  if (url.protocol !== "https:") {
+    return null;
+  }
+
+  return {
+    endpoint: url.toString().replace(/\/+$/, ""),
+    headers: parseOtlpHeaders(readEnvString(env.OTEL_EXPORTER_OTLP_HEADERS)),
+    serviceName: readEnvString(env.OTEL_SERVICE_NAME) ?? DEFAULT_OTLP_SERVICE_NAME,
+    environment: readEnvString(env.ENV),
+  };
 }
 
 export function getBeaconAnalyticsConfig(env: TelemetryEnv): BeaconAnalyticsConfig | null {

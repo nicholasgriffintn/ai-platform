@@ -1,8 +1,14 @@
+import type { ExecutionContext } from "@cloudflare/workers-types";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { buildAiEmbeddingEvent } from "./ai-embedding.js";
 import { buildAiGenerationEvent } from "./ai-generation.js";
-import { shouldCaptureAiObservability } from "./config.js";
+import { getOtlpExportConfig, shouldCaptureAiObservability } from "./config.js";
+import { buildGenAiGenerationSpan } from "./gen-ai-spans.js";
 import { buildAnalyticsDistinctId, buildTelemetryPersonProperties } from "./identity.js";
 import { createSpanId, createTraceId } from "./ids.js";
+import { getLogger } from "./logger.js";
+import { createOtlpHttpSink } from "./otel.js";
 import { createAiGatewaySink } from "./sinks/ai-gateway.js";
 import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
 import { createBeaconSink } from "./sinks/beacon.js";
@@ -11,6 +17,7 @@ import type {
   AiEmbeddingSignal,
   AiFeedbackSignal,
   AiGenerationSignal,
+  BeaconFetcher,
   CreateWorkerTelemetryOptions,
   ResolvedAiFeedback,
   TelemetryEnv,
@@ -22,6 +29,8 @@ import type {
   TelemetrySpan,
   TrainingExampleSignal,
 } from "./types.js";
+
+const otlpLogger = getLogger({ prefix: "ai-telemetry/otlp" });
 
 export interface ActiveSpan {
   readonly traceId: string;
@@ -46,6 +55,7 @@ export interface Telemetry {
   captureTrainingExample(signal: TrainingExampleSignal): Promise<void>;
   log(record: TelemetryLogRecord): void;
   startSpan(name: string, options?: StartSpanOptions): ActiveSpan;
+  recordSpan(span: TelemetrySpan): void;
   flush(): Promise<void>;
 }
 
@@ -97,6 +107,8 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
     });
 
   const observability = options.aiObservability ?? { enabled: true };
+  const recordSpan = (span: TelemetrySpan) =>
+    eachSink(sinks, onSinkError, (sink) => sink.exportSpan?.(span));
 
   const resolveAiEventIdentity = (signal: TelemetryIdentity) => ({
     distinctId: buildAnalyticsDistinctId(signal),
@@ -119,6 +131,7 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
       }
 
       capture(buildAiGenerationEvent({ ...signal, ...resolveAiEventIdentity(signal) }));
+      recordSpan(buildGenAiGenerationSpan(signal, now()));
     },
     captureAiEmbedding: (signal) => {
       if (!observability.enabled) {
@@ -184,12 +197,13 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
             statusMessage: error instanceof Error ? error.message : undefined,
             attributes,
           };
-          eachSink(sinks, onSinkError, (sink) => sink.exportSpan?.(ended as TelemetrySpan));
+          recordSpan(ended);
 
           return ended;
         },
       };
     },
+    recordSpan,
     flush: async () => {
       for (const sink of sinks) {
         try {
@@ -215,7 +229,36 @@ export function createWorkerTelemetrySinks({
     createPostHogSink(env, createPostHogClient, executionCtx),
     createBeaconSink(env, fetcher, executionCtx, now),
     resolveAiGatewayId ? createAiGatewaySink(env, resolveAiGatewayId) : null,
+    createWorkerOtlpSink(env, fetcher, executionCtx),
   ].filter((sink): sink is TelemetrySink => sink !== null);
+}
+
+function createWorkerOtlpSink(
+  env: TelemetryEnv,
+  fetcher: BeaconFetcher,
+  executionCtx: ExecutionContext | undefined,
+): TelemetrySink | null {
+  const config = getOtlpExportConfig(env);
+
+  if (!config) {
+    return null;
+  }
+
+  return createOtlpHttpSink({
+    endpoint: config.endpoint,
+    headers: config.headers,
+    serviceName: config.serviceName,
+    ...(config.environment
+      ? { attributes: { "deployment.environment.name": config.environment } }
+      : {}),
+    fetcher,
+    onError: (error) => otlpLogger.warn("OTLP export failed", { error: getErrorMessage(error) }),
+    scheduleFlush: (flush) => {
+      const exported = Promise.resolve().then(flush);
+
+      executionCtx?.waitUntil(exported);
+    },
+  });
 }
 
 export function createWorkerTelemetry(options: CreateWorkerTelemetryOptions): Telemetry {

@@ -1,3 +1,5 @@
+import { fnv1a64Hex, trimTrailingCharacter } from "@ngriffin_uk/polychat-utility-core";
+
 import type {
   TelemetryLogLevel,
   TelemetryLogRecord,
@@ -115,11 +117,28 @@ function unixNano(milliseconds: number): string {
   return (BigInt(Math.round(milliseconds)) * 1_000_000n).toString();
 }
 
+const TRACE_ID_PATTERN = /^[0-9a-f]{32}$/;
+const SPAN_ID_PATTERN = /^[0-9a-f]{16}$/;
+
+export function toOtlpTraceId(id: string): string {
+  const compact = id.toLowerCase().replaceAll("-", "");
+
+  return TRACE_ID_PATTERN.test(compact)
+    ? compact
+    : `${fnv1a64Hex(id, "trace:")}${fnv1a64Hex(id, "trace-high:")}`;
+}
+
+export function toOtlpSpanId(id: string): string {
+  const compact = id.toLowerCase();
+
+  return SPAN_ID_PATTERN.test(compact) ? compact : fnv1a64Hex(id, "span:");
+}
+
 export function toOtlpSpan(span: TelemetrySpan): OtlpSpan {
   return {
-    traceId: span.traceId,
-    spanId: span.spanId,
-    parentSpanId: span.parentSpanId,
+    traceId: toOtlpTraceId(span.traceId),
+    spanId: toOtlpSpanId(span.spanId),
+    ...(span.parentSpanId ? { parentSpanId: toOtlpSpanId(span.parentSpanId) } : {}),
     name: span.name,
     kind: 1,
     startTimeUnixNano: unixNano(span.startTime),
@@ -217,6 +236,7 @@ export interface OtlpHttpSinkOptions extends OtlpResourceOptions {
   headers?: Record<string, string>;
   fetcher?: (input: string, init: RequestInit) => Promise<Response>;
   onError?: (error: unknown) => void;
+  scheduleFlush?: (flush: () => Promise<void>) => void;
 }
 
 export function createOtlpHttpSink(options: OtlpHttpSinkOptions): TelemetrySink {
@@ -224,7 +244,20 @@ export function createOtlpHttpSink(options: OtlpHttpSinkOptions): TelemetrySink 
   const spans: TelemetrySpan[] = [];
   const logs: TelemetryLogRecord[] = [];
   const metrics: TelemetryMetric[] = [];
-  const endpoint = options.endpoint.replace(/\/$/, "");
+  const endpoint = trimTrailingCharacter(options.endpoint, "/");
+  let flushScheduled = false;
+  const buffer = <T>(items: T[], item: T) => {
+    items.push(item);
+
+    if (options.scheduleFlush && !flushScheduled) {
+      flushScheduled = true;
+      options.scheduleFlush(() => {
+        flushScheduled = false;
+
+        return flush();
+      });
+    }
+  };
 
   const post = async (path: string, body: OtlpExportRequest) => {
     const response = await fetcher(`${endpoint}${path}`, {
@@ -238,42 +271,42 @@ export function createOtlpHttpSink(options: OtlpHttpSinkOptions): TelemetrySink 
     }
   };
 
+  async function flush(): Promise<void> {
+    const pending = {
+      spans: spans.splice(0),
+      logs: logs.splice(0),
+      metrics: metrics.splice(0),
+    };
+    const exports: Array<Promise<void>> = [];
+
+    if (pending.spans.length) {
+      exports.push(post("/v1/traces", toOtlpExportRequest(options, { spans: pending.spans })));
+    }
+
+    if (pending.logs.length) {
+      exports.push(post("/v1/logs", toOtlpExportRequest(options, { logs: pending.logs })));
+    }
+
+    if (pending.metrics.length) {
+      exports.push(post("/v1/metrics", toOtlpExportRequest(options, { metrics: pending.metrics })));
+    }
+
+    try {
+      await Promise.all(exports);
+    } catch (error) {
+      if (!options.onError) {
+        throw error;
+      }
+
+      options.onError(error);
+    }
+  }
+
   return {
     name: "otlp",
-    exportSpan: (span) => void spans.push(span),
-    log: (record) => void logs.push(record),
-    recordMetric: (metric) => void metrics.push(metric),
-    flush: async () => {
-      const pending = {
-        spans: spans.splice(0),
-        logs: logs.splice(0),
-        metrics: metrics.splice(0),
-      };
-      const exports: Array<Promise<void>> = [];
-
-      if (pending.spans.length) {
-        exports.push(post("/v1/traces", toOtlpExportRequest(options, { spans: pending.spans })));
-      }
-
-      if (pending.logs.length) {
-        exports.push(post("/v1/logs", toOtlpExportRequest(options, { logs: pending.logs })));
-      }
-
-      if (pending.metrics.length) {
-        exports.push(
-          post("/v1/metrics", toOtlpExportRequest(options, { metrics: pending.metrics })),
-        );
-      }
-
-      try {
-        await Promise.all(exports);
-      } catch (error) {
-        if (!options.onError) {
-          throw error;
-        }
-
-        options.onError(error);
-      }
-    },
+    exportSpan: (span) => buffer(spans, span),
+    log: (record) => buffer(logs, record),
+    recordMetric: (metric) => buffer(metrics, metric),
+    flush,
   };
 }

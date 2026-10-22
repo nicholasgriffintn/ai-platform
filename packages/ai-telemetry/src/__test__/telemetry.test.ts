@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { getLogger, onLogRecord } from "../logger.js";
-import { createOtlpHttpSink, toOtlpExportRequest, toOtlpSpan } from "../otel.js";
+import { createOtlpHttpSink, toOtlpExportRequest } from "../otel.js";
 import { createTelemetry } from "../telemetry.js";
 import type { TelemetrySink } from "../types.js";
 
@@ -236,16 +236,15 @@ describe("OpenTelemetry formatting", () => {
     ]);
     expect(
       JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body)).resourceSpans[0].scopeSpans[0].spans[0],
-    ).toEqual(
-      toOtlpSpan({
-        traceId: expect.any(String),
-        spanId: expect.any(String),
-        name: "s",
-        startTime: 5,
-        endTime: 5,
-        status: "ok",
-        attributes: {},
-      }),
-    );
+    ).toEqual({
+      traceId: expect.stringMatching(/^[0-9a-f]{32}$/),
+      spanId: expect.stringMatching(/^[0-9a-f]{16}$/),
+      name: "s",
+      kind: 1,
+      startTimeUnixNano: "5000000",
+      endTimeUnixNano: "5000000",
+      attributes: [],
+      status: { code: 1 },
+    });
   });
 });
