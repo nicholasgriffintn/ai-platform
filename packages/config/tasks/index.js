@@ -2,7 +2,7 @@ const dependencyBuilds = [{ task: "build", from: ["dependencies", "devDependenci
 
 const styleOutputs = ["dist/styles.js", "dist/*.css", "dist/*.css.map"];
 
-const cleanOutput = "rm -rf dist";
+const cleanOutput = `node -e "require('node:fs').rmSync('dist', { recursive: true, force: true })"`;
 
 function withClean(command) {
   return `${cleanOutput} && ${command}`;
