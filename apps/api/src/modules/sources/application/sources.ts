@@ -6,8 +6,11 @@ import {
   type ListPage,
   type Source,
   type SourceCollection,
+  type SourceGenerationType,
+  type SourceKind,
   type SourceSummary,
   type UpdateSourceInput,
+  type WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
@@ -46,6 +49,8 @@ export function formatSource(record: SourceRecord): Source {
     delete metadata.embedding_provider_target;
   }
 
+  delete metadata.pending;
+
   return {
     id: record.id,
     createdByUserId: record.created_by_user_id,
@@ -81,6 +86,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
     description: record.description,
     kind: record.kind,
     sourceCount: record.source_count ?? 0,
+    hasFeed: Boolean(record.feed_token_hash),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -108,6 +114,17 @@ export async function requireSourceAccess(
 
   const { role } = await requireProjectAccess(context, source.project_id);
 
+  assertProjectSourceAuthority(userId, source, role, mutate);
+
+  return source;
+}
+
+function assertProjectSourceAuthority(
+  userId: number,
+  source: SourceRecord,
+  role: WorkspaceRole,
+  mutate: boolean,
+): void {
   const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
     actorId: String(userId),
     ownerId: String(source.created_by_user_id),
@@ -123,8 +140,6 @@ export async function requireSourceAccess(
       403,
     );
   }
-
-  return source;
 }
 
 export async function requireSourcesAccess(
@@ -132,6 +147,7 @@ export async function requireSourcesAccess(
   userId: number,
   sourceIds: readonly string[],
   validate?: (source: SourceRecord) => void,
+  mutate = false,
 ): Promise<SourceRecord[]> {
   if (sourceIds.length === 0) {
     return [];
@@ -139,7 +155,7 @@ export async function requireSourcesAccess(
 
   const records = await context.repositories.get(SourceRepository).getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
-  const verifiedProjects = new Set<string>();
+  const projectRoles = new Map<string, WorkspaceRole>();
   const sources: SourceRecord[] = [];
 
   for (const sourceId of sourceIds) {
@@ -153,9 +169,15 @@ export async function requireSourcesAccess(
       if (!ownsResource(userId, source.created_by_user_id)) {
         throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
       }
-    } else if (!verifiedProjects.has(source.project_id)) {
-      await requireProjectAccess(context, source.project_id);
-      verifiedProjects.add(source.project_id);
+    } else {
+      let role = projectRoles.get(source.project_id);
+
+      if (!role) {
+        role = (await requireProjectAccess(context, source.project_id)).role;
+        projectRoles.set(source.project_id, role);
+      }
+
+      assertProjectSourceAuthority(userId, source, role, mutate);
     }
 
     validate?.(source);
@@ -165,7 +187,7 @@ export async function requireSourcesAccess(
   return sources;
 }
 
-async function requireCollectionAccess(
+export async function requireCollectionAccess(
   context: ServiceContext,
   userId: number,
   collectionId: string,
@@ -209,7 +231,7 @@ async function requireCollectionAccess(
 export async function createSource(
   context: ServiceContext,
   userId: number,
-  input: CreateSourceInput,
+  input: Omit<CreateSourceInput, "kind"> & { kind: SourceKind },
   options: { id?: string } = {},
 ): Promise<Source> {
   if (input.projectId) {
@@ -282,16 +304,17 @@ export async function getSource(context: ServiceContext, userId: number, sourceI
 export async function listSources(
   context: ServiceContext,
   userId: number,
-  filters: { projectId?: string; kind?: SourceRecord["kind"] },
+  filters: { projectId?: string; kind?: SourceRecord["kind"]; generation?: SourceGenerationType },
 ): Promise<ListPage<SourceSummary>> {
+  const repositoryFilters = { kind: filters.kind, generation: filters.generation };
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
       await context.repositories
         .get(SourceRepository)
-        .listProjectSourceSummaries(filters.projectId, filters.kind))
+        .listProjectSourceSummaries(filters.projectId, repositoryFilters))
     : await context.repositories
         .get(SourceRepository)
-        .listPersonalSourceSummaries(userId, filters.kind);
+        .listPersonalSourceSummaries(userId, repositoryFilters);
 
   return listPageOf(records.map(formatSourceSummary), (source) => source.id);
 }
@@ -559,15 +582,21 @@ export async function addCollectionSources(
 ): Promise<{ added: number }> {
   const collection = await requireCollectionAccess(context, userId, collectionId, true);
 
-  await requireSourcesAccess(context, userId, sourceIds, (source) => {
-    if (source.project_id !== collection.project_id) {
-      throw new AssistantError(
-        "Source is outside this collection scope",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-  });
+  await requireSourcesAccess(
+    context,
+    userId,
+    sourceIds,
+    (source) => {
+      if (source.project_id !== collection.project_id) {
+        throw new AssistantError(
+          "Source is outside this collection scope",
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+    },
+    collection.kind === "podcast",
+  );
 
   return {
     added: await context.repositories

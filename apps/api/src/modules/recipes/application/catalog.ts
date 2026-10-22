@@ -13,6 +13,7 @@ import { healthConnectorRecipes } from "./catalog/health-connectors";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { personalUtilityRecipes } from "./catalog/personal-utilities";
 import { getPlatformKnowledgeRecipes } from "./catalog/platform-knowledge";
+import { podcastRecipes } from "./catalog/podcasts";
 import type { CatalogRecipe } from "./catalog/shared";
 import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -47,6 +48,7 @@ export function getAssistantRecipes(): AssistantRecipe[] {
     ...workspaceRecipes,
     ...wellbeingRecipes,
     ...personalUtilityRecipes,
+    ...podcastRecipes,
   ];
 
   const recipes: AssistantRecipe[] = catalogRecipes.map((recipe) => ({

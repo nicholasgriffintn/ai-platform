@@ -31,7 +31,7 @@ defineResource(app, { idParam: "job_id", tags: ["jobs"] }, (jobs) => {
       auth: true,
       summary: "Start a job",
       description:
-        "Starts long-running work of the given kind. Some kinds fan out (Canvas queues one job per model), so the response lists every job started and any that were rejected.",
+        "Starts long-running work of the given kind. The response lists every job started and any that were rejected.",
       bodySchema: createJobRequestSchema,
       responses: {
         200: { description: "The jobs started", schema: startedJobListSchema },

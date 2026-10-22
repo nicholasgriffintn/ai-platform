@@ -1,4 +1,9 @@
-import type { SourceCollectionKind, SourceKind, SourceStatus } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SourceCollectionKind,
+  SourceGenerationType,
+  SourceKind,
+  SourceStatus,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -83,9 +88,22 @@ export interface SourceCollectionRecord {
   title: string;
   description: string | null;
   kind: SourceCollectionKind;
+  feed_token_hash: string | null;
   created_at: string;
   updated_at: string | null;
   source_count?: number;
+}
+
+export interface SourceSummaryFilters {
+  kind?: SourceKind;
+  generation?: SourceGenerationType;
+}
+
+export interface SourceFileRecord {
+  storageKey: string;
+  mimeType: string;
+  filename: string | null;
+  byteSize: number | null;
 }
 
 export class SourceRepository extends BaseRepository {
@@ -240,16 +258,19 @@ export class SourceRepository extends BaseRepository {
 
   async listPersonalSourceSummaries(
     userId: number,
-    kind?: SourceKind,
+    filters: SourceSummaryFilters = {},
   ): Promise<SourceSummaryRecord[]> {
-    return this.selectSummaries({ created_by_user_id: userId, project_id: null, kind });
+    return this.selectSummaries(
+      { created_by_user_id: userId, project_id: null, kind: filters.kind },
+      filters.generation,
+    );
   }
 
   async listProjectSourceSummaries(
     projectId: string,
-    kind?: SourceKind,
+    filters: SourceSummaryFilters = {},
   ): Promise<SourceSummaryRecord[]> {
-    return this.selectSummaries({ project_id: projectId, kind });
+    return this.selectSummaries({ project_id: projectId, kind: filters.kind }, filters.generation);
   }
 
   async updateSource(
@@ -265,6 +286,31 @@ export class SourceRepository extends BaseRepository {
       "resource",
       updates,
       ["title", "status", "content", "metadata"],
+      "resource_type = 'source' AND id = ?",
+      [sourceId],
+      { jsonFields: ["metadata"] },
+    );
+
+    if (result) {
+      await this.executeRun(result.query, result.values);
+    }
+  }
+
+  async attachSourceFile(
+    sourceId: string,
+    file: SourceFileRecord,
+    updates: { status?: SourceStatus; metadata?: Record<string, unknown> } = {},
+  ): Promise<void> {
+    const result = this.buildUpdateQuery(
+      "resource",
+      {
+        storage_key: file.storageKey,
+        mime_type: file.mimeType,
+        filename: file.filename,
+        byte_size: file.byteSize,
+        ...updates,
+      },
+      ["storage_key", "mime_type", "filename", "byte_size", "status", "metadata"],
       "resource_type = 'source' AND id = ?",
       [sourceId],
       { jsonFields: ["metadata"] },
@@ -461,6 +507,23 @@ export class SourceRepository extends BaseRepository {
     await this.executeRun(query, values);
   }
 
+  async setCollectionFeedTokenHash(collectionId: string, tokenHash: string | null): Promise<void> {
+    await this.executeRun(
+      "UPDATE resource_collection SET feed_token_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE collection_type = 'source' AND id = ?",
+      [tokenHash, collectionId],
+    );
+  }
+
+  async getCollectionByFeedTokenHash(tokenHash: string): Promise<SourceCollectionRecord | null> {
+    const { query, values } = this.buildSelectQuery("resource_collection", {
+      collection_type: "source",
+      kind: "podcast",
+      feed_token_hash: tokenHash,
+    });
+
+    return this.runQuery<SourceCollectionRecord>(query, values, true);
+  }
+
   async deleteCollection(collectionId: string): Promise<void> {
     const { query, values } = this.buildDeleteQuery("resource_collection", {
       collection_type: "source",
@@ -502,6 +565,7 @@ export class SourceRepository extends BaseRepository {
 
   private async selectSummaries(
     conditions: Record<string, unknown>,
+    generation?: SourceGenerationType,
   ): Promise<SourceSummaryRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "resource",
@@ -511,10 +575,13 @@ export class SourceRepository extends BaseRepository {
         orderBy: "updated_at DESC, created_at DESC",
       },
     );
+    const generationFilter = generation
+      ? " AND json_extract(source.metadata, '$.generation.type') = ?"
+      : "";
 
     return this.runQuery<SourceSummaryRecord>(
-      `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
-      values,
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM (${query}) source WHERE ${sourceVisibilitySql("source")}${generationFilter} ORDER BY source.updated_at DESC, source.created_at DESC`,
+      generation ? [...values, generation] : values,
     );
   }
 

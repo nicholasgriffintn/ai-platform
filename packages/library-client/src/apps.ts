@@ -7,7 +7,6 @@ import type {
   ExtractArticleContentResponse,
   FetchMultipleArticlesResponse,
   GenerateReportParams,
-  Job,
   SummariseArticleParams,
   Note,
   NoteSummary,
@@ -15,15 +14,7 @@ import type {
   NoteDetailResponse,
   NoteFormatResponse,
   NoteUpdateRequest,
-  Recording,
-  RecordingDetailResponse,
-  RecordingListItem,
 } from "@ngriffin_uk/polychat-schemas";
-import type {
-  ProcessRecordingParams,
-  UploadRecordingParams,
-  UploadResponse,
-} from "@ngriffin_uk/polychat-schemas/experiences";
 
 import { startJobOfKind } from "./jobs.js";
 import { withProjectScope } from "./project-scope.js";
@@ -38,73 +29,6 @@ function experiencePath(path: string, projectId?: string): string {
 function listExperience<TItem>(path: string, projectId?: string, query?: { q?: string }) {
   return resource<TItem>(`${EXPERIENCES}${path}`).listAll({ project_id: projectId, ...query });
 }
-
-export const fetchRecordings = (projectId?: string): Promise<RecordingListItem[]> =>
-  listExperience<RecordingListItem>("/recordings", projectId);
-
-export const fetchRecording = async (id: string, projectId?: string): Promise<Recording> =>
-  (
-    await requestJson<RecordingDetailResponse>(
-      experiencePath(`/recordings/${encodeURIComponent(id)}`, projectId),
-      "GET",
-    )
-  ).recording;
-
-export const uploadRecording = async (
-  params: UploadRecordingParams,
-  projectId?: string,
-): Promise<UploadResponse> => {
-  const formData = new FormData();
-
-  formData.append("title", params.title);
-
-  if (params.description) {
-    formData.append("description", params.description);
-  }
-
-  if (params.audio) {
-    formData.append("audio", params.audio);
-  }
-
-  if (params.audioUrl) {
-    formData.append("audioUrl", params.audioUrl);
-  }
-
-  return requestJson<UploadResponse>(experiencePath("/recordings", projectId), "POST", formData);
-};
-
-export const processRecording = (
-  params: ProcessRecordingParams,
-  projectId?: string,
-): Promise<Job> => {
-  if (params.action === "transcribe") {
-    return startJobOfKind({
-      kind: "recording_transcription",
-      project_id: projectId,
-      input: {
-        recordingId: params.recordingId,
-        numberOfSpeakers: params.numberOfSpeakers || 2,
-        prompt:
-          params.prompt ||
-          `Transcribe this recording with the following speakers: ${params.speakers ? JSON.stringify(params.speakers) : "Person 1, 2, etc"}`,
-      },
-    });
-  }
-
-  if (params.action === "summarise") {
-    return startJobOfKind({
-      kind: "recording_summary",
-      project_id: projectId,
-      input: { recordingId: params.recordingId, speakers: params.speakers || {} },
-    });
-  }
-
-  return startJobOfKind({
-    kind: "recording_image",
-    project_id: projectId,
-    input: { recordingId: params.recordingId, prompt: params.prompt },
-  });
-};
 
 export const fetchArticles = async (projectId?: string): Promise<ArticlesResponse> => ({
   articles: await listExperience<ArticleSessionSummary>("/articles", projectId),

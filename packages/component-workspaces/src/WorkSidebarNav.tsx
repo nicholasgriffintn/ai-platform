@@ -16,7 +16,6 @@ import {
   LayoutDashboard,
   ListChecks,
   LayoutTemplate,
-  Palette,
   Plug,
   SquarePen,
   Users,
@@ -46,7 +45,6 @@ export interface WorkSidebarWorkspace {
 
 export interface WorkSidebarProject {
   newConversationHref: string;
-  canvasHref: string;
   sitesHref: string;
   filesHref: string;
   tasksHref: string;
@@ -73,7 +71,6 @@ export interface WorkSidebarNavProps {
   onNavigate: () => void;
   onNewChat: () => void;
   onNewConversation: () => void;
-  onCanvas: () => void;
 }
 
 export function WorkSidebarNav({
@@ -87,7 +84,6 @@ export function WorkSidebarNav({
   onNavigate,
   onNewChat,
   onNewConversation,
-  onCanvas,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
 
@@ -96,9 +92,6 @@ export function WorkSidebarNav({
       <div className="space-y-1">
         <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
           New chat
-        </SidebarNavButton>
-        <SidebarNavButton icon={<Palette size={17} />} onClick={onCanvas}>
-          Canvas
         </SidebarNavButton>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
@@ -190,9 +183,6 @@ export function WorkSidebarNav({
               count={project.attentionCount ?? 0}
               label={`${project.attentionCount} tasks need attention`}
             />
-          </NavLink>
-          <NavLink href={project.canvasHref} className={linkClass} onClick={onNavigate}>
-            <Palette size={16} /> Canvas
           </NavLink>
           <NavLink href={project.sitesHref} className={linkClass} onClick={onNavigate}>
             <LayoutTemplate size={16} /> Sites

@@ -14,7 +14,7 @@ function initialIsMobile(): boolean {
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
-export type ProjectPickerDestination = "chat" | "canvas";
+export type ProjectPickerDestination = "chat";
 
 export type PolyLayout = "dock" | "window";
 

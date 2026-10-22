@@ -1,8 +1,10 @@
 import type {
   CreateSourceCollectionInput,
   CreateSourceInput,
+  GeneratePodcastRequest,
   Source,
   SourceCollection,
+  SourceGenerationType,
   SourceKind,
   SourceSummary,
   ProjectKnowledgeSearchQuery,
@@ -13,14 +15,28 @@ import type {
   UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { API_BASE_URL } from "./constants.js";
 import { fetchApiData as request } from "./fetch-wrapper.js";
 
-export async function listSources(
-  filters: {
-    projectId?: string;
-    kind?: SourceKind;
-  } = {},
-): Promise<SourceSummary[]> {
+export interface SourceListFilters {
+  projectId?: string;
+  kind?: SourceKind;
+  generation?: SourceGenerationType;
+}
+
+function sourcePath(sourceId: string, suffix = ""): string {
+  return `/sources/${encodeURIComponent(sourceId)}${suffix}`;
+}
+
+export function getSourceContentUrl(sourceId: string): string {
+  return `${API_BASE_URL}${sourcePath(sourceId, "/content")}`;
+}
+
+export function getSourceCoverUrl(sourceId: string): string {
+  return `${API_BASE_URL}${sourcePath(sourceId, "/cover")}`;
+}
+
+export async function listSources(filters: SourceListFilters = {}): Promise<SourceSummary[]> {
   const query = new URLSearchParams();
 
   if (filters.projectId) {
@@ -31,13 +47,57 @@ export async function listSources(
     query.set("kind", filters.kind);
   }
 
+  if (filters.generation) {
+    query.set("generation", filters.generation);
+  }
+
   const suffix = query.size ? `?${query.toString()}` : "";
 
   return (await request<ListPage<SourceSummary>>(`/sources${suffix}`)).data;
 }
 
 export async function getSource(sourceId: string): Promise<Source> {
-  return request(`/sources/${encodeURIComponent(sourceId)}`);
+  return request(sourcePath(sourceId));
+}
+
+export async function transcribeSource(sourceId: string): Promise<Source> {
+  return request(sourcePath(sourceId, "/transcribe"), { method: "POST", body: {} });
+}
+
+export async function writeSourceNotes(
+  sourceId: string,
+  speakers?: Record<string, string>,
+): Promise<Source> {
+  return request(sourcePath(sourceId, "/notes"), {
+    method: "POST",
+    body: speakers ? { speakers } : {},
+    timeoutMs: null,
+  });
+}
+
+export async function createSourceCover(sourceId: string, prompt?: string): Promise<Source> {
+  return request(sourcePath(sourceId, "/cover"), {
+    method: "POST",
+    body: prompt ? { prompt } : {},
+    timeoutMs: null,
+  });
+}
+
+export async function generatePodcast(input: GeneratePodcastRequest): Promise<Source> {
+  return request("/sources/podcasts", { method: "POST", body: input });
+}
+
+export async function enablePodcastFeed(collectionId: string): Promise<{ url: string }> {
+  return request(`/sources/collections/${encodeURIComponent(collectionId)}/feed`, {
+    method: "POST",
+    body: {},
+  });
+}
+
+export async function disablePodcastFeed(collectionId: string): Promise<void> {
+  await request(`/sources/collections/${encodeURIComponent(collectionId)}/feed`, {
+    method: "DELETE",
+  });
 }
 
 export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {

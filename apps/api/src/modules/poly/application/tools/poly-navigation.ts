@@ -203,8 +203,7 @@ async function resolveNavigationTarget(
 
   if (
     target.mode === "work" &&
-    (target.place === "canvas" ||
-      target.place === "files" ||
+    (target.place === "files" ||
       target.place === "teammates" ||
       target.place === "plugins" ||
       target.place === "scheduled")

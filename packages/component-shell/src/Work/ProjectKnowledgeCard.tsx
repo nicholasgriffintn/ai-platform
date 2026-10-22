@@ -32,7 +32,7 @@ export function ProjectKnowledgeCard({
       contextCandidates={(allSources.data ?? []).filter(
         (source) => source.kind !== "memory" && source.status === "available",
       )}
-      sourcesHref={getProjectFilesPath(workspaceId, projectId, "given")}
+      sourcesHref={getProjectFilesPath(workspaceId, projectId, "sources")}
       isSavingContext={setContext.isPending}
       onSaveContext={async (sourceIds) => {
         await setContext.mutateAsync(sourceIds);

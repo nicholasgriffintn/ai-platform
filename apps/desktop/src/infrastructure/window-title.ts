@@ -3,7 +3,6 @@ export const APP_WINDOW_TITLE = "Polychat";
 const PAGE_TITLES: Record<string, string> = {
   apps: "App",
   attention: "Attention",
-  canvas: "Canvas",
   catalogue: "Apps",
   chat: "Chat",
   discover: "Discover",
@@ -18,7 +17,6 @@ const PAGE_TITLES: Record<string, string> = {
   project: "Project",
   "project-activity": "Project activity",
   "project-app": "Project app",
-  "project-canvas": "Canvas",
   "project-chat": "Project conversation",
   "project-files": "Project files",
   "project-plugins": "Plugins",

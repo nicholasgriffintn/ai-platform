@@ -2,7 +2,6 @@ export type ProductMode = "chat" | "work";
 
 export type ProductPlace =
   | "conversations"
-  | "canvas"
   | "sites"
   | "attention"
   | "files"
@@ -23,7 +22,6 @@ export const DISCOVER_PATH = "/discover";
 
 export interface PlacePaths {
   conversations: string;
-  canvas: string;
   sites: string;
   attention: string;
   files: string;
@@ -37,7 +35,6 @@ export function getPlacePaths(mode: ProductMode): PlacePaths {
 
   return {
     conversations: base,
-    canvas: `${base}/canvas`,
     sites: `${base}/apps/sites`,
     attention: `${base}/attention`,
     files: `${base}/files`,
@@ -65,7 +62,6 @@ export function getProductMode(pathname: string): ProductMode {
 }
 
 const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, string[]]> = [
-  ["canvas", ["canvas"]],
   ["sites", ["sites"]],
   ["attention", ["attention"]],
   ["files", ["files"]],

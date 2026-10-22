@@ -1,7 +1,7 @@
 import { getProjectBasePath } from "./conversation-route.js";
 import { getPlacePaths } from "./navigation/places.js";
 
-export type FilesTab = "given" | "made" | "memory";
+export type FilesTab = "sources" | "made" | "memory";
 
 export const DEFAULT_FILES_TAB: FilesTab = "made";
 
@@ -14,7 +14,7 @@ export function parseFilesSubpath(subpath: string): FilesLocation {
   const segments = subpath.split("/").filter(Boolean);
   const [first, ...rest] = segments;
 
-  if (first === "given" || first === "made" || first === "memory") {
+  if (first === "sources" || first === "made" || first === "memory") {
     return { tab: first, itemPath: rest.join("/") };
   }
 
@@ -41,4 +41,32 @@ export function getOutputPath(pathname: string, outputId: string): string {
   const filesPath = projectPath ? `${projectPath}/files` : getPlacePaths("chat").files;
 
   return getFilesTabPath(filesPath, "made", encodeURIComponent(outputId));
+}
+
+export type SourcesView =
+  | { view: "library" }
+  | { view: "podcasts" }
+  | { view: "studio" }
+  | { view: "replicate"; subpath: string }
+  | { view: "source"; sourceId: string };
+
+export const SOURCES_SECTIONS = ["podcasts", "studio", "replicate"] as const;
+
+/** Reads the Sources tab's own path: a section, or a source to open. */
+export function parseSourcesPath(itemPath: string): SourcesView {
+  const [first, ...rest] = itemPath.split("/").filter(Boolean);
+
+  if (!first) {
+    return { view: "library" };
+  }
+
+  if (first === "podcasts" || first === "studio") {
+    return { view: first };
+  }
+
+  if (first === "replicate") {
+    return { view: "replicate", subpath: rest.join("/") };
+  }
+
+  return { view: "source", sourceId: decodeURIComponent(first) };
 }

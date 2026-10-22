@@ -71,22 +71,6 @@ function startRequest(
   request: CreateJobRequest,
 ): Promise<StartedJobs> {
   switch (request.kind) {
-    case "canvas_generation":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.canvas_generation,
-        request.project_id,
-        request.input,
-      );
-    case "replicate_prediction":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.replicate_prediction,
-        request.project_id,
-        request.input,
-      );
     case "ocr_batch":
       return startKind(
         context,
@@ -108,30 +92,6 @@ function startRequest(
         context,
         user,
         JOB_KIND_DEFINITIONS.site_evaluation,
-        request.project_id,
-        request.input,
-      );
-    case "recording_transcription":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.recording_transcription,
-        request.project_id,
-        request.input,
-      );
-    case "recording_summary":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.recording_summary,
-        request.project_id,
-        request.input,
-      );
-    case "recording_image":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.recording_image,
         request.project_id,
         request.input,
       );

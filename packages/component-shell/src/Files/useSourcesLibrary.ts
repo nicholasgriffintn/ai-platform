@@ -3,8 +3,9 @@ import {
   useSourceMutations,
   useSources,
 } from "@ngriffin_uk/polychat-library-react";
-import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
+import { getUploadFileType, type SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function useSourcesLibrary(projectId?: string, createRequestKey?: number) {
   const [kind, setKind] = useState<"" | SourceKind>("");
@@ -39,6 +40,23 @@ export function useSourcesLibrary(projectId?: string, createRequestKey?: number)
     }
   }
 
+  const uploadFiles = async (files: FileList | null) => {
+    for (const file of Array.from(files ?? [])) {
+      try {
+        await mutations.uploadFile.mutateAsync({
+          file,
+          fileType: getUploadFileType(file.type),
+          projectId,
+        });
+        toast.success(`${file.name} added`);
+      } catch (uploadError) {
+        toast.error(
+          uploadError instanceof Error ? uploadError.message : `${file.name} could not be added`,
+        );
+      }
+    }
+  };
+
   return {
     kind,
     setKind,
@@ -64,5 +82,6 @@ export function useSourcesLibrary(projectId?: string, createRequestKey?: number)
     collections,
     mutations,
     selectedCollection,
+    uploadFiles,
   };
 }
