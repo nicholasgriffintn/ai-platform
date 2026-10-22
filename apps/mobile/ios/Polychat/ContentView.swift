@@ -8,6 +8,7 @@ struct ContentView: View {
     @EnvironmentObject var notificationManager: TaskNotificationManager
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @EnvironmentObject var polyStore: PolyStore
+    @EnvironmentObject var teammatesStore: TeammatesStore
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
@@ -16,6 +17,7 @@ struct ContentView: View {
     @State private var outputReviewTarget: OutputReviewTarget?
     @State private var showingWork = false
     @State private var showingPoly = false
+    @State private var showingTeammates = false
     @State private var selectedWorkTarget: MobileWorkTarget?
     @State private var conversationLoadTask: Task<Void, Never>?
 
@@ -50,6 +52,9 @@ struct ContentView: View {
                         },
                         onShowPoly: {
                             showingPoly = true
+                        },
+                        onShowTeammates: {
+                            showingTeammates = true
                         }
                     )
                 } detail: {
@@ -77,6 +82,14 @@ struct ContentView: View {
                     PolyView { conversationId in
                         openPolyItem(conversationId)
                     }
+                }
+                .sheet(isPresented: $showingTeammates, onDismiss: {
+                    conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
+                }) {
+                    TeammatesView(
+                        onOpenConversation: openRosterRow,
+                        onStartConversation: startTeammateConversation
+                    )
                 }
                 .sheet(item: $outputReviewTarget) { target in
                     OutputRevisionReviewView(outputId: target.id)
@@ -108,13 +121,18 @@ struct ContentView: View {
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
                         await pushNotificationManager.enableForAuthenticatedUser()
                         await polyStore.refresh()
-                        conversationManager.polyConversationId = polyStore.agenda?.conversationId
+                        await teammatesStore.refresh()
+                        conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
+                        if let polyConversationId = polyStore.agenda?.conversationId {
+                            conversationManager.bindTeammates([polyConversationId: PolyStore.teammateId])
+                        }
                         if let target = pushNotificationManager.targetToOpen {
                             openWorkTarget(target)
                         }
                     } else {
                         await pushNotificationManager.unregisterForSignedOutUser()
                         await polyStore.reset()
+                        teammatesStore.reset()
                         conversationManager.reset()
                         selectedConversationID = nil
                         await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
@@ -191,10 +209,39 @@ struct ContentView: View {
 
     private func openPolyItem(_ conversationId: String) {
         if conversationId == polyStore.agenda?.conversationId {
-            Task { await conversationManager.openPolyConversation(id: conversationId) }
+            Task {
+                await conversationManager.openTeammateConversation(
+                    id: conversationId,
+                    teammateId: PolyStore.teammateId,
+                    title: "Poly"
+                )
+            }
         } else {
             selectedConversationID = conversationId
         }
+    }
+
+    private func openRosterRow(_ row: TeammateRosterRow) {
+        guard let teammateId = row.entry.leadTeammateId else {
+            selectedConversationID = row.entry.conversationId
+            return
+        }
+
+        Task {
+            await conversationManager.openTeammateConversation(
+                id: row.entry.conversationId,
+                teammateId: teammateId,
+                title: row.title
+            )
+        }
+    }
+
+    private func startTeammateConversation(_ teammate: TeammateSummary) {
+        let conversation = conversationManager.startTeammateConversation(
+            teammateId: teammate.id,
+            title: teammate.name
+        )
+        selectedConversationID = conversation.id
     }
 
     private func openWorkTarget(_ target: MobileWorkTarget) {
