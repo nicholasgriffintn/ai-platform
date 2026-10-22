@@ -132,6 +132,24 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     type: "premium",
   },
   {
+    id: "forecasts",
+    runtime: "forecasts",
+    capabilityId: "featured-forecasts",
+    name: "Forecasts",
+    category: "Research",
+    when: "You have a column of numbers over time and want to know where it is heading, and how sure to be.",
+    uses: "A CSV you paste or drop in, or one of the samples. Timestral, Mistral's time-series model, reads it on Polychat's own servers.",
+    produces:
+      "A forecast with honest ranges, which can lean on columns you already know ahead, such as holidays or planned promotions.",
+    ios: "web-only",
+    description:
+      "Paste a time series and see where it goes next, with ranges rather than false confidence. Runs Timestral without your data leaving Polychat",
+    icon: "trending-up",
+    theme: "sky",
+    tags: ["forecasting", "time-series", "data"],
+    type: "normal",
+  },
+  {
     id: "notes",
     runtime: "notes",
     capabilityId: "featured-note-taker",

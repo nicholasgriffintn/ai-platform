@@ -4,6 +4,7 @@ import { requireAuth } from "~/middleware/auth";
 
 import { defineArticles } from "./articles";
 import { defineDrawings } from "./drawings";
+import { defineForecasts } from "./forecasts";
 import { defineTwentyQuestions, defineVerbatim } from "./games";
 import { defineExperienceModels } from "./models";
 import { defineNotes } from "./notes";
@@ -21,6 +22,7 @@ defineArticles(app);
 defineRecordings(app);
 defineTwentyQuestions(app);
 defineVerbatim(app);
+defineForecasts(app);
 defineExperienceModels(app);
 
 export default app;

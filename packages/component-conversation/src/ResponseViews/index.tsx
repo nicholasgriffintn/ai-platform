@@ -3,6 +3,7 @@ import {
   CouncilMemberPickerView,
   CouncilReviewView,
   type CustomResponseViewRegistry,
+  ForecastView,
   PanelConclusionView,
   PanelTurnView,
   UserQuestionView,
@@ -61,6 +62,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
     />
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
+  forecast: ({ data, embedded }) => <ForecastView data={data} embedded={embedded} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
   delegation_card: ({ data, onToolInteraction }) => {
     const parsed = delegationCardDataSchema.safeParse(data);

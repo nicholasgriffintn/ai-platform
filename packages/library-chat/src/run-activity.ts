@@ -1,4 +1,5 @@
 import type { SandboxRunData, SandboxRunEvent } from "@ngriffin_uk/polychat-schemas";
+import { formatMilliseconds } from "@ngriffin_uk/polychat-utility-core";
 
 import type { AgentTraceEntry, AgentTraceUsage } from "./agent-trace.js";
 
@@ -87,7 +88,7 @@ export function formatRunActivityDuration(durationMs: number | undefined): strin
     return undefined;
   }
 
-  return durationMs >= 1000 ? `${(durationMs / 1000).toFixed(1)}s` : `${durationMs}ms`;
+  return formatMilliseconds(durationMs);
 }
 
 export function formatRunActivityUsage(

@@ -1,3 +1,5 @@
+import { formatMilliseconds } from "@ngriffin_uk/polychat-utility-core";
+
 import type { AgentTraceEntry } from "./agent-trace.js";
 
 export function getAgentTraceTypeLabel(type: AgentTraceEntry["type"]): string {
@@ -53,7 +55,5 @@ export function formatAgentTraceLatency(entry: AgentTraceEntry): string | undefi
     return undefined;
   }
 
-  return entry.latencyMs >= 1000
-    ? `${(entry.latencyMs / 1000).toFixed(1)}s`
-    : `${entry.latencyMs}ms`;
+  return formatMilliseconds(entry.latencyMs);
 }

@@ -139,6 +139,39 @@ export function parseNumberInputValue(
   return Number.isFinite(parsed) ? parsed : "";
 }
 
+const MISSING_CELL_PATTERN = /^(?:|-|—|n\/?a|nan|null|none)$/i;
+const NUMERIC_CELL_DECORATION = /[,_\s£$€¥%]/g;
+
+export function parseNumericCell(value: string): number | null {
+  const trimmed = value.trim();
+
+  if (MISSING_CELL_PATTERN.test(trimmed)) {
+    return null;
+  }
+
+  const stripped = trimmed.replace(NUMERIC_CELL_DECORATION, "");
+  const parsed = stripped === "" ? Number.NaN : Number(stripped);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+const compactNumberFormat = new Intl.NumberFormat("en-GB", {
+  notation: "compact",
+  maximumSignificantDigits: 3,
+});
+
+export function formatCompactNumber(value: number): string {
+  return Number.isFinite(value) ? compactNumberFormat.format(value) : "—";
+}
+
+export function formatMilliseconds(durationMs: number): string {
+  return durationMs >= 1000 ? `${(durationMs / 1000).toFixed(1)}s` : `${Math.round(durationMs)}ms`;
+}
+
+export function roundToSignificant(value: number, digits: number): number {
+  return Number.isFinite(value) && value !== 0 ? Number(value.toPrecision(digits)) : value;
+}
+
 export function getNumberInputValue(value: unknown): ParsedNumberInput {
   return typeof value === "number" && Number.isFinite(value) ? value : "";
 }

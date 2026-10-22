@@ -18,5 +18,7 @@ export * from "./Views/CouncilReviewCard";
 export * from "./Views/PanelConclusionView";
 export * from "./Views/PanelTurnView";
 export * from "./Views/UserQuestionView";
+export * from "./Views/ForecastChart";
+export * from "./Views/ForecastView";
 export * from "./Views/WeatherView";
 export * from "./Views/WebSearchView";

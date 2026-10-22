@@ -20,6 +20,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   calculate: { icon: "calculator" },
   get_user_information: { icon: "user" },
   get_weather: { renderer: "weather", icon: "cloud" },
+  forecast_time_series: { renderer: "forecast", icon: "trending-up" },
   web_search: { renderer: "web_search", icon: "search" },
   search_documents: { renderer: "document_search", icon: "search" },
   search_memories: { icon: "search", responseType: ToolResponseType.HIDDEN },

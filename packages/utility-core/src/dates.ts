@@ -1,3 +1,4 @@
+import { percentile } from "./numbers.js";
 import { readOptionalString } from "./objects.js";
 
 export function formatDate(dateString: string): string {
@@ -129,4 +130,69 @@ export function describeZonedInstant(instant: Date, timeZone = "UTC"): ZonedInst
     weekday: parts.get("weekday") ?? "",
     utcOffset: offset || "+00:00",
   };
+}
+
+const DAY_MS = 86_400_000;
+const CALENDAR_MONTH_STEPS = [
+  { minDays: 28, maxDays: 31, months: 1 },
+  { minDays: 89, maxDays: 92, months: 3 },
+  { minDays: 181, maxDays: 184, months: 6 },
+  { minDays: 365, maxDays: 366, months: 12 },
+] as const;
+
+function addCalendarMonths(start: Date, months: number): Date {
+  const target = new Date(start.getTime());
+  const day = start.getUTCDate();
+
+  target.setUTCDate(1);
+  target.setUTCMonth(target.getUTCMonth() + months);
+
+  const monthEnd = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+
+  target.setUTCDate(Math.min(day, monthEnd));
+
+  return target;
+}
+
+function formatLikeInput(date: Date, sample: string): string {
+  if (/^\d{4}-\d{2}$/.test(sample)) {
+    return date.toISOString().slice(0, 7);
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sample)) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  return date.toISOString();
+}
+
+export function extendTimestamps(timestamps: readonly string[], count: number): string[] | null {
+  const instants = timestamps.map((timestamp) => Date.parse(timestamp));
+  const last = timestamps.at(-1);
+
+  if (instants.length < 2 || !last || instants.some((instant) => !Number.isFinite(instant))) {
+    return null;
+  }
+
+  const steps = instants.slice(1).map((instant, index) => instant - instants[index]);
+
+  if (steps.some((step) => step <= 0)) {
+    return null;
+  }
+
+  const step = percentile(steps, 0.5) ?? 0;
+  const lastDate = new Date(instants.at(-1) ?? 0);
+  const calendar = CALENDAR_MONTH_STEPS.find(
+    ({ minDays, maxDays }) => step >= minDays * DAY_MS && step <= maxDays * DAY_MS,
+  );
+
+  return Array.from({ length: count }, (_, index) => {
+    const next = calendar
+      ? addCalendarMonths(lastDate, calendar.months * (index + 1))
+      : new Date(lastDate.getTime() + step * (index + 1));
+
+    return formatLikeInput(next, last);
+  });
 }

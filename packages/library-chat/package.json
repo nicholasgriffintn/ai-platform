@@ -192,6 +192,11 @@
       "types": "./dist/verbosity.d.ts",
       "import": "./dist/verbosity.js"
     },
+    "./forecast": {
+      "polychat-source": "./src/forecast.ts",
+      "types": "./dist/forecast.d.ts",
+      "import": "./dist/forecast.js"
+    },
     "./weather": {
       "polychat-source": "./src/weather.ts",
       "types": "./dist/weather.d.ts",
