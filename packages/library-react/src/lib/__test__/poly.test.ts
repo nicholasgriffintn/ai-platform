@@ -1,7 +1,12 @@
 import { POLY_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { getFilesTabPath, getProjectFilesPath, parseFilesSubpath } from "../files-route.js";
+import {
+  getFilesTabPath,
+  getProjectFilesPath,
+  parseFilesSubpath,
+  parseSourcesPath,
+} from "../files-route.js";
 import { getActivePlace } from "../navigation/places.js";
 import { buildPolyUiContext, getPolyNavigationHref, readPolyNavigationTarget } from "../poly.js";
 
@@ -46,8 +51,8 @@ describe("buildPolyUiContext", () => {
 });
 
 describe("meta navigation", () => {
-  it("opens Work Canvas, Files, Teammates, Plugins and Scheduled under their authorised project", () => {
-    for (const place of ["canvas", "files", "teammates", "plugins", "scheduled"] as const) {
+  it("opens Work Files, Teammates, Plugins and Scheduled under their authorised project", () => {
+    for (const place of ["files", "teammates", "plugins", "scheduled"] as const) {
       expect(
         getPolyNavigationHref({
           kind: "place",
@@ -100,14 +105,12 @@ describe("places and files routes", () => {
     expect(getActivePlace("/chat/apps/sites")).toBe("sites");
     expect(getActivePlace("/chat/tools/get-weather")).toBe("plugins");
     expect(getActivePlace("/chat/skills/research")).toBe("plugins");
-    expect(getActivePlace("/chat/canvas")).toBe("canvas");
-    expect(getActivePlace("/chat/files/given")).toBe("files");
+    expect(getActivePlace("/chat/files/sources")).toBe("files");
     expect(getActivePlace("/chat/plugins")).toBe("plugins");
     expect(getActivePlace("/chat/scheduled")).toBe("scheduled");
     expect(getActivePlace("/chat/attention")).toBe("attention");
     expect(getActivePlace("/work")).toBe("conversations");
     expect(getActivePlace("/work/attention")).toBe("attention");
-    expect(getActivePlace("/work/w1/projects/p1/canvas")).toBe("canvas");
     expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("files");
     expect(getActivePlace("/work/w1/projects/p1/teammates")).toBe("teammates");
     expect(getActivePlace("/work/w1/projects/p1/scheduled")).toBe("scheduled");
@@ -118,11 +121,24 @@ describe("places and files routes", () => {
     expect(getActivePlace("/pricing")).toBeUndefined();
   });
 
+  it("reads the Sources tab's sections and sources", () => {
+    expect(parseSourcesPath("")).toEqual({ view: "library" });
+    expect(parseSourcesPath("podcasts")).toEqual({ view: "podcasts" });
+    expect(parseSourcesPath("replicate/predictions/s1")).toEqual({
+      view: "replicate",
+      subpath: "predictions/s1",
+    });
+    expect(parseSourcesPath("source%201")).toEqual({ view: "source", sourceId: "source 1" });
+  });
+
   it("parses files subpaths and builds tab paths", () => {
     expect(parseFilesSubpath("")).toEqual({ tab: "made", itemPath: "" });
     expect(parseFilesSubpath("made/output-1")).toEqual({ tab: "made", itemPath: "output-1" });
-    expect(parseFilesSubpath("given")).toEqual({ tab: "given", itemPath: "" });
+    expect(parseFilesSubpath("sources/podcasts")).toEqual({
+      tab: "sources",
+      itemPath: "podcasts",
+    });
     expect(getFilesTabPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
-    expect(getProjectFilesPath("w1", "p1", "given")).toBe("/work/w1/projects/p1/files/given");
+    expect(getProjectFilesPath("w1", "p1", "sources")).toBe("/work/w1/projects/p1/files/sources");
   });
 });

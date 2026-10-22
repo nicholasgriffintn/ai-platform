@@ -1,6 +1,7 @@
 import type {
   MarkdownConversionOptions,
   TranscriptionResponse,
+  UploadFileType,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
@@ -37,7 +38,7 @@ export class UploadService {
 
   async uploadFile(
     file: File,
-    fileType: "image" | "document" | "audio" | "code",
+    fileType: UploadFileType,
     options?: UploadFileOptions,
   ): Promise<{
     sourceId: string;

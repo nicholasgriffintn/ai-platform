@@ -13,6 +13,8 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { sourceKindSchema, type SourceKind } from "@ngriffin_uk/polychat-schemas";
+import { Upload } from "lucide-react";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 import { KnowledgeSyncPanel } from "./KnowledgeSyncPanel.js";
@@ -29,14 +31,19 @@ const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "url", label: "URLs" },
   { value: "connector", label: "Connected records" },
   { value: "repository", label: "Repositories" },
+  { value: "podcast", label: "Podcasts" },
 ];
 
+const UPLOAD_ACCEPT = "image/*,audio/*,video/*,.pdf,.md,.csv,.txt,.docx,.xlsx,.html,.json";
+
 interface SourcesLibraryProps {
+  basePath: string;
   projectId?: string;
   createRequestKey?: number;
 }
 
-export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryProps) {
+export function SourcesLibrary({ basePath, projectId, createRequestKey }: SourcesLibraryProps) {
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const {
     kind,
     setKind,
@@ -62,6 +69,7 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
     collections,
     mutations,
     selectedCollection,
+    uploadFiles,
   } = useSourcesLibrary(projectId, createRequestKey);
 
   return (
@@ -87,6 +95,26 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
             }
             actions={
               <div className="flex items-center gap-2">
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  aria-label="Upload files as sources"
+                  multiple
+                  accept={UPLOAD_ACCEPT}
+                  className="sr-only"
+                  onChange={(event) => {
+                    void uploadFiles(event.currentTarget.files);
+                    event.currentTarget.value = "";
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  icon={<Upload size={16} />}
+                  isLoading={mutations.uploadFile.isPending}
+                  onClick={() => uploadInputRef.current?.click()}
+                >
+                  Upload
+                </Button>
                 {projectId ? (
                   <Button variant="secondary" onClick={() => setIsCreateSourceOpen(true)}>
                     Add source
@@ -111,6 +139,7 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
               errorMessage={error?.message}
               isCollectionView={!!selectedCollection}
               fileHref={(source) => `${API_BASE_URL}/sources/${source.id}/content`}
+              itemHref={(source) => `${basePath}/${encodeURIComponent(source.id)}`}
               onAddToCollection={
                 collectionId
                   ? undefined

@@ -26,7 +26,8 @@ The platform includes:
 - Multi-provider chat with streaming, multimodal messages, model routing, sharing, feedback, and conversation compaction.
 - Custom agents, MCP servers, delegation, approval-aware tools, and reusable workflows.
 - Retrieval, memories, web research, generated media, realtime audio, and interactive artefacts.
-- Project-scoped experiences for longer workflows such as notes, podcasts and media generation.
+- Sources as a media library: upload and transcribe recordings and video, generate images and video across models, and turn sources into two-host podcast episodes with private RSS feeds, on demand or on a schedule.
+- Project-scoped experiences for longer workflows such as notes, articles and music patterns.
 - A governed model platform in Work: datasets, fine-tuning, deployments behind aliases, evals and audit on your own provider accounts.
 - Isolated coding runs against GitHub repositories through Cloudflare Sandboxes.
 - Authentication, guardrails, subscriptions, rate limiting, audit history, and observability.

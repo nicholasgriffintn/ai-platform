@@ -5,16 +5,28 @@ import {
   FormSelect,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
+import { getSourceMediaType } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
-import { Database, FileText, Link2, Trash2 } from "lucide-react";
+import {
+  Database,
+  FileText,
+  Film,
+  Image as ImageIcon,
+  Link2,
+  Mic,
+  Radio,
+  Trash2,
+} from "lucide-react";
+import type { ReactNode } from "react";
 
 export interface SourceSummary {
   id: string;
   title: string;
   kind: string;
+  status?: string;
   createdAt: string;
   updatedAt?: string | null;
-  file?: unknown;
+  file?: { mimeType: string } | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -30,6 +42,7 @@ export interface SourceListProps {
   errorMessage?: string;
   isCollectionView?: boolean;
   fileHref?: (source: SourceSummary) => string;
+  itemHref?: (source: SourceSummary) => string;
   onAddToCollection?: (collectionId: string, sourceId: string) => void;
   onDelete: (sourceId: string) => void;
 }
@@ -41,6 +54,7 @@ export function SourceList({
   errorMessage,
   isCollectionView = false,
   fileHref,
+  itemHref,
   onAddToCollection,
   onDelete,
 }: SourceListProps) {
@@ -75,12 +89,22 @@ export function SourceList({
           className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-selection text-muted-foreground">
-            {source.kind === "url" ? <Link2 size={17} /> : <FileText size={17} />}
+            {sourceIcon(source)}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-medium">{source.title}</h3>
+            <h3 className="truncate text-sm font-medium">
+              {itemHref ? (
+                <a href={itemHref(source)} className={textLinkClassName({})}>
+                  {source.title}
+                </a>
+              ) : (
+                source.title
+              )}
+            </h3>
             <p className="text-xs text-muted-foreground capitalize">
-              {source.kind} · {formatDate(source.updatedAt ?? source.createdAt)}
+              {sourceLabel(source)} · {formatDate(source.updatedAt ?? source.createdAt)}
+              {source.status === "processing" ? " · Processing" : null}
+              {source.status === "failed" ? " · Failed" : null}
             </p>
           </div>
           {source.file && fileHref ? (
@@ -115,4 +139,32 @@ export function SourceList({
       ))}
     </div>
   );
+}
+
+function sourceIcon(source: SourceSummary): ReactNode {
+  const mediaType = getSourceMediaType(source.file?.mimeType);
+
+  if (source.kind === "podcast") {
+    return <Radio size={17} />;
+  }
+
+  if (mediaType === "image") {
+    return <ImageIcon size={17} />;
+  }
+
+  if (mediaType === "video") {
+    return <Film size={17} />;
+  }
+
+  if (mediaType === "audio") {
+    return <Mic size={17} />;
+  }
+
+  return source.kind === "url" ? <Link2 size={17} /> : <FileText size={17} />;
+}
+
+function sourceLabel(source: SourceSummary): string {
+  const mediaType = getSourceMediaType(source.file?.mimeType);
+
+  return source.kind === "file" && mediaType ? mediaType : source.kind;
 }

@@ -18,13 +18,21 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const logger = getLogger({ prefix: "services/uploads" });
 
-const UPLOAD_SIZE_LIMITS: Record<
-  "image" | "document" | "audio" | "code",
-  { maxBytes: number; message: string }
-> = {
+type UploadFileType = "image" | "document" | "audio" | "video" | "code";
+
+const UPLOAD_FILE_TYPES: readonly UploadFileType[] = [
+  "image",
+  "document",
+  "audio",
+  "video",
+  "code",
+];
+
+const UPLOAD_SIZE_LIMITS: Record<UploadFileType, { maxBytes: number; message: string }> = {
   image: { maxBytes: 10 * 1024 * 1024, message: "Image files must be 10MB or smaller" },
   document: { maxBytes: 25 * 1024 * 1024, message: "Document files must be 25MB or smaller" },
   audio: { maxBytes: 50 * 1024 * 1024, message: "Audio files must be 50MB or smaller" },
+  video: { maxBytes: 50 * 1024 * 1024, message: "Video files must be 50MB or smaller" },
   code: { maxBytes: 200 * 1024, message: "Code files must be 200KB or smaller" },
 };
 
@@ -143,7 +151,8 @@ export async function handleFileUpload(
   markdown?: string;
 }> {
   const file = formData.get("file") as File | null;
-  const fileType = formData.get("file_type") as "image" | "document" | "audio" | "code" | null;
+  const fileTypeValue = formData.get("file_type");
+  const fileType = UPLOAD_FILE_TYPES.find((type) => type === fileTypeValue);
   const projectIdValue = formData.get("project_id");
   const projectId =
     typeof projectIdValue === "string" && projectIdValue.trim() ? projectIdValue.trim() : undefined;
@@ -156,9 +165,9 @@ export async function handleFileUpload(
     throw new AssistantError("No file uploaded", ErrorType.PARAMS_ERROR, 400);
   }
 
-  if (!fileType || !["image", "document", "audio", "code"].includes(fileType)) {
+  if (!fileType) {
     throw new AssistantError(
-      "Invalid file type. Must be 'image', 'document', 'audio', or 'code'",
+      "Invalid file type. Must be 'image', 'document', 'audio', 'video', or 'code'",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -184,7 +193,19 @@ export async function handleFileUpload(
       "text/csv",
       "application/vnd.apple.numbers",
     ],
-    audio: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/x-wav", "audio/mp4"],
+    audio: [
+      "audio/mpeg",
+      "audio/wav",
+      "audio/mp3",
+      "audio/x-wav",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/aac",
+      "audio/ogg",
+      "audio/webm",
+      "audio/flac",
+    ],
+    video: ["video/mp4", "video/webm", "video/quicktime"],
     code: [
       "text/javascript",
       "application/javascript",

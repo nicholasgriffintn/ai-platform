@@ -128,7 +128,7 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Productivity",
     kind: "colleague",
     summary: "Summarises episodes so you know which ones deserve an hour.",
-    suggestedTools: ["extract_content", "process_recording", "research", "create_note"],
+    suggestedTools: ["extract_content", "process_media", "research", "generate_podcast"],
     mode: "chat",
     characterId: "flask",
   },

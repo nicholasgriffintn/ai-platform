@@ -10,7 +10,6 @@ import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-libr
 import {
   useTaskAttention,
   useStartNewChat,
-  useOpenCanvas,
   getProjectBasePath,
   getProjectChatPath,
   getProjectConversationPath,
@@ -60,7 +59,6 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
   const startNewChat = useStartNewChat();
-  const openCanvas = useOpenCanvas();
   const { clearCurrentConversation, currentConversationId, setCurrentConversationId } =
     useChatStore();
   const activeConversationId =
@@ -177,7 +175,6 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
           projectId && workspaceId
             ? {
                 newConversationHref: projectChatPath,
-                canvasHref: `${projectBasePath}/canvas`,
                 sitesHref: `${projectBasePath}/apps/sites`,
                 filesHref: `${projectBasePath}/files`,
                 tasksHref: `${projectBasePath}/tasks`,
@@ -238,10 +235,6 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         onNavigate={closeOnMobile}
         onNewChat={() => {
           startNewChat();
-          closeOnMobile();
-        }}
-        onCanvas={() => {
-          openCanvas();
           closeOnMobile();
         }}
         onNewConversation={clearCurrentConversation}

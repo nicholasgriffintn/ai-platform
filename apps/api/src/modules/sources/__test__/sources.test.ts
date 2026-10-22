@@ -244,6 +244,7 @@ describe("project conversation context", () => {
     title: "Project context",
     description: "Sources attached to new project conversations.",
     kind: "context",
+    feed_token_hash: null,
     created_at: "2026-08-11T00:00:00.000Z",
     updated_at: null,
   };

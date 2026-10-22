@@ -4,8 +4,6 @@ export * from "./Apps/AppCard.js";
 export * from "./Apps/AppChrome.js";
 export * from "./Apps/AppRoute.js";
 export * from "./Apps/AppRuntime.js";
-export * from "./Apps/Canvas/CanvasPage.js";
-export * from "./Apps/Canvas/useCanvasStudio.js";
 export * from "./Apps/Sites/SharedSite.js";
 export * from "./Apps/Sites/SitesApp.js";
 export * from "./Apps/Sites/SiteStudio.js";

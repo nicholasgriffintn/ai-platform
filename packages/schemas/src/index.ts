@@ -181,6 +181,7 @@ export * from "./shared-teammates.js";
 export * from "./teammate-roles.js";
 export * from "./shared.js";
 export * from "./sources.js";
+export * from "./source-media.js";
 export * from "./knowledge-sync.js";
 export * from "./stripe.js";
 export * from "./tasks.js";

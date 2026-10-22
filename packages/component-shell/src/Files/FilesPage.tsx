@@ -10,7 +10,7 @@ import { type ReactNode, useState } from "react";
 import { PageShell } from "../Shell/PageShell.js";
 import { MemoryLibrary } from "./MemoryLibrary.js";
 import { OutputsLibrary } from "./OutputsLibrary.js";
-import { SourcesLibrary } from "./SourcesLibrary.js";
+import { SourcesSection } from "./Sources/SourcesSection.js";
 
 const TABS: Array<{ id: FilesTab; label: string; description: string }> = [
   {
@@ -19,9 +19,10 @@ const TABS: Array<{ id: FilesTab; label: string; description: string }> = [
     description: "Results that teammates, apps and tools have produced.",
   },
   {
-    id: "given",
-    label: "Given",
-    description: "Files, links, repositories and connected records you have supplied.",
+    id: "sources",
+    label: "Sources",
+    description:
+      "Files, links, media and connected records, plus the podcasts, images and video generated from them.",
   },
   {
     id: "memory",
@@ -53,7 +54,7 @@ export function FilesPage({
         <PageShell.Header
           title="Files"
           actions={
-            tab === "given" && !projectId
+            tab === "sources" && !itemPath && !projectId
               ? [
                   {
                     label: "Add source",
@@ -84,9 +85,10 @@ export function FilesPage({
       </nav>
       {tab === "memory" ? (
         <MemoryLibrary projectId={projectId} />
-      ) : tab === "given" ? (
-        <SourcesLibrary
-          key={projectId ?? "personal"}
+      ) : tab === "sources" ? (
+        <SourcesSection
+          basePath={getFilesTabPath(basePath, "sources")}
+          itemPath={itemPath}
           projectId={projectId}
           createRequestKey={createRequestKey}
         />

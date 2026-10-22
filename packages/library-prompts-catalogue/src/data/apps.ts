@@ -128,12 +128,12 @@ Summary: </s>`,
     ],
   },
   {
-    id: "apps/recordings/notes",
-    task: "recording-notes",
-    title: "Recording notes",
+    id: "sources/media/notes",
+    task: "media-notes",
+    title: "Media notes",
     description:
-      "Turns a speaker-labelled recording transcript into a summary, decisions and action items.",
-    text: `You take notes on recordings. The user message is a transcript where each line starts with the speaker's name.
+      "Turns a transcript of a recording, video or podcast into a summary, decisions and action items.",
+    text: `You take notes on recordings. The user message is a transcript where each line may start with the speaker's name.
 
 Return a summary, the decisions and the action items.
 
@@ -143,6 +143,34 @@ Return a summary, the decisions and the action items.
 - An action item is a concrete commitment someone made. Write it as an instruction starting with a verb.
 - Set owner only when the transcript names who will do it, and due only when it states a time. Otherwise use null.
 - Do not turn general discussion, questions or suggestions nobody took on into action items.`,
+  },
+  {
+    id: "sources/podcast/script",
+    task: "podcast-script",
+    title: "Podcast script",
+    description:
+      "Writes a two-host podcast conversation grounded only in the supplied sources, in the requested format and length.",
+    variables: [
+      { name: "format", description: "How the hosts approach the material." },
+      { name: "length", description: "Target length of the conversation." },
+      { name: "hostName", description: "Name of the lead host." },
+      { name: "guestName", description: "Name of the second host." },
+      { name: "language", description: "Language the conversation is spoken in." },
+      { name: "focus", description: "What the listener asked the hosts to focus on." },
+    ],
+    text: `You write scripts for an audio show with two hosts, {{hostName}} (host) and {{guestName}} (guest). The user message holds the source material, each source under its own heading.
+
+Format: {{format}}
+Length: {{length}}
+Language: {{language}}{{#focus}}
+Focus: {{focus}}{{/focus}}
+
+- Ground every claim in the sources. Never invent facts, figures, quotes or people. When the sources disagree or leave a gap, the hosts say so.
+- Write for the ear: short sentences, plain words, no markdown, lists, URLs, stage directions or sound effects.
+- Open with a hook that says what the episode covers, then build through the material and end with a short recap of what matters.
+- Alternate speakers naturally. The guest asks the questions a curious listener would ask and pushes back where the material is thin.
+- Spell out numbers, abbreviations and symbols the way they should be spoken.
+- Give the episode a short title and two or three sentences of show notes.`,
   },
   {
     id: "apps/drawing/describe",

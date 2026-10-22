@@ -77,13 +77,13 @@ test.describe("Provider release contracts", { tag: "@release" }, () => {
       ["replicate-prunaai-p-image-ideogram", "Release provider contract: Replicate Image"],
       ["replicate-prunaai-p-video-2-pro", "Release provider contract: Replicate Video"],
     ]) {
-      const response = await page.request.post(`${E2E_API_BASE_URL}/jobs`, {
-        data: { kind: "replicate_prediction", input: { modelId, input: { prompt } } },
+      const response = await page.request.post(`${E2E_API_BASE_URL}/sources/generations`, {
+        data: { type: "model", modelId, input: { prompt } },
       });
 
       expect(response.ok(), await response.text()).toBe(true);
       expect(await response.json()).toMatchObject({
-        data: [{ kind: "replicate_prediction", status: "succeeded" }],
+        sources: [{ status: "available", file: { key: expect.any(String) } }],
       });
     }
   });

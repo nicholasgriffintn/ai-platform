@@ -10,7 +10,6 @@ import {
   CalendarClock,
   FolderOpen,
   LayoutTemplate,
-  Palette,
   Plug,
   UsersRound,
 } from "lucide-react";
@@ -36,14 +35,6 @@ export function PlacesNavLinks({
         onClick={onNavigate}
       >
         Attention
-      </SidebarNavLink>
-      <SidebarNavLink
-        anchor={polyPlaceAnchor("canvas")}
-        href={places.canvas}
-        icon={<Palette size={16} />}
-        onClick={onNavigate}
-      >
-        Canvas
       </SidebarNavLink>
       <SidebarNavLink
         anchor={polyPlaceAnchor("sites")}

@@ -6,6 +6,8 @@ import {
   type ListPage,
   type Source,
   type SourceCollection,
+  type SourceGenerationType,
+  type SourceKind,
   type SourceSummary,
   type UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -46,6 +48,8 @@ export function formatSource(record: SourceRecord): Source {
     delete metadata.embedding_provider_target;
   }
 
+  delete metadata.pending;
+
   return {
     id: record.id,
     createdByUserId: record.created_by_user_id,
@@ -81,6 +85,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
     description: record.description,
     kind: record.kind,
     sourceCount: record.source_count ?? 0,
+    hasFeed: Boolean(record.feed_token_hash),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -165,7 +170,7 @@ export async function requireSourcesAccess(
   return sources;
 }
 
-async function requireCollectionAccess(
+export async function requireCollectionAccess(
   context: ServiceContext,
   userId: number,
   collectionId: string,
@@ -209,7 +214,7 @@ async function requireCollectionAccess(
 export async function createSource(
   context: ServiceContext,
   userId: number,
-  input: CreateSourceInput,
+  input: Omit<CreateSourceInput, "kind"> & { kind: SourceKind },
   options: { id?: string } = {},
 ): Promise<Source> {
   if (input.projectId) {
@@ -282,16 +287,17 @@ export async function getSource(context: ServiceContext, userId: number, sourceI
 export async function listSources(
   context: ServiceContext,
   userId: number,
-  filters: { projectId?: string; kind?: SourceRecord["kind"] },
+  filters: { projectId?: string; kind?: SourceRecord["kind"]; generation?: SourceGenerationType },
 ): Promise<ListPage<SourceSummary>> {
+  const repositoryFilters = { kind: filters.kind, generation: filters.generation };
   const records = filters.projectId
     ? (await requireProjectAccess(context, filters.projectId),
       await context.repositories
         .get(SourceRepository)
-        .listProjectSourceSummaries(filters.projectId, filters.kind))
+        .listProjectSourceSummaries(filters.projectId, repositoryFilters))
     : await context.repositories
         .get(SourceRepository)
-        .listPersonalSourceSummaries(userId, filters.kind);
+        .listPersonalSourceSummaries(userId, repositoryFilters);
 
   return listPageOf(records.map(formatSourceSummary), (source) => source.id);
 }

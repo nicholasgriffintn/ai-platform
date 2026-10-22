@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { listSchema } from "./platform/list.js";
+import { sourceGenerationTypeSchema } from "./source-media.js";
 
 export const sourceKindSchema = z.enum([
   "file",
@@ -9,12 +10,13 @@ export const sourceKindSchema = z.enum([
   "url",
   "connector",
   "repository",
+  "podcast",
 ]);
 const creatableSourceKindSchema = z.enum(["file", "text", "url", "connector", "repository"]);
 
 export const sourceStatusSchema = z.enum(["processing", "available", "failed", "archived"]);
 export const sourceScopeSchema = z.enum(["personal", "project"]);
-export const sourceCollectionKindSchema = z.enum(["general", "memory", "context"]);
+export const sourceCollectionKindSchema = z.enum(["general", "memory", "context", "podcast"]);
 
 export const sourceFileSchema = z
   .object({
@@ -130,6 +132,7 @@ export const sourceListQuerySchema = z
   .object({
     project_id: z.string().min(1).optional(),
     kind: sourceKindSchema.optional(),
+    generation: sourceGenerationTypeSchema.optional(),
     scope: sourceListScopeSchema.default("all"),
   })
   .strict()
@@ -146,6 +149,7 @@ export const sourceCollectionSchema = z
     description: z.string().max(500).nullable(),
     kind: sourceCollectionKindSchema,
     sourceCount: z.number().int().nonnegative(),
+    hasFeed: z.boolean(),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
   })
@@ -156,7 +160,7 @@ export const createSourceCollectionSchema = z
     projectId: z.string().min(1).nullable().optional(),
     title: z.string().trim().min(1).max(120),
     description: z.string().trim().max(500).nullable().optional(),
-    kind: z.enum(["general", "memory"]).default("general"),
+    kind: z.enum(["general", "memory", "podcast"]).default("general"),
   })
   .strict();
 

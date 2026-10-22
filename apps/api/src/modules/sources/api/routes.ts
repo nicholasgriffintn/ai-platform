@@ -1,5 +1,14 @@
 import {
   addCollectionSourcesSchema,
+  createSourceCoverSchema,
+  drawingSchema,
+  enablePodcastFeedResponseSchema,
+  generatePodcastSchema,
+  generateSourceMediaSchema,
+  guessDrawingSchema,
+  listPageOf,
+  sourceGenerationRejectionSchema,
+  summariseSourceSchema,
   createKnowledgeSyncSchema,
   createSourceCollectionSchema,
   createSourceSchema,
@@ -21,12 +30,30 @@ import z from "zod/v4";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import { startSourceGeneration } from "~/modules/sources/application/generation";
+import { paintDrawing } from "~/modules/sources/application/generation/drawing/create";
+import { guessDrawingFromImage } from "~/modules/sources/application/generation/drawing/guess";
+import { listReplicateModels } from "~/modules/sources/application/generation/replicate-models";
+import { listCanvasModels } from "~/modules/sources/application/generation/studio/list-models";
 import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import {
   controlKnowledgeSync,
   createKnowledgeSync,
   listKnowledgeSyncs,
 } from "~/modules/sources/application/knowledge-sync";
+import {
+  createSourceCover,
+  readSourceCoverObject,
+} from "~/modules/sources/application/media/cover";
+import { summariseSource } from "~/modules/sources/application/media/notes";
+import { startSourceTranscription } from "~/modules/sources/application/media/transcribe";
+import {
+  disablePodcastFeed,
+  enablePodcastFeed,
+  readPodcastFeed,
+  readPodcastFeedFile,
+} from "~/modules/sources/application/podcasts/feed";
+import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import {
   addCollectionSources,
   createSource,
@@ -39,6 +66,7 @@ import {
   listProjectConversationSources,
   listSourceCollections,
   listSources,
+  requireSourceAccess,
   setProjectContextSources,
   updateSource,
 } from "~/modules/sources/application/sources";
@@ -50,6 +78,17 @@ const syncParamsSchema = z.object({ sync_id: z.string().min(1) });
 const projectQuerySchema = z.object({ project_id: z.string().min(1).optional() });
 const requiredProjectQuerySchema = z.object({ project_id: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
+const feedParamsSchema = z.object({ token: z.string().min(32) });
+const feedFileParamsSchema = feedParamsSchema.extend({ source_id: z.string().min(1) });
+const studioModelsQuerySchema = z.object({ mode: z.enum(["image", "video"]).default("image") });
+const startedGenerationsSchema = z.object({
+  sources: z.array(sourceSchema),
+  rejected: z.array(sourceGenerationRejectionSchema),
+});
+
+function publicBaseUrl(env: { API_BASE_URL?: string }, requestUrl: string): string {
+  return env.API_BASE_URL || new URL(requestUrl).origin;
+}
 
 defineSingleton(app, { path: "/project_context", tags: ["sources"] }, (projectContext) => {
   projectContext.update({
@@ -83,6 +122,7 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
         return listSources(serviceContext, user.id, {
           projectId: query.project_id,
           kind: query.kind,
+          generation: query.generation,
         });
       },
     })
@@ -129,6 +169,119 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
 
         return { deleted: true };
       },
+    });
+
+  sources
+    .action("transcribe", {
+      auth: true,
+      summary: "Transcribe an audio or video source",
+      description:
+        "Queues a transcript. The source's media metadata reports progress, and the transcript becomes its searchable content.",
+      paramSchema: sourceParamsSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        startSourceTranscription(serviceContext, user.id, params.source_id),
+    })
+    .action("notes", {
+      auth: true,
+      summary: "Write notes for a transcribed source",
+      description: "Summarises the transcript into a summary, decisions and action items.",
+      paramSchema: sourceParamsSchema,
+      bodySchema: summariseSourceSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, params, serviceContext }) =>
+        summariseSource(serviceContext, params.source_id, body),
+    })
+    .action("cover", {
+      auth: true,
+      summary: "Generate cover art for a source",
+      paramSchema: sourceParamsSchema,
+      bodySchema: createSourceCoverSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, params, serviceContext }) =>
+        createSourceCover(serviceContext, params.source_id, body),
+    })
+    .collectionAction("podcasts", {
+      auth: true,
+      summary: "Generate a podcast episode from sources",
+      description:
+        "Creates a podcast source that stays processing while two hosts' conversation is written and voiced.",
+      bodySchema: generatePodcastSchema,
+      responses: { 200: { description: "The episode", schema: sourceSchema } },
+      handler: ({ body, serviceContext }) => startPodcastGeneration(serviceContext, body),
+    });
+
+  sources.singleton("cover").read({
+    auth: true,
+    summary: "Download a source's cover art",
+    paramSchema: sourceParamsSchema,
+    responses: { 200: { description: "Cover image" } },
+    handler: async ({ params, serviceContext, user }) =>
+      readSourceCoverObject(
+        serviceContext,
+        await requireSourceAccess(serviceContext, user.id, params.source_id),
+      ),
+  });
+
+  const generations = sources.collection("generations", "generation_id");
+
+  generations.create({
+    auth: true,
+    summary: "Generate images, video or model output into Sources",
+    description:
+      "type=studio runs one prompt across several image or video models; type=model runs one model with its own inputs. Each run is a source that stays processing until its media arrives.",
+    bodySchema: generateSourceMediaSchema,
+    responses: { 200: { description: "Started generations", schema: startedGenerationsSchema } },
+    handler: ({ body, serviceContext }) => startSourceGeneration(serviceContext, body),
+  });
+
+  generations.collection("models", "model_id").list({
+    auth: "user-or-anonymous",
+    summary: "List image and video generation models",
+    querySchema: studioModelsQuerySchema,
+    handler: async ({ query, serviceContext, user }) =>
+      listPageOf(
+        await listCanvasModels({ env: serviceContext.env, mode: query.mode, userId: user?.id }),
+        (model) => model.id,
+      ),
+  });
+
+  generations.collection("replicate_models", "model_id").list({
+    auth: "user-or-anonymous",
+    summary: "List Replicate models",
+    handler: async () => listPageOf(listReplicateModels(), (model) => model.id),
+  });
+
+  sources
+    .collection("drawings", "drawing_id")
+    .create({
+      auth: true,
+      summary: "Paint a sketch into an image source",
+      description: "Keeps the sketch and the painting as image sources.",
+      querySchema: projectQuerySchema,
+      formSchema: drawingSchema,
+      responses: { 200: { description: "The painting", schema: sourceSchema } },
+      handler: async ({ query, raw, serviceContext }) =>
+        paintDrawing(
+          serviceContext,
+          drawingSchema.parse(await raw.req.parseBody()).drawing,
+          query.project_id,
+        ),
+    })
+    .collectionAction("guess", {
+      auth: true,
+      summary: "Guess what a sketch shows",
+      querySchema: projectQuerySchema,
+      formSchema: guessDrawingSchema,
+      responses: {
+        200: { description: "The guess", schema: z.object({ guess: z.string() }) },
+      },
+      handler: async ({ query, raw, serviceContext }) =>
+        guessDrawingFromImage(
+          serviceContext,
+          guessDrawingSchema.parse(await raw.req.parseBody()).drawing,
+          query.project_id,
+        ),
     });
 
   sources.singleton("content").read({
@@ -179,6 +332,70 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
         return { deleted: true };
       },
     });
+
+  collections
+    .action("feed", {
+      auth: true,
+      summary: "Create a private RSS feed link for a podcast show",
+      description:
+        "Returns a new feed URL for podcast apps. Any earlier link for the show stops working.",
+      paramSchema: collectionParamsSchema,
+      responses: {
+        200: { description: "The feed link", schema: enablePodcastFeedResponseSchema },
+      },
+      handler: ({ params, raw, serviceContext, user }) =>
+        enablePodcastFeed(
+          serviceContext,
+          user.id,
+          params.collection_id,
+          publicBaseUrl(serviceContext.env, raw.req.url),
+        ),
+    })
+    .shared({
+      auth: false,
+      summary: "Read a podcast show's RSS feed",
+      paramSchema: feedParamsSchema,
+      responses: { 200: { description: "RSS feed" } },
+      handler: ({ params, raw, serviceContext }) =>
+        readPodcastFeed(
+          serviceContext,
+          params.token,
+          publicBaseUrl(serviceContext.env, raw.req.url),
+        ),
+    })
+    .shared(
+      {
+        auth: false,
+        summary: "Download a podcast episode from its feed",
+        paramSchema: feedFileParamsSchema,
+        responses: { 200: { description: "Episode audio" } },
+        handler: ({ params, serviceContext }) =>
+          readPodcastFeedFile(serviceContext, params.token, params.source_id, "audio"),
+      },
+      ":source_id",
+    )
+    .shared(
+      {
+        auth: false,
+        summary: "Download a podcast episode's cover art from its feed",
+        paramSchema: feedFileParamsSchema,
+        responses: { 200: { description: "Cover image" } },
+        handler: ({ params, serviceContext }) =>
+          readPodcastFeedFile(serviceContext, params.token, params.source_id, "cover"),
+      },
+      ":source_id/cover",
+    );
+
+  collections.singleton("feed").delete({
+    auth: true,
+    summary: "Turn off a podcast show's RSS feed",
+    paramSchema: collectionParamsSchema,
+    handler: async ({ params, serviceContext, user }) => {
+      await disablePodcastFeed(serviceContext, user.id, params.collection_id);
+
+      return { deleted: true };
+    },
+  });
 
   collections
     .sub("sources", "source_id")

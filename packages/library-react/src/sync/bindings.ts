@@ -21,7 +21,6 @@ import {
   TASK_ATTENTION_QUERY_KEY,
 } from "../hooks/useProjectTasks.js";
 import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenchPreview.js";
-import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
 import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
@@ -174,8 +173,12 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     type: "output.changed",
     apply: (context) => {
       context.invalidate(["outputs"]);
-      context.invalidate(["canvas"]);
-      context.invalidate([REPLICATE_QUERY_KEY]);
+    },
+  },
+  {
+    type: "source.changed",
+    apply: (context) => {
+      context.invalidate(["sources"]);
     },
   },
   {
@@ -230,8 +233,6 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     type: "job.changed",
     apply: (context) => {
       context.invalidate(["research-status"]);
-      context.invalidate(["canvas"]);
-      context.invalidate([REPLICATE_QUERY_KEY]);
     },
   },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
@@ -271,8 +272,6 @@ export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["inval
     [GOAL_QUERY_KEY],
     POLY_AGENDA_QUERY_KEY,
     ["research-status"],
-    ["canvas"],
-    [REPLICATE_QUERY_KEY],
   ]) {
     invalidateQuery(queryKey);
   }
