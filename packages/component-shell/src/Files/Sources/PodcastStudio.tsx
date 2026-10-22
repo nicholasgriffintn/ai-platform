@@ -1,280 +1,178 @@
 import { SourceList } from "@ngriffin_uk/polychat-component-account";
+import { Button, Card, ConfirmationDialog, FormInput } from "@ngriffin_uk/polychat-component-ui";
 import {
-  Button,
-  Card,
-  ConfirmationDialog,
-  FormCheckbox,
-  FormInput,
-  FormSelect,
-  Textarea,
-} from "@ngriffin_uk/polychat-component-ui";
-import {
-  useGeneratePodcast,
   usePodcastFeed,
   useSourceCollections,
   useSourceMutations,
   useSources,
 } from "@ngriffin_uk/polychat-library-react";
-import {
-  getSourceMediaType,
-  isTranscribableMediaType,
-  PODCAST_FORMATS,
-  podcastFormatSchema,
-  podcastLengthSchema,
-  readSourceMedia,
-  type PodcastFormat,
-  type PodcastLength,
-  type SourceCollection,
-  type SourceSummary,
-} from "@ngriffin_uk/polychat-schemas";
-import { Copy, Rss } from "lucide-react";
-import { useState } from "react";
+import type { SourceCollection } from "@ngriffin_uk/polychat-schemas";
+import { Copy, Plus, Radio, Rss } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
-const LENGTH_OPTIONS: Array<{ value: PodcastLength; label: string }> = [
-  { value: "short", label: "Short, about 5 minutes" },
-  { value: "default", label: "Standard, about 10 minutes" },
-  { value: "long", label: "Long, about 20 minutes" },
-];
+import { NewEpisodeDialog } from "./NewEpisodeDialog.js";
 
-function isEpisodeMaterial(source: SourceSummary): boolean {
-  if (source.status !== "available" || source.kind === "memory") {
-    return false;
-  }
-
-  if (!isTranscribableMediaType(getSourceMediaType(source.file?.mimeType))) {
-    return true;
-  }
-
-  return readSourceMedia(source.metadata).transcript?.status === "ready";
-}
-
-const FORMAT_OPTIONS = podcastFormatSchema.options.map((format) => ({
-  value: format,
-  label: PODCAST_FORMATS[format].label,
-}));
-
-function ShowFeed({ show }: { show: SourceCollection }) {
-  const feed = usePodcastFeed();
-  const [url, setUrl] = useState<string | null>(null);
-
+function SectionHeader({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border py-3 last:border-0">
+    <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{show.title}</p>
-        <p className="text-xs text-muted-foreground">
-          {show.sourceCount} episodes · {show.hasFeed ? "Feed on" : "Feed off"}
-        </p>
-        {url ? (
-          <p className="mt-1 truncate font-mono text-xs text-muted-foreground" title={url}>
-            {url}
-          </p>
-        ) : null}
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+        <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
       </div>
-      {url ? (
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<Copy size={14} />}
-          onClick={() => {
-            void navigator.clipboard.writeText(url);
-            toast.success("Feed link copied");
-          }}
-        >
-          Copy
-        </Button>
-      ) : null}
-      <Button
-        variant="secondary"
-        size="sm"
-        icon={<Rss size={14} />}
-        isLoading={feed.enable.isPending}
-        onClick={() => void feed.enable.mutateAsync(show.id).then((result) => setUrl(result.url))}
-      >
-        {show.hasFeed ? "New feed link" : "Create feed link"}
-      </Button>
-      {show.hasFeed ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          isLoading={feed.disable.isPending}
-          onClick={() => void feed.disable.mutateAsync(show.id).then(() => setUrl(null))}
-        >
-          Turn off
-        </Button>
-      ) : null}
+      {action}
     </div>
   );
 }
 
-function PodcastShows({ projectId }: { projectId?: string }) {
-  const { data: collections } = useSourceCollections(projectId);
-  const mutations = useSourceMutations();
-  const [title, setTitle] = useState("");
-  const shows = collections?.filter((collection) => collection.kind === "podcast") ?? [];
+function ShowRow({ show }: { show: SourceCollection }) {
+  const feed = usePodcastFeed();
+  const [url, setUrl] = useState<string | null>(null);
+  const [confirmingTurnOff, setConfirmingTurnOff] = useState(false);
+  const episodes = `${show.sourceCount} ${show.sourceCount === 1 ? "episode" : "episodes"}`;
 
   return (
-    <Card className="gap-3 p-5 shadow-none">
-      <div>
-        <h3 className="text-base font-semibold text-foreground">Shows</h3>
-        <p className="text-sm text-muted-foreground">
-          A show collects episodes and gives them a private RSS feed for your podcast app. Anyone
-          with the link can listen, so treat it like a password and make a new one to cut off old
-          links.
-        </p>
-      </div>
-      {shows.map((show) => (
-        <ShowFeed key={show.id} show={show} />
-      ))}
-      <form
-        className="flex items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void mutations.createCollection
-            .mutateAsync({ projectId, title: title.trim(), kind: "podcast" })
-            .then(() => setTitle(""));
-        }}
-      >
-        <FormInput
-          label="New show"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="Morning briefing"
-        />
+    <li className="space-y-3 py-4 first:pt-0 last:pb-0">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{show.title}</p>
+          <p className="text-xs text-muted-foreground">
+            {episodes} · {show.hasFeed ? "RSS feed on" : "No RSS feed"}
+          </p>
+        </div>
         <Button
-          type="submit"
           variant="secondary"
-          disabled={!title.trim()}
-          isLoading={mutations.createCollection.isPending}
+          size="sm"
+          icon={<Rss size={14} />}
+          isLoading={feed.enable.isPending}
+          onClick={() => void feed.enable.mutateAsync(show.id).then((result) => setUrl(result.url))}
         >
-          Add show
+          {show.hasFeed ? "Get a new feed link" : "Get feed link"}
         </Button>
-      </form>
-    </Card>
+        {show.hasFeed ? (
+          <Button variant="ghost" size="sm" onClick={() => setConfirmingTurnOff(true)}>
+            Turn off feed
+          </Button>
+        ) : null}
+      </div>
+      {url ? (
+        <div className="space-y-1 rounded-lg border border-border bg-selection p-3">
+          <div className="flex items-end gap-2">
+            <FormInput
+              label="Feed link"
+              value={url}
+              readOnly
+              onFocus={(event) => event.target.select()}
+            />
+            <Button
+              variant="secondary"
+              icon={<Copy size={14} />}
+              onClick={() => {
+                void navigator.clipboard.writeText(url);
+                toast.success("Feed link copied");
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Paste it into your podcast app's "follow a show by URL" option. Copy it now: it is only
+            shown once, and anyone with it can listen.
+          </p>
+        </div>
+      ) : null}
+      <ConfirmationDialog
+        open={confirmingTurnOff}
+        onOpenChange={setConfirmingTurnOff}
+        title="Turn off feed"
+        description="Podcast apps following this show stop getting episodes. You can make a new link later."
+        confirmText="Turn off feed"
+        variant="destructive"
+        isLoading={feed.disable.isPending}
+        onConfirm={async () => {
+          await feed.disable.mutateAsync(show.id);
+          setUrl(null);
+          setConfirmingTurnOff(false);
+        }}
+      />
+    </li>
   );
 }
 
-function EpisodeForm({ projectId, shows }: { projectId?: string; shows: SourceCollection[] }) {
-  const { data: sources } = useSources({ projectId });
-  const generate = useGeneratePodcast();
-  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+function ShowsSection({ projectId, shows }: { projectId?: string; shows: SourceCollection[] }) {
+  const mutations = useSourceMutations();
+  const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState("");
-  const [focus, setFocus] = useState("");
-  const [format, setFormat] = useState<PodcastFormat>("deep_dive");
-  const [length, setLength] = useState<PodcastLength>("default");
-  const [showId, setShowId] = useState("");
-  const candidates = sources?.filter(isEpisodeMaterial) ?? [];
 
-  const startEpisode = async () => {
-    await generate.mutateAsync({
+  const createShow = async () => {
+    await mutations.createCollection.mutateAsync({
       projectId,
-      sourceIds: [...selected],
-      title: title.trim() || undefined,
-      focus: focus.trim() || undefined,
-      format,
-      length,
-      showId: showId || undefined,
+      title: title.trim(),
+      kind: "podcast",
     });
-    setSelected(new Set());
     setTitle("");
-    setFocus("");
-    toast.success("Episode started. It appears below in a few minutes.");
+    setIsAdding(false);
   };
 
   return (
-    <Card className="gap-4 p-5 shadow-none">
-      <div>
-        <h3 className="text-base font-semibold text-foreground">New episode</h3>
-        <p className="text-sm text-muted-foreground">
-          Two hosts talk through the sources you pick. Audio and video sources need a transcript
-          first.
-        </p>
-      </div>
-      <fieldset className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-border p-3">
-        <legend className="px-1 text-sm font-medium">Sources</legend>
-        {candidates.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Add sources to make an episode from.</p>
-        ) : (
-          candidates.map((source) => (
-            <FormCheckbox
-              key={source.id}
-              label={source.title}
-              labelPosition="right"
-              checked={selected.has(source.id)}
-              onCheckedChange={(checked) =>
-                setSelected((current) => {
-                  const next = new Set(current);
-
-                  if (checked) {
-                    next.add(source.id);
-                  } else {
-                    next.delete(source.id);
-                  }
-
-                  return next;
-                })
-              }
-            />
-          ))
-        )}
-      </fieldset>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <FormSelect
-          label="Format"
-          value={format}
-          options={FORMAT_OPTIONS}
-          onValueChange={(value) => setFormat(podcastFormatSchema.parse(value))}
-        />
-        <FormSelect
-          label="Length"
-          value={length}
-          options={LENGTH_OPTIONS}
-          onValueChange={(value) => setLength(podcastLengthSchema.parse(value))}
-        />
-        <FormSelect
-          label="Show"
-          value={showId}
-          placeholder="No show"
-          options={[
-            { value: "", label: "No show" },
-            ...shows.map((show) => ({ value: show.id, label: show.title })),
-          ]}
-          onValueChange={setShowId}
-        />
-      </div>
-      <FormInput
-        label="Title"
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="Leave empty to let the hosts name it"
+    <Card className="gap-4 p-6 shadow-none">
+      <SectionHeader
+        title="Shows and RSS feeds"
+        description="Put episodes in a show to listen in any podcast app. Each show gets its own private feed link."
+        action={
+          isAdding ? null : (
+            <Button variant="secondary" icon={<Plus size={16} />} onClick={() => setIsAdding(true)}>
+              New show
+            </Button>
+          )
+        }
       />
-      <div className="space-y-1">
-        <label htmlFor="podcast-focus" className="text-sm font-medium">
-          Focus
-        </label>
-        <Textarea
-          id="podcast-focus"
-          value={focus}
-          onChange={(event) => setFocus(event.target.value)}
-          placeholder="Who is listening and what the hosts should concentrate on"
-          className="min-h-20"
-        />
-      </div>
-      {generate.error ? (
-        <p role="alert" className="text-sm text-failure">
-          {generate.error.message}
-        </p>
-      ) : null}
-      <div>
-        <Button
-          variant="primary"
-          disabled={selected.size === 0}
-          isLoading={generate.isPending}
-          onClick={() => void startEpisode()}
+      {isAdding ? (
+        <form
+          className="flex items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void createShow();
+          }}
         >
-          Generate episode
-        </Button>
-      </div>
+          <FormInput
+            label="Show name"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Morning briefing"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!title.trim()}
+            isLoading={mutations.createCollection.isPending}
+          >
+            Create
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setIsAdding(false)}>
+            Cancel
+          </Button>
+        </form>
+      ) : null}
+      {shows.length > 0 ? (
+        <ul className="divide-y divide-border">
+          {shows.map((show) => (
+            <ShowRow key={show.id} show={show} />
+          ))}
+        </ul>
+      ) : isAdding ? null : (
+        <p className="text-sm text-muted-foreground">
+          No shows yet. Episodes still work without one; a show is only needed for a feed.
+        </p>
+      )}
     </Card>
   );
 }
@@ -283,25 +181,54 @@ export function PodcastStudio({ basePath, projectId }: { basePath: string; proje
   const { data: collections } = useSourceCollections(projectId);
   const { data: episodes, isLoading, error } = useSources({ projectId, kind: "podcast" });
   const mutations = useSourceMutations();
+  const [isCreating, setIsCreating] = useState(false);
   const [episodeToDelete, setEpisodeToDelete] = useState<string | null>(null);
   const shows = collections?.filter((collection) => collection.kind === "podcast") ?? [];
+  const newEpisode = (
+    <Button variant="primary" icon={<Plus size={16} />} onClick={() => setIsCreating(true)}>
+      New episode
+    </Button>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        <EpisodeForm projectId={projectId} shows={shows} />
-        <PodcastShows projectId={projectId} />
-      </div>
-      <Card className="p-6 shadow-none">
-        <h3 className="mb-2 text-base font-semibold text-foreground">Episodes</h3>
-        <SourceList
-          sources={episodes}
-          isLoading={isLoading}
-          errorMessage={error?.message}
-          itemHref={(source) => `${basePath}/${encodeURIComponent(source.id)}`}
-          onDelete={setEpisodeToDelete}
+      <Card className="gap-4 p-6 shadow-none">
+        <SectionHeader
+          title="Episodes"
+          description="Two AI hosts talk through your sources: documents, links and transcribed recordings."
+          action={episodes?.length ? newEpisode : null}
         />
+        {!isLoading && !error && !episodes?.length ? (
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border px-6 py-10 text-center">
+            <Radio size={28} className="text-muted-foreground" aria-hidden="true" />
+            <div>
+              <p className="font-medium text-foreground">No episodes yet</p>
+              <p className="text-sm text-muted-foreground">
+                Choose a few sources and a style, and you get an episode with a transcript and show
+                notes.
+              </p>
+            </div>
+            {newEpisode}
+          </div>
+        ) : (
+          <SourceList
+            sources={episodes}
+            isLoading={isLoading}
+            errorMessage={error?.message}
+            itemHref={(source) => `${basePath}/${encodeURIComponent(source.id)}`}
+            onDelete={setEpisodeToDelete}
+          />
+        )}
       </Card>
+
+      <ShowsSection projectId={projectId} shows={shows} />
+
+      <NewEpisodeDialog
+        open={isCreating}
+        onOpenChange={setIsCreating}
+        projectId={projectId}
+        shows={shows}
+      />
       <ConfirmationDialog
         open={episodeToDelete !== null}
         onOpenChange={(open) => !open && setEpisodeToDelete(null)}
