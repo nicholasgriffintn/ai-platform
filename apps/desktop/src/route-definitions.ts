@@ -1,7 +1,11 @@
 import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
 import { matchRoutes } from "react-router";
 
-import { readPageRoutes, type DesktopPageRoutes } from "./pages/registry";
+import {
+  readPageRoutes,
+  type DesktopPageRoutes,
+  type DesktopPageRoutesModule,
+} from "./pages/registry";
 
 export const NOT_FOUND_PAGE = "not-found";
 
@@ -24,12 +28,10 @@ export interface DesktopRouteDefinition {
 export function buildRouteDefinitions(
   pages: readonly DesktopPageRoutes[],
 ): DesktopRouteDefinition[] {
-  const built = new Set(pages.flatMap(({ paths }) => paths));
+  const built = new Set(pages.flatMap(({ routes }) => routes.map(({ path }) => path)));
 
   return [
-    ...pages.flatMap(({ page, paths, layout }) =>
-      paths.map((path) => ({ path, page, ...(layout ? { layout } : {}) })),
-    ),
+    ...pages.flatMap(({ page, routes }) => routes.map((route) => ({ ...route, page }))),
     ...CHAT_PLACE_PATHS.map((path) => `${MODE_BASE_PATHS.chat}/${path}`)
       .filter((path) => !built.has(path))
       .map((path) => ({ path, page: NOT_FOUND_PAGE })),
@@ -37,9 +39,7 @@ export function buildRouteDefinitions(
 }
 
 export const DESKTOP_PAGE_ROUTES = readPageRoutes(
-  import.meta.glob<{ paths: readonly string[]; layout?: string }>("./pages/*/routes.ts", {
-    eager: true,
-  }),
+  import.meta.glob<DesktopPageRoutesModule>("./pages/*/routes.ts", { eager: true }),
 );
 
 export const DESKTOP_ROUTE_DEFINITIONS: readonly DesktopRouteDefinition[] =

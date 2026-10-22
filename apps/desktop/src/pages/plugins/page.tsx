@@ -1,5 +1,1 @@
-import { PluginsPage } from "@ngriffin_uk/polychat-component-shell";
-
-export default function DesktopPluginsPage() {
-  return <PluginsPage />;
-}
+export { PluginsPlace as default } from "@ngriffin_uk/polychat-component-shell";

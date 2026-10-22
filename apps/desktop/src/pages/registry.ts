@@ -1,9 +1,20 @@
 import type { ComponentType } from "react";
 
+export interface DesktopPageRoute {
+  path: string;
+  layout?: string;
+}
+
+export type DesktopPagePath = string | DesktopPageRoute;
+
+export interface DesktopPageRoutesModule {
+  paths: readonly DesktopPagePath[];
+  layout?: string;
+}
+
 export interface DesktopPageRoutes {
   page: string;
-  paths: readonly string[];
-  layout?: string;
+  routes: readonly DesktopPageRoute[];
 }
 
 export interface DesktopPageComponent {
@@ -19,6 +30,13 @@ function byPage<T extends { page: string }>(entries: T[]): T[] {
   return entries.sort((left, right) => left.page.localeCompare(right.page));
 }
 
+function toRoute(entry: DesktopPagePath, defaultLayout: string | undefined): DesktopPageRoute {
+  const route = typeof entry === "string" ? { path: entry } : entry;
+  const layout = route.layout ?? defaultLayout;
+
+  return layout ? { path: route.path, layout } : { path: route.path };
+}
+
 export function readPageNames(modules: Record<string, unknown>): string[] {
   return Object.keys(modules)
     .map(directoryName)
@@ -26,13 +44,12 @@ export function readPageNames(modules: Record<string, unknown>): string[] {
 }
 
 export function readPageRoutes(
-  modules: Record<string, { paths: readonly string[]; layout?: string }>,
+  modules: Record<string, DesktopPageRoutesModule>,
 ): DesktopPageRoutes[] {
   return byPage(
     Object.entries(modules).map(([file, module]) => ({
       page: directoryName(file),
-      paths: module.paths,
-      ...(module.layout ? { layout: module.layout } : {}),
+      routes: module.paths.map((entry) => toRoute(entry, module.layout)),
     })),
   );
 }
