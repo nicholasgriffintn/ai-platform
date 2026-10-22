@@ -7,7 +7,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { readSourceCoverObject } from "~/modules/sources/application/media/cover";
 import { readSourceRecordMedia } from "~/modules/sources/application/media/metadata";
-import { requireCollectionAccess } from "~/modules/sources/application/sources";
+import {
+  requireCollectionAccess,
+  requireSourcesAccess,
+} from "~/modules/sources/application/sources";
 import {
   SourceRepository,
   type SourceCollectionRecord,
@@ -46,11 +49,20 @@ export async function enablePodcastFeed(
   baseUrl: string,
 ): Promise<{ url: string }> {
   const show = await requireShow(context, userId, collectionId);
+  const repository = context.repositories.get(SourceRepository);
+  const episodes = await repository.listCollectionSources(show.id);
+
+  await requireSourcesAccess(
+    context,
+    userId,
+    episodes.map((episode) => episode.id),
+    undefined,
+    true,
+  );
+
   const token = randomHex(32);
 
-  await context.repositories
-    .get(SourceRepository)
-    .setCollectionFeedTokenHash(show.id, await sha256Hex(token));
+  await repository.setCollectionFeedTokenHash(show.id, await sha256Hex(token));
 
   if (show.project_id) {
     await recordProjectAudit(context, show.project_id, {

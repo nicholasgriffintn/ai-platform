@@ -39,7 +39,7 @@ import {
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { estimateSpokenSeconds, PODCAST_HOSTS, synthesisePodcastAudio } from "./audio";
-import { writePodcastScript } from "./script";
+import { buildPodcastMaterial, writePodcastScript } from "./script";
 
 const logger = getLogger({ prefix: "sources/podcasts" });
 
@@ -68,7 +68,7 @@ export async function startPodcastGeneration(
     );
   }
 
-  await requireSourcesAccess(context, user.id, input.sourceIds, (source) => {
+  const chosenSources = await requireSourcesAccess(context, user.id, input.sourceIds, (source) => {
     if (source.project_id !== projectId) {
       throw new AssistantError(
         "Sources must belong to the episode's scope",
@@ -77,6 +77,14 @@ export async function startPodcastGeneration(
       );
     }
   });
+
+  if (!input.material && !buildPodcastMaterial(chosenSources)) {
+    throw new AssistantError(
+      "The chosen sources have no text to talk about. Transcribe or add text first.",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   const sourceIds = [...input.sourceIds];
 

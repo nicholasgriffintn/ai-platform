@@ -413,6 +413,37 @@ describe("project conversation context", () => {
     expect(result).toEqual({ added: 2 });
   });
 
+  it("stops a member adding a coworker's source to a podcast show", async () => {
+    requireProjectAccessMock.mockResolvedValue({ role: "member" });
+    const addCollectionSourcesRepo = vi.fn();
+    const context = {
+      env: {},
+      user: { id: 42 },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi
+              .fn()
+              .mockResolvedValue([{ ...projectSource, created_by_user_id: 7 }]),
+            addCollectionSources: addCollectionSourcesRepo,
+            getCollection: vi.fn().mockResolvedValue({
+              id: "show-1",
+              project_id: "project-1",
+              created_by_user_id: 42,
+              kind: "podcast",
+            }),
+          },
+        ],
+      ]),
+    } as unknown as ServiceContext;
+
+    await expect(
+      addCollectionSources(context, 42, "show-1", [projectSource.id]),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(addCollectionSourcesRepo).not.toHaveBeenCalled();
+  });
+
   it("prevents the reserved project context collection from generic deletion", async () => {
     const deleteCollection = vi.fn();
     const context = {

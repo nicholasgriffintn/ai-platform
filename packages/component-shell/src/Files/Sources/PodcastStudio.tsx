@@ -16,12 +16,16 @@ import {
   useSources,
 } from "@ngriffin_uk/polychat-library-react";
 import {
+  getSourceMediaType,
+  isTranscribableMediaType,
   PODCAST_FORMATS,
   podcastFormatSchema,
   podcastLengthSchema,
+  readSourceMedia,
   type PodcastFormat,
   type PodcastLength,
   type SourceCollection,
+  type SourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import { Copy, Rss } from "lucide-react";
 import { useState } from "react";
@@ -32,6 +36,18 @@ const LENGTH_OPTIONS: Array<{ value: PodcastLength; label: string }> = [
   { value: "default", label: "Standard, about 10 minutes" },
   { value: "long", label: "Long, about 20 minutes" },
 ];
+
+function isEpisodeMaterial(source: SourceSummary): boolean {
+  if (source.status !== "available" || source.kind === "memory") {
+    return false;
+  }
+
+  if (!isTranscribableMediaType(getSourceMediaType(source.file?.mimeType))) {
+    return true;
+  }
+
+  return readSourceMedia(source.metadata).transcript?.status === "ready";
+}
 
 const FORMAT_OPTIONS = podcastFormatSchema.options.map((format) => ({
   value: format,
@@ -147,8 +163,7 @@ function EpisodeForm({ projectId, shows }: { projectId?: string; shows: SourceCo
   const [format, setFormat] = useState<PodcastFormat>("deep_dive");
   const [length, setLength] = useState<PodcastLength>("default");
   const [showId, setShowId] = useState("");
-  const candidates =
-    sources?.filter((source) => source.status === "available" && source.kind !== "memory") ?? [];
+  const candidates = sources?.filter(isEpisodeMaterial) ?? [];
 
   const startEpisode = async () => {
     await generate.mutateAsync({

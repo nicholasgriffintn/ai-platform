@@ -10,6 +10,7 @@ import {
   type SourceKind,
   type SourceSummary,
   type UpdateSourceInput,
+  type WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
@@ -113,6 +114,17 @@ export async function requireSourceAccess(
 
   const { role } = await requireProjectAccess(context, source.project_id);
 
+  assertProjectSourceAuthority(userId, source, role, mutate);
+
+  return source;
+}
+
+function assertProjectSourceAuthority(
+  userId: number,
+  source: SourceRecord,
+  role: WorkspaceRole,
+  mutate: boolean,
+): void {
   const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
     actorId: String(userId),
     ownerId: String(source.created_by_user_id),
@@ -128,8 +140,6 @@ export async function requireSourceAccess(
       403,
     );
   }
-
-  return source;
 }
 
 export async function requireSourcesAccess(
@@ -137,6 +147,7 @@ export async function requireSourcesAccess(
   userId: number,
   sourceIds: readonly string[],
   validate?: (source: SourceRecord) => void,
+  mutate = false,
 ): Promise<SourceRecord[]> {
   if (sourceIds.length === 0) {
     return [];
@@ -144,7 +155,7 @@ export async function requireSourcesAccess(
 
   const records = await context.repositories.get(SourceRepository).getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
-  const verifiedProjects = new Set<string>();
+  const projectRoles = new Map<string, WorkspaceRole>();
   const sources: SourceRecord[] = [];
 
   for (const sourceId of sourceIds) {
@@ -158,9 +169,15 @@ export async function requireSourcesAccess(
       if (!ownsResource(userId, source.created_by_user_id)) {
         throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
       }
-    } else if (!verifiedProjects.has(source.project_id)) {
-      await requireProjectAccess(context, source.project_id);
-      verifiedProjects.add(source.project_id);
+    } else {
+      let role = projectRoles.get(source.project_id);
+
+      if (!role) {
+        role = (await requireProjectAccess(context, source.project_id)).role;
+        projectRoles.set(source.project_id, role);
+      }
+
+      assertProjectSourceAuthority(userId, source, role, mutate);
     }
 
     validate?.(source);
@@ -565,15 +582,21 @@ export async function addCollectionSources(
 ): Promise<{ added: number }> {
   const collection = await requireCollectionAccess(context, userId, collectionId, true);
 
-  await requireSourcesAccess(context, userId, sourceIds, (source) => {
-    if (source.project_id !== collection.project_id) {
-      throw new AssistantError(
-        "Source is outside this collection scope",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
-  });
+  await requireSourcesAccess(
+    context,
+    userId,
+    sourceIds,
+    (source) => {
+      if (source.project_id !== collection.project_id) {
+        throw new AssistantError(
+          "Source is outside this collection scope",
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+    },
+    collection.kind === "podcast",
+  );
 
   return {
     added: await context.repositories
