@@ -92,6 +92,7 @@ const sessionQuerySchema = z.object({
   voice: z.string().min(1).optional(),
   instructions: z.string().min(1).optional(),
   delay: z.string().min(1).optional(),
+  speakers: z.literal("true").optional(),
   transport: z.string().min(1).optional(),
   input_modalities: z.string().min(1).optional(),
   output_modalities: z.string().min(1).optional(),
@@ -118,7 +119,11 @@ function transcriptionProxy(
 
     switch (provider) {
       case "mistral":
-        return createMistralRealtimeProxyResponse({ ...shared, delay: query.delay });
+        return createMistralRealtimeProxyResponse({
+          ...shared,
+          delay: query.delay,
+          speakerLabels: query.speakers === "true",
+        });
       case "elevenlabs":
         return createElevenLabsRealtimeProxyResponse({ ...shared, language: query.language });
       case "cartesia":
@@ -191,6 +196,7 @@ defineResource(
           voice: query.voice,
           instructions: query.instructions,
           delay: query.delay,
+          speakerLabels: query.speakers === "true",
           transport: query.transport,
           inputModalities: query.input_modalities,
           outputModalities: query.output_modalities,

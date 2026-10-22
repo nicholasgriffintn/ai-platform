@@ -8,6 +8,7 @@ import {
   parseResponseStyle,
   type PetModelOverrides,
   type ResponseStyleSettings,
+  type SavedSpeechVoice,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveSpeechSettings, resolveTranscriptionSettings } from "./transcription-settings";
@@ -50,8 +51,11 @@ export interface UserSettings {
   memory_provider?: string;
   transcription_provider?: string;
   transcription_model?: string;
+  transcription_vocabulary?: string[];
   speech_provider?: string;
   speech_model?: string;
+  speech_expressiveness?: number | null;
+  speech_voices?: SavedSpeechVoice[];
   search_provider?: string;
   sandbox_model?: string;
   default_model_tier?: ModelTier | null;
@@ -91,6 +95,14 @@ export function prepareUserSettingsPayload(
     payload.default_compute_site = default_compute_site || null;
   }
 
+  if (payload.transcription_vocabulary) {
+    payload.transcription_vocabulary = payload.transcription_vocabulary
+      .map((term) => term.trim())
+      .filter(Boolean);
+  }
+
+  delete payload.speech_voices;
+
   if (payload.embedding_provider !== "s3vectors") {
     delete payload.s3vectors_bucket_name;
     delete payload.s3vectors_index_name;
@@ -114,6 +126,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
   const speechSettings = resolveSpeechSettings(
     userSettings?.speech_provider,
     userSettings?.speech_model,
+    userSettings?.speech_voices,
   );
 
   return {
@@ -152,8 +165,11 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     advertise_machines: userSettings?.advertise_machines ?? true,
     transcription_provider: transcriptionSettings.transcription_provider,
     transcription_model: transcriptionSettings.transcription_model,
+    transcription_vocabulary: userSettings?.transcription_vocabulary ?? [],
     speech_provider: speechSettings.speech_provider,
     speech_model: speechSettings.speech_model,
+    speech_expressiveness: userSettings?.speech_expressiveness ?? null,
+    speech_voices: userSettings?.speech_voices ?? [],
     search_provider: userSettings?.search_provider || "",
     sandbox_model: userSettings?.sandbox_model || "",
     default_model_tier: userSettings?.default_model_tier ?? "",

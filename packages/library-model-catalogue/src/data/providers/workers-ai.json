@@ -907,6 +907,17 @@
         "supportsTemperature": false
       }
     },
+    "@cf/cloudflare/clairic": {
+      "model": "cloudflare/clairic/clairic",
+      "matchingModel": "@cf/cloudflare/clairic",
+      "overrides": {
+        "isFree": true,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
     "@cf/cloudflare/clef-omni": {
       "model": "workers-ai/@cf/cloudflare/clef-omni/clef-omni",
       "matchingModel": "@cf/cloudflare/clef-omni",

@@ -41,6 +41,28 @@ function sanitiseClientMessage(data: string): string {
   return JSON.stringify({ type, audio });
 }
 
+export function buildMistralSessionUpdateMessage({
+  audioFormat,
+  speakerLabels,
+  targetStreamingDelayMs,
+  vocabulary,
+}: {
+  audioFormat?: Record<string, unknown>;
+  speakerLabels: boolean;
+  targetStreamingDelayMs?: number;
+  vocabulary: readonly string[];
+}): string {
+  return JSON.stringify({
+    type: "session.update",
+    session: {
+      audio_format: audioFormat,
+      ...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
+      ...(vocabulary.length > 0 ? { context_bias: vocabulary } : {}),
+      ...(speakerLabels ? { diarize: true } : { turn_detection: {} }),
+    },
+  });
+}
+
 export function isMistralSessionCreatedMessage(data: unknown): boolean {
   if (typeof data !== "string") {
     return false;

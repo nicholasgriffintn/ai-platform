@@ -1,4 +1,5 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { AudioCommitGateConfig } from "./audio-commit-gate";
 import {
@@ -15,6 +16,7 @@ type RealtimeLiveProviderId = RealtimeLiveProviderDescriptor["id"];
 
 interface RealtimeLiveWebSocketAudioInputBaseConfig {
   commitMessages?: unknown[];
+  commitOnServerTurnEnd?: string;
   commitOnSilence?: AudioCommitGateConfig;
   endMessages?: unknown[];
   endOnMicrophonePause?: boolean;
@@ -67,6 +69,13 @@ export interface RealtimeLiveWebSocketConfig {
   setup?: RealtimeLiveWebSocketSetupConfig;
   startingMediaEventLabel: string;
   videoInput?: RealtimeLiveWebSocketVideoInputConfig;
+}
+
+export function hasServerTurnDetection(session: RealtimeSession): boolean {
+  const audio = session.audio;
+  const input = isRecord(audio) ? audio.input : undefined;
+
+  return isRecord(input) && isRecord(input.turn_detection);
 }
 
 export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
@@ -135,6 +144,7 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
         audio: base64Audio,
       }),
       commitMessages: [{ type: "input_audio.flush" }],
+      commitOnServerTurnEnd: "turn.end",
       commitOnSilence: {
         continueLevelThreshold: 0.045,
         minSpeechMs: 220,

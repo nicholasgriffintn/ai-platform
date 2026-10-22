@@ -19,6 +19,7 @@ import desktop from "~/modules/desktop-releases/api/routes";
 import environments from "~/modules/environments/api/routes";
 import experiences from "~/modules/experiences/api/routes";
 import flags from "~/modules/experiments/api/routes";
+import extractions from "~/modules/extractions/api/routes";
 import githubConnections from "~/modules/github/api/connections";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
@@ -108,6 +109,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sync", sync);
   app.route("/search", search);
   app.route("/decisions", decisions);
+  app.route("/extractions", extractions);
   app.route("/benchmarks", benchmarks);
   app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);

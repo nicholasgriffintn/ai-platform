@@ -68,7 +68,7 @@ export const MODEL_MAKERS: readonly ModelMaker[] = [
     id: "cloudflare",
     label: "Cloudflare",
     providers: ["workers-ai"],
-    families: ["cloudflare/clef"],
+    families: ["cloudflare/clef", "cloudflare/clairic"],
   },
   {
     id: "typesafe",

@@ -113,14 +113,16 @@ describe("realtime provider catalogue", () => {
 
     const catalogue = await listRealtimeLiveProviders(context);
 
+    const mistralProviders = new Set(["mistral", "mistral-voice"]);
+
     expect(catalogue).toHaveLength(registrations.length);
-    expect(catalogue.find(({ id }) => id === "mistral")).toMatchObject({
-      available: false,
-      readiness: "unavailable",
-    });
+    expect(catalogue.filter(({ id }) => mistralProviders.has(id))).toEqual([
+      expect.objectContaining({ available: false, readiness: "unavailable" }),
+      expect.objectContaining({ available: false, readiness: "unavailable" }),
+    ]);
     expect(
       catalogue
-        .filter(({ id }) => id !== "mistral")
+        .filter(({ id }) => !mistralProviders.has(id))
         .every(({ readiness }) => readiness === "ready"),
     ).toBe(true);
     expect(error).toHaveBeenCalledWith(

@@ -10,6 +10,15 @@ import { readTranscriptionTimings } from "../timings.js";
 
 const logger = getLogger({ prefix: "lib/transcription/mistral" });
 
+const MISTRAL_MINI_TRANSCRIPTION_MODEL = "voxtral-mini-transcribe-3-0";
+const MISTRAL_SMALL_TRANSCRIPTION_MODEL = "voxtral-small-transcribe-3-0";
+
+function resolveMistralTranscriptionModel(model?: string): string {
+  return model?.startsWith("voxtral-small")
+    ? MISTRAL_SMALL_TRANSCRIPTION_MODEL
+    : MISTRAL_MINI_TRANSCRIPTION_MODEL;
+}
+
 export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
   name = "mistral";
 
@@ -20,7 +29,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
   async transcribe(request: TranscriptionRequest): Promise<TranscriptionResult> {
     this.validateRequest(request);
 
-    const { audio, env, timestamps = false, user } = request;
+    const { audio, env, language, model, timestamps = false, user, vocabulary = [] } = request;
 
     if (!env.AI_GATEWAY_TOKEN || !env.ACCOUNT_ID) {
       throw new AssistantError(
@@ -41,11 +50,19 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
 
       formData.append("file", audio.file, "audio");
 
-      formData.append("model", "voxtral-mini-2507");
-      formData.append("language", "en");
+      formData.append("model", resolveMistralTranscriptionModel(model));
+
+      if (language) {
+        formData.append("language", language);
+      }
 
       if (timestamps) {
         formData.append("timestamp_granularities", "segment");
+        formData.append("diarize", "true");
+      }
+
+      for (const term of vocabulary) {
+        formData.append("context_bias", term);
       }
 
       const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId()}/mistral/v1/audio/transcriptions`;

@@ -25,6 +25,7 @@ import { analyse_article } from "~/modules/experiences/application/tools/analyse
 import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
 import { process_recording } from "~/modules/experiences/application/tools/process_recording";
 import { run_prediction } from "~/modules/experiences/application/tools/run_prediction";
+import { extract_values } from "~/modules/extractions/application/tools/extract_values";
 import { create_image } from "~/modules/generate/application/tools/image";
 import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
@@ -84,6 +85,7 @@ registerTools([
   get_weather,
   grade_writing,
   decide,
+  extract_values,
   audit_evidence,
   build_site,
   create_video,

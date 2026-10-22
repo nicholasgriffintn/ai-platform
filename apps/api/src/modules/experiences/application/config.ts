@@ -202,6 +202,24 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     type: "normal",
   },
   {
+    id: "paperwork",
+    runtime: "paperwork",
+    capabilityId: "featured-paperwork",
+    name: "Paperwork",
+    category: "Extraction",
+    when: "You have a stack of receipts, invoices or claim emails and want the figures without retyping them.",
+    uses: "Photos, scans or pasted text. Clairic reads every field in a single pass.",
+    produces:
+      "Typed totals, dates and line items with a confidence on each, the source text highlighted where each value came from, a running total and a CSV.",
+    ios: "web-only",
+    description:
+      "Drop in receipts or invoices and get the figures back typed, with a confidence on each and the doubtful ones flagged",
+    icon: "receipt-text",
+    theme: "sky",
+    tags: ["image", "extraction", "documents"],
+    type: "normal",
+  },
+  {
     id: "twenty-questions",
     runtime: "twenty-questions",
     capabilityId: "featured-twenty-questions",

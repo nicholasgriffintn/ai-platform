@@ -20,6 +20,7 @@ import { devicesTagDescription } from "./content/tags/devicesTagDescription.js";
 import { documentsTagDescription } from "./content/tags/documentsTagDescription.js";
 import { environmentsTagDescription } from "./content/tags/environmentsTagDescription.js";
 import { experiencesTagDescription } from "./content/tags/experiencesTagDescription.js";
+import { extractionsTagDescription } from "./content/tags/extractionsTagDescription.js";
 import { flagsTagDescription } from "./content/tags/flagsTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
 import { jobsTagDescription } from "./content/tags/jobsTagDescription.js";
@@ -91,6 +92,7 @@ export const tagDescriptions = {
   channels: channelsTagDescription,
   webhooks: webhooksTagDescription,
   decisions: decisionsTagDescription,
+  extractions: extractionsTagDescription,
   code: codeTagDescription,
   audio: audioTagDescription,
   realtime: realtimeTagDescription,

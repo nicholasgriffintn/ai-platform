@@ -77,13 +77,7 @@ export function buildArtificialAnalysisModelsUrl(apiUrl) {
     return null;
   }
 
-  const url = new URL(apiUrl);
-
-  if (!url.pathname.endsWith("/models/artificial-analysis")) {
-    return new URL("/models/artificial-analysis", url).toString();
-  }
-
-  return url.toString();
+  return new URL("/models/artificial_analysis", apiUrl).toString();
 }
 
 export async function fetchArtificialAnalysisData({ apiUrl, apiKey }) {
@@ -97,46 +91,24 @@ export async function fetchArtificialAnalysisData({ apiUrl, apiKey }) {
     return [];
   }
 
-  const models = [];
-  let page = 1;
+  const response = await fetch(modelsUrl, {
+    headers: {
+      accept: "application/json",
+      authorization: `Bearer ${apiKey}`,
+    },
+  });
 
-  while (true) {
-    const url = new URL(modelsUrl);
-
-    url.searchParams.set("page", String(page));
-    if (!url.searchParams.has("limit")) {
-      url.searchParams.set("limit", "100");
-    }
-
-    const response = await fetch(url, {
-      headers: {
-        accept: "application/json",
-        authorization: `Bearer ${apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url.toString()}: ${response.status}`);
-    }
-
-    const payload = await response.json();
-
-    if (!payload || typeof payload !== "object" || !Array.isArray(payload.models)) {
-      throw new Error("Polychat Artificial Analysis payload is not a model list");
-    }
-
-    models.push(...payload.models);
-    const totalPages =
-      typeof payload.pagination?.totalPages === "number" ? payload.pagination.totalPages : page;
-
-    if (page >= totalPages) {
-      break;
-    }
-
-    page += 1;
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${modelsUrl}: ${response.status}`);
   }
 
-  return models;
+  const payload = await response.json();
+
+  if (!payload || typeof payload !== "object" || !Array.isArray(payload.data)) {
+    throw new Error("Polychat Artificial Analysis payload is not a model list");
+  }
+
+  return payload.data;
 }
 
 export function buildArtificialAnalysisTriggerUrl(apiUrl) {

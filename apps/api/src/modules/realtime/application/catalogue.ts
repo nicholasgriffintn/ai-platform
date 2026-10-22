@@ -105,7 +105,7 @@ export async function listRealtimeLiveProviders(
           (await hasUserProviderApiKey({
             env: context.env,
             user,
-            providerName: descriptorResult.data.id,
+            providerName: provider.configuration.modelProvider ?? descriptorResult.data.id,
           }));
         const readiness = resolveRealtimeProviderReadiness({
           descriptor: descriptorResult.data,

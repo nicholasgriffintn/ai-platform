@@ -363,6 +363,7 @@ export const SYSTEM_MODEL_ROLES = [
   "retrieval",
   "guardrails",
   "decision",
+  "extraction",
   "reranking",
   "transcription",
   "ocr",
@@ -458,6 +459,13 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       { model: "@cf/cloudflare/clef-omni", provider: "workers-ai" },
       { model: "gpt-6-luna", provider: "openai" },
     ],
+  },
+  {
+    id: "extraction",
+    label: "Extraction",
+    description:
+      "Typed values pulled from text and images: amounts, dates, spans, estimates and forecasts with confidence.",
+    candidates: [{ model: "@cf/cloudflare/clairic", provider: "workers-ai" }],
   },
   {
     id: "reranking",
@@ -569,6 +577,7 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "ocr",
   "transcription",
   "decision",
+  "extraction",
 ];
 
 const LINEUP_OUTPUTS: ReadonlySet<ModelModality> = new Set(["text", "decision"]);

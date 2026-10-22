@@ -84,6 +84,13 @@ export const DEFAULT_CAPABILITY_METERS: CapabilityMeterTable = {
   embedding: {
     generate: () => null,
   },
+  extraction: {
+    extract: (_args, result) =>
+      measure(
+        "input_tokens",
+        isRecord(result) ? positive(findNumericFieldDeep(result, ["input_tokens"], 2)) : null,
+      ),
+  },
   guardrails: {
     validateContent: () => null,
   },

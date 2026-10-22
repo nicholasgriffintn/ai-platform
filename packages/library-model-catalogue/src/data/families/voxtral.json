@@ -100,6 +100,31 @@
           ]
         }
       }
+    },
+    "voxtral-voice-agent": {
+      "defaults": {
+        "name": "Voxtral Voice Agent",
+        "openWeights": false,
+        "description": "Hosted voice agent that listens with Voxtral Transcribe Realtime 3, reasons with Mistral Small and answers with Voxtral TTS 3",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "audio",
+            "text"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": true,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
     }
   }
 }

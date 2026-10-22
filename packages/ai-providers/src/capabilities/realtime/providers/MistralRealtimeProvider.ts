@@ -28,7 +28,7 @@ export const MISTRAL_REALTIME_DESCRIPTOR = {
 } satisfies RealtimeLiveProviderDescriptor;
 
 export const DEFAULT_TRANSCRIPTION_MODEL = MISTRAL_REALTIME_DESCRIPTOR.defaultModelId;
-export const MISTRAL_REALTIME_MODEL_ID = "voxtral-mini-transcribe-realtime-2602";
+export const MISTRAL_REALTIME_MODEL_ID = "voxtral-mini-transcribe-realtime-3-0";
 const API_KEY_ENVIRONMENT_VARIABLE = "MISTRAL_API_KEY";
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
   realtime: [],
@@ -39,10 +39,10 @@ const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> =
 const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "low";
 const MISTRAL_TARGET_DELAY_MS_BY_DELAY: Record<NonNullable<RealtimeTranscriptionDelay>, number> = {
   minimal: 240,
-  low: 500,
-  medium: 1000,
-  high: 2400,
-  xhigh: 5000,
+  low: 480,
+  medium: 800,
+  high: 1200,
+  xhigh: 2400,
 };
 
 export function getMistralTargetStreamingDelayMs(
@@ -115,7 +115,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
       );
     }
 
-    return modelConfig.matchingModel;
+    return MISTRAL_REALTIME_MODEL_ID;
   }
 
   buildAudioFormat(): Record<string, unknown> {
@@ -155,7 +155,7 @@ export class MistralRealtimeProvider implements RealtimeProvider {
       byok: request.credentialAuthority === "byok",
       env: request.env,
       model,
-      params: { delay: request.delay },
+      params: { delay: request.delay, speakers: request.speakerLabels ? "true" : undefined },
       path: REALTIME_TRANSCRIPTION_PROXY_PATH,
       provider: this.name,
       sessionId,
@@ -174,6 +174,9 @@ export class MistralRealtimeProvider implements RealtimeProvider {
       input_audio_format: this.buildAudioFormat().encoding,
       input_audio_transcription: {
         model,
+      },
+      audio: {
+        input: { turn_detection: request.speakerLabels ? null : { type: "server" } },
       },
       ...(targetStreamingDelayMs ? { target_streaming_delay_ms: targetStreamingDelayMs } : {}),
     };
