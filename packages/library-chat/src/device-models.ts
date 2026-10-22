@@ -88,6 +88,10 @@ export function buildMachineModels(machines: readonly MachineRecord[]): ModelCon
     }
 
     for (const runtime of machine.runtimes) {
+      if (runtime.kind === "local-tools") {
+        continue;
+      }
+
       if (runtime.kind === "agent") {
         if (runtime.readiness.state !== "ready" || !runtime.supportsSessions) {
           continue;

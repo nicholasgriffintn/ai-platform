@@ -43,6 +43,10 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   ],
   Automation: [
     "use_computer",
+    "desktop_list_directory",
+    "desktop_read_file",
+    "desktop_search_files",
+    "desktop_write_file",
     "call_api",
     "decide",
     "discover_capabilities",

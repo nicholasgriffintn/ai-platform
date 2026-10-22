@@ -3,6 +3,8 @@ import type {
   AgentThreadBinding,
   DesktopAgentProcessRunRequest,
   AgentDirectory,
+  DesktopLocalToolRequest,
+  DesktopToolResult,
   AgentRuntimeVendor,
   AgentToolState,
   DesktopEndpoint,
@@ -53,6 +55,7 @@ export interface DesktopBackend {
   saveAgentThread: (binding: AgentThreadBinding) => Promise<void>;
   forgetAgentThread: (conversationId: string) => Promise<void>;
   listAgentDirectories: () => Promise<AgentDirectory[]>;
+  runLocalTool: (request: DesktopLocalToolRequest) => Promise<DesktopToolResult>;
   pickAgentDirectory: () => Promise<string | null>;
   saveAgentDirectory: (path: string) => Promise<AgentDirectory>;
   revokeAgentDirectory: (directoryId: string) => Promise<void>;

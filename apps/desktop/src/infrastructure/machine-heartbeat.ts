@@ -105,16 +105,23 @@ export async function buildMachineHeartbeatPayload(
   const hasAgentRuntime = agentRuntimes.some(
     (runtime) => runtime.readiness.state === "ready" && runtime.supportsSessions,
   );
+  const directories = (await backend.listAgentDirectories().catch(() => [])).map((directory) => ({
+    id: directory.id,
+    label: directory.label,
+  }));
+  const localToolRuntimes =
+    directories.length > 0 ? [{ kind: "local-tools" as const, directories }] : [];
 
   return machineHeartbeatSchema.parse({
     machineId: diagnostics.machineId,
     label: `Polychat Desktop (${diagnostics.platform})`,
     platform: diagnostics.platform,
     appVersion: diagnostics.appVersion,
-    runtimes: [...modelRuntimes, ...agentRuntimes],
+    runtimes: [...modelRuntimes, ...agentRuntimes, ...localToolRuntimes],
     capabilities: [
       ...(modelEndpoints.length > 0 ? (["model-run", "model-relay"] as const) : []),
       ...(hasAgentRuntime ? (["agent-run"] as const) : []),
+      ...(directories.length > 0 ? (["local-tools"] as const) : []),
     ],
   });
 }
