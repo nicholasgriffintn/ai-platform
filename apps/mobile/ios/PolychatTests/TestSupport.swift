@@ -566,3 +566,28 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         deletedConversationIds.append(id)
     }
 }
+
+final class AgeGateAPIClientStub: AgeGateAPIClient {
+    var fetchResult: Result<AgeGateResponse, Error>
+    var confirmResult: Result<AgeGateResponse, Error>
+    private(set) var fetchCount = 0
+    private(set) var confirmedBirthDates: [String] = []
+
+    init(
+        fetchResult: Result<AgeGateResponse, Error>,
+        confirmResult: Result<AgeGateResponse, Error> = .success(AgeGateResponse(status: .adult))
+    ) {
+        self.fetchResult = fetchResult
+        self.confirmResult = confirmResult
+    }
+
+    func fetchAgeGate() async throws -> AgeGateResponse {
+        fetchCount += 1
+        return try fetchResult.get()
+    }
+
+    func confirmAge(birthDate: String) async throws -> AgeGateResponse {
+        confirmedBirthDates.append(birthDate)
+        return try confirmResult.get()
+    }
+}

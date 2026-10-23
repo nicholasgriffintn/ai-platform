@@ -136,4 +136,9 @@ extension ConversationAPIClient {
 
 }
 
-extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient {}
+protocol AgeGateAPIClient {
+    func fetchAgeGate() async throws -> AgeGateResponse
+    func confirmAge(birthDate: String) async throws -> AgeGateResponse
+}
+
+extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient, AgeGateAPIClient {}

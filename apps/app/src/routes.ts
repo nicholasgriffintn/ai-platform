@@ -70,6 +70,7 @@ export default [
   route("/downloads", "pages/downloads.tsx"),
   route("/terms", "pages/terms.tsx"),
   route("/privacy", "pages/privacy.tsx"),
+  route("/age-check", "pages/age-check.tsx"),
   route("/auth/callback", "pages/auth/callback.tsx"),
   route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
   route("/profile", "pages/profile.tsx"),

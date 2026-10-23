@@ -100,6 +100,26 @@ function wrangler(args, { json = false } = {}) {
   return json ? JSON.parse(result.stdout) : null;
 }
 
+function reachesItself(start, parents, remaining) {
+  const seen = new Set();
+  const stack = [...parents.get(start)];
+
+  while (stack.length > 0) {
+    const name = stack.pop();
+
+    if (name === start) {
+      return true;
+    }
+
+    if (remaining.has(name) && !seen.has(name)) {
+      seen.add(name);
+      stack.push(...parents.get(name));
+    }
+  }
+
+  return false;
+}
+
 function childrenFirst(tables) {
   const parents = new Map(
     tables.map((table) => [
@@ -118,7 +138,13 @@ function childrenFirst(tables) {
     const leaves = [...remaining].filter(
       (name) => ![...remaining].some((other) => other !== name && parents.get(other).has(name)),
     );
-    const batch = leaves.length > 0 ? leaves : [...remaining];
+    const batch =
+      leaves.length > 0
+        ? leaves
+        : [
+            [...remaining].find((name) => reachesItself(name, parents, remaining)) ??
+              [...remaining][0],
+          ];
 
     for (const name of batch) {
       ordered.push(name);

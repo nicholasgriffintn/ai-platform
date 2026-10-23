@@ -1,3 +1,5 @@
+import type { AgeCheckResult } from "@ngriffin_uk/polychat-schemas";
+
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { User } from "~/types";
 
@@ -61,6 +63,15 @@ export class UserRepository extends BaseRepository {
     }
 
     await this.executeRun(result.query, result.values);
+  }
+
+  public async recordAgeCheck(userId: number, result: AgeCheckResult): Promise<User | null> {
+    await this.executeRun(
+      "UPDATE user SET age_check = ?, age_checked_at = ? WHERE id = ? AND age_check IS NULL",
+      [result, new Date().toISOString(), userId],
+    );
+
+    return this.getUserById(userId);
   }
 
   public async incrementUsageCounters(

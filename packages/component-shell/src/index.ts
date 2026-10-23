@@ -1,5 +1,6 @@
 export * from "./Account/DeviceApprovalPage.js";
 export * from "./Account/SignInEmptyState.js";
+export * from "./AgeGate/AgeGateDialog.js";
 export * from "./Apps/AppCard.js";
 export * from "./Apps/AppChrome.js";
 export * from "./Apps/AppRoute.js";
@@ -41,6 +42,7 @@ export * from "./Header/ProductModeHeader.js";
 export * from "./Home/HomePage.js";
 export * from "./Host/ShellDialogs.js";
 export * from "./Host/ShellHostContext.js";
+export * from "./Legal/AgeCheckPage.js";
 export * from "./Legal/PrivacyPage.js";
 export * from "./Legal/TermsPage.js";
 export * from "./Poly/PolyOverlay.js";

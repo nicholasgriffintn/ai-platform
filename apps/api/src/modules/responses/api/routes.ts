@@ -25,6 +25,7 @@ import z from "zod/v4";
 
 import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
 import { defineResource } from "~/infrastructure/http/resource";
+import { requireAgeCheck } from "~/middleware/ageGate";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -71,8 +72,9 @@ defineResource(app, { idParam: "response_id", tags: ["responses"] }, (responses)
       200: { description: "The response, or its event stream", schema: responseSchema },
       400: { description: "Bad request or validation error", schema: errorResponseSchema },
       401: { description: "Authentication error", schema: errorResponseSchema },
+      403: { description: "Date of birth not confirmed", schema: errorResponseSchema },
     },
-    middleware: [validateCaptcha],
+    middleware: [validateCaptcha, requireAgeCheck],
     handler: ({ serviceContext, body, user, anonymousUser, raw }) =>
       createResponse({
         context: serviceContext,
@@ -184,9 +186,11 @@ defineResource(app, { idParam: "response_id", tags: ["responses"] }, (responses)
           z.object({ object: z.literal("queued_item"), queued: queuedChatMessageSchema }),
         ]),
       },
+      403: { description: "Date of birth not confirmed", schema: errorResponseSchema },
       404: { description: "Response not found", schema: errorResponseSchema },
       409: { description: "Too many queued items", schema: errorResponseSchema },
     },
+    middleware: [requireAgeCheck],
     handler: ({ serviceContext, params, body, user, anonymousUser, raw }) =>
       submitResponseInput({
         context: serviceContext,

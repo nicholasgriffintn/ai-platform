@@ -9,6 +9,7 @@ struct ContentView: View {
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
     @EnvironmentObject var polyStore: PolyStore
     @EnvironmentObject var teammatesStore: TeammatesStore
+    @EnvironmentObject var ageGateStore: AgeGateStore
     @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
@@ -114,6 +115,7 @@ struct ContentView: View {
                     }
                 }
                 .task(id: authManager.isAuthenticated) {
+                    ageGateStore.reset()
                     if authManager.isAuthenticated {
                         await conversationManager.loadConversations()
                         modelsStore.applyAccountDefaults(authManager.userSettings)
@@ -193,6 +195,10 @@ struct ContentView: View {
         selectedConversationID = conversation.id
 
         Task {
+            guard await ageGateStore.ensureConfirmed() else {
+                return
+            }
+
             do {
                 let settings = setup.enabledTools.isEmpty
                 ? nil

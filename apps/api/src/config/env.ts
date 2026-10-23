@@ -186,6 +186,7 @@ export type IEnv = {
   SES_EMAIL_FROM?: string;
   HCAPTCHA_SECRET_KEY?: string;
   HCAPTCHA_SITE_KEY?: string;
+  AGE_GATE_ENABLED?: string;
   FREE_RATE_LIMITER?: RateLimit;
   PRO_RATE_LIMITER?: RateLimit;
   ENV?: string;

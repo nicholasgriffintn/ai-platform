@@ -1,6 +1,7 @@
 import { WelcomeScreen } from "@ngriffin_uk/polychat-component-account";
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
 import {
+  AgeGateDialog,
   AppErrorBoundary,
   ArtifactDataProvider,
   customResponseViews,
@@ -95,6 +96,7 @@ export function App() {
               <DesktopWindowContent />
             </DesktopShellHost>
             <ThemedToaster />
+            <AgeGateDialog />
           </AppInitializer>
         </LoadingProvider>
       )}

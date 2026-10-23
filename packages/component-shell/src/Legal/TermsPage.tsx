@@ -28,11 +28,10 @@ export function TermsPage() {
         </p>
         <h3>2.1 Age Requirements</h3>
         <p>
-          You must be at least 18 years of age to use our services without permission. By using our
-          services you represent that you are above the minimum age required by the laws of your
-          country. If you are under the age of 18, you represent that you have your parent or
-          guardian's permission to use the Service and they have read and agreed to these Terms on
-          your behalf.
+          You must be at least 18 years of age to use our services. We ask for your date of birth
+          before your first message and keep only whether you meet this requirement. By using our
+          services you confirm that the date of birth you give us is true. See{" "}
+          <a href="/age-check">why we ask for your date of birth</a>.
         </p>
         <h3>2.2 Service Description</h3>
         <p>

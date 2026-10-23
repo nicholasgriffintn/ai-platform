@@ -30,6 +30,7 @@ import type {
   ScoreSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  AGE_CHECK_RESULTS,
   COST_SUBJECTS,
   LINEAGE_RELATIONS,
   MODEL_ASSET_KINDS,
@@ -85,6 +86,8 @@ export const anonymousUser = sqliteTable("anonymous_user", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   last_active_at: text("last_active_at"),
   captcha_verified: integer({ mode: "boolean" }).default(false),
+  age_check: text({ enum: AGE_CHECK_RESULTS }),
+  age_checked_at: text(),
 });
 
 export const user = sqliteTable("user", {
@@ -109,6 +112,8 @@ export const user = sqliteTable("user", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   setup_at: text(),
   terms_accepted_at: text(),
+  age_check: text({ enum: AGE_CHECK_RESULTS }),
+  age_checked_at: text(),
   plan_id: text().references(() => plans.id),
   message_count: integer("message_count").default(0),
   last_active_at: text("last_active_at"),

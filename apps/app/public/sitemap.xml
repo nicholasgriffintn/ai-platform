@@ -40,6 +40,12 @@
     <lastmod>2024-01-01</lastmod>
   </url>
   <url>
+    <loc>https://polychat.app/age-check</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://polychat.app/terms</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>monthly</changefreq>

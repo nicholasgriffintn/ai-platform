@@ -1,3 +1,5 @@
+import type { AgeCheckResult } from "@ngriffin_uk/polychat-schemas";
+
 export type AnonymousUser = {
   id: string;
   ip_address: string;
@@ -9,4 +11,6 @@ export type AnonymousUser = {
   updated_at: string;
   last_active_at?: string;
   captcha_verified?: number;
+  age_check?: AgeCheckResult | null;
+  age_checked_at?: string | null;
 };

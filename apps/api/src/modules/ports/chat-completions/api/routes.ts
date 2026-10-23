@@ -7,6 +7,7 @@ import { type Context, Hono, type Next } from "hono";
 
 import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { requireAgeCheck } from "~/middleware/ageGate";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
@@ -36,9 +37,12 @@ addRoute(app, "post", "/", {
     },
     400: { description: "Bad request or validation error", schema: errorResponseSchema },
     401: { description: "Authentication error", schema: errorResponseSchema },
-    403: { description: "Model not available to the caller", schema: errorResponseSchema },
+    403: {
+      description: "Model not available, or date of birth not confirmed",
+      schema: errorResponseSchema,
+    },
   },
-  middleware: [validateCaptcha],
+  middleware: [validateCaptcha, requireAgeCheck],
   handler: ({ serviceContext, body, user, anonymousUser, raw }) =>
     createChatCompletionThroughPort({
       context: serviceContext,

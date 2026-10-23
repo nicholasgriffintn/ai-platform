@@ -81,6 +81,56 @@ export function epochSecondsToIso(value: unknown): string | null {
   return Number.isFinite(seconds) ? new Date(seconds * 1000).toISOString() : null;
 }
 
+export function calendarDateFromParts(year: number, month: number, day: number): string | null {
+  if (![year, month, day].every(Number.isInteger) || year < 1000 || year > 9999) {
+    return null;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+export function listMonthNames(locale?: string): string[] {
+  const format = new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" });
+
+  return Array.from({ length: 12 }, (_, monthIndex) =>
+    format.format(new Date(Date.UTC(2000, monthIndex, 1))),
+  );
+}
+
+export function wholeYearsSince(calendarDate: string, now = new Date()): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(calendarDate);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  if (
+    calendarDateFromParts(year, month, day) !== calendarDate ||
+    Date.UTC(year, month - 1, day) > now.getTime()
+  ) {
+    return null;
+  }
+
+  const hasReachedAnniversary =
+    now.getUTCMonth() + 1 > month || (now.getUTCMonth() + 1 === month && now.getUTCDate() >= day);
+
+  return now.getUTCFullYear() - year - (hasReachedAnniversary ? 0 : 1);
+}
+
 export function hoursBetween(start: string, end: string): number {
   return Math.max(0, Date.parse(end) - Date.parse(start)) / 3_600_000;
 }

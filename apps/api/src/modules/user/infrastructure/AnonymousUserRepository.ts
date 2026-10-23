@@ -1,5 +1,6 @@
 import type { CreditDeltas } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { AgeCheckResult } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -106,6 +107,15 @@ export class AnonymousUserRepository extends BaseRepository {
     }
 
     await this.executeRun(result.query, result.values);
+
+    return this.getAnonymousUserById(id);
+  }
+
+  public async recordAgeCheck(id: string, result: AgeCheckResult): Promise<AnonymousUser | null> {
+    await this.executeRun(
+      "UPDATE anonymous_user SET age_check = ?, age_checked_at = ? WHERE id = ? AND age_check IS NULL",
+      [result, new Date().toISOString(), id],
+    );
 
     return this.getAnonymousUserById(id);
   }

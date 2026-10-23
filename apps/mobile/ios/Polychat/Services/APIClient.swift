@@ -68,6 +68,18 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func fetchAgeGate() async throws -> AgeGateResponse {
+        try await send(path: "/auth/age", method: "GET")
+    }
+
+    func confirmAge(birthDate: String) async throws -> AgeGateResponse {
+        try await send(
+            path: "/auth/age",
+            method: "POST",
+            body: AgeConfirmationRequest(birthDate: birthDate)
+        )
+    }
+
     func logout() async throws -> SuccessResponse {
         try await send(path: "/auth/logout", method: "POST", emptyBody: true)
     }

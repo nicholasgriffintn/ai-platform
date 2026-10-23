@@ -32,6 +32,7 @@ export const API_BASE_URL =
 export const WEB_APP_BASE_URL =
   import.meta.env?.VITE_WEB_APP_BASE_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "https://polychat.app" : "http://localhost:5173");
+export const AGE_CHECK_INFO_URL = `${WEB_APP_BASE_URL}/age-check`;
 export const WS_API_URL =
   import.meta.env?.VITE_E2E_WS_API_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787");

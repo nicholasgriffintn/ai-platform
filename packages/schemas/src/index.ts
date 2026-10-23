@@ -77,6 +77,7 @@ export * from "./activity.js";
 export * from "./audit.js";
 export * from "./audio.js";
 export * from "./auth.js";
+export * from "./age-gate.js";
 export * from "./conversation-type.js";
 export * from "./engine-request.js";
 export * from "./platform/index.js";

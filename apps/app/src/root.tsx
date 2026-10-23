@@ -1,5 +1,6 @@
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
 import {
+  AgeGateDialog,
   ArtifactDataProvider,
   customResponseViews,
   ErrorPage,
@@ -70,6 +71,7 @@ export default function Root() {
             <ServiceWorkerRegistration />
             <ClientUpdateWatcher />
             <ThemedToaster />
+            <AgeGateDialog />
           </CaptchaProvider>
         </AppInitializer>
       </LoadingProvider>

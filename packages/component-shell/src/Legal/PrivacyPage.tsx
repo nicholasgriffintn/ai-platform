@@ -204,9 +204,10 @@ export function PrivacyPage() {
 
         <h2>9. Children's Privacy</h2>
         <p>
-          Our Service is not directed to children under the age of 13. We do not knowingly collect
-          personal information from children under 13. If you are under 18, you may only use the
-          service with the involvement and consent of a parent or guardian.
+          Our Service is only for people aged 18 or over and is not directed to children. Before
+          your first message we ask for your date of birth, use it once to work out whether you are
+          18 or over, and keep only that outcome and when you gave it. See{" "}
+          <a href="/age-check">why we ask for your date of birth</a>.
         </p>
 
         <h2>10. Legal Compliance</h2>

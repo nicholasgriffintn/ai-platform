@@ -4,6 +4,7 @@ struct ChatView: View {
     @EnvironmentObject var conversationManager: ConversationManager
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var apiClient: APIClient
+    @EnvironmentObject var ageGateStore: AgeGateStore
     @State private var messageText = ""
     @State private var selectedAttachments: [ComposerAttachment] = []
     @State private var isUploadingAttachments = false
@@ -244,6 +245,9 @@ struct ChatView: View {
                 }
             )
         }
+        .sheet(isPresented: $ageGateStore.isPrompting) {
+            AgeGateSheet()
+        }
         .sheet(isPresented: $showingChatSettings) {
             ChatSettingsView(settings: $chatSettings, modelConfig: activeModelConfig)
         }
@@ -274,6 +278,10 @@ struct ChatView: View {
             await modelsStore.refreshModelsIfNeeded(for: requestedModelId)
             if modelsStore.readinessMessage(for: requestedModelId) != nil {
                 uploadError = nil
+                return
+            }
+
+            guard await ageGateStore.ensureConfirmed() else {
                 return
             }
 

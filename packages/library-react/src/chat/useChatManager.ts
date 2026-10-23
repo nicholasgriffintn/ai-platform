@@ -25,6 +25,7 @@ import {
   isPlaceholderConversationTitle,
 } from "../chat/title-source.js";
 import { upsertConversationInChatCaches } from "../conversation-cache.js";
+import { useEnsureAgeConfirmed } from "../hooks/useAgeGate.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useGenerateTitle } from "./useChat.js";
@@ -40,6 +41,7 @@ export function useChatManager(
   conversationMode?: ConversationModeMetadata,
 ) {
   const queryClient = useQueryClient();
+  const ensureAgeConfirmed = useEnsureAgeConfirmed();
   const generateTitleMutation = useGenerateTitle(requestOptions);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const { startLoading, stopLoading } = useLoadingActions();
@@ -155,7 +157,7 @@ export function useChatManager(
       overrideRequestOptions?: ChatRequestOptions,
       timelineOptions?: { goalStarted?: string },
     ) => {
-      if (!input.trim() && !attachments?.length) {
+      if ((!input.trim() && !attachments?.length) || !(await ensureAgeConfirmed())) {
         return {
           status: "error",
           response: "",
@@ -222,6 +224,7 @@ export function useChatManager(
       }
     },
     [
+      ensureAgeConfirmed,
       model,
       startNewConversation,
       getCurrentConversationId,

@@ -1,4 +1,5 @@
 import type {
+  AgeCheckResult,
   ComputeSite,
   GuardrailsProviderId,
   LastModelSelection,
@@ -25,6 +26,8 @@ export interface User {
   updated_at: string;
   setup_at: string | null;
   terms_accepted_at: string | null;
+  age_check?: AgeCheckResult | null;
+  age_checked_at?: string | null;
   plan_id: string | null;
   message_count?: number;
   last_active_at?: string | null;

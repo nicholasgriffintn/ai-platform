@@ -54,6 +54,7 @@
     "PRIVATE_ASSETS_BUCKET_NAME": "assistant-private-assets",
     "PUBLIC_ASSETS_BUCKET": "assistant-assets",
     "REQUIRE_CAPTCHA_SECRET_KEY": "false",
+    "AGE_GATE_ENABLED": "true",
     "LOG_LEVEL": "error",
     "SENTRY_DSN": "<REPLACE_ME>",
     "ENV": "production",

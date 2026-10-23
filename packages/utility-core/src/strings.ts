@@ -244,3 +244,7 @@ export function excerptAround(text: string, terms: readonly string[], maxLength:
 export function quoteShellArgument(value: string): string {
   return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
+
+export function keepDigits(value: string, maxLength = Number.POSITIVE_INFINITY): string {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+}
