@@ -2,6 +2,8 @@ export * from "./CataloguePrimitives";
 export * from "./AppCard";
 export * from "./CapabilityCard";
 export * from "./CapabilityFilters";
+export * from "./CapabilityIcon";
+export * from "./InstalledCapabilities";
 export * from "./capability-theme";
 export * from "./Recipes";
 export * from "./ToolForm/FormField";

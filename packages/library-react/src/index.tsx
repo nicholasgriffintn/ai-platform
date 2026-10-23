@@ -149,6 +149,7 @@ export * from "./lib/pet/model-targets.js";
 export * from "./lib/pet/presence.js";
 export * from "./lib/poly/pause-options.js";
 export * from "./lib/plan-format.js";
+export * from "./lib/capability-catalogue-params.js";
 export * from "./lib/project-capability-catalog.js";
 export * from "./lib/project-coding-presentation.js";
 export * from "./lib/project-workbench-preview.js";

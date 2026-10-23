@@ -1,14 +1,12 @@
-import {
-  CapabilityFilters,
-  type CapabilityFilter,
-} from "@ngriffin_uk/polychat-component-capabilities";
+import { CapabilityFilters } from "@ngriffin_uk/polychat-component-capabilities";
 import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import type { SkillSummary, Tool } from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import {
-  TEAMMATE_CAPABILITY_FILTERS,
+  TEAMMATE_CAPABILITY_KINDS,
+  type TeammateCapabilityKind,
   type TeammateCapabilityOption,
   filterTeammateCapabilityOptions,
   getTeammateCapabilityCategories,
@@ -40,10 +38,10 @@ export function CapabilitiesSection({
 }: CapabilitiesSectionProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  const [filters, setFilters] = useState<CapabilityFilter[]>([]);
+  const [kind, setKind] = useState<TeammateCapabilityKind>("skill");
 
   const options = toTeammateCapabilityOptions(tools, skills);
-  const visibleOptions = filterTeammateCapabilityOptions(options, { category, filters, query });
+  const visibleOptions = filterTeammateCapabilityOptions(options, { category, kind, query });
   const selectedCount = value.toolIds.length + value.skillIds.length;
 
   const isSelected = (option: TeammateCapabilityOption) =>
@@ -63,15 +61,15 @@ export function CapabilitiesSection({
       description={`Tools the teammate may call and skills it loads. ${selectedCount} selected.`}
     >
       <CapabilityFilters
-        availableFilters={TEAMMATE_CAPABILITY_FILTERS}
+        kinds={TEAMMATE_CAPABILITY_KINDS}
+        kind={kind}
         categories={getTeammateCapabilityCategories(options)}
         category={category}
-        filters={filters}
         query={query}
         searchPlaceholder="Search tools and skills..."
         onCategoryChange={setCategory}
-        onFiltersChange={(next) => {
-          setFilters(next);
+        onKindChange={(next) => {
+          setKind(TEAMMATE_CAPABILITY_KINDS.find((candidate) => candidate === next) ?? kind);
           setCategory("all");
         }}
         onQueryChange={setQuery}

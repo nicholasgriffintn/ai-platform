@@ -1,23 +1,8 @@
-import { useSearchParams } from "react-router";
+import { useSearchParamsPatch } from "./useSearchParamsPatch.js";
 
 export function useQueryDialog(parameter: string): [boolean, (open: boolean) => void] {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const setOpen = (open: boolean) => {
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-
-        if (open) {
-          next.set(parameter, "1");
-        } else {
-          next.delete(parameter);
-        }
-
-        return next;
-      },
-      { replace: true },
-    );
-  };
+  const [searchParams, patch] = useSearchParamsPatch();
+  const setOpen = (open: boolean) => patch({ [parameter]: open ? "1" : null });
 
   return [searchParams.get(parameter) === "1", setOpen];
 }

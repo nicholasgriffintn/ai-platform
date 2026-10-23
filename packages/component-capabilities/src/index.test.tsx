@@ -45,29 +45,27 @@ function teammateItem(
 describe("capability controls", () => {
   it("reports controlled filter changes without owning filter state", () => {
     const onCategoryChange = vi.fn();
-    const onFiltersChange = vi.fn();
+    const onKindChange = vi.fn();
     const onQueryChange = vi.fn();
 
     render(
       <CapabilityFilters
+        kinds={["connector", "skill"]}
+        kind="connector"
         categories={["Research"]}
         category="all"
-        filters={["configured"]}
         query=""
         onCategoryChange={onCategoryChange}
-        onFiltersChange={onFiltersChange}
+        onKindChange={onKindChange}
         onQueryChange={onQueryChange}
       />,
     );
 
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "weather" } });
-    fireEvent.click(screen.getByRole("button", { name: "Automations" }));
-    fireEvent.click(screen.getByRole("button", { name: "Filter capabilities by category" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Research" }));
+    fireEvent.click(screen.getByRole("button", { name: "Skills" }));
 
     expect(onQueryChange).toHaveBeenCalledWith("weather");
-    expect(onFiltersChange).toHaveBeenCalledWith(["configured", "recipe"]);
-    expect(onCategoryChange).toHaveBeenCalledWith("Research");
+    expect(onKindChange).toHaveBeenCalledWith("skill");
     expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
   });
 });

@@ -1,7 +1,6 @@
 import {
   CapabilityFilters,
   ToolConfigurationDialog,
-  type CapabilityFilter,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import {
   CardGridLoadingSkeleton,
@@ -16,7 +15,7 @@ import type {
 import { useMcpConnections } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { SearchX } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
@@ -25,6 +24,10 @@ import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
 import { CapabilityAddMenu } from "./CapabilityAddMenu.js";
 import { CapabilityGroups } from "./CapabilityGroups.js";
 import { HireTeammateDialog } from "./HireTeammateDialog.js";
+import {
+  InstalledCapabilityStrip,
+  type InstalledTileResolver,
+} from "./InstalledCapabilityStrip.js";
 import { McpConnectionManager } from "./McpConnectionManager.js";
 import { SharedTeammatesDialog } from "./SharedTeammatesDialog.js";
 import { ShareTeammateDialog } from "./ShareTeammateDialog.js";
@@ -43,9 +46,13 @@ export function CapabilityLibrary({
   kinds = DEFAULT_CAPABILITY_KINDS,
   extraItems,
   renderGroup,
+  resolveInstalledTile,
   children,
 }: CapabilityLibraryProps) {
-  const controller = useCapabilityLibraryController(scope, { kinds, extraItems });
+  const controller = useCapabilityLibraryController(scope, {
+    kinds,
+    extraItems,
+  });
   const mcpConnections = useMcpConnections(
     controller.toolConfigurationDialog.tool?.configurationKind === "mcp",
   );
@@ -60,10 +67,11 @@ export function CapabilityLibrary({
   });
   const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
   const managesTeammates = kinds.includes("teammate");
-  const availableFilters = useMemo<CapabilityFilter[]>(
-    () => [...(kinds.includes("tool") ? ["configured" as const] : []), ...kinds],
-    [kinds],
-  );
+  const { filters } = controller;
+  const tracksInstalled = kinds.includes("tool") || kinds.includes("connector");
+  const showsEmptyInstalled = filters.installed && !filters.query && filters.category === "all";
+  const showInstalledStrip =
+    tracksInstalled && !filters.installed && !filters.query && filters.category === "all";
   const mutationError =
     controller.configurationMutation.error ??
     controller.projectMutations?.add.error ??
@@ -91,16 +99,18 @@ export function CapabilityLibrary({
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
         {navigation}
         <CapabilityFilters
-          availableFilters={availableFilters}
-          categories={controller.filters.categories}
-          category={controller.filters.category}
-          filters={controller.filters.selected}
+          kinds={kinds}
+          kind={filters.kind}
+          installed={filters.installed}
+          categories={filters.categories}
+          category={filters.category}
+          query={filters.query}
           searchLabel={managesTeammates ? "Search teammates" : "Search plugins"}
           searchPlaceholder={managesTeammates ? "Search teammates..." : "Search plugins..."}
-          onCategoryChange={controller.filters.setCategory}
-          onFiltersChange={controller.filters.setSelected}
-          onQueryChange={controller.filters.setQuery}
-          query={controller.filters.query}
+          onKindChange={filters.setKind}
+          onInstalledChange={tracksInstalled ? filters.setInstalled : undefined}
+          onCategoryChange={filters.setCategory}
+          onQueryChange={filters.setQuery}
         />
         {mutationError && !isAuthenticationError(mutationError) && (
           <p role="alert" className="mb-4 text-sm text-failure">
@@ -132,29 +142,49 @@ export function CapabilityLibrary({
         ) : controller.catalog.groups.length === 0 ? (
           <EmptyState
             icon={<SearchX size={24} className="text-muted-foreground" />}
-            title="Nothing matches"
-            message="Try another search, type, or category."
+            title={showsEmptyInstalled ? "Nothing installed yet" : "Nothing matches"}
+            message={
+              showsEmptyInstalled
+                ? "Connect an integration or set up a tool and it will perch here."
+                : "Try another search, type, or category."
+            }
             className="min-h-[240px]"
           />
         ) : (
-          <CapabilityGroups
-            appById={controller.catalog.appById}
-            capabilities={controller.capabilities}
-            currentUserId={controller.currentUserId}
-            experiences={controller.catalog.experiences}
-            groups={controller.catalog.groups}
-            pendingAddCapabilityId={pendingAddCapabilityId}
-            pendingRemoveId={pendingRemoveId}
-            onConfigureTool={controller.toolConfigurationDialog.open}
-            personalSkills={controller.personalSkills}
-            projectActions={controller.projectActions}
-            toolById={controller.catalog.toolById}
-            toolConfigurationById={controller.toolConfigurationById}
-            surface={controller.surface}
-            teammateActions={authoring.teammateActions}
-            authoredSkillActions={authoring.authoredSkillActions}
-            renderGroup={renderGroup}
-          />
+          <>
+            {showInstalledStrip && (
+              <InstalledCapabilityStrip
+                items={controller.installedItems}
+                capabilities={controller.capabilities}
+                appById={controller.catalog.appById}
+                toolById={controller.catalog.toolById}
+                toolConfigurationById={controller.toolConfigurationById}
+                experiences={controller.catalog.experiences}
+                surface={controller.surface}
+                onConfigureTool={controller.toolConfigurationDialog.open}
+                resolveTile={resolveInstalledTile}
+                onShowAll={() => filters.setInstalled(true)}
+              />
+            )}
+            <CapabilityGroups
+              appById={controller.catalog.appById}
+              capabilities={controller.capabilities}
+              currentUserId={controller.currentUserId}
+              experiences={controller.catalog.experiences}
+              groups={controller.catalog.groups}
+              pendingAddCapabilityId={pendingAddCapabilityId}
+              pendingRemoveId={pendingRemoveId}
+              onConfigureTool={controller.toolConfigurationDialog.open}
+              personalSkills={controller.personalSkills}
+              projectActions={controller.projectActions}
+              toolById={controller.catalog.toolById}
+              toolConfigurationById={controller.toolConfigurationById}
+              surface={controller.surface}
+              teammateActions={authoring.teammateActions}
+              authoredSkillActions={authoring.authoredSkillActions}
+              renderGroup={renderGroup}
+            />
+          </>
         )}
         {children}
       </PageShell.Content>
@@ -229,6 +259,7 @@ interface CapabilityLibraryProps {
   extraItems?: readonly AssistantActionItem[];
   kinds?: readonly CatalogueItemKind[];
   renderGroup?: (group: ProjectCapabilityKindGroup) => ReactNode;
+  resolveInstalledTile?: InstalledTileResolver;
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;

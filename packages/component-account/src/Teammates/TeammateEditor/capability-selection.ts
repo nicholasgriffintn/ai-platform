@@ -1,4 +1,3 @@
-import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
 import type { SkillSummary, Tool } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText } from "@ngriffin_uk/polychat-utility-core";
 
@@ -12,7 +11,7 @@ export interface TeammateCapabilityOption {
   category: string;
 }
 
-export const TEAMMATE_CAPABILITY_FILTERS: CapabilityFilter[] = ["skill", "tool"];
+export const TEAMMATE_CAPABILITY_KINDS: readonly TeammateCapabilityKind[] = ["skill", "tool"];
 
 export function toTeammateCapabilityOptions(
   tools: readonly Tool[],
@@ -44,15 +43,12 @@ export function getTeammateCapabilityCategories(
 
 export function filterTeammateCapabilityOptions(
   options: readonly TeammateCapabilityOption[],
-  { category, filters, query }: { category: string; filters: CapabilityFilter[]; query: string },
+  { category, kind, query }: { category: string; kind: TeammateCapabilityKind; query: string },
 ): TeammateCapabilityOption[] {
-  const kinds = filters.filter(
-    (filter): filter is TeammateCapabilityKind => filter === "tool" || filter === "skill",
-  );
   const search = query.trim().toLowerCase();
 
   return options.filter((option) => {
-    if (kinds.length > 0 && !kinds.includes(option.kind)) {
+    if (option.kind !== kind) {
       return false;
     }
 

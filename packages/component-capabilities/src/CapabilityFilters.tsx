@@ -1,124 +1,120 @@
-import { FormSelect, SearchInput } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  OptionsMenu,
+  OptionsMenuSection,
+  SearchInput,
+} from "@ngriffin_uk/polychat-component-ui";
+import { ListFilter } from "lucide-react";
 
 export type CapabilityKind = "app" | "connector" | "recipe" | "skill" | "tool" | "teammate";
-export type CapabilityFilter = "configured" | CapabilityKind;
 
 export interface CapabilityFiltersProps {
+  kinds?: readonly CapabilityKind[];
+  kind?: CapabilityKind | null;
+  installed?: boolean;
   categories: string[];
   category: string;
-  filters: CapabilityFilter[];
   query: string;
-  availableFilters?: CapabilityFilter[];
   searchLabel?: string;
   searchPlaceholder?: string;
+  onKindChange?: (kind: CapabilityKind) => void;
+  onInstalledChange?: (installed: boolean) => void;
   onCategoryChange: (category: string) => void;
-  onFiltersChange: (filters: CapabilityFilter[]) => void;
   onQueryChange: (query: string) => void;
 }
 
-const capabilityFilters: Array<{ label: string; value: CapabilityFilter }> = [
-  { label: "Configured", value: "configured" },
-  { label: "Integrations", value: "connector" },
-  { label: "Teammates", value: "teammate" },
-  { label: "Apps", value: "app" },
-  { label: "Automations", value: "recipe" },
-  { label: "Skills", value: "skill" },
-  { label: "Tools", value: "tool" },
-];
+const KIND_LABELS: Record<CapabilityKind, string> = {
+  connector: "Integrations",
+  teammate: "Teammates",
+  app: "Apps",
+  recipe: "Automations",
+  skill: "Skills",
+  tool: "Tools",
+};
+
+const NO_KINDS: readonly CapabilityKind[] = [];
+
+const SHOW_OPTIONS = [
+  { value: "everything", label: "Everything" },
+  { value: "installed", label: "Installed" },
+] as const;
 
 export function CapabilityFilters({
+  kinds = NO_KINDS,
+  kind = null,
+  installed = false,
   categories,
   category,
-  filters,
   query,
-  availableFilters,
   searchLabel = "Search capabilities",
   searchPlaceholder = "Search apps, recipes, and tools...",
+  onKindChange,
+  onInstalledChange,
   onCategoryChange,
-  onFiltersChange,
   onQueryChange,
 }: CapabilityFiltersProps) {
-  const categoryFilters = [
-    { label: "All categories", value: "all" },
-    ...categories.map((value) => ({ label: value, value })),
+  const categoryOptions = [
+    { value: "all", label: "Any category" },
+    ...categories.map((value) => ({ value, label: value })),
   ];
-  const visibleFilters = availableFilters
-    ? capabilityFilters.filter((filter) => availableFilters.includes(filter.value))
-    : capabilityFilters;
+  const isFiltered = installed || category !== "all";
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="mb-8 flex flex-wrap items-center gap-2">
+      {onKindChange && kinds.length > 0 ? (
+        <nav aria-label="Capability types" className="w-full sm:mr-auto sm:w-auto">
+          <ul className="flex flex-wrap gap-1">
+            {kinds.map((value) => (
+              <li key={value}>
+                <Button
+                  variant={value === kind && !installed ? "secondary" : "ghost"}
+                  size="sm"
+                  className="rounded-full"
+                  aria-pressed={value === kind && !installed}
+                  onClick={() => onKindChange(value)}
+                >
+                  {KIND_LABELS[value]}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : (
+        <span className="hidden sm:mr-auto sm:block" />
+      )}
       <SearchInput
         aria-label={searchLabel}
-        className="max-w-xl"
+        className="min-w-0 flex-1 sm:w-64 sm:flex-none"
         placeholder={searchPlaceholder}
         value={query}
         onChange={onQueryChange}
       />
-      <div className="space-y-3">
-        <fieldset className="m-0 flex min-w-0 flex-wrap gap-1.5 border-0 p-0">
-          <legend className="sr-only">Filter capabilities</legend>
-          <button
-            type="button"
-            aria-pressed={filters.length === 0}
-            onClick={() => onFiltersChange([])}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-              filters.length === 0
-                ? "border-foreground bg-foreground text-background"
-                : "border-border bg-surface text-muted-foreground hover:bg-surface-elevated"
-            }`}
-          >
-            All
-          </button>
-          {visibleFilters.map((filter) => (
-            <button
-              key={filter.value}
-              type="button"
-              aria-pressed={filters.includes(filter.value)}
-              onClick={() =>
-                onFiltersChange(
-                  filters.includes(filter.value)
-                    ? filters.filter((value) => value !== filter.value)
-                    : [...filters, filter.value],
-                )
-              }
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                filters.includes(filter.value)
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-surface text-muted-foreground hover:bg-surface-elevated"
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </fieldset>
-        <div className="mt-4 sm:hidden">
-          <FormSelect
-            aria-label="Filter capabilities by category"
-            onValueChange={onCategoryChange}
-            options={categoryFilters}
-            value={category}
+      <OptionsMenu
+        align="end"
+        trigger={
+          <Button
+            variant={isFiltered ? "secondary" : "icon"}
+            size="icon"
+            icon={<ListFilter size={16} />}
+            aria-label={isFiltered ? "Filters applied" : "Filter"}
           />
-        </div>
-        <fieldset className="m-0 mt-4 hidden min-w-0 flex-wrap gap-1.5 border-0 p-0 sm:flex">
-          <legend className="sr-only">Filter capabilities by category</legend>
-          {categoryFilters.map((filter) => (
-            <button
-              key={filter.value}
-              type="button"
-              aria-pressed={category === filter.value}
-              onClick={() => onCategoryChange(filter.value)}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                category === filter.value
-                  ? "border-border-strong bg-surface-elevated text-foreground"
-                  : "border-transparent text-muted-foreground hover:bg-surface-elevated"
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </fieldset>
-      </div>
+        }
+      >
+        {onInstalledChange ? (
+          <OptionsMenuSection
+            label="Show"
+            value={installed ? "installed" : "everything"}
+            options={SHOW_OPTIONS}
+            onChange={(value) => onInstalledChange(value === "installed")}
+          />
+        ) : null}
+        <OptionsMenuSection
+          label="Category"
+          value={category}
+          options={categoryOptions}
+          onChange={onCategoryChange}
+        />
+      </OptionsMenu>
     </div>
   );
 }

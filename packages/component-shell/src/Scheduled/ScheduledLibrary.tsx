@@ -39,15 +39,18 @@ export function ScheduledLibrary({ scope, title, subtitle, navigation }: Schedul
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
         {navigation}
         <CapabilityFilters
-          availableFilters={["configured", "recipe"]}
+          kinds={controller.kinds}
+          kind={controller.kind}
+          installed={controller.installed}
           categories={controller.categories}
           category={controller.category}
-          filters={controller.selectedFilters}
-          searchPlaceholder="Search automations..."
-          onCategoryChange={controller.setCategory}
-          onFiltersChange={controller.setSelectedFilters}
-          onQueryChange={controller.setQuery}
           query={controller.query}
+          searchLabel="Search automations"
+          searchPlaceholder="Search automations..."
+          onKindChange={controller.setKind}
+          onInstalledChange={controller.setInstalled}
+          onCategoryChange={controller.setCategory}
+          onQueryChange={controller.setQuery}
         />
 
         {hasAuthenticationError ? (

@@ -1,4 +1,3 @@
-import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useProjectCapabilityCatalog,
@@ -29,6 +28,8 @@ import {
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
+
+import { useCatalogueFilters } from "./useCatalogueFilters.js";
 
 export interface PersonalSkillControls {
   byId: Map<string, SkillAvailability>;
@@ -113,9 +114,7 @@ export function useCapabilityLibraryController(
   const catalog = useProjectCapabilityCatalog(scope.surface.projectId);
   const deleteSkill = useDeleteSkill(scope.surface.projectId);
   const currentUserId = useChatStore((state) => state.user?.id);
-  const [query, setQuery] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState<CapabilityFilter[]>([]);
-  const [category, setCategory] = useState("all");
+  const filters = useCatalogueFilters(allowedKinds);
   const [configurationTool, setConfigurationTool] = useState<ModelToolDefinition | null>(null);
   const [configuration, setConfiguration] = useState<Record<string, unknown>>();
 
@@ -143,23 +142,25 @@ export function useCapabilityLibraryController(
       ),
     [scope.toolConfigurations],
   );
-  const configuredItemIds = useMemo(() => {
-    const configured = new Set<string>();
+  const installedItemIds = useMemo(() => {
+    const installed = new Set<string>();
 
     for (const item of items) {
       const kind = getProjectCapabilityKind(item);
-
-      if (kind === "connector") {
-        const granted = scope.capabilities.some(
+      const isProjectEnabled =
+        scope.requiresExplicitEnablement &&
+        scope.capabilities.some(
           (capability) =>
             capability.kind === kind &&
             capability.capabilityId === item.capability.id &&
             !capability.excluded,
         );
+      const isConnected =
+        kind === "connector" && !scope.requiresExplicitEnablement && item.status === "connected";
+      const isAuthoredSkill = kind === "skill" && item.metadata?.skillSource === "user-authored";
 
-        if (scope.requiresExplicitEnablement ? granted : item.status === "connected") {
-          configured.add(item.id);
-        }
+      if (isProjectEnabled || isConnected || isAuthoredSkill) {
+        installed.add(item.id);
       }
 
       if (kind === "tool") {
@@ -176,12 +177,12 @@ export function useCapabilityLibraryController(
           resolvedConfiguration &&
           parseModelToolConfiguration(tool, resolvedConfiguration)
         ) {
-          configured.add(item.id);
+          installed.add(item.id);
         }
       }
     }
 
-    return configured;
+    return installed;
   }, [
     items,
     scope.capabilities,
@@ -190,19 +191,30 @@ export function useCapabilityLibraryController(
     toolConfigurationById,
   ]);
   const kinds = useMemo(
-    () => selectedFilters.filter((filter): filter is CatalogueItemKind => filter !== "configured"),
-    [selectedFilters],
+    () => (filters.kind && !filters.installed ? [filters.kind] : []),
+    [filters.installed, filters.kind],
+  );
+  const installedItems = useMemo(
+    () =>
+      filterProjectCapabilities(items, {
+        category: "all",
+        configuredItemIds: installedItemIds,
+        configuredOnly: true,
+        kinds: [],
+        query: "",
+      }).sort((left, right) => left.label.localeCompare(right.label)),
+    [installedItemIds, items],
   );
   const itemsForCategories = useMemo(
     () =>
       filterProjectCapabilities(items, {
         category: "all",
-        configuredItemIds,
-        configuredOnly: selectedFilters.includes("configured"),
+        configuredItemIds: installedItemIds,
+        configuredOnly: filters.installed,
         kinds,
         query: "",
       }),
-    [configuredItemIds, items, kinds, selectedFilters],
+    [filters.installed, installedItemIds, items, kinds],
   );
   const categories = useMemo(
     () => getProjectCapabilityCategories(itemsForCategories, []),
@@ -211,13 +223,13 @@ export function useCapabilityLibraryController(
   const visibleItems = useMemo(
     () =>
       filterProjectCapabilities(items, {
-        category,
-        configuredItemIds,
-        configuredOnly: selectedFilters.includes("configured"),
+        category: filters.category,
+        configuredItemIds: installedItemIds,
+        configuredOnly: filters.installed,
         kinds,
-        query,
+        query: filters.query,
       }),
-    [category, configuredItemIds, items, kinds, query, selectedFilters],
+    [filters.category, filters.installed, filters.query, installedItemIds, items, kinds],
   );
   const groups = useMemo(() => groupProjectCapabilities(visibleItems), [visibleItems]);
 
@@ -275,17 +287,10 @@ export function useCapabilityLibraryController(
       tool: configurationTool,
     },
     filters: {
+      ...filters,
       categories,
-      category,
-      selected: selectedFilters,
-      query,
-      setCategory,
-      setSelected: (nextFilters: CapabilityFilter[]) => {
-        setSelectedFilters(nextFilters);
-        setCategory("all");
-      },
-      setQuery,
     },
+    installedItems,
     configurationMutation: scope.configurationMutation,
     projectMutations: scope.requiresExplicitEnablement ? scope.projectMutations : undefined,
     surface: scope.surface,

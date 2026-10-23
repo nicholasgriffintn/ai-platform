@@ -1,4 +1,3 @@
-import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilities";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   filterProjectCapabilities,
@@ -13,9 +12,10 @@ import {
   isRecipeConfigured,
   type AssistantActionItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import type { CapabilityLibraryScope } from "../Capabilities/useCapabilityLibraryController.js";
+import { useCatalogueFilters } from "../Capabilities/useCatalogueFilters.js";
 import { buildOwnInstallationByRecipeId } from "../Recipes/installations.js";
 import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest.js";
 import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
@@ -30,9 +30,7 @@ export function useScheduledLibraryController(scope: CapabilityLibraryScope) {
     conversationPath: scope.conversationPath,
     projectId: scope.surface.projectId,
   });
-  const [query, setQuery] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState<CapabilityFilter[]>([]);
-  const [category, setCategory] = useState("all");
+  const filters = useCatalogueFilters(RECIPE_KINDS);
 
   const recipes = useMemo(() => recipesQuery.data?.recipes ?? [], [recipesQuery.data?.recipes]);
   const recipeById = useMemo(
@@ -62,7 +60,7 @@ export function useScheduledLibraryController(scope: CapabilityLibraryScope) {
 
     return configured;
   }, [installationByRecipeId, items, recipeById]);
-  const configuredOnly = selectedFilters.includes("configured");
+  const { category, installed: configuredOnly, query } = filters;
   const itemsForCategories = useMemo(
     () =>
       filterProjectCapabilities(items, {
@@ -119,15 +117,15 @@ export function useScheduledLibraryController(scope: CapabilityLibraryScope) {
     groups,
     installationByRecipeId,
     isLoading: recipesQuery.isLoading,
+    installed: configuredOnly,
+    kind: filters.kind,
+    kinds: RECIPE_KINDS,
     query,
     recipeById,
-    selectedFilters,
-    setCategory,
-    setQuery,
-    setSelectedFilters: (nextFilters: CapabilityFilter[]) => {
-      setSelectedFilters(nextFilters);
-      setCategory("all");
-    },
+    setCategory: filters.setCategory,
+    setInstalled: filters.setInstalled,
+    setKind: filters.setKind,
+    setQuery: filters.setQuery,
     workflows: recipeWorkflows,
     addItem,
     removeCapability,

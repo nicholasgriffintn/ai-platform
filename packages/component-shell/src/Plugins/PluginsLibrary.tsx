@@ -1,9 +1,10 @@
-import { ConnectorDetailsModal } from "@ngriffin_uk/polychat-component-account";
+import { ConnectorDetailsModal, ConnectorLogo } from "@ngriffin_uk/polychat-component-account";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import type { ProjectCapabilityKindGroup } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 import { CapabilityLibrary } from "../Capabilities/CapabilityLibrary.js";
+import type { InstalledTileResolver } from "../Capabilities/InstalledCapabilityStrip.js";
 import {
   PLUGIN_LIBRARY_KINDS,
   type CapabilityLibraryScope,
@@ -40,12 +41,27 @@ export function PluginsLibrary({
     );
   };
 
+  const resolveInstalledTile: InstalledTileResolver = (item) => {
+    const connector =
+      item.kind === "connector" ? controller.manifestsById.get(item.capability.id) : undefined;
+
+    return connector
+      ? {
+          id: item.id,
+          label: connector.name,
+          icon: <ConnectorLogo connector={connector} />,
+          onSelect: () => controller.setSelectedConnector(connector),
+        }
+      : null;
+  };
+
   return (
     <CapabilityLibrary
       scope={scope}
       kinds={PLUGIN_LIBRARY_KINDS}
       extraItems={controller.items}
       renderGroup={renderGroup}
+      resolveInstalledTile={resolveInstalledTile}
       navigation={navigation}
       title="Plugins"
       subtitle={

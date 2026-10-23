@@ -1,10 +1,4 @@
-import {
-  Button,
-  Card,
-  DropdownMenu,
-  DropdownMenuItem,
-  TeammateCharacter,
-} from "@ngriffin_uk/polychat-component-ui";
+import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
 import type {
   AssistantActionItem,
   CapabilityCatalogItem,
@@ -12,22 +6,18 @@ import type {
   ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import {
-  Bot,
   Ellipsis,
   ExternalLink,
   MessageSquare,
   Pencil,
   Play,
   Plus,
-  Puzzle,
   Settings2,
   Share2,
-  Sparkles,
   Trash2,
-  Wrench,
 } from "lucide-react";
 
-import { getIcon, getIconContainerClass } from "./capability-theme";
+import { CapabilityIcon } from "./CapabilityIcon";
 export interface CapabilityCardProps {
   app?: CapabilityCatalogItem;
   isEnabled?: boolean;
@@ -76,7 +66,6 @@ export function CapabilityCard({
   authoredCapability,
   onOpen,
 }: CapabilityCardProps) {
-  const appIcon = app ? getIcon(app.icon, app.theme) : null;
   const isRunnableTool = kind === "tool" && Boolean(item.metadata?.toolRunnable);
   const isUnavailable = item.capability.availability === "unavailable";
   const canManage = projectActions?.canManage ?? true;
@@ -140,30 +129,7 @@ export function CapabilityCard({
     <Card className="justify-between p-5 shadow-none">
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <span
-            className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-              app ? getIconContainerClass(app.theme) : "bg-surface-elevated"
-            }`}
-          >
-            {appIcon ? (
-              appIcon
-            ) : kind === "teammate" && item.metadata?.characterId ? (
-              <TeammateCharacter
-                characterId={item.metadata.characterId}
-                teammateId={item.metadata.teammateId}
-                name={item.label}
-                size={36}
-              />
-            ) : kind === "tool" ? (
-              <Wrench size={18} />
-            ) : kind === "skill" ? (
-              <Sparkles size={18} />
-            ) : kind === "teammate" ? (
-              <Bot size={18} />
-            ) : (
-              <Puzzle size={18} />
-            )}
-          </span>
+          <CapabilityIcon app={app} item={item} kind={kind} />
           {isIncluded && (
             <span className="rounded-full bg-surface-elevated px-2 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
               {statusLabel}

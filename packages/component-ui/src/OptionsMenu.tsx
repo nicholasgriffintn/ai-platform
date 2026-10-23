@@ -174,7 +174,10 @@ export function OptionsMenuSection<TValue extends string>({
           sideOffset={2}
           alignOffset={-5}
           collisionPadding={8}
-          className={surfaceClassName}
+          className={cn(
+            surfaceClassName,
+            "max-h-(--radix-dropdown-menu-content-available-height) overflow-y-auto",
+          )}
         >
           <OptionsMenuRadioGroup value={value} options={options} onChange={onChange} />
         </DropdownMenuPrimitive.SubContent>
