@@ -11,7 +11,7 @@ import { listScopedTeammateSummaries } from "~/modules/teammates/application/lis
 const A2A_CARD_VERSION = "1.0.0";
 
 export function teammateA2aUrl(origin: string, teammateId: string): string {
-  return `${origin}/a2a/teammates/${encodeURIComponent(teammateId)}`;
+  return `${origin}/a2a/teammates/${encodeURIComponent(teammateId)}/rpc`;
 }
 
 export function buildTeammateAgentCard(teammate: TeammateSummary, origin: string): A2aAgentCard {
@@ -24,7 +24,7 @@ export function buildTeammateAgentCard(teammate: TeammateSummary, origin: string
     version: A2A_CARD_VERSION,
     ...(teammate.avatarUrl ? { iconUrl: teammate.avatarUrl } : {}),
     provider: { organization: "Polychat", url: origin },
-    capabilities: { streaming: false, pushNotifications: false, stateTransitionHistory: false },
+    capabilities: { streaming: true, pushNotifications: false, stateTransitionHistory: false },
     defaultInputModes: ["text/plain", "application/json"],
     defaultOutputModes: ["text/plain"],
     skills: [

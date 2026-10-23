@@ -18,15 +18,13 @@ import {
   mcpOAuthStartInputSchema,
   mcpOAuthStartResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
-import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { runFunctionWithOutput } from "~/modules/outputs/application/run-with-output";
+import { runToolDirectly } from "~/modules/tools/application/direct-run";
 import { callMcpAppTool } from "~/modules/tools/application/mcp-app-calls";
 import {
   createMcpConnection,
@@ -45,7 +43,6 @@ import {
 import { getRunnableTool } from "~/modules/tools/application/runnable";
 import { getScopedAvailableTools } from "~/modules/tools/application/toolsOperations";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
-import type { IRequest } from "~/types";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("tools");
@@ -93,28 +90,26 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
       querySchema: projectScopeQuerySchema,
       bodySchema: runnableToolExecuteRequestSchema,
       responses: { 200: { description: "Tool result", schema: runnableToolResponseSchema } },
-      handler: async ({ body, params, query, raw, serviceContext, user }) => {
-        if (!getRunnableTool(params.tool_id)) {
-          throw new AssistantError("Tool not found", ErrorType.NOT_FOUND, 404);
-        }
-
-        const requestUrl = new URL(raw.req.url);
-        const req: IRequest = {
-          app_url: `${requestUrl.protocol}//${requestUrl.host}`,
-          env: serviceContext.env,
-          request: {
-            completion_id: generateId(),
-            input: "tool-execution",
-            date: new Date().toISOString(),
-            platform: "tool-run",
-          },
-          user,
+      handler: ({ body, params, query, raw, serviceContext }) =>
+        runToolDirectly({
           context: serviceContext,
-        };
-
-        return runFunctionWithOutput(params.tool_id, body, req, query.project_id);
-      },
+          toolId: params.tool_id,
+          args: body,
+          appUrl: new URL(raw.req.url).origin,
+          platform: "tool-run",
+          projectId: query.project_id,
+        }),
     });
+
+  tools.collection("mcp_calls", "call_id").create({
+    auth: true,
+    summary: "Run a read-only MCP tool from an app view",
+    description:
+      "Lets an MCP app rendered in a conversation refresh its data. Only tools the integration marks read-only run here; anything that changes something has to go through the conversation so it can ask first.",
+    bodySchema: mcpAppToolCallRequestSchema,
+    responses: { 200: { description: "The tool result", schema: mcpAppCallToolResultSchema } },
+    handler: ({ serviceContext, body }) => callMcpAppTool(serviceContext, body),
+  });
 
   tools.singleton("configuration").update({
     auth: true,
@@ -197,17 +192,6 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
         return raw.redirect(mcpOAuthReturnUrl(serviceContext, connected ? "connected" : "failed"));
       },
     });
-});
-
-addRoute(app, "post", "/mcp/calls", {
-  tags: ["tools"],
-  summary: "Run a read-only MCP tool from an app view",
-  description:
-    "Lets an MCP app rendered in a conversation refresh its data. Only tools the integration marks read-only run here; anything that changes something has to go through the conversation so it can ask first.",
-  auth: true,
-  bodySchema: mcpAppToolCallRequestSchema,
-  responses: { 200: { description: "The tool result", schema: mcpAppCallToolResultSchema } },
-  handler: ({ serviceContext, body }) => callMcpAppTool(serviceContext, body),
 });
 
 export default app;

@@ -1,4 +1,5 @@
 import {
+  JSON_RPC_ERRORS,
   MCP_APP_PROTOCOL_VERSION,
   jsonRpcRequestSchema,
   type McpAppCallToolResult,
@@ -9,10 +10,6 @@ import {
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const MCP_APP_SANDBOX = "allow-scripts allow-forms";
-
-const JSON_RPC_METHOD_NOT_FOUND = -32601;
-const JSON_RPC_INVALID_PARAMS = -32602;
-const JSON_RPC_INTERNAL_ERROR = -32603;
 
 const PERMISSION_FEATURES: readonly (readonly [keyof McpAppPermissions, string])[] = [
   ["camera", "camera"],
@@ -124,7 +121,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
       const url = readParams(params).url;
 
       if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
-        fail(id, JSON_RPC_INVALID_PARAMS, "ui/open-link needs an http or https url");
+        fail(id, JSON_RPC_ERRORS.invalidParams, "ui/open-link needs an http or https url");
 
         return;
       }
@@ -137,7 +134,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
       const text = isRecord(content) ? content.text : undefined;
 
       if (typeof text !== "string" || !text.trim()) {
-        fail(id, JSON_RPC_INVALID_PARAMS, "ui/message needs text content");
+        fail(id, JSON_RPC_ERRORS.invalidParams, "ui/message needs text content");
 
         return;
       }
@@ -160,7 +157,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
       const { name, arguments: args } = readParams(params);
 
       if (typeof name !== "string" || !name) {
-        fail(id, JSON_RPC_INVALID_PARAMS, "tools/call needs a tool name");
+        fail(id, JSON_RPC_ERRORS.invalidParams, "tools/call needs a tool name");
 
         return;
       }
@@ -170,7 +167,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
       } catch (error) {
         fail(
           id,
-          JSON_RPC_INTERNAL_ERROR,
+          JSON_RPC_ERRORS.internal,
           error instanceof Error ? error.message : "The tool call failed",
         );
       }
@@ -192,7 +189,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
         : undefined;
 
       if (!handler) {
-        fail(request.id, JSON_RPC_METHOD_NOT_FOUND, `${request.method} is not supported here`);
+        fail(request.id, JSON_RPC_ERRORS.methodNotFound, `${request.method} is not supported here`);
 
         return;
       }

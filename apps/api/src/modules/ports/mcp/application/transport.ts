@@ -1,6 +1,5 @@
+import type { JsonRpcResponse } from "@ngriffin_uk/polychat-schemas";
 import { encodeServerSentEvent } from "@ngriffin_uk/polychat-utility-core";
-
-import type { JsonRpcResponse } from "./protocol";
 
 function acceptedMediaTypes(accept: string | null): Set<string> {
   return new Set(

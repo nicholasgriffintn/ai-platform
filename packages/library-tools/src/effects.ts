@@ -28,6 +28,10 @@ export function effectClassFromToolHints(hints: ToolEffectHints): ToolEffectClas
   return hints.destructive ? "destructive" : "write";
 }
 
+export function toolHintsFromEffectClass(effectClass: ToolEffectClass): ToolEffectHints {
+  return { readOnly: effectClass === "read", destructive: effectClass === "destructive" };
+}
+
 export function resolveToolEffectClass<TInput>(
   effects: ToolEffects<TInput, never> | ToolEffects<TInput> | undefined,
   input: TInput,

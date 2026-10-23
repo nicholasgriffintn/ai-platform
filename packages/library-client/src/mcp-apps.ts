@@ -7,7 +7,7 @@ import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 export async function callMcpAppTool(
   request: McpAppToolCallRequest,
 ): Promise<McpAppCallToolResult> {
-  const response = await fetchApi("/tools/mcp/calls", {
+  const response = await fetchApi("/tools/mcp_calls", {
     method: "POST",
     headers: await apiService.getHeaders(),
     body: request,

@@ -146,6 +146,7 @@ export * from "./outputs.js";
 export * from "./work-outputs.js";
 export * from "./ocr.js";
 export * from "./jobs.js";
+export * from "./json-rpc.js";
 export * from "./ocr-batch.js";
 export * from "./pets.js";
 export * from "./platform-teammates.js";

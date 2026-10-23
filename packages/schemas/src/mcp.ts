@@ -119,14 +119,6 @@ export const MCP_APP_MIME_TYPE = "text/html;profile=mcp-app";
 export const MCP_APP_RENDERER = "mcp_app";
 export const MCP_APP_PROTOCOL_VERSION = "2025-06-18";
 
-export const jsonRpcRequestSchema = z.object({
-  jsonrpc: z.literal("2.0"),
-  id: z.union([z.number(), z.string(), z.null()]).optional(),
-  method: z.string().min(1),
-  params: z.unknown().optional(),
-});
-
-export type JsonRpcRequest = z.infer<typeof jsonRpcRequestSchema>;
 export const MCP_APP_MAX_HTML_BYTES = 1024 * 1024;
 
 const domainListSchema = z.array(z.string().trim().min(1).max(253)).max(32);

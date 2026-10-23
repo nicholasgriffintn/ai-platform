@@ -16,9 +16,9 @@ An app view is rendered content. Its HTML runs in a frame with `allow-scripts al
 - Links open in a new window, and a message from the view becomes a draft in the composer, never a sent turn.
 - The resource is fetched and attached by the API when the tool result is produced, so the view never fetches it itself and the client never speaks to the integration directly.
 
-The MCP server exposes a short list of Polychat's own operations under the key owner's authority. Runs it starts are admitted with the `channel` trigger, so a never-standing effect asks in Polychat Attention rather than running because a remote host said so. The remote host only sees the receipt.
+The MCP server is a port onto the tool registry and Responses: it lists the tools the key owner can run in Polychat plus one tool per teammate, and runs them under the owner's authority with the `channel` trigger and assistant autonomy. A write without a standing approval or a never-standing effect is refused to the remote host and asks in Polychat instead of running because a remote host said so.
 
-Agent2Agent follows the same rule. Each teammate publishes an agent card and a `message/send` endpoint to its owner's API key only, and a message from another agent becomes a `channel` run in the teammate's own conversation, never a grant of anything the teammate would otherwise ask for.
+Agent2Agent follows the same rule. Each teammate publishes an agent card and a JSON-RPC endpoint to its owner's API key only. An A2A task is a Response in the teammate's own conversation, started as a `channel` run, so a message from another agent is never a grant of anything the teammate would otherwise ask for.
 
 ## Consequences
 

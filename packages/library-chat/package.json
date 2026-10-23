@@ -177,6 +177,11 @@
       "types": "./dist/mcp-apps.d.ts",
       "import": "./dist/mcp-apps.js"
     },
+    "./response-output": {
+      "polychat-source": "./src/response-output.ts",
+      "types": "./dist/response-output.d.ts",
+      "import": "./dist/response-output.js"
+    },
     "./reactions": {
       "polychat-source": "./src/reactions.ts",
       "types": "./dist/reactions.d.ts",

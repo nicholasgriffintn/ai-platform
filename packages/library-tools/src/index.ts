@@ -19,6 +19,7 @@ export {
   resolveToolDestination,
   resolveToolEffectClass,
   resolveToolEffectClassWithHints,
+  toolHintsFromEffectClass,
   type ToolEffectHints,
   type ToolEffects,
 } from "./effects.js";

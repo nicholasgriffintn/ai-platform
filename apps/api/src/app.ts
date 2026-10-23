@@ -1,6 +1,5 @@
 import type { Hono } from "hono";
 
-import a2a from "~/modules/a2a/api/routes";
 import account from "~/modules/account/api/routes";
 import activity from "~/modules/activity/api/routes";
 import admin from "~/modules/admin/api/routes";
@@ -24,7 +23,6 @@ import extractions from "~/modules/extractions/api/routes";
 import githubConnections from "~/modules/github/api/connections";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
-import mcpServer from "~/modules/mcp/api/routes";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
 import memorySyntheses from "~/modules/memory/api/syntheses";
 import devices from "~/modules/mobile-push/api/routes";
@@ -40,7 +38,9 @@ import outputs from "~/modules/outputs/api/routes";
 import pets from "~/modules/pets/api/routes";
 import plans from "~/modules/plans/api/routes";
 import poly from "~/modules/poly/api/routes";
+import a2a from "~/modules/ports/a2a/api/routes";
 import chatCompletionsPort from "~/modules/ports/chat-completions/api/routes";
+import mcpServer from "~/modules/ports/mcp/api/routes";
 import tasks from "~/modules/queue/api/routes";
 import realtime from "~/modules/realtime/api/routes";
 import recipes from "~/modules/recipes/api/routes";
