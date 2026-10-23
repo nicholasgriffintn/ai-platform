@@ -1,5 +1,7 @@
 {
   "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 32768,
     "modalities": {
       "input": [
         "text"
@@ -8,54 +10,33 @@
         "text"
       ]
     },
+    "strengths": [
+      "reasoning",
+      "analysis",
+      "multilingual",
+      "coding",
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
     "knowledgeCutoffDate": "September 2023",
     "releaseDate": "December 11, 2023",
-    "supportsTemperature": true
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 5.1,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.3
+    }
   },
   "description": "The mixtral family includes models that produce text.",
   "models": {
     "mixtral-8x7b-instruct": {
       "defaults": {
         "name": "Mixtral 8x7B Instruct",
-        "description": "Mixtral 8x7B Instruct accepts text and produces text.",
-        "contextWindow": 32768,
-        "maxTokens": 32768,
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "multilingual",
-          "coding",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "supportsToolCalls": true,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 5.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
-    "mixtral-8x7b-instruct-v0-1": {
-      "defaults": {
-        "name": "Mixtral 8x7B Instruct v0.1",
-        "openWeights": true,
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 32000,
-        "maxTokens": 4096,
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "Mixtral 8x7B Instruct accepts text and produces text."
       }
     }
   }

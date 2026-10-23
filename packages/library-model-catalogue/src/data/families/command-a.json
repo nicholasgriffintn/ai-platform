@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": true,
-    "knowledgeCutoffDate": "June 1, 2024",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsTemperature": true
   },
   "description": "The command a family includes models that produce text.",
@@ -10,7 +10,6 @@
     "cohere-command-a": {
       "defaults": {
         "name": "Cohere: Command A+",
-        "openWeights": false,
         "description": "Command A+ is Cohere's flagship model for enterprise agentic workflows. It accepts text and image inputs with a 192K context window, supports native tool calling with strict tool schemas, structured...",
         "contextWindow": 192000,
         "maxTokens": 64000,
@@ -30,8 +29,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "September 22, 2026",
-        "supportsResponseFormat": true,
+        "knowledgeCutoffDate": "April 1, 2025",
+        "releaseDate": "May 20, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -64,7 +63,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 13, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7,
@@ -98,7 +96,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 1, 2025",
         "releaseDate": "May 20, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -129,6 +126,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "June 1, 2024",
         "releaseDate": "August 21, 2025",
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -154,6 +152,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "June 1, 2024",
         "releaseDate": "August 28, 2025",
         "supportsAttachments": false
       }
@@ -173,6 +172,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "June 1, 2024",
         "releaseDate": "July 31, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": true

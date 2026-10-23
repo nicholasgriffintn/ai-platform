@@ -1,7 +1,7 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "models": {
@@ -9,35 +9,17 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "openWeights": false,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.0042
+        "costPer1kInputTokens": 0.0011215,
+        "costPer1kOutputTokens": 0.0047103,
+        "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "qwen3-coder-next": {
-      "model": "qwen/qwen3-coder-next",
-      "matchingModel": "qwen3-coder-next",
-      "overrides": {
-        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
-        "maxTokens": 16384,
-        "contextComplexity": 3,
-        "speed": 3,
-        "releaseDate": "March 1, 2026",
-        "lastUpdated": "March 1, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
-      },
-      "unset": [
-        "knowledgeCutoffDate",
         "supportsResponseFormat"
       ]
     },
@@ -47,7 +29,8 @@
       "overrides": {
         "lastUpdated": "September 2, 2025",
         "costPer1kInputTokens": 0.00046,
-        "costPer1kOutputTokens": 0.00242
+        "costPer1kOutputTokens": 0.00242,
+        "supportsAttachments": false
       }
     },
     "brick-complexity-pro": {
@@ -56,8 +39,7 @@
       "overrides": {
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.00046,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00046
       }
     },
     "brick-v1-beta": {
@@ -67,8 +49,7 @@
         "status": "beta",
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0
       }
     },
     "deepseek-ocr-2": {
@@ -78,25 +59,18 @@
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false,
-        "supportsAttachments": true
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+        "supportsToolCalls": false
+      }
     },
     "faster-whisper-large-v3": {
       "model": "whisper/faster-whisper-large-v3",
       "matchingModel": "faster-whisper-large-v3",
       "overrides": {
-        "lastUpdated": "October 1, 2024",
+        "lastUpdated": "November 6, 2023",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "gemma4-31b": {
       "model": "gemma/gemma-4-31b-it",
@@ -106,8 +80,7 @@
         "maxTokens": 100000,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00046,
-        "costPer1kOutputTokens": 0.00242,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00242
       }
     },
     "glm5.2": {
@@ -122,6 +95,7 @@
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.00231,
         "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -140,31 +114,13 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "speed": 5,
-        "releaseDate": "March 1, 2026",
-        "lastUpdated": "March 1, 2026",
-        "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.0018
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00011215,
+        "costPer1kOutputTokens": 0.00047103,
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
-      ]
-    },
-    "llama-3.3-70b-instruct": {
-      "model": "llama/llama-3-3-70b-instruct",
-      "matchingModel": "llama-3.3-70b-instruct",
-      "overrides": {
-        "name": "Llama 3.3 70B Instruct",
-        "openWeights": false,
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "releaseDate": "April 28, 2025",
-        "lastUpdated": "April 28, 2025",
-        "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0027
-      },
-      "unset": [
-        "knowledgeCutoffDate"
       ]
     },
     "mistral-small-4-119b": {
@@ -172,10 +128,9 @@
       "matchingModel": "mistral-small-4-119b",
       "overrides": {
         "isFeatured": true,
-        "lastUpdated": "March 15, 2026",
-        "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true
+        "lastUpdated": "March 16, 2026",
+        "costPer1kInputTokens": 0.00056075,
+        "costPer1kOutputTokens": 0.00235515
       }
     },
     "qwen-image": {
@@ -204,30 +159,29 @@
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002,
-        "supportsToolCalls": false
-      }
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-embedding-8b": {
       "model": "qwen/qwen3-embedding-8b",
       "matchingModel": "qwen3-embedding-8b",
       "overrides": {
-        "name": "Qwen3-Embedding-8B",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "February 1, 2026",
-        "lastUpdated": "February 1, 2026",
+        "lastUpdated": "June 5, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-reranker-4b": {
       "model": "qwen/qwen3-reranker-4b",
@@ -237,18 +191,24 @@
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.00012,
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.5-122b": {
       "model": "qwen/qwen3-5-122b",
       "matchingModel": "qwen3.5-122b",
       "overrides": {
-        "lastUpdated": "February 1, 2026",
-        "costPer1kInputTokens": 0.0009,
-        "costPer1kOutputTokens": 0.0036,
-        "supportsAttachments": true
-      }
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.0011215,
+        "costPer1kOutputTokens": 0.0047103
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.5-9b": {
       "model": "qwen/qwen3-5-9b",
@@ -257,26 +217,10 @@
         "name": "Qwen3.5-9B",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
-        "releaseDate": "February 1, 2026",
-        "lastUpdated": "February 1, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": true
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.000078505,
+        "costPer1kOutputTokens": 0.000392525
       },
       "unset": [
         "supportsResponseFormat"
@@ -310,7 +254,6 @@
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00242,
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

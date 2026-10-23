@@ -90,15 +90,13 @@
     "gpt-5-6-terra-global": {
       "defaults": {
         "name": "GPT-5.6 Terra (Global)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
-        "supportsResponseFormat": false
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
       }
     },
     "gpt-5-6-terra-india": {
       "defaults": {
         "name": "GPT-5.6 Terra (India)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
-        "supportsResponseFormat": false
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
       }
     },
     "gpt-5-6-terra-pro": {
@@ -110,8 +108,7 @@
     "gpt-5-6-terra-us": {
       "defaults": {
         "name": "GPT-5.6 Terra (US)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
-        "supportsResponseFormat": false
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
       }
     },
     "gpt-terra-latest": {

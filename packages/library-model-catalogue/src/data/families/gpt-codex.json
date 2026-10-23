@@ -82,6 +82,14 @@
           "tool_use"
         ],
         "releaseDate": "November 13, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 20.4,
           "codingIndex": null,
@@ -163,6 +171,7 @@
         ],
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 5, 2026",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 32.5,
           "codingIndex": null,

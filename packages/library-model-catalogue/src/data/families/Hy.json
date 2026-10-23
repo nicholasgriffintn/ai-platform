@@ -20,7 +20,7 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
-        "releaseDate": "August 20, 2026",
+        "releaseDate": "May 21, 2026",
         "supportsResponseFormat": false
       }
     },
@@ -29,7 +29,7 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
-        "releaseDate": "August 20, 2026",
+        "releaseDate": "May 21, 2026",
         "supportsResponseFormat": true
       }
     },
@@ -38,7 +38,7 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
-        "releaseDate": "August 19, 2026",
+        "releaseDate": "May 21, 2026",
         "supportsResponseFormat": true
       }
     },

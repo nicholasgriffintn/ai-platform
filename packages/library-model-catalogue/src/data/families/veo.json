@@ -10,7 +10,8 @@
       ]
     },
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "description": "Video model for prompt-guided generation, editing, and motion workflows",
   "models": {
@@ -53,8 +54,7 @@
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextWindow": 0,
         "maxTokens": 0,
-        "releaseDate": "May 20, 2025",
-        "supportsTemperature": true
+        "releaseDate": "May 20, 2025"
       }
     },
     "veo-3-0-fast-generate": {
@@ -63,8 +63,7 @@
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextWindow": 0,
         "maxTokens": 0,
-        "releaseDate": "July 31, 2025",
-        "supportsTemperature": true
+        "releaseDate": "July 31, 2025"
       }
     },
     "veo-3-1": {
@@ -82,7 +81,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 968,
+              "value": 969,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -116,8 +115,6 @@
         "contextComplexity": 2,
         "reliability": 4,
         "releaseDate": "October 15, 2025",
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -142,8 +139,7 @@
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextWindow": 0,
         "maxTokens": 0,
-        "releaseDate": "October 15, 2025",
-        "supportsTemperature": true
+        "releaseDate": "October 15, 2025"
       }
     },
     "veo-3-1-lite": {
@@ -170,8 +166,6 @@
         "contextComplexity": 2,
         "reliability": 2,
         "releaseDate": "March 31, 2026",
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

@@ -281,7 +281,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -933,7 +933,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -1308,7 +1308,6 @@
           ]
         },
         "deprecated": true,
-        "releaseDate": "February 5, 2026",
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1799,7 +1798,7 @@
           "document",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
         "dataRetention": {
@@ -1926,8 +1925,6 @@
       "matchingModel": "gpt-realtime-2",
       "overrides": {
         "name": "GPT Realtime 2",
-        "contextWindow": 128000,
-        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text",
@@ -1949,7 +1946,6 @@
         ],
         "speed": 4,
         "multimodal": true,
-        "knowledgeCutoffDate": "September 30, 2024",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
@@ -2001,34 +1997,10 @@
       "model": "gpt/gpt-realtime-mini",
       "matchingModel": "gpt-realtime-mini",
       "overrides": {
-        "name": "GPT Realtime Mini",
-        "contextWindow": 32000,
-        "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "chat",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
         "speed": 5,
-        "multimodal": true,
         "deprecated": true,
         "deprecationMessage": "GPT Realtime Mini is being retired. Use GPT Realtime 2.1 Mini instead.",
         "replacementModel": "gpt-realtime-2.1-mini",
-        "knowledgeCutoffDate": "October 1, 2023",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
@@ -2167,7 +2139,6 @@
       "model": "gpt/gpt-4o-transcribe",
       "matchingModel": "gpt-4o-transcribe",
       "overrides": {
-        "contextWindow": 16000,
         "strengths": [
           "transcription"
         ],
@@ -2192,8 +2163,6 @@
       "model": "whisper/whisper",
       "matchingModel": "whisper-1",
       "overrides": {
-        "contextWindow": 448,
-        "maxTokens": 448,
         "strengths": [
           "transcription"
         ],
@@ -2603,6 +2572,9 @@
       "model": "gpt/gpt-live-1",
       "matchingModel": "gpt-live-1",
       "overrides": {
+        "strengths": [
+          "audio"
+        ],
         "lastUpdated": "September 10, 2026",
         "dataRetention": {
           "maxDays": 30,

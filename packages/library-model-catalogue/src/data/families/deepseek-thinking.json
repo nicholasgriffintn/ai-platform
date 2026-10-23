@@ -68,23 +68,13 @@
       "defaults": {
         "name": "DeepSeek R1 0528",
         "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
-        "contextWindow": 164000,
-        "maxTokens": 164000,
+        "contextWindow": 163840,
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "May 28, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 13.1,
           "codingIndex": null,
@@ -165,35 +155,6 @@
         }
       }
     },
-    "deepseek-r1-us": {
-      "defaults": {
-        "name": "DeepSeek-R1 (US)",
-        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
-        "contextWindow": 128000,
-        "maxTokens": 32768,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "knowledgeCutoffDate": "July 2024",
-        "releaseDate": "January 20, 2025",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 13.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
     "deepseek-reasoner": {
       "defaults": {
         "name": "DeepSeek Reasoner",
@@ -252,7 +213,7 @@
         ],
         "contextComplexity": 5,
         "reliability": 3,
-        "releaseDate": "August 12, 2026",
+        "releaseDate": "August 13, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 36,
           "codingIndex": 68.8,
@@ -273,7 +234,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 3,
-        "releaseDate": "August 12, 2026",
+        "releaseDate": "August 13, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

@@ -13,6 +13,7 @@
     },
     "knowledgeCutoffDate": "June 1, 2024",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -39,9 +40,8 @@
       "defaults": {
         "name": "Command R7B",
         "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
-        "releaseDate": "December 2, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
+        "releaseDate": "December 13, 2024",
+        "supportsToolCalls": false
       }
     },
     "command-r7b-arabic": {

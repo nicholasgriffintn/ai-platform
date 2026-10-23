@@ -1,19 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 128000,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "reliability": 1,
     "supportsToolCalls": false,
-    "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
       "intelligenceIndex": 11.8,
@@ -28,7 +17,17 @@
       "defaults": {
         "name": "Perplexity: Sonar Reasoning Pro",
         "description": "Web-grounded reasoning model for multi-step research and cited answers",
+        "contextWindow": 128000,
         "maxTokens": 115200,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document"
@@ -36,28 +35,19 @@
         "contextComplexity": 4,
         "releaseDate": "March 7, 2025",
         "supportsResponseFormat": false,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "high"
         }
       }
     },
     "sonar-reasoning-pro": {
       "defaults": {
         "name": "Sonar Reasoning Pro",
-        "description": "Web-grounded reasoning model for multi-step research and cited answers",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "description": "Web-grounded reasoning model for multi-step research and cited answers"
       }
     }
   }

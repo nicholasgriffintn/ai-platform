@@ -7,15 +7,13 @@
   },
   "models": {
     "gpt-oss-120b": {
-      "model": "gpt/gpt-oss-120b",
+      "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "contextComplexity": 4,
         "speed": 5,
-        "releaseDate": "August 28, 2025",
-        "lastUpdated": "August 28, 2025",
+        "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00047
       }
@@ -38,35 +36,24 @@
       ]
     },
     "gpt-oss-20b": {
-      "model": "gpt/gpt-oss-20b",
+      "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "gpt-oss-20b",
       "overrides": {
         "name": "gpt-oss-20b",
-        "openWeights": true,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
+        "maxTokens": 131072,
+        "contextComplexity": 4,
         "speed": 5,
-        "releaseDate": "August 28, 2025",
-        "lastUpdated": "August 28, 2025",
+        "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.00018,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+        "costPer1kOutputTokens": 0.00018
+      }
     },
     "meta-llama-3_3-70b-instruct": {
       "model": "llama/meta-llama-3-3-70b-instruct",
       "matchingModel": "meta-llama-3_3-70b-instruct",
       "overrides": {
-        "lastUpdated": "April 1, 2025",
+        "lastUpdated": "December 6, 2024",
         "costPer1kInputTokens": 0.00074,
         "costPer1kOutputTokens": 0.00074
       }
@@ -85,29 +72,27 @@
       }
     },
     "mistral-nemo-instruct-2407": {
-      "model": "mistral/mistral-nemo-instruct-2407",
+      "model": "mistral-nemo/mistral-nemo-instruct-2407",
       "matchingModel": "mistral-nemo-instruct-2407",
       "overrides": {
         "name": "Mistral-Nemo-Instruct-2407",
-        "openWeights": true,
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "releaseDate": "November 20, 2024",
-        "lastUpdated": "November 20, 2024",
+        "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00014
       }
     },
     "mistral-small-3.2-24b-instruct-2506": {
-      "model": "mistral/mistral-small-3-2-24b-instruct-2506",
+      "model": "mistral-small/mistral-small-3-2-24b-instruct-2506",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
         "name": "Mistral-Small-3.2-24B-Instruct-2506",
-        "openWeights": true,
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "releaseDate": "July 16, 2025",
-        "lastUpdated": "July 16, 2025",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00031,
         "supportsAttachments": true
@@ -121,8 +106,7 @@
         "description": "Multimodal model for analyzing text, images, documents, and rich media",
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "releaseDate": "March 31, 2025",
-        "lastUpdated": "March 31, 2025",
+        "lastUpdated": "January 26, 2025",
         "costPer1kInputTokens": 0.00101,
         "costPer1kOutputTokens": 0.00101,
         "supportsToolCalls": false,
@@ -168,8 +152,7 @@
           "tool_use"
         ],
         "speed": 3,
-        "releaseDate": "May 18, 2026",
-        "lastUpdated": "May 18, 2026",
+        "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.00071,
         "costPer1kOutputTokens": 0.00425,
         "supportsAttachments": true,
@@ -191,23 +174,8 @@
         "name": "Qwen3.5-9B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
-        "releaseDate": "April 22, 2026",
-        "lastUpdated": "April 22, 2026",
+        "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.00018,
         "supportsAttachments": true,
@@ -245,8 +213,7 @@
         ],
         "speed": 3,
         "isFeatured": true,
-        "releaseDate": "June 1, 2026",
-        "lastUpdated": "June 1, 2026",
+        "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00047,
         "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,
@@ -284,7 +251,6 @@
       "matchingModel": "qwen3guard-gen-8b",
       "overrides": {
         "name": "Qwen3Guard-Gen-8B",
-        "openWeights": true,
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
         "contextWindow": 32768,
         "maxTokens": 16384,
@@ -315,8 +281,7 @@
         "maxTokens": 262144,
         "speed": 2,
         "isFeatured": true,
-        "releaseDate": "September 2, 2026",
-        "lastUpdated": "September 2, 2026",
+        "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00047,
         "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,

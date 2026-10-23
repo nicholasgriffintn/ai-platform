@@ -1,7 +1,6 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true
+    "supportsToolCalls": true
   },
   "models": {
     "lucidquery-agi-01-frontier": {
@@ -10,8 +9,8 @@
       "overrides": {
         "isFeatured": true,
         "lastUpdated": "June 16, 2026",
-        "costPer1kInputTokens": 0.0045,
-        "costPer1kOutputTokens": 0.022
+        "costPer1kInputTokens": 0.00504675,
+        "costPer1kOutputTokens": 0.024673
       },
       "unset": [
         "supportsResponseFormat"
@@ -41,8 +40,8 @@
       "overrides": {
         "isFeatured": true,
         "lastUpdated": "June 16, 2026",
-        "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.00280375,
+        "costPer1kOutputTokens": 0.0168225
       },
       "unset": [
         "supportsResponseFormat"

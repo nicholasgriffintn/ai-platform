@@ -14,6 +14,7 @@
     },
     "releaseDate": "September 22, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {

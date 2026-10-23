@@ -2,7 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 8192,
-    "maxTokens": 1536,
+    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -14,7 +14,7 @@
     "releaseDate": "April 30, 2024",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The titan embed family includes models that produce embedding.",
   "models": {

@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 32768,
-    "maxTokens": 4096,
+    "contextWindow": 524288,
+    "maxTokens": 131072,
     "modalities": {
       "input": [
         "text"
@@ -11,21 +11,28 @@
         "text"
       ]
     },
-    "strengths": [
-      "chat",
-      "general_knowledge",
-      "analysis",
-      "tool_use"
-    ],
-    "contextComplexity": 2,
+    "contextComplexity": 4,
     "reliability": 1,
-    "knowledgeCutoffDate": "September 2024",
-    "releaseDate": "June 12, 2024",
+    "knowledgeCutoffDate": "February 2026",
+    "releaseDate": "September 22, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "none"
+    },
     "artificialAnalysis": {
-      "intelligenceIndex": 6.4,
+      "intelligenceIndex": 24.1,
       "codingIndex": null,
       "agenticIndex": null,
       "intelligenceIndexVersion": 4.3
@@ -36,7 +43,39 @@
     "solar-mini": {
       "defaults": {
         "name": "solar-mini",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 32768,
+        "maxTokens": 4096,
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "tool_use"
+        ],
+        "contextComplexity": 2,
+        "knowledgeCutoffDate": "September 2024",
+        "releaseDate": "June 12, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "solar-mini-4": {
+      "defaults": {
+        "name": "Solar Mini 4",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    },
+    "upstage-solar-mini-4": {
+      "defaults": {
+        "name": "Upstage: Solar Mini 4",
+        "description": "Solar Mini 4 is Upstage's compact, cost-efficient language model, a 35B-parameter mixture-of-experts with 3B active parameters and a 524K context window. It is built for agentic use cases where response...",
+        "strengths": [
+          "tool_use"
+        ]
       }
     }
   }

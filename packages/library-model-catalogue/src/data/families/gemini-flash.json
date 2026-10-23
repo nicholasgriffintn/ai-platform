@@ -12,9 +12,8 @@
     "gemini-2-5-flash": {
       "defaults": {
         "name": "Gemini 2.5 Flash",
-        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "description": "Google's fast multimodal model with support for text, images, audio, video, and PDFs.",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -28,7 +27,6 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -36,22 +34,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 984,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 9
-            }
-          ]
         }
       }
     },
@@ -285,15 +267,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "May 19, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 32.6,
           "codingIndex": 70.1,
@@ -354,6 +327,7 @@
         "name": "Gemini 3.6 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -366,6 +340,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
@@ -486,7 +468,6 @@
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -570,6 +551,144 @@
           "codingIndex": 76.3,
           "agenticIndex": 40.2,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "gemini-3-8-flash-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash TTS",
+        "description": "Flagship text-to-speech model for expressive, studio-grade voices and long-form multi-speaker audio",
+        "contextWindow": 8192,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "contextComplexity": 2,
+        "reliability": 5,
+        "releaseDate": "September 22, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1274,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 15
+            }
+          ]
+        }
+      }
+    },
+    "gemini-3-8-live": {
+      "defaults": {
+        "name": "Gemini 3.8 Live",
+        "description": "Low-latency Live API model for real-time voice agents with interleaved reasoning and async tools",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "September 15, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "bbaScore",
+              "label": "Big Bench Audio",
+              "value": 0.92,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "fdbScore",
+              "label": "Full Duplex Bench",
+              "value": 0.96,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "tauVoiceScore",
+              "label": "Tau Voice",
+              "value": 0.3,
+              "min": 0,
+              "max": 1
+            }
+          ]
+        }
+      }
+    },
+    "gemini-3-8-live-extended-thinking": {
+      "defaults": {
+        "name": "Gemini 3.8 Live Extended Thinking",
+        "description": "Live API voice model with configurable background reasoning for multi-step real-time agents",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "releaseDate": "September 15, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "tauVoiceScore",
+              "label": "Tau Voice",
+              "value": 0.69,
+              "min": 0,
+              "max": 1
+            }
+          ]
         }
       }
     },
@@ -736,13 +855,6 @@
         "reliability": 3,
         "releaseDate": "May 28, 2026",
         "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -752,7 +864,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1126,
+              "value": 1125,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -828,14 +940,14 @@
         },
         "strengths": [
           "image",
-          "creative"
+          "creative",
+          "document"
         ],
         "contextComplexity": 3,
         "reliability": 2,
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "August 26, 2025",
         "supportsToolCalls": false,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

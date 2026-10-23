@@ -14,7 +14,7 @@
     "releaseDate": "February 26, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The v0 family includes models that produce text.",
   "models": {

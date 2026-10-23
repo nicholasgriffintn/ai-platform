@@ -15,7 +15,7 @@
     "releaseDate": "October 9, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The vercel/heygen/heygen video 1 family includes models that produce video.",
   "models": {

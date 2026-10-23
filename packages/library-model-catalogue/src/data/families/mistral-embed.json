@@ -1,6 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 8000,
+    "maxTokens": 3072,
     "modalities": {
       "input": [
         "text"
@@ -11,7 +13,8 @@
     },
     "releaseDate": "December 11, 2023",
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": false,
+    "supportsTemperature": false
   },
   "description": "The mistral embed family includes models that produce embedding.",
   "models": {

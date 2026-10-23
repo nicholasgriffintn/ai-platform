@@ -1,64 +1,16 @@
 {
   "defaults": {
+    "openWeights": true,
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The qwen family includes models that produce audio, embedding, image, text.",
   "models": {
-    "qwen-2-5-7b-instruct-turbo": {
-      "defaults": {
-        "name": "Qwen 2.5 7B Instruct Turbo",
-        "openWeights": true,
-        "description": "Efficient Qwen model for fast chat, extraction, and high-volume workloads",
-        "contextWindow": 32768,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 19, 2024",
-        "supportsResponseFormat": true
-      }
-    },
-    "qwen-2-5-7b-vision-instruct": {
-      "defaults": {
-        "name": "Qwen 2.5 7B Vision Instruct",
-        "openWeights": true,
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 125000,
-        "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "analysis",
-          "multilingual",
-          "general_knowledge"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "multimodal": true,
-        "knowledgeCutoffDate": "December 2024",
-        "releaseDate": "January 1, 2025",
-        "supportsAttachments": true
-      }
-    },
     "qwen-3-32b": {
       "defaults": {
         "name": "Qwen 3.32B",
-        "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 128000,
         "maxTokens": 8192,
@@ -75,7 +27,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -84,7 +38,6 @@
     "qwen-3-5-35b-a3b": {
       "defaults": {
         "name": "Qwen 3.5 35B A3B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 81920,
@@ -107,8 +60,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "February 1, 2026",
-        "supportsResponseFormat": true,
+        "releaseDate": "February 23, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -128,7 +80,6 @@
     "qwen-3-5-397b-a17b": {
       "defaults": {
         "name": "Qwen 3.5 397B A17B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 81920,
@@ -151,8 +102,7 @@
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "February 1, 2026",
-        "supportsResponseFormat": true,
+        "releaseDate": "February 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -187,7 +137,6 @@
           ]
         },
         "releaseDate": "February 23, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -240,7 +189,6 @@
     "qwen-3-6-27b": {
       "defaults": {
         "name": "Qwen 3.6 27B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 256000,
         "maxTokens": 65536,
@@ -262,7 +210,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 22, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -282,7 +229,6 @@
     "qwen-3-6-max-preview": {
       "defaults": {
         "name": "Qwen 3.6 Max Preview",
-        "openWeights": true,
         "description": "Flagship Qwen model for complex reasoning, coding, and agentic workflows",
         "contextWindow": 240000,
         "maxTokens": 64000,
@@ -332,7 +278,6 @@
           ]
         },
         "releaseDate": "July 15, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -374,7 +319,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "May 21, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -421,7 +365,6 @@
           ]
         },
         "releaseDate": "August 26, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -436,7 +379,6 @@
     "qwen-3-8-flash-next": {
       "defaults": {
         "name": "Qwen 3.8 Flash Next",
-        "openWeights": true,
         "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
@@ -458,7 +400,6 @@
         "contextComplexity": 5,
         "reliability": 3,
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -535,7 +476,6 @@
           ]
         },
         "releaseDate": "September 17, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -551,7 +491,6 @@
     "qwen-3-coder-30b-a3b-instruct": {
       "defaults": {
         "name": "Qwen 3 Coder 30B A3B Instruct",
-        "openWeights": false,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262144,
         "maxTokens": 8192,
@@ -595,10 +534,9 @@
     "qwen-3-embedding-4b": {
       "defaults": {
         "name": "Qwen 3 Embedding 4B",
-        "openWeights": true,
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "contextWindow": 32000,
-        "maxTokens": 2048,
+        "contextWindow": 32768,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -608,7 +546,7 @@
           ]
         },
         "knowledgeCutoffDate": "December 2024",
-        "releaseDate": "January 1, 2025",
+        "releaseDate": "June 5, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -616,10 +554,9 @@
     "qwen-3-embedding-8b": {
       "defaults": {
         "name": "Qwen 3 Embedding 8B",
-        "openWeights": true,
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "contextWindow": 32000,
-        "maxTokens": 4096,
+        "contextWindow": 32768,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -629,7 +566,7 @@
           ]
         },
         "knowledgeCutoffDate": "December 2024",
-        "releaseDate": "January 1, 2025",
+        "releaseDate": "June 5, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -674,7 +611,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 889,
+              "value": 891,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -687,7 +624,7 @@
       "defaults": {
         "name": "Qwen Image Edit",
         "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Image editing model with multilingual text editing and subject consistency",
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
@@ -710,6 +647,7 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "supportsAttachments": true,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -719,7 +657,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 919,
+              "value": 920,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -759,7 +697,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 1021,
+              "value": 1020,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -834,71 +772,6 @@
         "supportsToolCalls": false
       }
     },
-    "qwen-mt-turbo": {
-      "defaults": {
-        "name": "Qwen-MT Turbo",
-        "openWeights": false,
-        "description": "Translation model for multilingual conversion, localization, and cross-language workflows",
-        "contextWindow": 16384,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 2025",
-        "supportsToolCalls": false
-      }
-    },
-    "qwen-omni-turbo": {
-      "defaults": {
-        "name": "Qwen-Omni Turbo",
-        "openWeights": false,
-        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
-        "contextWindow": 32768,
-        "maxTokens": 2048,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 19, 2025"
-      }
-    },
-    "qwen-omni-turbo-realtime": {
-      "defaults": {
-        "name": "Qwen-Omni Turbo Realtime",
-        "openWeights": false,
-        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
-        "contextWindow": 32768,
-        "maxTokens": 2048,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "May 8, 2025"
-      }
-    },
     "qwen-plus": {
       "defaults": {
         "name": "Qwen Plus",
@@ -915,8 +788,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 25, 2024",
-        "supportsResponseFormat": true
+        "releaseDate": "January 25, 2024"
       }
     },
     "qwen-plus-0728-thinking": {
@@ -936,7 +808,6 @@
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "September 8, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -962,7 +833,8 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 2024"
+        "releaseDate": "January 2024",
+        "supportsToolCalls": false
       }
     },
     "qwen-qwen2-5-7b-instruct": {
@@ -980,14 +852,12 @@
             "text"
           ]
         },
-        "releaseDate": "October 16, 2024",
-        "supportsResponseFormat": true
+        "releaseDate": "October 16, 2024"
       }
     },
     "qwen-qwen2-5-vl-72b-instruct": {
       "defaults": {
         "name": "Qwen: Qwen2.5 VL 72B Instruct",
-        "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 128000,
         "maxTokens": 115200,
@@ -1000,9 +870,9 @@
             "text"
           ]
         },
-        "releaseDate": "February 1, 2025",
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 26, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
@@ -1027,7 +897,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "April 28, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1046,7 +915,6 @@
     "qwen-qwen3-235b-a22b-instruct-2507": {
       "defaults": {
         "name": "Qwen: Qwen3 235B A22B Instruct 2507",
-        "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "maxTokens": 16384,
@@ -1064,7 +932,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "July 21, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.7,
           "codingIndex": 22.1,
@@ -1076,7 +943,6 @@
     "qwen-qwen3-235b-a22b-thinking-2507": {
       "defaults": {
         "name": "Qwen: Qwen3 235B A22B Thinking 2507 (retires Oct 9)",
-        "openWeights": false,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 128000,
         "maxTokens": 16384,
@@ -1101,7 +967,6 @@
     "qwen-qwen3-30b-a3b-instruct-2507": {
       "defaults": {
         "name": "Qwen: Qwen3 30B A3B Instruct 2507",
-        "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "maxTokens": 235929,
@@ -1113,8 +978,7 @@
             "text"
           ]
         },
-        "releaseDate": "July 29, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "July 28, 2025"
       }
     },
     "qwen-qwen3-30b-a3b-thinking-2507-retires-oct-9": {
@@ -1182,7 +1046,6 @@
     "qwen-qwen3-coder-480b-a35b": {
       "defaults": {
         "name": "Qwen: Qwen3 Coder 480B A35B",
-        "openWeights": false,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -1194,8 +1057,8 @@
             "text"
           ]
         },
-        "releaseDate": "July 23, 2025",
-        "supportsResponseFormat": true
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 22, 2025"
       }
     },
     "qwen-qwen3-max-thinking-retires-oct-9": {
@@ -1219,7 +1082,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 9, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1252,7 +1114,6 @@
           ]
         },
         "releaseDate": "October 6, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1286,7 +1147,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 23, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 8.4,
@@ -1320,7 +1180,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 14, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 7.3,
@@ -1347,7 +1206,6 @@
           ]
         },
         "releaseDate": "October 14, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1355,63 +1213,6 @@
           ],
           "defaultEffort": "high"
         }
-      }
-    },
-    "qwen-turbo": {
-      "defaults": {
-        "name": "Qwen Turbo",
-        "openWeights": false,
-        "description": "Efficient Qwen model for fast chat, extraction, and high-volume workloads",
-        "contextWindow": 1000000,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "November 1, 2024",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 6.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
-    "qwen-vl-max": {
-      "defaults": {
-        "name": "Qwen-VL Max",
-        "openWeights": false,
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 8, 2024"
       }
     },
     "qwen-vl-ocr": {
@@ -1432,33 +1233,13 @@
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "October 28, 2024",
-        "supportsToolCalls": false
-      }
-    },
-    "qwen-vl-plus": {
-      "defaults": {
-        "name": "Qwen-VL Plus",
-        "openWeights": false,
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "January 25, 2024"
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     },
     "qwen2-5-14b-instruct": {
       "defaults": {
         "name": "Qwen2.5 14B Instruct",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 131072,
         "maxTokens": 8192,
@@ -1477,7 +1258,6 @@
     "qwen2-5-32b-instruct": {
       "defaults": {
         "name": "Qwen2.5 32B Instruct",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 131072,
         "maxTokens": 8192,
@@ -1507,7 +1287,6 @@
     "qwen2-5-72b-instruct": {
       "defaults": {
         "name": "Qwen2.5 72B Instruct",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 32768,
         "modalities": {
@@ -1524,7 +1303,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "September 19, 2024",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 7.7,
           "codingIndex": null,
@@ -1536,7 +1314,6 @@
     "qwen2-5-7b-instruct": {
       "defaults": {
         "name": "Qwen2.5 7B Instruct",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "modalities": {
           "input": [
@@ -1551,7 +1328,6 @@
     "qwen2-5-coder-32b-instruct": {
       "defaults": {
         "name": "Qwen2.5 Coder 32B Instruct",
-        "openWeights": true,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 32768,
         "modalities": {
@@ -1564,6 +1340,7 @@
         },
         "contextComplexity": 3,
         "reliability": 1,
+        "releaseDate": "November 12, 2024",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "artificialAnalysis": {
@@ -1574,33 +1351,9 @@
         }
       }
     },
-    "qwen2-5-omni-7b": {
-      "defaults": {
-        "name": "Qwen2.5-Omni 7B",
-        "openWeights": true,
-        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
-        "contextWindow": 32768,
-        "maxTokens": 2048,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "December 2024"
-      }
-    },
     "qwen2-5-vl-32b-instruct": {
       "defaults": {
         "name": "Qwen2.5 VL 32B Instruct",
-        "openWeights": true,
         "description": "Qwen2.5 VL 32B Instruct accepts text, image and produces text.",
         "contextWindow": 16384,
         "maxTokens": 16384,
@@ -1615,7 +1368,6 @@
         },
         "releaseDate": "December 29, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
@@ -1642,7 +1394,6 @@
     },
     "qwen2-5-vl-72b-instruct": {
       "defaults": {
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "modalities": {
           "input": [
@@ -1653,8 +1404,9 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 26, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
@@ -1694,14 +1446,12 @@
           ]
         },
         "releaseDate": "December 29, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
+        "supportsToolCalls": false
       }
     },
     "qwen2-5-vl-7b-instruct": {
       "defaults": {
         "name": "Qwen2.5-VL 7B Instruct",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 8192,
@@ -1743,6 +1493,7 @@
         "name": "Qwen3 14B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text"
@@ -1756,6 +1507,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "releaseDate": "April 28, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1804,6 +1556,7 @@
       "defaults": {
         "name": "Qwen3 235B-A22B",
         "description": "Large open Qwen MoE for multilingual reasoning, coding, and tool use",
+        "contextWindow": 40960,
         "maxTokens": 16384,
         "modalities": {
           "input": [
@@ -1859,7 +1612,6 @@
     "qwen3-235b-a22b-instruct-2507": {
       "defaults": {
         "name": "Qwen3 235B A22B Instruct 2507",
-        "openWeights": true,
         "description": "Updated large open Qwen3 MoE instruct model for multilingual chat, coding, and tool use",
         "contextWindow": 262144,
         "modalities": {
@@ -1876,7 +1628,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "July 21, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12,
           "codingIndex": null,
@@ -1917,7 +1668,6 @@
     "qwen3-235b-a22b-instruct-2507-tee": {
       "defaults": {
         "name": "Qwen3 235B A22B Instruct 2507 TEE",
-        "openWeights": true,
         "description": "Qwen3 235B A22B Instruct 2507 TEE accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -1930,14 +1680,12 @@
           ]
         },
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "April 2025"
       }
     },
     "qwen3-235b-a22b-thinking-2507": {
       "defaults": {
         "name": "Qwen3 235B A22B Thinking 2507",
-        "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
         "modalities": {
@@ -1962,7 +1710,6 @@
     "qwen3-235b-a22b-thinking-2507-tee": {
       "defaults": {
         "name": "Qwen3 235B A22B Thinking 2507 TEE",
-        "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
         "maxTokens": 262144,
@@ -1975,8 +1722,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "July 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "July 25, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1989,7 +1735,6 @@
     "qwen3-30b-a3b": {
       "defaults": {
         "name": "Qwen3 30B A3B",
-        "openWeights": true,
         "description": "Sparse MoE Qwen model with 3B active parameters for efficient chat and reasoning",
         "contextWindow": 40960,
         "maxTokens": 16384,
@@ -2007,7 +1752,6 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "April 28, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2026,7 +1770,6 @@
     "qwen3-30b-a3b-fp8": {
       "defaults": {
         "name": "Qwen3 30B A3B FP8",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 32768,
         "maxTokens": 32768,
@@ -2091,13 +1834,12 @@
             "text"
           ]
         },
-        "supportsResponseFormat": true
+        "releaseDate": "July 28, 2025"
       }
     },
     "qwen3-30b-a3b-thinking-2507": {
       "defaults": {
         "name": "Qwen3 30B A3B Thinking 2507",
-        "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 81920,
         "maxTokens": 32768,
@@ -2124,7 +1866,6 @@
     "qwen3-32b": {
       "defaults": {
         "name": "Qwen3 32B",
-        "openWeights": true,
         "description": "Dense open Qwen model for self-hosted chat, reasoning, and coding",
         "maxTokens": 16384,
         "modalities": {
@@ -2141,8 +1882,7 @@
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "April 28, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2190,7 +1930,6 @@
     "qwen3-32b-tee": {
       "defaults": {
         "name": "Qwen3 32B TEE",
-        "openWeights": true,
         "description": "Dense open Qwen model for self-hosted chat, reasoning, and coding",
         "contextWindow": 40960,
         "maxTokens": 40960,
@@ -2203,8 +1942,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "April 28, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2246,7 +1984,6 @@
     "qwen3-5-122b": {
       "defaults": {
         "name": "Qwen3.5-122B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 16384,
@@ -2259,7 +1996,7 @@
             "text"
           ]
         },
-        "releaseDate": "February 1, 2026",
+        "releaseDate": "February 23, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2273,14 +2010,12 @@
     "qwen3-5-122b-a10b": {
       "defaults": {
         "name": "Qwen3.5 122B-A10B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "February 23, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2300,9 +2035,9 @@
     "qwen3-5-27b": {
       "defaults": {
         "name": "Qwen3.5 27B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "strengths": [
           "vision",
           "audio",
@@ -2313,7 +2048,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2330,16 +2064,57 @@
         }
       }
     },
+    "qwen3-5-2b": {
+      "defaults": {
+        "name": "qwen3.5-2b",
+        "description": "Compact Qwen3.5 multimodal model for fast chat, reasoning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 81920,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "March 2, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.9,
+          "codingIndex": 2.9,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "qwen3-5-35b-a3b": {
       "defaults": {
         "name": "Qwen3.5 35B-A3B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2356,10 +2131,27 @@
         }
       }
     },
+    "qwen3-5-35b-a3b-base": {
+      "defaults": {
+        "name": "Qwen3.5 35B-A3B Base",
+        "description": "Pre-trained Qwen3.5 base checkpoint for fine-tuning and research, without instruction tuning",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 24, 2026",
+        "supportsToolCalls": false
+      }
+    },
     "qwen3-5-397b": {
       "defaults": {
         "name": "qwen3.5:397b",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -2385,14 +2177,19 @@
     },
     "qwen3-5-397b-a17b": {
       "defaults": {
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "February 15, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 18.4,
           "codingIndex": 48.2,
@@ -2404,7 +2201,6 @@
     "qwen3-5-397b-a17b-tee": {
       "defaults": {
         "name": "Qwen3.5 397B A17B TEE",
-        "openWeights": true,
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -2418,7 +2214,6 @@
           ]
         },
         "releaseDate": "February 15, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2429,16 +2224,66 @@
         }
       }
     },
+    "qwen3-5-4b": {
+      "defaults": {
+        "name": "Qwen3.5 4B",
+        "description": "Small Qwen3.5 multimodal model for low-cost chat, reasoning, and tool use",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "March 2, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.1,
+          "codingIndex": 22.6,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "qwen3-5-9b": {
       "defaults": {
         "name": "Qwen3.5 9B",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2453,6 +2298,24 @@
           "agenticIndex": 1.2,
           "intelligenceIndexVersion": 4.3
         }
+      }
+    },
+    "qwen3-5-9b-base": {
+      "defaults": {
+        "name": "Qwen3.5 9B Base",
+        "description": "Pre-trained Qwen3.5 base checkpoint for fine-tuning and research, without instruction tuning",
+        "contextWindow": 65536,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false
       }
     },
     "qwen3-5-flash": {
@@ -2471,7 +2334,6 @@
             "text"
           ]
         },
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2486,8 +2348,7 @@
       "defaults": {
         "name": "Qwen3.5 Plus",
         "openWeights": false,
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 1000000,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -2501,6 +2362,7 @@
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 16, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2529,7 +2391,6 @@
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 16, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2543,13 +2404,12 @@
     "qwen3-6-27b": {
       "defaults": {
         "name": "Qwen3.6 27B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 22, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2569,7 +2429,6 @@
     "qwen3-6-27b-tee": {
       "defaults": {
         "name": "Qwen3.6 27B TEE",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -2583,7 +2442,6 @@
           ]
         },
         "releaseDate": "April 22, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2597,14 +2455,25 @@
     "qwen3-6-35b-a3b": {
       "defaults": {
         "name": "Qwen3.6 35B-A3B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 17, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2624,7 +2493,6 @@
     "qwen3-6-35b-a3b-fp8": {
       "defaults": {
         "name": "Qwen3.6 35B A3B FP8",
-        "openWeights": true,
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "contextWindow": 262144,
         "maxTokens": 262144,
@@ -2638,7 +2506,6 @@
           ]
         },
         "releaseDate": "April 17, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2671,14 +2538,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 20, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 28.4,
           "codingIndex": null,
@@ -2714,7 +2573,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2737,7 +2595,6 @@
         "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -2749,7 +2606,6 @@
           ]
         },
         "releaseDate": "July 15, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2782,7 +2638,13 @@
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "May 21, 2026",
-        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 29.5,
           "codingIndex": 66,
@@ -2798,12 +2660,28 @@
         "description": "Multimodal Qwen workhorse for long-context agents, visual inputs, and coding",
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 5,
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "June 2, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 25.2,
           "codingIndex": 55.9,
@@ -2815,10 +2693,8 @@
     "qwen3-8-2-4t-a95b": {
       "defaults": {
         "name": "Qwen3.8 2.4T A95B",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -2834,7 +2710,6 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "August 12, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2854,7 +2729,6 @@
     "qwen3-8-2-4t-a95b-eu": {
       "defaults": {
         "name": "Qwen3.8 2.4T A95B (EU)",
-        "openWeights": true,
         "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "contextWindow": 1000000,
         "maxTokens": 262144,
@@ -2873,7 +2747,6 @@
         "contextComplexity": 5,
         "reliability": 3,
         "releaseDate": "August 12, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2895,7 +2768,6 @@
     "qwen3-8-27b": {
       "defaults": {
         "name": "Qwen3.8 27B",
-        "openWeights": true,
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
         "modalities": {
@@ -2916,7 +2788,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 14, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 33.7,
@@ -2929,7 +2800,6 @@
     "qwen3-8-27b-free": {
       "defaults": {
         "name": "Qwen3.8 27B (free)",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 235929,
@@ -2953,7 +2823,6 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 14, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2974,7 +2843,6 @@
     "qwen3-8-27b-tee": {
       "defaults": {
         "name": "Qwen3.8 27B TEE",
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -2987,8 +2855,7 @@
             "text"
           ]
         },
-        "releaseDate": "August 16, 2026",
-        "supportsResponseFormat": true,
+        "releaseDate": "August 14, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3017,20 +2884,17 @@
           ]
         },
         "releaseDate": "August 26, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
     "qwen3-8-flash-next": {
       "defaults": {
         "name": "Qwen3.8 Flash Next",
-        "openWeights": true,
         "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 39.8,
@@ -3043,7 +2907,6 @@
     "qwen3-8-flash-next-eu": {
       "defaults": {
         "name": "Qwen3.8 Flash Next (EU)",
-        "openWeights": true,
         "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
         "maxTokens": 262144,
@@ -3067,7 +2930,6 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3096,7 +2958,6 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "August 3, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 45.4,
@@ -3124,7 +2985,6 @@
           ]
         },
         "releaseDate": "September 2, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3157,17 +3017,14 @@
           ]
         },
         "releaseDate": "September 17, 2026",
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
     "qwen3-8b": {
       "defaults": {
         "name": "Qwen3 8B",
-        "openWeights": true,
-        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
+        "description": "Dense 8B Qwen3 model with switchable thinking for chat, reasoning, and tool use",
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text"
@@ -3181,6 +3038,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "releaseDate": "April 29, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3243,12 +3101,12 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 8, 2025",
         "supportsToolCalls": false,
+        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
     "qwen3-coder-30b-a3b-instruct": {
       "defaults": {
-        "openWeights": true,
         "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
         "contextWindow": 262144,
         "modalities": {
@@ -3265,8 +3123,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "July 31, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 9.6,
           "codingIndex": null,
@@ -3278,7 +3135,6 @@
     "qwen3-coder-480b-a35b": {
       "defaults": {
         "name": "Qwen3 Coder 480B A35B",
-        "openWeights": true,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -3290,15 +3146,13 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "June 30, 2025",
-        "releaseDate": "July 23, 2025",
-        "supportsResponseFormat": true
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 22, 2025"
       }
     },
     "qwen3-coder-480b-a35b-free": {
       "defaults": {
         "name": "Qwen3 Coder 480B A35B (free)",
-        "openWeights": true,
         "description": "Qwen3 Coder 480B A35B (free) accepts text and produces text.",
         "contextWindow": 1048576,
         "maxTokens": 262000,
@@ -3325,8 +3179,7 @@
     "qwen3-coder-480b-a35b-instruct": {
       "defaults": {
         "name": "Qwen3 Coder 480B A35B Instruct",
-        "openWeights": true,
-        "description": "Open Qwen coding heavyweight for repository reasoning and agentic engineering",
+        "description": "Qwen3 Coder model with advanced coding capabilities and extensive context window.",
         "contextWindow": 262144,
         "modalities": {
           "input": [
@@ -3342,6 +3195,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 22, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 11.9,
           "codingIndex": null,
@@ -3392,14 +3246,12 @@
             "text"
           ]
         },
-        "releaseDate": "December 29, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "December 29, 2025"
       }
     },
     "qwen3-coder-480b-a35b-instruct-turbo": {
       "defaults": {
         "name": "Qwen3 Coder 480B A35B Instruct Turbo",
-        "openWeights": true,
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262144,
         "maxTokens": 66536,
@@ -3420,8 +3272,7 @@
         "contextComplexity": 5,
         "reliability": 4,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "July 23, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "July 22, 2025"
       }
     },
     "qwen3-coder-exacto": {
@@ -3465,7 +3316,6 @@
     "qwen3-coder-next": {
       "defaults": {
         "name": "Qwen3 Coder Next",
-        "openWeights": true,
         "description": "Open-weight Qwen coding model for agents, repository edits, and multi-turn tool use",
         "contextWindow": 262144,
         "modalities": {
@@ -3483,7 +3333,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "February 3, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3502,7 +3351,6 @@
     "qwen3-coder-next-tee": {
       "defaults": {
         "name": "Qwen3 Coder Next TEE",
-        "openWeights": true,
         "description": "Qwen3 Coder Next TEE accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 65536,
@@ -3514,8 +3362,7 @@
             "text"
           ]
         },
-        "releaseDate": "April 25, 2026",
-        "supportsResponseFormat": true
+        "releaseDate": "April 25, 2026"
       }
     },
     "qwen3-coder-plus": {
@@ -3534,8 +3381,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "July 23, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "July 23, 2025"
       }
     },
     "qwen3-embedding-0-6b": {
@@ -3550,17 +3396,15 @@
             "embedding"
           ]
         },
-        "releaseDate": "November 14, 2025",
         "supportsToolCalls": false
       }
     },
     "qwen3-embedding-4b": {
       "defaults": {
         "name": "Qwen3 Embedding 4B",
-        "openWeights": false,
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "description": "Multilingual text embedding model for retrieval, code search, classification, and clustering",
         "contextWindow": 32768,
-        "maxTokens": 32768,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -3570,39 +3414,27 @@
           ]
         },
         "releaseDate": "June 5, 2025",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "qwen3-embedding-8b": {
       "defaults": {
-        "openWeights": true,
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "name": "Qwen3-Embedding-8B",
+        "description": "Multilingual text embedding model for retrieval, code search, classification, and clustering",
         "contextWindow": 32768,
-        "supportsToolCalls": false
-      }
-    },
-    "qwen3-livetranslate-flash-realtime": {
-      "defaults": {
-        "name": "Qwen3-LiveTranslate Flash Realtime",
-        "openWeights": false,
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 53248,
-        "maxTokens": 4096,
+        "maxTokens": 0,
         "modalities": {
           "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
+            "text"
           ],
           "output": [
-            "text",
-            "audio"
+            "text"
           ]
         },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "September 22, 2025",
-        "supportsToolCalls": false
+        "releaseDate": "June 5, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "qwen3-max": {
@@ -3627,7 +3459,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 23, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 15.6,
           "codingIndex": null,
@@ -3687,7 +3518,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 9, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3705,7 +3535,6 @@
     },
     "qwen3-next-80b-a3b-instruct": {
       "defaults": {
-        "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "modalities": {
@@ -3723,7 +3552,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 9.6,
           "codingIndex": null,
@@ -3735,7 +3563,6 @@
     "qwen3-next-80b-a3b-instruct-free": {
       "defaults": {
         "name": "Qwen3 Next 80B A3B Instruct (free)",
-        "openWeights": true,
         "description": "Qwen3 Next 80B A3B Instruct (free) accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 262144,
@@ -3754,7 +3581,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 9.6,
           "codingIndex": null,
@@ -3765,7 +3591,7 @@
     },
     "qwen3-next-80b-a3b-thinking": {
       "defaults": {
-        "openWeights": true,
+        "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
         "modalities": {
@@ -3779,6 +3605,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 2025",
@@ -3812,6 +3639,7 @@
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 15, 2025",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3821,33 +3649,9 @@
         }
       }
     },
-    "qwen3-omni-flash-realtime": {
-      "defaults": {
-        "name": "Qwen3-Omni Flash Realtime",
-        "openWeights": false,
-        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
-        "contextWindow": 65536,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "September 15, 2025"
-      }
-    },
     "qwen3-reranker-4b": {
       "defaults": {
         "name": "Qwen3-Reranker-4B",
-        "openWeights": true,
         "description": "Reranking model for improving retrieval quality in search and recommendation systems",
         "contextWindow": 32768,
         "maxTokens": 8192,
@@ -3869,7 +3673,10 @@
     },
     "qwen3-vl-235b-a22b": {
       "defaults": {
+        "name": "Qwen3 VL 235B A22B",
         "description": "Qwen3 VL 235B A22B is a 235B-parameter MoE vision-language flagship model (≈22B active) designed for frontier-level multimodal understanding across text, images, documents, and long videos.",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
         "modalities": {
           "input": [
             "text",
@@ -3879,8 +3686,17 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "September 23, 2025",
+        "supportsAttachments": true,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3899,7 +3715,6 @@
     "qwen3-vl-235b-a22b-instruct": {
       "defaults": {
         "name": "Qwen3 VL 235B A22B Instruct",
-        "openWeights": true,
         "description": "Qwen vision-language instruct model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 32768,
@@ -3921,7 +3736,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "September 23, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 9.9,
@@ -3934,7 +3748,6 @@
     "qwen3-vl-235b-a22b-thinking": {
       "defaults": {
         "name": "Qwen3 VL 235B A22B Thinking",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -3949,14 +3762,12 @@
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "September 23, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
     "qwen3-vl-30b-a3b": {
       "defaults": {
         "name": "Qwen3-VL 30B-A3B",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -3971,12 +3782,14 @@
         },
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3995,7 +3808,6 @@
     "qwen3-vl-30b-a3b-instruct": {
       "defaults": {
         "name": "Qwen3 VL 30B A3B Instruct",
-        "openWeights": true,
         "description": "Open vision-language MoE model for image and video understanding, documents, and visual agents",
         "contextWindow": 262144,
         "modalities": {
@@ -4016,7 +3828,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "October 4, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 7.9,
@@ -4029,7 +3840,6 @@
     "qwen3-vl-30b-a3b-thinking": {
       "defaults": {
         "name": "Qwen3 VL 30B A3B Thinking",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 235929,
@@ -4044,7 +3854,6 @@
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "October 6, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4058,7 +3867,6 @@
     "qwen3-vl-32b-instruct": {
       "defaults": {
         "name": "Qwen3 VL 32B Instruct",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -4079,7 +3887,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 23, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 8.4,
@@ -4092,7 +3899,6 @@
     "qwen3-vl-8b-instruct": {
       "defaults": {
         "name": "Qwen3 VL 8B Instruct",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 235929,
@@ -4113,7 +3919,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 14, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 7.3,
@@ -4126,7 +3931,6 @@
     "qwen3-vl-8b-thinking": {
       "defaults": {
         "name": "Qwen3 VL 8B Thinking",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -4140,7 +3944,6 @@
           ]
         },
         "releaseDate": "October 14, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4154,7 +3957,6 @@
     "qwen3-vl-instruct": {
       "defaults": {
         "name": "Qwen3 VL Instruct",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 262144,
@@ -4190,6 +3992,7 @@
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 23, 2025",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -4202,7 +4005,6 @@
     "qwen3-vl-thinking": {
       "defaults": {
         "name": "Qwen3 VL Thinking",
-        "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -4229,7 +4031,6 @@
     },
     "qwen3guard-gen-0-6b": {
       "defaults": {
-        "openWeights": true,
         "description": "Qwen3Guard-Gen-0.6B is a lightweight multilingual safety moderation model that classifies prompts and responses into safe, controversial, or unsafe categories.",
         "contextWindow": 32768,
         "modalities": {
@@ -4253,7 +4054,6 @@
     "qwq-32b": {
       "defaults": {
         "name": "QwQ 32B",
-        "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 24000,
         "maxTokens": 24000,
@@ -4317,32 +4117,6 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
-    "qwq-plus": {
-      "defaults": {
-        "name": "QwQ Plus",
-        "openWeights": false,
-        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "March 5, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
         }
       }
     }

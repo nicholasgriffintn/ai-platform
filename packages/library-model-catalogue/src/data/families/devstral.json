@@ -1,6 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
     "modalities": {
       "input": [
         "text"
@@ -9,6 +11,8 @@
         "text"
       ]
     },
+    "contextComplexity": 4,
+    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -21,11 +25,6 @@
         "name": "Devstral 2",
         "openWeights": true,
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {
@@ -36,33 +35,38 @@
         }
       }
     },
-    "devstral-2-123b": {
-      "defaults": {
-        "name": "Devstral 2 123B",
-        "openWeights": true,
-        "description": "Mistral's coding-agent model for repository work, terminal tasks, and software fixes",
-        "contextWindow": 262144,
-        "maxTokens": 8192,
-        "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "December 9, 2025"
-      }
-    },
     "devstral-latest": {
       "defaults": {
         "name": "devstral-latest",
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "releaseDate": "May 27, 2026"
+        "releaseDate": "May 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "devstral-latest-eu": {
       "defaults": {
         "name": "devstral-latest@eu",
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "releaseDate": "May 27, 2026"
+        "releaseDate": "May 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "devstral-small-1-1": {
@@ -74,8 +78,6 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 21, 2025",
         "artificialAnalysis": {
@@ -90,13 +92,9 @@
       "defaults": {
         "name": "Devstral Small 2",
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {

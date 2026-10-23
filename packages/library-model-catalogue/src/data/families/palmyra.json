@@ -11,55 +11,31 @@
         "text"
       ]
     },
-    "supportsToolCalls": true,
+    "releaseDate": "April 28, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
   "models": {
-    "palmyra-x4": {
-      "defaults": {
-        "name": "Palmyra X4",
-        "description": "Enterprise language model for workflow automation, coding, data analysis, and tool use",
-        "contextWindow": 122880,
-        "releaseDate": "October 9, 2024"
-      }
-    },
-    "palmyra-x4-us": {
-      "defaults": {
-        "name": "Palmyra X4 (US)",
-        "description": "Enterprise language model for workflow automation, coding, data analysis, and tool use",
-        "contextWindow": 122880,
-        "releaseDate": "October 9, 2024"
-      }
-    },
     "palmyra-x5": {
       "defaults": {
         "name": "Palmyra X5",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
-      }
-    },
-    "palmyra-x5-us": {
-      "defaults": {
-        "name": "Palmyra X5 (US)",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "releaseDate": "April 28, 2025"
+        "description": "General-purpose chat model for instruction following, writing, and analysis"
       }
     },
     "writer-palmyra-x5": {
       "defaults": {
         "name": "Writer: Palmyra X5",
         "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "releaseDate": "January 21, 2026",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

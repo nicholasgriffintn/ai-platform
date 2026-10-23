@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 15, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/unbiased/pareto 26.10 family includes models that produce text.",
+  "models": {
+    "pareto-26-10": {
+      "defaults": {
+        "name": "Pareto 26.10",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media"
+      }
+    }
+  }
+}

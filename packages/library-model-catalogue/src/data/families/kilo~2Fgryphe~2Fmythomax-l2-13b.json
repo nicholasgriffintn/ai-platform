@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "openWeights": false,
+    "openWeights": true,
     "contextWindow": 4096,
     "maxTokens": 3686,
     "modalities": {
@@ -11,7 +11,7 @@
         "text"
       ]
     },
-    "releaseDate": "July 2, 2023",
+    "releaseDate": "August 10, 2023",
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": false,

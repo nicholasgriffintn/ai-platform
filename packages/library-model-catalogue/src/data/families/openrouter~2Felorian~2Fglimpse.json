@@ -1,8 +1,8 @@
 {
   "defaults": {
-    "openWeights": true,
-    "contextWindow": 131072,
-    "maxTokens": 16384,
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 256000,
     "modalities": {
       "input": [
         "text",
@@ -13,7 +13,7 @@
         "text"
       ]
     },
-    "releaseDate": "December 1, 2025",
+    "releaseDate": "October 17, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -26,12 +26,12 @@
       "defaultEffort": "none"
     }
   },
-  "description": "The nvidia/nvidia/cosmos reason2 8b family includes models that produce text.",
+  "description": "The openrouter/elorian/glimpse family includes models that produce text.",
   "models": {
-    "cosmos-reason2-8b": {
+    "glimpse": {
       "defaults": {
-        "name": "Cosmos Reason2 8B",
-        "description": "Vision language model for physical-world understanding with structured reasoning on video and images"
+        "name": "Glimpse",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
       }
     }
   }

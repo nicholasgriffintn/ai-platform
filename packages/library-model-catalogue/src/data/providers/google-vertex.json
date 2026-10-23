@@ -133,7 +133,14 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -196,7 +203,16 @@
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.009
+        "costPer1kOutputTokens": 0.009,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-3.5-flash-lite": {
@@ -296,7 +312,6 @@
         "costPer1kOutputTokens": 0.0015
       },
       "unset": [
-        "strengths",
         "contextComplexity",
         "supportsResponseFormat"
       ]
@@ -306,6 +321,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65536,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
@@ -341,7 +357,14 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.03,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-nano-banana-2.1": {
@@ -390,6 +413,7 @@
       "matchingModel": "gemini-4-argon",
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 65536,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,

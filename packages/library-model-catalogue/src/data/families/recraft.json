@@ -17,7 +17,7 @@
     "reliability": 2,
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
@@ -69,10 +69,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 983,
+              "value": 984,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -92,7 +92,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 989,
+              "value": 991,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -142,7 +142,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 986,
+              "value": 987,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -196,7 +196,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1017,
+              "value": 1018,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -219,10 +219,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 988,
+              "value": 987,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }

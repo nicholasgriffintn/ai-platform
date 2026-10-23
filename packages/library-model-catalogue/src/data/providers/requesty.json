@@ -212,7 +212,7 @@
       "model": "gemini-flash/gemini-2-5-flash",
       "matchingModel": "google/gemini-2.5-flash",
       "overrides": {
-        "description": "Google's fast multimodal model with support for text, images, audio, video, and PDFs.",
+        "maxTokens": 65536,
         "strengths": [
           "vision",
           "audio",
@@ -224,13 +224,30 @@
           "image",
           "creative"
         ],
+        "reliability": 2,
         "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAudio": true
+        "supportsAudio": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 984,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -240,19 +257,7 @@
       "model": "gemini-pro/gemini-2-5-pro",
       "matchingModel": "google/gemini-2.5-pro",
       "overrides": {
-        "description": "Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "maxTokens": 65536,
         "strengths": [
           "vision",
           "audio",
@@ -300,8 +305,8 @@
       "unset": [
         "contextComplexity",
         "supportsTopP",
-        "reliability",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "reliability"
       ]
     },
     "anthropic/claude-opus-4-5": {
@@ -335,20 +340,21 @@
         "costPer1kOutputTokens": 0.015
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "contextComplexity"
       ]
     },
     "anthropic/claude-sonnet-4-5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
       "matchingModel": "anthropic/claude-sonnet-4-5",
       "overrides": {
-        "contextWindow": 1000000,
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "contextComplexity"
       ]
     },
     "google/gemini-3-flash-preview": {
@@ -400,7 +406,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -578,7 +584,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -622,7 +628,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "October 1, 2024",
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -1219,7 +1225,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "claude-sonnet-4-5@eu": {
       "model": "claude-sonnet/claude-sonnet-4-5-latest-eu",
@@ -1228,7 +1237,10 @@
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "claude-sonnet-4-6": {
       "model": "claude-sonnet/claude-sonnet-4-6",
@@ -1236,7 +1248,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1258,7 +1270,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -1272,15 +1284,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "claude-sonnet-4@eu": {
-      "model": "claude-sonnet/claude-sonnet-4-latest-eu",
-      "matchingModel": "claude-sonnet-4@eu",
-      "overrides": {
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
       }
     },
     "claude-sonnet-5": {
@@ -1393,14 +1396,6 @@
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
         "maxTokens": 65535,
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "coding"
-        ],
         "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -1438,17 +1433,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "glm-5.2@eu": {
-      "model": "glm/glm-5-2-eu",
-      "matchingModel": "glm-5.2@eu",
-      "overrides": {
-        "speed": 3,
-        "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0012,
-        "costPer1kOutputTokens": 0.0042,
-        "supportsAttachments": false
       }
     },
     "gpt-4.1-mini@eu": {
@@ -1537,7 +1521,7 @@
       "model": "gpt/gpt-5-5-eu",
       "matchingModel": "gpt-5.5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.033,
@@ -1581,7 +1565,7 @@
       "model": "gpt/gpt-5-eu",
       "matchingModel": "gpt-5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011,
@@ -1797,7 +1781,9 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsTemperature"
+        "supportsTemperature",
+        "contextComplexity",
+        "reliability"
       ]
     },
     "devstral-latest@eu": {
@@ -1810,7 +1796,9 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsTemperature"
+        "supportsTemperature",
+        "contextComplexity",
+        "reliability"
       ]
     },
     "fugu-ultra": {
@@ -1990,7 +1978,7 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
-        "maxTokens": 262144,
+        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00034,
@@ -2096,6 +2084,7 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
@@ -2271,7 +2260,7 @@
       "model": "gpt/gpt-5-5",
       "matchingModel": "gpt-5.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.033,
@@ -2372,22 +2361,49 @@
       }
     },
     "grok-4.2-beta": {
-      "model": "grok/grok-4-2-beta",
+      "model": "grok/grok-4-20-reasoning",
       "matchingModel": "grok-4.2-beta",
       "overrides": {
-        "lastUpdated": "March 19, 2026",
+        "name": "grok-4.2-beta",
+        "description": "Reasoning Grok for document-heavy analysis and long-horizon tool use",
+        "maxTokens": 30000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 3,
+        "lastUpdated": "March 9, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     },
     "grok-4.3": {
       "model": "grok/grok-4-3",
       "matchingModel": "grok-4.3",
       "overrides": {
-        "maxTokens": 1000000,
+        "maxTokens": 30000,
+        "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -2472,8 +2488,19 @@
       "model": "ling/inkling",
       "matchingModel": "inkling",
       "overrides": {
+        "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "contextWindow": 65536,
         "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "July 15, 2026",
@@ -2493,16 +2520,28 @@
       }
     },
     "inkling-256k": {
-      "model": "kling/inkling-256k",
+      "model": "ling/inkling-256k",
       "matchingModel": "inkling-256k",
       "overrides": {
-        "lastUpdated": "July 16, 2026",
+        "name": "inkling-256k",
+        "maxTokens": 32768,
+        "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
-        "supportsTemperature"
+        "contextComplexity"
       ]
     },
     "kat-coder-pro": {
@@ -2543,7 +2582,7 @@
           "coding"
         ],
         "speed": 2,
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "reasoningConfig": {
@@ -2563,7 +2602,7 @@
       "matchingModel": "kimi-k2.6@eu",
       "overrides": {
         "speed": 2,
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
       }
@@ -2618,41 +2657,6 @@
         "supportsTemperature": false
       }
     },
-    "laguna-m.1": {
-      "model": "laguna/laguna-m-1",
-      "matchingModel": "laguna-m.1",
-      "overrides": {
-        "contextWindow": 32768,
-        "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "laguna-xs.2": {
-      "model": "laguna/laguna-xs-2",
-      "matchingModel": "laguna-xs.2",
-      "overrides": {
-        "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false
-      }
-    },
     "leanstral-1-5": {
       "model": "leanstral/leanstral-1-5",
       "matchingModel": "leanstral-1-5",
@@ -2666,7 +2670,17 @@
         "lastUpdated": "May 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"
@@ -2737,18 +2751,7 @@
       "matchingModel": "mimo-v2.5",
       "overrides": {
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
-        "contextWindow": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
@@ -2770,6 +2773,7 @@
       "model": "mimo/mimo-v2-5-pro",
       "matchingModel": "mimo-v2.5-pro",
       "overrides": {
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
@@ -2817,22 +2821,10 @@
       "model": "minimax/minimax-m2-7-highspeed",
       "matchingModel": "minimax-m2.7-highspeed",
       "overrides": {
-        "contextWindow": 200000,
-        "maxTokens": 128000,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "minimax-m3": {
@@ -2873,16 +2865,6 @@
       "matchingModel": "mistral-medium-3-5",
       "overrides": {
         "name": "mistral-medium-3-5",
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "April 30, 2026",
         "costPer1kInputTokens": 0.00165,
@@ -2919,11 +2901,18 @@
         "speed": 4,
         "lastUpdated": "April 29, 2026",
         "costPer1kInputTokens": 0.00044,
-        "costPer1kOutputTokens": 0.0022
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+        "costPer1kOutputTokens": 0.0022,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     },
     "mistral-medium-latest@eu": {
       "model": "mistral-medium/mistral-medium-latest-eu",
@@ -3107,7 +3096,7 @@
       "matchingModel": "nemotron-3.5-content-safety",
       "overrides": {
         "maxTokens": 8192,
-        "lastUpdated": "June 4, 2026",
+        "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -3129,8 +3118,7 @@
       "matchingModel": "nemotron-3.5-lightning-30b-a3b",
       "overrides": {
         "name": "nemotron-3.5-lightning-30b-a3b",
-        "openWeights": false,
-        "description": "NVIDIA Nemotron 3.5 Lightning 30B-A3B is a hybrid Mamba-2 + MoE + Attention model with 30B total and 3B active parameters, pre-trained on over 20T tokens with an NVFP4 recipe and Multi-Token Prediction for fast generation. Up to 1M token context for long-running autonomous agents, sub-agent workhorse deployments, and agentic workflows. Supports reasoning and tool calling. English and coding languages plus Spanish, French, German, Italian, and Japanese. Open weights under the OpenMDW License Agreement v1.1. Part of the NVIDIA Nemotron family.",
+        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
         "contextWindow": 1048576,
         "maxTokens": 65536,
         "lastUpdated": "August 11, 2026",
@@ -3148,10 +3136,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "nemotron-lightning-3.5-30b-a3b": {
       "model": "nemotron/nemotron-lightning-3-5-30b-a3b",
@@ -3167,12 +3152,10 @@
       ]
     },
     "nvidia-nemotron-3-super-120b-a12b": {
-      "model": "nemotron/nvidia-nemotron-3-super-120b-a12b",
+      "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia-nemotron-3-super-120b-a12b",
       "overrides": {
         "name": "nvidia-nemotron-3-super-120b-a12b",
-        "openWeights": false,
-        "description": "NVIDIA Nemotron 3 Super is a hybrid Mixture-of-Experts (MoE) model engineered for highest compute efficiency and accuracy in multi-agent applications and specialized agentic systems. It is optimized to run many collaborating agents per application on a single GPU, delivering high accuracy for reasoning, tool use, and instruction following.",
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
@@ -3189,31 +3172,42 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "nvidia-nemotron-3-ultra": {
-      "model": "nemotron/nvidia-nemotron-3-ultra",
+      "model": "nemotron/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia-nemotron-3-ultra",
       "overrides": {
-        "lastUpdated": "June 23, 2026",
+        "name": "nvidia-nemotron-3-ultra",
+        "contextWindow": 262144,
+        "maxTokens": 131072,
+        "contextComplexity": 5,
+        "speed": 4,
+        "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0025,
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
-        "supportsTemperature"
+        "strengths"
       ]
     },
     "qwen3.5-27b": {
       "model": "qwen/qwen3-5-27b",
       "matchingModel": "qwen3.5-27b",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -3242,23 +3236,19 @@
       }
     },
     "qwen3.5-2b": {
-      "model": "qwen3.5/qwen3-5-2b",
+      "model": "qwen/qwen3-5-2b",
       "matchingModel": "qwen3.5-2b",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "March 10, 2026",
+        "lastUpdated": "March 2, 2026",
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.0001
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "qwen3.5-35b-a3b": {
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "qwen3.5-35b-a3b",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -3340,16 +3330,6 @@
       "matchingModel": "qwen3.7-plus",
       "overrides": {
         "contextWindow": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "video",
@@ -3467,9 +3447,8 @@
       "matchingModel": "seed-1.8",
       "overrides": {
         "name": "seed-1.8",
-        "maxTokens": 256000,
-        "releaseDate": "May 27, 2026",
-        "lastUpdated": "May 27, 2026",
+        "maxTokens": 64000,
+        "lastUpdated": "December 28, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "supportsResponseFormat": false,
@@ -3483,17 +3462,22 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "seed-2.0-code": {
       "model": "seed/seed-2-0-code",
       "matchingModel": "seed-2.0-code",
       "overrides": {
-        "contextWindow": 256000,
-        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "February 14, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
@@ -3515,7 +3499,7 @@
       "matchingModel": "seed-2.0-mini",
       "overrides": {
         "contextWindow": 256000,
-        "maxTokens": 256000,
+        "maxTokens": 32000,
         "lastUpdated": "February 14, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
@@ -3536,7 +3520,6 @@
       "model": "seed/seed-2-0-pro",
       "matchingModel": "seed-2.0-pro",
       "overrides": {
-        "maxTokens": 256000,
         "modalities": {
           "input": [
             "text",
@@ -3551,6 +3534,7 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "supportsResponseFormat": false,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3798,10 +3782,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsTemperature"
-      ]
+      }
     },
     "qwen3.8-flash-next": {
       "model": "qwen/qwen3-8-flash-next",
@@ -3877,7 +3858,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -3897,7 +3878,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-eu",
       "matchingModel": "deepseek-v4.1-flash@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -4013,18 +3994,7 @@
       "model": "mimo/mimo-v2-6-flash",
       "matchingModel": "mimo-v2.6-flash",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
@@ -4044,17 +4014,6 @@
       "model": "mimo/mimo-v2-6-pro",
       "matchingModel": "mimo-v2.6-pro",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
@@ -4173,7 +4132,6 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
-        "maxTokens": 524288,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209,
@@ -4249,7 +4207,7 @@
       "matchingModel": "kimi-k2.5@eu",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "January 2026",
+        "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.0036,
         "supportsTemperature": false
@@ -4260,6 +4218,7 @@
       "matchingModel": "gemini-4-argon",
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 65536,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -4314,7 +4273,7 @@
       "overrides": {
         "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
         "maxTokens": 943718,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 12, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -4328,6 +4287,79 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "deepseek-v4.1-flash-1017@eu": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017-eu",
+      "matchingModel": "deepseek-v4.1-flash-1017@eu",
+      "overrides": {
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "minimax-m3.1-flash": {
+      "model": "minimax/minimax-m3-1-flash",
+      "matchingModel": "minimax-m3.1-flash",
+      "overrides": {
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "maxTokens": 128000,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "muse-spark-open": {
+      "model": "muse/muse-spark-open",
+      "matchingModel": "muse-spark-open",
+      "overrides": {
+        "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.00425,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "step-5-preview": {
+      "model": "requesty/step-5-preview/step-5-preview",
+      "matchingModel": "step-5-preview",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 20, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.0027
       }
     }
   }

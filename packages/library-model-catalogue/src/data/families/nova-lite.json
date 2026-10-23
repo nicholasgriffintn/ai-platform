@@ -24,6 +24,7 @@
     "knowledgeCutoffDate": "October 2024",
     "releaseDate": "December 3, 2024",
     "supportsToolCalls": true,
+    "supportsResponseFormat": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
@@ -49,49 +50,13 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "October 31, 2024",
         "releaseDate": "December 5, 2024",
-        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": 6.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
-    "nova-2-lite": {
-      "defaults": {
-        "name": "Nova 2 Lite",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
-        "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "analysis",
-          "reasoning",
-          "coding",
-          "vision",
-          "multilingual"
-        ],
-        "reliability": 4,
-        "releaseDate": "December 1, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
         }
       }
     },

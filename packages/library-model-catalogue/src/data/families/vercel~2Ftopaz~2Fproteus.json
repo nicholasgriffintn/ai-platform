@@ -14,7 +14,7 @@
     "releaseDate": "October 6, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The vercel/topaz/proteus family includes models that produce video.",
   "models": {

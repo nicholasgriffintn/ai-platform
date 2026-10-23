@@ -12,7 +12,6 @@
     "ministral-14b": {
       "defaults": {
         "name": "Ministral 14B",
-        "openWeights": false,
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 262144,
         "maxTokens": 256000,
@@ -176,7 +175,6 @@
         "name": "Ministral 3B",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 131072,
-        "maxTokens": 128000,
         "modalities": {
           "input": [
             "text"
@@ -185,8 +183,7 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024"
+        "knowledgeCutoffDate": "October 2024"
       }
     },
     "ministral-8b-latest": {
@@ -194,7 +191,6 @@
         "name": "Ministral 8B",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 262144,
-        "maxTokens": 128000,
         "modalities": {
           "input": [
             "text"
@@ -203,8 +199,7 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024"
+        "knowledgeCutoffDate": "October 2024"
       }
     }
   }

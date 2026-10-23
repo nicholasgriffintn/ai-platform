@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 1000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 20, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/scaledown/scaledown summarize 1 family includes models that produce text.",
+  "models": {
+    "summarize-1": {
+      "defaults": {
+        "name": "Summarize-1",
+        "description": "General-purpose chat model for instruction following, writing, and analysis"
+      }
+    }
+  }
+}

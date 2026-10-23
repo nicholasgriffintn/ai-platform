@@ -13,7 +13,6 @@
     "knowledgeCutoffDate": "August 31, 2024",
     "releaseDate": "August 26, 2025",
     "supportsToolCalls": false,
-    "supportsResponseFormat": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -25,13 +24,23 @@
         "description": "Hermes 3 405B Instruct (free) accepts text and produces text.",
         "maxTokens": 131072,
         "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 16, 2024"
+        "releaseDate": "August 16, 2024",
+        "supportsResponseFormat": false
       }
     },
     "hermes-4-405b": {
       "defaults": {
         "name": "Hermes 4 405B",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "hermes-4-70b": {
@@ -39,10 +48,26 @@
         "name": "Hermes 4 70B",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "maxTokens": 117964,
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nous-hermes-4-405b": {
+      "defaults": {
+        "name": "Nous: Hermes 4 405B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 117964,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
           ],
           "defaultEffort": "none"
         }

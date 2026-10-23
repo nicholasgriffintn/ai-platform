@@ -4,7 +4,8 @@
     "contextWindow": 0,
     "maxTokens": 0,
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "description": "The o family includes models that produce audio, image, text, video.",
   "models": {
@@ -35,15 +36,15 @@
           "creative",
           "image"
         ],
+        "supportsAttachments": false,
         "supportsTemperature": true
       }
     },
     "cohere-rerank-3-5": {
       "defaults": {
         "name": "Cohere Rerank 3.5",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "description": "Multilingual reranker for documents and semi-structured data",
         "contextWindow": 4096,
-        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text"
@@ -55,15 +56,15 @@
         "strengths": [
           "reranking"
         ],
-        "releaseDate": "December 2, 2024"
+        "releaseDate": "December 2, 2024",
+        "supportsAttachments": false
       }
     },
     "cohere-rerank-4-fast": {
       "defaults": {
         "name": "Cohere Rerank 4 Fast",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "description": "Low-latency multilingual reranker for high-throughput retrieval",
         "contextWindow": 32000,
-        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -75,15 +76,15 @@
         "strengths": [
           "reranking"
         ],
-        "releaseDate": "December 11, 2025"
+        "releaseDate": "December 11, 2025",
+        "supportsAttachments": false
       }
     },
     "cohere-rerank-4-pro": {
       "defaults": {
         "name": "Cohere Rerank 4 Pro",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "description": "Multilingual reranker for maximum relevance on documents and semi-structured data",
         "contextWindow": 32000,
-        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -95,7 +96,8 @@
         "strengths": [
           "reranking"
         ],
-        "releaseDate": "December 11, 2025"
+        "releaseDate": "December 11, 2025",
+        "supportsAttachments": false
       }
     },
     "o1": {
@@ -125,8 +127,6 @@
         "releaseDate": "December 5, 2024",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": 15.2,
           "codingIndex": 39.7,
@@ -162,8 +162,6 @@
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -189,7 +187,6 @@
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "June 26, 2024",
         "supportsToolCalls": true,
-        "supportsAttachments": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -227,8 +224,6 @@
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -270,8 +265,6 @@
         "releaseDate": "February 12, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"
@@ -306,8 +299,6 @@
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"
@@ -340,8 +331,6 @@
         "releaseDate": "February 12, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"
@@ -375,8 +364,6 @@
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"
@@ -397,7 +384,8 @@
             "audio"
           ]
         },
-        "releaseDate": "October 20, 2025"
+        "releaseDate": "October 20, 2025",
+        "supportsAttachments": false
       }
     },
     "s1-free": {
@@ -412,7 +400,8 @@
             "audio"
           ]
         },
-        "releaseDate": "October 20, 2025"
+        "releaseDate": "October 20, 2025",
+        "supportsAttachments": false
       }
     },
     "s2-1-pro": {
@@ -432,6 +421,7 @@
         ],
         "reliability": 3,
         "releaseDate": "July 28, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -467,6 +457,7 @@
         ],
         "reliability": 3,
         "releaseDate": "July 28, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -502,6 +493,7 @@
         ],
         "reliability": 3,
         "releaseDate": "March 9, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -511,7 +503,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1116,
+              "value": 1118,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -532,7 +524,8 @@
             "audio"
           ]
         },
-        "releaseDate": "March 9, 2026"
+        "releaseDate": "March 9, 2026",
+        "supportsAttachments": false
       }
     },
     "schematron-v2-small": {
@@ -550,6 +543,8 @@
           ]
         },
         "releaseDate": "April 16, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false,
         "supportsTemperature": true
       }
     },
@@ -568,6 +563,8 @@
           ]
         },
         "releaseDate": "April 16, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false,
         "supportsTemperature": true
       }
     },
@@ -598,13 +595,14 @@
             "text"
           ]
         },
-        "releaseDate": "March 1, 2026"
+        "releaseDate": "March 1, 2026",
+        "supportsAttachments": false
       }
     },
     "tts-1": {
       "defaults": {
         "name": "TTS-1",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "description": "Text-to-speech model optimized for low latency",
         "modalities": {
           "input": [
             "text"
@@ -618,7 +616,7 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
-        "supportsTemperature": true,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -640,7 +638,7 @@
     "tts-1-hd": {
       "defaults": {
         "name": "TTS-1 HD",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "description": "Text-to-speech model optimized for audio quality",
         "modalities": {
           "input": [
             "text"
@@ -654,7 +652,7 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
-        "supportsTemperature": true,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -685,14 +683,13 @@
             "video"
           ]
         },
-        "releaseDate": "September 24, 2025",
-        "supportsTemperature": true
+        "releaseDate": "September 24, 2025"
       }
     },
     "wan-v2-6-image-to-video": {
       "defaults": {
         "name": "Wan v2.6 Image-to-Video",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
           "input": [
             "text"
@@ -701,14 +698,13 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-image-to-video-flash": {
       "defaults": {
         "name": "Wan v2.6 Image-to-Video Flash",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
           "input": [
             "text"
@@ -717,8 +713,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-reference-to-video": {
@@ -733,8 +728,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-reference-to-video-flash": {
@@ -749,8 +743,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-text-to-video": {
@@ -765,8 +758,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-7-reference-to-video": {
@@ -781,8 +773,7 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026",
-        "supportsTemperature": true
+        "releaseDate": "April 7, 2026"
       }
     },
     "wan-v2-7-text-to-video": {
@@ -797,8 +788,7 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026",
-        "supportsTemperature": true
+        "releaseDate": "April 7, 2026"
       }
     },
     "wan-v3-0-video": {
@@ -814,8 +804,7 @@
             "video"
           ]
         },
-        "releaseDate": "August 23, 2026",
-        "supportsAttachments": true
+        "releaseDate": "August 23, 2026"
       }
     },
     "wan-v3-0-video-prime": {
@@ -831,8 +820,7 @@
             "video"
           ]
         },
-        "releaseDate": "August 28, 2026",
-        "supportsAttachments": true
+        "releaseDate": "August 28, 2026"
       }
     }
   }

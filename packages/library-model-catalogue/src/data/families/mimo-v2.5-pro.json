@@ -21,7 +21,7 @@
     "knowledgeCutoffDate": "December 2024",
     "releaseDate": "April 22, 2026",
     "supportsToolCalls": true,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [

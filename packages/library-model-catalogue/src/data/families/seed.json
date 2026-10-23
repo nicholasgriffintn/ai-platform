@@ -1,68 +1,11 @@
 {
   "defaults": {
     "openWeights": false,
-    "supportsTemperature": true
+    "supportsToolCalls": false,
+    "supportsAttachments": true
   },
   "description": "The seed family includes models that produce image, text, video.",
   "models": {
-    "bytedance-seed-seed-1-6-flash-retires-nov-11": {
-      "defaults": {
-        "name": "ByteDance Seed: Seed 1.6 Flash",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 23, 2025",
-        "supportsToolCalls": true,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "bytedance-seed-seed-1-6-retires-nov-11": {
-      "defaults": {
-        "name": "ByteDance Seed: Seed 1.6",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 23, 2025",
-        "supportsToolCalls": true,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "bytedance-seed-seed-2-1-turbo": {
       "defaults": {
         "name": "ByteDance Seed: Seed 2.1 Turbo",
@@ -79,10 +22,10 @@
             "text"
           ]
         },
-        "releaseDate": "August 12, 2026",
+        "releaseDate": "June 23, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -96,36 +39,21 @@
       "defaults": {
         "name": "Seed 1.6",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "seed-1-6-flash": {
-      "defaults": {
-        "name": "Seed 1.6 Flash",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
+        "contextWindow": 256000,
+        "maxTokens": 32000,
         "modalities": {
           "input": [
-            "image",
-            "text",
-            "video"
+            "text"
           ],
           "output": [
             "text"
           ]
         },
-        "releaseDate": "December 23, 2025",
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 15, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -137,7 +65,7 @@
     },
     "seed-1-8": {
       "defaults": {
-        "description": "Optimized specifically for multimodal agent scenarios. It features enhanced agent capabilities, upgraded multimodal comprehension, and more flexible context management.",
+        "description": "ByteDance Seed model for multimodal reasoning, long-context analysis, and agent workflows",
         "contextWindow": 256000,
         "modalities": {
           "input": [
@@ -148,28 +76,20 @@
             "text"
           ]
         },
-        "supportsToolCalls": true
+        "releaseDate": "December 28, 2025",
+        "supportsToolCalls": true,
+        "supportsTemperature": true
       }
     },
     "seed-2-0-code": {
       "defaults": {
         "name": "Seed 2.0 Code",
         "description": "ByteDance Seed coding model for multimodal software engineering and long-running agents",
+        "contextWindow": 256000,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "February 14, 2026",
         "supportsToolCalls": true,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsTemperature": true
       }
     },
     "seed-2-0-lite": {
@@ -190,7 +110,7 @@
         "releaseDate": "February 14, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsTemperature": true
       }
     },
     "seed-2-0-mini": {
@@ -210,7 +130,7 @@
         "releaseDate": "February 14, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsTemperature": true
       }
     },
     "seed-2-0-pro": {
@@ -218,9 +138,10 @@
         "name": "Seed 2.0 Pro",
         "description": "Flagship ByteDance Seed 2.0 model for complex multimodal reasoning and long-horizon agent workflows",
         "contextWindow": 256000,
+        "maxTokens": 128000,
         "releaseDate": "February 14, 2026",
         "supportsToolCalls": true,
-        "supportsAttachments": true
+        "supportsTemperature": false
       }
     },
     "seed-2-1-turbo": {
@@ -228,9 +149,10 @@
         "name": "Seed 2.1 Turbo",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 262144,
+        "releaseDate": "June 23, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsTemperature": true
       }
     },
     "seedance-1-5-pro": {
@@ -275,10 +197,9 @@
     "seedance-2-0": {
       "defaults": {
         "name": "Seedance 2.0",
-        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "description": "ByteDance unified multimodal audio-video model supporting text, image, video and audio references, editing, extension and synchronized stereo sound.",
         "contextComplexity": 4,
         "reliability": 5,
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -313,8 +234,7 @@
           ]
         },
         "releaseDate": "April 14, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsTemperature": false
       }
     },
     "seedance-2-0-mini": {
@@ -333,14 +253,13 @@
           ]
         },
         "releaseDate": "June 22, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsTemperature": false
       }
     },
     "seedance-2-5": {
       "defaults": {
         "name": "Seedance 2.5",
-        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "description": "ByteDance multimodal audio-video model with up to 30-second single-pass generation, multi-round extension, reference inputs and timestamp-level editing.",
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
@@ -351,9 +270,9 @@
             "video"
           ]
         },
-        "releaseDate": "August 7, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
+        "supportsTemperature": false
       }
     },
     "seedance-v1-0-lite-image-to-video": {
@@ -371,8 +290,8 @@
           ]
         },
         "releaseDate": "June 1, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "supportsTemperature": true
       }
     },
     "seedance-v1-0-lite-text-to-video": {
@@ -390,8 +309,8 @@
           ]
         },
         "releaseDate": "June 1, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "supportsTemperature": true
       }
     },
     "seedance-v1-0-pro": {
@@ -409,8 +328,7 @@
           ]
         },
         "releaseDate": "June 11, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsTemperature": false
       }
     },
     "seedance-v1-0-pro-fast": {
@@ -428,8 +346,7 @@
           ]
         },
         "releaseDate": "October 24, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsTemperature": false
       }
     },
     "seedance-v1-5-pro": {
@@ -447,8 +364,7 @@
           ]
         },
         "releaseDate": "December 16, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsTemperature": false
       }
     },
     "seedream-4-0": {
@@ -471,8 +387,8 @@
         ],
         "reliability": 2,
         "releaseDate": "September 9, 2025",
-        "supportsToolCalls": false,
         "supportsAttachments": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -496,7 +412,6 @@
         "name": "Seedream 4.5",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "reliability": 2,
-        "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -507,10 +422,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1023,
+              "value": 1024,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -535,8 +450,8 @@
         ],
         "reliability": 2,
         "releaseDate": "February 13, 2026",
-        "supportsToolCalls": false,
         "supportsAttachments": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -549,7 +464,7 @@
               "value": 1013,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -574,8 +489,8 @@
         ],
         "reliability": 3,
         "releaseDate": "July 11, 2026",
-        "supportsToolCalls": false,
         "supportsAttachments": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -585,10 +500,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1081,
+              "value": 1082,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }

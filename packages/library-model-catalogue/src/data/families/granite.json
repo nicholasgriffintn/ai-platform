@@ -72,7 +72,7 @@
         "strengths": [
           "tool_use"
         ],
-        "releaseDate": "August 31, 2026",
+        "releaseDate": "August 25, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -105,14 +105,13 @@
     "ibm-granite-4-2-8b": {
       "defaults": {
         "name": "IBM: Granite 4.2 8B",
-        "openWeights": false,
         "description": "Granite 4.2 8B is a dense reasoning model from IBM. It is suited for mathematics, code generation, multilingual dialogue, and agentic workflows that need multi-step reasoning. It supports full, low-effort,...",
         "contextWindow": 131072,
         "maxTokens": 117964,
         "strengths": [
           "tool_use"
         ],
-        "releaseDate": "August 31, 2026",
+        "releaseDate": "August 25, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

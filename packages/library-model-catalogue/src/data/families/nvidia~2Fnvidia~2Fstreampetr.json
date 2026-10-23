@@ -15,14 +15,14 @@
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The nvidia/nvidia/streampetr family includes models that produce text.",
   "models": {
     "streampetr": {
       "defaults": {
         "name": "streampetr",
-        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows"
+        "description": "Temporal 3D object detection model for autonomous driving"
       }
     }
   }

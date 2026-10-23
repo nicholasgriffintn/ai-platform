@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 15, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/moondream/moondream3.1 9b a2b family includes models that produce text.",
+  "models": {
+    "moondream-moondream-3-1": {
+      "defaults": {
+        "name": "Moondream: Moondream 3.1",
+        "description": "Moondream 3.1 is a vision-language model from Moondream, the successor to Moondream 3 Preview, with 9B total parameters and 2B active (mixture-of-experts). It handles visual question answering, captioning, OCR, and..."
+      }
+    }
+  }
+}

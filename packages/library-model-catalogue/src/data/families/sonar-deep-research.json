@@ -25,10 +25,9 @@
         "description": "Sonar search model for current answers, retrieval, and citation-backed chat",
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "high"
         }
       }
     },

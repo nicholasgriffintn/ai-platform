@@ -24,6 +24,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -67,25 +68,6 @@
           ]
         },
         "multimodal": true
-      }
-    },
-    "amazon-nova-premier-1-0": {
-      "defaults": {
-        "name": "Amazon: Nova Premier 1.0",
-        "openWeights": false,
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "maxTokens": 32000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 31, 2025",
-        "supportsResponseFormat": false
       }
     },
     "amazon-nova-reel": {
@@ -147,6 +129,7 @@
         },
         "knowledgeCutoffDate": "September 16, 2025",
         "releaseDate": "December 28, 2024",
+        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -163,6 +146,7 @@
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 65535,
+        "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025"
       }
     },
@@ -185,6 +169,7 @@
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -221,6 +206,7 @@
         "multimodal": true,
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -250,6 +236,7 @@
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -279,6 +266,7 @@
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -396,25 +384,6 @@
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
         }
-      }
-    },
-    "nova-premier-1-0": {
-      "defaults": {
-        "name": "Nova Premier 1.0",
-        "openWeights": false,
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "maxTokens": 32000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 31, 2025",
-        "supportsResponseFormat": false
       }
     },
     "nova-pro": {

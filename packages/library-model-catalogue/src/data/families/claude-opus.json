@@ -16,6 +16,7 @@
     "contextComplexity": 5,
     "reliability": 3,
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
     "supportsTopP": false
@@ -27,7 +28,6 @@
         "name": "Anthropic: Claude Opus Latest",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "releaseDate": "April 21, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -46,7 +46,6 @@
         "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -120,6 +119,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
@@ -144,8 +144,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 1, 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -178,8 +177,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 1, 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -213,7 +211,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 23.7,
@@ -238,7 +235,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -272,8 +268,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 1, 2025",
-        "supportsResponseFormat": true,
+        "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -304,7 +299,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 26.4,
@@ -326,7 +320,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 26.4,
@@ -347,7 +340,6 @@
         ],
         "reliability": 1,
         "releaseDate": "April 7, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -376,7 +368,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -408,7 +399,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -823,7 +813,6 @@
         ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 50.8,
           "codingIndex": 78,
@@ -843,7 +832,6 @@
         ],
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1146,6 +1134,7 @@
         ],
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1231,7 +1220,6 @@
       "defaults": {
         "name": "Claude Opus Latest",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
