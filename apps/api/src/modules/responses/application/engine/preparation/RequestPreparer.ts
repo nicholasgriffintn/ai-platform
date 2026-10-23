@@ -69,6 +69,7 @@ import {
   listPerMessageSkillCandidates,
   selectPerMessageSkills,
 } from "~/modules/skills/application/per-message";
+import { recordSkillUses } from "~/modules/skills/application/use-ledger";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
 import {
   resolveEnabledFunctionToolNames,
@@ -589,6 +590,21 @@ export class RequestPreparer {
       perMessageSkillsPromise,
       polyAgendaPromise,
     ]);
+
+    if (perMessageSkills.length > 0 && user?.id && scopedSkillCatalog) {
+      await recordSkillUses(
+        repositories,
+        perMessageSkills.flatMap((skill) => scopedSkillCatalog.loadRuntime(skill.id) ?? []),
+        {
+          userId: user.id,
+          projectId: projectContext?.projectId ?? null,
+          runId: runId ?? null,
+          conversationId: scope.options.completion_id,
+          activation: "per_message",
+        },
+      );
+    }
+
     const latestTurn = buildLatestTurn({
       text: messageWithContext,
       poly: scope.options.poly,

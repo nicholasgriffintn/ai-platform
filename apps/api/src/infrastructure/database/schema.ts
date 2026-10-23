@@ -2289,6 +2289,30 @@ export const workspaceAuditRecord = sqliteTable(
 
 export type WorkspaceAuditRecord = typeof workspaceAuditRecord.$inferSelect;
 
+export const skillUse = sqliteTable(
+  "skill_use",
+  {
+    id: text().primaryKey(),
+    skill_id: text().notNull(),
+    revision_id: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    run_id: text(),
+    conversation_id: text().notNull(),
+    activation: text({ enum: ["load", "per_message"] }).notNull(),
+    used_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    skillUsedIdx: index("skill_use_skill_used_idx").on(table.skill_id, table.used_at),
+    runIdx: index("skill_use_run_idx").on(table.run_id),
+  }),
+);
+
+export type SkillUseRow = typeof skillUse.$inferSelect;
+
 export const teammateGroupMember = sqliteTable(
   "teammate_group_member",
   {

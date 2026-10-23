@@ -6,6 +6,7 @@ import type {
   PolyAgendaLists,
   PolyAgendaItem,
   PolyHandoffJudgement,
+  PolyHandoffSourceKind,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 
@@ -26,6 +27,7 @@ export interface PolyNotedHandoff {
   id: string;
   title: string;
   reason: string;
+  sourceKind: PolyHandoffSourceKind;
   resultConversationId: string | null;
   createdAt: string;
   judgement: PolyHandoffJudgement | null;
@@ -117,7 +119,7 @@ export function buildPolyAgenda(input: PolyAgendaInput): PolyAgendaLists {
   }
 
   const noted = input.noted.map((handoff): PolyAgendaItem => ({
-    kind: "routine",
+    kind: handoff.sourceKind === "routine" ? "routine" : "skill",
     id: handoff.id,
     title: truncateSingleLine(handoff.title, AGENDA_TITLE_LIMIT),
     status: handoff.reason,

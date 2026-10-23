@@ -26,6 +26,7 @@ import { DelegationRepository } from "~/modules/delegations/infrastructure/Deleg
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
 import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
+import { considerSkillHarvest } from "~/modules/skills/application/harvest";
 import {
   publishConversationChanged,
   publishRunChanged,
@@ -259,6 +260,15 @@ export class ChatRunLifecycle {
     }
 
     await settleTeammateRun(this.serviceContext, this.run, result);
+
+    try {
+      await considerSkillHarvest(this.serviceContext, this.run, result);
+    } catch (error) {
+      logger.warn("Skill harvest could not be queued", {
+        runId: this.run.id,
+        error: getErrorMessage(error),
+      });
+    }
   }
 
   async isCancellationRequested(): Promise<boolean> {

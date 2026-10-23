@@ -45,6 +45,25 @@ export class CorrectionRepository extends BaseRepository {
     );
   }
 
+  public async countActiveByConversationIds(
+    userId: number,
+    conversationIds: readonly string[],
+  ): Promise<number> {
+    if (conversationIds.length === 0) {
+      return 0;
+    }
+
+    const row = await this.runQuery<{ total: number }>(
+      `SELECT COUNT(*) AS total FROM correction
+       WHERE user_id = ? AND status = 'active'
+         AND conversation_id IN (${conversationIds.map(() => "?").join(", ")})`,
+      [userId, ...conversationIds],
+      true,
+    );
+
+    return row?.total ?? 0;
+  }
+
   public async listActive(userId: number, limit: number): Promise<Correction[]> {
     const rows = await this.runQuery<CorrectionRow>(
       `SELECT * FROM correction WHERE user_id = ? AND status = 'active'

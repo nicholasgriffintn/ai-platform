@@ -21,6 +21,7 @@ import { registerRealtimeQueue } from "~/modules/realtime/application/queue/regi
 import { registerRecipesQueue } from "~/modules/recipes/application/queue/register";
 import { registerResponsesQueue } from "~/modules/responses/application/queue/register";
 import { registerSandboxQueue } from "~/modules/sandbox/application/queue/register";
+import { registerSkillsQueue } from "~/modules/skills/application/queue/register";
 import { registerSourcesQueue } from "~/modules/sources/application/queue/register";
 import { registerSubscriptionQueue } from "~/modules/subscription/application/queue/register";
 import { registerTaskNotificationsQueue } from "~/modules/task-notifications/application/queue/register";
@@ -57,6 +58,7 @@ registerJobsQueue(workflows);
 registerProjectTasksQueue(workflows);
 registerRealtimeQueue(workflows);
 registerSandboxQueue(workflows);
+registerSkillsQueue(workflows);
 registerTeammatesQueue(workflows);
 registerUsageQueue(workflows);
 registerWebhookEndpointsQueue(workflows);

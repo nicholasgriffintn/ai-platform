@@ -17,6 +17,8 @@ import {
   isPinnedAuthoredSkillAuthorised,
   resolvePinnedRequestSkillState,
 } from "~/modules/skills/application/runtime-state";
+import { recordSkillUses } from "~/modules/skills/application/use-ledger";
+import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { load_skill as load_skillDescriptor } from "./definitions/load_skill";
@@ -51,6 +53,16 @@ export const load_skill: ApiToolDefinition = {
         }.`,
         data: { skill: skillId, available: [...readyIds] },
       };
+    }
+
+    if (loaded?.provenance && toolContext.request.context && toolContext.request.user?.id) {
+      await recordSkillUses(toolContext.request.context.repositories, [loaded], {
+        userId: toolContext.request.user.id,
+        projectId: resolveRequestProjectId(toolContext.request),
+        runId: toolContext.request.request?.run_id ?? null,
+        conversationId: toolContext.completionId,
+        activation: "load",
+      });
     }
 
     const resources = (requested.resources ?? []).map(toSkillResourceSummary);

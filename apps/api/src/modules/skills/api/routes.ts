@@ -13,6 +13,8 @@ import {
   setSkillEnabledSchema,
   skillAvailabilitySchema,
   skillIdSchema,
+  skillOutcomeSummarySchema,
+  skillReplayReportSchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -32,6 +34,9 @@ import {
   deleteScopedSkill,
   getScopedSkill,
   getScopedSkillHistory,
+  getScopedSkillOutcomes,
+  getScopedSkillReplay,
+  startScopedSkillReplay,
   getScopedSkillRevision,
   importScopedSkill,
   listScopedSkills,
@@ -43,6 +48,11 @@ import {
 
 const app = new Hono();
 const skillParamsSchema = z.object({ skill_id: skillIdSchema });
+
+function notFound(message: string): never {
+  throw new AssistantError(message, ErrorType.NOT_FOUND, 404);
+}
+
 const documentParamsSchema = z.object({ document_id: skillIdSchema });
 const revisionParamsSchema = documentParamsSchema.extend({ revision_id: z.string().min(1) });
 
@@ -71,6 +81,61 @@ defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
     });
 
   const documents = skills.collection("documents", "document_id");
+
+  documents.singleton("outcomes").read({
+    auth: true,
+    summary: "How an authored skill is doing",
+    description:
+      "Uses, replies marked up or down and corrections in the conversations that used it, with a verdict.",
+    paramSchema: documentParamsSchema,
+    querySchema: projectScopeQuerySchema,
+    responses: {
+      200: { description: "Outcomes", schema: skillOutcomeSummarySchema },
+      404: { description: "Skill not found", schema: errorResponseSchema },
+    },
+    handler: async ({ params, query, serviceContext, user }) =>
+      (await getScopedSkillOutcomes(
+        { context: serviceContext, user, projectId: query.project_id },
+        params.document_id,
+      )) ?? notFound("Skill not found"),
+  });
+
+  const replayQuerySchema = projectScopeQuerySchema.extend({ revision_id: z.string().min(1) });
+
+  documents
+    .singleton("replay")
+    .read({
+      auth: true,
+      summary: "Read a draft's replay",
+      description:
+        "How a skill revision did when replayed, with every external effect simulated, against recent requests that used the skill.",
+      paramSchema: documentParamsSchema,
+      querySchema: replayQuerySchema,
+      responses: {
+        200: { description: "Replay report", schema: skillReplayReportSchema.nullable() },
+      },
+      handler: ({ params, query, serviceContext, user }) =>
+        getScopedSkillReplay(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          query.revision_id,
+        ),
+    })
+    .create({
+      auth: true,
+      summary: "Replay a draft before promoting it",
+      description:
+        "Queues a dry-run replay of the revision against up to three recent requests that used the skill. Promotion is refused while it runs, and when it makes any request worse unless acceptReplayRegression is set.",
+      paramSchema: documentParamsSchema,
+      querySchema: replayQuerySchema,
+      responses: { 200: { description: "Replay report", schema: skillReplayReportSchema } },
+      handler: ({ params, query, serviceContext, user }) =>
+        startScopedSkillReplay(
+          { context: serviceContext, user, projectId: query.project_id },
+          params.document_id,
+          query.revision_id,
+        ),
+    });
 
   documents
     .list({

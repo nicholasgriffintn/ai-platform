@@ -177,6 +177,11 @@
       "types": "./dist/reactions.d.ts",
       "import": "./dist/reactions.js"
     },
+    "./skill-harvest": {
+      "polychat-source": "./src/skill-harvest.ts",
+      "types": "./dist/skill-harvest.d.ts",
+      "import": "./dist/skill-harvest.js"
+    },
     "./tool-receipts": {
       "polychat-source": "./src/tool-receipts.ts",
       "types": "./dist/tool-receipts.d.ts",

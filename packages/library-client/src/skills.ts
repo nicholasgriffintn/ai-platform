@@ -8,6 +8,7 @@ import type {
   AuthoredSkillVersionedDocument,
   SkillAvailability,
   SkillAvailabilityResponse,
+  SkillOutcomeSummary,
   ListPage,
   TeachingSkillDraftInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -40,6 +41,22 @@ export async function getSkill(
   }
 
   return returnFetchedData<AuthoredSkillDocument>(response);
+}
+
+export async function getSkillOutcomes(
+  skillId: string,
+  projectId?: string,
+): Promise<SkillOutcomeSummary> {
+  const response = await fetchApi(skillDocumentPath(skillId, projectId, "/outcomes"), {
+    method: "GET",
+    headers: await readHeaders(),
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to load skill outcomes");
+  }
+
+  return returnFetchedData<SkillOutcomeSummary>(response);
 }
 
 export async function getSkillHistory(

@@ -12,6 +12,7 @@ import { CheckCircle2, RotateCcw, Save, Upload } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
+import { SkillOutcomesCard } from "./SkillOutcomesCard.js";
 import { useSkillEditorController } from "./useSkillEditorController.js";
 
 export interface SkillEditorPageProps {
@@ -135,6 +136,8 @@ export function SkillEditorPage({
           </p>
         )}
       </Card>
+
+      <SkillOutcomesCard skillId={skillId} projectId={projectId} />
 
       <section className="mt-8 space-y-3">
         <h2 className="text-sm font-semibold text-foreground">Revision history</h2>

@@ -30,6 +30,7 @@ import {
   rollbackStoredSkill,
   saveStoredSkillDraft,
 } from "./persistence";
+import { assertDraftReplayAllowsPromotion } from "./replay";
 
 function projectSkillAudit(
   workspaceId: string,
@@ -156,6 +157,8 @@ export async function promotePersonalSkillDraft(
   skillId: string,
   input: AuthoredSkillPromotionInput,
 ): Promise<AuthoredSkillVersionedDocument> {
+  await assertDraftReplayAllowsPromotion(context, personalSkillScope(userId), skillId, input);
+
   const promoted = await promoteStoredSkillDraft(
     context,
     personalSkillScope(userId),
@@ -302,6 +305,9 @@ export async function promoteProjectSkillDraft(
   input: AuthoredSkillPromotionInput,
 ): Promise<AuthoredSkillVersionedDocument> {
   const { project } = await requireProjectSkillAdministration(context, projectId, skillId);
+
+  await assertDraftReplayAllowsPromotion(context, projectSkillScope(projectId), skillId, input);
+
   const promoted = await promoteStoredSkillDraft(
     context,
     projectSkillScope(projectId),

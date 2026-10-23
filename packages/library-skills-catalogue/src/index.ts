@@ -14,6 +14,12 @@ export {
 } from "./catalogue.js";
 export { builtInSkillDocumentSources } from "./generated/documents.js";
 export {
+  assessSkillOutcomes,
+  SKILL_OUTCOME_WINDOW_DAYS,
+  SKILL_STRUGGLING_THUMBS_DOWN,
+  type SkillOutcomeSignals,
+} from "./outcomes.js";
+export {
   agentSkillFrontmatterSchema,
   buildSkillDocument,
   MAX_USER_SKILL_DOCUMENT_BYTES,

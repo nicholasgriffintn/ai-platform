@@ -5,6 +5,7 @@ import {
   fetchPersonalSkills,
   getSkill,
   getSkillHistory,
+  getSkillOutcomes,
   promoteSkillDraft,
   rollbackSkill,
   saveSkillDraft,
@@ -30,6 +31,20 @@ export const authoredSkillQueryKey = (skillId: string, projectId?: string) =>
 
 export const authoredSkillHistoryQueryKey = (skillId: string, projectId?: string) =>
   ["authoredSkillHistory", projectId ?? "personal", skillId] as const;
+
+export const skillOutcomesQueryKey = (skillId: string, projectId?: string) =>
+  ["skillOutcomes", projectId ?? "personal", skillId] as const;
+
+export function useSkillOutcomes(skillId: string, projectId?: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: skillOutcomesQueryKey(skillId, projectId),
+    queryFn: () => getSkillOutcomes(skillId, projectId),
+    enabled: isAuthenticated && Boolean(skillId),
+    staleTime: 1000 * 60,
+  });
+}
 
 function useInvalidateSkillScope(projectId?: string) {
   const queryClient = useQueryClient();

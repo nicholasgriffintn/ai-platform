@@ -14,6 +14,7 @@ import type {
   CreateAuthoredSkillInput,
 } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { SkillUseRepository } from "~/modules/skills/infrastructure/SkillUseRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { resolveSkillCatalog } from "../catalog";
@@ -301,6 +302,7 @@ function createAuthoredSkillsRepository() {
     getRevision,
     getRevisionForSkill,
     getRevisionByStorageKey,
+    getRevisionReplay: async () => null,
     listByScope,
     listRevisions,
     promoteDraft,
@@ -313,6 +315,7 @@ function createAuthoredSkillsRepository() {
 function createContext() {
   const bucket = createBucket();
   const authoredSkills = createAuthoredSkillsRepository();
+  const skillUses = { record: vi.fn().mockResolvedValue(undefined) };
   const workspaces = {
     addProjectCapability: vi.fn().mockResolvedValue(undefined),
     listProjectCapabilities: vi.fn().mockResolvedValue([]),
@@ -332,12 +335,21 @@ function createContext() {
       [AuthoredSkillRepository, authoredSkills],
       [WorkspaceRepository, workspaces],
       [CapabilityConfigurationRepository, capabilityConfigurations],
+      [SkillUseRepository, skillUses],
     ]),
     requireUser: () => user,
     getLogger: () => logger,
   } as unknown as ServiceContext;
 
-  return { authoredSkills, bucket, capabilityConfigurations, context, logger, workspaces };
+  return {
+    authoredSkills,
+    bucket,
+    capabilityConfigurations,
+    context,
+    logger,
+    skillUses,
+    workspaces,
+  };
 }
 
 beforeEach(() => {
@@ -532,7 +544,7 @@ describe("personal skill management", () => {
   });
 
   it("keeps prompt discovery and tool loading on one pinned revision", async () => {
-    const { context } = createContext();
+    const { context, skillUses } = createContext();
 
     await createPersonalSkill(context, 42, { content });
 
@@ -557,6 +569,9 @@ describe("personal skill management", () => {
       content: expect.stringContaining("Extract decisions and actions."),
       data: { provenance: { revision: 1 } },
     });
+    expect(skillUses.record).toHaveBeenCalledWith([
+      expect.objectContaining({ userId: 42, activation: "load" }),
+    ]);
   });
 
   it("archives a personal skill while preserving its immutable revision", async () => {
