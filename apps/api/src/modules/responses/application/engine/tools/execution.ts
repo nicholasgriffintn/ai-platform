@@ -34,8 +34,7 @@ import {
 import {
   hasStandingApproval,
   isStandingApprovalEligible,
-  resolveToolCallDestination,
-  resolveToolCallEffectClass,
+  resolveToolCallEffects,
 } from "~/modules/tools/application/effects";
 import { handleFunctions } from "~/modules/tools/application/execution";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
@@ -172,15 +171,13 @@ export const handleToolCalls = async (
         functionName === "memory" ? null : resolveFunctionTool(functionName);
 
       const rawToolArguments = toolCall.function?.arguments ?? toolCall.arguments;
-      const callEffectClass = resolveToolCallEffectClass({
-        toolName: functionName,
-        effects: functionDefinition?.effects,
-        rawArguments: rawToolArguments,
-      });
-      const callDestination = resolveToolCallDestination({
-        effects: functionDefinition?.effects,
-        rawArguments: rawToolArguments,
-      });
+      const { effectClass: callEffectClass, destination: callDestination } =
+        await resolveToolCallEffects({
+          toolName: functionName,
+          effects: functionDefinition?.effects,
+          rawArguments: rawToolArguments,
+          request: req,
+        });
       const permissionInput = {
         toolName: functionName,
         mode,
@@ -347,6 +344,7 @@ export const handleToolCalls = async (
         requiresToolIntentVerification({
           permissions: permissionResult.permissions,
           alreadyApproved: permissionResult.approved,
+          effectClass: callEffectClass,
         })
       ) {
         const intent = await evaluateToolIntentGate({
@@ -355,8 +353,11 @@ export const handleToolCalls = async (
           completionId: completion_id,
           conversationId: req.request?.completion_id,
           request: req.request?.input,
+          trigger: req.request?.trigger,
           toolName: functionName,
           permissions: permissionResult.permissions,
+          effectClass: callEffectClass,
+          destination: callDestination,
           hasEvidenceProjector: Boolean(functionDefinition?.intentEvidence),
           evidence: functionDefinition?.intentEvidence?.(validatedFunctionArgs),
         });

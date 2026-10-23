@@ -9,7 +9,7 @@ import {
   parseNumberInputValue,
   parseRecordValue,
   slugify,
-  trimTrailingCharacter,
+  trimTrailingCharacters,
   sortCopy,
 } from "./index";
 
@@ -74,16 +74,19 @@ describe("slugify", () => {
   });
 });
 
-describe("trimTrailingCharacter", () => {
-  it("removes only the trailing run of the given character", () => {
-    expect(trimTrailingCharacter("Heading ###", "#")).toBe("Heading ");
-    expect(trimTrailingCharacter("### Heading", "#")).toBe("### Heading");
+describe("trimTrailingCharacters", () => {
+  it("removes only the trailing run of the given characters", () => {
+    expect(trimTrailingCharacters("Heading ###", "#")).toBe("Heading ");
+    expect(trimTrailingCharacters("### Heading", "#")).toBe("### Heading");
+    expect(trimTrailingCharacters("see https://x.test/a!?.", ".,;:!?")).toBe(
+      "see https://x.test/a",
+    );
   });
 
   it("stays linear on a long trailing run", () => {
     const started = Date.now();
 
-    expect(trimTrailingCharacter(`x${"#".repeat(200_000)}`, "#")).toBe("x");
+    expect(trimTrailingCharacters(`x${"#".repeat(200_000)}`, "#")).toBe("x");
     expect(Date.now() - started).toBeLessThan(1_000);
   });
 });

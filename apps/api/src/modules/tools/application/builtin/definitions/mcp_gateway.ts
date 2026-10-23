@@ -1,4 +1,5 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
@@ -55,4 +56,9 @@ export const mcp_call_tool: FunctionToolDescriptor = {
         ? `mcp:${input.integration.trim().toLowerCase()}`
         : undefined,
   },
+  intentEvidence: (input) => ({
+    integration: input.integration,
+    tool: input.tool,
+    argumentNames: Object.keys(isRecord(input.arguments) ? input.arguments : {}),
+  }),
 };

@@ -6,13 +6,30 @@ import {
 
 import { ToolError } from "./errors.js";
 
-export interface ToolEffects<TInput = unknown> {
+export interface ToolEffectHints {
+  readOnly?: boolean;
+  destructive?: boolean;
+}
+
+export interface ToolEffects<TInput = unknown, THost = unknown> {
   effectClass: ToolEffectClass | ((input: TInput) => ToolEffectClass);
   destination?: (input: TInput) => string | undefined;
+  hints?(
+    input: TInput,
+    host: THost,
+  ): ToolEffectHints | undefined | Promise<ToolEffectHints | undefined>;
+}
+
+export function effectClassFromToolHints(hints: ToolEffectHints): ToolEffectClass {
+  if (hints.readOnly) {
+    return "read";
+  }
+
+  return hints.destructive ? "destructive" : "write";
 }
 
 export function resolveToolEffectClass<TInput>(
-  effects: ToolEffects<TInput> | undefined,
+  effects: ToolEffects<TInput, never> | ToolEffects<TInput> | undefined,
   input: TInput,
 ): ToolEffectClass {
   if (!effects) {
@@ -32,8 +49,26 @@ export function resolveToolEffectClass<TInput>(
   }
 }
 
+export async function resolveToolEffectClassWithHints<TInput, THost>(
+  effects: ToolEffects<TInput, THost> | undefined,
+  input: TInput,
+  host: THost,
+): Promise<ToolEffectClass> {
+  if (!effects?.hints) {
+    return resolveToolEffectClass(effects, input);
+  }
+
+  try {
+    const hints = await effects.hints(input, host);
+
+    return hints ? effectClassFromToolHints(hints) : resolveToolEffectClass(effects, input);
+  } catch {
+    return resolveToolEffectClass(effects, input);
+  }
+}
+
 export function resolveToolDestination<TInput>(
-  effects: ToolEffects<TInput> | undefined,
+  effects: ToolEffects<TInput, never> | ToolEffects<TInput> | undefined,
   input: TInput,
 ): string | undefined {
   try {
@@ -45,10 +80,10 @@ export function resolveToolDestination<TInput>(
   }
 }
 
-export function requireToolEffects<TInput>(
+export function requireToolEffects<TInput, THost>(
   name: string,
-  effects: ToolEffects<TInput> | undefined,
-): ToolEffects<TInput> {
+  effects: ToolEffects<TInput, THost> | undefined,
+): ToolEffects<TInput, THost> {
   if (!effects) {
     throw new ToolError("missing_effects", `Tool "${name}" is missing declared effects`, {
       toolName: name,
