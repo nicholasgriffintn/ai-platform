@@ -5,13 +5,19 @@ export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
   const query = useKnowledgeSyncs(projectId);
   const control = useKnowledgeSyncControl(projectId);
 
+  if (!query.data?.length && !query.error) {
+    return null;
+  }
+
   return (
-    <div className="mb-6 space-y-3 rounded-lg border p-4">
-      <h3 className="font-medium">Connected knowledge</h3>
-      <p className="text-sm text-muted-foreground">
-        Use a knowledge recipe to choose resources to share with this project. Synced text is
-        available to project members. Search updates after indexing.
-      </p>
+    <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
+      <div>
+        <h2 className="text-sm font-medium">Connected knowledge</h2>
+        <p className="text-xs text-muted-foreground">
+          Synced from your connections and shared with project members. Search catches up after
+          indexing.
+        </p>
+      </div>
       {query.error || control.error ? (
         <p role="alert" className="text-sm text-failure">
           Could not load or update the sync.
@@ -56,6 +62,6 @@ export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
           ) : null}
         </div>
       ))}
-    </div>
+    </section>
   );
 }

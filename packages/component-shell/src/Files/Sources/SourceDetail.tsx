@@ -4,7 +4,6 @@ import {
   type CaptionFormat,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import {
-  BackLink,
   Button,
   Card,
   CardGridLoadingSkeleton,
@@ -12,7 +11,12 @@ import {
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
 import { getSourceContentUrl, getSourceCoverUrl } from "@ngriffin_uk/polychat-library-client";
-import { useSource, useSourceMediaActions } from "@ngriffin_uk/polychat-library-react";
+import {
+  getFilesPath,
+  useSource,
+  useSourceCollections,
+  useSourceMediaActions,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   formatTranscriptText,
   getSourceMediaType,
@@ -23,7 +27,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { AudioLines, FileText, ImagePlus } from "lucide-react";
+import { useNavigate } from "react-router";
 
+import { FilesBreadcrumb } from "../FilesBreadcrumb.js";
+import { sourceToFileItem } from "../Library/file-items.js";
+import { FileActionDialogs } from "../Library/FileActionDialogs.js";
+import { FileItemMenu } from "../Library/FileItemMenu.js";
+import { useFileActions } from "../Library/useFileActions.js";
 import { useSourceActionItemTasks } from "./useSourceActionItemTasks.js";
 
 function sourceFilename(source: Source, suffix: string): string {
@@ -137,28 +147,50 @@ function MediaSource({ source }: { source: Source }) {
   );
 }
 
-export function SourceDetail({ sourceId, backHref }: { sourceId: string; backHref: string }) {
+export function SourceDetail({
+  basePath,
+  projectId,
+  sourceId,
+}: {
+  basePath: string;
+  projectId?: string;
+  sourceId: string;
+}) {
+  const navigate = useNavigate();
+  const sourcesPath = getFilesPath(basePath, "sources");
+  const actions = useFileActions({ projectId, onDeleted: () => void navigate(sourcesPath) });
+  const { data: folders } = useSourceCollections(projectId);
   const { data: source, isLoading, error } = useSource(sourceId);
+  const trail = [{ label: "Sources", href: sourcesPath }];
 
   if (isLoading) {
     return <CardGridLoadingSkeleton count={1} label="Loading source" />;
   }
 
   if (error || !source) {
-    return <EmptyState title="Source unavailable" message={error?.message ?? "Source not found"} />;
+    return (
+      <div className="space-y-4">
+        <FilesBreadcrumb basePath={basePath} trail={trail} />
+        <EmptyState title="Source unavailable" message={error?.message ?? "Source not found"} />
+      </div>
+    );
   }
 
   const generation = readSourceGeneration(source.metadata);
   const isMedia = Boolean(getSourceMediaType(source.file?.mimeType));
+  const item = sourceToFileItem(source, basePath);
 
   return (
     <div className="space-y-5">
-      <BackLink href={backHref} label="Sources" />
+      <FilesBreadcrumb
+        basePath={basePath}
+        trail={[...trail, { label: source.title }]}
+        actions={<FileItemMenu item={item} actions={actions} folders={folders ?? []} />}
+      />
       <div>
         <h2 className="text-2xl font-semibold text-foreground">{source.title}</h2>
-        <p className="text-sm text-muted-foreground capitalize">
-          {source.kind}
-          {generation?.modelName ? ` · ${generation.modelName}` : ""}
+        <p className="text-sm text-muted-foreground">
+          {item.detail}
           {source.status === "processing" ? " · Processing" : ""}
         </p>
       </div>
@@ -185,6 +217,7 @@ export function SourceDetail({ sourceId, backHref }: { sourceId: string; backHre
           Open file
         </a>
       ) : null}
+      <FileActionDialogs actions={actions} />
     </div>
   );
 }

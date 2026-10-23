@@ -27,7 +27,6 @@ export * from "./ProjectConversationList";
 export * from "./WorkspaceProjectsSection";
 export * from "./ShareLinkList";
 export * from "./StartConversationDialog";
-export * from "./OutputCardGrid";
 export * from "./OutputDetailHeader";
 export * from "./OutputProvenanceSummary";
 export * from "./OutputRevisionReview";

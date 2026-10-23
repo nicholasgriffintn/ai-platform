@@ -1,36 +1,94 @@
-import { ButtonLink } from "@ngriffin_uk/polychat-component-ui";
 import {
-  type FilesTab,
-  getFilesTabPath,
+  type FilesLocation,
+  getFilesPath,
   parseFilesSubpath,
 } from "@ngriffin_uk/polychat-library-react";
-import { Plus } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { lazy, type ReactNode, Suspense } from "react";
 
 import { PageShell } from "../Shell/PageShell.js";
-import { MemoryLibrary } from "./MemoryLibrary.js";
-import { OutputsLibrary } from "./OutputsLibrary.js";
-import { SourcesSection } from "./Sources/SourcesSection.js";
+import { FilesBreadcrumb } from "./FilesBreadcrumb.js";
+import { FolderView } from "./FolderView.js";
+import { FilesLibrary } from "./Library/FilesLibrary.js";
+import { MemoryDocumentDetail } from "./MemoryDocumentDetail.js";
+import { OutputDetail } from "./OutputDetail.js";
+import { SourceDetail } from "./Sources/SourceDetail.js";
 
-const TABS: Array<{ id: FilesTab; label: string; description: string }> = [
-  {
-    id: "made",
-    label: "Made",
-    description: "Results that teammates, apps and tools have produced.",
-  },
-  {
-    id: "sources",
-    label: "Sources",
-    description:
-      "Files, links, media and connected records, plus the podcasts, images and video generated from them.",
-  },
-  {
-    id: "memory",
-    label: "Memory",
-    description:
-      "What Polychat remembers, kept as documents you can read, edit and delete. Every save is a revision.",
-  },
-];
+const ImageStudio = lazy(async () => ({
+  default: (await import("./Studio/ImageStudio.js")).ImageStudio,
+}));
+const ReplicateStudio = lazy(async () => ({
+  default: (await import("./Studio/Replicate/ReplicateStudio.js")).ReplicateStudio,
+}));
+
+function FilesView({
+  location,
+  basePath,
+  projectId,
+}: {
+  location: FilesLocation;
+  basePath: string;
+  projectId?: string;
+}) {
+  switch (location.view) {
+    case "library":
+      return (
+        <FilesLibrary
+          key={`${projectId ?? "personal"}-${location.filter}`}
+          basePath={basePath}
+          projectId={projectId}
+          filter={location.filter}
+        />
+      );
+    case "folder":
+      return (
+        <FolderView
+          key={location.folderId}
+          basePath={basePath}
+          projectId={projectId}
+          folderId={location.folderId}
+        />
+      );
+    case "output":
+      return (
+        <OutputDetail basePath={basePath} projectId={projectId} outputId={location.outputId} />
+      );
+    case "source":
+      return (
+        <SourceDetail basePath={basePath} projectId={projectId} sourceId={location.sourceId} />
+      );
+    case "memory":
+      return (
+        <MemoryDocumentDetail
+          key={location.name}
+          basePath={basePath}
+          projectId={projectId}
+          name={location.name}
+        />
+      );
+    case "studio":
+      return (
+        <div className="space-y-4">
+          <FilesBreadcrumb basePath={basePath} trail={[{ label: "Image studio" }]} />
+          <Suspense fallback={null}>
+            <ImageStudio projectId={projectId} />
+          </Suspense>
+        </div>
+      );
+  }
+
+  return (
+    <div className="space-y-4">
+      <FilesBreadcrumb basePath={basePath} trail={[{ label: "Replicate" }]} />
+      <Suspense fallback={null}>
+        <ReplicateStudio
+          basePath={getFilesPath(basePath, "replicate")}
+          subpath={location.subpath}
+          projectId={projectId}
+        />
+      </Suspense>
+    </div>
+  );
+}
 
 export function FilesPage({
   basePath,
@@ -43,62 +101,10 @@ export function FilesPage({
   subpath: string;
   header?: ReactNode;
 }) {
-  const { tab, itemPath } = parseFilesSubpath(subpath);
-  const [createRequestKey, setCreateRequestKey] = useState(0);
-  const activeTab = TABS.find((candidate) => candidate.id === tab) ?? TABS[0];
-
   return (
     <PageShell.Content className="max-w-6xl">
-      {header}
-      {header ? null : (
-        <PageShell.Header
-          title="Files"
-          actions={
-            tab === "sources" && !itemPath && !projectId
-              ? [
-                  {
-                    label: "Add source",
-                    icon: <Plus size={16} />,
-                    onClick: () => setCreateRequestKey((current) => current + 1),
-                  },
-                ]
-              : undefined
-          }
-        />
-      )}
-      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">{activeTab.description}</p>
-      <nav aria-label="Files sections" className="mb-6">
-        <ul className="flex flex-wrap gap-1">
-          {TABS.map((candidate) => (
-            <li key={candidate.id}>
-              <ButtonLink
-                href={getFilesTabPath(basePath, candidate.id)}
-                variant={candidate.id === tab ? "secondary" : "ghost"}
-                size="sm"
-                aria-current={candidate.id === tab ? "page" : undefined}
-              >
-                {candidate.label}
-              </ButtonLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      {tab === "memory" ? (
-        <MemoryLibrary projectId={projectId} />
-      ) : tab === "sources" ? (
-        <SourcesSection
-          basePath={getFilesTabPath(basePath, "sources")}
-          itemPath={itemPath}
-          projectId={projectId}
-          createRequestKey={createRequestKey}
-        />
-      ) : (
-        <OutputsLibrary
-          basePath={getFilesTabPath(basePath, "made")}
-          projectId={projectId}
-          subpath={itemPath}
-        />
-      )}
+      {header ?? <PageShell.Header title="Files" />}
+      <FilesView location={parseFilesSubpath(subpath)} basePath={basePath} projectId={projectId} />
     </PageShell.Content>
   );
 }

@@ -1,72 +1,71 @@
 import { getProjectBasePath } from "./conversation-route.js";
 import { getPlacePaths } from "./navigation/places.js";
 
-export type FilesTab = "sources" | "made" | "memory";
+export const FILES_FILTERS = ["all", "made", "sources", "memory"] as const;
 
-export const DEFAULT_FILES_TAB: FilesTab = "made";
+export type FilesFilter = (typeof FILES_FILTERS)[number];
 
-export interface FilesLocation {
-  tab: FilesTab;
-  itemPath: string;
-}
+export type FilesSection = Exclude<FilesFilter, "all"> | "folders" | "studio" | "replicate";
+
+export type FilesLocation =
+  | { view: "library"; filter: FilesFilter }
+  | { view: "folder"; folderId: string }
+  | { view: "output"; outputId: string }
+  | { view: "source"; sourceId: string }
+  | { view: "memory"; name: string }
+  | { view: "studio" }
+  | { view: "replicate"; subpath: string };
 
 export function parseFilesSubpath(subpath: string): FilesLocation {
-  const segments = subpath.split("/").filter(Boolean);
-  const [first, ...rest] = segments;
+  const [first, second, ...rest] = subpath.split("/").filter(Boolean);
+  const item = second ? decodeURIComponent(second) : null;
 
-  if (first === "sources" || first === "made" || first === "memory") {
-    return { tab: first, itemPath: rest.join("/") };
+  switch (first) {
+    case undefined:
+      return { view: "library", filter: "all" };
+    case "made":
+      return item ? { view: "output", outputId: item } : { view: "library", filter: "made" };
+    case "sources":
+      return item ? { view: "source", sourceId: item } : { view: "library", filter: "sources" };
+    case "memory":
+      return item ? { view: "memory", name: item } : { view: "library", filter: "memory" };
+    case "folders":
+      return item ? { view: "folder", folderId: item } : { view: "library", filter: "all" };
+    case "studio":
+      return { view: "studio" };
+    case "replicate":
+      return { view: "replicate", subpath: [second, ...rest].filter(Boolean).join("/") };
+    default:
+      return { view: "library", filter: "all" };
   }
-
-  return { tab: DEFAULT_FILES_TAB, itemPath: segments.join("/") };
 }
 
-export function getFilesTabPath(basePath: string, tab: FilesTab, itemPath?: string): string {
-  const tabPath = `${basePath}/${tab}`;
+export function getFilesPath(basePath: string, section?: FilesSection, itemPath?: string): string {
+  if (!section) {
+    return basePath;
+  }
 
-  return itemPath ? `${tabPath}/${itemPath.replace(/^\/+/, "")}` : tabPath;
+  const sectionPath = `${basePath}/${section}`;
+
+  return itemPath ? `${sectionPath}/${itemPath.replace(/^\/+/, "")}` : sectionPath;
+}
+
+export function getFilesFilterPath(basePath: string, filter: FilesFilter): string {
+  return filter === "all" ? basePath : getFilesPath(basePath, filter);
 }
 
 export function getProjectFilesPath(
   workspaceId: string,
   projectId: string,
-  tab: FilesTab = DEFAULT_FILES_TAB,
+  section?: FilesSection,
   itemPath?: string,
 ): string {
-  return getFilesTabPath(`${getProjectBasePath(workspaceId, projectId)}/files`, tab, itemPath);
+  return getFilesPath(`${getProjectBasePath(workspaceId, projectId)}/files`, section, itemPath);
 }
 
 export function getOutputPath(pathname: string, outputId: string): string {
   const projectPath = pathname.match(/^(\/work\/[^/]+\/projects\/[^/]+)(?:\/|$)/u)?.[1];
   const filesPath = projectPath ? `${projectPath}/files` : getPlacePaths("chat").files;
 
-  return getFilesTabPath(filesPath, "made", encodeURIComponent(outputId));
-}
-
-export type SourcesView =
-  | { view: "library" }
-  | { view: "podcasts" }
-  | { view: "studio" }
-  | { view: "replicate"; subpath: string }
-  | { view: "source"; sourceId: string };
-
-export const SOURCES_SECTIONS = ["podcasts", "studio", "replicate"] as const;
-
-/** Reads the Sources tab's own path: a section, or a source to open. */
-export function parseSourcesPath(itemPath: string): SourcesView {
-  const [first, ...rest] = itemPath.split("/").filter(Boolean);
-
-  if (!first) {
-    return { view: "library" };
-  }
-
-  if (first === "podcasts" || first === "studio") {
-    return { view: first };
-  }
-
-  if (first === "replicate") {
-    return { view: "replicate", subpath: rest.join("/") };
-  }
-
-  return { view: "source", sourceId: decodeURIComponent(first) };
+  return getFilesPath(filesPath, "made", encodeURIComponent(outputId));
 }

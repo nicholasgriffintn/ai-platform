@@ -85,7 +85,7 @@ function SourcePicker({
       <div className="max-h-60 divide-y divide-border overflow-y-auto rounded-lg border border-border">
         {sources.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
-            Add documents, links or transcribed recordings in the Library first.
+            Add documents, links or transcribed recordings to Files first.
           </p>
         ) : visible.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">No sources match.</p>
@@ -126,11 +126,13 @@ export function NewEpisodeDialog({
   onOpenChange,
   projectId,
   shows,
+  defaultShowId = "",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId?: string;
   shows: SourceCollection[];
+  defaultShowId?: string;
 }) {
   const { data: sources } = useSources({ projectId }, { enabled: open });
   const generate = useGeneratePodcast();
@@ -140,7 +142,7 @@ export function NewEpisodeDialog({
   const [showDetails, setShowDetails] = useState(false);
   const [title, setTitle] = useState("");
   const [focus, setFocus] = useState("");
-  const [showId, setShowId] = useState("");
+  const [showId, setShowId] = useState(defaultShowId);
   const candidates = useMemo(
     () => (sources ?? []).filter((source) => source.kind !== "memory"),
     [sources],
@@ -159,7 +161,7 @@ export function NewEpisodeDialog({
       onOpenChange={onOpenChange}
       size="lg"
       title="New episode"
-      description="Two hosts talk through the sources you choose. It takes a few minutes and appears in your episodes when it is ready."
+      description="Two hosts talk through the sources you choose. It takes a few minutes and appears in Files when it is ready."
       submitText="Make episode"
       submitDisabled={selected.size === 0}
       isLoading={generate.isPending}
@@ -175,7 +177,7 @@ export function NewEpisodeDialog({
         });
         reset();
         onOpenChange(false);
-        toast.success("Episode started. It will appear in your episodes in a few minutes.");
+        toast.success("Episode started. It lands in Files in a few minutes.");
       }}
     >
       <SourcePicker

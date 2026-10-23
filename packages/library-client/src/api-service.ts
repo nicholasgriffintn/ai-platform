@@ -537,12 +537,7 @@ class ApiService {
     file: File,
     fileType: UploadFileType,
     options?: UploadFileOptions,
-  ): Promise<{
-    url: string;
-    type: string;
-    name: string;
-    markdown?: string;
-  }> => {
+  ): ReturnType<UploadService["uploadFile"]> => {
     return this.uploadService.uploadFile(file, fileType, options);
   };
 }

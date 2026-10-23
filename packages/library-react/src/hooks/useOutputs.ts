@@ -1,5 +1,6 @@
 import {
   createOutputShare,
+  deleteOutput,
   describeOutputDocument,
   exportOutputContent,
   formatOutputDocument,
@@ -95,6 +96,30 @@ export function useRestoreOutputRevision() {
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all }),
       ]),
   });
+}
+
+export function useOutputMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all });
+
+  return {
+    rename: useMutation({
+      mutationFn: ({
+        outputId,
+        title,
+        expectedRevision,
+      }: {
+        outputId: string;
+        title: string;
+        expectedRevision: number;
+      }) => updateOutput(outputId, { title, expectedRevision }),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: deleteOutput,
+      onSuccess: invalidate,
+    }),
+  };
 }
 
 export function useSaveDocumentRevision() {

@@ -2,10 +2,11 @@ import { POLY_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
-  getFilesTabPath,
+  getFilesFilterPath,
+  getFilesPath,
+  getOutputPath,
   getProjectFilesPath,
   parseFilesSubpath,
-  parseSourcesPath,
 } from "../files-route.js";
 import { getActivePlace } from "../navigation/places.js";
 import { buildPolyUiContext, getPolyNavigationHref, readPolyNavigationTarget } from "../poly.js";
@@ -121,24 +122,32 @@ describe("places and files routes", () => {
     expect(getActivePlace("/pricing")).toBeUndefined();
   });
 
-  it("reads the Sources tab's sections and sources", () => {
-    expect(parseSourcesPath("")).toEqual({ view: "library" });
-    expect(parseSourcesPath("podcasts")).toEqual({ view: "podcasts" });
-    expect(parseSourcesPath("replicate/predictions/s1")).toEqual({
+  it("reads every Files location from its path", () => {
+    expect(parseFilesSubpath("")).toEqual({ view: "library", filter: "all" });
+    expect(parseFilesSubpath("memory")).toEqual({ view: "library", filter: "memory" });
+    expect(parseFilesSubpath("made/output-1")).toEqual({ view: "output", outputId: "output-1" });
+    expect(parseFilesSubpath("sources/source%201")).toEqual({
+      view: "source",
+      sourceId: "source 1",
+    });
+    expect(parseFilesSubpath("memory/how-we-write")).toEqual({
+      view: "memory",
+      name: "how-we-write",
+    });
+    expect(parseFilesSubpath("folders/c1")).toEqual({ view: "folder", folderId: "c1" });
+    expect(parseFilesSubpath("replicate/predictions/s1")).toEqual({
       view: "replicate",
       subpath: "predictions/s1",
     });
-    expect(parseSourcesPath("source%201")).toEqual({ view: "source", sourceId: "source 1" });
+    expect(parseFilesSubpath("unknown")).toEqual({ view: "library", filter: "all" });
   });
 
-  it("parses files subpaths and builds tab paths", () => {
-    expect(parseFilesSubpath("")).toEqual({ tab: "made", itemPath: "" });
-    expect(parseFilesSubpath("made/output-1")).toEqual({ tab: "made", itemPath: "output-1" });
-    expect(parseFilesSubpath("sources/podcasts")).toEqual({
-      tab: "sources",
-      itemPath: "podcasts",
-    });
-    expect(getFilesTabPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
+  it("builds Files paths", () => {
+    expect(getFilesPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
+    expect(getFilesFilterPath("/chat/files", "all")).toBe("/chat/files");
     expect(getProjectFilesPath("w1", "p1", "sources")).toBe("/work/w1/projects/p1/files/sources");
+    expect(getOutputPath("/work/w1/projects/p1/chat", "o 1")).toBe(
+      "/work/w1/projects/p1/files/made/o%201",
+    );
   });
 });

@@ -17,6 +17,7 @@ import {
   setProjectContextSources,
   searchProjectKnowledge,
   transcribeSource,
+  updateSource,
   writeSourceNotes,
 } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -157,6 +158,11 @@ export function useSourceMutations() {
   return {
     createSource: useMutation({
       mutationFn: (input: CreateSourceInput) => createSource(input),
+      onSuccess: invalidate,
+    }),
+    renameSource: useMutation({
+      mutationFn: ({ sourceId, title }: { sourceId: string; title: string }) =>
+        updateSource(sourceId, { title }),
       onSuccess: invalidate,
     }),
     deleteSource: useMutation({

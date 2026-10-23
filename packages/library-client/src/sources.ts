@@ -7,6 +7,7 @@ import type {
   SourceGenerationType,
   SourceKind,
   SourceSummary,
+  UpdateSourceInput,
   ProjectKnowledgeSearchQuery,
   ProjectKnowledgeSearchResponse,
   KnowledgeSync,
@@ -144,6 +145,10 @@ export async function searchProjectKnowledge(
 
 export async function createSource(input: CreateSourceInput): Promise<Source> {
   return request("/sources", { method: "POST", body: input });
+}
+
+export async function updateSource(sourceId: string, input: UpdateSourceInput): Promise<Source> {
+  return request(sourcePath(sourceId), { method: "PATCH", body: input });
 }
 
 export async function deleteSource(sourceId: string): Promise<void> {

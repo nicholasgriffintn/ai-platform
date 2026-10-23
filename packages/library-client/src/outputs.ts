@@ -103,6 +103,10 @@ export async function updateOutput(
   return returnFetchedData<Output>(response);
 }
 
+export async function deleteOutput(outputId: string): Promise<void> {
+  await resource<Output>("/outputs").delete(outputId);
+}
+
 export async function formatOutputDocument(
   outputId: string,
   prompt?: string,
