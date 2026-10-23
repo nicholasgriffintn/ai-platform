@@ -82,7 +82,7 @@
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "livekit-client": "2.22.3"
+    "livekit-client": "2.22.4"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
