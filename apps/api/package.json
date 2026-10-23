@@ -8,7 +8,6 @@
     "build": "pnpm run build:deps",
     "build:deps": "vp run --filter=\"@assistant/api^...\" build",
     "cf-typegen": "wrangler types",
-    "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply personal-assistant --local",

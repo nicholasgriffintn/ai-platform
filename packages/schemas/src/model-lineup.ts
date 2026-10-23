@@ -432,7 +432,6 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Reading",
     description: "Article analysis, reports, summaries and content extraction.",
     candidates: [
-      { model: "sonar", provider: "perplexity-ai" },
       { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
       { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
       { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },

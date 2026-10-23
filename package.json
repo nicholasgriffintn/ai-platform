@@ -11,7 +11,6 @@
     "changeset:version": "changeset version && node scripts/sync-native-versions.mjs",
     "check": "pnpm lint && pnpm format:check && pnpm check:references",
     "check:references": "node scripts/sync-project-references.mjs --check",
-    "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "deploy": "pnpm --filter @assistant/api --filter @assistant/app deploy",
     "deploy:api": "pnpm --filter @assistant/api deploy",
