@@ -7,7 +7,7 @@ Composio owns credentials and execution schemas for its configured connectors. P
 - Set API secrets `COMPOSIO_API_KEY` and `COMPOSIO_WEBHOOK_SECRET` for the matching Composio project.
 - Set a stable, environment-specific `COMPOSIO_USER_NAMESPACE`. Changing it requires reconnection.
 - Bind `PRIVATE_ASSETS_BUCKET` and set matching `API_BASE_URL`/`APP_BASE_URL`.
-- Set Composio's callback verifier to `${API_BASE_URL}/apps/connectors/composio/verify` and the signed webhook to `${API_BASE_URL}/webhooks/composio`.
+- Set Composio's callback verifier to `${API_BASE_URL}/connectors/composio_callback` and the signed webhook to `${API_BASE_URL}/webhooks/composio`.
 - Subscribe to `composio.trigger.message` and `composio.connected_account.expired`.
 - Apply the current migration set for the authorised target; do not use historical migration numbers from older guides.
 
