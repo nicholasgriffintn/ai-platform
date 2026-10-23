@@ -91,7 +91,9 @@
         "openWeights": true,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
-        "releaseDate": "December 2, 2025"
+        "knowledgeCutoffDate": "November 2024",
+        "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false
       }
     },
     "mistral-large-3-675b-instruct-2512": {
@@ -135,7 +137,6 @@
         "name": "Mistral Large 4 (EU)",
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
-        "maxTokens": 524288,
         "strengths": [
           "vision",
           "document",
@@ -188,7 +189,7 @@
         }
       }
     },
-    "mistral-mistral-large-4-50-off": {
+    "mistral-mistral-large-4": {
       "defaults": {
         "name": "Mistral: Mistral Large 4 (50% off)",
         "description": "Mistral Large 4 is a frontier multimodal (text and image input) model from Mistral AI built for reasoning, coding, and agentic workloads. It offers a 512K-token context window with up...",

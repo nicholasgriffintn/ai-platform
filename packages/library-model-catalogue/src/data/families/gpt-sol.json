@@ -168,7 +168,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "February 16, 2026",
         "releaseDate": "July 9, 2026",
-        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -220,7 +219,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "February 16, 2026",
         "releaseDate": "July 9, 2026",
-        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

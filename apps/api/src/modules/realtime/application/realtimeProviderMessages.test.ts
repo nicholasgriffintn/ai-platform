@@ -5,7 +5,11 @@ import {
   createElevenLabsClientMessageMapper,
   createElevenLabsUpstreamMessageMapper,
 } from "./elevenlabs";
-import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";
+import {
+  buildMistralSessionUpdateMessage,
+  isMistralSessionCreatedMessage,
+  toMistralUpstreamMessage,
+} from "./mistralProtocol";
 
 vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
   getRealtimeProvider: vi.fn(),
@@ -16,6 +20,18 @@ vi.mock("~/infrastructure/providers/capabilities/realtime/providers", () => ({
 }));
 
 describe("Mistral realtime proxy messages", () => {
+  it("asks for speaker labels or turn detection, never both, with the vocabulary", () => {
+    const labelled = JSON.parse(
+      buildMistralSessionUpdateMessage({ speakerLabels: true, vocabulary: ["Polychat"] }),
+    );
+    const conversational = JSON.parse(
+      buildMistralSessionUpdateMessage({ speakerLabels: false, vocabulary: [] }),
+    );
+
+    expect(labelled.session).toEqual({ context_bias: ["Polychat"], diarize: true });
+    expect(conversational.session).toEqual({ turn_detection: {} });
+  });
+
   it("normalises JSON and binary audio messages before forwarding them upstream", () => {
     expect(
       toMistralUpstreamMessage(

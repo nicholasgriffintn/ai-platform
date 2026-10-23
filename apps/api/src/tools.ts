@@ -17,18 +17,19 @@ import { delegate } from "~/modules/delegations/application/tools/delegate";
 import { messageParent } from "~/modules/delegations/application/tools/message-parent";
 import { get_document } from "~/modules/documents/application/tools/get_document";
 import { grade_writing } from "~/modules/documents/application/tools/grade_writing";
+import { write_deck, write_sheet } from "~/modules/documents/application/tools/work_outputs";
 import { write_document } from "~/modules/documents/application/tools/write_document";
 import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
 import { analyse_article } from "~/modules/experiences/application/tools/analyse_article";
 import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
-import { process_recording } from "~/modules/experiences/application/tools/process_recording";
-import { run_prediction } from "~/modules/experiences/application/tools/run_prediction";
+import { extract_values } from "~/modules/extractions/application/tools/extract_values";
 import { create_image } from "~/modules/generate/application/tools/image";
 import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
 import { create_video } from "~/modules/generate/application/tools/video";
 import { complete_goal, set_goal } from "~/modules/goals/application/tools/goal";
+import { DESKTOP_FUNCTION_TOOLS } from "~/modules/machines/application/tools/desktop";
 import {
   read_memory_document,
   search_memories,
@@ -54,7 +55,10 @@ import { load_skill } from "~/modules/skills/application/tools/load_skill";
 import { save_skill } from "~/modules/skills/application/tools/save_skill";
 import { configure_knowledge_sync } from "~/modules/sources/application/tools/configure_knowledge_sync";
 import { create_note } from "~/modules/sources/application/tools/create_note";
+import { generate_podcast } from "~/modules/sources/application/tools/generate_podcast";
 import { get_note } from "~/modules/sources/application/tools/get_note";
+import { process_media } from "~/modules/sources/application/tools/process_media";
+import { run_prediction } from "~/modules/sources/application/tools/run_prediction";
 import { search_documents } from "~/modules/sources/application/tools/search_documents";
 import { call_api } from "~/modules/tools/application/builtin/api_call";
 import { calculate } from "~/modules/tools/application/builtin/calculate";
@@ -82,6 +86,7 @@ registerTools([
   get_weather,
   grade_writing,
   decide,
+  extract_values,
   audit_evidence,
   build_site,
   create_video,
@@ -92,6 +97,8 @@ registerTools([
   apply_edit_completion,
   web_search,
   write_document,
+  write_deck,
+  write_sheet,
   get_document,
   create_qr_code,
   search_pashi_tools,
@@ -109,6 +116,7 @@ registerTools([
   analyse_article,
   create_automation,
   create_note,
+  generate_podcast,
   delegate,
   messageParent,
   generate_pattern,
@@ -118,6 +126,7 @@ registerTools([
   get_recipe,
   configure_recipe,
   trigger_recipe,
+  ...DESKTOP_FUNCTION_TOOLS,
   get_task_status,
   create_task,
   get_task,
@@ -130,7 +139,7 @@ registerTools([
   complete_goal,
   list_saved_messages,
   load_skill,
-  process_recording,
+  process_media,
   propose_correction,
   react,
   save_skill,

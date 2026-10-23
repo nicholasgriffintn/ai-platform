@@ -23,7 +23,7 @@
     "magpie-tts-zeroshot": {
       "defaults": {
         "name": "magpie-tts-zeroshot",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+        "description": "Expressive text-to-speech that clones a voice from a short audio sample"
       }
     }
   }

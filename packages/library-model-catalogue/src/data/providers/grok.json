@@ -450,19 +450,11 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
-        "speed": 2,
-        "releaseDate": "March 9, 2026",
+        "speed": 3,
         "lastUpdated": "March 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsResponseFormat": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 25.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsResponseFormat": true
       }
     },
     "grok-4.20-multi-agent-0309": {
@@ -516,7 +508,17 @@
         "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "grok-imagine-image": {
@@ -541,16 +543,6 @@
         ],
         "contextComplexity": 3,
         "lastUpdated": "January 28, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false
-      }
-    },
-    "grok-imagine-image-quality": {
-      "model": "grok/grok-imagine-image-quality",
-      "matchingModel": "grok-imagine-image-quality",
-      "overrides": {
-        "isFeatured": true,
-        "lastUpdated": "April 3, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -601,14 +593,22 @@
         "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "grok-imagine-video-1.5": {
       "model": "grok/grok-imagine-video-1-5",
       "matchingModel": "grok-imagine-video-1.5",
       "overrides": {
-        "contextWindow": 1024,
         "modalities": {
           "input": [
             "text",
@@ -656,7 +656,6 @@
       "model": "grok/grok-imagine-image-2-0",
       "matchingModel": "grok-imagine-image-2.0",
       "overrides": {
-        "contextWindow": 64000,
         "modalities": {
           "input": [
             "text",
@@ -695,7 +694,6 @@
       "model": "grok/grok-imagine-video-1-5-lite",
       "matchingModel": "grok-imagine-video-1.5-lite",
       "overrides": {
-        "contextWindow": 1024,
         "modalities": {
           "input": [
             "text",

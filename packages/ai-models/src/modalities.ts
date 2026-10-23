@@ -32,6 +32,7 @@ export const availableModalities = [
   "ocr",
   "transcription",
   "decision",
+  "extraction",
 ] as const;
 
 const DEFAULT_MODALITIES: ModelModalities = {

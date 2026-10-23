@@ -2,7 +2,12 @@ import {
   UserSettingsForm as ControlledUserSettingsForm,
   type UserSettings,
 } from "@ngriffin_uk/polychat-component-account";
-import { useTrackEvent, useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import {
+  useAuthStatus,
+  useSpeechVoiceLibrary,
+  useTrackEvent,
+  useUIStore,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 interface UserSettingsFormProps {
@@ -23,6 +28,7 @@ export function UserSettingsForm({
   const { updateUserSettings, isUpdatingUserSettings } = useAuthStatus();
   const { trackError } = useTrackEvent();
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
+  const { createVoice, deleteVoice, isCreatingVoice, isDeletingVoice } = useSpeechVoiceLibrary();
 
   return (
     <ControlledUserSettingsForm
@@ -37,6 +43,16 @@ export function UserSettingsForm({
         await updateUserSettings(settings);
       }}
       onSaveError={(error) => trackError("settings_save_failed", error)}
+      speechVoiceLibrary={
+        isAuthenticated
+          ? {
+              isCreating: isCreatingVoice,
+              isDeleting: isDeletingVoice,
+              onCreate: createVoice,
+              onDelete: deleteVoice,
+            }
+          : undefined
+      }
     />
   );
 }

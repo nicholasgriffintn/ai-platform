@@ -144,18 +144,6 @@
         "releaseDate": "February 13, 2025"
       }
     },
-    "magistral-small-2506": {
-      "defaults": {
-        "name": "Magistral Small 2506",
-        "openWeights": false,
-        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions",
-        "contextWindow": 32768,
-        "maxTokens": 32768,
-        "releaseDate": "September 25, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false
-      }
-    },
     "mistral-7b-instruct-free": {
       "defaults": {
         "name": "Mistral 7B Instruct (free)",
@@ -207,6 +195,8 @@
       "defaults": {
         "name": "Mistral-7B-Instruct-v0.3",
         "description": "Mistral-7B-Instruct-v0.3 model is a fine-tuned version of the Mistral 7B base model, optimized for instruction-following tasks. Released in 2023, it is intended for demonstration purposes and does not include built-in guardrails or moderation features.",
+        "contextWindow": 127000,
+        "maxTokens": 127000,
         "releaseDate": "April 1, 2025",
         "supportsResponseFormat": true
       }
@@ -281,48 +271,6 @@
         }
       }
     },
-    "mistral-medium-3-5": {
-      "defaults": {
-        "name": "Mistral Medium 3.5",
-        "openWeights": false,
-        "description": "Mistral Medium 3.5 is a frontier multimodal 128B model combining reasoning, coding, and instruction-following with strong agentic performance and efficient deployment.",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 2,
-        "releaseDate": "April 30, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 14.2,
-          "codingIndex": 46.9,
-          "agenticIndex": 7,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
     "mistral-moderation": {
       "defaults": {
         "name": "Mistral Moderation",
@@ -345,12 +293,6 @@
         "maxTokens": 131072,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "July 19, 2024"
-      }
-    },
-    "mistral-nemo-instruct-2407": {
-      "defaults": {
-        "description": "A 12B parameter, instruct-tuned language model by Mistral AI and NVIDIA, designed for advanced instruction following, multi-turn conversations, and generating text and code across multiple languages.",
-        "supportsResponseFormat": true
       }
     },
     "mistral-ocr-4-1": {
@@ -464,8 +406,8 @@
             "text"
           ]
         },
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
       }
     },
     "mistral-small-creative-labs": {
@@ -551,11 +493,8 @@
     },
     "mixtral-8x7b-instruct-v0-1": {
       "defaults": {
-        "name": "Mixtral-8x7B-Instruct-v0.1",
         "description": "Mixtral-8x7B-Instruct-v0.1 accepts text and produces text.",
         "contextWindow": 32000,
-        "maxTokens": 32000,
-        "releaseDate": "April 1, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
@@ -593,19 +532,6 @@
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
         }
-      }
-    },
-    "rerank-qa-mistral-4b": {
-      "defaults": {
-        "name": "rerank-qa-mistral-4b",
-        "openWeights": true,
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "contextWindow": 128000,
-        "maxTokens": 4096,
-        "releaseDate": "March 17, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true,
-        "supportsTemperature": false
       }
     },
     "saba": {
@@ -670,35 +596,76 @@
     "venice-uncensored": {
       "defaults": {
         "name": "Venice: Uncensored",
-        "openWeights": false,
+        "openWeights": true,
         "description": "Venice Uncensored Dolphin Mistral 24B Venice Edition is a fine-tuned variant of Mistral-Small-24B-Instruct-2501, developed by dphn.ai in collaboration with Venice.ai. This model is designed as an “uncensored” instruct-tuned LLM, preserving...",
         "contextWindow": 128000,
         "maxTokens": 8192,
+        "knowledgeCutoffDate": "April 30, 2024",
         "releaseDate": "July 9, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },
-    "voxtral-small-24b": {
+    "voxtral-mini-transcribe-3": {
       "defaults": {
-        "name": "Voxtral Small 24B",
-        "openWeights": true,
-        "description": "Mistral Voxtral audio-understanding model for speech and transcription tasks",
-        "contextWindow": 32768,
-        "maxTokens": 16384,
+        "name": "Voxtral Mini Transcribe 3",
+        "openWeights": false,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
         "modalities": {
           "input": [
-            "text",
             "audio"
           ],
           "output": [
             "text"
           ]
         },
-        "knowledgeCutoffDate": "July 2025",
-        "releaseDate": "July 15, 2025",
-        "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "voxtral-small-transcribe-3": {
+      "defaults": {
+        "name": "Voxtral Small Transcribe 3",
+        "openWeights": false,
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "voxtral-tts-3": {
+      "defaults": {
+        "name": "Voxtral TTS 3",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     }
   }

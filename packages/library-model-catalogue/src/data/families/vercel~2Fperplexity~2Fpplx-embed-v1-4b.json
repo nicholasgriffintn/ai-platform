@@ -13,7 +13,8 @@
     },
     "releaseDate": "February 26, 2026",
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": false,
+    "supportsTemperature": false
   },
   "description": "The vercel/perplexity/pplx embed v1 4b family includes models that produce text.",
   "models": {

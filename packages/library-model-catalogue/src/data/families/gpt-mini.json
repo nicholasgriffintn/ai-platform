@@ -184,6 +184,26 @@
         "supportsAttachments": false
       }
     },
+    "gpt-4o-mini-transcribe": {
+      "defaults": {
+        "name": "GPT-4o mini Transcribe",
+        "description": "Speech-to-text model powered by GPT-4o Mini for fast, accurate transcription",
+        "contextWindow": 16000,
+        "maxTokens": 2000,
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2024",
+        "releaseDate": "March 20, 2025",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
     "gpt-5-4-mini": {
       "defaults": {
         "description": "Strong small GPT for coding subagents, quick tool use, and high-volume work",
@@ -266,6 +286,15 @@
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 16.8,
           "codingIndex": 15.6,
@@ -346,6 +375,15 @@
         }
       }
     },
+    "gpt-audio-mini": {
+      "defaults": {
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "knowledgeCutoffDate": "October 1, 2023",
+        "releaseDate": "October 6, 2025"
+      }
+    },
     "gpt-mini-latest": {
       "defaults": {
         "name": "OpenAI GPT Mini Latest",
@@ -374,6 +412,62 @@
             "xhigh"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-realtime-mini": {
+      "defaults": {
+        "name": "GPT-Realtime mini",
+        "description": "Cost-efficient realtime speech-to-speech model for voice agents",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 5,
+        "knowledgeCutoffDate": "October 1, 2023",
+        "releaseDate": "October 6, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "bbaScore",
+              "label": "Big Bench Audio",
+              "value": 0.64,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "fdbScore",
+              "label": "Full Duplex Bench",
+              "value": 0.96,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "key": "tauVoiceScore",
+              "label": "Tau Voice",
+              "value": 0.15,
+              "min": 0,
+              "max": 1
+            }
+          ]
         }
       }
     },

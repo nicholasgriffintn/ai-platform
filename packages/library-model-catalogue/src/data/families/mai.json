@@ -6,7 +6,7 @@
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
+    "supportsTemperature": false,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "low",
@@ -55,7 +55,8 @@
         },
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "June 2, 2026",
-        "supportsToolCalls": true
+        "supportsToolCalls": true,
+        "supportsTemperature": true
       }
     },
     "mai-image-2-6": {
@@ -85,7 +86,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1150,
+              "value": 1152,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -148,6 +149,7 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "June 1, 2026",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -180,11 +182,13 @@
         },
         "strengths": [
           "audio",
-          "transcription"
+          "transcription",
+          "document"
         ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 3, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -215,7 +219,8 @@
             "text"
           ]
         },
-        "releaseDate": "October 1, 2026"
+        "releaseDate": "October 1, 2026",
+        "supportsAttachments": true
       }
     },
     "mai-voice-2": {

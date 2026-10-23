@@ -99,7 +99,7 @@ export class WorkPage extends BasePage {
     await this.page.getByRole("heading", { name: surface.heading, exact: true }).first().waitFor();
   }
 
-  async openProjectFiles(tab: "Made" | "Given" | "Memory") {
+  async openProjectFiles(tab: "Made" | "Sources" | "Memory") {
     await this.openProjectSurface("Files");
     await this.clickElement(
       this.page.getByRole("navigation", { name: "Files sections" }).getByRole("link", {
@@ -821,60 +821,6 @@ export class WorkPage extends BasePage {
     }
 
     await this.page.getByRole("heading", { name: "Report Content", exact: true }).waitFor();
-  }
-
-  async uploadRecordingWithoutOptionalProcessing(
-    title: string,
-    description: string,
-    audio: Buffer,
-  ) {
-    await this.openProjectApp("Recording Processor");
-    await this.page.getByRole("link", { name: "New recording", exact: true }).click();
-    await this.page.getByLabel("Recording Title *", { exact: true }).fill(title);
-    await this.page.getByLabel("Description", { exact: true }).fill(description);
-    await this.page.locator('input[type="file"]#audioFile').setInputFiles({
-      name: "release-recording.wav",
-      mimeType: "audio/wav",
-      buffer: audio,
-    });
-    const uploadResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        new URL(response.url()).pathname.endsWith("/experiences/recordings"),
-    );
-
-    await this.page.getByRole("button", { name: "Upload & Continue" }).click();
-    const response = await uploadResponse;
-
-    if (!response.ok()) {
-      throw new Error(
-        `Recording upload failed with ${response.status()}: ${await response.text()}`,
-      );
-    }
-
-    await this.page.getByRole("heading", { name: "Processing Options" }).waitFor();
-    for (const option of ["Transcribe Recording", "Generate Summary", "Generate Cover Image"]) {
-      await this.page.getByLabel(option, { exact: true }).uncheck();
-    }
-
-    await this.page.getByRole("button", { name: "Process Recording" }).click();
-    await this.page.getByText(description, { exact: true }).waitFor();
-    await this.page.getByRole("button", { name: "Transcribe recording" }).waitFor();
-  }
-
-  async browseReplicateModelsAndPredictions(modelName: string) {
-    await this.openProjectApp("Replicate Predictions");
-    await this.page.getByPlaceholder("Search Replicate models...").fill(modelName);
-    await this.page.getByRole("heading", { name: modelName, exact: true }).click();
-    await this.page.getByRole("heading", { name: modelName, exact: true }).waitFor();
-    await this.clickElement(
-      this.page.getByRole("link", { name: "Back to Replicate Predictions", exact: true }),
-    );
-    await this.page.getByPlaceholder("Search Replicate models...").waitFor();
-    await this.page.getByRole("button", { name: "View my predictions" }).click();
-    await this.page.getByRole("heading", { name: "No predictions yet" }).waitFor();
-    await this.page.getByRole("link", { name: "Explore Models" }).click();
-    await this.page.getByPlaceholder("Search Replicate models...").waitFor();
   }
 
   async searchProjectCapabilities(name: string) {

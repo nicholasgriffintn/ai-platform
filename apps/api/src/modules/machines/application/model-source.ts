@@ -31,7 +31,7 @@ async function findMachineModel(
   }
 
   for (const runtime of machine.runtimes) {
-    if (runtime.vendor !== runtimeVendor) {
+    if (runtime.kind === "local-tools" || runtime.vendor !== runtimeVendor) {
       continue;
     }
 

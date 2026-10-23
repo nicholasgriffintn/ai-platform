@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { modelBenchmarkStandingSchema } from "./benchmarks.js";
+import { listSchema } from "./platform/list.js";
 import {
   agentWorkspaceRequirementSchema,
   permissionModeSchema,
@@ -41,6 +42,7 @@ export const modelModalities = [
   "ocr",
   "transcription",
   "decision",
+  "extraction",
 ] as const;
 
 export const modelModalitySchema = z.enum(modelModalities);
@@ -358,6 +360,15 @@ export const artificialAnalysisModelSchema = z.object({
   ingested_at: z.string(),
   created_at: z.string().optional(),
   updated_at: z.string().optional().nullable(),
+});
+
+export const artificialAnalysisModelsResponseSchema = listSchema(
+  artificialAnalysisModelSchema,
+).extend({
+  attribution: z.object({
+    label: z.literal("Artificial Analysis"),
+    url: z.literal("https://artificialanalysis.ai/"),
+  }),
 });
 
 export const capabilitiesResponseSchema = z.object({

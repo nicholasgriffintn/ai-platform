@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 220000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 16, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The vercel/elorian/glimpse family includes models that produce text.",
+  "models": {
+    "glimpse": {
+      "defaults": {
+        "name": "Glimpse",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

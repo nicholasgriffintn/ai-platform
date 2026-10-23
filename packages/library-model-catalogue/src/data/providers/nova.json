@@ -6,21 +6,46 @@
   },
   "models": {
     "nova-2-lite-v1": {
-      "model": "nova-lite/nova-2-lite",
+      "model": "nova/nova-2-lite",
       "matchingModel": "nova-2-lite-v1",
       "overrides": {
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "multilingual"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
         "speed": 4,
         "isFeatured": true,
-        "lastUpdated": "December 1, 2025",
+        "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
-        "supportsDocuments": true
-      },
-      "unset": [
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
-      ]
+        "supportsDocuments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
     },
     "nova-2-pro-v1": {
       "model": "nova-pro/nova-2-pro",
@@ -36,7 +61,8 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "artificialAnalysis",
+        "supportsResponseFormat"
       ]
     },
     "nova-2-sonic-v1": {

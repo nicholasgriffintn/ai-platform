@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": true,
     "modalities": {
       "input": [
         "text",
@@ -10,6 +11,7 @@
       ]
     },
     "contextComplexity": 4,
+    "reliability": 1,
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
@@ -24,10 +26,45 @@
   },
   "description": "The step family includes models that produce text.",
   "models": {
+    "step-3-5-flash": {
+      "defaults": {
+        "name": "Step 3.5 Flash",
+        "description": "StepFun flash lane for quick multimodal reasoning and coding assistance",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 29, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 17,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "step-3-7-flash": {
       "defaults": {
         "name": "Step 3.7 Flash",
-        "openWeights": true,
         "description": "Newer StepFun flash model for faster agents, coding, and multimodal prompts",
         "contextWindow": 256000,
         "maxTokens": 256000,
@@ -50,10 +87,9 @@
     "step-5-preview": {
       "defaults": {
         "name": "Step 5 Preview",
-        "openWeights": false,
         "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use",
-        "contextWindow": 1000000,
-        "maxTokens": 1000000,
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
         "strengths": [
           "vision",
           "document"
@@ -74,7 +110,6 @@
     "stepfun-3-5-flash": {
       "defaults": {
         "name": "StepFun 3.5 Flash",
-        "openWeights": true,
         "description": "StepFun flash lane for quick multimodal reasoning and coding assistance",
         "contextWindow": 262114,
         "maxTokens": 262114,
@@ -89,7 +124,6 @@
         "strengths": [
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 29, 2026",
         "supportsAttachments": false,
@@ -108,7 +142,6 @@
         "description": "Step 5 Preview is StepFun's flagship model for agentic work, with strong capabilities in software engineering, professional knowledge work, and finance. It natively supports text, image, and video input with a 1M-token context window and up to 64K output tokens. The model supports tool calling, structured outputs, and selectable reasoning levels (low/medium/high) for long-context research, coding, and multi-step workflows.",
         "contextWindow": 1000000,
         "maxTokens": 64000,
-        "reliability": 1,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false
       }

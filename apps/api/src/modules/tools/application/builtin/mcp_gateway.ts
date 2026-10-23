@@ -7,6 +7,7 @@ import {
   type McpToolCallResult,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { requireToolEffects, type ToolEffectHints } from "@ngriffin_uk/polychat-library-tools";
 import {
   MCP_APP_RENDERER,
   modelAcceptsImageInput,
@@ -185,8 +186,39 @@ export const mcp_list_tools: ApiToolDefinition = {
   },
 };
 
+async function readMcpToolHints(
+  args: unknown,
+  request: IRequest,
+): Promise<ToolEffectHints | undefined> {
+  const toolName = isRecord(args) && typeof args.tool === "string" ? args.tool.trim() : "";
+
+  if (!toolName) {
+    return undefined;
+  }
+
+  const serviceContext = resolveServiceContext(request);
+  const server = findMcpGatewayServer(
+    readMcpGatewayServers(request.request?.tool_options?.mcp_servers),
+    readIntegration(args),
+  );
+  const session = await openMcpGatewaySession(serviceContext, server);
+  const annotations = (await listMcpGatewayTools(serviceContext, session)).find(
+    (tool) => tool.name === toolName,
+  )?.annotations;
+
+  if (!annotations) {
+    return undefined;
+  }
+
+  return { readOnly: annotations.readOnlyHint, destructive: annotations.destructiveHint };
+}
+
 export const mcp_call_tool: ApiToolDefinition = {
   ...mcp_call_toolDescriptor,
+  effects: {
+    ...requireToolEffects(MCP_CALL_TOOL_NAME, mcp_call_toolDescriptor.effects),
+    hints: readMcpToolHints,
+  },
   execute: async (args, context) => {
     const toolName = isRecord(args) && typeof args.tool === "string" ? args.tool.trim() : "";
     const toolArguments = isRecord(args) && isRecord(args.arguments) ? args.arguments : {};

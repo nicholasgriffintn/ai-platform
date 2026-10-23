@@ -336,6 +336,7 @@ type ChatSystemModelRole = "housekeeping" | "titling" | "compaction" | "retrieva
 const MODALITY_SYSTEM_ROLE_MODALITIES: Partial<Record<SystemModelRole, ModelModality>> = {
   guardrails: "guardrails",
   decision: "decision",
+  extraction: "extraction",
   reranking: "reranking",
   transcription: "transcription",
   ocr: "ocr",

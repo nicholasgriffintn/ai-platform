@@ -1,0 +1,76 @@
+import {
+  ReplicateModelDetailView,
+  ReplicateModelForm,
+  ReplicateModelLoadError,
+  ReplicateModelLoading,
+} from "@ngriffin_uk/polychat-component-experiences/media";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useReplicateModels, useExecuteReplicateModel } from "@ngriffin_uk/polychat-library-react";
+import { useNavigate } from "react-router";
+
+import { SignInEmptyState } from "../../../Account/SignInEmptyState.js";
+
+interface ReplicateModelDetailProps {
+  basePath: string;
+  modelId: string;
+  projectId?: string;
+}
+
+export function ReplicateModelDetail({ basePath, modelId, projectId }: ReplicateModelDetailProps) {
+  const navigate = useNavigate();
+  const { data: models, isLoading, error } = useReplicateModels();
+  const executeMutation = useExecuteReplicateModel(projectId);
+
+  const model = models?.find((m) => m.id === modelId);
+
+  if (isLoading) {
+    return <ReplicateModelLoading />;
+  }
+
+  if (error || !model) {
+    if (isAuthenticationError(error)) {
+      return (
+        <SignInEmptyState
+          title="Sign in to use this model"
+          message="Sign in to run Replicate models for this project."
+          className="min-h-[300px]"
+        />
+      );
+    }
+
+    return <ReplicateModelLoadError />;
+  }
+
+  const handleSubmit = async (data: Record<string, any>) => {
+    try {
+      const result = await executeMutation.mutateAsync({
+        modelId,
+        input: data,
+      });
+
+      void navigate(`${basePath}/predictions/${result.id}`);
+    } catch (executionError) {
+      console.error("Failed to execute model:", executionError);
+    }
+  };
+
+  return (
+    <ReplicateModelDetailView
+      model={model}
+      errorMessage={
+        executeMutation.isError
+          ? executeMutation.error instanceof Error
+            ? executeMutation.error.message
+            : "Failed to execute model. Please try again."
+          : undefined
+      }
+      form={
+        <ReplicateModelForm
+          model={model}
+          onSubmit={(data) => void handleSubmit(data)}
+          isSubmitting={executeMutation.isPending}
+        />
+      }
+    />
+  );
+}

@@ -87,10 +87,11 @@ describe("sync bindings", () => {
     const { context, invalidatedKeys } = createContext();
 
     applySyncEvent(context, buildEvent("output.changed"));
+    applySyncEvent(context, buildEvent("source.changed"));
     applySyncEvent(context, buildEvent("channel_senders.changed"));
 
-    expect(invalidatedKeys).toContainEqual(["canvas"]);
-    expect(invalidatedKeys).toContainEqual(["replicate"]);
+    expect(invalidatedKeys).toContainEqual(["outputs"]);
+    expect(invalidatedKeys).toContainEqual(["sources"]);
     expect(invalidatedKeys).toContainEqual(["channel-senders"]);
   });
 

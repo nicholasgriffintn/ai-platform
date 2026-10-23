@@ -34,6 +34,10 @@ export type ToolExecutionContext<
 
 export type AnyToolExecutionContext = ToolExecutionContext<unknown, unknown, unknown, unknown, any>;
 
+export type ToolEffectHost<TContext> = TContext extends { request?: infer TRequest }
+  ? TRequest
+  : unknown;
+
 export type ToolType = "normal" | "premium" | "byok";
 
 export interface ToolDefinition<
@@ -54,7 +58,7 @@ export interface ToolDefinition<
   maxIdenticalCalls?: number;
   companionTools?: readonly string[];
   intentEvidence?: (input: TInput) => unknown;
-  effects?: ToolEffects<TInput>;
+  effects?: ToolEffects<TInput, ToolEffectHost<TContext>>;
 }
 
 export type ToolDescriptor<

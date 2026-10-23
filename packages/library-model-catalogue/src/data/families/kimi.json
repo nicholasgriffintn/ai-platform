@@ -247,7 +247,6 @@
     },
     "kimi-latest": {
       "defaults": {
-        "name": "MoonshotAI Kimi Latest",
         "openWeights": false,
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1048576,
@@ -261,17 +260,8 @@
             "text"
           ]
         },
-        "releaseDate": "April 27, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       }
     },
     "moonshotai-kimi-latest": {

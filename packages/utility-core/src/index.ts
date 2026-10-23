@@ -11,6 +11,7 @@ export * from "./dates.js";
 export * from "./delay.js";
 export * from "./errors.js";
 export * from "./geo.js";
+export * from "./html.js";
 export * from "./ids.js";
 export * from "./image-dimensions.js";
 export * from "./jpeg.js";

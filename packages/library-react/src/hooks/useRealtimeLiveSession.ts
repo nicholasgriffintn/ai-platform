@@ -42,6 +42,7 @@ import {
   type RealtimeLiveProviderOption,
   type RealtimeLiveStatus,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import { connectRealtimeLiveKit } from "@ngriffin_uk/polychat-library-realtime/livekit";
 import {
   extractRealtimeErrorMessage,
   extractRealtimeEvent,
@@ -52,6 +53,7 @@ import {
   type RealtimeEventResult,
   type RealtimeTranscriptResult,
 } from "@ngriffin_uk/polychat-library-realtime/messages";
+import { hasServerTurnDetection } from "@ngriffin_uk/polychat-library-realtime/websocket-protocols";
 import type { RealtimeLiveSessionType } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -87,6 +89,10 @@ interface CleanupOptions {
 }
 
 const WEBRTC_COMMIT_MESSAGE = JSON.stringify({ type: "input_audio_buffer.commit" });
+
+function sendsMicrophoneAsTrack(connection: RealtimeConnection | null): boolean {
+  return connection?.session.transport === "webrtc" || connection?.session.transport === "livekit";
+}
 
 function getConnectionProviderOption(
   connection: RealtimeConnection,
@@ -397,7 +403,12 @@ export function useRealtimeLiveSession({
       const config = getConnectionProviderOption(connection, providerOptionsRef.current)?.websocket
         ?.audioInput?.commitOnSilence;
 
-      if (!config || stoppingRef.current || !microphoneEnabledRef.current) {
+      if (
+        !config ||
+        hasServerTurnDetection(connection.session) ||
+        stoppingRef.current ||
+        !microphoneEnabledRef.current
+      ) {
         return;
       }
 
@@ -506,7 +517,7 @@ export function useRealtimeLiveSession({
         });
       }
 
-      if (connection?.session.transport === "webrtc") {
+      if (sendsMicrophoneAsTrack(connection)) {
         setMediaStreamTrackEnabled(audioStreamRef.current, "audio", false);
 
         return;
@@ -935,6 +946,96 @@ export function useRealtimeLiveSession({
     ],
   );
 
+  const startLiveKitProvider = useCallback(
+    async (
+      selectedProvider: RealtimeLiveProviderOption,
+      lease: RealtimeSessionLease,
+      selectedModel?: string | null,
+    ) => {
+      const audioStream = await ensureAudioStream();
+
+      if (!sessionController.isCurrent(lease)) {
+        releaseAudioStream(audioStream);
+        if (audioStreamRef.current === audioStream) {
+          audioStreamRef.current = null;
+          stopInputAudioMeter();
+        }
+
+        return;
+      }
+
+      const session = await createRealtimeSession({
+        type: selectedProvider.sessionType,
+        provider: selectedProvider.id,
+        model: selectedModel ?? undefined,
+        transport: selectedProvider.transport,
+        signal: lease.signal,
+      });
+
+      if (!sessionController.isCurrent(lease)) {
+        return;
+      }
+
+      scheduleSessionLimit(session, lease);
+
+      const remoteAudio = new Audio();
+
+      remoteAudio.autoplay = true;
+      remoteAudioRef.current = remoteAudio;
+
+      const connection = await connectRealtimeLiveKit({
+        session,
+        stream: audioStream,
+        signal: lease.signal,
+        onAgentEvent: (payload) => {
+          if (sessionController.isCurrent(lease)) {
+            handleRealtimePayload(payload);
+          }
+        },
+        onDisconnected: () => {
+          if (sessionController.isCurrent(lease) && !stoppingRef.current) {
+            failSession("Voice agent session ended");
+          }
+        },
+        onRemoteAudio: (outputStream) => {
+          if (!sessionController.isCurrent(lease)) {
+            return;
+          }
+
+          remoteAudio.srcObject = outputStream;
+          startOutputAudioMeter(outputStream);
+          void remoteAudio.play().catch(() => {
+            if (sessionController.isCurrent(lease)) {
+              setLastEvent("Tap Live again if the browser blocked playback");
+            }
+          });
+        },
+      });
+
+      if (!sessionController.isCurrent(lease)) {
+        connection.close();
+
+        return;
+      }
+
+      connectionRef.current = connection;
+      connectionLeaseRef.current = lease;
+      setLastEvent("Voice agent listening");
+      setLiveStatus("active");
+    },
+    [
+      ensureAudioStream,
+      failSession,
+      handleRealtimePayload,
+      releaseAudioStream,
+      scheduleSessionLimit,
+      sessionController,
+      setLiveStatus,
+      startOutputAudioMeter,
+      stopInputAudioMeter,
+    ],
+  );
+
   const startWebSocketProvider = useCallback(
     async (
       selectedProvider: RealtimeLiveProviderOption,
@@ -955,6 +1056,7 @@ export function useRealtimeLiveSession({
         inputModalities: selectedProvider.inputModalities,
         outputModalities: selectedProvider.outputModalities,
         delay: selectedProvider.defaultDelay,
+        speakerLabels: sessionType === "transcription",
         signal: lease.signal,
       });
 
@@ -1067,6 +1169,14 @@ export function useRealtimeLiveSession({
             setOutputAudioLevel(0);
           }
 
+          if (
+            eventType &&
+            eventType === websocketConfig.audioInput?.commitOnServerTurnEnd &&
+            hasServerTurnDetection(connection.session)
+          ) {
+            sendConfiguredAudioCommit(connection, providerOptionsRef.current);
+          }
+
           handleRealtimePayload(payload);
           for (const chunk of websocketConfig.audioOutput?.extractChunks(payload) ?? []) {
             audioPlayerRef.current?.playBase64(chunk);
@@ -1089,6 +1199,7 @@ export function useRealtimeLiveSession({
       resetAudioTurnDetection,
       scheduleSessionLimit,
       sessionController,
+      sessionType,
       setLiveStatus,
       startInputAudio,
       startInputVideo,
@@ -1129,6 +1240,8 @@ export function useRealtimeLiveSession({
 
         if (selectedProvider.transport === "webrtc") {
           await startWebRTCProvider(selectedProvider, lease, selectedModel);
+        } else if (selectedProvider.transport === "livekit") {
+          await startLiveKitProvider(selectedProvider, lease, selectedModel);
         } else {
           await startWebSocketProvider(selectedProvider, lease, selectedModel);
         }
@@ -1147,6 +1260,7 @@ export function useRealtimeLiveSession({
       provider,
       providerOptions,
       sessionController,
+      startLiveKitProvider,
       startWebRTCProvider,
       startWebSocketProvider,
     ],
@@ -1187,7 +1301,7 @@ export function useRealtimeLiveSession({
         return;
       }
 
-      if (connection.session.transport === "webrtc") {
+      if (sendsMicrophoneAsTrack(connection)) {
         setMediaStreamTrackEnabled(audioStreamRef.current, "audio", enabled);
         if (!enabled) {
           setInputAudioLevel(0);

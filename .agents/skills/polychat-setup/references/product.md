@@ -9,6 +9,7 @@ Polychat has two primary modes:
 
 - Use a **Conversation** for an interactive request.
 - Use **Experiences** for structured workflows.
+- Use **Sources** for material and media: uploads, transcripts, generated images and video, and podcast episodes with private RSS feeds.
 - Use **Project tasks** for work that needs durable status, delegation or delivery.
 - Use **Recipes** for reusable, scheduled conversations.
 

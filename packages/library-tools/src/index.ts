@@ -14,9 +14,12 @@ export {
   updatePlanToolDeclaration,
 } from "./control-tools.js";
 export {
+  effectClassFromToolHints,
   requireToolEffects,
   resolveToolDestination,
   resolveToolEffectClass,
+  resolveToolEffectClassWithHints,
+  type ToolEffectHints,
   type ToolEffects,
 } from "./effects.js";
 export { ToolError, isToolError, type ToolErrorCode, type ToolValidationIssue } from "./errors.js";

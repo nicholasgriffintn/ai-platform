@@ -13,7 +13,6 @@ export const polyModeSchema = z.enum(["chat", "work"]);
 
 export const polyPlaceSchema = z.enum([
   "conversations",
-  "canvas",
   "sites",
   "attention",
   "files",

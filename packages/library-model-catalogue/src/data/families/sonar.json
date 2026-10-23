@@ -12,7 +12,6 @@
     },
     "contextComplexity": 3,
     "reliability": 1,
-    "supportsToolCalls": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
@@ -35,6 +34,7 @@
           "document"
         ],
         "releaseDate": "January 27, 2025",
+        "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },

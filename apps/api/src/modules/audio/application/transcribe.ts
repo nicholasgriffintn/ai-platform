@@ -37,12 +37,11 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
   try {
     let selectedProvider = provider;
     let selectedModel: string | undefined;
+    const userSettings = user?.id
+      ? await new UserSettingsRepository(env).getUserSettings(user.id)
+      : null;
 
     if (!selectedProvider) {
-      const userSettings = user?.id
-        ? await new UserSettingsRepository(env).getUserSettings(user.id)
-        : null;
-
       const speechModel = await getAuxiliarySpeechModel(env, userSettings, user);
 
       if (!isTranscriptionProvider(speechModel.transcriptionProvider)) {
@@ -80,6 +79,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
       provider: resolvedProvider,
       model: selectedModel,
       timestamps,
+      vocabulary: userSettings?.transcription_vocabulary,
     });
 
     return {

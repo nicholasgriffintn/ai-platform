@@ -121,7 +121,6 @@
         },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
-        "supportsResponseFormat": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
@@ -138,7 +137,6 @@
         },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
-        "supportsResponseFormat": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
       "unset": [
@@ -201,14 +199,14 @@
         }
       },
       "unset": [
-        "supportsTopP",
-        "supportsResponseFormat"
+        "supportsTopP"
       ]
     },
     "anthropic/claude-sonnet-4-5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
       "matchingModel": "claude-sonnet-4-5",
       "overrides": {
+        "contextWindow": 200000,
         "releaseDate": "November 18, 2025",
         "lastUpdated": "November 18, 2025",
         "dataRetention": {
@@ -219,7 +217,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "mistral/codestral-2501": {
       "model": "codestral/codestral-25-01",
@@ -233,7 +234,8 @@
         },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "cohere/command-a": {
@@ -246,6 +248,7 @@
           "tool_use"
         ],
         "speed": 3,
+        "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -255,6 +258,7 @@
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": false,
+        "apiShape": "completions",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -281,7 +285,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "cohere/command-r-plus-08-2024": {
       "model": "command-r/command-r",
@@ -297,7 +304,10 @@
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "cohere/embed-v-4-0": {
       "model": "cohere-embed/embed-v4",
@@ -312,7 +322,8 @@
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models"
       }
     },
     "cohere/embed-v3-english": {
@@ -329,7 +340,8 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models"
       }
     },
     "cohere/embed-v3-multilingual": {
@@ -346,7 +358,8 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models"
       }
     },
     "deepseek/v3-0324": {
@@ -409,7 +422,8 @@
         },
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00168,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       },
       "unset": [
         "supportsResponseFormat"
@@ -432,7 +446,8 @@
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00168,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "openai/gpt-5": {
@@ -440,7 +455,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -493,9 +508,10 @@
         "name": "GPT-5-Codex",
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -504,7 +520,6 @@
         },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -533,16 +548,7 @@
         },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "supportsTemperature": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -599,7 +605,6 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "gpt-5.1",
       "overrides": {
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
           "input": [
             "text",
@@ -674,7 +679,7 @@
       "model": "gpt-codex/gpt-5-1-codex",
       "matchingModel": "gpt-5.1-codex",
       "overrides": {
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "modalities": {
           "input": [
             "text",
@@ -690,7 +695,8 @@
         "strengths": [
           "vision",
           "audio",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 3,
         "releaseDate": "November 14, 2025",
@@ -702,7 +708,6 @@
         },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -733,7 +738,8 @@
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 3,
         "releaseDate": "November 14, 2025",
@@ -745,16 +751,7 @@
         },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": false,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "openai/gpt-5.2": {
@@ -800,7 +797,8 @@
         "name": "GPT-5.2 Codex",
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 3,
         "releaseDate": "January 14, 2026",
@@ -812,7 +810,6 @@
         },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -958,7 +955,6 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
-        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "December 2, 2025",
@@ -970,24 +966,20 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "monshot/kimi-k2.5": {
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
-        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 262144,
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 3,
-        "releaseDate": "February 6, 2026",
-        "lastUpdated": "February 6, 2026",
+        "lastUpdated": "January 27, 2026",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
@@ -995,7 +987,6 @@
         },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions"
       }
@@ -1034,7 +1025,6 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 128000,
         "maxTokens": 32768,
         "lastUpdated": "December 6, 2024",
@@ -1045,8 +1035,12 @@
         },
         "costPer1kInputTokens": 0.00071,
         "costPer1kOutputTokens": 0.00071,
-        "supportsAttachments": false
-      }
+        "supportsAttachments": false,
+        "apiShape": "completions"
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "meta/llama-4-maverick-17b-128e-instruct-fp8": {
       "model": "llama/llama-4-maverick-17b-128e-instruct-fp8",
@@ -1062,7 +1056,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kOutputTokens": 0.001,
+        "apiShape": "completions"
       }
     },
     "meta/llama-4-scout-17b-16e-instruct": {
@@ -1078,7 +1073,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00078
+        "costPer1kOutputTokens": 0.00078,
+        "apiShape": "completions"
       }
     },
     "microsoft/mai-ds-r1": {
@@ -1186,7 +1182,8 @@
         },
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       },
       "unset": [
         "supportsResponseFormat"
@@ -1236,7 +1233,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.002
+        "costPer1kOutputTokens": 0.002,
+        "apiShape": "completions"
       },
       "unset": [
         "supportsResponseFormat"
@@ -1248,7 +1246,6 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 128000,
-        "releaseDate": "July 18, 2024",
         "lastUpdated": "July 18, 2024",
         "dataRetention": {
           "maxDays": 30,
@@ -1272,7 +1269,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0003
+        "costPer1kOutputTokens": 0.0003,
+        "apiShape": "completions"
       }
     },
     "azure/model-router": {
@@ -1437,7 +1435,8 @@
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/phi-4-mini": {
@@ -1453,7 +1452,8 @@
         },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/phi-4-mini-reasoning": {
@@ -1468,7 +1468,8 @@
         },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/phi-4-multimodal": {
@@ -1484,7 +1485,8 @@
         },
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00032,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/phi-4-reasoning": {
@@ -1500,7 +1502,8 @@
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/phi-4-reasoning-plus": {
@@ -1516,7 +1519,8 @@
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "microsoft/text-embedding-3-large": {
@@ -1582,7 +1586,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1637,7 +1641,8 @@
         },
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 3,
         "releaseDate": "February 24, 2026",
@@ -1649,7 +1654,6 @@
         },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1758,7 +1762,7 @@
       "model": "gpt/gpt-5-5",
       "matchingModel": "gpt-5.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "April 24, 2026",
         "lastUpdated": "April 24, 2026",
         "dataRetention": {
@@ -1804,6 +1808,7 @@
         },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
+        "apiShape": "completions",
         "artificialAnalysis": {
           "intelligenceIndex": 11.3,
           "codingIndex": null,
@@ -1838,7 +1843,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kOutputTokens": 0.0005,
+        "apiShape": "completions"
       }
     },
     "grok-4-20-non-reasoning": {
@@ -1872,7 +1878,8 @@
         },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "apiShape": "completions"
       }
     },
     "grok-4-20-reasoning": {
@@ -1895,8 +1902,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
@@ -1908,27 +1914,23 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 25.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "apiShape": "completions"
       }
     },
     "kimi-k2.6": {
       "model": "kimi-k2/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 262144,
         "strengths": [
           "vision",
           "tool_use",
-          "coding"
+          "coding",
+          "document"
         ],
         "speed": 2,
-        "releaseDate": "April 22, 2026",
-        "lastUpdated": "April 22, 2026",
+        "lastUpdated": "April 20, 2026",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "on_request",
@@ -1936,7 +1938,6 @@
         },
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions"
       }
@@ -2234,11 +2235,9 @@
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
+            "medium"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "medium"
         }
       }
     },
@@ -2378,7 +2377,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "apiShape": "completions"
       }
     },
     "gpt-6-astra": {
@@ -2561,7 +2561,18 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
       }
     },
     "grok-4.7": {
@@ -2577,7 +2588,8 @@
           "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
         },
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "apiShape": "completions"
       }
     },
     "deepseek-v4.1-flash": {
@@ -2588,7 +2600,7 @@
         "status": "beta",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

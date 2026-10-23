@@ -14,9 +14,13 @@ function initialIsMobile(): boolean {
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
-export type ProjectPickerDestination = "chat" | "canvas";
+export type ProjectPickerDestination = "chat";
 
 export type PolyLayout = "dock" | "window";
+
+export type FilesLayout = "grid" | "list";
+
+export type FilesSort = "recent" | "name";
 
 export const POLY_DOCK_MIN_WIDTH = 340;
 export const POLY_DOCK_MAX_WIDTH = 720;
@@ -52,6 +56,10 @@ export interface UIStore {
   workConversationListFilters: ConversationListFilters;
   setWorkConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
   resetWorkConversationListFilters: () => void;
+  filesLayout: FilesLayout;
+  setFilesLayout: (filesLayout: FilesLayout) => void;
+  filesSort: FilesSort;
+  setFilesSort: (filesSort: FilesSort) => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -99,6 +107,10 @@ export const useUIStore = create<UIStore>()(
         })),
       resetWorkConversationListFilters: () =>
         set({ workConversationListFilters: DEFAULT_WORK_CONVERSATION_LIST_FILTERS }),
+      filesLayout: "grid",
+      setFilesLayout: (filesLayout) => set({ filesLayout }),
+      filesSort: "recent",
+      setFilesSort: (filesSort) => set({ filesSort }),
     }),
     {
       name: "ui-store",

@@ -13,10 +13,11 @@
         "text"
       ]
     },
+    "contextComplexity": 5,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The claude sonnet family includes models that produce text.",
   "models": {
@@ -38,6 +39,7 @@
         },
         "releaseDate": "May 22, 2025",
         "supportsResponseFormat": false,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -53,7 +55,6 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "April 27, 2026",
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -73,6 +74,7 @@
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -105,6 +107,7 @@
         "multimodal": true,
         "knowledgeCutoffDate": "January 2024",
         "releaseDate": "February 19, 2025",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -128,6 +131,7 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -141,10 +145,10 @@
       "defaults": {
         "name": "Claude Sonnet 4.5",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
         "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -154,84 +158,13 @@
         }
       }
     },
-    "claude-sonnet-4-5-au": {
-      "defaults": {
-        "name": "Claude Sonnet 4.5 (AU)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none",
-          "thinkingApi": "budget"
-        }
-      }
-    },
-    "claude-sonnet-4-5-eu": {
-      "defaults": {
-        "name": "Claude Sonnet 4.5 (EU)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none",
-          "thinkingApi": "budget"
-        }
-      }
-    },
-    "claude-sonnet-4-5-global": {
-      "defaults": {
-        "name": "Claude Sonnet 4.5 (Global)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none",
-          "thinkingApi": "budget"
-        }
-      }
-    },
-    "claude-sonnet-4-5-jp": {
-      "defaults": {
-        "name": "Claude Sonnet 4.5 (JP)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none",
-          "thinkingApi": "budget"
-        }
-      }
-    },
     "claude-sonnet-4-5-latest": {
       "defaults": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025"
+        "releaseDate": "September 29, 2025",
+        "supportsTemperature": true
       }
     },
     "claude-sonnet-4-5-latest-eu": {
@@ -241,6 +174,7 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -250,36 +184,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
-      }
-    },
-    "claude-sonnet-4-5-us": {
-      "defaults": {
-        "name": "Claude Sonnet 4.5 (US)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "card": "https://www.prompthub.us/models/claude-sonnet-4-5",
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "coding",
-          "reasoning",
-          "creative"
-        ],
-        "contextComplexity": 5,
-        "reliability": 5,
-        "multimodal": true,
-        "knowledgeCutoffDate": "July 31, 2025",
-        "releaseDate": "September 29, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none",
-          "thinkingApi": "budget"
         }
       }
     },
@@ -293,10 +197,10 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 24.7,
           "codingIndex": null,
@@ -318,6 +222,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": 24.7,
           "codingIndex": null,
@@ -336,10 +241,10 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -368,10 +273,10 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -400,10 +305,10 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -426,26 +331,8 @@
       "defaults": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "May 22, 2025"
-      }
-    },
-    "claude-sonnet-4-latest-eu": {
-      "defaults": {
-        "name": "Claude Sonnet 4 (latest) (EU)",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "maxTokens": 64000,
-        "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": true
       }
     },
     "claude-sonnet-5": {
@@ -458,11 +345,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsTemperature": false,
         "supportsTopP": false,
         "artificialAnalysis": {
           "intelligenceIndex": 38.2,
@@ -481,11 +366,9 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -515,11 +398,9 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": 56,
           "codingIndex": null,
@@ -537,12 +418,9 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -572,12 +450,9 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -608,12 +483,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -644,11 +516,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsTemperature": false,
         "supportsTopP": false,
         "artificialAnalysis": {
           "intelligenceIndex": 38.2,
@@ -668,12 +538,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -704,12 +571,10 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -740,12 +605,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -776,12 +638,9 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -808,7 +667,6 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 27, 2026",
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -838,7 +696,6 @@
         "reliability": 1,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

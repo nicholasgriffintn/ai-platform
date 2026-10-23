@@ -20,6 +20,7 @@ const getModelsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
   getRealtimeProvider: vi.fn(() => ({
+    configuration: { acceptsUserApiKey: true, environmentVariables: [] },
     createSession: createSessionMock,
     getDefaultModel: getDefaultModelMock,
   })),

@@ -16,6 +16,7 @@
     "contextComplexity": 5,
     "releaseDate": "June 9, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
     "supportsTopP": false,
@@ -37,7 +38,6 @@
       "defaults": {
         "name": "Anthropic: Claude Fable Latest ($$$$)",
         "description": "This model always redirects to the latest model in the Claude Fable family.",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -93,7 +93,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 53.4,
           "codingIndex": 81.6,
@@ -115,7 +114,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -258,8 +256,7 @@
     "claude-fable-latest": {
       "defaults": {
         "name": "Claude Fable Latest",
-        "description": "Claude model for creative writing, analysis, and controlled agent workflows",
-        "supportsResponseFormat": true
+        "description": "Claude model for creative writing, analysis, and controlled agent workflows"
       }
     }
   }

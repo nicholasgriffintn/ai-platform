@@ -244,6 +244,7 @@ describe("project conversation context", () => {
     title: "Project context",
     description: "Sources attached to new project conversations.",
     kind: "context",
+    feed_token_hash: null,
     created_at: "2026-08-11T00:00:00.000Z",
     updated_at: null,
   };
@@ -410,6 +411,37 @@ describe("project conversation context", () => {
       "source-2",
     ]);
     expect(result).toEqual({ added: 2 });
+  });
+
+  it("stops a member adding a coworker's source to a podcast show", async () => {
+    requireProjectAccessMock.mockResolvedValue({ role: "member" });
+    const addCollectionSourcesRepo = vi.fn();
+    const context = {
+      env: {},
+      user: { id: 42 },
+      repositories: fakeRepositories([
+        [
+          SourceRepository,
+          {
+            getSourcesByIds: vi
+              .fn()
+              .mockResolvedValue([{ ...projectSource, created_by_user_id: 7 }]),
+            addCollectionSources: addCollectionSourcesRepo,
+            getCollection: vi.fn().mockResolvedValue({
+              id: "show-1",
+              project_id: "project-1",
+              created_by_user_id: 42,
+              kind: "podcast",
+            }),
+          },
+        ],
+      ]),
+    } as unknown as ServiceContext;
+
+    await expect(
+      addCollectionSources(context, 42, "show-1", [projectSource.id]),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(addCollectionSourcesRepo).not.toHaveBeenCalled();
   });
 
   it("prevents the reserved project context collection from generic deletion", async () => {

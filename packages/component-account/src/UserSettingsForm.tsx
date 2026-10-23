@@ -16,16 +16,16 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { AudioSettings } from "./AudioSettings";
 import { BedrockManagedAgentSettings } from "./BedrockManagedAgentSettings";
 import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
+import type { SpeechVoiceLibraryActions } from "./SpeechVoiceLibrary";
 import {
   getSpeechModelOptions,
   getTranscriptionModelOptions,
   getSpeechProviderOption,
   getTranscriptionProviderOption,
-  speechProviderOptions,
-  transcriptionProviderOptions,
 } from "./transcription-settings";
 import {
   prepareUserSettingsPayload,
@@ -148,6 +148,7 @@ export interface UserSettingsFormProps {
   onSignIn: () => void;
   onSave: (settings: Partial<UserSettings>) => Promise<void>;
   onSaveError?: (error: unknown) => void;
+  speechVoiceLibrary?: SpeechVoiceLibraryActions;
 }
 
 export function UserSettingsForm({
@@ -160,6 +161,7 @@ export function UserSettingsForm({
   onSignIn,
   onSave,
   onSaveError,
+  speechVoiceLibrary,
 }: UserSettingsFormProps) {
   const analytics = useAnalytics();
   const { formData, updateFormData: updateDraft } = useUserSettingsForm(userSettings);
@@ -859,108 +861,13 @@ export function UserSettingsForm({
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Audio">
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="transcription_provider"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Transcription Provider
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Choose the provider for speech-to-text transcription used by Polychat.
-            </p>
-            <FormSelect
-              id="transcription_provider"
-              name="transcription_provider"
-              value={formData.transcription_provider}
-              options={transcriptionProviderOptions.map((provider) => ({
-                value: provider.id,
-                label: provider.label,
-              }))}
-              onValueChange={handleTranscriptionProviderChange}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="transcription_model"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Transcription Model
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Select from the available models for the {formData.transcription_provider} provider.
-            </p>
-            <FormSelect
-              id="transcription_model"
-              name="transcription_model"
-              value={formData.transcription_model}
-              options={getTranscriptionModelOptions(formData.transcription_provider).map(
-                (model) => ({
-                  value: model.id,
-                  label: model.label,
-                }),
-              )}
-              onValueChange={(value) =>
-                updateFormData({
-                  transcription_model: value,
-                })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="speech_provider"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Speech Provider
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Choose the provider for text-to-speech response audio.
-            </p>
-            <FormSelect
-              id="speech_provider"
-              name="speech_provider"
-              value={formData.speech_provider}
-              options={speechProviderOptions.map((provider) => ({
-                value: provider.id,
-                label: provider.label,
-              }))}
-              onValueChange={handleSpeechProviderChange}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="speech_model"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Speech Model
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Select from the available voices or models for the {formData.speech_provider}{" "}
-              provider.
-            </p>
-            <FormSelect
-              id="speech_model"
-              name="speech_model"
-              value={formData.speech_model}
-              options={getSpeechModelOptions(formData.speech_provider).map((model) => ({
-                value: model.id,
-                label: model.label,
-              }))}
-              onValueChange={(value) =>
-                updateFormData({
-                  speech_model: value,
-                })
-              }
-            />
-          </div>
-        </div>
-      </SettingsSection>
+      <AudioSettings
+        formData={formData}
+        updateFormData={updateFormData}
+        onTranscriptionProviderChange={handleTranscriptionProviderChange}
+        onSpeechProviderChange={handleSpeechProviderChange}
+        speechVoiceLibrary={speechVoiceLibrary}
+      />
 
       <SettingsSection title="Web Search">
         <div className="space-y-4">

@@ -121,10 +121,7 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsFim": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "mistral-medium": {
       "model": "mistral-medium/mistral-medium-latest",
@@ -159,6 +156,7 @@
       "model": "codestral/codestral-latest",
       "matchingModel": "codestral-latest",
       "overrides": {
+        "maxTokens": 4096,
         "card": "https://www.prompthub.us/models/codestral",
         "strengths": [
           "coding",
@@ -175,6 +173,8 @@
         },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "supportsFim": true
       }
     },
@@ -199,7 +199,6 @@
         "speed": 4,
         "multimodal": true,
         "isFeatured": false,
-        "releaseDate": "March 16, 2026",
         "lastUpdated": "March 16, 2026",
         "dataRetention": {
           "zeroRetention": "on_request",
@@ -207,6 +206,7 @@
         },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -233,6 +233,7 @@
       "model": "ministral/ministral-8b-latest",
       "matchingModel": "ministral-8b-latest",
       "overrides": {
+        "maxTokens": 128000,
         "strengths": [
           "chat",
           "general_knowledge",
@@ -245,22 +246,21 @@
         "reliability": 3,
         "speed": 3,
         "multimodal": true,
+        "releaseDate": "October 1, 2024",
         "lastUpdated": "October 4, 2024",
         "dataRetention": {
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0001
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00015
+      }
     },
     "ministral-3-3b": {
       "model": "ministral/ministral-3b-latest",
       "matchingModel": "ministral-3b-latest",
       "overrides": {
+        "maxTokens": 128000,
         "strengths": [
           "chat",
           "general_knowledge",
@@ -277,23 +277,21 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "releaseDate": "October 1, 2024",
         "lastUpdated": "October 4, 2024",
         "dataRetention": {
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00004,
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0001,
         "artificialAnalysis": {
           "intelligenceIndex": 4.8,
           "codingIndex": 4.8,
           "agenticIndex": 0.8,
           "intelligenceIndexVersion": 4.3
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "mistral-tiny": {
       "model": "mistral/mistral-tiny",
@@ -320,7 +318,7 @@
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0004,
         "supportsAudio": true
       }
     },
@@ -328,7 +326,7 @@
       "model": "voxtral/voxtral-mini-latest",
       "matchingModel": "voxtral-mini-latest",
       "overrides": {
-        "lastUpdated": "February 1, 2026",
+        "lastUpdated": "February 4, 2026",
         "dataRetention": {
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
@@ -347,6 +345,7 @@
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
+        "costPerAudioSecond": 0.000133,
         "supportsToolCalls": false,
         "supportsStreaming": true,
         "supportsAudio": true,
@@ -354,12 +353,25 @@
         "supportsTemperature": false
       }
     },
+    "voxtral-voice-agent": {
+      "model": "voxtral/voxtral-voice-agent",
+      "matchingModel": "voxtral-voice-agent",
+      "overrides": {
+        "lastUpdated": "October 20, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
+        "costPerAudioSecond": 0.000667,
+        "supportsStreaming": true,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true
+      }
+    },
     "mistral-embed": {
       "model": "mistral-embed/mistral-embed",
       "matchingModel": "mistral-embed",
       "overrides": {
-        "contextWindow": 8000,
-        "maxTokens": 3072,
         "lastUpdated": "December 11, 2023",
         "dataRetention": {
           "zeroRetention": "on_request",
@@ -407,7 +419,7 @@
       "model": "voxtral/voxtral-mini-tts-latest",
       "matchingModel": "voxtral-mini-tts-latest",
       "overrides": {
-        "lastUpdated": "March 1, 2026",
+        "lastUpdated": "March 23, 2026",
         "dataRetention": {
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
@@ -420,6 +432,7 @@
       "model": "glm/glm-5-3",
       "matchingModel": "zai-glm-5-3",
       "overrides": {
+        "contextWindow": 1048576,
         "maxTokens": 131072,
         "speed": 3,
         "isFeatured": true,
@@ -430,6 +443,35 @@
         },
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "zai-glm-5-3-flash": {
+      "model": "glm-flash/glm-5-3-flash",
+      "matchingModel": "zai-glm-5-3-flash",
+      "overrides": {
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005
       }
     }
   }

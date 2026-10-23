@@ -26,6 +26,7 @@
         "maxTokens": 32768,
         "releaseDate": "February 25, 2026",
         "supportsToolCalls": false,
+        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": 5.9,
           "codingIndex": null,

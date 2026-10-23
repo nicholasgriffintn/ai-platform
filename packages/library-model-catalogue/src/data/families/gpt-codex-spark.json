@@ -3,6 +3,7 @@
     "openWeights": false,
     "contextWindow": 128000,
     "knowledgeCutoffDate": "August 31, 2025",
+    "releaseDate": "February 5, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsTemperature": false

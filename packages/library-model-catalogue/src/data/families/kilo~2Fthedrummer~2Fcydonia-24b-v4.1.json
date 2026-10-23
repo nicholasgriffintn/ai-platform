@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "openWeights": false,
+    "openWeights": true,
     "contextWindow": 131072,
     "maxTokens": 117964,
     "modalities": {
@@ -11,6 +11,7 @@
         "text"
       ]
     },
+    "knowledgeCutoffDate": "April 30, 2024",
     "releaseDate": "September 27, 2025",
     "supportsToolCalls": false,
     "supportsResponseFormat": true,

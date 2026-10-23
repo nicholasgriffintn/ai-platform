@@ -5,7 +5,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "high"
+    }
   },
   "description": "The fugu family includes models that produce text.",
   "models": {
@@ -47,15 +55,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 11, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "releaseDate": "September 11, 2026"
       }
     },
     "fugu-ultra": {
@@ -90,15 +90,7 @@
           ]
         },
         "knowledgeCutoffDate": "August 28, 2026",
-        "releaseDate": "September 11, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "releaseDate": "September 11, 2026"
       }
     }
   }

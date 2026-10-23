@@ -1,3 +1,6 @@
+const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+const SIGNED_NUMBER = /^[+-]?\d/;
+
 export class CsvRecordParser {
   private field = "";
   private record: string[] = [];
@@ -70,4 +73,16 @@ export function csvRecordsToObjects(header: readonly string[], records: readonly
   return records
     .filter((record) => record.some((value) => value !== ""))
     .map((record) => Object.fromEntries(header.map((name, index) => [name, record[index] ?? ""])));
+}
+
+export function guardSpreadsheetFormula(value: string): string {
+  return FORMULA_PREFIX.test(value) && !SIGNED_NUMBER.test(value) ? `'${value}` : value;
+}
+
+function formatCsvField(value: string): string {
+  return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+}
+
+export function formatCsv(rows: readonly (readonly string[])[]): string {
+  return rows.map((row) => row.map(formatCsvField).join(",")).join("\r\n");
 }

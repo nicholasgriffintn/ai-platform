@@ -1,3 +1,4 @@
+import { effectClassFromToolHints } from "@ngriffin_uk/polychat-library-tools";
 import type { McpAppCallToolResult, McpAppToolCallRequest } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -31,7 +32,12 @@ export async function callMcpAppTool(
     );
   }
 
-  if (tool.annotations?.readOnlyHint !== true) {
+  const effectClass = effectClassFromToolHints({
+    readOnly: tool.annotations?.readOnlyHint,
+    destructive: tool.annotations?.destructiveHint,
+  });
+
+  if (effectClass !== "read") {
     throw new AssistantError(
       `"${request.tool}" can change something, so it only runs from the conversation, where it can ask you first`,
       ErrorType.AUTHORISATION_ERROR,

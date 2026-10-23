@@ -24,7 +24,7 @@
     "cosmos-transfer2-5-2b": {
       "defaults": {
         "name": "cosmos-transfer2.5-2b",
-        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+        "description": "Generates physics-aware video world states from text and spatial control videos"
       }
     }
   }

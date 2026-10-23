@@ -126,6 +126,18 @@ export function formatUsd(usd: number | null): string {
   return usd === null ? "—" : formatUsdFromMicros(Math.round(usd * 1_000_000));
 }
 
+export function formatCurrencyAmount(amount: number, currency: string): string {
+  try {
+    return amount.toLocaleString("en-GB", { style: "currency", currency });
+  } catch {
+    return `${amount.toLocaleString("en-GB", { maximumFractionDigits: 2 })} ${currency}`;
+  }
+}
+
+export function formatPercentFraction(fraction: number): string {
+  return fraction.toLocaleString("en-GB", { style: "percent", maximumFractionDigits: 1 });
+}
+
 export function parseNumberInputValue(
   value: string,
   { integer = false }: { integer?: boolean } = {},

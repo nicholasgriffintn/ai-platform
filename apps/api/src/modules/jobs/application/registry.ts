@@ -5,14 +5,7 @@ import type { SyncPublisher } from "~/modules/sync/application/publish";
 
 import type { JobKindDefinition, JobKindView } from "../domain/job-kind";
 import { articleAnalysisJobs, articleReportJobs, articleSummaryJobs } from "./kinds/articles";
-import { canvasGenerationJobs } from "./kinds/canvas-generation";
 import { ocrBatchJobs } from "./kinds/ocr-batch";
-import {
-  recordingImageJobs,
-  recordingSummaryJobs,
-  recordingTranscriptionJobs,
-} from "./kinds/recordings";
-import { replicatePredictionJobs } from "./kinds/replicate-prediction";
 import { researchJobs } from "./kinds/research";
 import { siteEvaluationJobs } from "./kinds/site-evaluation";
 import { publishJobChanged } from "./publish";
@@ -20,14 +13,9 @@ import { publishJobChanged } from "./publish";
 type JobKindRegistry = { [TKind in JobKind]: JobKindDefinition<TKind> };
 
 export const JOB_KIND_DEFINITIONS: JobKindRegistry = {
-  canvas_generation: canvasGenerationJobs,
-  replicate_prediction: replicatePredictionJobs,
   ocr_batch: ocrBatchJobs,
   research: researchJobs,
   site_evaluation: siteEvaluationJobs,
-  recording_transcription: recordingTranscriptionJobs,
-  recording_summary: recordingSummaryJobs,
-  recording_image: recordingImageJobs,
   article_analysis: articleAnalysisJobs,
   article_summary: articleSummaryJobs,
   article_report: articleReportJobs,

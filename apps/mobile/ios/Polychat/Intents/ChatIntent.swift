@@ -38,5 +38,14 @@ struct ChatIntentShortcuts: AppShortcutsProvider {
             shortTitle: "Ask Polychat",
             systemImageName: "message.fill"
         )
+        AppShortcut(
+            intent: AskPolyIntent(),
+            phrases: [
+                "Tell Poly in \(.applicationName)",
+                "Ask Poly in \(.applicationName)"
+            ],
+            shortTitle: "Ask Poly",
+            systemImageName: "bird"
+        )
     }
 }

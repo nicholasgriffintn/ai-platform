@@ -10,6 +10,10 @@ The same inputs, results and configuration were at risk of acquiring parallel st
 
 Use **sources** for durable inputs, **outputs** for results, **templates** for reusable configuration, **activity** for execution history, and immutable **audit records** for governed workspace changes. A source or output is personal without a project and collaborative with one. Conversation links are provenance, not authority.
 
+Media is source material, whoever made it. Uploaded images, audio and video, and the images, video, model runs, drawings and podcast episodes generated in Sources, are sources: a generated one carries its model, prompt and the sources it drew on in its `generation` metadata and stays `processing` until its file arrives. Transcripts, notes and cover art belong to the media source they describe, and a transcript becomes that source's searchable content. Generated media therefore feeds retrieval, podcasts and later conversations like anything else supplied. Outputs remain the results of a run, such as documents, decks and reports; tools that answer inside a conversation keep their own results there.
+
+Podcast shows are source collections of kind `podcast`. A show's RSS feed is the only unauthenticated path to source bytes: it is addressed by a hashed token on the collection, serves only available audio sources in that show, and a new link revokes the old one.
+
 Keep file bytes private. Authorise source and output access on the server; output shares use hashed, expiring, revocable tokens. Do not publish project conversations through personal conversation sharing. Use the owning service's creator and administrator mutation rules rather than inferring write permission from read access.
 
 Store validated settings in `capability_configuration`, keyed by scope, capability kind and ID. Configuration does not enable a capability. `project_capability` owns project associations; app and recipe associations are member-created and creator-managed, while project tools remain administrator-managed.

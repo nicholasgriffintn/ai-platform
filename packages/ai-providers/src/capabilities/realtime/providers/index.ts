@@ -23,3 +23,8 @@ export {
   resolveMistralRealtimeProxyModel,
   MistralRealtimeProvider,
 } from "./MistralRealtimeProvider.js";
+export {
+  buildMistralVoiceAgentSessionRequest,
+  MISTRAL_VOICE_AGENT_DESCRIPTOR,
+  MistralVoiceAgentProvider,
+} from "./MistralVoiceAgentProvider.js";

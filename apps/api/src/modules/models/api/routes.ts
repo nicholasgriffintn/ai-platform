@@ -1,5 +1,6 @@
 import { availableModalities } from "@ngriffin_uk/polychat-ai-models";
 import {
+  artificialAnalysisModelsResponseSchema,
   errorResponseSchema,
   listPageOf,
   modelParamsSchema,
@@ -11,6 +12,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
 import {
   getModelDetails,
   listModalities,
@@ -76,6 +78,25 @@ defineResource(app, { idParam: "model_id", tags: ["models"] }, (models) => {
         "Every model the platform knows about, without filtering by the caller's access. Intended for public catalogue surfaces.",
       cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
       handler: async () => modelPage(listModelCatalogue()),
+    })
+    .view("artificial_analysis", {
+      auth: false,
+      summary: "List cached Artificial Analysis model data",
+      description:
+        "Cached Artificial Analysis benchmark, arena, pricing and performance data with source attribution.",
+      responses: {
+        200: { description: "Model data", schema: artificialAnalysisModelsResponseSchema },
+      },
+      handler: async ({ serviceContext }) => ({
+        ...listPageOf(
+          await serviceContext.repositories.get(ArtificialAnalysisRepository).listAll(),
+          (model) => model.id,
+        ),
+        attribution: {
+          label: "Artificial Analysis",
+          url: "https://artificialanalysis.ai/",
+        },
+      }),
     })
     .view("tiers", {
       auth: false,

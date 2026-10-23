@@ -14,6 +14,45 @@ import {
 } from "./messages";
 
 describe("realtime message helpers", () => {
+  it("reads Mistral voice agent segments by role and keeps diarised speakers", () => {
+    expect(
+      extractRealtimeTranscript({
+        type: "transcription.segment",
+        id: "segment-1",
+        role: "assistant",
+        content: "It is raining in Lisbon.",
+        final: true,
+        ts: 1,
+      }),
+    ).toEqual({
+      text: "It is raining in Lisbon.",
+      isDelta: false,
+      isFinal: true,
+      itemId: "segment-1",
+      source: "output",
+    });
+    expect(
+      extractRealtimeTranscript({
+        type: "transcription.segment",
+        text: "Shall we start?",
+        speaker_id: "speaker_2",
+        start: 0,
+        end: 1.4,
+      }),
+    ).toMatchObject({
+      text: "Shall we start?",
+      isFinal: true,
+      source: "input",
+      speaker: "speaker_2",
+    });
+  });
+
+  it("keeps non-fatal voice agent errors from ending the session", () => {
+    expect(
+      extractRealtimeErrorMessage({ type: "error", message: "Tool timed out", fatal: false }),
+    ).toBeUndefined();
+  });
+
   it("extracts OpenAI-style completed transcription messages", () => {
     const transcript = extractRealtimeTranscript({
       type: "conversation.item.input_audio_transcription.completed",

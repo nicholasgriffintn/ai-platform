@@ -105,7 +105,6 @@ export function ShellDialogs() {
         <Suspense fallback={null}>
           <ProjectPickerDialog
             open
-            destination={projectPicker}
             onOpenChange={(open) => {
               if (!open) {
                 closeProjectPicker();

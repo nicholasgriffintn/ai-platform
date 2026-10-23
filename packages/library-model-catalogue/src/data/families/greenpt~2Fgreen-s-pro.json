@@ -16,7 +16,7 @@
     ],
     "releaseDate": "February 2025",
     "supportsToolCalls": false,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "The greenpt/green s pro family includes models that produce text.",

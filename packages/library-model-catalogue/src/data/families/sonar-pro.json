@@ -56,7 +56,6 @@
       "defaults": {
         "name": "Sonar Pro",
         "description": "Advanced Sonar search model for deeper research and cited synthesis",
-        "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 7.6,

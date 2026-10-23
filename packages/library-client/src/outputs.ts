@@ -9,6 +9,7 @@ import type {
   OutputSummary,
   SharedOutput,
 } from "@ngriffin_uk/polychat-schemas";
+import { readAttachmentFilename } from "@ngriffin_uk/polychat-utility-core";
 
 import { apiService } from "./api-service.js";
 import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response.js";
@@ -102,6 +103,10 @@ export async function updateOutput(
   return returnFetchedData<Output>(response);
 }
 
+export async function deleteOutput(outputId: string): Promise<void> {
+  await resource<Output>("/outputs").delete(outputId);
+}
+
 export async function formatOutputDocument(
   outputId: string,
   prompt?: string,
@@ -128,13 +133,18 @@ export async function describeOutputDocument(
   return returnFetchedData<{ metadata: DocumentMetadata }>(response);
 }
 
-export async function exportOutputDocument(outputId: string): Promise<{ body: string }> {
+export async function exportOutputContent(
+  outputId: string,
+): Promise<{ blob: Blob; filename: string | null }> {
   const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/content`, {
     method: "GET",
     headers: await getHeaders(),
   });
 
-  return { body: await response.text() };
+  return {
+    blob: await response.blob(),
+    filename: readAttachmentFilename(response.headers.get("content-disposition")),
+  };
 }
 
 export async function getOutputArtifactContent(

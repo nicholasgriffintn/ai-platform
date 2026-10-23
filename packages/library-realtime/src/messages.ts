@@ -4,6 +4,7 @@ export interface RealtimeTranscriptResult {
   itemId?: string;
   responseId?: string;
   source: "input" | "output" | "unknown";
+  speaker?: string;
   text: string;
 }
 
@@ -49,6 +50,14 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
   "turn.eager_end": "Checking whether speech is complete",
   "turn.resume": "Listening",
   "turn.end": "Speech captured",
+  "tool_call.started": "Using a tool",
+  "tool_call.ended": "Tool finished",
+};
+
+const VOICE_AGENT_STATE_LABELS: Record<string, string> = {
+  listening: "Listening",
+  thinking: "Assistant thinking",
+  speaking: "Assistant speaking",
 };
 
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
@@ -215,6 +224,10 @@ export function extractRealtimeErrorMessage(payload: unknown): string | undefine
   const type = getString(payload.type)?.toLowerCase() ?? "";
   const error = getNestedRecord(payload, "error");
 
+  if (payload.fatal === false) {
+    return undefined;
+  }
+
   if (error) {
     return (
       getString(error.message) ??
@@ -245,6 +258,10 @@ export function extractRealtimeEventLabel(payload: unknown): string | undefined 
 
   if (!type || type.includes("transcript")) {
     return undefined;
+  }
+
+  if (type === "agent.state.changed") {
+    return VOICE_AGENT_STATE_LABELS[getString(payload.state) ?? ""];
   }
 
   return REALTIME_EVENT_LABELS[type];
@@ -349,13 +366,31 @@ export function extractRealtimeTranscript(
     };
   }
 
+  const type = getString(payload.type)?.toLowerCase() ?? "";
+
+  if (
+    type === "transcription.segment" &&
+    (payload.role === "user" || payload.role === "assistant")
+  ) {
+    const content = getString(payload.content);
+    const segmentId = getString(payload.id);
+
+    return content
+      ? {
+          text: content,
+          isDelta: false,
+          isFinal: getBoolean(payload.final),
+          ...(segmentId ? { itemId: segmentId } : {}),
+          source: payload.role === "assistant" ? "output" : "input",
+        }
+      : undefined;
+  }
+
   const directTranscript = getTranscriptFromRecord(payload);
 
   if (!directTranscript) {
     return undefined;
   }
-
-  const type = getString(payload.type)?.toLowerCase() ?? "";
 
   if (type === "turn.update" || type === "turn.eager_end" || type === "turn.end") {
     return {
@@ -372,6 +407,7 @@ export function extractRealtimeTranscript(
 
   const itemId = getRealtimeItemId(payload);
   const responseId = getRealtimeResponseId(payload);
+  const speaker = getString(payload.speaker_id);
 
   return {
     text: directTranscript,
@@ -380,7 +416,14 @@ export function extractRealtimeTranscript(
     ...(itemId ? { itemId } : {}),
     ...(responseId ? { responseId } : {}),
     source: getTranscriptSource(payload),
+    ...(speaker ? { speaker } : {}),
   };
+}
+
+export function formatRealtimeSpeakerLabel(speaker: string): string {
+  const numbered = /^speaker_(\d+)$/i.exec(speaker);
+
+  return numbered ? `Speaker ${numbered[1]}` : speaker;
 }
 
 export function extractInlineAudioChunks(payload: unknown): string[] {

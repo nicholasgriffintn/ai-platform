@@ -51,6 +51,7 @@ export interface CreateRealtimeSessionOptions {
   voice?: string;
   instructions?: string;
   delay?: RealtimeTranscriptionDelay;
+  speakerLabels?: boolean;
   signal?: AbortSignal;
   timeoutMs?: number | null;
 }

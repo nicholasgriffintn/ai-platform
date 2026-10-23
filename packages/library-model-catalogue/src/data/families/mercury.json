@@ -36,7 +36,7 @@
         "contextWindow": 128000,
         "maxTokens": 50000,
         "contextComplexity": 3,
-        "releaseDate": "March 4, 2026",
+        "releaseDate": "February 24, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 13.8,
           "codingIndex": 31.1,
@@ -59,6 +59,15 @@
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
         }
+      }
+    },
+    "inception-mercury-3": {
+      "defaults": {
+        "name": "Inception: Mercury 3",
+        "description": "Mercury 3 is a diffusion-based language model from Inception, and the lab's most capable model to date. It is suited for agentic workflows and real-time applications where latency compounds, such...",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "October 16, 2026"
       }
     },
     "mercury-2": {
@@ -108,6 +117,15 @@
         "contextWindow": 260000,
         "maxTokens": 65536,
         "releaseDate": "August 31, 2026"
+      }
+    },
+    "mercury-3": {
+      "defaults": {
+        "name": "Mercury 3",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "October 16, 2026"
       }
     },
     "mercury-coder-small-beta": {

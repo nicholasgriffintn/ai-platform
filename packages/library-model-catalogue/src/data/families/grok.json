@@ -497,36 +497,6 @@
         }
       }
     },
-    "grok-4-2-beta": {
-      "defaults": {
-        "name": "grok-4.2-beta",
-        "description": "Grok 4.20 Beta is xAI's newest flagship model with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherance, delivering consistently precise and truthful responses.",
-        "contextWindow": 2000000,
-        "maxTokens": 2000000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "March 19, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "grok-4-20": {
       "defaults": {
         "name": "Grok 4.20",
@@ -647,6 +617,9 @@
     "grok-4-20-reasoning": {
       "defaults": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "contextWindow": 2000000,
+        "reliability": 1,
+        "releaseDate": "March 9, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -654,6 +627,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 25.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -682,15 +661,6 @@
         "releaseDate": "April 17, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 24.9,
           "codingIndex": 42.2,
@@ -1160,14 +1130,9 @@
             "video"
           ]
         },
-        "strengths": [
-          "video",
-          "creative"
-        ],
         "reliability": 4,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1204,7 +1169,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1022,
+              "value": 1020,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -1217,7 +1182,7 @@
       "defaults": {
         "name": "Grok Imagine Image 2.0",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 0,
+        "contextWindow": 64000,
         "maxTokens": 0,
         "modalities": {
           "input": [
@@ -1245,7 +1210,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1156,
+              "value": 1155,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -1313,51 +1278,6 @@
         }
       }
     },
-    "grok-imagine-image-quality": {
-      "defaults": {
-        "name": "Grok Imagine Image Quality",
-        "description": "Higher-fidelity Grok Imagine image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 16000,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "image",
-          "creative"
-        ],
-        "contextComplexity": 3,
-        "reliability": 2,
-        "releaseDate": "April 3, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1046,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 7
-            }
-          ]
-        }
-      }
-    },
     "grok-imagine-video": {
       "defaults": {
         "name": "Grok Imagine Video",
@@ -1394,8 +1314,8 @@
     "grok-imagine-video-1-5": {
       "defaults": {
         "name": "Grok Imagine Video 1.5",
-        "description": "Video model for image-to-video generation, editing, and extension workflows",
-        "contextWindow": 0,
+        "description": "Video model for text-to-video, image-to-video, and reference-to-video generation with optional voice references",
+        "contextWindow": 1024,
         "maxTokens": 0,
         "modalities": {
           "input": [
@@ -1436,6 +1356,7 @@
       "defaults": {
         "name": "Grok Imagine Video 1.5 Lite",
         "description": "Cost-efficient video model for text-to-video and image-to-video generation",
+        "contextWindow": 1024,
         "maxTokens": 0,
         "reliability": 2,
         "releaseDate": "October 1, 2026",
@@ -1450,7 +1371,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 983,
+              "value": 985,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -1544,16 +1465,13 @@
           ]
         },
         "releaseDate": "March 16, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsToolCalls": false
       }
     },
     "grok-tts": {
       "defaults": {
         "name": "Grok TTS",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 0,
-        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -1666,9 +1584,7 @@
             "audio"
           ]
         },
-        "releaseDate": "July 29, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "releaseDate": "July 29, 2026"
       }
     },
     "spacexai-grok-4-20": {

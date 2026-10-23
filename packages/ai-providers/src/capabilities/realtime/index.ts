@@ -34,6 +34,8 @@ export interface RealtimeSessionRequest {
   voice?: string;
   instructions?: string;
   delay?: RealtimeTranscriptionDelay;
+  speakerLabels?: boolean;
+  vocabulary?: readonly string[];
   transport?: RealtimeTransport;
   inputModalities?: RealtimeModality[];
   outputModalities?: RealtimeModality[];
@@ -45,6 +47,7 @@ export interface RealtimeProvider {
   readonly configuration: {
     readonly acceptsUserApiKey: boolean;
     readonly environmentVariables: readonly string[];
+    readonly modelProvider?: string;
   };
   models?: string[];
   getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;

@@ -52,7 +52,7 @@
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
-        "contextWindow": 1000000,
+        "contextWindow": 1048576,
         "maxTokens": 393216,
         "isFree": true,
         "strengths": [
@@ -65,7 +65,7 @@
         ],
         "speed": 3,
         "isFeatured": true,
-        "releaseDate": "August 12, 2026",
+        "releaseDate": "August 13, 2026",
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
@@ -83,14 +83,19 @@
       }
     },
     "deepseek-flash": {
-      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
       "matchingModel": "deepseek-flash",
       "overrides": {
-        "contextWindow": 1000000,
+        "name": "DeepSeek V4.1 Flash",
         "maxTokens": 393216,
-        "speed": 4,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 5,
         "isFeatured": true,
-        "lastUpdated": "September 10, 2026",
+        "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "costPer1kReasoningTokens": 0.0006,
@@ -101,6 +106,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 39.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

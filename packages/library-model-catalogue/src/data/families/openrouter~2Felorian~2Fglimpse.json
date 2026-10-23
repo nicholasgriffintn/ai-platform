@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 17, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/elorian/glimpse family includes models that produce text.",
+  "models": {
+    "glimpse": {
+      "defaults": {
+        "name": "Glimpse",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

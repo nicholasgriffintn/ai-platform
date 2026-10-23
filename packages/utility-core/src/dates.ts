@@ -34,12 +34,16 @@ export function isDeadlinePassed(deadline: unknown, now: Date | string = new Dat
   return Number.isFinite(deadlineMs) && Number.isFinite(nowMs) && deadlineMs <= nowMs;
 }
 
-export function formatRelativeTime(dateString: string, now = new Date()): string {
-  const date = new Date(
+export function parseTimestamp(dateString: string): Date {
+  return new Date(
     /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)
       ? `${dateString.replace(" ", "T")}Z`
       : dateString,
   );
+}
+
+export function formatRelativeTime(dateString: string, now = new Date()): string {
+  const date = parseTimestamp(dateString);
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);

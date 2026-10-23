@@ -1,6 +1,15 @@
 {
   "defaults": {
     "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "strengths": [
       "vision",
       "document",
@@ -20,6 +29,18 @@
         "name": "Mistral Medium 3",
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 131072,
+        "maxTokens": 104857,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 7, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 9,
@@ -46,7 +67,7 @@
           ]
         },
         "knowledgeCutoffDate": "June 30, 2025",
-        "releaseDate": "August 13, 2025",
+        "releaseDate": "August 12, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 9.2,
           "codingIndex": 20.5,
@@ -57,8 +78,10 @@
     },
     "mistral-medium-3-5": {
       "defaults": {
+        "name": "Mistral Medium 3.5",
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 262144,
+        "maxTokens": 209715,
         "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
@@ -81,16 +104,7 @@
         "name": "mistral-medium-3-5@eu",
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 262144,
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "maxTokens": 209715,
         "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
@@ -116,15 +130,6 @@
         "openWeights": true,
         "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 29, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -148,16 +153,17 @@
         "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "April 29, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 5.5,
           "codingIndex": null,

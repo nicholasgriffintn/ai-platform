@@ -95,6 +95,20 @@ export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): b
   }
 }
 
+export function readAttachmentFilename(contentDisposition: string | null): string | null {
+  const marker = 'filename="';
+  const start = contentDisposition?.indexOf(marker) ?? -1;
+
+  if (!contentDisposition || start === -1) {
+    return null;
+  }
+
+  const end = contentDisposition.indexOf('"', start + marker.length);
+  const filename = contentDisposition.slice(start + marker.length, end === -1 ? undefined : end);
+
+  return filename.trim() || null;
+}
+
 export function encodePathSegments(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }

@@ -64,9 +64,27 @@
         "speed": 4,
         "isFeatured": true,
         "knowledgeCutoffDate": "November 1, 2025",
-        "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00015,
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00075,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "mercury-3": {
+      "model": "mercury/mercury-3",
+      "matchingModel": "mercury-3",
+      "overrides": {
+        "description": "Inception's diffusion reasoning model for chat, multi-step problem solving, and tool use",
+        "lastUpdated": "October 20, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00035,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

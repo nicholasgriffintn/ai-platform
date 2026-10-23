@@ -28,7 +28,6 @@ const PERSONAL_CONVERSATION_PATTERN = "/chat/:conversationId";
 
 const RESERVED_CHAT_SEGMENTS = new Set([
   "attention",
-  "canvas",
   "sites",
   "files",
   "teammates",
@@ -121,8 +120,7 @@ export function getPolyNavigationHref(target: PolyNavigationTarget): string {
     case "place":
       if (
         target.mode === "work" &&
-        (target.place === "canvas" ||
-          target.place === "sites" ||
+        (target.place === "sites" ||
           target.place === "files" ||
           target.place === "teammates" ||
           target.place === "plugins" ||

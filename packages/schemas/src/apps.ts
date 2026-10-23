@@ -58,29 +58,12 @@ export const drawingSchema = z.object({
   drawing: z.any().refine((file) => file && file instanceof File, {
     error: "Drawing must be a valid file",
   }),
-  drawingId: z.string().optional(),
 });
 
 export const guessDrawingSchema = z.object({
   drawing: z.any().refine((file) => file && file instanceof File, {
     error: "Drawing must be a valid file",
   }),
-});
-
-export const recordingTranscribeSchema = z.object({
-  recordingId: z.string(),
-  numberOfSpeakers: z.number(),
-  prompt: z.string(),
-});
-
-export const recordingSummariseSchema = z.object({
-  recordingId: z.string(),
-  speakers: z.record(z.string(), z.string()),
-});
-
-export const recordingGenerateImageSchema = z.object({
-  recordingId: z.string(),
-  prompt: z.string().optional(),
 });
 
 export const articleAnalyzeSchema = z.object({
@@ -395,11 +378,9 @@ export const projectExperienceRuntimeSchema = z.enum([
   "articles",
   "benchmarks",
   "charades",
-  "image-studio",
   "notes",
+  "paperwork",
   "photo-sorter",
-  "recordings",
-  "replicate",
   "sites",
   "strudel",
   "twenty-questions",
@@ -829,81 +810,6 @@ export const listArticlesResponseSchema = z.object({
 export const sourceArticlesResponseSchema = z.object({
   articles: z.array(outputSchema),
 });
-
-export const recordingStatusSchema = z.enum([
-  "processing",
-  "transcribing",
-  "summarizing",
-  "complete",
-]);
-
-export const recordingListItemSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  createdAt: z.string(),
-  imageUrl: z.string().optional(),
-  duration: z.number().optional(),
-  status: recordingStatusSchema,
-});
-
-export const recordingTranscriptSegmentSchema = z.object({
-  start: z.number().optional(),
-  end: z.number().optional(),
-  text: z.string(),
-  speaker: z.string().optional(),
-  avg_logprob: z.number().optional(),
-});
-
-export const recordingTranscriptDataSchema = z.object({
-  language: z.string().optional(),
-  segments: z.array(recordingTranscriptSegmentSchema),
-  num_speakers: z.number().optional(),
-});
-
-export const recordingTranscriptSchema = z.union([z.string(), recordingTranscriptDataSchema]);
-
-export const recordingActionItemSchema = z.object({
-  task: z
-    .string()
-    .min(1)
-    .describe("One concrete thing someone said they or another person will do."),
-  owner: z.string().nullable().describe("Who will do it, only when the recording names them."),
-  due: z.string().nullable().describe("When it is due, only when the recording states it."),
-});
-
-export const recordingNotesSchema = z.object({
-  summary: z.string().min(1).describe("What the recording covers, in a few sentences."),
-  decisions: z.array(z.string().min(1)).describe("Decisions the speakers agreed on."),
-  actionItems: z.array(recordingActionItemSchema).describe("Commitments made in the recording."),
-});
-
-export const recordingSchema = recordingListItemSchema.extend({
-  description: z.string().optional(),
-  audioUrl: z.string().optional(),
-  transcript: recordingTranscriptSchema.optional(),
-  summary: z.string().optional(),
-  decisions: z.array(z.string()).optional(),
-  actionItems: z.array(recordingActionItemSchema).optional(),
-});
-
-export const listRecordingsResponseSchema = z.object({
-  recordings: z.array(recordingListItemSchema),
-});
-
-export const recordingDetailResponseSchema = z.object({
-  recording: recordingSchema,
-});
-
-export type RecordingStatus = z.infer<typeof recordingStatusSchema>;
-export type RecordingListItem = z.infer<typeof recordingListItemSchema>;
-export type RecordingTranscriptSegment = z.infer<typeof recordingTranscriptSegmentSchema>;
-export type RecordingTranscriptData = z.infer<typeof recordingTranscriptDataSchema>;
-export type RecordingTranscript = z.infer<typeof recordingTranscriptSchema>;
-export type RecordingActionItem = z.infer<typeof recordingActionItemSchema>;
-export type RecordingNotes = z.infer<typeof recordingNotesSchema>;
-export type Recording = z.infer<typeof recordingSchema>;
-export type ListRecordingsResponse = z.infer<typeof listRecordingsResponseSchema>;
-export type RecordingDetailResponse = z.infer<typeof recordingDetailResponseSchema>;
 
 export const noteMetadataSchema = documentMetadataSchema;
 

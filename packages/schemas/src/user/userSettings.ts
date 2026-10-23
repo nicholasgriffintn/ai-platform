@@ -1,5 +1,6 @@
 import * as z from "zod/v4";
 
+import { speechExpressivenessSchema, transcriptionVocabularySchema } from "../audio.js";
 import { bedrockManagedAgentTargetSchema } from "../bedrock-managed-agents.js";
 import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
@@ -105,8 +106,10 @@ export const updateUserSettingsSchema = z
     memory_provider: z.enum(["built-in", "hindsight", "honcho"]).optional(),
     transcription_provider: z.string().optional(),
     transcription_model: z.string().optional(),
+    transcription_vocabulary: transcriptionVocabularySchema.optional(),
     speech_provider: z.string().optional(),
     speech_model: z.string().optional(),
+    speech_expressiveness: speechExpressivenessSchema.nullable().optional(),
     search_provider: z.union([searchProviderSchema, z.literal("")]).optional(),
     sandbox_model: z.string().optional(),
     default_model_tier: modelTierSchema.nullable().optional(),

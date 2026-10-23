@@ -3,7 +3,8 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "apiBaseUrl": "https://opencode.ai/inference/openai/v1"
   },
   "models": {
     "big-pickle": {
@@ -22,7 +23,8 @@
       "overrides": {
         "lastUpdated": "October 15, 2025",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
+        "costPer1kOutputTokens": 0.005,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -33,10 +35,10 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "speed": 2,
-        "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -59,6 +61,7 @@
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -84,6 +87,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -108,6 +112,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -123,31 +128,18 @@
         "supportsResponseFormat"
       ]
     },
-    "claude-sonnet-4": {
-      "model": "claude-sonnet/claude-sonnet-4",
-      "matchingModel": "claude-sonnet-4",
-      "overrides": {
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "contextWindow": 1000000,
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
     "claude-sonnet-4-5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
       "matchingModel": "claude-sonnet-4-5",
       "overrides": {
-        "contextWindow": 1000000,
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kOutputTokens": 0.015,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "contextComplexity"
       ]
     },
     "claude-sonnet-4-6": {
@@ -157,10 +149,11 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
-        "lastUpdated": "February 17, 2026",
+        "speed": 2,
+        "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -204,6 +197,7 @@
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "minimal",
@@ -223,7 +217,8 @@
         "speed": 3,
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012
+        "costPer1kOutputTokens": 0.012,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       }
     },
     "gemini-3.5-flash": {
@@ -241,7 +236,17 @@
         "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.009
+        "costPer1kOutputTokens": 0.009,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "glm-5": {
@@ -251,11 +256,9 @@
         "name": "GLM-5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "February 11, 2026",
-        "lastUpdated": "February 11, 2026",
+        "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032,
         "supportsAttachments": false
@@ -285,7 +288,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085,
@@ -302,7 +305,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085,
@@ -337,8 +340,7 @@
         "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00107,
-        "costPer1kOutputTokens": 0.0085,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0085
       }
     },
     "gpt-5.1-codex": {
@@ -377,15 +379,7 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "gpt-5.2": {
@@ -396,8 +390,7 @@
         "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
-        "costPer1kOutputTokens": 0.014,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.014
       }
     },
     "gpt-5.2-codex": {
@@ -416,8 +409,7 @@
           ]
         },
         "speed": 3,
-        "releaseDate": "January 14, 2026",
-        "lastUpdated": "January 14, 2026",
+        "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false,
@@ -437,11 +429,9 @@
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
         "speed": 3,
-        "releaseDate": "February 24, 2026",
-        "lastUpdated": "February 24, 2026",
+        "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -467,8 +457,7 @@
             "text"
           ]
         },
-        "releaseDate": "February 12, 2026",
-        "lastUpdated": "February 12, 2026",
+        "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsAttachments": false,
@@ -513,8 +502,7 @@
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.0045,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0045
       }
     },
     "gpt-5.4-nano": {
@@ -536,8 +524,7 @@
         "speed": 3,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00125,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00125
       }
     },
     "gpt-5.4-pro": {
@@ -556,7 +543,7 @@
       "model": "gpt/gpt-5-5",
       "matchingModel": "gpt-5.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
@@ -568,8 +555,7 @@
       "matchingModel": "gpt-5.5-pro",
       "overrides": {
         "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "releaseDate": "April 24, 2026",
-        "lastUpdated": "April 24, 2026",
+        "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
         "supportsResponseFormat": false,
@@ -608,11 +594,10 @@
           "tool_use"
         ],
         "speed": 3,
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "supportsTemperature": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -641,8 +626,7 @@
           "coding"
         ],
         "speed": 2,
-        "knowledgeCutoffDate": "October 2024",
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
       },
@@ -673,6 +657,7 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax M2.7",
+        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "March 18, 2026",
@@ -685,25 +670,30 @@
       ]
     },
     "qwen3.5-plus": {
-      "model": "qwen3.5/qwen3-5-plus",
+      "model": "qwen/qwen3-5-plus",
       "matchingModel": "qwen3.5-plus",
       "overrides": {
+        "contextWindow": 262144,
         "lastUpdated": "February 16, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
         "supportsResponseFormat"
       ]
     },
     "qwen3.6-plus": {
-      "model": "qwen3.6/qwen3-6-plus",
+      "model": "qwen/qwen3-6-plus",
       "matchingModel": "qwen3.6-plus",
       "overrides": {
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
         "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -733,13 +723,22 @@
       }
     },
     "nemotron-3-ultra-free": {
-      "model": "nemotron-free/nemotron-3-ultra-free",
+      "model": "nemotron/nemotron-3-ultra-free",
       "matchingModel": "nemotron-3-ultra-free",
       "overrides": {
+        "name": "Nemotron 3 Ultra Free",
+        "maxTokens": 128000,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -754,7 +753,7 @@
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
-        "costPer1kOutputTokens": 0.00384,
+        "costPer1kOutputTokens": 0.00348,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -798,6 +797,7 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -865,7 +865,8 @@
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -918,8 +919,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015,
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
       }
     },
@@ -931,26 +932,19 @@
         "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kOutputTokens": 0.0025,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       }
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
-        "maxTokens": 65536,
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "coding"
-        ],
         "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.0075
+        "costPer1kOutputTokens": 0.0075,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       }
     },
     "claude-opus-5": {
@@ -962,6 +956,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1005,6 +1000,8 @@
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "low",
+            "high",
             "max"
           ],
           "defaultEffort": "max"
@@ -1012,9 +1009,13 @@
       }
     },
     "nemotron-3.5-lightning-free": {
-      "model": "nemotron-free/nemotron-3-5-lightning-free",
+      "model": "nemotron/nemotron-3-5-lightning-free",
       "matchingModel": "nemotron-3.5-lightning-free",
       "overrides": {
+        "name": "Nemotron 3.5 Lightning Free",
+        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1039,7 +1040,8 @@
         "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.0075
+        "costPer1kOutputTokens": 0.0075,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       }
     },
     "muse-spark-1.2": {
@@ -1073,26 +1075,6 @@
         "costPer1kOutputTokens": 0.00425
       }
     },
-    "ling-3.0-flash-fin-free": {
-      "model": "ling/ling-3-0-flash-fin-free",
-      "matchingModel": "ling-3.0-flash-fin-free",
-      "overrides": {
-        "name": "Ling 3.0 Flash Fin Free",
-        "openWeights": true,
-        "description": "Finance-enhanced model for financial research, multi-step investment workflows, and long-horizon planning and execution",
-        "lastUpdated": "September 3, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false
-      },
-      "unset": [
-        "contextComplexity",
-        "strengths",
-        "reliability",
-        "artificialAnalysis"
-      ]
-    },
     "claude-fable-5-1": {
       "model": "claude-fable/claude-fable-5-1",
       "matchingModel": "claude-fable-5-1",
@@ -1101,7 +1083,8 @@
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -1112,37 +1095,15 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.0075
+        "costPer1kOutputTokens": 0.0075,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       },
       "unset": [
         "knowledgeCutoffDate"
-      ]
-    },
-    "muse-spark-1.3-contributor-free": {
-      "model": "muse-free/muse-spark-1-3-free",
-      "matchingModel": "muse-spark-1.3-contributor-free",
-      "overrides": {
-        "lastUpdated": "September 2, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
-    "deepseek-v4-flash-vision-exp": {
-      "model": "deepseek-flash/deepseek-v4-flash-vision-exp",
-      "matchingModel": "deepseek-v4-flash-vision-exp",
-      "overrides": {
-        "contextWindow": 1000000,
-        "lastUpdated": "September 1, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028
-      },
-      "unset": [
-        "knowledgeCutoffDate",
-        "contextComplexity",
-        "reliability"
       ]
     },
     "glm-5.3": {
@@ -1227,7 +1188,10 @@
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "apiBaseUrl"
+      ]
     },
     "jev-latest": {
       "model": "opencode/jev-latest/jev",
@@ -1239,7 +1203,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "apiBaseUrl"
+      ]
     },
     "deepseek-v4.1-flash": {
       "model": "deepseek-flash/deepseek-v4-1-flash",
@@ -1247,7 +1214,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1268,6 +1235,7 @@
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00047,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1285,10 +1253,7 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "claude-opus-5-5": {
       "model": "claude-opus/claude-opus-5-5",
@@ -1299,7 +1264,8 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       }
     },
     "gpt-6-luna": {
@@ -1335,15 +1301,6 @@
         "costPer1kOutputTokens": 0.006
       }
     },
-    "space-bunny-free": {
-      "model": "opencode/space-bunny-free/space-bunny-free",
-      "matchingModel": "space-bunny-free",
-      "overrides": {
-        "lastUpdated": "September 23, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "qwen3.8-max": {
       "model": "qwen/qwen3-8-max",
       "matchingModel": "qwen3.8-max",
@@ -1370,10 +1327,11 @@
         "costPer1kOutputTokens": 0.006,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "low",
+            "medium",
+            "xhigh"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       }
     },
@@ -1385,16 +1343,8 @@
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
-      }
-    },
-    "longcat-2.5-preview-free": {
-      "model": "longcat/longcat-2-5-preview-free",
-      "matchingModel": "longcat-2.5-preview-free",
-      "overrides": {
-        "lastUpdated": "September 25, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1"
       }
     },
     "gpt-6.1-sol": {
@@ -1406,38 +1356,6 @@
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
-      }
-    },
-    "ling-3.1-flash-free": {
-      "model": "ling/ling-3-1-flash-free",
-      "matchingModel": "ling-3.1-flash-free",
-      "overrides": {
-        "name": "Ling 3.1 Flash Free",
-        "lastUpdated": "September 29, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
-    },
-    "exo-free": {
-      "model": "opencode/exo-free/exo-free",
-      "matchingModel": "exo-free",
-      "overrides": {
-        "lastUpdated": "October 6, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
         "supportsTemperature": false
       }
     },
@@ -1461,26 +1379,19 @@
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
-      }
-    },
-    "step-5-preview-free": {
-      "model": "opencode/step-5-preview-free/step-5-preview-free",
-      "matchingModel": "step-5-preview-free",
-      "overrides": {
-        "lastUpdated": "September 20, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
-    "cat-jam-free": {
-      "model": "opencode/cat-jam-free/cat-jam-free",
-      "matchingModel": "cat-jam-free",
-      "overrides": {
-        "lastUpdated": "October 12, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsAttachments": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/anthropic/v1",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
       }
     },
     "gemini-4-argon": {
@@ -1488,10 +1399,94 @@
       "matchingModel": "gemini-4-argon",
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 65536,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
+      }
+    },
+    "beam-free": {
+      "model": "beam/beam-free",
+      "matchingModel": "beam-free",
+      "overrides": {
+        "lastUpdated": "October 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "deepseek-v4.1-flash-free": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-free",
+      "matchingModel": "deepseek-v4.1-flash-free",
+      "overrides": {
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "flint-40b-free": {
+      "model": "flint/flint-40b-free",
+      "matchingModel": "flint-40b-free",
+      "overrides": {
+        "lastUpdated": "October 21, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "glm-5.3-flash-free": {
+      "model": "glm-flash/glm-5-3-flash-free",
+      "matchingModel": "glm-5.3-flash-free",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "muse-wonder-1.0": {
+      "model": "muse/muse-wonder",
+      "matchingModel": "muse-wonder-1.0",
+      "overrides": {
+        "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
+        "maxTokens": 131072,
+        "speed": 3,
+        "lastUpdated": "October 12, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02
+      }
+    },
+    "nemotron-3.5-super-vl-free": {
+      "model": "nemotron/nemotron-3-5-super-vl-free",
+      "matchingModel": "nemotron-3.5-super-vl-free",
+      "overrides": {
+        "name": "Nemotron 3.5 Super VL Free",
+        "description": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

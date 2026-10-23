@@ -1,28 +1,19 @@
 import { StartConversationDialog } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  getProjectCanvasPath,
   getProjectChatPath,
   useTrackEvent,
   useWorkspace,
   useWorkspaces,
-  type ProjectPickerDestination,
 } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-const CANVAS_COPY = {
-  description: "Pick a workspace, then a project. Anything you make is kept with that project.",
-  projectDescription: "Pick the project this canvas belongs to.",
-};
-
 export function ProjectPickerDialog({
-  destination,
   open,
   onOpenChange,
 }: {
-  destination: ProjectPickerDestination;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -35,7 +26,6 @@ export function ProjectPickerDialog({
   const workspaces = workspacesQuery.data ?? [];
   const selectedWorkspace = workspaces.find((workspace) => workspace.id === workspaceId) ?? null;
   const error = workspacesQuery.error ?? workspaceQuery.error;
-  const isCanvas = destination === "canvas";
 
   return (
     <StartConversationDialog
@@ -51,8 +41,6 @@ export function ProjectPickerDialog({
       }))}
       isLoadingProjects={Boolean(workspaceId) && workspaceQuery.isLoading}
       errorMessage={error ? getErrorMessage(error, "Workspaces could not be loaded") : undefined}
-      description={isCanvas ? CANVAS_COPY.description : undefined}
-      projectDescription={isCanvas ? CANVAS_COPY.projectDescription : undefined}
       onOpenChange={(next) => {
         if (!next) {
           setWorkspaceId(null);
@@ -67,19 +55,13 @@ export function ProjectPickerDialog({
         }
 
         trackEvent({
-          name: isCanvas ? "open_canvas" : "new_chat",
+          name: "new_chat",
           category: "sidebar",
           label: "project_picker",
           value: 1,
         });
         onOpenChange(false);
         setWorkspaceId(null);
-
-        if (isCanvas) {
-          void navigate(getProjectCanvasPath(workspaceId, projectId));
-
-          return;
-        }
 
         clearCurrentConversation();
         void navigate(getProjectChatPath(workspaceId, projectId));

@@ -16,7 +16,10 @@ import {
   useTabAudioCapture,
 } from "@ngriffin_uk/polychat-library-react";
 import { getFirstReadyRealtimeTranscriptionProviderOption } from "@ngriffin_uk/polychat-library-realtime/live-providers";
-import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
+import {
+  formatRealtimeSpeakerLabel,
+  type RealtimeTranscriptResult,
+} from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { NoteMetadata as NoteMetadataType } from "@ngriffin_uk/polychat-schemas";
 import {
   formatTextWithSpacing,
@@ -139,6 +142,7 @@ export function NoteEditor({
   }, [noteId, forceSave]);
 
   const partialTranscriptRef = useRef("");
+  const lastSpeakerRef = useRef<string | undefined>(undefined);
 
   const updatePartialTranscript = useCallback((value: string) => {
     partialTranscriptRef.current = value;
@@ -162,9 +166,30 @@ export function NoteEditor({
       }
 
       updatePartialTranscript("");
-      if (merged.trim()) {
-        setText((current) => formatTextWithSpacing(current, merged.trim()));
+      const finalText = merged.trim();
+
+      if (!finalText) {
+        return;
       }
+
+      const speaker = transcript.speaker;
+
+      if (speaker === undefined && lastSpeakerRef.current !== undefined) {
+        return;
+      }
+
+      const speakerChanged = speaker !== undefined && speaker !== lastSpeakerRef.current;
+
+      if (!speakerChanged) {
+        setText((current) => formatTextWithSpacing(current, finalText));
+
+        return;
+      }
+
+      lastSpeakerRef.current = speaker;
+      const entry = `${formatRealtimeSpeakerLabel(speaker)}: ${finalText}`;
+
+      setText((current) => (current.trim() ? `${current.trimEnd()}\n\n${entry}` : entry));
     },
     [updatePartialTranscript],
   );
@@ -260,6 +285,7 @@ export function NoteEditor({
       }
 
       updatePartialTranscript("");
+      lastSpeakerRef.current = undefined;
       void transcription.start(provider.id, undefined, { inputStream });
 
       return true;

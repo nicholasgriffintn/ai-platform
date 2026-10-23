@@ -8,7 +8,7 @@ export function useOutputSharing() {
   const mintedShareTokens = useRef(new Map<string, string>());
   const create = useCreateOutputShare();
   const revoke = useRevokeOutputShare();
-  const copy = async (outputId: string) => {
+  const copy = async (outputId: string): Promise<boolean> => {
     setError(null);
     try {
       let token = mintedShareTokens.current.get(outputId);
@@ -20,9 +20,13 @@ export function useOutputSharing() {
 
       await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
       setCopiedOutputId(outputId);
+
+      return true;
     } catch (failure) {
       setCopiedOutputId(null);
       setError({ outputId, message: getErrorMessage(failure, "Could not copy the share link") });
+
+      return false;
     }
   };
 

@@ -14,7 +14,7 @@
     "knowledgeCutoffDate": "August 1, 2025",
     "releaseDate": "September 1, 2025",
     "supportsToolCalls": true,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": false,
     "reasoningConfig": {
       "supportedEffortLevels": [

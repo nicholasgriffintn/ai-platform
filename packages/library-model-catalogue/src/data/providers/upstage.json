@@ -13,7 +13,11 @@
         "lastUpdated": "April 22, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
-      }
+      },
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "solar-pro2": {
       "model": "solar-pro/solar-pro2",
@@ -33,7 +37,7 @@
       "model": "solar-pro/solar-pro3",
       "matchingModel": "solar-pro3",
       "overrides": {
-        "lastUpdated": "January 2026",
+        "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00025
       },
@@ -47,11 +51,29 @@
       "model": "solar-pro/solar-pro-4",
       "matchingModel": "solar-pro4",
       "overrides": {
+        "description": "Upstage's flagship model, specialized for agentic use",
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "solar-mini4": {
+      "model": "solar-mini/solar-mini-4",
+      "matchingModel": "solar-mini4",
+      "overrides": {
+        "description": "Upstage's compact, cost-efficient model for agentic use",
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0004
       }
     }
   }

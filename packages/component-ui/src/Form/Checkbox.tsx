@@ -47,18 +47,41 @@ export function FormCheckbox({
     />
   );
 
+  const descriptionText = description && (
+    <p id={descriptionId} className="text-xs text-muted-foreground">
+      {description}
+    </p>
+  );
+
+  if (labelPosition === "right") {
+    return (
+      <div className="flex items-start gap-3">
+        <div className="flex h-5 items-center">{control}</div>
+        {(label || description) && (
+          <div className="min-w-0 space-y-1">
+            {label && (
+              <Label htmlFor={controlId} className="min-h-5 cursor-pointer leading-5">
+                {label}
+              </Label>
+            )}
+            {descriptionText}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        {label && labelPosition === "left" && <Label htmlFor={controlId}>{label}</Label>}
+      <div className="flex min-h-5 items-center justify-between gap-3">
+        {label && (
+          <Label htmlFor={controlId} className="cursor-pointer leading-5">
+            {label}
+          </Label>
+        )}
         {control}
-        {label && labelPosition === "right" && <Label htmlFor={controlId}>{label}</Label>}
       </div>
-      {description && (
-        <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">
-          {description}
-        </p>
-      )}
+      {descriptionText}
     </div>
   );
 }

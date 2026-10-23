@@ -12,6 +12,7 @@ Local model runtimes and agent gateways need access to device addresses and cred
 - Let the webview call the hosted API through the shared API client over HTTPS. The desktop content security policy allows only the required hosted API origin.
 - Share navigation and product composition through `component-shell`. Keep host-only actions behind its host interface; ordinary component packages remain independent of routers, stores and API clients.
 - Keep device model discovery and execution on the device. Apply account-scoped local storage and retention rules at the native host boundary.
+- Keep local file effects in the Tauri core too. Hosted tools reach a granted folder only through a machine run that the desktop claims, and the core resolves every path inside the grant before it reads or writes. The heartbeat advertises folder ids and labels, never paths.
 
 ## Consequences
 

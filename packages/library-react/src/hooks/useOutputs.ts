@@ -1,6 +1,8 @@
 import {
   createOutputShare,
+  deleteOutput,
   describeOutputDocument,
+  exportOutputContent,
   formatOutputDocument,
   getOutput,
   getOutputHistory,
@@ -96,6 +98,30 @@ export function useRestoreOutputRevision() {
   });
 }
 
+export function useOutputMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all });
+
+  return {
+    rename: useMutation({
+      mutationFn: ({
+        outputId,
+        title,
+        expectedRevision,
+      }: {
+        outputId: string;
+        title: string;
+        expectedRevision: number;
+      }) => updateOutput(outputId, { title, expectedRevision }),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: deleteOutput,
+      onSuccess: invalidate,
+    }),
+  };
+}
+
 export function useSaveDocumentRevision() {
   const queryClient = useQueryClient();
 
@@ -142,6 +168,12 @@ export function useDescribeDocument() {
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.detail(outputId) }),
         queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.history(outputId) }),
       ]),
+  });
+}
+
+export function useExportOutput() {
+  return useMutation({
+    mutationFn: ({ outputId }: { outputId: string }) => exportOutputContent(outputId),
   });
 }
 

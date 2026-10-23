@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": true,
     "supportsResponseFormat": true,
     "supportsTemperature": true
   },
@@ -21,7 +22,7 @@
             "text"
           ]
         },
-        "releaseDate": "March 20, 2026",
+        "releaseDate": "March 11, 2026",
         "supportsToolCalls": true,
         "supportsAttachments": true
       }
@@ -43,7 +44,7 @@
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "January 31, 2025",
-        "releaseDate": "March 12, 2025",
+        "releaseDate": "March 10, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {

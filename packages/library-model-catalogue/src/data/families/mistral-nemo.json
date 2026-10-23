@@ -11,6 +11,7 @@
       ]
     },
     "knowledgeCutoffDate": "July 2024",
+    "releaseDate": "July 18, 2024",
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -23,22 +24,10 @@
         "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment"
       }
     },
-    "mistral-nemo-12b-instruct": {
+    "mistral-nemo-instruct-2407": {
       "defaults": {
-        "name": "Mistral Nemo 12B Instruct",
-        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "contextWindow": 16000,
-        "maxTokens": 4096,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "multilingual"
-        ],
-        "contextComplexity": 3,
-        "reliability": 3,
-        "knowledgeCutoffDate": "December 2024",
-        "releaseDate": "January 1, 2025"
+        "description": "A 12B parameter, instruct-tuned language model by Mistral AI and NVIDIA, designed for advanced instruction following, multi-turn conversations, and generating text and code across multiple languages.",
+        "supportsResponseFormat": true
       }
     },
     "mistral-nemo-instruct-2407-tee": {
@@ -46,7 +35,6 @@
         "name": "Mistral Nemo Instruct 2407 TEE",
         "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
         "maxTokens": 131072,
-        "releaseDate": "July 1, 2024",
         "supportsToolCalls": false
       }
     }

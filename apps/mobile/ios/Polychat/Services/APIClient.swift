@@ -80,6 +80,16 @@ final class APIClient: ObservableObject {
         try await send(path: "/poly/agenda", method: "GET")
     }
 
+    func fetchTeammates() async throws -> [TeammateSummary] {
+        let response: TeammateListResponse = try await send(path: "/teammates", method: "GET")
+        return response.data
+    }
+
+    func fetchTeammateRoster() async throws -> [TeammateRosterEntry] {
+        let response: TeammateRosterResponse = try await send(path: "/teammates/roster", method: "GET")
+        return response.data
+    }
+
     func setPolyPause(contextId: String, until: Date?) async throws {
         let formatter = ISO8601DateFormatter()
         let _: PolyContextResponse = try await send(
@@ -136,7 +146,8 @@ final class APIClient: ObservableObject {
         modelId: String?,
         provider: String? = nil,
         conversationId: String? = nil,
-        settings: ChatSettings? = nil
+        settings: ChatSettings? = nil,
+        agentTeammateId: String? = nil
     ) async throws -> PlatformResponse {
         let requestBody = CreateResponseRequest(
             messages: messages,
@@ -144,7 +155,8 @@ final class APIClient: ObservableObject {
             provider: provider,
             store: true,
             conversationId: conversationId,
-            settings: settings
+            settings: settings,
+            agentTeammateId: agentTeammateId
         )
         try validateResponseRequest(requestBody)
 

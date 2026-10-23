@@ -11,6 +11,7 @@ import {
   getRealtimeProvider,
   listRealtimeProviders,
 } from "~/infrastructure/providers/capabilities/realtime";
+import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IUser } from "~/types";
 
 import {
@@ -34,6 +35,7 @@ export interface RealtimeSessionOptions {
   voice?: string;
   instructions?: string;
   delay?: string;
+  speakerLabels?: boolean;
   transport?: string;
   inputModalities?: string;
   outputModalities?: string;
@@ -64,6 +66,7 @@ export async function createRealtimeSession(
   }
 
   const provider = getRealtimeProvider(providerName, { env, user });
+  const modelProvider = provider.configuration.modelProvider ?? providerName;
 
   if (options.model && provider.models && !provider.models.includes(options.model)) {
     rejected("Invalid model specified", 400);
@@ -87,7 +90,7 @@ export async function createRealtimeSession(
     env,
     user,
     model: requestedModel,
-    provider: providerName,
+    provider: modelProvider,
   });
 
   if (!accessibleModel) {
@@ -110,6 +113,9 @@ export async function createRealtimeSession(
   }
 
   const maxSessionSeconds = resolveRealtimeMaxSessionSeconds(env);
+  const userSettings = await optionalRepositories(serviceContext)
+    ?.get(UserSettingsRepository)
+    .getUserSettings(user.id);
   const session = await provider.createSession({
     env,
     user,
@@ -121,6 +127,8 @@ export async function createRealtimeSession(
     voice: options.voice,
     instructions: options.instructions,
     delay: parseRealtimeTranscriptionDelay(options.delay),
+    speakerLabels: options.speakerLabels,
+    vocabulary: userSettings?.transcription_vocabulary,
     transport: parseRealtimeTransport(options.transport),
     inputModalities: parseRealtimeModalities(options.inputModalities),
     outputModalities: parseRealtimeModalities(options.outputModalities),

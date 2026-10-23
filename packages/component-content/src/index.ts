@@ -13,6 +13,7 @@ export {
 } from "./share";
 export * from "./AgentApprovalCard";
 export * from "./Artifacts";
+export * from "./Outputs";
 export * from "./Response";
 export * from "./SandboxView";
 export * from "./RunEvidence";

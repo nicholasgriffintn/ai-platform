@@ -21,9 +21,9 @@ vi.mock("~/infrastructure/providers/capabilities/realtime/providers", () => ({
     if (
       model === undefined ||
       model === "voxtral-mini-transcribe-realtime" ||
-      model === "voxtral-mini-transcribe-realtime-2602"
+      model === "voxtral-mini-transcribe-realtime-3-0"
     ) {
-      return "voxtral-mini-transcribe-realtime-2602";
+      return "voxtral-mini-transcribe-realtime-3-0";
     }
 
     return undefined;
@@ -82,7 +82,7 @@ describe("Mistral realtime proxy", () => {
         context,
         env: createEnv(),
         user,
-        model: "voxtral-mini-transcribe-realtime-2602",
+        model: "voxtral-mini-transcribe-realtime-3-0",
       }),
     );
 
@@ -93,7 +93,7 @@ describe("Mistral realtime proxy", () => {
     expect(response.status).toBe(401);
     expect(fetchMock).toHaveBeenCalledWith(
       new URL(
-        "https://api.mistral.ai/v1/audio/transcriptions/realtime?model=voxtral-mini-transcribe-realtime-2602",
+        "https://api.mistral.ai/v1/audio/transcriptions/realtime?model=voxtral-mini-transcribe-realtime-3-0",
       ),
       {
         headers: {

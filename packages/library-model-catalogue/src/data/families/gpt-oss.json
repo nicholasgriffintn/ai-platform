@@ -14,6 +14,7 @@
       "tool_use"
     ],
     "reliability": 1,
+    "knowledgeCutoffDate": "June 2024",
     "releaseDate": "August 5, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -217,7 +218,6 @@
         "contextWindow": 128072,
         "maxTokens": 128072,
         "contextComplexity": 4,
-        "knowledgeCutoffDate": "August 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

@@ -70,3 +70,8 @@ export * from "./ReplicatePredictionList";
 export * from "./ReplicateModelDetailView";
 export * from "./ReplicateModelCategoryGrid";
 export * from "./ReplicateLoadState";
+
+export * from "./Sources/captions";
+export * from "./Sources/MediaNotes";
+export * from "./Sources/SourceMediaDetail";
+export * from "./Sources/TranscriptViewer";

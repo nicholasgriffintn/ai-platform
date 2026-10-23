@@ -11,7 +11,6 @@
       ]
     },
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "Mistral coding model for code completion, generation, and developer workflows",
@@ -22,7 +21,8 @@
         "description": "Mistral coding model for code completion, generation, and developer workflows",
         "maxTokens": 256000,
         "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "January 1, 2025"
+        "releaseDate": "January 1, 2025",
+        "supportsAttachments": false
       }
     },
     "codestral-25-08": {
@@ -49,7 +49,6 @@
         "name": "Codestral",
         "openWeights": true,
         "description": "Mistral code model for completions, refactors, and developer IDE workflows",
-        "maxTokens": 4096,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 29, 2024"
       }

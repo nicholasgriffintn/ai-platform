@@ -54,25 +54,6 @@
         "releaseDate": "July 21, 2026"
       }
     },
-    "laguna-xs-2": {
-      "defaults": {
-        "name": "Laguna XS.2",
-        "description": "Agentic coding model from Poolside in the XS size class for local deployment",
-        "contextWindow": 32768,
-        "releaseDate": "April 28, 2026",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "laguna-xs-2-1": {
       "defaults": {
         "name": "Laguna XS 2.1",
@@ -80,19 +61,11 @@
         "releaseDate": "July 2, 2026"
       }
     },
-    "laguna-xs-2-1-free": {
+    "poolside-laguna-s-2-1-free": {
       "defaults": {
-        "name": "Laguna XS 2.1 (free)",
-        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
-        "releaseDate": "July 2, 2026"
-      }
-    },
-    "poolside-laguna-xs-2-1-free": {
-      "defaults": {
-        "name": "Poolside: Laguna XS 2.1 (free)",
-        "openWeights": false,
-        "description": "Laguna XS 2.1 is the latest coding agent model in the 33B-A3B category from [Poolside](https://poolside.ai/) and a step forward from their Laguna XS.2 model (released in April 2026). It combines...",
-        "releaseDate": "July 2, 2026",
+        "name": "Poolside: Laguna S 2.1 (free)",
+        "description": "Laguna S 2.1 is the latest coding agent model from [Poolside](<https://poolside.ai/>). Laguna S 2.1 is a 118B total parameter model with 8B active parameters, scoring 70.2% on Terminal-Bench 2.1 and...",
+        "releaseDate": "July 21, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -102,10 +75,9 @@
         }
       }
     },
-    "poolside-laguna-xs-2-1-retires-oct-31": {
+    "poolside-laguna-xs-2-1-free": {
       "defaults": {
-        "name": "Poolside: Laguna XS 2.1 (retires Oct 31)",
-        "openWeights": false,
+        "name": "Poolside: Laguna XS 2.1 (free)",
         "description": "Laguna XS 2.1 is the latest coding agent model in the 33B-A3B category from [Poolside](https://poolside.ai/) and a step forward from their Laguna XS.2 model (released in April 2026). It combines...",
         "releaseDate": "July 2, 2026",
         "reasoningConfig": {

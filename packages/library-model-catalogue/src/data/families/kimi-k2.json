@@ -148,6 +148,7 @@
         },
         "contextComplexity": 4,
         "reliability": 2,
+        "releaseDate": "January 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -187,7 +188,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 2,
-        "releaseDate": "January 2026",
+        "releaseDate": "January 27, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -248,7 +249,7 @@
         },
         "contextComplexity": 4,
         "reliability": 2,
-        "releaseDate": "April 21, 2026",
+        "releaseDate": "April 20, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -289,7 +290,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 2,
-        "releaseDate": "April 21, 2026",
+        "releaseDate": "April 20, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -323,8 +324,7 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "April 21, 2026",
+        "releaseDate": "April 20, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

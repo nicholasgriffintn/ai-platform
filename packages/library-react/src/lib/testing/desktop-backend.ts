@@ -169,6 +169,9 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       checkedAt: new Date(0).toISOString(),
     }),
     listAgentDirectories: async () => seed.agentDirectories ?? [],
+    runLocalTool: async () => {
+      throw new Error("Local tools are not available in the fake desktop backend.");
+    },
     pickAgentDirectory: async () => null,
     saveAgentDirectory: async (path) => ({
       id: `fake-directory-${path}`,

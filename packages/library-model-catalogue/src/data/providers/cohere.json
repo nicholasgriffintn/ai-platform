@@ -9,6 +9,8 @@
       "model": "o/cohere-rerank-3-5",
       "matchingModel": "rerank-v3.5",
       "overrides": {
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "maxTokens": 4096,
         "lastUpdated": "December 2, 2024",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -18,6 +20,8 @@
       "model": "o/cohere-rerank-4-fast",
       "matchingModel": "rerank-v4.0-fast",
       "overrides": {
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "maxTokens": 32000,
         "lastUpdated": "December 11, 2025",
         "costPer1kSearchUnits": 2,
         "supportsToolCalls": false,
@@ -28,6 +32,8 @@
       "model": "o/cohere-rerank-4-pro",
       "matchingModel": "rerank-v4.0-pro",
       "overrides": {
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
+        "maxTokens": 32000,
         "lastUpdated": "December 11, 2025",
         "costPer1kSearchUnits": 2.5,
         "supportsToolCalls": false,
@@ -39,6 +45,8 @@
       "matchingModel": "c4ai-aya-expanse-32b",
       "overrides": {
         "lastUpdated": "October 24, 2024",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
         "supportsToolCalls": false
       }
     },
@@ -78,20 +86,18 @@
           "tool_use"
         ],
         "speed": 3,
+        "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "command-a-plus-05-2026": {
       "model": "command-a/command-a-plus",
       "matchingModel": "command-a-plus-05-2026",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -158,13 +164,10 @@
       "matchingModel": "command-r7b-12-2024",
       "overrides": {
         "isFree": true,
-        "lastUpdated": "December 2, 2024",
+        "lastUpdated": "December 13, 2024",
         "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "command-r7b-arabic-02-2025": {
       "model": "command-r/command-r7b-arabic",
@@ -196,7 +199,10 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "tiny-aya-earth": {
       "model": "cohere/tiny-aya-earth/tiny-aya-earth",

@@ -48,6 +48,12 @@
       "import": "./dist/media-encoding.js",
       "require": "./dist/media-encoding.cjs"
     },
+    "./livekit": {
+      "polychat-source": "./src/livekit.ts",
+      "types": "./dist/livekit.d.ts",
+      "import": "./dist/livekit.js",
+      "require": "./dist/livekit.cjs"
+    },
     "./live-providers": {
       "polychat-source": "./src/live-providers.ts",
       "types": "./dist/live-providers.d.ts",
@@ -75,7 +81,8 @@
   },
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "livekit-client": "2.23.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

@@ -1914,9 +1914,10 @@ export const resourceCollection = sqliteTable(
     title: text().notNull(),
     normalised_name: text(),
     description: text(),
-    kind: text({ enum: ["general", "memory", "context"] })
+    kind: text({ enum: ["general", "memory", "context", "podcast"] })
       .default("general")
       .notNull(),
+    feed_token_hash: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -1936,6 +1937,9 @@ export const resourceCollection = sqliteTable(
     personalNameIdx: uniqueIndex("resource_collection_personal_group_name_idx")
       .on(table.owner_user_id, table.normalised_name)
       .where(sql`${table.collection_type} = 'conversation' AND ${table.owner_user_id} IS NOT NULL`),
+    feedTokenIdx: uniqueIndex("resource_collection_feed_token_idx")
+      .on(table.feed_token_hash)
+      .where(sql`${table.feed_token_hash} IS NOT NULL`),
     projectNameIdx: uniqueIndex("resource_collection_project_group_name_idx")
       .on(table.project_id, table.normalised_name)
       .where(sql`${table.collection_type} = 'conversation' AND ${table.project_id} IS NOT NULL`),
@@ -2558,9 +2562,10 @@ export const tasks = sqliteTable(
         "memory_synthesis",
         "memory_reflection",
         "research_polling",
-        "replicate_polling",
         "async_message_polling",
-        "recording_transcription_polling",
+        "source_generation_polling",
+        "source_media_transcription",
+        "source_podcast_generation",
         "training_quality_scoring",
         "recipe_execution",
         "sandbox_run_dispatch",

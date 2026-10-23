@@ -1,12 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 262144,
-    "maxTokens": 65536,
     "supportsToolCalls": true,
-    "supportsResponseFormat": false,
-    "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsResponseFormat": false
   },
   "description": "The qwen3.6 family includes models that produce text.",
   "models": {
@@ -15,6 +11,7 @@
         "name": "Qwen3.6 Flash",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -27,51 +24,14 @@
         },
         "releaseDate": "April 27, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
-        }
-      }
-    },
-    "qwen3-6-plus": {
-      "defaults": {
-        "name": "Qwen3.6 Plus",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 2,
-        "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "April 2, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 27,
-          "codingIndex": 54.5,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -80,6 +40,7 @@
         "name": "Stealth: Qwen3.6 Plus (50% off)",
         "description": "Your prompts and completions may be retained and used to train or improve the provider's services. This third-party-served variant of Qwen3.6 Plus is offered at 50% lower cost than standard Qwen3.6 Plus pricing and is not served by Alibaba or Kilo Code. Note: a surcharge applies to long-context workloads exceeding 256K input tokens.",
         "contextWindow": 1000000,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -97,6 +58,8 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 26, 2025",
+        "supportsAttachments": true,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "minimal",
@@ -119,6 +82,7 @@
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b",
         "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -146,6 +110,7 @@
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b@eu",
         "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [

@@ -11,18 +11,19 @@ import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { StorageService } from "~/infrastructure/storage";
 import { requiresAuthenticatedSpeechProvider } from "~/modules/audio/application/access";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { IEnv, IFunctionResponse, IUser } from "~/types";
+import type { IEnv, IFunctionResponse, IUser, IUserSettings } from "~/types";
 
 import { prepareSpeechInput } from "./input";
+import { resolveMistralSpeechVoice } from "./voices";
 
 export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";
 
-const defaultSpeechModelsByProvider: Record<SpeechProvider, string> = {
+export const defaultSpeechModelsByProvider: Record<SpeechProvider, string> = {
   polly: "Ruth",
   cartesia: "sonic-3.5",
   elevenlabs: "eleven_multilingual_v2",
   melotts: "@cf/myshell-ai/melotts",
-  mistral: "82c99ee6-f932-423f-a4a3-d403c8914b8d",
+  mistral: "voice_1787",
 };
 
 type TextToSpeechRequest = {
@@ -36,6 +37,7 @@ type TextToSpeechRequest = {
   voice_id?: string;
   ref_audio?: string;
   response_format?: AudioResponseFormat;
+  expressiveness?: number;
   context?: ServiceContext;
 };
 
@@ -49,31 +51,38 @@ function isSpeechProvider(provider: unknown): provider is SpeechProvider {
   );
 }
 
-async function resolveSpeechSettings({
-  env,
-  user,
+function resolveSpeechSettings({
   provider,
   model,
-}: Pick<TextToSpeechRequest, "env" | "user" | "provider" | "model">): Promise<{
+  voiceId,
+  userSettings,
+}: Pick<TextToSpeechRequest, "provider" | "model"> & {
+  voiceId?: string;
+  userSettings: IUserSettings | null;
+}): {
   provider: SpeechProvider;
   model: string;
-}> {
-  if (provider) {
+} {
+  const settingsProvider = userSettings?.speech_provider;
+  const resolvedProvider =
+    provider ?? (isSpeechProvider(settingsProvider) ? settingsProvider : "melotts");
+  const configuredModel = provider ? undefined : userSettings?.speech_model;
+
+  if (resolvedProvider === "mistral") {
     return {
-      provider,
-      model: model || defaultSpeechModelsByProvider[provider],
+      provider: resolvedProvider,
+      model: resolveMistralSpeechVoice({
+        requestedVoice: voiceId ?? (provider ? model : undefined),
+        configuredVoice: configuredModel,
+        defaultVoice: defaultSpeechModelsByProvider.mistral,
+        savedVoices: userSettings?.speech_voices ?? [],
+      }),
     };
   }
 
-  const userSettings = user?.id
-    ? await new UserSettingsRepository(env).getUserSettings(user.id)
-    : null;
-  const settingsProvider = userSettings?.speech_provider;
-  const resolvedProvider = isSpeechProvider(settingsProvider) ? settingsProvider : "melotts";
-
   return {
     provider: resolvedProvider,
-    model: userSettings?.speech_model || defaultSpeechModelsByProvider[resolvedProvider],
+    model: (provider ? model : configuredModel) || defaultSpeechModelsByProvider[resolvedProvider],
   };
 }
 
@@ -88,7 +97,15 @@ export const handleTextToSpeech = async (
     throw new AssistantError("Missing input", ErrorType.PARAMS_ERROR);
   }
 
-  const speechSettings = await resolveSpeechSettings({ env, user, provider, model });
+  const userSettings = user?.id
+    ? await new UserSettingsRepository(env).getUserSettings(user.id)
+    : null;
+  const speechSettings = resolveSpeechSettings({
+    provider,
+    model,
+    voiceId: req.voice_id,
+    userSettings,
+  });
 
   if (!user?.id && requiresAuthenticatedSpeechProvider(speechSettings.provider)) {
     throw new AssistantError(
@@ -119,10 +136,14 @@ export const handleTextToSpeech = async (
     slug,
     storage,
     store,
-    voice: req.voice_id ?? speechSettings.model,
+    voice:
+      speechSettings.provider === "mistral"
+        ? speechSettings.model
+        : (req.voice_id ?? speechSettings.model),
     locale: lang,
     refAudio: req.ref_audio,
     responseFormat: req.response_format,
+    expressiveness: req.expressiveness ?? userSettings?.speech_expressiveness ?? undefined,
     metadata: preparedInput.metadata,
   });
 
