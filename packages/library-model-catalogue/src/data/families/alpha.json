@@ -21,6 +21,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "June 30, 2023",
         "releaseDate": "August 2, 2023",
         "supportsToolCalls": false,
         "supportsAttachments": false

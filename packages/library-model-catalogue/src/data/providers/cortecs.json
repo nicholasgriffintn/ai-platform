@@ -19,7 +19,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.002989,
         "costPer1kOutputTokens": 0.014945,
@@ -44,7 +44,7 @@
       "matchingModel": "claude-4-6-sonnet",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003196,
         "costPer1kOutputTokens": 0.01594,
@@ -157,7 +157,10 @@
           ],
           "defaultEffort": "low"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "codestral-2508": {
       "model": "codestral/codestral-25-08",
@@ -183,11 +186,22 @@
       "model": "deepseek-thinking/deepseek-r1-0528",
       "matchingModel": "deepseek-r1-0528",
       "overrides": {
+        "contextWindow": 164000,
+        "maxTokens": 164000,
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "May 28, 2025",
         "costPer1kInputTokens": 0.000652,
         "costPer1kOutputTokens": 0.00257,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "deepseek-v3-0324": {
@@ -257,8 +271,9 @@
       "matchingModel": "devstral-2512",
       "overrides": {
         "name": "Devstral 2 2512",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
+        "strengths": [
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "December 9, 2025",
         "costPer1kInputTokens": 0.000478,
@@ -302,13 +317,22 @@
         "speed": 3,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.001495,
-        "costPer1kOutputTokens": 0.009964
+        "costPer1kOutputTokens": 0.009964,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "glm-4.5": {
       "model": "glm/glm-4-5",
       "matchingModel": "glm-4.5",
       "overrides": {
+        "name": "GLM 4.5",
         "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "July 29, 2025",
@@ -342,7 +366,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
         "maxTokens": 202752,
         "speed": 2,
@@ -356,7 +379,6 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
-        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 203000,
         "maxTokens": 203000,
         "speed": 3,
@@ -430,7 +452,6 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "speed": 5,
-        "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000089,
         "costPer1kOutputTokens": 0.000446,
@@ -547,7 +568,7 @@
           "coding"
         ],
         "speed": 2,
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.000475,
         "costPer1kOutputTokens": 0.00297
       }
@@ -567,6 +588,7 @@
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
         "name": "Llama 3.3 70B Instruct",
+        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "contextWindow": 131000,
         "maxTokens": 131000,
         "lastUpdated": "December 6, 2024",
@@ -586,8 +608,6 @@
       "model": "minimax/minimax-m2",
       "matchingModel": "minimax-m2",
       "overrides": {
-        "name": "MiniMax-M2",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 400000,
         "maxTokens": 196000,
         "speed": 3,
@@ -602,7 +622,6 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "minimax-m2.1",
       "overrides": {
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
         "speed": 3,
@@ -616,6 +635,7 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
+        "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
@@ -658,13 +678,26 @@
       }
     },
     "mixtral-8x7B-instruct-v0.1": {
-      "model": "mixtral/mixtral-8x7b-instruct-v0-1",
+      "model": "mistral/mixtral-8x7b-instruct-v0-1",
       "matchingModel": "mixtral-8x7B-instruct-v0.1",
       "overrides": {
+        "name": "Mixtral 8x7B Instruct v0.1",
+        "openWeights": true,
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "December 11, 2023",
         "lastUpdated": "December 11, 2023",
         "costPer1kInputTokens": 0.000488,
         "costPer1kOutputTokens": 0.000758,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-super-120b-a12b": {
@@ -759,7 +792,7 @@
         "contextWindow": 16384,
         "contextComplexity": 2,
         "speed": 3,
-        "lastUpdated": "April 2025",
+        "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false
@@ -772,7 +805,7 @@
         "name": "Qwen3 Coder 30B A3B Instruct",
         "maxTokens": 262144,
         "speed": 4,
-        "lastUpdated": "April 2025",
+        "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false,
@@ -823,11 +856,9 @@
       "model": "qwen/qwen3-next-80b-a3b-thinking",
       "matchingModel": "qwen3-next-80b-a3b-thinking",
       "overrides": {
-        "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 128000,
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.000149,
@@ -893,14 +924,7 @@
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.000668,
         "costPer1kOutputTokens": 0.00401,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -1047,10 +1071,11 @@
         "costPer1kOutputTokens": 0.001631,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       }
     },
@@ -1080,20 +1105,6 @@
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "contextWindow": 262000,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.000167,
@@ -1147,14 +1158,24 @@
       }
     },
     "mistral-medium-3.5": {
-      "model": "mistral/mistral-medium-3-5",
+      "model": "mistral-medium/mistral-medium-3-5",
       "matchingModel": "mistral-medium-3.5",
       "overrides": {
+        "description": "Mistral Medium 3.5 is a frontier multimodal 128B model combining reasoning, coding, and instruction-following with strong agentic performance and efficient deployment.",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
         "speed": 4,
         "lastUpdated": "April 30, 2026",
         "costPer1kInputTokens": 0.001532,
         "costPer1kOutputTokens": 0.007843,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nvidia-nemotron-3-nano-omni": {
@@ -1324,10 +1345,10 @@
       }
     },
     "voxtral-small-2507": {
-      "model": "cortecs/voxtral-small-2507/voxtral-small-2507",
+      "model": "voxtral/voxtral-small-2507",
       "matchingModel": "voxtral-small-2507",
       "overrides": {
-        "lastUpdated": "February 2, 2026",
+        "lastUpdated": "July 15, 2025",
         "costPer1kInputTokens": 0.000123,
         "costPer1kOutputTokens": 0.000368,
         "supportsTemperature": false
@@ -1337,18 +1358,8 @@
       "model": "qwen/qwen3-vl-235b-a22b",
       "matchingModel": "qwen3-vl-235b-a22b",
       "overrides": {
-        "name": "Qwen3 VL 235B A22B",
-        "openWeights": false,
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
-        "releaseDate": "January 13, 2026",
-        "lastUpdated": "January 13, 2026",
+        "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.000617,
         "costPer1kOutputTokens": 0.003119,
         "supportsTemperature": false
@@ -1359,7 +1370,7 @@
       "matchingModel": "nvidia-nemotron-3-nano-30b-a3b",
       "overrides": {
         "speed": 5,
-        "lastUpdated": "January 12, 2026",
+        "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false,
@@ -1390,7 +1401,6 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.000373,
         "costPer1kOutputTokens": 0.003144,
@@ -1416,7 +1426,8 @@
       },
       "unset": [
         "strengths",
-        "reliability"
+        "reliability",
+        "knowledgeCutoffDate"
       ]
     },
     "ministral-8b-2512": {
@@ -1485,7 +1496,7 @@
       "model": "nemotron/nemotron-nano-v2-12b",
       "matchingModel": "nemotron-nano-v2-12b",
       "overrides": {
-        "lastUpdated": "October 31, 2025",
+        "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.000707,
         "supportsTemperature": false
@@ -1522,7 +1533,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "name": "GPT 5",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -1542,11 +1553,9 @@
       "model": "qwen/qwen3-30b-a3b-instruct-2507",
       "matchingModel": "qwen3-30b-a3b-instruct-2507",
       "overrides": {
-        "openWeights": false,
         "description": "Qwen3-30B-A3B-Instruct-2507 is an advanced Mixture-of-Experts model optimized for reasoning, coding, and multilingual instruction following.",
         "contextWindow": 262000,
         "maxTokens": 262000,
-        "releaseDate": "July 28, 2025",
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.000099,
         "costPer1kOutputTokens": 0.000299,
@@ -1581,8 +1590,6 @@
       "overrides": {
         "name": "Mistral 7B Instruct V0.3",
         "openWeights": false,
-        "contextWindow": 127000,
-        "maxTokens": 127000,
         "releaseDate": "May 26, 2025",
         "lastUpdated": "May 26, 2025",
         "costPer1kInputTokens": 0.000111,
@@ -1629,15 +1636,13 @@
       ]
     },
     "mistral-small-3.2-24b-instruct-2506": {
-      "model": "mistral/mistral-small-3-2-24b-instruct-2506",
+      "model": "mistral-small/mistral-small-3-2-24b-instruct-2506",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "openWeights": false,
-        "description": "Mistral-Small-3.2-24B-Instruct-2506 is a 24B parameter instruction-tuned model with enhanced long-context support (128k) and state-of-the-art vision understanding.",
+        "name": "Mistral Small 3.2 24B Instruct 2506",
         "contextWindow": 131000,
         "maxTokens": 131000,
-        "releaseDate": "May 26, 2025",
-        "lastUpdated": "May 26, 2025",
+        "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.000312,
         "supportsTemperature": false
@@ -1783,7 +1788,6 @@
           "tool_use"
         ],
         "speed": 2,
-        "knowledgeCutoffDate": "August 2024",
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.000124,
         "costPer1kOutputTokens": 0.000603
@@ -1820,6 +1824,7 @@
       "model": "gemini-flash/gemini-2-5-flash",
       "matchingModel": "gemini-2.5-flash",
       "overrides": {
+        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -1842,6 +1847,14 @@
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.000299,
         "costPer1kOutputTokens": 0.002491,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 9.9,
           "codingIndex": null,
@@ -1869,12 +1882,10 @@
       "matchingModel": "qwen2.5-vl-72b-instruct",
       "overrides": {
         "name": "Qwen2.5 VL 72B Instruct",
-        "openWeights": false,
         "description": "Qwen2.5-VL is a powerful vision-language model with advanced capabilities in visual understanding, long video reasoning, and structured output generation.",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "releaseDate": "January 27, 2025",
-        "lastUpdated": "January 27, 2025",
+        "lastUpdated": "January 26, 2025",
         "costPer1kInputTokens": 0.001014,
         "costPer1kOutputTokens": 0.001014,
         "supportsToolCalls": false,
@@ -1981,18 +1992,19 @@
         "costPer1kOutputTokens": 0.002989,
         "supportsAttachments": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "mistral-nemo-instruct-2407": {
-      "model": "mistral/mistral-nemo-instruct-2407",
+      "model": "mistral-nemo/mistral-nemo-instruct-2407",
       "matchingModel": "mistral-nemo-instruct-2407",
       "overrides": {
         "name": "Mistral Nemo Instruct 2407",
-        "openWeights": false,
-        "contextWindow": 128000,
-        "maxTokens": 128000,
-        "releaseDate": "August 7, 2024",
-        "lastUpdated": "August 7, 2024",
+        "contextWindow": 118000,
+        "maxTokens": 118000,
+        "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000145,
         "costPer1kOutputTokens": 0.000145,
         "supportsAttachments": false,
@@ -2144,11 +2156,28 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.014999,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "apertus-70b": {
@@ -2339,7 +2368,15 @@
         "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00033,
-        "costPer1kOutputTokens": 0.002749
+        "costPer1kOutputTokens": 0.002749,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "deepseek-v4-flash-0731": {
@@ -2349,8 +2386,8 @@
         "maxTokens": 1048576,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
-        "costPer1kInputTokens": 0.00009,
-        "costPer1kOutputTokens": 0.00017,
+        "costPer1kInputTokens": 0.000082,
+        "costPer1kOutputTokens": 0.000413,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2469,11 +2506,12 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.000873,
-        "costPer1kOutputTokens": 0.003306,
+        "costPer1kInputTokens": 0.000511,
+        "costPer1kOutputTokens": 0.002045,
         "supportsAttachments": false
       }
     },
@@ -2572,8 +2610,8 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
-        "maxTokens": 1048576,
-        "speed": 4,
+        "maxTokens": 393216,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000201,
         "costPer1kOutputTokens": 0.0006,
@@ -2714,6 +2752,59 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "gemini-4-argon",
+      "overrides": {
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.00225,
+        "costPer1kOutputTokens": 0.011249,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "gpt-6-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.012272,
+        "costPer1kOutputTokens": 0.061359,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "kolibri-1": {
+      "model": "cortecs/kolibri-1/kolibri-1",
+      "matchingModel": "kolibri-1",
+      "overrides": {
+        "lastUpdated": "October 22, 2026",
+        "costPer1kInputTokens": 0.000167,
+        "costPer1kOutputTokens": 0.000613,
+        "supportsAttachments": false,
+        "supportsTemperature": false
       }
     }
   }

@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 81920,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 22, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The cortecs/kolibri 1 family includes models that produce text.",
+  "models": {
+    "kolibri-1": {
+      "defaults": {
+        "name": "kolibri-1",
+        "description": "Kolibri-1 is Aleph Alpha’s open-weight English-German MoE language model, designed for enterprise use with efficient inference and advanced reasoning."
+      }
+    }
+  }
+}

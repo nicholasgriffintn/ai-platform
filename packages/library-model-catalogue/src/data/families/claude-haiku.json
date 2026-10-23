@@ -13,6 +13,7 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -25,7 +26,6 @@
         "contextWindow": 1000000,
         "maxTokens": 128000,
         "releaseDate": "April 27, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -146,7 +146,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -164,7 +163,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -182,7 +180,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -217,7 +214,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -234,8 +230,7 @@
         "description": "Fast Claude lane for lightweight agents, office tasks, and responsive chat",
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
-        "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "October 15, 2025"
       }
     },
     "claude-haiku-4-5-latest-eu": {
@@ -245,7 +240,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -265,7 +259,6 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -291,20 +284,8 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 43.4,
           "codingIndex": null,
@@ -328,7 +309,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -389,7 +369,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -426,7 +405,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -463,7 +441,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -492,11 +469,11 @@
         "contextWindow": 1000000,
         "maxTokens": 128000,
         "releaseDate": "April 27, 2026",
-        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "low",
             "medium",
             "high",

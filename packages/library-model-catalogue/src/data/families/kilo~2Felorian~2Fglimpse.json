@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 17, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/elorian/glimpse family includes models that produce text.",
+  "models": {
+    "elorian-glimpse": {
+      "defaults": {
+        "name": "Elorian: Glimpse",
+        "description": "Glimpse is a multimodal visual reasoning model from Elorian, built for visual understanding and complex visual reasoning in the physical world. It reasons directly over images and video rather than..."
+      }
+    }
+  }
+}

@@ -134,6 +134,8 @@
       "model": "gemini-flash/gemini-2-5-flash",
       "matchingModel": "gemini-2.5-flash",
       "overrides": {
+        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "maxTokens": 65536,
         "isFree": true,
         "strengths": [
           "vision",
@@ -376,18 +378,8 @@
       "model": "gemini-pro/gemini-2-5-pro",
       "matchingModel": "gemini-2.5-pro",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
+        "maxTokens": 65536,
         "isFree": true,
         "strengths": [
           "vision",
@@ -560,26 +552,6 @@
       "model": "gemini/gemini-3-8-live",
       "matchingModel": "gemini-3.8-live",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "vision",
-          "video",
-          "document",
-          "tool_use",
-          "search"
-        ],
         "lastUpdated": "September 15, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -596,26 +568,6 @@
       "model": "gemini/gemini-3-8-live-extended-thinking",
       "matchingModel": "gemini-3.8-live-extended-thinking",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "vision",
-          "video",
-          "document",
-          "tool_use",
-          "search"
-        ],
         "lastUpdated": "September 15, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -664,7 +616,14 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false,
-        "supportsSearchGrounding": true
+        "supportsSearchGrounding": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-3.1-flash-lite": {
@@ -791,9 +750,7 @@
       "model": "gemma/gemma-3-27b",
       "matchingModel": "gemma-3-27b-it",
       "overrides": {
-        "contextWindow": 131072,
         "isFree": true,
-        "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "March 12, 2025",
         "dataRetention": {
           "maxDays": 55,
@@ -893,7 +850,10 @@
           "agenticIndex": 4.2,
           "intelligenceIndexVersion": 4.3
         }
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "gemini-3.5-flash": {
       "model": "gemini-flash/gemini-3-5-flash",
@@ -1083,7 +1043,6 @@
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
-        "maxTokens": 65536,
         "strengths": [
           "vision",
           "document",
@@ -1217,7 +1176,14 @@
         },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -1251,7 +1217,14 @@
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.03
+        "costPer1kOutputTokens": 0.03,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-3.5-live-translate-preview": {
@@ -1266,7 +1239,6 @@
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.021,
         "supportsToolCalls": false,
-        "supportsAttachments": false,
         "supportsAudio": true,
         "supportsRealtimeTranslationSession": true
       },
@@ -1296,7 +1268,6 @@
       "model": "gemini/gemini-embedding-2",
       "matchingModel": "gemini-embedding-2",
       "overrides": {
-        "contextWindow": 8192,
         "maxTokens": 1,
         "modalities": {
           "input": [
@@ -1476,6 +1447,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65536,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
@@ -1499,6 +1471,31 @@
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gemini-pro-latest": {
+      "model": "gemini-pro/gemini-pro-latest",
+      "matchingModel": "gemini-pro-latest",
+      "overrides": {
+        "name": "Gemini Pro Latest",
+        "description": "Reasoning-first Gemini preview for agentic coding and complex problem solving",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 19, 2026",
+        "lastUpdated": "February 19, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012
       }
     }
   }

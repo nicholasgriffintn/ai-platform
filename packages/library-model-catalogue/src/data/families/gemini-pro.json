@@ -95,9 +95,20 @@
     "gemini-2-5-pro": {
       "defaults": {
         "name": "Gemini 2.5 Pro",
-        "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
+        "description": "Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "June 17, 2025",
@@ -301,8 +312,7 @@
           ]
         },
         "releaseDate": "June 9, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsToolCalls": false
       }
     },
     "gemini-3-pro": {
@@ -393,23 +403,8 @@
     },
     "gemini-pro-latest": {
       "defaults": {
-        "name": "Google Gemini Pro Latest",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "audio",
-            "pdf",
-            "image",
-            "text",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -425,7 +420,7 @@
         "name": "Google: Gemini Pro Latest",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "audio",
@@ -478,7 +473,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1102,
+              "value": 1104,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8

@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 128000,
-    "maxTokens": 8192,
+    "contextWindow": 0,
+    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -14,15 +14,15 @@
     "releaseDate": "October 3, 2024",
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "description": "The nvidia/nvidia/studiovoice family includes models that produce text.",
   "models": {
     "studiovoice": {
       "defaults": {
         "name": "studiovoice",
-        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents"
+        "description": "Enhances noisy or reverberant speech recordings to studio-quality speech"
       }
     }
   }

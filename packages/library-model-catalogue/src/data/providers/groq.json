@@ -75,25 +75,6 @@
         "openWeights"
       ]
     },
-    "llama-3.3-70b-versatile": {
-      "model": "llama/llama-3-3-70b",
-      "matchingModel": "llama-3.3-70b-versatile",
-      "overrides": {
-        "name": "Llama 3.3 70B Versatile",
-        "status": "deprecated",
-        "maxTokens": 32768,
-        "card": "https://www.prompthub.us/models/llama-3-3-70b",
-        "speed": 5,
-        "lastUpdated": "December 6, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "account_setting",
-          "source": "https://console.groq.com/docs/your-data"
-        },
-        "costPer1kInputTokens": 0.00059,
-        "costPer1kOutputTokens": 0.00079
-      }
-    },
     "groq-llama-4-scout-17b": {
       "model": "llama/llama-4-scout-17b",
       "matchingModel": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -115,7 +96,6 @@
         "speed": 5,
         "multimodal": true,
         "isFeatured": false,
-        "knowledgeCutoffDate": "August 2024",
         "lastUpdated": "April 5, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -125,32 +105,6 @@
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00034,
         "supportsAttachments": true
-      }
-    },
-    "llama-3.1-8b-instant": {
-      "model": "llama/llama-3-1-8b",
-      "matchingModel": "llama-3.1-8b-instant",
-      "overrides": {
-        "name": "Llama 3.1 8B Instant",
-        "status": "deprecated",
-        "maxTokens": 131072,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "multilingual"
-        ],
-        "contextComplexity": 3,
-        "reliability": 3,
-        "speed": 5,
-        "knowledgeCutoffDate": "December 2023",
-        "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "account_setting",
-          "source": "https://console.groq.com/docs/your-data"
-        },
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.00008
       }
     },
     "mixtral-8x7b-32768": {
@@ -216,7 +170,7 @@
         ],
         "contextComplexity": 4,
         "speed": 5,
-        "lastUpdated": "September 25, 2025",
+        "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -241,7 +195,7 @@
         ],
         "speed": 5,
         "isFeatured": false,
-        "lastUpdated": "October 21, 2025",
+        "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -303,7 +257,8 @@
         "costPer1kInputTokens": 0.04,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.groq.com/openai/v1"
       }
     },
     "canopylabs/orpheus-v1-english": {
@@ -320,7 +275,8 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://api.groq.com/openai/v1"
       }
     },
     "groq/compound": {
@@ -367,7 +323,7 @@
       "matchingModel": "meta-llama/llama-prompt-guard-2-22m",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "May 29, 2025",
+        "lastUpdated": "April 29, 2025",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -384,7 +340,7 @@
       "matchingModel": "meta-llama/llama-prompt-guard-2-86m",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "May 29, 2025",
+        "lastUpdated": "April 29, 2025",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -402,7 +358,7 @@
       "overrides": {
         "status": "beta",
         "isFree": true,
-        "lastUpdated": "June 29, 2026",
+        "lastUpdated": "October 29, 2025",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -413,7 +369,8 @@
       },
       "unset": [
         "strengths",
-        "reliability"
+        "reliability",
+        "knowledgeCutoffDate"
       ]
     },
     "whisper-large-v3": {
@@ -424,8 +381,8 @@
         "openWeights": true,
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
         "knowledgeCutoffDate": "September 2023",
-        "releaseDate": "September 1, 2023",
-        "lastUpdated": "September 5, 2025",
+        "releaseDate": "November 6, 2023",
+        "lastUpdated": "November 6, 2023",
         "dataRetention": {
           "maxDays": 30,
           "zeroRetention": "account_setting",
@@ -433,7 +390,8 @@
         },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     },
     "whisper-large-v3-turbo": {
@@ -448,55 +406,16 @@
         },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false
-      }
-    },
-    "qwen/qwen3.6-27b": {
-      "model": "qwen/qwen3-6-27b",
-      "matchingModel": "qwen/qwen3.6-27b",
-      "overrides": {
-        "contextWindow": 131072,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "speed": 3,
-        "isFeatured": true,
-        "lastUpdated": "April 22, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "account_setting",
-          "source": "https://console.groq.com/docs/your-data"
-        },
-        "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "default"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     },
     "qwen/qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "qwen/qwen3.8-27b",
       "overrides": {
-        "contextWindow": 131042,
+        "status": "beta",
+        "contextWindow": 131072,
         "maxTokens": 16384,
         "speed": 2,
         "isFeatured": true,

@@ -4,13 +4,22 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
   },
   "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
   "models": {
     "glm-4-5-flash": {
       "defaults": {
         "name": "GLM-4.5-Flash",
+        "openWeights": false,
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 131072,
         "maxTokens": 98304,
@@ -52,7 +61,8 @@
     "glm-4-7-flash": {
       "defaults": {
         "name": "GLM-4.7-Flash",
-        "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 200000,
         "modalities": {
           "input": [
             "text"
@@ -96,15 +106,9 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "January 19, 2026",
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "glm-5-3-flash": {
@@ -115,14 +119,6 @@
         "contextComplexity": 5,
         "reliability": 3,
         "releaseDate": "August 26, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 41.8,
           "codingIndex": 71.5,
@@ -176,19 +172,31 @@
         }
       }
     },
+    "glm-5-3-flash-free": {
+      "defaults": {
+        "name": "GLM-5.3-Flash Free",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026"
+      }
+    },
     "glm-5-3-flashx": {
       "defaults": {
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "maxTokens": 131072
       }
     },
     "glm-flash-latest": {
@@ -208,15 +216,7 @@
             "text"
           ]
         },
-        "releaseDate": "August 27, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "August 27, 2026"
       }
     },
     "glm-flash-latest-glm-5-3-flash": {
@@ -234,15 +234,7 @@
             "text"
           ]
         },
-        "releaseDate": "August 26, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "August 26, 2026"
       }
     },
     "z-ai-glm-flash-latest": {
@@ -262,15 +254,7 @@
             "text"
           ]
         },
-        "releaseDate": "August 27, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "August 27, 2026"
       }
     }
   }

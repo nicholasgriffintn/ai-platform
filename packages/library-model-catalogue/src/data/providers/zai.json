@@ -9,6 +9,7 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
+        "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -29,7 +30,6 @@
       "overrides": {
         "name": "GLM 5",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "coding",
           "reasoning",
@@ -47,6 +47,7 @@
       "matchingModel": "glm-4.5",
       "overrides": {
         "name": "GLM-4.5",
+        "maxTokens": 98304,
         "speed": 3,
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -100,7 +101,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
@@ -162,7 +163,7 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
-        "contextWindow": 200000,
+        "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "January 19, 2026",
@@ -179,10 +180,16 @@
       "overrides": {
         "name": "GLM-4.7-FlashX",
         "maxTokens": 131072,
-        "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00007,
-        "costPer1kOutputTokens": 0.0004
+        "costPer1kOutputTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"

@@ -16,7 +16,7 @@
     ],
     "releaseDate": "January 2025",
     "supportsToolCalls": false,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "The greenpt/green s family includes models that produce text.",

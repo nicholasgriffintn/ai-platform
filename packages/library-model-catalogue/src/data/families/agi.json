@@ -12,19 +12,10 @@
         "text"
       ]
     },
-    "releaseDate": "September 8, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "medium",
-        "high"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
   "models": {
@@ -77,21 +68,48 @@
         "name": "Nex AGI: Nex-N2.5-Mini",
         "openWeights": false,
         "description": "Nex-N2.5 is an agentic model built to turn goals into working, verified outcomes. Its core strength is agentic coding within a visual feedback loop: it can explore codebases, implement multi-file...",
-        "supportsToolCalls": false
+        "releaseDate": "September 8, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-agi-nex-n2-5-pro": {
       "defaults": {
         "name": "Nex AGI: Nex-N2.5-Pro",
         "openWeights": false,
-        "description": "Nex-N2.5 is an agentic model built to turn goals into working, verified outcomes. Its core strength is agentic coding within a visual feedback loop: it can explore codebases, implement multi-file..."
+        "description": "Nex-N2.5 is an agentic model built to turn goals into working, verified outcomes. Its core strength is agentic coding within a visual feedback loop: it can explore codebases, implement multi-file...",
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-5-mini": {
       "defaults": {
         "name": "Nex-N2.5-Mini",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "supportsToolCalls": false
+        "releaseDate": "September 8, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-5-mini-free": {
@@ -105,19 +123,46 @@
           "output": [
             "text"
           ]
+        },
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
     "nex-n2-5-pro": {
       "defaults": {
         "name": "Nex-N2.5-Pro",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-5-pro-free": {
       "defaults": {
         "name": "Nex-N2.5-Pro (free)",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-mini": {
@@ -159,6 +204,53 @@
           "codingIndex": 59.1,
           "agenticIndex": 23.7,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "xing4-0-29b-a4b-free": {
+      "defaults": {
+        "name": "Xing4.0 29B A4B (free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 16, 2026",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "xingchen-xing4-0-29b-a4b-free": {
+      "defaults": {
+        "name": "XingChen: Xing4.0 29B A4B (free)",
+        "openWeights": false,
+        "description": "Xing4.0-29B-A4B is an open-weight mixture-of-experts language model from China Telecom's AI team (TeleAI) and the successor to the TeleChat series. It has 29B total parameters with 4B active per token...",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 16, 2026",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

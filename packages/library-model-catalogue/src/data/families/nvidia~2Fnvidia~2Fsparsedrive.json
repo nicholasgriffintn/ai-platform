@@ -15,14 +15,14 @@
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The nvidia/nvidia/sparsedrive family includes models that produce text.",
   "models": {
     "sparsedrive": {
       "defaults": {
         "name": "sparsedrive",
-        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows"
+        "description": "End-to-end autonomous driving stack for perception, prediction, and planning"
       }
     }
   }

@@ -14,6 +14,7 @@
     },
     "releaseDate": "March 4, 2025",
     "supportsToolCalls": false,
+    "supportsResponseFormat": false,
     "supportsAttachments": true,
     "supportsTemperature": true
   },

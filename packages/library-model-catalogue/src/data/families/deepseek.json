@@ -193,12 +193,16 @@
     },
     "deepseek-r1-0528": {
       "defaults": {
-        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "name": "DeepSeek R1 (0528)",
+        "description": "Reasoning-optimized DeepSeek R1 model.",
+        "contextWindow": 75000,
+        "maxTokens": 163840,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "releaseDate": "August 1, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 13.1,
           "codingIndex": null,
@@ -451,6 +455,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "August 21, 2025",
         "supportsResponseFormat": true,
@@ -643,7 +648,7 @@
         "contextWindow": 131072,
         "maxTokens": 65536,
         "knowledgeCutoffDate": "July 2024",
-        "releaseDate": "December 2025",
+        "releaseDate": "December 1, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -663,6 +668,36 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "March 29, 2025",
         "supportsToolCalls": false
+      }
+    },
+    "deepseek-v4-1-flash-1017": {
+      "defaults": {
+        "name": "Deepseek V4.1 Flash 1017",
+        "openWeights": true,
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 17, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "deepseek-v4-1-flash-beta": {
@@ -734,6 +769,7 @@
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "low",
             "high",
             "max"

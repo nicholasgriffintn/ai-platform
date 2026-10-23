@@ -18,7 +18,7 @@
     ],
     "releaseDate": "October 19, 2026",
     "supportsToolCalls": false,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "Cloudflare Clairic extraction models return typed values read, computed, estimated or forecast from text and images, each with a confidence.",

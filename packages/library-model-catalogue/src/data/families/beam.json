@@ -1,0 +1,73 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 30, 2026",
+    "releaseDate": "October 5, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The beam family includes models that produce text.",
+  "models": {
+    "beam-1-0": {
+      "defaults": {
+        "name": "Beam 1.0",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    },
+    "beam-1-0-501b-a23b": {
+      "defaults": {
+        "name": "Beam 1.0 501B A23B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    },
+    "beam-1-0-free": {
+      "defaults": {
+        "name": "Beam 1.0 (Free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads"
+      }
+    },
+    "beam-free": {
+      "defaults": {
+        "name": "Beam Free",
+        "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows"
+      }
+    },
+    "reflection-beam-1-0-501b-a23b": {
+      "defaults": {
+        "name": "Reflection: Beam 1.0 501B A23B",
+        "description": "Beam 1.0 is Reflection's open-weight reasoning model for coding and long-horizon agentic workflows. It uses a sparse mixture-of-experts architecture with 501B total and 23B active parameters per token, and a..."
+      }
+    },
+    "reflection-beam-1-0-free": {
+      "defaults": {
+        "name": "Reflection: Beam 1.0 (free)",
+        "openWeights": false,
+        "description": "Your prompts and completions may be retained and used to train or improve the provider's services. Beam is Reflection's reasoning model for coding and agentic workflows, combining strong coding capabilities with fast, low-latency inference, served through Vercel AI Gateway at no cost. It supports function calling, structured outputs, and streaming, and takes text input only. Zero Data Retention is not available for this model.",
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false
+      }
+    }
+  }
+}

@@ -13,6 +13,7 @@
     },
     "releaseDate": "February 17, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },

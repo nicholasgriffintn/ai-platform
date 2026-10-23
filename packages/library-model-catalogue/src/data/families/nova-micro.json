@@ -19,6 +19,7 @@
     "knowledgeCutoffDate": "October 2024",
     "releaseDate": "December 3, 2024",
     "supportsToolCalls": true,
+    "supportsResponseFormat": false,
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
@@ -35,8 +36,8 @@
         "name": "Amazon: Nova Micro 1.0",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "maxTokens": 5120,
+        "knowledgeCutoffDate": "October 31, 2024",
         "releaseDate": "December 5, 2024",
-        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": 4.7,
           "codingIndex": null,

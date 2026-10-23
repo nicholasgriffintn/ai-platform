@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 8192,
-    "maxTokens": 1536,
     "modalities": {
       "input": [
         "text"
@@ -12,37 +11,17 @@
       ]
     },
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": false,
+    "supportsTemperature": false
   },
   "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
   "models": {
-    "qwen3-embedding-8b": {
-      "defaults": {
-        "name": "Qwen3-Embedding-8B",
-        "openWeights": true,
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "contextWindow": 40960,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "October 2025",
-        "releaseDate": "January 10, 2026",
-        "supportsResponseFormat": false,
-        "supportsTemperature": false
-      }
-    },
     "text-embedding-005": {
       "defaults": {
         "name": "Text Embedding 005",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "releaseDate": "August 1, 2024",
-        "supportsTemperature": true
+        "maxTokens": 0,
+        "releaseDate": "August 1, 2024"
       }
     },
     "text-embedding-3-large": {
@@ -57,6 +36,7 @@
       "defaults": {
         "name": "text-embedding-3-small",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "maxTokens": 1536,
         "releaseDate": "January 25, 2024"
       }
     },
@@ -64,6 +44,7 @@
       "defaults": {
         "name": "text-embedding-ada-002",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "maxTokens": 1536,
         "releaseDate": "December 15, 2022"
       }
     },
@@ -71,8 +52,8 @@
       "defaults": {
         "name": "Text Multilingual Embedding 002",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "releaseDate": "March 1, 2024",
-        "supportsTemperature": true
+        "maxTokens": 0,
+        "releaseDate": "March 1, 2024"
       }
     }
   }

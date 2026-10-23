@@ -2,13 +2,6 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1048576,
-    "strengths": [
-      "vision",
-      "document",
-      "audio",
-      "video",
-      "tool_use"
-    ],
     "contextComplexity": 4,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
@@ -22,7 +15,6 @@
       "defaults": {
         "name": "Gemini 2.5 Flash Lite",
         "description": "Lean Gemini 2.5 lane for cheap multimodal traffic and quick agents",
-        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text",
@@ -126,6 +118,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 1,
         "knowledgeCutoffDate": "January 31, 2025",
         "releaseDate": "September 25, 2025",
@@ -161,6 +160,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "artificialAnalysis": {
@@ -188,6 +194,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "reasoningConfig": {
@@ -241,6 +254,13 @@
         "name": "Gemini 3.1 Flash Lite Preview",
         "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
         "maxTokens": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "March 3, 2026",
         "artificialAnalysis": {
@@ -268,6 +288,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
@@ -305,6 +332,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
@@ -323,6 +357,48 @@
           "codingIndex": 49.3,
           "agenticIndex": 14.3,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "gemini-3-8-flash-lite-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash-Lite TTS",
+        "description": "Fast, cost-efficient text-to-speech model for high-volume narration and voice agent pipelines",
+        "contextWindow": 8192,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "contextComplexity": 2,
+        "reliability": 4,
+        "releaseDate": "September 22, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1248,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 14
+            }
+          ]
         }
       }
     },
@@ -353,13 +429,6 @@
         "reliability": 3,
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -369,7 +438,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1094,
+              "value": 1096,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8

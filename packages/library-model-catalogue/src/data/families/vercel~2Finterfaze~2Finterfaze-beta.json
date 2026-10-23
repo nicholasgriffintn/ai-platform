@@ -13,7 +13,7 @@
     },
     "releaseDate": "October 7, 2025",
     "supportsToolCalls": false,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [

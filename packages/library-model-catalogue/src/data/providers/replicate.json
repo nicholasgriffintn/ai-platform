@@ -1562,6 +1562,7 @@
       "unset": [
         "supportsToolCalls",
         "supportsTemperature",
+        "maxTokens",
         "releaseDate"
       ]
     },
@@ -1666,6 +1667,7 @@
       "unset": [
         "supportsToolCalls",
         "supportsTemperature",
+        "maxTokens",
         "contextComplexity",
         "releaseDate"
       ]
@@ -1789,6 +1791,7 @@
       "unset": [
         "supportsToolCalls",
         "supportsTemperature",
+        "maxTokens",
         "releaseDate"
       ]
     },
@@ -1879,7 +1882,8 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "replicate-flux-1.1-pro": {
@@ -1957,7 +1961,8 @@
       "unset": [
         "reliability",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "replicate-sd3.5large": {
@@ -2458,7 +2463,9 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "replicate-insanely-fast-whisper-with-video": {
@@ -2755,6 +2762,7 @@
       "unset": [
         "openWeights",
         "supportsToolCalls",
+        "supportsTemperature",
         "releaseDate"
       ]
     },
@@ -2844,6 +2852,7 @@
         "openWeights",
         "supportsToolCalls",
         "supportsAttachments",
+        "supportsTemperature",
         "supportsStreaming"
       ]
     },
@@ -2929,7 +2938,7 @@
       },
       "unset": [
         "openWeights",
-        "supportsTemperature"
+        "supportsToolCalls"
       ]
     },
     "replicate-bytedance-seedance-2-0": {
@@ -3050,7 +3059,7 @@
       },
       "unset": [
         "openWeights",
-        "supportsTemperature"
+        "supportsToolCalls"
       ]
     },
     "replicate-alibaba-happyhorse-1-0": {
@@ -3529,7 +3538,8 @@
       },
       "unset": [
         "openWeights",
-        "supportsToolCalls"
+        "supportsToolCalls",
+        "supportsTemperature"
       ]
     },
     "replicate-kwaivgi-kling-v3-omni-video": {
@@ -4429,7 +4439,9 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights",
+        "supportsResponseFormat"
       ]
     },
     "replicate-minimax-image-01": {

@@ -34,46 +34,6 @@
         "supportsTopP": false
       }
     },
-    "gpt-4o-mini-transcribe": {
-      "defaults": {
-        "name": "GPT-4o mini Transcribe",
-        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "contextWindow": 0,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "March 13, 2024",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": true
-      }
-    },
-    "gpt-audio-mini": {
-      "defaults": {
-        "name": "GPT Audio Mini",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "releaseDate": "January 19, 2026",
-        "supportsTemperature": true
-      }
-    },
     "o1-mini": {
       "defaults": {
         "name": "o1-mini",

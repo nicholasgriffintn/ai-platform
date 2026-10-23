@@ -68,7 +68,7 @@
           "coding"
         ],
         "speed": 2,
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,
@@ -176,7 +176,8 @@
       "unset": [
         "supportsAttachments",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "flux-2-dev": {
@@ -190,7 +191,8 @@
       "unset": [
         "supportsAttachments",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -204,7 +206,8 @@
       "unset": [
         "supportsAttachments",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -217,7 +220,8 @@
       "unset": [
         "supportsAttachments",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "maxTokens"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -366,7 +370,6 @@
           "coding"
         ],
         "speed": 3,
-        "releaseDate": "November 12, 2024",
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.001
@@ -600,7 +603,6 @@
       "matchingModel": "@cf/zai-org/glm-4.7-flash",
       "overrides": {
         "name": "GLM 4.7 Flash",
-        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 131072,
         "maxTokens": 131072,
         "strengths": [
@@ -688,10 +690,15 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 16384,
+        "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.000012,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "@cf/moonshotai/kimi-k2.7-code": {
       "model": "kimi-k2/kimi-k2-7-code",
@@ -822,6 +829,7 @@
       "overrides": {
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "isFeatured": true,
@@ -927,6 +935,16 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0,
         "supportsTemperature": false
+      }
+    },
+    "@cf/deepseek-ai/deepseek-v4.1-flash-1017": {
+      "model": "deepseek/deepseek-v4-1-flash-1017",
+      "matchingModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
+      "overrides": {
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true
       }
     }
   }

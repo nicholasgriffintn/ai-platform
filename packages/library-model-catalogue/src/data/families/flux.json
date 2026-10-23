@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -11,7 +12,7 @@
     "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
@@ -33,7 +34,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 803,
+              "value": 802,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -88,7 +89,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 865,
+              "value": 862,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -115,7 +116,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 941,
+              "value": 940,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -136,10 +137,9 @@
     "flux-1-dev": {
       "defaults": {
         "name": "FLUX.1-dev",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 4096,
-        "maxTokens": 0,
+        "openWeights": true,
+        "description": "Open-weight FLUX.1 text-to-image model for high-quality guidance-distilled generation",
+        "contextWindow": 0,
         "strengths": [
           "image"
         ],
@@ -156,7 +156,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 841,
+              "value": 840,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -171,7 +171,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "releaseDate": "October 1, 2024"
       }
     },
@@ -179,9 +178,8 @@
       "defaults": {
         "name": "FLUX.1-Kontext-dev",
         "openWeights": true,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 40960,
-        "maxTokens": 40960,
+        "description": "Open-weight FLUX.1 Kontext model for instruction-based image editing",
+        "contextWindow": 0,
         "modalities": {
           "input": [
             "text",
@@ -196,11 +194,10 @@
           "vision",
           "document"
         ],
-        "contextComplexity": 3,
-        "releaseDate": "August 12, 2025",
+        "contextComplexity": 4,
+        "releaseDate": "May 29, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -210,10 +207,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 862,
+              "value": 863,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 7
             }
           ]
         }
@@ -225,7 +222,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -240,7 +236,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 933,
+              "value": 931,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -255,7 +251,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -283,9 +278,8 @@
       "defaults": {
         "name": "FLUX.1-schnell",
         "openWeights": true,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 77,
-        "maxTokens": 0,
+        "description": "Fast few-step FLUX.1 text-to-image model under Apache 2.0",
+        "contextWindow": 0,
         "strengths": [
           "image"
         ],
@@ -293,7 +287,6 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": false,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -303,7 +296,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 803,
+              "value": 802,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -353,10 +346,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1028,
+              "value": 1029,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 8
             }
           ]
         }
@@ -366,11 +359,9 @@
       "defaults": {
         "name": "FLUX.2 Klein 4B",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 40960,
-        "maxTokens": 40960,
-        "contextComplexity": 3,
+        "contextWindow": 0,
         "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "January 14, 2026",
+        "releaseDate": "January 15, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -380,7 +371,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 865,
+              "value": 862,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9
@@ -395,7 +386,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -409,7 +399,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 941,
+              "value": 940,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -433,7 +423,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1019,
+              "value": 1020,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -457,7 +447,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1004,
+              "value": 1003,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 8
@@ -470,9 +460,8 @@
       "defaults": {
         "name": "Flux 3",
         "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextWindow": 0,
-        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -482,10 +471,13 @@
           ]
         },
         "strengths": [
-          "video"
+          "video",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "August 4, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -495,7 +487,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1092,
+              "value": 1091,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -510,7 +502,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -525,7 +516,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1116,
+              "value": 1115,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -534,13 +525,21 @@
         }
       }
     },
+    "flux-3-image-klein": {
+      "defaults": {
+        "name": "FLUX 3 Image Klein",
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "releaseDate": "October 15, 2026"
+      }
+    },
     "flux-schnell": {
       "defaults": {
         "name": "Flux Schnell",
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "releaseDate": "August 2, 2024"
       }
     },
@@ -550,7 +549,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -565,7 +563,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 891,
+              "value": 892,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7
@@ -580,7 +578,6 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "maxTokens": 0,
         "strengths": [
           "image"
         ],
@@ -595,7 +592,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 895,
+              "value": 894,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 7

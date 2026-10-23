@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 512000,
-    "maxTokens": 460800,
+    "contextWindow": 220000,
+    "maxTokens": 4096,
     "modalities": {
       "input": [
         "text",
@@ -12,24 +12,24 @@
         "text"
       ]
     },
-    "releaseDate": "August 14, 2026",
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
+    "releaseDate": "October 16, 2026",
+    "supportsToolCalls": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
-        "none",
-        "thinking"
+        "low",
+        "medium",
+        "xhigh"
       ],
-      "defaultEffort": "none"
+      "defaultEffort": "low"
     }
   },
-  "description": "The openrouter/dots studio/dots 3 note preview:free family includes models that produce text.",
+  "description": "The vercel/elorian/glimpse family includes models that produce text.",
   "models": {
-    "dots3-note-preview-free": {
+    "glimpse": {
       "defaults": {
-        "name": "Dots3-Note Preview (free)",
+        "name": "Glimpse",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
       }
     }

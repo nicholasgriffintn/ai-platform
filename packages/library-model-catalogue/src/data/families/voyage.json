@@ -1,6 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -11,106 +13,86 @@
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The voyage family includes models that produce text.",
   "models": {
     "voyage-3-5": {
       "defaults": {
         "name": "voyage-3.5",
-        "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "releaseDate": "May 20, 2025"
       }
     },
     "voyage-3-5-lite": {
       "defaults": {
         "name": "voyage-3.5-lite",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "releaseDate": "May 20, 2025"
       }
     },
     "voyage-3-large": {
       "defaults": {
         "name": "voyage-3-large",
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "releaseDate": "January 7, 2025"
       }
     },
     "voyage-4": {
       "defaults": {
         "name": "voyage-4",
-        "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "contextWindow": 32000,
-        "maxTokens": 0,
+        "description": "General-purpose and multilingual embedding model balancing retrieval quality and cost",
         "releaseDate": "January 15, 2026"
       }
     },
     "voyage-4-large": {
       "defaults": {
         "name": "voyage-4-large",
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "contextWindow": 32000,
-        "maxTokens": 0,
+        "description": "General-purpose and multilingual embedding model optimized for retrieval quality",
         "releaseDate": "January 15, 2026"
       }
     },
     "voyage-4-lite": {
       "defaults": {
         "name": "voyage-4-lite",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 32000,
-        "maxTokens": 0,
+        "description": "Lightweight general-purpose embedding model optimized for latency and cost",
         "releaseDate": "January 15, 2026"
       }
     },
     "voyage-code-2": {
       "defaults": {
         "name": "voyage-code-2",
-        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 16000,
         "releaseDate": "January 1, 2024"
       }
     },
     "voyage-code-3": {
       "defaults": {
         "name": "voyage-code-3",
-        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "releaseDate": "December 4, 2024"
       }
     },
     "voyage-finance-2": {
       "defaults": {
         "name": "voyage-finance-2",
-        "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "releaseDate": "June 3, 2024"
       }
     },
     "voyage-law-2": {
       "defaults": {
         "name": "voyage-law-2",
-        "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "contextWindow": 8192,
-        "maxTokens": 1536,
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 16000,
         "releaseDate": "April 15, 2024"
       }
     },
     "voyage-rerank-2-5": {
       "defaults": {
         "name": "Voyage Rerank 2.5",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
+        "description": "Instruction-following reranker optimized for retrieval quality",
         "modalities": {
           "input": [
             "text"
@@ -128,9 +110,7 @@
     "voyage-rerank-2-5-lite": {
       "defaults": {
         "name": "Voyage Rerank 2.5 Lite",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
+        "description": "Instruction-following reranker optimized for latency and quality",
         "modalities": {
           "input": [
             "text"
@@ -148,18 +128,14 @@
     "voyage-rerank-3": {
       "defaults": {
         "name": "Voyage Rerank 3",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
+        "description": "Reranker optimized for retrieval quality, successor to rerank-2.5",
         "releaseDate": "September 30, 2026"
       }
     },
     "voyage-rerank-3-lite": {
       "defaults": {
         "name": "Voyage Rerank 3 Lite",
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
+        "description": "Reranker optimized for latency and cost, successor to rerank-2.5-lite",
         "releaseDate": "September 30, 2026"
       }
     }

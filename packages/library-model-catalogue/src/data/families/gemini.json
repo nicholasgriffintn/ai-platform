@@ -492,9 +492,9 @@
       "defaults": {
         "name": "Gemini 3.5 Transcribe",
         "openWeights": false,
-        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "contextWindow": 0,
-        "maxTokens": 0,
+        "description": "Speech-to-text model with language detection, speaker diarization, word timestamps, and custom vocabulary",
+        "contextWindow": 98304,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "audio"
@@ -505,13 +505,14 @@
         },
         "strengths": [
           "audio",
-          "transcription"
+          "transcription",
+          "document"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "reliability": 5,
         "releaseDate": "August 26, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -546,90 +547,7 @@
           ]
         },
         "releaseDate": "August 26, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
-      }
-    },
-    "gemini-3-8-flash-lite-tts": {
-      "defaults": {
-        "name": "Gemini 3.8 Flash-Lite TTS",
-        "openWeights": false,
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 0,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "creative"
-        ],
-        "reliability": 4,
-        "releaseDate": "September 23, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1246,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 14
-            }
-          ]
-        }
-      }
-    },
-    "gemini-3-8-flash-tts": {
-      "defaults": {
-        "name": "Gemini 3.8 Flash TTS",
-        "openWeights": false,
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 0,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "creative"
-        ],
-        "reliability": 5,
-        "releaseDate": "September 23, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1274,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 15
-            }
-          ]
-        }
+        "supportsToolCalls": false
       }
     },
     "gemini-3-8-live": {
@@ -639,6 +557,26 @@
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "search"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 15, 2026",
@@ -680,6 +618,26 @@
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "search"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "September 15, 2026",
@@ -788,7 +746,6 @@
         "openWeights": false,
         "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -827,6 +784,39 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "gemini-4-argon-contributor": {
+      "defaults": {
+        "name": "Gemini 4 Argon Contributor",
+        "openWeights": false,
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "October 13, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -907,9 +897,11 @@
         "name": "Gemini Embedding 2",
         "openWeights": false,
         "description": "Multimodal embedding model mapping text, images, video, audio, and PDFs into a unified embedding space",
+        "contextWindow": 8192,
         "knowledgeCutoffDate": "November 2025",
         "releaseDate": "April 22, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "gemini-omni-flash-preview": {

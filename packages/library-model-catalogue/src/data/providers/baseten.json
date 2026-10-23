@@ -10,6 +10,7 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Flash-0731",
       "overrides": {
+        "maxTokens": 384000,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00013,
@@ -18,36 +19,8 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
-            "medium",
             "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "deepseek-ai/DeepSeek-V4-Pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
-      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
-      "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 262144,
-        "speed": 3,
-        "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00174,
-        "costPer1kOutputTokens": 0.00348,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
             "max"
           ],
           "defaultEffort": "none"
@@ -60,14 +33,13 @@
       "overrides": {
         "maxTokens": 32768,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "low",
             "high",
             "max"
           ],
@@ -86,7 +58,6 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "low",
             "high",
             "max"
           ],
@@ -131,6 +102,7 @@
           "coding"
         ],
         "speed": 2,
+        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -169,6 +141,15 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -262,20 +243,6 @@
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1048576,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -298,7 +265,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "zai-org/GLM-4.7",
       "overrides": {
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 200000,
         "maxTokens": 200000,
         "speed": 2,
@@ -368,6 +334,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -398,6 +365,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -411,6 +379,7 @@
       "overrides": {
         "name": "GLM 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1048576,
         "maxTokens": 262144,
         "modalities": {
           "input": [
@@ -449,16 +418,7 @@
         },
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0021,
-        "costPer1kOutputTokens": 0.0066,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0066
       }
     },
     "zai-org/GLM-5.3-Flash": {
@@ -487,6 +447,47 @@
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Pro-0813": {
+      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "overrides": {
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "maxTokens": 262144,
+        "speed": 3,
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017-Fast": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017-fast",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017-Fast",
+      "overrides": {
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

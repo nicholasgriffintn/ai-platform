@@ -42,15 +42,7 @@
     "deepseek-flash-latest": {
       "defaults": {
         "name": "DeepSeek Flash Latest",
-        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops"
       }
     },
     "deepseek-v4-1-flash": {
@@ -68,6 +60,55 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "deepseek-v4-1-flash-1017": {
+      "defaults": {
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
+        "releaseDate": "October 17, 2026"
+      }
+    },
+    "deepseek-v4-1-flash-1017-eu": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash 1017 (EU)",
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
+        "maxTokens": 393216,
+        "releaseDate": "October 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4-1-flash-1017-fast": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash 1017 Fast",
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 262144,
+        "releaseDate": "October 17, 2026"
+      }
+    },
+    "deepseek-v4-1-flash-1017-spot": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash 1017 Spot",
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "October 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -108,6 +149,40 @@
         "releaseDate": "September 10, 2026"
       }
     },
+    "deepseek-v4-1-flash-free": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Free",
+        "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "releaseDate": "September 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "deepseek-v4-1-flash-spot": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Spot",
+        "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "September 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "deepseek-v4-flash": {
       "defaults": {
         "name": "DeepSeek V4 Flash",
@@ -138,7 +213,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash 0731",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "maxTokens": 384000,
         "modalities": {
           "input": [
             "text"
@@ -261,16 +335,7 @@
       "defaults": {
         "name": "DeepSeek V4 Flash Vision Exp",
         "description": "Experimental multimodal DeepSeek V4 Flash model for image understanding, coding, and agentic work",
-        "maxTokens": 384000,
-        "releaseDate": "August 21, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "August 21, 2026"
       }
     }
   }

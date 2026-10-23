@@ -29,7 +29,7 @@
       "matchingModel": "agent-max",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 24, 2026",
+        "lastUpdated": "July 30, 2026",
         "supportsAttachments": true
       }
     },
@@ -38,7 +38,7 @@
       "matchingModel": "agent-standard",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026",
+        "lastUpdated": "October 6, 2026",
         "supportsTemperature": true
       }
     },
@@ -47,7 +47,7 @@
       "matchingModel": "code-max",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 24, 2026",
+        "lastUpdated": "July 30, 2026",
         "supportsAttachments": true
       }
     },
@@ -56,7 +56,7 @@
       "matchingModel": "code-standard",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026",
+        "lastUpdated": "October 6, 2026",
         "supportsTemperature": true
       }
     },
@@ -64,7 +64,7 @@
       "model": "the-grid-ai/text-max/text-max",
       "matchingModel": "text-max",
       "overrides": {
-        "lastUpdated": "July 24, 2026",
+        "lastUpdated": "July 30, 2026",
         "supportsAttachments": true
       }
     },
@@ -80,7 +80,7 @@
       "model": "the-grid-ai/text-standard/text-standard",
       "matchingModel": "text-standard",
       "overrides": {
-        "lastUpdated": "July 15, 2026",
+        "lastUpdated": "October 6, 2026",
         "supportsTemperature": true
       }
     },
@@ -147,19 +147,10 @@
       "matchingModel": "glm-latest",
       "overrides": {
         "description": "Lab latest market for GLM supply. You contract for the latest qualifying route, not a specific model.",
-        "contextWindow": 1000000,
-        "maxTokens": 128000,
+        "maxTokens": 131072,
         "isFeatured": true,
         "releaseDate": "July 6, 2026",
-        "lastUpdated": "July 6, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "lastUpdated": "August 18, 2026"
       }
     },
     "gpt-sol-latest": {
@@ -179,6 +170,25 @@
         "contextWindow": 1000000,
         "releaseDate": "July 6, 2026",
         "lastUpdated": "July 6, 2026"
+      }
+    },
+    "kimi-latest": {
+      "model": "kimi/kimi-latest",
+      "matchingModel": "kimi-latest",
+      "overrides": {
+        "name": "Kimi Latest",
+        "description": "Lab latest market for Kimi supply. You contract for the latest qualifying route, not a specific model.",
+        "releaseDate": "July 6, 2026",
+        "lastUpdated": "July 6, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

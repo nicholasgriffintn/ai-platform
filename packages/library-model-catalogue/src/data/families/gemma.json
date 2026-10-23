@@ -219,6 +219,7 @@
       "defaults": {
         "name": "Gemma 3 27B",
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "contextWindow": 131072,
         "maxTokens": 8192,
         "strengths": [
           "vision",
@@ -227,6 +228,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "knowledgeCutoffDate": "October 2024",
         "releaseDate": "March 12, 2025",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
@@ -565,6 +567,7 @@
         "openWeights": true,
         "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
         "contextWindow": 262144,
+        "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -583,6 +586,7 @@
         "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
         "contextWindow": 131072,
         "maxTokens": 65536,
+        "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -682,6 +686,7 @@
         "maxTokens": 262144,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -715,7 +720,7 @@
       "defaults": {
         "name": "paligemma",
         "openWeights": true,
-        "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
+        "description": "Vision-language model for answering questions about images and text",
         "contextWindow": 128000,
         "maxTokens": 8192,
         "releaseDate": "May 14, 2024",

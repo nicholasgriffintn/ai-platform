@@ -2,7 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 8192,
-    "maxTokens": 1536,
+    "maxTokens": 3072,
     "modalities": {
       "input": [
         "text"
@@ -14,14 +14,14 @@
     "releaseDate": "May 28, 2025",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "description": "The codestral embed family includes models that produce embedding.",
   "models": {
     "codestral-embed": {
       "defaults": {
         "name": "Codestral Embed",
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+        "description": "Embedding model for code search, retrieval, and code-aware RAG pipelines"
       }
     }
   }

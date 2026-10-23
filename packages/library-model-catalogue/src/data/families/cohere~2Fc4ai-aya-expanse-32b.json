@@ -13,6 +13,7 @@
     },
     "releaseDate": "October 24, 2024",
     "supportsToolCalls": false,
+    "supportsResponseFormat": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },

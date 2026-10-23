@@ -54,7 +54,7 @@
     "kimi-k2-thinking": {
       "defaults": {
         "name": "Kimi K2 Thinking",
-        "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "contextWindow": 262144,
         "modalities": {
           "input": [
@@ -71,7 +71,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "November 6, 2025",
-        "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 22,

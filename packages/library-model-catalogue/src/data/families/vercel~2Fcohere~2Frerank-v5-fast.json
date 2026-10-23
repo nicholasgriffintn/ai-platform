@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32768,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 21, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The vercel/cohere/rerank v5 fast family includes models that produce text.",
+  "models": {
+    "cohere-rerank-5-fast": {
+      "defaults": {
+        "name": "Cohere Rerank 5 Fast",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems"
+      }
+    }
+  }
+}

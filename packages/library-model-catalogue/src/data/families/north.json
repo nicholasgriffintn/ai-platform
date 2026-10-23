@@ -16,7 +16,10 @@
     ],
     "contextComplexity": 4,
     "reliability": 1,
+    "knowledgeCutoffDate": "September 23, 2025",
+    "releaseDate": "June 9, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -25,10 +28,7 @@
     "cohere-north-mini-code-free": {
       "defaults": {
         "name": "Cohere: North Mini Code (free)",
-        "openWeights": false,
         "description": "North Mini Code is Cohere's first agentic coding model and the debut of its North family. A sparse mixture-of-experts model with 30B total parameters and 3B active, it is optimized...",
-        "releaseDate": "June 17, 2026",
-        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -48,9 +48,6 @@
       "defaults": {
         "name": "North Mini Code",
         "description": "Cohere coding model for practical software engineering and agentic edits",
-        "knowledgeCutoffDate": "September 23, 2025",
-        "releaseDate": "June 9, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -70,8 +67,6 @@
       "defaults": {
         "name": "North Mini Code (free)",
         "description": "Cohere coding model for practical software engineering and agentic edits",
-        "releaseDate": "June 17, 2026",
-        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

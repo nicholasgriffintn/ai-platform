@@ -451,6 +451,7 @@
       "defaults": {
         "name": "GPT-4o Transcribe",
         "description": "Higher-accuracy speech-to-text model for transcription workflows.",
+        "contextWindow": 16000,
         "modalities": {
           "input": [
             "audio"
@@ -460,7 +461,7 @@
           ]
         },
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsTemperature": false
       }
     },
     "gpt-5": {
@@ -529,7 +530,7 @@
         "reliability": 2,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
-        "supportsTemperature": false,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -706,7 +707,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -728,29 +728,9 @@
     "gpt-5-2-chat": {
       "defaults": {
         "name": "GPT-5.2 Chat",
-        "description": "GPT-5.2 Chat accepts text, image, pdf and produces text.",
+        "description": "Chat-tuned GPT model for conversational assistance, writing, and tool workflows",
         "contextWindow": 128000,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "December 11, 2025",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "December 11, 2025"
       }
     },
     "gpt-5-2-fast": {
@@ -1417,21 +1397,11 @@
     },
     "gpt-audio": {
       "defaults": {
-        "name": "GPT Audio",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "releaseDate": "January 19, 2026",
+        "knowledgeCutoffDate": "October 1, 2023",
+        "releaseDate": "August 28, 2025",
         "supportsTemperature": true
       }
     },
@@ -1529,14 +1499,9 @@
             "audio"
           ]
         },
-        "strengths": [
-          "audio"
-        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 10, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1594,9 +1559,9 @@
     "gpt-oss-120b": {
       "defaults": {
         "name": "GPT OSS 120B",
-        "openWeights": true,
         "description": "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
         "contextWindow": 131072,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text"
@@ -1606,20 +1571,17 @@
           ]
         },
         "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "multilingual",
           "tool_use"
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "releaseDate": "August 5, 2025",
         "supportsAttachments": false,
         "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 11.6,
           "codingIndex": 30.4,
@@ -1662,7 +1624,6 @@
       "defaults": {
         "description": "Efficient 20B parameter open-source GPT model for fast reasoning and general tasks.",
         "contextWindow": 131072,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -1671,10 +1632,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
         "reliability": 1,
         "supportsAttachments": false,
         "supportsTemperature": true,
@@ -1689,9 +1646,9 @@
     "gpt-realtime-1-5": {
       "defaults": {
         "name": "GPT-Realtime-1.5",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 0,
-        "maxTokens": 0,
+        "description": "Realtime speech-to-speech model for voice agents and customer support",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text",
@@ -1703,13 +1660,14 @@
           ]
         },
         "strengths": [
-          "audio"
+          "audio",
+          "document",
+          "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "reliability": 5,
+        "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "February 23, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -1745,8 +1703,11 @@
     "gpt-realtime-2": {
       "defaults": {
         "description": "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use.",
+        "contextWindow": 128000,
+        "maxTokens": 32000,
         "contextComplexity": 4,
         "reliability": 3,
+        "knowledgeCutoffDate": "September 30, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1828,8 +1789,33 @@
     },
     "gpt-realtime-mini": {
       "defaults": {
+        "name": "GPT Realtime Mini",
         "description": "Cost-efficient realtime model for responding to audio and text inputs over WebRTC, WebSocket, or SIP connections.",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "chat",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
         "reliability": 5,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 1, 2023",
+        "supportsResponseFormat": false,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -2123,7 +2109,8 @@
             "text"
           ]
         },
-        "releaseDate": "December 10, 2025",
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "December 11, 2025",
         "supportsTemperature": false
       }
     },
@@ -2247,48 +2234,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "openai-gpt-audio": {
-      "defaults": {
-        "name": "OpenAI: GPT Audio",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "releaseDate": "January 19, 2026",
-        "supportsTemperature": true
-      }
-    },
-    "openai-gpt-audio-mini": {
-      "defaults": {
-        "name": "OpenAI: GPT Audio Mini",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "releaseDate": "January 19, 2026",
-        "supportsTemperature": true
       }
     },
     "openai-gpt-chat-latest": {

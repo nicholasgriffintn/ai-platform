@@ -2,13 +2,15 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsTemperature": true
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "models": {
     "kimi-k2-thinking": {
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
+        "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
         "maxTokens": 262144,
         "strengths": [
           "reasoning",
@@ -20,6 +22,8 @@
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
+        "supportsAttachments": false,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -52,8 +56,7 @@
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.003,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.003
       }
     },
     "kimi-k2-0711-preview": {
@@ -65,7 +68,9 @@
         "releaseDate": "July 14, 2025",
         "lastUpdated": "July 14, 2025",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kOutputTokens": 0.0025,
+        "supportsAttachments": false,
+        "supportsTemperature": true
       },
       "unset": [
         "supportsResponseFormat",
@@ -81,7 +86,9 @@
         "speed": 3,
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kOutputTokens": 0.0025,
+        "supportsAttachments": false,
+        "supportsTemperature": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -93,7 +100,9 @@
       "overrides": {
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.00115,
-        "costPer1kOutputTokens": 0.008
+        "costPer1kOutputTokens": 0.008,
+        "supportsAttachments": false,
+        "supportsTemperature": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -105,7 +114,9 @@
       "overrides": {
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0024,
-        "costPer1kOutputTokens": 0.01
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false,
+        "supportsTemperature": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -135,7 +146,7 @@
           "coding"
         ],
         "speed": 2,
-        "lastUpdated": "April 21, 2026",
+        "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
       }
@@ -165,8 +176,7 @@
         "isFeatured": true,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.004
       }
     },
     "kimi-k2.7-code-highspeed": {
@@ -175,8 +185,7 @@
       "overrides": {
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0019,
-        "costPer1kOutputTokens": 0.008,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.008
       }
     },
     "kimi-k3": {
@@ -206,7 +215,45 @@
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsTemperature": false
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "kimi-k3.1-pro": {
+      "model": "kimi-k3/kimi-k3-1-pro",
+      "matchingModel": "kimi-k3.1-pro",
+      "overrides": {
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "maxTokens": 1048576,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "kimi-k3.1-pro-highspeed": {
+      "model": "kimi-k3/kimi-k3-1-pro-highspeed",
+      "matchingModel": "kimi-k3.1-pro-highspeed",
+      "overrides": {
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02
       }
     }
   }

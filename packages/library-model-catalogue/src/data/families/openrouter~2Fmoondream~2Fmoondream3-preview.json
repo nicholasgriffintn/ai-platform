@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 15, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/moondream/moondream3 preview family includes models that produce text.",
+  "models": {
+    "moondream-3-preview": {
+      "defaults": {
+        "name": "Moondream 3 Preview",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

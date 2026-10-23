@@ -2,16 +2,6 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
-    "maxTokens": 131072,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "releaseDate": "July 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -24,7 +14,16 @@
       "defaults": {
         "name": "Kimi Fast Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "releaseDate": "July 27, 2026",
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -40,6 +39,7 @@
       "defaults": {
         "name": "Kimi K3",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "maxTokens": 131072,
         "strengths": [
           "vision",
           "document",
@@ -48,14 +48,6 @@
         ],
         "contextComplexity": 5,
         "reliability": 3,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 43.6,
           "codingIndex": 76.2,
@@ -64,11 +56,64 @@
         }
       }
     },
+    "kimi-k3-1-pro": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro",
+        "openWeights": false,
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed",
+        "openWeights": false,
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "maxTokens": 1048576,
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "kimi-k3-256k": {
       "defaults": {
         "name": "Kimi K3-256K",
         "description": "256K-context version of Kimi K3, reducing token consumption for shorter coding sessions",
         "contextWindow": 262144,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -124,7 +169,8 @@
     "kimi-k3-fast": {
       "defaults": {
         "name": "Kimi K3 Fast",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work"
+        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "maxTokens": 131072
       }
     },
     "kimi-k3-global": {
@@ -132,6 +178,15 @@
         "name": "Kimi K3 (Global)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -170,7 +225,6 @@
             "text"
           ]
         },
-        "releaseDate": "July 29, 2026",
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -186,6 +240,15 @@
         "name": "Kimi K3 (US)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -213,7 +276,16 @@
       "defaults": {
         "name": "Kimi Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "releaseDate": "July 27, 2026",
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -222,6 +294,34 @@
             "max"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "moonshotai-kimi-k3-1-pro": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K3.1 Pro",
+        "openWeights": false,
+        "description": "Kimi K3.1 Pro is Moonshot AI's flagship open-weight multimodal reasoning model and a post-trained successor to Kimi K3, with a 1M-token context window. It is built for long-horizon coding, 3D...",
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

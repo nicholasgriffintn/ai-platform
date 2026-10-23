@@ -1,8 +1,6 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 131072,
-    "maxTokens": 16384,
     "modalities": {
       "input": [
         "text"
@@ -11,7 +9,8 @@
         "text"
       ]
     },
-    "supportsToolCalls": false,
+    "releaseDate": "December 29, 2025",
+    "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -29,34 +28,8 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "releaseDate": "December 29, 2025",
-        "supportsToolCalls": true,
         "artificialAnalysis": {
           "intelligenceIndex": 6.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
-    "hermes-3-405b-instruct": {
-      "defaults": {
-        "name": "Hermes 3 405B Instruct",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 16, 2024"
-      }
-    },
-    "hermes-3-70b-instruct": {
-      "defaults": {
-        "name": "Hermes 3 70B Instruct",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextComplexity": 3,
-        "reliability": 1,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 18, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": 6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
@@ -69,53 +42,10 @@
         "description": "Hermes 4 14B accepts text and produces text.",
         "contextWindow": 40960,
         "maxTokens": 40960,
-        "releaseDate": "December 29, 2025",
-        "supportsToolCalls": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "nous-hermes-3-405b-instruct": {
-      "defaults": {
-        "name": "Nous: Hermes 3 405B Instruct",
-        "openWeights": false,
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "releaseDate": "August 16, 2024"
-      }
-    },
-    "nous-hermes-3-70b-instruct": {
-      "defaults": {
-        "name": "Nous: Hermes 3 70B Instruct",
-        "openWeights": false,
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextComplexity": 3,
-        "reliability": 1,
-        "releaseDate": "August 18, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": 6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
-      }
-    },
-    "nous-hermes-4-405b": {
-      "defaults": {
-        "name": "Nous: Hermes 4 405B",
-        "openWeights": false,
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "maxTokens": 117964,
-        "releaseDate": "August 26, 2025",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
           ],
           "defaultEffort": "none"
         }
