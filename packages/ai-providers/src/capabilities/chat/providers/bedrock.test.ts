@@ -40,7 +40,7 @@ describe("BedrockProvider.mapParameters", () => {
   it("keeps a budget Claude's thinking allowance below its output allowance", async () => {
     const body = await provider.mapParameters(
       requestFor({
-        model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+        model: "us.anthropic.claude-haiku-4-5-20251001-v1:0",
         reasoning_effort: "thinking",
       }),
     );
@@ -66,7 +66,7 @@ describe("BedrockProvider.mapParameters", () => {
   it("sends no reasoning payload when the effort is off", async () => {
     const body = await provider.mapParameters(
       requestFor({
-        model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+        model: "us.anthropic.claude-haiku-4-5-20251001-v1:0",
         reasoning_effort: "none",
       }),
     );

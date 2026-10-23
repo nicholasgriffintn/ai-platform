@@ -9,7 +9,6 @@
     "build:deps": "vp run --filter=\"@assistant/app^...\" build",
     "build:e2e": "pnpm run build:deps && react-router build --mode e2e",
     "check": "pnpm lint && pnpm format:check",
-    "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "deploy": "pnpm run build && wrangler deploy --minify",
     "dev": "react-router dev",

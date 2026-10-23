@@ -1,11 +1,18 @@
 import {
   formatMcpToolResult,
   McpRequestError,
+  readMcpToolUiResourceUri,
   type FormattedMcpToolResult,
   type McpTool,
+  type McpToolCallResult,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { requireToolEffects, type ToolEffectHints } from "@ngriffin_uk/polychat-library-tools";
-import { modelAcceptsImageInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  MCP_APP_RENDERER,
+  modelAcceptsImageInput,
+  type McpAppView,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
@@ -13,13 +20,18 @@ import {
   toolErrorResponse,
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  resolveServiceContext,
+  type ServiceContext,
+} from "~/infrastructure/context/serviceContext";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import {
   findMcpGatewayServer,
   listMcpGatewayTools,
   openMcpGatewaySession,
+  readMcpGatewayAppResource,
   readMcpGatewayServers,
+  type McpGatewaySession,
 } from "~/modules/tools/application/mcp-gateway-servers";
 import type { IRequest, MessageContent } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -31,6 +43,7 @@ import {
   mcp_list_tools as mcp_list_toolsDescriptor,
 } from "./definitions/mcp_gateway";
 
+const logger = getLogger({ prefix: "tools/mcp-gateway" });
 const MAX_LISTED_TOOLS = 40;
 const MAX_RESULT_CHARS = 16_000;
 const MAX_DESCRIPTION_CHARS = 480;
@@ -96,6 +109,53 @@ function failure(name: string, error: unknown) {
 
 function readIntegration(args: unknown): string {
   return isRecord(args) && typeof args.integration === "string" ? args.integration.trim() : "";
+}
+
+async function readToolApp(
+  serviceContext: ServiceContext,
+  session: McpGatewaySession,
+  toolName: string,
+  toolArguments: Record<string, unknown>,
+  result: McpToolCallResult,
+): Promise<McpAppView | null> {
+  try {
+    const tool = (await listMcpGatewayTools(serviceContext, session)).find(
+      (candidate) => candidate.name === toolName,
+    );
+    const uri = tool ? readMcpToolUiResourceUri(tool) : undefined;
+
+    if (!uri) {
+      return null;
+    }
+
+    const resource = await readMcpGatewayAppResource(serviceContext, session, uri);
+
+    if (!resource) {
+      return null;
+    }
+
+    return {
+      integration: session.server.label,
+      tool: toolName,
+      uri,
+      html: resource.html,
+      ui: resource.ui,
+      arguments: toolArguments,
+      result: {
+        content: result.content,
+        ...(result.structuredContent !== undefined
+          ? { structuredContent: result.structuredContent }
+          : {}),
+        ...(result.isError !== undefined ? { isError: result.isError } : {}),
+      },
+    };
+  } catch (error) {
+    logger.warn(`The ${toolName} app could not be loaded from ${session.server.label}`, {
+      error: getErrorMessage(error),
+    });
+
+    return null;
+  }
 }
 
 export const mcp_list_tools: ApiToolDefinition = {
@@ -178,11 +238,15 @@ export const mcp_call_tool: ApiToolDefinition = {
         );
       }
 
+      const callResult = await session.client.callTool(toolName, toolArguments);
       const result = formatMcpToolResult(
-        await session.client.callTool(toolName, toolArguments),
+        callResult,
         MAX_RESULT_CHARS,
         (await activeModelReadsImages(context.request)) ? RESULT_IMAGE_OPTIONS : undefined,
       );
+      const app = result.isError
+        ? null
+        : await readToolApp(serviceContext, session, toolName, toolArguments, callResult);
 
       return {
         status: result.isError ? "error" : "success",
@@ -193,6 +257,7 @@ export const mcp_call_tool: ApiToolDefinition = {
           tool: toolName,
           truncated: result.truncated,
           images: result.images.length,
+          ...(app ? { renderer: MCP_APP_RENDERER, app } : {}),
         },
       };
     } catch (error) {

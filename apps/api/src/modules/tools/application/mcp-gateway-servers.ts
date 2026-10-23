@@ -1,12 +1,25 @@
-import { McpHttpClient, type McpTool } from "@ngriffin_uk/polychat-ai-integrations";
-import { normaliseMcpServerLabel } from "@ngriffin_uk/polychat-schemas";
+import {
+  McpHttpClient,
+  readMcpAppUiMeta,
+  type McpResourceContent,
+  type McpTool,
+} from "@ngriffin_uk/polychat-ai-integrations";
+import {
+  MCP_APP_MAX_HTML_BYTES,
+  MCP_APP_MIME_TYPE,
+  mcpAppUiMetaSchema,
+  normaliseMcpServerLabel,
+  type McpAppUiMeta,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cache";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 
 import { listMcpConnections, resolveMcpGatewayAccess } from "./mcp-connections";
+import { resolveModelToolConfigurations } from "./modelToolConfiguration";
 
 const configuredServerSchema = z.object({
   server_label: z.string().min(1),
@@ -111,6 +124,70 @@ export function listMcpGatewayTools(
       (await session.client.listTools()).filter(
         (tool) => !session.allowedTools || session.allowedTools.has(tool.name),
       ),
+  );
+}
+
+export interface McpGatewayAppResource {
+  uri: string;
+  html: string;
+  ui: McpAppUiMeta;
+}
+
+function decodeResourceHtml(content: McpResourceContent): string | undefined {
+  if (typeof content.text === "string") {
+    return content.text;
+  }
+
+  if (typeof content.blob === "string") {
+    try {
+      return new TextDecoder().decode(Uint8Array.from(atob(content.blob), (c) => c.charCodeAt(0)));
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+export function readMcpGatewayAppResource(
+  context: ServiceContext,
+  session: McpGatewaySession,
+  uri: string,
+): Promise<McpGatewayAppResource | null> {
+  return memoizeRequest(
+    context.requestCache,
+    `mcp-gateway-app:${session.server.label}:${session.server.url}:${uri}`,
+    async () => {
+      const content = (await session.client.readResource(uri)).find(
+        (item) => item.mimeType === MCP_APP_MIME_TYPE,
+      );
+      const html = content ? decodeResourceHtml(content) : undefined;
+
+      if (!content || !html || new TextEncoder().encode(html).byteLength > MCP_APP_MAX_HTML_BYTES) {
+        return null;
+      }
+
+      const ui = mcpAppUiMetaSchema.safeParse(readMcpAppUiMeta(content));
+
+      return { uri, html, ui: ui.success ? ui.data : {} };
+    },
+  );
+}
+
+export async function resolveUserMcpGatewayServers(
+  context: ServiceContext,
+): Promise<McpGatewayServer[]> {
+  const configurations = await context.repositories
+    .get(CapabilityConfigurationRepository)
+    .list({ type: "user", id: context.requireUser().id }, "tool");
+
+  return readMcpGatewayServers(
+    resolveModelToolConfigurations(
+      configurations.map((configuration) => ({
+        toolId: configuration.capabilityId,
+        configuration: configuration.configuration,
+      })),
+    ).toolOptions?.mcp_servers,
   );
 }
 

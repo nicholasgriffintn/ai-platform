@@ -17,12 +17,14 @@ import {
 } from "~/modules/teammates/application/run-admission";
 import type { AnonymousUser, IUser } from "~/types";
 
+import type { ResponseAuthority } from "../domain/command";
 import { prepareConversationCompletion } from "./prepare";
 import { toResponseCommand } from "./request-mapping";
 
 export interface CreateResponseInput {
   context: ServiceContext;
   request: ParsedCreateResponseRequest;
+  authority?: ResponseAuthority;
   user?: IUser;
   anonymousUser?: AnonymousUser;
   executionCtx?: ExecutionContext;
@@ -80,6 +82,7 @@ export function completionToResponse(
 export async function createResponse({
   context,
   request,
+  authority,
   user,
   anonymousUser,
   executionCtx,
@@ -102,10 +105,12 @@ export async function createResponse({
         anonymousUser,
         executionCtx,
         signal,
+        authority,
       })
     : await prepareConversationCompletion({
         context,
         request: command,
+        authority,
         user,
         anonymousUser,
         executionCtx,

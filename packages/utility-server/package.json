@@ -92,6 +92,11 @@
       "types": "./dist/errors.d.ts",
       "import": "./dist/errors.js"
     },
+    "./json-rpc": {
+      "polychat-source": "./src/json-rpc.ts",
+      "types": "./dist/json-rpc.d.ts",
+      "import": "./dist/json-rpc.js"
+    },
     "./http": {
       "polychat-source": "./src/http.ts",
       "types": "./dist/http.d.ts",

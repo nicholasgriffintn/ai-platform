@@ -2,7 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { startResponse } from "~/modules/responses/application/start";
-import type { ResponseCommand } from "~/modules/responses/domain/command";
+import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { resumeStoredTeammateInteraction } from "~/modules/teammates/application/interaction-resume";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import type { AnonymousUser, IUser } from "~/types";
@@ -10,6 +10,7 @@ import type { AnonymousUser, IUser } from "~/types";
 export interface PrepareConversationCompletionInput {
   context: ServiceContext;
   request: ResponseCommand;
+  authority?: ResponseAuthority;
   user?: IUser;
   anonymousUser?: AnonymousUser;
   executionCtx?: ExecutionContext;
@@ -23,6 +24,7 @@ export interface PrepareConversationCompletionInput {
 export async function prepareConversationCompletion({
   context,
   request,
+  authority,
   user: userContext,
   anonymousUser,
   executionCtx,
@@ -55,6 +57,6 @@ export async function prepareConversationCompletion({
 
   return (
     (await resumeStoredTeammateInteraction({ ...completionContext, body: request })) ??
-    startResponse({ ...completionContext, command: request })
+    startResponse({ ...completionContext, command: request, authority })
   );
 }

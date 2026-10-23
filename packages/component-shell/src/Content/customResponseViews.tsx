@@ -4,6 +4,7 @@ import { sharedResponseViews } from "@ngriffin_uk/polychat-component-conversatio
 import { DelegationTimelineView } from "../Delegations/DelegationTimelineView.js";
 import { BrowserSessionView } from "./BrowserSessionView.js";
 import { CapabilityDiscoveryView } from "./CapabilityDiscoveryView.js";
+import { McpAppMessageView } from "./McpAppMessageView.js";
 import { SiteMessageView } from "./SiteMessageView.js";
 
 export const customResponseViews: CustomResponseViewRegistry = {
@@ -12,6 +13,9 @@ export const customResponseViews: CustomResponseViewRegistry = {
     <BrowserSessionView data={data} onToolInteraction={onToolInteraction} />
   ),
   capability_discovery: ({ data }) => <CapabilityDiscoveryView data={data} />,
+  mcp_app: ({ data, onToolInteraction }) => (
+    <McpAppMessageView data={data} onToolInteraction={onToolInteraction} />
+  ),
   delegation_card: ({ data, onToolInteraction }) => (
     <DelegationTimelineView data={data} onToolInteraction={onToolInteraction} />
   ),

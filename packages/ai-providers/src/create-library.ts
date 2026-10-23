@@ -68,7 +68,9 @@ export function createProviderLibrary<
   TContext extends ProviderFactoryContext,
 >(options: CreateProviderLibraryOptions<TMap, TContext>): ProviderLibrary<TMap, TContext> {
   const runtime: ProviderRuntime = {
-    host: options.host,
+    get host() {
+      return options.host;
+    },
     get providers(): AiProviderResolver {
       return library;
     },

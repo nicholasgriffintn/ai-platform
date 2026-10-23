@@ -5,9 +5,12 @@ import {
 
 import {
   MCP_PROTOCOL_VERSION,
+  mcpResourceContentSchema,
+  mcpResourceReadResultSchema,
   mcpToolCallResultSchema,
   mcpToolListResultSchema,
   mcpToolSchema,
+  type McpResourceContent,
   type McpTool,
   type McpToolCallResult,
 } from "./contracts.js";
@@ -77,6 +80,24 @@ export class McpHttpClient {
     }
 
     return tools.slice(0, MAX_TOOLS);
+  }
+
+  async readResource(uri: string): Promise<McpResourceContent[]> {
+    await this.initialise();
+
+    const result = mcpResourceReadResultSchema.safeParse(
+      await this.request("resources/read", { uri }, "resources/read"),
+    );
+
+    if (!result.success) {
+      throw this.invalidResponse("resources/read");
+    }
+
+    return result.data.contents.flatMap((raw) => {
+      const content = mcpResourceContentSchema.safeParse(raw);
+
+      return content.success ? [content.data] : [];
+    });
   }
 
   async callTool(name: string, args: Record<string, unknown>): Promise<McpToolCallResult> {

@@ -17,7 +17,7 @@ export default defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 2 : "50%",
   timeout: 30 * 1000,
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
   testDir: "./apps/app/tests/e2e",
   use: {
     actionTimeout: 10 * 1000,
@@ -25,9 +25,9 @@ export default defineConfig({
     permissions: ["clipboard-read", "clipboard-write"],
     viewport: { width: 1280, height: 720 },
     screenshot: "only-on-failure",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     video: {
-      mode: process.env.CI ? "on-first-retry" : "on",
+      mode: process.env.CI ? "retain-on-failure" : "on",
       size: { width: 640, height: 480 },
       show: {
         actions: {

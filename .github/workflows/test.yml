@@ -12,60 +12,72 @@ on:
 
 permissions:
   contents: read
-  checks: write
-  pull-requests: write
+  pull-requests: read
+
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  checks:
+    name: Checks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [24.x]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
           cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Run checks
         run: pnpm check
       - name: Run typechecks
         run: pnpm typecheck
+
+  unit:
+    name: Unit (${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: "pnpm"
+      - name: Restore the Vite+ task cache
+        uses: ./.github/actions/vite-task-cache
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Run tests
-        run: pnpm ci:test
-      - name: Coverage comment
-        if: github.event_name == 'pull_request'
-        uses: davelosert/vitest-coverage-report-action@v2
-        with:
-          json-summary-path: ./coverage/coverage-summary.json
-          json-final-path: ./coverage/coverage-final.json
-          file-coverage-mode: none
-      - name: Coverage summary
-        if: always()
+        run: pnpm vitest run --shard=${{ matrix.shard }}/4
+
+  test:
+    name: test (24.x)
+    if: always()
+    needs: [checks, unit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check checks and unit results
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          UNIT_RESULT: ${{ needs.unit.result }}
         run: |
-          echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
-          if [ -f "./coverage/coverage-summary.json" ]; then
-            echo "| Metric | Covered | Total | Percent |" >> $GITHUB_STEP_SUMMARY
-            echo "| --- | ---: | ---: | ---: |" >> $GITHUB_STEP_SUMMARY
-            jq -r '.total | to_entries[] | "| \(.key) | \(.value.covered) | \(.value.total) | \(.value.pct)% |"' \
-              ./coverage/coverage-summary.json >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No coverage summary was produced." >> $GITHUB_STEP_SUMMARY
-          fi
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: coverage/lcov.info
-          retention-days: 7
+          test "$CHECKS_RESULT" = "success"
+          test "$UNIT_RESULT" = "success"
 
   e2e-changes:
     name: Detect E2E changes
@@ -99,7 +111,9 @@ jobs:
     if: needs.e2e-changes.outputs.run == 'true'
     needs: e2e-changes
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
     steps:
       - uses: actions/checkout@v7
       - name: Install pnpm
@@ -109,12 +123,10 @@ jobs:
         with:
           node-version: 24.x
           cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build packages and app for end-to-end tests
         run: pnpm build:e2e
       - name: Typecheck end-to-end tests

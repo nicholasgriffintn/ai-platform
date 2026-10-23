@@ -122,10 +122,10 @@ jobs:
           targets: ${{ matrix.rust-targets }}
           cache-key: ${{ matrix.label }}
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build workspace packages
         run: pnpm build:packages

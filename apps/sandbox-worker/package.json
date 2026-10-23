@@ -7,7 +7,6 @@
   "scripts": {
     "build:deps": "vp run --filter=\"@assistant/sandbox-worker^...\" build",
     "cf-typegen": "wrangler types",
-    "ci:test": "pnpm run coverage",
     "coverage": "vitest run --coverage",
     "deploy": "pnpm run build:deps && pnpm typecheck && wrangler deploy",
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",

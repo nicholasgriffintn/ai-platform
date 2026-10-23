@@ -38,7 +38,9 @@ import outputs from "~/modules/outputs/api/routes";
 import pets from "~/modules/pets/api/routes";
 import plans from "~/modules/plans/api/routes";
 import poly from "~/modules/poly/api/routes";
+import a2a from "~/modules/ports/a2a/api/routes";
 import chatCompletionsPort from "~/modules/ports/chat-completions/api/routes";
+import mcpServer from "~/modules/ports/mcp/api/routes";
 import tasks from "~/modules/queue/api/routes";
 import realtime from "~/modules/realtime/api/routes";
 import recipes from "~/modules/recipes/api/routes";
@@ -74,6 +76,8 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/responses", responses);
   app.route("/conversations", conversations);
   app.route("/chat/completions", chatCompletionsPort);
+  app.route("/mcp", mcpServer);
+  app.route("/a2a", a2a);
   app.route("/code", code);
   app.route("/jobs", jobs);
   app.route("/approvals", approvals);

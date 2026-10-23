@@ -9,14 +9,14 @@ describe("chat provider module graph", () => {
     const provider = new GroqProvider(createTestRuntime());
 
     const body = await provider.defaultMapParameters({
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-120b",
       provider: "groq",
       messages: [{ role: "user", content: "hello" }],
       stream: false,
       disable_functions: true,
     } as unknown as ChatCompletionParameters);
 
-    expect(body.model).toBe("groq/llama-3.3-70b-versatile");
+    expect(body.model).toBe("groq/openai/gpt-oss-120b");
     expect(body.messages).toHaveLength(1);
   });
 });

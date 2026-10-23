@@ -73,7 +73,9 @@ function withPreparedChatRequests(provider: AIProvider): AIProvider {
 }
 
 export const providerLibrary = createProviderLibrary<CategoryProviderMap, ProviderFactoryContext>({
-  host: providerHost,
+  get host() {
+    return providerHost;
+  },
   bootstrappers: {
     chat: [registerHostChatProviders],
     embedding: [registerEmbeddingProviders],
