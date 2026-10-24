@@ -9,12 +9,12 @@ const fieldPathSchema = z
 
 export const knowledgeDocumentMappingSchema = z
   .object({
-    id: fieldPathSchema,
-    title: fieldPathSchema,
+    id: fieldPathSchema.optional(),
+    title: fieldPathSchema.optional(),
     content: z
       .object({
-        path: fieldPathSchema,
-        format: z.enum(["text", "html", "base64"]).default("text"),
+        path: fieldPathSchema.optional(),
+        format: z.enum(["text", "html", "base64", "json"]).default("text"),
       })
       .strict(),
     revision: fieldPathSchema.optional(),
@@ -38,6 +38,7 @@ export const knowledgeDocumentMappingSchema = z
 export const knowledgeSyncResourceSchema = z
   .object({
     resourceId: z.string().trim().min(1).max(200),
+    title: z.string().trim().min(1).max(200).optional(),
     operation: z.string().trim().min(1).max(200),
     documentMapping: knowledgeDocumentMappingSchema,
     readParameters: z

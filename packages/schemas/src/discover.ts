@@ -20,6 +20,12 @@ export const DISCOVER_MAX_INTERESTS = 8;
 export const DISCOVER_CURATE_MAX_LENGTH = 500;
 export const DISCOVER_EDITION_VERSION = 1;
 export const DISCOVER_JOB_TASK_TYPE = "discover_job";
+export const DISCOVER_NOTEBOOK_NAME = "Discover";
+export const DISCOVER_SIGNAL_METADATA_KEY = "discoverSignal";
+export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
+export const DISCOVER_GATHER_HOUR = 5;
+export const DISCOVER_FRESH_HOURS = 20;
+export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 
 function text(max: number) {
   return z.string().trim().min(1).max(max);
@@ -188,6 +194,10 @@ export const discoverEditionContentSchema = z
     runId: z.string().min(1).optional(),
     episodeFailed: z.boolean().optional(),
     weekSourceId: z.string().min(1).optional(),
+    signals: z
+      .object({ read: z.array(z.string().min(1)), stale: z.array(z.string().min(1)) })
+      .strict()
+      .optional(),
     generatedAt: z.iso.datetime(),
   })
   .strict();
@@ -205,6 +215,7 @@ export const discoverSettingsSchema = z.object({
   enabled: z.boolean(),
   timezone: z.string().nullable(),
   curate: z.string().max(DISCOVER_CURATE_MAX_LENGTH),
+  location: z.string().nullable(),
   listen: z.boolean(),
   episode: discoverEpisodeLengthSchema,
   style: videoOverviewStyleSchema,
@@ -216,6 +227,8 @@ export const discoverSettingsSchema = z.object({
       description: z.string(),
       connected: z.boolean(),
       used: z.boolean(),
+      lastReadAt: z.string().nullable(),
+      lastError: z.string().nullable(),
     }),
   ),
   installationId: z.string().nullable(),
@@ -302,6 +315,7 @@ export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
   z.object({ ...discoverJobRun, job: z.literal("covers"), editionId: z.string().min(1) }).strict(),
   z.object({ ...discoverJobRun, job: z.literal("links"), editionId: z.string().min(1) }).strict(),
   z.object({ ...discoverJobRun, job: z.literal("tidy"), today: z.iso.date() }).strict(),
+  z.object({ ...discoverJobRun, job: z.literal("gather") }).strict(),
   z
     .object({ ...discoverJobRun, job: z.literal("your_week"), editionId: z.string().min(1) })
     .strict(),

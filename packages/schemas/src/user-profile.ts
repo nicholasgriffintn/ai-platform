@@ -41,6 +41,7 @@ export interface UserSettings {
   id: string;
   nickname: string;
   job_role: string;
+  location: string;
   traits: string;
   preferences: string;
   response_style?: ResponseStyleSettings;

@@ -68,7 +68,7 @@ function readDocumentStatus(
 }
 
 function readDocumentContent(result: unknown, mapping: KnowledgeDocumentMapping): string {
-  const values = readPathValues(result, mapping.content.path);
+  const values = mapping.content.path ? readPathValues(result, mapping.content.path) : [result];
 
   if (values.length === 0) {
     throw new AssistantError(
@@ -81,6 +81,11 @@ function readDocumentContent(result: unknown, mapping: KnowledgeDocumentMapping)
   const parts: string[] = [];
 
   for (const value of values) {
+    if (mapping.content.format === "json") {
+      parts.push(contentSchema.parse(JSON.stringify(value ?? null)));
+      continue;
+    }
+
     const content = contentSchema.parse(value);
 
     switch (mapping.content.format) {
@@ -110,7 +115,7 @@ export function normaliseConnectorKnowledge(
   resource: KnowledgeSyncResource,
 ): ConnectorKnowledgeDocument {
   const mapping = resource.documentMapping;
-  const resourceId = readDocumentField(result, mapping.id);
+  const resourceId = mapping.id ? readDocumentField(result, mapping.id) : resource.resourceId;
   const id = resourceIdSchema.parse(resourceId);
 
   if (id !== resource.resourceId) {
@@ -122,7 +127,7 @@ export function normaliseConnectorKnowledge(
   }
 
   const status = readDocumentStatus(result, mapping);
-  const title = readDocumentField(result, mapping.title);
+  const title = mapping.title ? readDocumentField(result, mapping.title) : resource.title;
   const revision = readDocumentField(result, mapping.revision);
   const url = readDocumentField(result, mapping.url);
   const urlBase = readDocumentField(result, mapping.urlBase);

@@ -1,4 +1,5 @@
 import {
+  connectorOperationRequiresApproval,
   getConnectorProviderConfig,
   RECIPE_CONNECTOR_CONNECTION_KIND,
 } from "@ngriffin_uk/polychat-ai-integrations";
@@ -204,6 +205,7 @@ export const use_recipe_connector: ApiToolDefinition = {
     requireRecipeConnectorAccess(recipe, savedConfiguration, provider, operation || undefined);
     const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
     const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
+    const unattended = channel === "scheduled" || channel === "event";
 
     if (!operation && !useCase) {
       return {
@@ -227,6 +229,15 @@ export const use_recipe_connector: ApiToolDefinition = {
       };
     }
 
+    if (operation && unattended && connectorOperationRequiresApproval(provider, operation)) {
+      return {
+        status: "error",
+        name: "use_recipe_connector",
+        content: `${provider} ${operation} needs the person's approval, which an unattended run cannot ask for. Leave it out and carry on; it can be run from a chat.`,
+        data: { provider, operation, unattended: true, approvalRequired: true },
+      };
+    }
+
     if (!operation) {
       try {
         const discovery = await discoverRecipeConnectorTools({
@@ -241,7 +252,7 @@ export const use_recipe_connector: ApiToolDefinition = {
           projectId,
           teammateContextId: request.request?.teammate_context_id,
           connectedAccountId: teammateAuthority?.connectedAccountId,
-          requireSelectedAccount: channel === "scheduled" || channel === "event",
+          requireSelectedAccount: unattended,
         });
 
         return {
@@ -285,7 +296,7 @@ export const use_recipe_connector: ApiToolDefinition = {
               operationId: operation,
               connectedAccountId: teammateAuthority?.connectedAccountId,
               sessionId: args.sessionId,
-              requireSelectedAccount: channel === "scheduled" || channel === "event",
+              requireSelectedAccount: unattended,
               scope,
             })
           : undefined;

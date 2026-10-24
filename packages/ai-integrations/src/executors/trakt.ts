@@ -7,8 +7,22 @@ const TRAKT_API_BASE_URL = "https://api.trakt.tv";
 const fetchTraktJson = createConnectorJsonClient(TRAKT_API_BASE_URL);
 const TRAKT_MEDIA_TYPES = new Set(["movies", "shows"]);
 
-function requireTraktUser(params: Record<string, unknown>): string {
-  const username = getStringParam(params, "username");
+export const TRAKT_CREDENTIAL_SEPARATOR = "|";
+
+function readTraktCredential(credential: string): { clientId: string; username?: string } {
+  const separator = credential.indexOf(TRAKT_CREDENTIAL_SEPARATOR);
+
+  if (separator === -1) {
+    return { clientId: credential };
+  }
+
+  const username = credential.slice(separator + 1).trim();
+
+  return { clientId: credential.slice(0, separator), ...(username ? { username } : {}) };
+}
+
+function requireTraktUser(params: Record<string, unknown>, fallback: string | undefined): string {
+  const username = getStringParam(params, "username") ?? fallback;
 
   if (!username) {
     throw new AssistantError("username is required", ErrorType.PARAMS_ERROR, 400);
@@ -28,16 +42,17 @@ function requireMediaType(params: Record<string, unknown>): string {
 }
 
 export async function executeTraktOperation(
-  clientId: string,
+  credential: string,
   operation: string,
   params: Record<string, unknown>,
 ) {
+  const { clientId, username } = readTraktCredential(credential);
   const headers = { "trakt-api-version": "2", "trakt-api-key": clientId, Authorization: "" };
   const limit = limitPositiveInteger(getNumberParam(params, "limit"), 20, 100);
 
   if (operation === "get_history") {
     return fetchTraktJson({
-      path: `/users/${requireTraktUser(params)}/history/${requireMediaType(params)}?limit=${limit}`,
+      path: `/users/${requireTraktUser(params, username)}/history/${requireMediaType(params)}?limit=${limit}`,
       token: clientId,
       headers,
     });
@@ -45,7 +60,7 @@ export async function executeTraktOperation(
 
   if (operation === "get_watchlist") {
     return fetchTraktJson({
-      path: `/users/${requireTraktUser(params)}/watchlist/${requireMediaType(params)}?limit=${limit}`,
+      path: `/users/${requireTraktUser(params, username)}/watchlist/${requireMediaType(params)}?limit=${limit}`,
       token: clientId,
       headers,
     });

@@ -18,6 +18,8 @@ import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../conte
 import { canAffordDiscoverListen } from "../cost";
 import { enqueueDiscoverJob } from "../covers";
 import { saveDiscoverEdition } from "../editions";
+import { scheduleNextDiscoverGather } from "../gather";
+import { listDiscoverDocuments } from "../notebook";
 import { startDiscoverWindDown } from "../wind-down";
 import {
   compose_discover_edition as composeDescriptor,
@@ -59,7 +61,10 @@ export const compose_discover_edition: ApiToolDefinition = {
   execute: async (args: ComposeDiscoverEditionInput, toolContext) => {
     const context = requireToolContext(toolContext);
     const user = context.requireUser();
-    const basis = await readDiscoverEditionBasis(context);
+    const [basis, documents] = await Promise.all([
+      readDiscoverEditionBasis(context),
+      listDiscoverDocuments(context, user.id),
+    ]);
     const edition = buildDiscoverEdition({
       draft: args,
       date: basis.date,
@@ -75,7 +80,25 @@ export const compose_discover_edition: ApiToolDefinition = {
     const saved = await saveDiscoverEdition(context, user.id, {
       ...edition,
       runId: context.executionRunId,
+      signals: {
+        read: [
+          ...new Set(
+            documents.signals
+              .filter((document) => document.readAt && !document.error)
+              .map((document) => document.providerId),
+          ),
+        ],
+        stale: [
+          ...new Set(
+            documents.signals
+              .filter((document) => document.error)
+              .map((document) => document.providerId),
+          ),
+        ],
+      },
     });
+
+    await scheduleNextDiscoverGather(context, edition.date, edition.timezone);
 
     if (edition.cards.some((card) => card.kind === "topic")) {
       await enqueueDiscoverJob(context, { job: "covers", editionId: saved.id });

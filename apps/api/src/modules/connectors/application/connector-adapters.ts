@@ -5,6 +5,7 @@ import {
   executeHardcoverOperation,
   executeOuraOperation,
   executeLastfmOperation,
+  executeMarqueeOperation,
   executeNetlifyOperation,
   executePodcastIndexOperation,
   executeReadwiseOperation,
@@ -43,6 +44,7 @@ const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperation
   podcastindex: executePodcastIndexOperation,
   oura: executeOuraOperation,
   audiobookshelf: executeAudiobookshelfOperation,
+  marquee: executeMarqueeOperation,
 };
 
 const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((provider) => ({

@@ -198,7 +198,7 @@ export function selectActiveRecipeConnectorAccount(params: {
     return selected;
   }
 
-  if (params.requireExact) {
+  if (params.requireExact && active.length > 1) {
     throw new AssistantError(
       "The selected connector account is not connected",
       ErrorType.AUTHORISATION_ERROR,

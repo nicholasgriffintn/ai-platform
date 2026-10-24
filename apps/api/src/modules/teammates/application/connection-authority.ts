@@ -24,6 +24,49 @@ export interface TeammateConnectorAuthority {
   grantRevision: number;
 }
 
+function ownerReadOperations(provider: NonNullable<ReturnType<typeof getConnectorProviderConfig>>) {
+  return provider.operations
+    .filter((operation) => operation.access === "read" && !operation.destructive)
+    .map((operation) => operation.id)
+    .sort();
+}
+
+async function inheritOwnerReadAuthority(params: {
+  context: ServiceContext;
+  userId: number;
+  provider: NonNullable<ReturnType<typeof getConnectorProviderConfig>>;
+}): Promise<TeammateConnectorAuthority | null> {
+  const allowedOperations = ownerReadOperations(params.provider);
+
+  if (allowedOperations.length === 0) {
+    return null;
+  }
+
+  const connection = (
+    await params.context.repositories
+      .get(ProviderConnectionRepository)
+      .listConnections(params.userId, params.provider.id)
+  ).find(
+    (candidate) =>
+      candidate.status === "connected" &&
+      isConnectorConnectionKindForAuth(candidate.kind, params.provider.auth.authType) &&
+      (params.provider.auth.authType !== "composio" || Boolean(candidate.external_id)),
+  );
+
+  if (!connection) {
+    return null;
+  }
+
+  return {
+    allowedOperations,
+    connection,
+    grantRevision: 0,
+    ...(connection.kind === CONNECTOR_ACCOUNT_REFERENCE_KIND && connection.external_id
+      ? { connectedAccountId: connection.external_id }
+      : {}),
+  };
+}
+
 export async function resolveTeammateConnectorAuthority(params: {
   context: ServiceContext;
   contextId: string;
@@ -104,6 +147,18 @@ export async function resolveTeammateConnectorAuthority(params: {
       item.grant.allowedOperations.length > 0
     ) {
       matching.push({ grant: item.grant, connection: item.connection });
+    }
+  }
+
+  if (matching.length === 0 && teammateContext.scope.type === "personal") {
+    const inherited = await inheritOwnerReadAuthority({
+      context: params.context,
+      userId: params.userId,
+      provider,
+    });
+
+    if (inherited) {
+      return inherited;
     }
   }
 

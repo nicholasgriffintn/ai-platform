@@ -51,9 +51,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
       access: "read" as const,
       inputSchema: {
         type: "object",
-        required: ["user"],
         properties: {
-          user: { type: "string", description: "The Last.fm username." },
+          user: {
+            type: "string",
+            description: "The Last.fm username. Defaults to the one saved with the connection.",
+          },
           period: {
             type: "string",
             enum: ["overall", "7day", "1month", "3month", "6month", "12month"],
@@ -64,7 +66,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     })),
     auth: {
       authType: "api_key",
-      credentialFields: [{ label: "API key", secret: true }],
+      credentialFields: [
+        { label: "API key", secret: true },
+        { label: "Last.fm username", secret: false },
+      ],
+      credentialSeparator: "|",
       scopes: ["scrobbles:read"],
     },
   },
@@ -79,9 +85,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
       access: "read" as const,
       inputSchema: {
         type: "object",
-        required: ["username"],
         properties: {
-          username: { type: "string", description: "A public Trakt username." },
+          username: {
+            type: "string",
+            description: "A public Trakt username. Defaults to the one saved with the connection.",
+          },
           type: { type: "string", enum: ["movies", "shows"] },
           limit: limitProperty,
         },
@@ -89,7 +97,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     })),
     auth: {
       authType: "api_key",
-      credentialFields: [{ label: "Client ID", secret: true }],
+      credentialFields: [
+        { label: "Client ID", secret: true },
+        { label: "Trakt username", secret: false },
+      ],
+      credentialSeparator: "|",
       scopes: ["history:read"],
     },
   },
@@ -206,6 +218,109 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
       ],
       credentialSeparator: "|",
       scopes: ["library:read"],
+    },
+  },
+  {
+    id: "marquee",
+    name: "Marquee",
+    description:
+      "Read your Marquee shelf, what is on tonight and the week ahead, and search its film and television catalogue.",
+    categories: [{ id: "video", name: "Film and TV" }],
+    appUrl: "https://marquee.pashi.app",
+    setupUrl: "/chat/plugins?connector=marquee",
+    operations: [
+      { id: "get_shelf", access: "read", inputSchema: { type: "object", properties: {} } },
+      { id: "whats_on_tonight", access: "read", inputSchema: { type: "object", properties: {} } },
+      {
+        id: "whats_on_this_week",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          properties: {
+            days: {
+              type: "integer",
+              minimum: 1,
+              maximum: 60,
+              description: "How far ahead to look. Defaults to seven days.",
+            },
+          },
+        },
+      },
+      {
+        id: "search_catalogue",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["query"],
+          properties: {
+            query: { type: "string", description: "A title, a name or a half-remembered plot." },
+          },
+        },
+      },
+      {
+        id: "find_similar",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["titleId"],
+          properties: {
+            titleId: { type: "string", description: "A Marquee id such as movie:550." },
+          },
+        },
+      },
+      {
+        id: "get_title",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["titleId"],
+          properties: {
+            titleId: { type: "string", description: "A Marquee id such as movie:550." },
+          },
+        },
+      },
+      {
+        id: "titles_by_person",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["name"],
+          properties: { name: { type: "string", description: "A credited name." } },
+        },
+      },
+      {
+        id: "save_to_shelf",
+        access: "write",
+        inputSchema: {
+          type: "object",
+          required: ["titleId"],
+          properties: {
+            titleId: { type: "string" },
+            status: { type: "string" },
+            rating: { type: "integer", minimum: 1, maximum: 5 },
+            thoughts: { type: "string" },
+            confirm: { type: "boolean", description: "True applies the change." },
+          },
+        },
+      },
+      {
+        id: "follow_person",
+        access: "write",
+        inputSchema: {
+          type: "object",
+          required: ["name"],
+          properties: {
+            name: { type: "string" },
+            follow: { type: "boolean" },
+            confirm: { type: "boolean", description: "True applies the change." },
+          },
+        },
+      },
+    ],
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "API token", secret: true }],
+      scopes: ["catalogue:read", "shelf:read", "shelf:write", "people:follow"],
     },
   },
 ];

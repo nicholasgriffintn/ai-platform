@@ -8,6 +8,7 @@ import type {
   Validator,
   ValidatorResult,
 } from "~/modules/responses/application/engine/validation/ValidationPipeline";
+import { isBuiltInToolApprovalResolution } from "~/modules/responses/application/runs/interactions";
 import { describeGuardrailBlock } from "~/modules/responses/domain/guardrails";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
@@ -22,6 +23,10 @@ export class GuardrailsValidator implements Validator {
     const { env, completion_id } = options;
     const user = options.context?.user;
     const requestCache = options.context?.requestCache;
+
+    if (!context.messageWithContext && isBuiltInToolApprovalResolution(options.options)) {
+      return { validation: { isValid: true }, context: {} };
+    }
 
     if (!context.messageWithContext) {
       return {

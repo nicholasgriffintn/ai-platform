@@ -1,7 +1,8 @@
 import {
-  CONNECTOR_ACCOUNT_REFERENCE_KIND,
   connectorOperationRequiresApproval,
   getConnectorOperationConfig,
+  getConnectorProviderConfig,
+  isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
@@ -82,11 +83,14 @@ export async function requireKnowledgeSyncAuthority(
     .get(ProviderConnectionRepository)
     .getConnectionById(sync.connection_id);
 
+  const providerConfig = getConnectorProviderConfig(provider);
+
   if (
     !connection ||
+    !providerConfig ||
     !ownsResource(userId, connection.user_id) ||
     connection.provider !== provider ||
-    connection.kind !== CONNECTOR_ACCOUNT_REFERENCE_KIND ||
+    !isConnectorConnectionKindForAuth(connection.kind, providerConfig.auth.authType) ||
     connection.status !== "connected"
   ) {
     throw new AssistantError(

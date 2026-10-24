@@ -9,6 +9,7 @@ export type StoredUserSettings = {
 export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   nickname: null,
   job_role: null,
+  location: null,
   traits: null,
   preferences: null,
   response_style: null,
@@ -67,6 +68,7 @@ export function prepareUserSettingsUpdates(
   const updates: Record<string, unknown> = {
     nickname: settings.nickname ?? null,
     job_role: settings.job_role ?? null,
+    location: settings.location ?? null,
     traits: settings.traits ?? null,
     preferences: settings.preferences ?? null,
     response_style: settings.response_style ?? null,

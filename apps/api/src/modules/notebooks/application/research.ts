@@ -23,7 +23,7 @@ const logger = getLogger({ prefix: "notebooks/research" });
 const FAST_RESEARCH_LIMIT = 10;
 const MAX_SOURCE_CHARACTERS = 400_000;
 
-async function findWebResults(
+export async function findWebResults(
   context: ServiceContext,
   query: string,
 ): Promise<NotebookResearchResult[]> {

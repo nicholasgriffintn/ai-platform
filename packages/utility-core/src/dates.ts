@@ -185,6 +185,29 @@ export function describeZonedInstant(instant: Date, timeZone = "UTC"): ZonedInst
   };
 }
 
+export function zonedTimeToInstant(calendarDate: string, hour: number, timeZone = "UTC"): Date {
+  const [year, month, day] = calendarDate.split("-").map(Number);
+  let instant = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1, hour));
+
+  for (let pass = 0; pass < 2; pass += 1) {
+    const zoned = describeZonedInstant(instant, timeZone);
+    const [zonedHour, zonedMinute] = zoned.time.split(":").map(Number);
+    const wanted = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1, hour));
+    const seen = new Date(
+      `${zoned.date}T${String(zonedHour).padStart(2, "0")}:${String(zonedMinute).padStart(2, "0")}:00Z`,
+    );
+    const drift = seen.getTime() - wanted.getTime();
+
+    if (drift === 0) {
+      break;
+    }
+
+    instant = new Date(instant.getTime() - drift);
+  }
+
+  return instant;
+}
+
 export function shiftCalendarDate(calendarDate: string, days: number): string {
   const [year, month, day] = calendarDate.split("-").map(Number);
 

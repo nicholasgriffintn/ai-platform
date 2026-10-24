@@ -24,6 +24,7 @@ export interface UserSettings {
   id: string;
   nickname: string;
   job_role: string;
+  location: string;
   traits: string;
   preferences: string;
   response_style?: ResponseStyleSettings;
@@ -129,6 +130,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
   return {
     nickname: userSettings?.nickname || "",
     job_role: userSettings?.job_role || "",
+    location: userSettings?.location || "",
     traits: userSettings?.traits || "",
     preferences: userSettings?.preferences || "",
     response_style: parseResponseStyle(userSettings?.response_style),

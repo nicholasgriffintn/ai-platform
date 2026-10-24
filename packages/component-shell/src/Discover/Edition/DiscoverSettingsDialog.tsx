@@ -26,7 +26,7 @@ import {
   type DiscoverSettings,
   type UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
+import { formatCredits, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -72,6 +72,18 @@ export interface DiscoverSettingsDialogProps {
   ) => void;
 }
 
+function describeSourceHealth(source: DiscoverSettings["sources"][number]): string {
+  if (source.lastError) {
+    return `Could not be read: ${source.lastError}`;
+  }
+
+  if (source.lastReadAt) {
+    return `Read ${formatRelativeTime(source.lastReadAt)}. ${source.description}`;
+  }
+
+  return source.description;
+}
+
 export function DiscoverSettingsDialog({
   open,
   onOpenChange,
@@ -85,7 +97,11 @@ export function DiscoverSettingsDialog({
   onSavePreferences,
 }: DiscoverSettingsDialogProps) {
   const [curate, setCurate] = useState(settings.curate);
+  const [showSources, setShowSources] = useState(false);
   const changed = curate.trim() !== settings.curate.trim();
+  const connectedSources = settings.sources.filter((source) => source.connected);
+  const usedSources = connectedSources.filter((source) => source.used);
+  const unconnectedCount = settings.sources.length - connectedSources.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,44 +161,53 @@ export function DiscoverSettingsDialog({
             </>
           )}
           {settings.enabled && settings.sources.length > 0 && (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-medium text-foreground">Connected services</p>
-                <p className="text-xs text-muted-foreground">
-                  What you read, watch and listen to elsewhere, for Discover to work from.
-                </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <p className="text-sm font-medium text-foreground">Connected services</p>
+                  <p className="text-xs text-muted-foreground">
+                    {connectedSources.length === 0
+                      ? "Nothing connected yet. Connect what you read, watch and listen to and Discover works from it."
+                      : `Reading ${usedSources.length === connectedSources.length ? "all" : usedSources.length} of your ${connectedSources.length} connected services${unconnectedCount > 0 ? `, ${unconnectedCount} more could be connected` : ""}.`}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowSources((current) => !current)}
+                >
+                  {showSources ? "Done" : "Change"}
+                </Button>
               </div>
-              <ul className="flex flex-col gap-2">
-                {settings.sources.map((source) => (
-                  <li key={source.providerId}>
-                    {source.connected ? (
+              {showSources && (
+                <ul className="flex flex-col gap-2">
+                  {connectedSources.map((source) => (
+                    <li key={source.providerId}>
                       <Switch
                         label={source.name}
-                        description={source.description}
+                        description={describeSourceHealth(source)}
                         checked={source.used}
                         disabled={isSaving}
                         onChange={(event) => onUseSource(source.providerId, event.target.checked)}
                       />
-                    ) : (
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 flex-col">
-                          <span className="text-sm text-foreground">{source.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {source.description}
-                          </span>
-                        </div>
-                        <ButtonLink
-                          href={getPlacePaths("chat").plugins}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Connect
-                        </ButtonLink>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                  {unconnectedCount > 0 && (
+                    <li className="flex items-center justify-between gap-3 pt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {settings.sources
+                          .filter((source) => !source.connected)
+                          .map((source) => source.name)
+                          .join(", ")}
+                      </span>
+                      <ButtonLink href={getPlacePaths("chat").plugins} variant="outline" size="sm">
+                        Connect
+                      </ButtonLink>
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           )}
           {settings.enabled && settings.installationId && (
@@ -250,6 +275,16 @@ export function DiscoverSettingsDialog({
                 </Button>
               </div>
             </form>
+          )}
+          {settings.enabled && (
+            <p className="text-xs text-muted-foreground">
+              {settings.location
+                ? `Weather and what is on nearby use ${settings.location}, from your account.`
+                : "Add a location to your account and Discover will bring in the weather and what is on nearby."}{" "}
+              <Link to="/profile" className="text-foreground underline">
+                Profile
+              </Link>
+            </p>
           )}
         </div>
       </DialogContent>

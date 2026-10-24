@@ -13,6 +13,7 @@ import { makeEpisodeStudySet } from "../episode-extras";
 import { renderEpisodeChapter } from "../episode-render";
 import { produceDiscoverEpisode } from "../episodes";
 import { fileDiscoverLinks } from "../follows";
+import { runDiscoverGather } from "../gather";
 import { produceDiscoverListen } from "../listen";
 import { tidyDiscover } from "../retention";
 import { produceSeasonListen } from "../season-listen";
@@ -29,6 +30,15 @@ const discoverJob = defineTask<DiscoverJobTaskData>({
     }
 
     const context = job.runId ? withExecutionRunContext(owner, job.runId) : owner;
+
+    if (job.job === "gather") {
+      const gathered = await runDiscoverGather(context);
+
+      return {
+        status: "success",
+        message: `Read ${gathered.read.length} services and researched ${gathered.topics.length} topics`,
+      };
+    }
 
     if (job.job === "wind_down") {
       await renderDiscoverWindDown(context, job.windDownId);

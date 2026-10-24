@@ -12,13 +12,29 @@ const LASTFM_METHODS: Record<string, string> = {
   get_top_tracks: "user.gettoptracks",
 };
 
+export const LASTFM_CREDENTIAL_SEPARATOR = "|";
+
+function readLastfmCredential(credential: string): { apiKey: string; user?: string } {
+  const separator = credential.indexOf(LASTFM_CREDENTIAL_SEPARATOR);
+
+  if (separator === -1) {
+    return { apiKey: credential };
+  }
+
+  const user = credential.slice(separator + 1).trim();
+
+  return { apiKey: credential.slice(0, separator), ...(user ? { user } : {}) };
+}
+
 export async function executeLastfmOperation(
-  apiKey: string,
+  credential: string,
   operation: string,
   params: Record<string, unknown>,
 ) {
   const method = LASTFM_METHODS[operation];
-  const user = getStringParam(params, "user");
+  const stored = readLastfmCredential(credential);
+  const apiKey = stored.apiKey;
+  const user = getStringParam(params, "user") ?? stored.user;
 
   if (!method) {
     throw new AssistantError("Unsupported Last.fm operation", ErrorType.PARAMS_ERROR, 400);

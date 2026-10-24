@@ -10,6 +10,7 @@ const savedSettings: UserSettings = {
   id: "settings-1",
   nickname: "Alex",
   job_role: "Engineer",
+  location: "Leeds",
   traits: "Thoughtful",
   preferences: "Use British English",
   guardrails_provider: "bedrock",

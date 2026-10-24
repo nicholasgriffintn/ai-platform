@@ -4,7 +4,11 @@ import { describeZonedInstant, partOfDay, truncateText } from "@ngriffin_uk/poly
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getUserSettings } from "~/modules/auth/application/user";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
-import type { DiscoverContextSnapshot } from "~/modules/discover/domain/context";
+import type {
+  DiscoverContextSnapshot,
+  DiscoverResearchContext,
+  DiscoverSignalContext,
+} from "~/modules/discover/domain/context";
 import {
   describeDiscoverCard,
   discoverTopicKey,
@@ -12,6 +16,8 @@ import {
 } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
+import { latestResearchSection } from "~/modules/discover/domain/research";
+import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
@@ -20,7 +26,9 @@ import { listRecentDiscoverEditions } from "./editions";
 import { wasLatestEpisodeWatched } from "./episodes";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
+import { ensureDiscoverGathered } from "./gather";
 import { readDiscoverHealthSummary } from "./health";
+import type { DiscoverDocuments } from "./notebook";
 import { loadResurfaceCandidates } from "./resurface";
 import { readDiscoverRoutine } from "./settings";
 
@@ -130,12 +138,35 @@ export async function readDiscoverEditionBasis(
   };
 }
 
+function describeDocuments(documents: DiscoverDocuments): {
+  signals: DiscoverSignalContext[];
+  research: DiscoverResearchContext[];
+} {
+  return {
+    signals: documents.signals.map((document) => ({
+      title: document.title,
+      group: findDiscoverSignal(document.signalId)?.group ?? "signal",
+      readAt: document.readAt,
+      error: document.error,
+      lines: document.lines,
+    })),
+    research: documents.research.flatMap((document) => {
+      const section = latestResearchSection(document.content);
+
+      return section
+        ? [{ topic: document.topic, date: section.date, results: section.results }]
+        : [];
+    }),
+  };
+}
+
 export async function buildDiscoverContextSnapshot(
   context: ServiceContext,
   now = new Date(),
 ): Promise<DiscoverContextSnapshot> {
   const basis = await loadDiscoverBasis(context, now);
   const userId = basis.user.id;
+  const documents = describeDocuments(await ensureDiscoverGathered(context, now));
   const [conversations, memorySummary, agenda, resurface, health] = await Promise.all([
     context.repositories
       .get(ConversationRepository)
@@ -178,5 +209,7 @@ export async function buildDiscoverContextSnapshot(
     })),
     resurface,
     health,
+    signals: documents.signals,
+    research: documents.research,
   };
 }

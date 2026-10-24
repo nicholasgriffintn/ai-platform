@@ -22,6 +22,7 @@ export const notebookSettingsSchema = z
     responseLength: notebookResponseLengthSchema.default("default"),
     sourcesOnly: z.boolean().default(true),
     followTopic: z.string().trim().min(1).max(60).nullable().default(null),
+    discover: z.boolean().default(false),
   })
   .strict();
 

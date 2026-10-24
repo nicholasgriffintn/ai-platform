@@ -1023,6 +1023,7 @@ const nonComposioRecipeConnectorProviders = [
   "podcastindex",
   "oura",
   "audiobookshelf",
+  "marquee",
 ];
 
 const recipeConnectorProviders = [

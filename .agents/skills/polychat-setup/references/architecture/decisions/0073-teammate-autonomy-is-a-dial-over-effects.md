@@ -17,7 +17,9 @@ A teammate context may carry an autonomy level, stored on the context and change
 
 Each call is classified from its arguments with the tool's declared effects (ADR 0071) before the permission check, falling back to `write` when the arguments do not parse or a classifier throws. Teammate admission copies the context's live level into the run, so tightening the dial applies to the next call of any run admitted after the change. The decision is three Cedar statements beside the existing tool policies: an observer forbid on `tool.use`, and a floor and an assistant forbid on `tool.unattended`. The dial is a ceiling over the existing rules, so mode approvals, denied tools and teammate kinds still apply; a partner cannot loosen what a mode already asks for.
 
-Approvals reuse the existing pending-approval rail. A background run has no client to supply an approval, so anything that asks there waits for the person.
+Approvals reuse the existing pending-approval rail. A background run has no client to supply an approval, so anything that asks there is refused as a plain tool error that names the operation; the run carries on and the person can run it from a chat. No approval record is created on a scheduled or event channel.
+
+A read of the owner's own connected account by a teammate in the owner's personal context sits at the floor of the dial. Such a context inherits the owner's connections for read, non-destructive operations without a connection grant, choosing the selected account and otherwise the first connected one. Grants remain the mechanism for writes and for every project context.
 
 ## Consequences
 

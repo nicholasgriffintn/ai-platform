@@ -59,6 +59,7 @@ export interface IUserSettings {
   dynamodb_vectors_region?: string | null;
   nickname: string | null;
   job_role: string | null;
+  location: string | null;
   traits: string | null;
   preferences: string | null;
   response_style: ResponseStyleSettings;
@@ -98,6 +99,7 @@ export interface UserSettings {
   user_id: number;
   nickname: string | null;
   job_role: string | null;
+  location: string | null;
   traits: string | null;
   preferences: string | null;
   tracking_enabled: boolean;

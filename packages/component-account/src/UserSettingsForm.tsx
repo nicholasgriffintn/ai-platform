@@ -331,6 +331,20 @@ export function UserSettingsForm({
             />
           </div>
 
+          <div>
+            <label htmlFor="location" className="mb-1 block text-sm font-medium text-foreground">
+              Where you are
+            </label>
+            <FormInput
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="A town or city, for weather and what is on nearby"
+              className="w-full"
+            />
+          </div>
+
           <div className="divide-y divide-border rounded-lg border border-border">
             {RESPONSE_STYLE_CONTROLS.map((control) => (
               <div key={control.key} className="flex items-center justify-between gap-4 px-3 py-2">

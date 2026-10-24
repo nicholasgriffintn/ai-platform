@@ -12,6 +12,7 @@ import { isValidTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getUserSettings } from "~/modules/auth/application/user";
 import {
   DEFAULT_DISCOVER_PREFERENCES,
   readDiscoverPreferences,
@@ -31,11 +32,14 @@ import {
 } from "~/modules/recipes/application";
 
 import { estimateDiscoverCosts } from "./cost";
+import { enqueueDiscoverJob } from "./covers";
+import { listDiscoverDocuments } from "./notebook";
 
 const DISABLED: DiscoverSettings = {
   enabled: false,
   timezone: null,
   curate: DEFAULT_DISCOVER_PREFERENCES.curate,
+  location: null,
   listen: DEFAULT_DISCOVER_PREFERENCES.listen,
   episode: DEFAULT_DISCOVER_PREFERENCES.episode,
   style: DEFAULT_DISCOVER_PREFERENCES.style,
@@ -71,25 +75,45 @@ async function describeSources(
   context: ServiceContext,
   excluded: readonly string[],
 ): Promise<DiscoverSettings["sources"]> {
-  const recipe = await getAssistantRecipe(DISCOVER_RECIPE_ID, {
-    context,
-    userId: context.requireUser().id,
-  });
+  const user = context.requireUser();
+  const [recipe, documents] = await Promise.all([
+    getAssistantRecipe(DISCOVER_RECIPE_ID, { context, userId: user.id }),
+    listDiscoverDocuments(context, user.id),
+  ]);
 
-  return (recipe?.integrations ?? []).map((integration) => ({
-    providerId: integration.providerId,
-    name: integration.name,
-    description: integration.description,
-    connected: integration.connectionStatus === "connected",
-    used: !excluded.includes(integration.providerId),
-  }));
+  return (recipe?.integrations ?? []).map((integration) => {
+    const read = documents.signals.filter(
+      (document) => document.providerId === integration.providerId,
+    );
+    const latest = read
+      .map((document) => document.readAt)
+      .filter((value): value is string => value !== null)
+      .sort()
+      .at(-1);
+
+    return {
+      providerId: integration.providerId,
+      name: integration.name,
+      description: integration.description,
+      connected: integration.connectionStatus === "connected",
+      used: !excluded.includes(integration.providerId),
+      lastReadAt: latest ?? null,
+      lastError: read.find((document) => document.error)?.error ?? null,
+    };
+  });
 }
 
-export type DiscoverRoutineSettings = Omit<DiscoverSettings, "notify" | "sources" | "episodeCosts">;
+export type DiscoverRoutineSettings = Omit<
+  DiscoverSettings,
+  "notify" | "sources" | "episodeCosts"
+> & { excludedProviders: string[] };
 
-function describeRoutine(installation: RecipeInstallation | null): DiscoverRoutineSettings {
+function describeRoutine(
+  installation: RecipeInstallation | null,
+  location: string | null,
+): DiscoverRoutineSettings {
   if (!installation) {
-    return DISABLED;
+    return { ...DISABLED, location, excludedProviders: [] };
   }
 
   const schedule = installation.triggers.find((trigger) => trigger.type === "schedule");
@@ -99,10 +123,12 @@ function describeRoutine(installation: RecipeInstallation | null): DiscoverRouti
     enabled: installation.status === "active",
     timezone: schedule?.timezone ?? null,
     curate: preferences.curate,
+    location,
     listen: preferences.listen,
     episode: preferences.episode,
     style: preferences.style,
     installationId: installation.id,
+    excludedProviders: preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY],
   };
 }
 
@@ -115,9 +141,13 @@ async function describeInstallation(
   }
 
   const preferences = storedPreferences(installation);
+  const { excludedProviders: _excluded, ...routine } = describeRoutine(
+    installation,
+    await readUserLocation(context),
+  );
 
   return {
-    ...describeRoutine(installation),
+    ...routine,
     notify: await isRoutineAlwaysNotified(context, installation.id),
     episodeCosts: (await estimateDiscoverCosts(context)).episode,
     sources: await describeSources(context, preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]),
@@ -137,12 +167,23 @@ function nextExcludedSources(
   return change.used ? others : [...others, change.providerId];
 }
 
+async function readUserLocation(context: ServiceContext): Promise<string | null> {
+  const user = context.requireUser();
+  const settings = await getUserSettings(context.repositories, user.id);
+  const location = (settings?.location ?? user.location)?.trim();
+
+  return location ? location : null;
+}
+
 export async function readDiscoverRoutine(
   context: ServiceContext,
 ): Promise<DiscoverRoutineSettings> {
   const polyContext = await requirePolyContext(context);
 
-  return describeRoutine(await findDiscoverInstallation(context, polyContext));
+  return describeRoutine(
+    await findDiscoverInstallation(context, polyContext),
+    await readUserLocation(context),
+  );
 }
 
 export async function readDiscoverSettings(context: ServiceContext): Promise<DiscoverSettings> {
@@ -204,6 +245,8 @@ export async function updateDiscoverSettings(
       enabled: input.notify,
     });
   }
+
+  await enqueueDiscoverJob(context, { job: "gather" });
 
   return describeInstallation(context, reinstalled);
 }
