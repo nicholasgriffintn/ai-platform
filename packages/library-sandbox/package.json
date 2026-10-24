@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-sandbox",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Sandbox mechanisms for Polychat hosts: dynamic worker code specs and the evaluation worker template, outbound policy and tool-call routing, lease fencing, execution control with pause and cancel, output redaction, signed access grants and container request helpers",
   "license": "Apache-2.0",
   "files": [

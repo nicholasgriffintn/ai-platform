@@ -1,5 +1,27 @@
 # @ngriffin_uk/polychat-ai-prompts
 
+## 0.4.0
+
+### Minor Changes
+
+- 91c7d3d: Choose how the assistant responds without writing a prompt.
+
+  - **Style controls.** Personalised responses now has dropdowns for base style and tone (Professional, Friendly, Candid, Quirky, Efficient, Nerdy or Cynical), warmth, enthusiasm, emoji, and headers and lists. Leave any on Default to keep the assistant's usual behaviour.
+  - **Custom instructions on top.** Your own traits and preferences sit below the controls and are added to the style you pick, so you can choose a tone and still add anything the controls do not cover. Instructions you have already written carry on working unchanged.
+
+### Patch Changes
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [7accf45]
+- Updated dependencies [bf39c94]
+- Updated dependencies [f4841cd]
+- Updated dependencies [8b965f6]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-library-prompts-catalogue@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
