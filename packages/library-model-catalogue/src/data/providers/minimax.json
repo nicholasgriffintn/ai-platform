@@ -13,7 +13,7 @@
         "contextWindow": 1000000,
         "maxTokens": 524288,
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 25, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -26,6 +26,7 @@
       "overrides": {
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "maxTokens": 524288,
+        "speed": 3,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006

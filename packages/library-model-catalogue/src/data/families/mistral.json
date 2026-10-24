@@ -621,10 +621,33 @@
             "text"
           ]
         },
+        "strengths": [
+          "transcription",
+          "audio",
+          "document"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
         "releaseDate": "October 20, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "aaWerIndex",
+              "label": "Word Error Rate",
+              "value": 0.022,
+              "min": 0,
+              "max": 1,
+              "lowerIsBetter": true
+            }
+          ]
+        }
       }
     },
     "voxtral-small-transcribe-3": {
@@ -642,10 +665,33 @@
             "text"
           ]
         },
+        "strengths": [
+          "transcription",
+          "audio",
+          "document"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
         "releaseDate": "October 20, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "aaWerIndex",
+              "label": "Word Error Rate",
+              "value": 0.021,
+              "min": 0,
+              "max": 1,
+              "lowerIsBetter": true
+            }
+          ]
+        }
       }
     },
     "voxtral-tts-3": {

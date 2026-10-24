@@ -34,10 +34,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 802,
+              "value": 740,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 20
             }
           ]
         }
@@ -89,10 +89,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 862,
+              "value": 837,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -116,10 +116,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 940,
+              "value": 929,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -156,10 +156,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 840,
+              "value": 823,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 45
             }
           ]
         }
@@ -207,10 +207,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 863,
+              "value": 883,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 21
             }
           ]
         }
@@ -236,10 +236,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 931,
+              "value": 929,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -265,10 +265,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 909,
+              "value": 917,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 18
             }
           ]
         }
@@ -296,10 +296,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 802,
+              "value": 740,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 20
             }
           ]
         }
@@ -346,10 +346,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1029,
+              "value": 1026,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -371,10 +371,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 862,
+              "value": 837,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -399,10 +399,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 940,
+              "value": 929,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -423,10 +423,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1020,
+              "value": 1021,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -450,7 +450,7 @@
               "value": 1003,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -487,10 +487,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1091,
+              "value": 1090,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 11
+              "confidenceInterval95": 18
             }
           ]
         }
@@ -516,10 +516,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1115,
+              "value": 1117,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -531,7 +531,27 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
-        "releaseDate": "October 15, 2026"
+        "strengths": [
+          "image"
+        ],
+        "reliability": 2,
+        "releaseDate": "October 15, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1043,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
       }
     },
     "flux-schnell": {
@@ -563,10 +583,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 892,
+              "value": 870,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 19
             }
           ]
         }
@@ -592,10 +612,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 894,
+              "value": 855,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 19
             }
           ]
         }

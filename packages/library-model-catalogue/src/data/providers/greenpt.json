@@ -272,7 +272,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.0007524,
         "costPer1kOutputTokens": 0.004275,
@@ -413,7 +413,7 @@
       "model": "mistral-small/mistral-small-3-2",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0.000456,

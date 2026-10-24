@@ -33,7 +33,18 @@
     "beam-1-0": {
       "defaults": {
         "name": "Beam 1.0",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "beam-1-0-501b-a23b": {
@@ -45,7 +56,18 @@
     "beam-1-0-free": {
       "defaults": {
         "name": "Beam 1.0 (Free)",
-        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads"
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "beam-free": {

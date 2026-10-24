@@ -246,8 +246,8 @@
       },
       "unset": [
         "openWeights",
-        "supportsTopP",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTopP"
       ]
     },
     "anthropic.claude-3-7-sonnet": {
@@ -282,9 +282,9 @@
       },
       "unset": [
         "supportsToolCalls",
+        "supportsResponseFormat",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "cohere.embed-multilingual": {
@@ -299,9 +299,9 @@
       },
       "unset": [
         "supportsToolCalls",
+        "supportsResponseFormat",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "cohere.command-r": {
@@ -772,8 +772,8 @@
       "unset": [
         "openWeights",
         "contextComplexity",
-        "supportsTopP",
         "supportsResponseFormat",
+        "supportsTopP",
         "reliability",
         "reasoningConfig"
       ]
@@ -1254,7 +1254,7 @@
         "name": "gpt-oss-20b",
         "maxTokens": 128000,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1418,7 +1418,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1531,7 +1531,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1570,7 +1570,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-global",
       "matchingModel": "global.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1599,7 +1599,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-jp",
       "matchingModel": "jp.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1777,7 +1777,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-us",
       "matchingModel": "us.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2718,7 +2718,7 @@
       "model": "gpt-oss/gpt-oss-20b-govcloud",
       "matchingModel": "us-gov.openai.gpt-oss-20b-1:0",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",

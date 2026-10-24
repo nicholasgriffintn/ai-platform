@@ -503,7 +503,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1118,
+              "value": 1111,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -629,7 +629,7 @@
               "value": 1090,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 11
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -662,7 +662,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1106,
+              "value": 1103,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

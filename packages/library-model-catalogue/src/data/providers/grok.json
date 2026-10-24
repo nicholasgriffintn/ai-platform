@@ -97,7 +97,7 @@
           "general_knowledge",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
@@ -170,7 +170,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.003,

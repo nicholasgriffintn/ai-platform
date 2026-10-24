@@ -66,7 +66,7 @@
       "model": "mimo-v2.5/mimo-v2-5",
       "matchingModel": "mimo-v2.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
@@ -79,7 +79,7 @@
       "model": "mimo-v2.5-pro/mimo-v2-5-pro",
       "matchingModel": "mimo-v2.5-pro",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
@@ -93,7 +93,7 @@
       "model": "minimax-m3/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -537,7 +537,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
@@ -606,6 +606,7 @@
       "overrides": {
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 131072,
+        "speed": 3,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -619,6 +620,7 @@
         "name": "MiniMax M3.1 Flash",
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "maxTokens": 512000,
+        "speed": 3,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
@@ -628,7 +630,7 @@
       "model": "opencode-go/step-5-preview/step-5-preview",
       "matchingModel": "step-5-preview",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0027

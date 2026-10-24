@@ -20,7 +20,7 @@
           "tool_use"
         ],
         "contextComplexity": 2,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "March 24, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -68,7 +68,7 @@
           "reasoning",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.002
@@ -276,9 +276,9 @@
       "unset": [
         "supportsResponseFormat",
         "strengths",
+        "contextComplexity",
         "reliability",
-        "reasoningConfig",
-        "contextComplexity"
+        "reasoningConfig"
       ]
     },
     "XiaomiMiMo/MiMo-V2-Flash": {
@@ -412,7 +412,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -591,7 +591,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -783,7 +783,7 @@
       "model": "glm/glm-4-5v",
       "matchingModel": "zai-org/GLM-4.5V",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
@@ -874,7 +874,7 @@
       "matchingModel": "XiaomiMiMo/MiMo-V2.5-Pro",
       "overrides": {
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003,
@@ -908,7 +908,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005
@@ -930,7 +930,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
@@ -1053,7 +1053,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013
@@ -1116,7 +1116,7 @@
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005

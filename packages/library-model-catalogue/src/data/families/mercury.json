@@ -38,7 +38,7 @@
         "contextComplexity": 3,
         "releaseDate": "February 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 13.8,
+          "intelligenceIndex": 10.8,
           "codingIndex": 31.1,
           "agenticIndex": 1.6,
           "intelligenceIndexVersion": 4.3
@@ -87,7 +87,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.8,
+          "intelligenceIndex": 10.8,
           "codingIndex": 31.1,
           "agenticIndex": 1.6,
           "intelligenceIndexVersion": 4.3

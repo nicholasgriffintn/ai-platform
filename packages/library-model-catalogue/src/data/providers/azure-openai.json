@@ -369,7 +369,7 @@
         "name": "DeepSeek-V3-0324",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "March 24, 2025",
         "dataRetention": {
@@ -455,7 +455,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -511,7 +511,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -559,7 +559,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -800,7 +800,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "dataRetention": {
@@ -829,7 +829,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "February 17, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -867,7 +867,7 @@
       "model": "grok/grok-4",
       "matchingModel": "grok-4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1586,7 +1586,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1644,7 +1644,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
         "dataRetention": {
@@ -1762,7 +1762,7 @@
       "model": "gpt/gpt-5-5",
       "matchingModel": "gpt-5.5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "April 24, 2026",
         "lastUpdated": "April 24, 2026",
         "dataRetention": {
@@ -1929,7 +1929,7 @@
           "coding",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "dataRetention": {
           "maxDays": 30,

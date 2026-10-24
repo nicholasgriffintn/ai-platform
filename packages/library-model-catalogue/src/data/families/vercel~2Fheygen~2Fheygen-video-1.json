@@ -12,10 +12,33 @@
         "video"
       ]
     },
+    "strengths": [
+      "video",
+      "vision",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
     "releaseDate": "October 9, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1144,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 17
+        }
+      ]
+    }
   },
   "description": "The vercel/heygen/heygen video 1 family includes models that produce video.",
   "models": {

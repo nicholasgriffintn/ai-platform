@@ -27,10 +27,10 @@
         {
           "key": "music_with_vocalsElo",
           "label": "Music with vocals arena",
-          "value": 998,
+          "value": 997,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 13
+          "confidenceInterval95": 19
         }
       ]
     }

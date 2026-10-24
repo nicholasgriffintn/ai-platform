@@ -109,8 +109,8 @@
       "unset": [
         "openWeights",
         "contextComplexity",
-        "supportsTopP",
         "supportsResponseFormat",
+        "supportsTopP",
         "reliability",
         "reasoningConfig"
       ]
@@ -215,8 +215,8 @@
       "unset": [
         "openWeights",
         "contextComplexity",
-        "supportsTopP",
         "supportsResponseFormat",
+        "supportsTopP",
         "reliability",
         "reasoningConfig"
       ]
@@ -359,8 +359,8 @@
         }
       },
       "unset": [
-        "supportsTopP",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTopP"
       ]
     },
     "ghcopilot/anthropic/claude-opus-4.6": {
@@ -394,8 +394,8 @@
         }
       },
       "unset": [
-        "supportsTopP",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTopP"
       ]
     },
     "ghcopilot/anthropic/claude-sonnet-4.5": {
@@ -481,7 +481,7 @@
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -537,7 +537,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -597,7 +597,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -1024,6 +1024,7 @@
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
         "maxTokens": 65536,
+        "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,

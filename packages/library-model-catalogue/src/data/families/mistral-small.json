@@ -142,7 +142,7 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "June 20, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 8.2,
+          "intelligenceIndex": 7,
           "codingIndex": 12.5,
           "agenticIndex": 1,
           "intelligenceIndexVersion": 4.3
