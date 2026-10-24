@@ -55,6 +55,15 @@ export interface RunSpendSummaryRow {
   run_count: number;
 }
 
+export interface TeammateSpendRow {
+  teammate_context_id: string;
+  teammate_id: string | null;
+  teammate_name: string | null;
+  monthly_credit_cap_micros: number | null;
+  credit_micros: number;
+  run_count: number;
+}
+
 export interface ListUsageEventsParams {
   userId: number;
   period: string;
@@ -357,6 +366,25 @@ export class UsageEventRepository extends BaseRepository {
     );
 
     return rows[0] ?? { credit_micros: 0, cost_micros: 0, run_count: 0 };
+  }
+
+  async summariseTeammateSpendForUser(userId: number, period: string): Promise<TeammateSpendRow[]> {
+    return this.runQuery<TeammateSpendRow>(
+      `SELECT r.teammate_context_id AS teammate_context_id,
+              tc.teammate_id AS teammate_id,
+              t.name AS teammate_name,
+              tc.monthly_credit_cap_micros AS monthly_credit_cap_micros,
+              COALESCE(SUM(ue.credit_micros), 0) AS credit_micros,
+              COUNT(DISTINCT ue.run_id) AS run_count
+       FROM usage_event ue
+       JOIN conversation_run r ON r.id = ue.run_id
+       JOIN teammate_context tc ON tc.id = r.teammate_context_id
+       LEFT JOIN teammates t ON t.id = tc.teammate_id
+       WHERE ue.period = ? AND r.initiator_user_id = ? AND r.teammate_context_id IS NOT NULL
+       GROUP BY r.teammate_context_id
+       ORDER BY credit_micros DESC`,
+      [period, userId],
+    );
   }
 
   async summariseChatRuns(runIds: readonly string[]): Promise<ChatRunUsageEventSummaryRow[]> {

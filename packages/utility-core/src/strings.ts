@@ -168,6 +168,10 @@ export function trimTrailingCharacters(value: string, characters: string): strin
   return end === value.length ? value : value.slice(0, end);
 }
 
+export function formatCountLabel(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
 export function truncateText(value: string, maxLength: number): string {
   if (value.length <= maxLength) {
     return value;
