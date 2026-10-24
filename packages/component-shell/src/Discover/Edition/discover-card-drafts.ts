@@ -13,6 +13,14 @@ export function discoverCardEyebrow(card: DiscoverCard): string {
       return "Checking in";
     case "resurface":
       return "From before";
+    case "watch":
+      return `Watch · ${card.source}`;
+    case "listen":
+      return `Listen · ${card.source}`;
+    case "event":
+      return card.where ? `${card.when} · ${card.where}` : card.when;
+    case "inbox":
+      return `From ${card.source}`;
   }
 }
 
@@ -21,11 +29,11 @@ export function discoverCardHeadline(card: DiscoverCard): string {
 }
 
 export function hasDiscoverTopic(card: DiscoverCard): boolean {
-  return card.kind === "topic" || card.kind === "read";
+  return "topic" in card;
 }
 
 export function cardTopic(card: DiscoverCard): string {
-  return card.kind === "topic" || card.kind === "read" ? card.topic : "";
+  return "topic" in card ? card.topic : "";
 }
 
 function suggestion(
@@ -109,6 +117,52 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
           "next",
           "What should I do with it now?",
           `Looking again at "${card.title}": ${card.detail} What would be a useful next step?`,
+        ),
+      ];
+    case "watch":
+    case "listen":
+      return [
+        suggestion(
+          card,
+          "about",
+          "What is this about?",
+          `Tell me about "${card.title}" from ${card.source} (${card.url}) and whether it is worth my time.`,
+        ),
+        suggestion(
+          card,
+          "more",
+          "More like this",
+          `Find me more like "${card.title}" from ${card.source}, given what you know I like.`,
+        ),
+      ];
+    case "event":
+      return [
+        suggestion(
+          card,
+          "calendar",
+          "Add it to my calendar",
+          `Add "${card.title}" on ${card.when}${card.where ? ` at ${card.where}` : ""} to my calendar. Show me the event before you create it.`,
+        ),
+        suggestion(
+          card,
+          "remind",
+          "Remind me beforehand",
+          `Remind me about "${card.title}" an hour before ${card.when}.`,
+        ),
+      ];
+    case "inbox":
+      return [
+        suggestion(
+          card,
+          "gist",
+          "Give me the gist",
+          `Give me the gist of "${card.title}" from ${card.source}${card.url ? ` (${card.url})` : ""} in five bullet points.`,
+        ),
+        suggestion(
+          card,
+          "save",
+          "Save it for later",
+          `Save "${card.title}" from ${card.source}${card.url ? ` (${card.url})` : ""} to my reading list.`,
         ),
       ];
   }

@@ -1,4 +1,7 @@
-import { POLY_LOOK_AROUND_RECIPE_ID } from "@ngriffin_uk/polychat-schemas";
+import {
+  DISCOVER_CONTEXT_TOOL_NAME,
+  POLY_LOOK_AROUND_RECIPE_ID,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { CatalogRecipe } from "./shared";
 import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";
@@ -164,7 +167,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
     category: "Productivity",
     featured: false,
     readOnly: true,
-    enabledTools: [RECIPE_CONNECTOR_TOOL],
+    enabledTools: [DISCOVER_CONTEXT_TOOL_NAME, RECIPE_CONNECTOR_TOOL],
     connectorPolicy: { access: "read" },
     integrations: [
       {
@@ -230,6 +233,7 @@ export const mailCalendarRecipes: CatalogRecipe[] = [
       },
     ],
     actions: [
+      `Call ${DISCOVER_CONTEXT_TOOL_NAME} first: it already holds the calendar, tasks, newsletters and work items gathered for Discover, so only read a source directly when it is not there`,
       "Read the last day of every connected source, as you",
       "Keep only what is new, changing, slipping or waiting on you, and drop anything you already handled",
       "Write at most five short notes, each with its source link and why it matters, most urgent first",

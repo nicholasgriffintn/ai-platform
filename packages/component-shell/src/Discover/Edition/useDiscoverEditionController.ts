@@ -173,7 +173,10 @@ export function useDiscoverEditionController() {
     saveCurate: (curate: string) =>
       settings && updateSettings.mutate({ enabled: settings.enabled, curate }),
     savePreferences: (
-      preferences: Pick<UpdateDiscoverSettings, "listen" | "episode" | "style" | "notify">,
+      preferences: Pick<
+        UpdateDiscoverSettings,
+        "listen" | "evening" | "episode" | "style" | "notify"
+      >,
     ) => settings && updateSettings.mutate({ enabled: settings.enabled, ...preferences }),
   };
 }

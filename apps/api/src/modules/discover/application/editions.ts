@@ -139,7 +139,7 @@ export async function saveDiscoverEdition(
   content: DiscoverEditionContent,
 ): Promise<StoredDiscoverEdition> {
   const outputs = context.repositories.get(OutputRepository);
-  const groupId = discoverEditionGroupId(content.date);
+  const groupId = discoverEditionGroupId(content.date, content.edition);
   const existing = await outputs.getPersonalOutputByGroup(userId, groupId, DISCOVER_EDITION_KIND);
   const previous = readStoredEdition(existing)?.content;
   const title = `Discover, ${content.date}`;

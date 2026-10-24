@@ -1,7 +1,7 @@
 import { cn, Pet } from "@ngriffin_uk/polychat-component-ui";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
-import { ChevronRight, History, Repeat } from "lucide-react";
+import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 
 type RowCard = Exclude<DiscoverCard, { kind: "topic" }>;
 
@@ -31,6 +31,30 @@ function RowLead({ card }: { card: RowCard }) {
           <History size={16} aria-hidden />
         </span>
       );
+    case "watch":
+      return (
+        <span className="flex size-9 items-center justify-center rounded-xl bg-selection text-foreground">
+          <Play size={16} aria-hidden />
+        </span>
+      );
+    case "listen":
+      return (
+        <span className="flex size-9 items-center justify-center rounded-xl bg-selection text-foreground">
+          <Headphones size={16} aria-hidden />
+        </span>
+      );
+    case "event":
+      return (
+        <span className="flex size-9 items-center justify-center rounded-xl bg-selection text-foreground">
+          <CalendarDays size={16} aria-hidden />
+        </span>
+      );
+    case "inbox":
+      return (
+        <span className="flex size-9 items-center justify-center rounded-xl bg-selection text-foreground">
+          <Mail size={16} aria-hidden />
+        </span>
+      );
   }
 }
 
@@ -52,6 +76,18 @@ function rowText(card: RowCard): { kicker: string; title: string; detail: string
       };
     case "resurface":
       return { kicker: "From before", title: card.title, detail: card.detail };
+    case "watch":
+      return { kicker: `Watch · ${card.source}`, title: card.title, detail: card.summary };
+    case "listen":
+      return { kicker: `Listen · ${card.source}`, title: card.title, detail: card.summary };
+    case "event":
+      return {
+        kicker: card.where ? `${card.when} · ${card.where}` : card.when,
+        title: card.title,
+        detail: card.detail,
+      };
+    case "inbox":
+      return { kicker: `From ${card.source}`, title: card.title, detail: card.summary };
   }
 }
 

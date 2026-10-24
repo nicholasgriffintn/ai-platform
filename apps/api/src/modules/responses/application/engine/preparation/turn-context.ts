@@ -2,6 +2,8 @@ import { buildTurnContext, type PolyAgendaPromptInput } from "@ngriffin_uk/polyc
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
+import { listDiscoverDocuments } from "~/modules/discover/application/notebook";
+import { describeLately } from "~/modules/discover/domain/lately";
 import { toPolyAgendaPrompt } from "~/modules/poly/application/agenda";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 import type { PerMessageSkill } from "~/modules/skills/application/per-message";
@@ -18,9 +20,16 @@ export async function loadPolyAgendaPrompt(
 ): Promise<PolyAgendaPromptInput | null> {
   const userId = options.context?.user?.id;
 
-  return options.poly && userId
-    ? toPolyAgendaPrompt(await loadPolyAgenda(repositories, userId))
-    : null;
+  if (!options.poly || !userId || !options.context) {
+    return null;
+  }
+
+  const [agenda, documents] = await Promise.all([
+    loadPolyAgenda(repositories, userId),
+    listDiscoverDocuments(options.context, userId),
+  ]);
+
+  return { ...toPolyAgendaPrompt(agenda), lately: describeLately(documents.signals) };
 }
 
 export function buildLatestTurn({

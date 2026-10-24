@@ -41,7 +41,9 @@ export function MediaPlayer({
   onPlayingChange,
 }: MediaPlayerProps) {
   const track = useMediaTrack();
-  const activeIndex = transcript ? currentTranscriptIndex(transcript, track.currentTime) : -1;
+  const activeIndex = transcript
+    ? currentTranscriptIndex(transcript, track.currentTime, track.duration)
+    : -1;
   const started = track.playing || track.currentTime > 0;
   const subtitle =
     transcript && started && (kind === "audio" || !captionsVtt)

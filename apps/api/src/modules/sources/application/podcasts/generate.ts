@@ -149,12 +149,20 @@ async function produceEpisode(
     language,
     focus: generation.prompt,
   });
-  const audio = await synthesisePodcastAudio(context, script.turns, language);
+  const { audio, turnStarts, durationSeconds } = await synthesisePodcastAudio(
+    context,
+    script.turns,
+    language,
+  );
   const key = `sources/${episode.id}/episode.mp3`;
   const transcript: SourceTranscript = {
     status: "ready",
     speakers: { host: PODCAST_HOSTS.host.name, guest: PODCAST_HOSTS.guest.name },
-    segments: script.turns.map((turn) => ({ speaker: turn.speaker, text: turn.text })),
+    segments: script.turns.map((turn, index) => ({
+      speaker: turn.speaker,
+      text: turn.text,
+      start: Math.round((turnStarts[index] ?? 0) * 100) / 100,
+    })),
   };
 
   await StorageService.forPrivateAssets(context).uploadObject(key, audio, {
@@ -167,7 +175,8 @@ async function produceEpisode(
     media: {
       transcript,
       notes: { summary: script.description, decisions: [], actionItems: [] },
-      durationSeconds: estimateSpokenSeconds(script.turns),
+      durationSeconds:
+        durationSeconds > 0 ? Math.round(durationSeconds) : estimateSpokenSeconds(script.turns),
     },
   });
   const repository = context.repositories.get(SourceRepository);

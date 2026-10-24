@@ -2,9 +2,11 @@ import {
   connectorOperationRequiresApproval,
   getConnectorOperationConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DISCOVER_FRESH_HOURS,
+  discoverInterestInferenceSchema,
   DISCOVER_GATHER_HOUR,
   DISCOVER_JOB_TASK_TYPE,
   DISCOVER_RECIPE_ID,
@@ -25,6 +27,11 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
+import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
+import {
+  chooseResearchTopics,
+  describeInterestMaterial,
+} from "~/modules/discover/domain/interests";
 import { mergeResearchDocument } from "~/modules/discover/domain/research";
 import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
@@ -35,7 +42,11 @@ import { getAssistantRecipe } from "~/modules/recipes/application";
 import { createSource, updateSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
+import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
+import { listRecentDiscoverEditions } from "./editions";
+import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
+import { generateDiscoverObject } from "./generate";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -317,6 +328,50 @@ export async function listDiscoverTopics(
   return topics;
 }
 
+async function inferDiscoverInterests(
+  context: ServiceContext,
+  notebookId: string,
+  now: Date,
+): Promise<{ inferred: string[]; more: string[]; hidden: string[] }> {
+  const user = context.requireUser();
+  const [sources, chatTitles, memorySummary, feedback, [latest]] = await Promise.all([
+    context.repositories.get(SourceRepository).listCollectionSources(notebookId),
+    listRecentDiscoverChatTitles(context, user.id, now.getTime()),
+    readMemorySummary(context, user.id),
+    listDiscoverFeedback(context, user.id),
+    listRecentDiscoverEditions(context, user.id, 1),
+  ]);
+  const summary = summariseDiscoverFeedback(feedback);
+  const signals = readDiscoverDocuments(sources).signals.filter(
+    (document) => !document.error && document.lines.length > 0,
+  );
+  const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
+
+  try {
+    const { interests } = await generateDiscoverObject(context, {
+      name: "discover_interests",
+      schema: discoverInterestInferenceSchema,
+      system: renderPrompt("discover/interests"),
+      material: describeInterestMaterial({
+        signals,
+        chatTitles,
+        memorySummary,
+        more: summary.moreTopics,
+        less: hidden,
+        previous: latest?.content.interests.map((interest) => interest.topic) ?? [],
+      }),
+    });
+
+    return { inferred: interests, more: summary.moreTopics, hidden };
+  } catch (error) {
+    logger.warn("Discover interests could not be inferred", {
+      error_message: getErrorMessage(error),
+    });
+
+    return { inferred: [], more: summary.moreTopics, hidden };
+  }
+}
+
 export async function runDiscoverGather(
   context: ServiceContext,
   now = new Date(),
@@ -326,9 +381,9 @@ export async function runDiscoverGather(
   const zoned = describeZonedInstant(now, timezone);
   const notebook = await ensureDiscoverNotebook(context);
   const { selected } = await resolveDiscoverSignals(context, settings);
-  const topics = await listDiscoverTopics(context, settings.curate);
   const read: string[] = [];
   const stale: string[] = [];
+  let topics: string[] = [];
 
   try {
     for (const signal of selected) {
@@ -341,6 +396,17 @@ export async function runDiscoverGather(
 
       (ok ? read : stale).push(signal.providerId);
     }
+
+    const follows = await listDiscoverFollows(context, context.requireUser().id);
+    const interests = await inferDiscoverInterests(context, notebook.id, now);
+
+    topics = chooseResearchTopics({
+      followed: follows.map((follow) => follow.topic),
+      asked: curateTopics(settings.curate),
+      more: interests.more,
+      inferred: interests.inferred,
+      hidden: interests.hidden,
+    });
 
     for (const topic of topics) {
       await researchTopic(context, notebook.id, topic, zoned.date);

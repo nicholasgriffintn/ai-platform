@@ -68,7 +68,10 @@ export interface DiscoverSettingsDialogProps {
   onUseSource: (providerId: string, used: boolean) => void;
   onSaveCurate: (curate: string) => void;
   onSavePreferences: (
-    preferences: Pick<UpdateDiscoverSettings, "listen" | "episode" | "style" | "notify">,
+    preferences: Pick<
+      UpdateDiscoverSettings,
+      "listen" | "evening" | "episode" | "style" | "notify"
+    >,
   ) => void;
 }
 
@@ -132,6 +135,13 @@ export function DiscoverSettingsDialog({
                 checked={settings.notify}
                 disabled={isSaving}
                 onChange={(event) => onSavePreferences({ notify: event.target.checked })}
+              />
+              <Switch
+                label="Evening edition"
+                description="A second, shorter edition at 19:00 that looks at tomorrow."
+                checked={settings.evening}
+                disabled={isSaving}
+                onChange={(event) => onSavePreferences({ evening: event.target.checked })}
               />
               <Switch
                 label="The Perch"

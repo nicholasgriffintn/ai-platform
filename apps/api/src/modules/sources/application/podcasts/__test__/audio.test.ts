@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { joinAudioSegments, splitForSpeech, stripId3Tag } from "../audio";
+import { joinAudioSegments, mp3DurationSeconds, splitForSpeech, stripId3Tag } from "../audio";
+
+function mp3Frames(count: number): Uint8Array {
+  const bytes = new Uint8Array(417 * count);
+
+  for (let index = 0; index < count; index += 1) {
+    bytes.set([0xff, 0xfb, 0x90, 0x00], index * 417);
+  }
+
+  return bytes;
+}
 
 function infoTagged(audio: number[]): Uint8Array {
   const frame = new Uint8Array(417);
@@ -38,6 +48,16 @@ describe("stripId3Tag", () => {
 
   it("leaves untagged audio alone", () => {
     expect([...stripId3Tag(new Uint8Array([0xff, 0xfb, 2]))]).toEqual([0xff, 0xfb, 2]);
+  });
+});
+
+describe("mp3DurationSeconds", () => {
+  it("sums the frames of a 128 kbps 44.1 kHz stream", () => {
+    expect(mp3DurationSeconds(mp3Frames(100))).toBeCloseTo(2.612, 2);
+  });
+
+  it("skips bytes that are not frame headers", () => {
+    expect(mp3DurationSeconds(new Uint8Array([1, 2, 3, ...mp3Frames(10)]))).toBeCloseTo(0.261, 2);
   });
 });
 

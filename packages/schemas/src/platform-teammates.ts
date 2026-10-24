@@ -271,6 +271,7 @@ export const POLY_TEAMMATE: PlatformTeammate = {
     "list_saved_messages",
     DISCOVER_CONTEXT_TOOL_NAME,
     DISCOVER_COMPOSE_TOOL_NAME,
+    "file_in_notebook",
     "use_recipe_connector",
   ],
   skillIds: [],

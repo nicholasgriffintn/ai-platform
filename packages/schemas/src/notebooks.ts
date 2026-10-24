@@ -8,6 +8,39 @@ import { sourceSummarySchema } from "./sources.js";
 import { videoOverviewStyleSchema } from "./study-outputs.js";
 
 export const NOTEBOOK_JOB_TASK_TYPE = "notebook_job";
+export const NOTEBOOK_FILE_TOOL_NAME = "file_in_notebook";
+
+export const fileInNotebookInputSchema = z
+  .object({
+    notebook: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .describe("The notebook's name as the person says it, or its id."),
+    sourceIds: z
+      .array(z.string().min(1))
+      .max(50)
+      .optional()
+      .describe("Ids of sources in Files to link into the notebook."),
+    url: z.url().max(2_048).optional().describe("A web page to read into the notebook."),
+    title: z.string().trim().min(1).max(200).optional().describe("A title for the page."),
+    note: z
+      .object({
+        title: z.string().trim().min(1).max(200),
+        content: z.string().trim().min(1).max(100_000),
+      })
+      .strict()
+      .optional()
+      .describe("A note to add, written for the person in their words."),
+    create: z
+      .boolean()
+      .default(false)
+      .describe("Make the notebook when none has that name. Only when the person asked for it."),
+  })
+  .strict();
+
+export type FileInNotebookInput = z.infer<typeof fileInNotebookInputSchema>;
 export const NOTEBOOK_MAX_SOURCES = 300;
 export const NOTEBOOK_INSTRUCTIONS_MAX = 10_000;
 export const NOTEBOOK_SOURCE_CITATION_PREFIX = "#source-";

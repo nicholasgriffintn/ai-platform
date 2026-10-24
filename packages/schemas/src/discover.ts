@@ -9,6 +9,10 @@ export const DISCOVER_EDITION_KIND = "discover.edition";
 export const DISCOVER_FEEDBACK_KIND = "discover.feedback";
 export const DISCOVER_RECIPE_ID = "poly-discover";
 export const DISCOVER_CRON = "0 7 * * *";
+export const DISCOVER_EVENING_CRON = "0 19 * * *";
+export const DISCOVER_EDITION_TIMES = ["morning", "evening"] as const;
+export const discoverEditionTimeSchema = z.enum(DISCOVER_EDITION_TIMES);
+export type DiscoverEditionTime = z.infer<typeof discoverEditionTimeSchema>;
 export const DISCOVER_EDITION_RETENTION_DAYS = 14;
 export const DISCOVER_LINK_RETENTION_DAYS = 30;
 export const DISCOVER_LINK_METADATA_KEY = "discoverLink";
@@ -133,9 +137,64 @@ const checkInCardDraftSchema = z
   })
   .strict();
 
+const watchCardDraftSchema = z
+  .object({
+    kind: z.literal("watch"),
+    topic: topicSchema,
+    title: text(160),
+    url: externalHttpUrlSchema.describe("The video, exactly as the context gave it."),
+    source: text(80).describe("The channel or service it is on."),
+    summary: text(400).describe("What it is and why now, in one or two sentences."),
+    reason: reasonSchema,
+    sensitive: sensitiveSchema,
+  })
+  .strict();
+
+const listenCardDraftSchema = z
+  .object({
+    kind: z.literal("listen"),
+    topic: topicSchema,
+    title: text(160),
+    url: externalHttpUrlSchema.describe("The episode or album, exactly as the context gave it."),
+    source: text(80).describe("The show, artist or service."),
+    summary: text(400).describe("What it is and why now, in one or two sentences."),
+    reason: reasonSchema,
+    sensitive: sensitiveSchema,
+  })
+  .strict();
+
+const eventCardDraftSchema = z
+  .object({
+    kind: z.literal("event"),
+    title: text(120).describe("What is happening: an episode airing, a release, a gig, a meeting."),
+    when: text(80).describe("When, as a readable day and time."),
+    where: text(120).optional().describe("Where, when it has a place or a service."),
+    detail: text(300).describe("One or two sentences on what to expect."),
+    url: externalHttpUrlSchema.optional().describe("A link, only when the context gave one."),
+    reason: reasonSchema,
+    sensitive: sensitiveSchema,
+  })
+  .strict();
+
+const inboxCardDraftSchema = z
+  .object({
+    kind: z.literal("inbox"),
+    title: text(160).describe("The subject, tidied."),
+    source: text(80).describe("Who sent it."),
+    summary: text(400).describe("The one thing worth knowing from it."),
+    url: externalHttpUrlSchema.optional().describe("A link from the message, when there is one."),
+    reason: reasonSchema,
+    sensitive: sensitiveSchema,
+  })
+  .strict();
+
 export const discoverCardDraftSchema = z.discriminatedUnion("kind", [
   topicCardDraftSchema,
   readCardDraftSchema,
+  watchCardDraftSchema,
+  listenCardDraftSchema,
+  eventCardDraftSchema,
+  inboxCardDraftSchema,
   actionCardDraftSchema,
   checkInCardDraftSchema,
   resurfaceCardDraftSchema,
@@ -150,12 +209,38 @@ export const discoverCoverIdSchema = z
 export const discoverCardSchema = z.discriminatedUnion("kind", [
   topicCardDraftSchema.extend({ ...cardIdentity, coverId: discoverCoverIdSchema.optional() }),
   readCardDraftSchema.extend(cardIdentity),
+  watchCardDraftSchema.extend(cardIdentity),
+  listenCardDraftSchema.extend(cardIdentity),
+  eventCardDraftSchema.extend(cardIdentity),
+  inboxCardDraftSchema.extend(cardIdentity),
   actionCardDraftSchema.extend(cardIdentity),
   checkInCardDraftSchema.extend(cardIdentity),
   resurfaceCardDraftSchema.extend(cardIdentity),
 ]);
 
-export const DISCOVER_CARD_KINDS = ["topic", "read", "action", "check_in", "resurface"] as const;
+export const DISCOVER_CARD_KINDS = [
+  "topic",
+  "read",
+  "watch",
+  "listen",
+  "event",
+  "inbox",
+  "action",
+  "check_in",
+  "resurface",
+] as const;
+
+export const discoverInterestInferenceSchema = z
+  .object({
+    interests: z
+      .array(topicSchema)
+      .min(1)
+      .max(5)
+      .describe("Three to five interests to research overnight, strongest first."),
+  })
+  .strict();
+
+export type DiscoverInterestInference = z.infer<typeof discoverInterestInferenceSchema>;
 
 export const composeDiscoverEditionInputSchema = z
   .object({
@@ -198,6 +283,7 @@ export const discoverEditionContentSchema = z
       .object({ read: z.array(z.string().min(1)), stale: z.array(z.string().min(1)) })
       .strict()
       .optional(),
+    edition: discoverEditionTimeSchema.optional(),
     generatedAt: z.iso.datetime(),
   })
   .strict();
@@ -217,6 +303,7 @@ export const discoverSettingsSchema = z.object({
   curate: z.string().max(DISCOVER_CURATE_MAX_LENGTH),
   location: z.string().nullable(),
   listen: z.boolean(),
+  evening: z.boolean(),
   episode: discoverEpisodeLengthSchema,
   style: videoOverviewStyleSchema,
   notify: z.boolean(),
@@ -247,6 +334,7 @@ export const updateDiscoverSettingsSchema = z
     timezone: z.string().trim().min(1).max(120).optional(),
     curate: z.string().trim().max(DISCOVER_CURATE_MAX_LENGTH).optional(),
     listen: z.boolean().optional(),
+    evening: z.boolean().optional(),
     episode: discoverEpisodeLengthSchema.optional(),
     style: videoOverviewStyleSchema.optional(),
     notify: z.boolean().optional(),

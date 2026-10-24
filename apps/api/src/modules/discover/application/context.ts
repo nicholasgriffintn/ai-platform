@@ -45,7 +45,10 @@ function stringField(row: Record<string, unknown>, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-async function readMemorySummary(context: ServiceContext, userId: number): Promise<string | null> {
+export async function readMemorySummary(
+  context: ServiceContext,
+  userId: number,
+): Promise<string | null> {
   const settings = await getUserSettings(context.repositories, userId);
 
   if (!settings?.memories_save_enabled && !settings?.memories_chat_history_enabled) {
@@ -59,6 +62,25 @@ async function readMemorySummary(context: ServiceContext, userId: number): Promi
   return synthesis?.synthesis_text
     ? truncateText(synthesis.synthesis_text, MEMORY_SUMMARY_LIMIT)
     : null;
+}
+
+export async function listRecentDiscoverChatTitles(
+  context: ServiceContext,
+  userId: number,
+  now: number,
+): Promise<string[]> {
+  const conversations = await context.repositories
+    .get(ConversationRepository)
+    .listUserConversations(userId, { limit: CHAT_SCAN_LIMIT, teammateThreads: "exclude" });
+
+  return selectRecentChatTitles(
+    conversations.data.map((row) => ({
+      title: stringField(row, "title"),
+      type: stringField(row, "type"),
+      updatedAt: stringField(row, "updated_at") || stringField(row, "created_at"),
+    })),
+    { now, maxAgeDays: CHAT_MAX_AGE_DAYS, limit: CHAT_TITLE_LIMIT },
+  );
 }
 
 export interface DiscoverEditionBasis {

@@ -54,9 +54,12 @@ export const load_skill: ApiToolDefinition = {
     }
 
     const resources = (requested.resources ?? []).map(toSkillResourceSummary);
-    const resourcePath = typeof args.resource === "string" ? args.resource.trim() : undefined;
+    const resourcePath =
+      typeof args.resource === "string"
+        ? args.resource.trim().replace(/^(?:\.\/|\/)+/u, "")
+        : undefined;
 
-    if (resourcePath && resourcePath !== "SKILL.md") {
+    if (resourcePath && resourcePath.toLowerCase() !== "skill.md") {
       const resource = catalog
         ? catalog.readResource(skillId, resourcePath)
         : await getSkillResource(skillId, resourcePath);

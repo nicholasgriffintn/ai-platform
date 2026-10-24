@@ -100,11 +100,38 @@ function buildUiContextSection(uiContext?: PolyUiContextInput | null): string {
   return `${lines.join("\n")}\n`;
 }
 
+export interface PolyLatelyInput {
+  title: string;
+  lines: readonly string[];
+}
+
 export interface PolyAgendaPromptInput {
   needsYou: readonly string[];
   workingOn: readonly string[];
   done: readonly string[];
   noted: readonly string[];
+  lately?: readonly PolyLatelyInput[];
+}
+
+function buildLatelySection(lately: readonly PolyLatelyInput[] = []): string {
+  const sources = lately.filter((source) => source.lines.length > 0);
+
+  if (sources.length === 0) {
+    return "";
+  }
+
+  return [
+    "<lately>",
+    ...sources.map((source) =>
+      [
+        `<source name="${escapeHtml(source.title)}">`,
+        ...source.lines.map((line) => `- ${escapeHtml(line)}`),
+        "</source>",
+      ].join("\n"),
+    ),
+    getPromptText("chat/poly/lately-note"),
+    "</lately>",
+  ].join("\n");
 }
 
 function buildAgendaList(tag: string, items: readonly string[]): string | null {
@@ -164,6 +191,7 @@ export function buildTurnContext({ uiContext, agenda, goal, skills }: TurnContex
     buildSelectedSkillsSection(skills),
     buildUiContextSection(uiContext),
     buildAgendaSection(agenda),
+    buildLatelySection(agenda?.lately),
     goal ? buildGoalProgressSection(goal) : "",
   ].filter(Boolean);
 

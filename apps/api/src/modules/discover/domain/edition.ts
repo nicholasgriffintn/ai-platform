@@ -4,6 +4,7 @@ import {
   type DiscoverCard,
   type DiscoverCardDraft,
   type DiscoverEditionContent,
+  type DiscoverEditionTime,
 } from "@ngriffin_uk/polychat-schemas";
 import { comparableHttpUrl, normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
@@ -24,12 +25,23 @@ export function discoverTopicKey(topic: string): string {
   return normaliseComparableText(topic);
 }
 
-export function discoverEditionGroupId(date: string): string {
-  return `discover:${date}`;
+export function discoverEditionGroupId(
+  date: string,
+  edition: DiscoverEditionTime = "morning",
+): string {
+  return edition === "evening" ? `discover:${date}:evening` : `discover:${date}`;
+}
+
+export function discoverEditionTimeAt(hour: number): DiscoverEditionTime {
+  return hour >= 15 ? "evening" : "morning";
 }
 
 function cardTopic(card: DiscoverCardDraft): string | null {
-  return card.kind === "topic" || card.kind === "read" ? card.topic : null;
+  return "topic" in card ? card.topic : null;
+}
+
+export function discoverCardUrl(card: DiscoverCardDraft): string | null {
+  return "url" in card && typeof card.url === "string" ? card.url : null;
 }
 
 function isHidden(topic: string | null, hiddenTopics: ReadonlySet<string>): boolean {
@@ -67,8 +79,10 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
       continue;
     }
 
-    if (card.kind === "read") {
-      const url = comparableHttpUrl(card.url);
+    const linked = discoverCardUrl(card);
+
+    if (linked) {
+      const url = comparableHttpUrl(linked);
 
       if (!url || seenUrls.has(url)) {
         continue;
@@ -101,7 +115,8 @@ export function listEditionUrls(editions: readonly DiscoverEditionContent[]): Se
 
   for (const edition of editions) {
     for (const card of edition.cards) {
-      const url = card.kind === "read" ? comparableHttpUrl(card.url) : null;
+      const linked = discoverCardUrl(card);
+      const url = linked ? comparableHttpUrl(linked) : null;
 
       if (url) {
         urls.add(url);
@@ -117,5 +132,5 @@ export function describeDiscoverCard(card: DiscoverCard): string {
 }
 
 export function discoverCardTopic(card: DiscoverCard): string | null {
-  return card.kind === "topic" || card.kind === "read" ? card.topic : null;
+  return "topic" in card ? card.topic : null;
 }

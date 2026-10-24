@@ -3,7 +3,35 @@ import { formatTranscriptTimestamp } from "@ngriffin_uk/polychat-utility-core";
 import { cn } from "../utils";
 import type { MediaTranscript } from "./media-status";
 
-export function currentTranscriptIndex(transcript: MediaTranscript, seconds: number): number {
+function hasTimedSegments(transcript: MediaTranscript): boolean {
+  return transcript.segments.some((segment, index) => index > 0 && (segment.start ?? 0) > 0);
+}
+
+export function estimatedSegmentStarts(transcript: MediaTranscript, duration: number): number[] {
+  const weights = transcript.segments.map((segment) => Math.max(1, segment.text.length));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  let elapsed = 0;
+
+  return weights.map((weight) => {
+    const start = (elapsed / total) * duration;
+
+    elapsed += weight;
+
+    return start;
+  });
+}
+
+export function currentTranscriptIndex(
+  transcript: MediaTranscript,
+  seconds: number,
+  duration = 0,
+): number {
+  if (!hasTimedSegments(transcript) && duration > 0) {
+    return (
+      estimatedSegmentStarts(transcript, duration).filter((start) => start <= seconds).length - 1
+    );
+  }
+
   return transcript.segments.filter((segment) => (segment.start ?? 0) <= seconds).length - 1;
 }
 

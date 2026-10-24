@@ -58,6 +58,11 @@ function bullets(values: readonly string[]): string[] {
 export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): string {
   return [
     `Today is ${snapshot.weekday} ${snapshot.date} (${snapshot.timezone}), ${snapshot.partOfDay}.`,
+    ...(snapshot.partOfDay === "evening"
+      ? [
+          "This is the evening edition: lead the brief with tomorrow's calendar and tasks, keep to six cards, include one long read for the evening and one thing to watch or listen to, and leave out anything the morning edition already showed.",
+        ]
+      : []),
     section(
       "They asked for",
       snapshot.curate.trim() ? [snapshot.curate.trim()] : [],

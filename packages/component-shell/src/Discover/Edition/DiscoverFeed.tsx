@@ -66,7 +66,9 @@ export function DiscoverFeed({
   const forYou = rows.filter(
     (card) => card.kind === "action" || card.kind === "check_in" || card.kind === "resurface",
   );
-  const reads = rows.filter((card) => card.kind === "read");
+  const comingUp = rows.filter((card) => card.kind === "event");
+  const reads = rows.filter((card) => card.kind === "read" || card.kind === "inbox");
+  const watching = rows.filter((card) => card.kind === "watch" || card.kind === "listen");
 
   return (
     <div className="flex flex-col gap-8">
@@ -98,10 +100,30 @@ export function DiscoverFeed({
           />
         </FeedSection>
       )}
+      {comingUp.length > 0 && (
+        <FeedSection title="Coming up">
+          <RowList
+            cards={comingUp}
+            selectedId={selectedId}
+            isTopicHidden={isTopicHidden}
+            onSelect={onSelect}
+          />
+        </FeedSection>
+      )}
       {reads.length > 0 && (
         <FeedSection title="Reading">
           <RowList
             cards={reads}
+            selectedId={selectedId}
+            isTopicHidden={isTopicHidden}
+            onSelect={onSelect}
+          />
+        </FeedSection>
+      )}
+      {watching.length > 0 && (
+        <FeedSection title="Watching and listening">
+          <RowList
+            cards={watching}
             selectedId={selectedId}
             isTopicHidden={isTopicHidden}
             onSelect={onSelect}

@@ -93,6 +93,46 @@ function CardSummary({ card }: { card: DiscoverCard }) {
           </a>
         </div>
       );
+    case "watch":
+    case "listen":
+    case "inbox":
+      return (
+        <div className="flex flex-col gap-2">
+          <p className="text-[0.95rem] leading-relaxed text-foreground">{card.summary}</p>
+          {card.url ? (
+            <a
+              href={card.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-active-work hover:underline"
+            >
+              Open on {card.source}
+              <ExternalLink size={14} aria-hidden />
+            </a>
+          ) : null}
+        </div>
+      );
+    case "event":
+      return (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm text-muted-foreground">
+            {card.when}
+            {card.where ? ` · ${card.where}` : ""}
+          </p>
+          <p className="text-[0.95rem] leading-relaxed text-foreground">{card.detail}</p>
+          {card.url ? (
+            <a
+              href={card.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-active-work hover:underline"
+            >
+              Open it
+              <ExternalLink size={14} aria-hidden />
+            </a>
+          ) : null}
+        </div>
+      );
     case "action":
       return <p className="text-[0.95rem] leading-relaxed text-foreground">{card.detail}</p>;
     case "check_in":

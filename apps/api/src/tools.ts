@@ -40,6 +40,7 @@ import {
   search_memories,
   store_memory,
 } from "~/modules/memory/application/tools/memory";
+import { file_in_notebook } from "~/modules/notebooks/application/tools/file_in_notebook";
 import { polyNavigationTools } from "~/modules/poly/application/tools/poly-navigation";
 import {
   create_task,
@@ -165,6 +166,7 @@ registerTools([
   read_discover_context,
   compose_discover_edition,
   prepare_wind_down,
+  file_in_notebook,
 ]);
 
 registerTools([hostedMcpApproval], { listed: false });

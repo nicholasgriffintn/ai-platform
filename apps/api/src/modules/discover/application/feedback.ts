@@ -14,7 +14,11 @@ import {
   ActivityRepository,
   type ActivityRecord,
 } from "~/modules/activity/infrastructure/ActivityRepository";
-import { describeDiscoverCard, discoverCardTopic } from "~/modules/discover/domain/edition";
+import {
+  describeDiscoverCard,
+  discoverCardTopic,
+  discoverCardUrl,
+} from "~/modules/discover/domain/edition";
 import { collectCardSignals, type DiscoverFeedbackEntry } from "~/modules/discover/domain/feedback";
 
 import { requireDiscoverEdition } from "./editions";
@@ -92,7 +96,7 @@ export async function recordDiscoverFeedback(
       signal: input.signal,
       topic: discoverCardTopic(card),
       title,
-      url: card.kind === "read" ? card.url : null,
+      url: discoverCardUrl(card),
     },
   });
 

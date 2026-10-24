@@ -66,7 +66,8 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
       `Call ${ON_THIS_DAY_TOOL} for today's date and, when one event suits the person, give it one brief line with its link`,
       "Leave out links and angles that appeared in recent editions",
       `Always call ${DISCOVER_COMPOSE_TOOL_NAME} once with a greeting, the interests, a brief of up to five lines and six to twelve cards, even when a service could not be read or a topic has nothing fresh`,
-      "Mix topic, read, action and check-in cards, and give every card a reason naming the signal behind it",
+      "Mix topic, read, watch, listen, event, inbox, action and check-in cards, and give every card a reason naming the signal behind it",
+      "Use event cards for episodes airing, releases, gigs and meetings the context dates; watch and listen cards for videos, episodes and albums it names; inbox cards for newsletters worth a minute, naming the sender",
       "Give every followed topic one to three read cards citing only the pages the context listed for it; when none were listed, use a topic card instead",
       "Use calendar and task lines for the brief, and newsletters and new episodes as read cards with their source named",
       "When something is worth resurfacing, add one resurface card using its link exactly as given",
@@ -83,6 +84,12 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
         type: "textarea",
         placeholder:
           "Anything you'd like covered, such as the Japanese Grand Prix or new sourdough techniques",
+      },
+      {
+        key: "evening",
+        label: "Evening edition",
+        type: "boolean",
+        description: "A second, shorter edition at 19:00 that looks at tomorrow.",
       },
       {
         key: "listen",

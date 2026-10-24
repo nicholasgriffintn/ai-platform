@@ -8,12 +8,13 @@ import {
 
 export type DiscoverPreferences = Pick<
   DiscoverSettings,
-  "curate" | "listen" | "episode" | "style"
+  "curate" | "listen" | "evening" | "episode" | "style"
 > & { [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: string[] };
 
 export const DEFAULT_DISCOVER_PREFERENCES: DiscoverPreferences = {
   curate: "",
   listen: true,
+  evening: false,
   episode: "standard",
   style: "watercolour",
   [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: [],
@@ -32,6 +33,10 @@ export function readDiscoverPreferences(configuration: RecipeConfiguration): Dis
       typeof configuration.listen === "boolean"
         ? configuration.listen
         : DEFAULT_DISCOVER_PREFERENCES.listen,
+    evening:
+      typeof configuration.evening === "boolean"
+        ? configuration.evening
+        : DEFAULT_DISCOVER_PREFERENCES.evening,
     episode: episode.success ? episode.data : DEFAULT_DISCOVER_PREFERENCES.episode,
     style: style.success ? style.data : DEFAULT_DISCOVER_PREFERENCES.style,
     [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: Array.isArray(

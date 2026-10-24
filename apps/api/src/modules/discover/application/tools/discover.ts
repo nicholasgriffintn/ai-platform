@@ -5,11 +5,11 @@ import {
   type ComposeDiscoverEditionInput,
   type CreateDiscoverWindDown,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { describeZonedInstant, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { describeDiscoverContext } from "~/modules/discover/domain/context";
-import { buildDiscoverEdition } from "~/modules/discover/domain/edition";
+import { buildDiscoverEdition, discoverEditionTimeAt } from "~/modules/discover/domain/edition";
 import { isSundayEdition } from "~/modules/discover/domain/week";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -77,8 +77,12 @@ export const compose_discover_edition: ApiToolDefinition = {
       recentUrls: basis.recentUrls,
       createId: generateId,
     });
+    const editionTime = discoverEditionTimeAt(
+      Number.parseInt(describeZonedInstant(new Date(), basis.timezone).time.slice(0, 2), 10),
+    );
     const saved = await saveDiscoverEdition(context, user.id, {
       ...edition,
+      edition: editionTime,
       runId: context.executionRunId,
       signals: {
         read: [
@@ -104,7 +108,10 @@ export const compose_discover_edition: ApiToolDefinition = {
       await enqueueDiscoverJob(context, { job: "covers", editionId: saved.id });
     }
 
+    const morning = editionTime === "morning";
+
     if (
+      morning &&
       basis.activeReader &&
       basis.preferences.listen &&
       (await canAffordDiscoverListen(context, basis.installationId))
@@ -112,7 +119,7 @@ export const compose_discover_edition: ApiToolDefinition = {
       await enqueueDiscoverJob(context, { job: "listen", editionId: saved.id });
     }
 
-    if (basis.watchedLatestEpisode && basis.preferences.episode !== "off") {
+    if (morning && basis.watchedLatestEpisode && basis.preferences.episode !== "off") {
       await enqueueDiscoverJob(context, { job: "episode", editionId: saved.id });
     }
 
@@ -120,7 +127,7 @@ export const compose_discover_edition: ApiToolDefinition = {
       await enqueueDiscoverJob(context, { job: "links", editionId: saved.id });
     }
 
-    if (basis.preferences.listen && isSundayEdition(edition.date)) {
+    if (morning && basis.preferences.listen && isSundayEdition(edition.date)) {
       await enqueueDiscoverJob(context, { job: "your_week", editionId: saved.id });
     }
 

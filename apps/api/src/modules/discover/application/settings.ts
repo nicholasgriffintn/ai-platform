@@ -1,5 +1,6 @@
 import {
   DISCOVER_CRON,
+  DISCOVER_EVENING_CRON,
   DISCOVER_RECIPE_ID,
   RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
   type DiscoverRefreshResponse,
@@ -41,6 +42,7 @@ const DISABLED: DiscoverSettings = {
   curate: DEFAULT_DISCOVER_PREFERENCES.curate,
   location: null,
   listen: DEFAULT_DISCOVER_PREFERENCES.listen,
+  evening: DEFAULT_DISCOVER_PREFERENCES.evening,
   episode: DEFAULT_DISCOVER_PREFERENCES.episode,
   style: DEFAULT_DISCOVER_PREFERENCES.style,
   notify: false,
@@ -125,6 +127,7 @@ function describeRoutine(
     curate: preferences.curate,
     location,
     listen: preferences.listen,
+    evening: preferences.evening,
     episode: preferences.episode,
     style: preferences.style,
     installationId: installation.id,
@@ -216,6 +219,7 @@ export async function updateDiscoverSettings(
   const preferences: DiscoverPreferences = {
     curate: input.curate ?? current.curate,
     listen: input.listen ?? current.listen,
+    evening: input.evening ?? current.evening,
     episode: input.episode ?? current.episode,
     style: input.style ?? current.style,
     [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: nextExcludedSources(
@@ -228,7 +232,19 @@ export async function updateDiscoverSettings(
     userId: user.id,
     channel: "web",
     teammateContextId: polyContext.id,
-    triggers: [{ type: "schedule", enabled: true, cronExpression: DISCOVER_CRON, timezone }],
+    triggers: [
+      { type: "schedule", enabled: true, cronExpression: DISCOVER_CRON, timezone },
+      ...(preferences.evening
+        ? [
+            {
+              type: "schedule" as const,
+              enabled: true,
+              cronExpression: DISCOVER_EVENING_CRON,
+              timezone,
+            },
+          ]
+        : []),
+    ],
     configuration: preferences,
   });
 

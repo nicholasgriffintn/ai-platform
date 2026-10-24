@@ -17,6 +17,14 @@ export function buildDiscoverListenMaterial(edition: DiscoverEditionContent): st
         return `## ${card.topic}: ${card.title}\n${card.angle}\nWhy it matters to them: ${card.reason}`;
       case "read":
         return `## Reading on ${card.topic}: ${card.title} (${card.source}, ${card.url})\n${card.summary}`;
+      case "watch":
+        return `## Worth watching on ${card.topic}: ${card.title} (${card.source})\n${card.summary}`;
+      case "listen":
+        return `## Worth hearing on ${card.topic}: ${card.title} (${card.source})\n${card.summary}`;
+      case "event":
+        return `## Coming up: ${card.title}, ${card.when}${card.where ? ` at ${card.where}` : ""}\n${card.detail}`;
+      case "inbox":
+        return `## From ${card.source}: ${card.title}\n${card.summary}`;
       case "action":
         return `## Worth doing: ${card.title}\n${card.detail}`;
       case "check_in":

@@ -76,10 +76,12 @@ export function NotebookPage({
     void navigate(getNotebookPath(surface, notebookId, nextConversationId), { replace: true });
   };
 
-  const askAbout = (topic: string) => {
+  const ask = (input: string) => {
     setPane("chat");
-    setPendingQuestion({ key: generateId(), input: `Tell me about ${topic}, using the sources.` });
+    setPendingQuestion({ key: generateId(), input });
   };
+
+  const askAbout = (topic: string) => ask(`Tell me about ${topic}, using the sources.`);
 
   const toggle = (panel: "sources" | "studio") =>
     setCollapsed((current) => ({ ...current, [panel]: !current[panel] }));
@@ -161,6 +163,7 @@ export function NotebookPage({
             actions={actions}
             selectedSourceIds={selection.selectedIds}
             onAskAbout={askAbout}
+            onAsk={ask}
           />
         </NotebookPanel>
       </div>

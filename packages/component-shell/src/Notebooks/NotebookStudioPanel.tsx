@@ -1,14 +1,23 @@
 import { isStudyOutputKind } from "@ngriffin_uk/polychat-component-content";
-import { Button, FormDialog, FormInput, FormTextarea } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuItem,
+  FormDialog,
+  FormInput,
+  FormTextarea,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
   type useNotebookActions,
   useOutput,
+  useRecipeConnectors,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
   NotebookDetail,
   NotebookStudioRequestInput,
   OutputSummary,
+  RecipeConnectorProvider,
   SourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -17,6 +26,7 @@ import {
   LoaderCircle,
   Maximize2,
   Pencil,
+  Send,
   StickyNote,
   TriangleAlert,
 } from "lucide-react";
@@ -173,6 +183,64 @@ interface OpenStudioItem {
   title: string;
 }
 
+const SEND_TARGETS: ReadonlyArray<{
+  provider: RecipeConnectorProvider;
+  label: string;
+  describe: (title: string) => string;
+}> = [
+  {
+    provider: "googledocs",
+    label: "Google Docs",
+    describe: (title) =>
+      `Send "${title}" from this notebook to Google Docs: create a new document with its full content through the Google Docs connector, then give me the link.`,
+  },
+  {
+    provider: "googleslides",
+    label: "Google Slides",
+    describe: (title) =>
+      `Send "${title}" from this notebook to Google Slides: create a presentation from it through the Google Slides connector, one slide per section, then give me the link.`,
+  },
+  {
+    provider: "googlesheets",
+    label: "Google Sheets",
+    describe: (title) =>
+      `Send "${title}" from this notebook to Google Sheets: create a spreadsheet with its rows through the Google Sheets connector, then give me the link.`,
+  },
+  {
+    provider: "devto",
+    label: "DEV as a draft",
+    describe: (title) =>
+      `Publish "${title}" from this notebook to DEV as an unpublished draft article through the DEV connector, then give me the link.`,
+  },
+];
+
+function SendToMenu({ item, onAsk }: { item: OpenStudioItem; onAsk: (prompt: string) => void }) {
+  const { data } = useRecipeConnectors({ status: "connected" });
+  const connected = new Set(
+    (data?.connectors ?? [])
+      .filter((connector) => connector.status === "connected")
+      .map((connector) => connector.id),
+  );
+  const targets = SEND_TARGETS.filter((target) => connected.has(target.provider));
+
+  if (item.origin !== "output" || targets.length === 0) {
+    return null;
+  }
+
+  return (
+    <DropdownMenu
+      trigger={<Send className="size-4" aria-hidden />}
+      buttonProps={{ variant: "icon", "aria-label": "Send to a connected service" }}
+    >
+      {targets.map((target) => (
+        <DropdownMenuItem key={target.provider} onClick={() => onAsk(target.describe(item.title))}>
+          {target.label}
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenu>
+  );
+}
+
 function OpenOutputStage({
   outputId,
   onAskAbout,
@@ -190,11 +258,13 @@ function OpenStudioItemPanel({
   projectId,
   onBack,
   onAskAbout,
+  onAsk,
 }: {
   item: OpenStudioItem;
   projectId?: string;
   onBack: () => void;
   onAskAbout: (topic: string) => void;
+  onAsk: (prompt: string) => void;
 }) {
   const setOpenFile = useUIStore((state) => state.setOpenFile);
 
@@ -205,6 +275,7 @@ function OpenStudioItemPanel({
           <ArrowLeft className="size-4" />
         </Button>
         <h3 className="min-w-0 flex-1 truncate font-medium">{item.title}</h3>
+        <SendToMenu item={item} onAsk={onAsk} />
         <Button
           variant="icon"
           aria-label="Open larger"
@@ -279,11 +350,13 @@ export function NotebookStudioPanel({
   actions,
   selectedSourceIds,
   onAskAbout,
+  onAsk,
 }: {
   notebook: NotebookDetail;
   actions: NotebookActions;
   selectedSourceIds: readonly string[];
   onAskAbout: (topic: string) => void;
+  onAsk: (prompt: string) => void;
 }) {
   const [customising, setCustomising] = useState<StudioTile | null>(null);
   const [openItem, setOpenItem] = useState<OpenStudioItem | null>(null);
@@ -329,6 +402,7 @@ export function NotebookStudioPanel({
         projectId={projectId}
         onBack={() => setOpenItem(null)}
         onAskAbout={onAskAbout}
+        onAsk={onAsk}
       />
     );
   }

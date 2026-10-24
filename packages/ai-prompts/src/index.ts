@@ -67,6 +67,7 @@ export {
   POLY_MODE_LABELS,
   POLY_PLACE_LABELS,
   type PolyAgendaPromptInput,
+  type PolyLatelyInput,
   type PolyUiContextInput,
   type TurnContextInput,
   type TurnSkillInput,
