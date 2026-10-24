@@ -33,7 +33,6 @@ import {
   useIsLoading,
   useConversationScope,
   useConversationStorage,
-  getOutputPath,
   getSiblingConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
@@ -70,7 +69,7 @@ import { toast } from "sonner";
 import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
 import { GoalStatusCard } from "../GoalStatusCard.js";
 import { PetPerch } from "../PetPerch.js";
-import { WELCOME_PET_SIZE, WelcomeScreen } from "../WelcomeScreen.js";
+import { WELCOME_PET_SIZE, type WelcomeOpening, WelcomeScreen } from "../WelcomeScreen.js";
 import { AgentApprovalDock, type ConversationAgentApprovals } from "./AgentApprovalDock.js";
 import {
   ChatInput,
@@ -111,6 +110,7 @@ export interface ThreadModeConfig {
   conversationMode?: ConversationModeMetadata;
   welcomeTitle?: string;
   welcomeDescription?: string;
+  welcomeOpening?: WelcomeOpening;
   welcomeLoading?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
@@ -139,6 +139,8 @@ export interface ThreadModeConfig {
   hideInlineResponseControls?: boolean;
   hideChatSettings?: boolean;
   hideComposerSuggestions?: boolean;
+  hidePetPerch?: boolean;
+  submitSuggestions?: boolean;
   hideModelSelector?: boolean;
   hideVoiceControls?: boolean;
   petPresetSlug?: string;
@@ -689,6 +691,23 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     ],
   );
 
+  const submitPrompt = useCallback(
+    async (input: string) => {
+      setComposerInput("");
+
+      const result = await sendMessage(
+        input,
+        contextAttachments.length > 0 ? contextAttachments : undefined,
+        modeConfig?.requestOptions,
+      );
+
+      if (result?.status === "error") {
+        setComposerInput(input);
+      }
+    },
+    [contextAttachments, modeConfig?.requestOptions, sendMessage, setComposerInput],
+  );
+
   useEffect(() => {
     const initialAutoSubmit = modeConfig?.initialAutoSubmit;
 
@@ -704,31 +723,14 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     }
 
     autoSubmittedKeyRef.current = initialAutoSubmit.key;
-    setComposerInput("");
-
-    const submitInitialInput = async () => {
-      const result = await sendMessage(
-        initialAutoSubmit.input,
-        contextAttachments.length > 0 ? contextAttachments : undefined,
-        modeConfig?.requestOptions,
-      );
-
-      if (result?.status === "error") {
-        setComposerInput(initialAutoSubmit.input);
-      }
-    };
-
-    void submitInitialInput();
+    void submitPrompt(initialAutoSubmit.input);
   }, [
-    contextAttachments,
     isModelInitializing,
     isStreamLoading,
     modeConfig?.contextAttachmentsReady,
     modeConfig?.initialAutoSubmit,
-    modeConfig?.requestOptions,
-    sendMessage,
-    setComposerInput,
     streamStarted,
+    submitPrompt,
   ]);
 
   const handleKeyPress = useCallback(
@@ -820,6 +822,18 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   );
 
   const applyApprovalRule = useApprovalRules();
+  const setOpenFile = useUIStore((state) => state.setOpenFile);
+  const filesProjectId = modeConfig?.requestOptions?.metadata?.project_id;
+  const openOutput = useCallback(
+    (outputId: string) =>
+      setOpenFile({
+        origin: "output",
+        id: outputId,
+        ...(filesProjectId ? { projectId: filesProjectId } : {}),
+      }),
+    [filesProjectId, setOpenFile],
+  );
+
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
     async (toolName, action, interactionData) => {
       const data = await applyApprovalRule(toolName, interactionData);
@@ -892,12 +906,18 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
         return;
       }
 
+      if (action === "openFile" && typeof data.outputId === "string") {
+        openOutput(data.outputId);
+
+        return;
+      }
+
       switch (toolName) {
         case "delegate":
           if (data.action === "open" && typeof data.childConversationId === "string") {
             void navigate(getSiblingConversationPath(location.pathname, data.childConversationId));
           } else if (data.action === "output" && typeof data.outputId === "string") {
-            void navigate(getOutputPath(location.pathname, data.outputId));
+            openOutput(data.outputId);
           } else if (
             (data.action === "resume" || data.action === "fresh") &&
             typeof data.input === "string"
@@ -927,6 +947,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
       modeToolInteraction,
       location.pathname,
       navigate,
+      openOutput,
     ],
   );
 
@@ -935,7 +956,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   const polyIsOpen = useUIStore((state) => state.showPoly);
   const setShowPoly = useUIStore((state) => state.setShowPoly);
   const isPolySurface = modeConfig?.surface === "poly";
-  const showPetPerch = petFollows && !isPolySurface && !polyIsOpen;
+  const showPetPerch = petFollows && !isPolySurface && !polyIsOpen && !modeConfig?.hidePetPerch;
   const openPolyFromPet = isPolySurface ? undefined : () => setShowPoly(true);
 
   usePetNudgeSources({
@@ -986,6 +1007,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
             <WelcomeScreen
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
+              opening={modeConfig?.welcomeOpening}
               isLoading={modeConfig?.welcomeLoading}
               pet={
                 <Pet
@@ -1003,6 +1025,11 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
               suggestions={
                 <ChatSuggestions
                   setInput={setComposerInput}
+                  onSubmitPrompt={
+                    modeConfig?.submitSuggestions
+                      ? (prompt) => void submitPrompt(prompt)
+                      : undefined
+                  }
                   suggestionsOverride={modeConfig?.welcomeSuggestions}
                   isLoading={modeConfig?.welcomeLoading}
                   modeCommands={modeConfig?.modeControls?.commands}

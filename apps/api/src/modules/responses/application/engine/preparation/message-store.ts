@@ -158,5 +158,6 @@ export async function storeUserTurn({
     model_id: modelId ?? primaryModel,
     model_tier: modelTier,
     permission_mode: permissionMode,
+    subject: options.conversation_subject,
   });
 }

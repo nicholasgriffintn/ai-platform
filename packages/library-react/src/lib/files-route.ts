@@ -1,5 +1,4 @@
 import { getProjectBasePath } from "./conversation-route.js";
-import { getPlacePaths } from "./navigation/places.js";
 
 export const FILES_FILTERS = ["all", "made", "sources", "memory"] as const;
 
@@ -63,9 +62,44 @@ export function getProjectFilesPath(
   return getFilesPath(`${getProjectBasePath(workspaceId, projectId)}/files`, section, itemPath);
 }
 
-export function getOutputPath(pathname: string, outputId: string): string {
-  const projectPath = pathname.match(/^(\/work\/[^/]+\/projects\/[^/]+)(?:\/|$)/u)?.[1];
-  const filesPath = projectPath ? `${projectPath}/files` : getPlacePaths("chat").files;
+export type FileTarget =
+  | { origin: "output"; id: string; projectId?: string }
+  | { origin: "source"; id: string; projectId?: string }
+  | { origin: "memory"; name: string; projectId?: string };
 
-  return getFilesPath(filesPath, "made", encodeURIComponent(outputId));
+export function getFileTargetPath(basePath: string, target: FileTarget): string {
+  switch (target.origin) {
+    case "output":
+      return getFilesPath(basePath, "made", encodeURIComponent(target.id));
+    case "source":
+      return getFilesPath(basePath, "sources", encodeURIComponent(target.id));
+    case "memory":
+      return getFilesPath(basePath, "memory", encodeURIComponent(target.name));
+  }
+}
+
+export type FilesFileLocation = Extract<FilesLocation, { view: "output" | "source" | "memory" }>;
+
+export function isFilesFileLocation(location: FilesLocation): location is FilesFileLocation {
+  return location.view === "output" || location.view === "source" || location.view === "memory";
+}
+
+export const FILE_LOCATION_SECTIONS = {
+  output: "made",
+  source: "sources",
+  memory: "memory",
+} as const satisfies Record<FilesFileLocation["view"], FilesSection>;
+
+export function fileTargetFromLocation(
+  location: FilesFileLocation,
+  projectId: string | undefined,
+): FileTarget {
+  switch (location.view) {
+    case "output":
+      return { origin: "output", id: location.outputId, projectId };
+    case "source":
+      return { origin: "source", id: location.sourceId, projectId };
+    case "memory":
+      return { origin: "memory", name: location.name, projectId };
+  }
 }

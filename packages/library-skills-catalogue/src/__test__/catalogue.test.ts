@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 
+import { polyPlaceSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,6 +9,7 @@ import {
   getBuiltInSkillResource,
   listBuiltInSkillDefinitions,
   listBuiltInSkillSummaries,
+  listSkillGuides,
   loadBuiltInSkill,
   parseSkillDocument,
   parseUserSkillDocument,
@@ -105,5 +107,31 @@ describe("skill documents", () => {
       getBuiltInSkillCatalogue().getDefinition("artifacts"),
     );
     expect(getBuiltInSkillCatalogue().getDefinition("release-notes")).toBeUndefined();
+  });
+});
+
+describe("place guides", () => {
+  it("ships exactly one guide with an opening and starters for every place", () => {
+    const guides = listSkillGuides();
+
+    expect(guides.map((guide) => guide.place).sort()).toEqual([...polyPlaceSchema.options].sort());
+
+    for (const guide of guides) {
+      expect(guide.opening.length).toBeGreaterThan(0);
+      expect(guide.opening).not.toContain("## ");
+      expect(guide.starters.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("rejects a guide without an opening", () => {
+    const catalog = getBuiltInSkillCatalogue().extend([
+      {
+        directory: "guide-broken",
+        rawContent:
+          "---\nname: guide-broken\ndescription: Broken guide\nmetadata:\n  polychat-category: Guide\n  polychat-guide-place: files\n---\n\n## Starters\n\n- One\n",
+      },
+    ]);
+
+    expect(() => listSkillGuides(catalog)).toThrow("Opening");
   });
 });

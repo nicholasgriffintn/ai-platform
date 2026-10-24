@@ -17,3 +17,4 @@ export * from "./Outputs";
 export * from "./Response";
 export * from "./SandboxView";
 export * from "./RunEvidence";
+export * from "./Viewer";

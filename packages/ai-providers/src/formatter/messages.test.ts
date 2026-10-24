@@ -242,6 +242,40 @@ describe("Workers AI history formatting", () => {
       { role: "user", content: [{ type: "text", text: "Where is this?" }, image] },
     ]);
   });
+
+  it("sends text-only histories as plain strings", () => {
+    const formatted = MessageFormatter.formatMessages(
+      [
+        { role: "user", content: [{ type: "text", text: "Summarise this" }] },
+        { role: "assistant", content: "Done." },
+      ],
+      { provider: "workers-ai", system_prompt: "Be terse." },
+    );
+
+    expect(formatted.map((message) => message.content)).toEqual([
+      "Be terse.",
+      "Summarise this",
+      "Done.",
+    ]);
+  });
+
+  it("sends every message as parts once any message carries an image", () => {
+    const image = { type: "image_url" as const, image_url: { url: "data:image/jpeg;base64,aGk=" } };
+    const formatted = MessageFormatter.formatMessages(
+      [
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: "Hi." },
+        { role: "user", content: [{ type: "text", text: "Where is this?" }, image] },
+      ],
+      { provider: "workers-ai", system_prompt: "Be terse." },
+    );
+
+    expect(formatted.every((message) => Array.isArray(message.content))).toBe(true);
+    expect(formatted[0]).toEqual({
+      role: "system",
+      content: [{ type: "text", text: "Be terse." }],
+    });
+  });
 });
 
 describe("tool result images", () => {

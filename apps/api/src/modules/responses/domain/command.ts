@@ -1,5 +1,6 @@
 import type {
   ChatRunTrigger,
+  ConversationSubject,
   ConversationType,
   DelegationContext,
   DurableExecution,
@@ -17,6 +18,7 @@ import type { ChatCompletionParameters, Message } from "~/types";
 export interface ResponseCommand {
   conversationId?: string;
   conversationType?: ConversationType;
+  conversationSubject?: ConversationSubject;
   commandId?: string;
   runId?: string;
   messages: EngineRequest["messages"] | Message[];

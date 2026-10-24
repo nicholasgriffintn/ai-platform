@@ -5,6 +5,7 @@ import { ChevronRight, ExternalLink, Gauge } from "lucide-react";
 import type { ReactNode } from "react";
 
 import {
+  CONTEXT_DOCUMENT_LABELS,
   buildContextSegments,
   contextPressureTone,
   formatContextShare,
@@ -261,7 +262,7 @@ function SnapshotDetails({
             {snapshot.documents.map((document) => (
               <li key={document.id} className="flex items-center gap-2">
                 <span className="flex-1 text-foreground">
-                  {document.kind === "conversation_brief" ? "Conversation brief" : "Memory"}
+                  {CONTEXT_DOCUMENT_LABELS[document.kind]}
                 </span>
                 <span className="font-mono text-[11px]">r{document.revision}</span>
                 <span>{document.access === "read-write" ? "can edit" : "read only"}</span>

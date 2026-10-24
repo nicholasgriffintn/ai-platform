@@ -650,6 +650,7 @@ export async function workStatements({ serverKey, teammates }) {
 
   const threadInsertIndex = statements.length;
   const taskStatements = [];
+  const goalStatements = [];
 
   statements.push(...runningThread.statements);
   statements.push(
@@ -1091,7 +1092,7 @@ export async function workStatements({ serverKey, teammates }) {
     }
 
     if (task.completion) {
-      statements.push(
+      goalStatements.push(
         insert("goal", {
           id: seedId("goal", task.id),
           conversation_id: task.conversation?.conversationId ?? seedId("work", "pricing-copy"),
@@ -1226,6 +1227,8 @@ Start with Free. Upgrade when you hit the allowance.`,
       expires_at: ahead({ minutes: 48 }),
     }),
   );
+
+  statements.push(...goalStatements);
 
   return {
     statements,

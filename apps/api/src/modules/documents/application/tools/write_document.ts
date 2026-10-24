@@ -51,7 +51,12 @@ export const write_document: ApiToolDefinition = {
       content: args.outputId
         ? `Revised ${saved.title}. It is revision ${saved.revision} in Files.`
         : `Wrote ${saved.title}. You can find it in Files, revise it, or export it.`,
-      data: { outputId: saved.id, title: saved.title, revision: saved.revision },
+      data: {
+        renderer: "document_output",
+        outputId: saved.id,
+        title: saved.title,
+        revision: saved.revision,
+      },
     } satisfies IFunctionResponse;
   },
 };

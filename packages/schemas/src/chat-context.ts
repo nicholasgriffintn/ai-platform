@@ -17,6 +17,7 @@ export const CHAT_CONTEXT_BREAKDOWN_KINDS = [
   "conversation",
   "tool_results",
   "summary",
+  "subject",
 ] as const;
 
 export const chatContextBreakdownEntrySchema = z.object({
@@ -41,7 +42,7 @@ export const chatContextSkillSchema = z.object({
 
 export const chatContextDocumentSchema = z.object({
   id: z.string().min(1),
-  kind: z.enum(["conversation_brief", "memory"]),
+  kind: z.enum(["conversation_brief", "memory", "subject"]),
   revision: z.number().int().positive(),
   access: z.enum(["read", "read-write"]),
 });

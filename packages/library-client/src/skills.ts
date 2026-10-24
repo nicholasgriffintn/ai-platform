@@ -8,6 +8,7 @@ import type {
   AuthoredSkillVersionedDocument,
   SkillAvailability,
   SkillAvailabilityResponse,
+  SkillGuide,
   ListPage,
   TeachingSkillDraftInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -183,4 +184,10 @@ export async function deleteSkill(skillId: string, projectId?: string): Promise<
   if (!response.ok) {
     throw await createApiErrorFromResponse(response, "Failed to delete skill");
   }
+}
+
+export async function listSkillGuides(): Promise<SkillGuide[]> {
+  const page = await requestJson<ListPage<SkillGuide>>("/skills/guides", "GET");
+
+  return page.data;
 }

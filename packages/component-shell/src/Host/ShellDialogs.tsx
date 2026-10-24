@@ -14,6 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
 
+import { FileViewerOverlay } from "../Files/Viewer/FileViewerOverlay.js";
 import { PolyOverlay } from "../Poly/PolyOverlay.js";
 import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
 import { useShellHost } from "./ShellHostContext.js";
@@ -101,6 +102,7 @@ export function ShellDialogs() {
   return (
     <>
       {polyPresentation === "window" && <PolyOverlay open onClose={() => setShowPoly(false)} />}
+      <FileViewerOverlay />
       {projectPicker && (
         <Suspense fallback={null}>
           <ProjectPickerDialog

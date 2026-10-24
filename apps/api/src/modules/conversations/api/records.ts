@@ -48,6 +48,10 @@ export function defineConversationRecords(conversations: ResourceBuilder): void 
           sortBy: query.sort_by,
           updatedAfter: query.updated_after,
           teammateThreads: query.teammate_threads ?? "include",
+          subject:
+            query.subject_type && query.subject_id
+              ? { type: query.subject_type, id: query.subject_id }
+              : undefined,
         }),
     })
     .deleteAll({

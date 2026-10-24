@@ -11,6 +11,8 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  buildGuideOpening,
+  buildGuideSuggestions,
   createChatWelcome,
   useChats,
   useCancelDelegations,
@@ -19,6 +21,7 @@ import {
   useStableRandomSeed,
   useConversationRoute,
   useConversationScope,
+  useSkillGuide,
 } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router";
@@ -78,6 +81,16 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
     ],
   );
   const hasModeWelcome = Boolean(modeConfig?.welcomeTitle || modeConfig?.welcomeDescription);
+  const conversationsGuide = useSkillGuide("conversations");
+  const firstVisitGuide =
+    !hasModeWelcome &&
+    !isTemporary &&
+    isAuthenticated &&
+    !areConversationsLoading &&
+    !user?.message_count &&
+    conversations.length === 0
+      ? conversationsGuide
+      : null;
   const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
   const showDiscover = !hasModeWelcome && !isAuthenticated && !isAuthenticationLoading;
   const effectiveModeConfig = useMemo<ThreadModeConfig>(
@@ -117,6 +130,13 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
           ...effectiveModeConfig,
           welcomeTitle: hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title,
           welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
+          ...(firstVisitGuide
+            ? {
+                welcomeOpening: buildGuideOpening(firstVisitGuide),
+                welcomeSuggestions: buildGuideSuggestions(firstVisitGuide),
+                welcomeCapabilitySuggestions: false,
+              }
+            : {}),
           welcomeLoading: isWelcomeLoading,
           welcomeFooter: showDiscover ? <HomeDiscover /> : undefined,
           welcomeFooterHint: showDiscover ? "Keep scrolling for the tour" : undefined,

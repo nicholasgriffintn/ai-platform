@@ -6,6 +6,7 @@ import {
   useProjectTasks,
   useCapabilityCatalog,
   getProjectConversationPath,
+  getProjectFilesPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -130,7 +131,9 @@ export function ProjectTaskDetail({
           runHref={(conversationId, runId) =>
             `${basePath}/chat?completion_id=${encodeURIComponent(conversationId)}&run_id=${encodeURIComponent(runId)}`
           }
-          outputHref={(outputId) => `${basePath}/outputs/${encodeURIComponent(outputId)}`}
+          outputHref={(outputId) =>
+            getProjectFilesPath(workspaceId, projectId, "made", encodeURIComponent(outputId))
+          }
           isBusy={isBusy}
           onRun={() => void run()}
           onAccept={() => void acceptTask()}

@@ -7,6 +7,7 @@ import {
   type StoredItem,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { readStoredSubject } from "~/modules/conversations/domain/subject";
 import type { Message } from "~/types";
 
 interface ConversationRecordLike extends Record<string, unknown> {
@@ -24,12 +25,16 @@ export function presentConversation(record: ConversationRecordLike): Conversatio
     message_count: messageCount,
     has_more_messages: hasMoreMessages,
     oldest_message_id: oldestMessageId,
+    subject_type: _subjectType,
+    subject_id: _subjectId,
     ...rest
   } = record;
+  const subject = readStoredSubject(record);
 
   return {
     ...(rest as Conversation),
     object: "conversation",
+    ...(subject ? { subject } : {}),
     ...(latestRun !== undefined
       ? { latest_response: latestRun ? toResponse(latestRun) : null }
       : {}),

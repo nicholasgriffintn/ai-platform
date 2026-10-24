@@ -24,6 +24,7 @@ import {
   queuedChatMessagesResponseSchema,
   type ArtifactBindingReadRequest,
   type ArtifactBindingReadResponse,
+  type ConversationSubject,
   type EnqueueChatMessageRequest,
   type Goal,
   type ModelTier,
@@ -44,7 +45,7 @@ import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
 import { resource, type ResourceQuery } from "../resource.js";
 import type { ConversationShare } from "../shared-conversation.js";
 
-interface ConversationSummaryRow {
+export interface ConversationSummaryRow {
   id: string;
   title: string;
   model?: string | null;
@@ -112,6 +113,16 @@ export class ConversationsService {
       updated_after: conversationActivityCutoff(options.activity)?.toISOString(),
       q: options.query?.trim() || undefined,
     };
+  }
+
+  async listAboutSubject(subject: ConversationSubject): Promise<ConversationSummaryRow[]> {
+    const page = await conversations.list({
+      subject_type: subject.type,
+      subject_id: subject.id,
+      limit: 20,
+    });
+
+    return page.data;
   }
 
   async list(options: ConversationListOptions = {}): Promise<ConversationListPage> {

@@ -1,20 +1,12 @@
 import {
   PageShell,
   readSharedSiteProject,
-  ResponseRenderer,
+  SharedOutputViewer,
   SharedSite,
 } from "@ngriffin_uk/polychat-component-shell";
-import {
-  ButtonLink,
-  Card,
-  LoadingSpinner,
-  PageStatus,
-  textLinkClassName,
-} from "@ngriffin_uk/polychat-component-ui";
+import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL, getSharedOutput } from "@ngriffin_uk/polychat-library-client";
-import { useRunnableTool } from "@ngriffin_uk/polychat-library-react";
 import type { SharedOutput } from "@ngriffin_uk/polychat-schemas";
-import { FileQuestion } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
@@ -29,7 +21,6 @@ export default function SharedOutputPage() {
   const { token } = useParams<{ token: string }>();
   const [output, setOutput] = useState<SharedOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
   const missingTokenError = token ? null : "Invalid share link";
 
   useEffect(() => {
@@ -77,29 +68,15 @@ export default function SharedOutputPage() {
   }
 
   return (
-    <PageShell title={output.title} displayNavBar={false} className="max-w-4xl">
-      <Card className="gap-5 p-6 shadow-none">
-        <div className="flex items-center gap-3">
-          <FileQuestion size={20} className="text-muted-foreground" />
-          <div>
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              {output.capabilityId}
-            </p>
-            <h2 className="text-xl font-semibold">{output.title}</h2>
-          </div>
-        </div>
-        {output.file ? (
-          <a
-            href={`${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`}
-            target="_blank"
-            rel="noreferrer"
-            className={textLinkClassName({ tone: "accent" })}
-          >
-            Open {output.file.filename || "shared file"}
-          </a>
-        ) : null}
-        <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
-      </Card>
+    <PageShell title={output.title} displayNavBar={false} className="max-w-6xl">
+      <SharedOutputViewer
+        output={output}
+        fileUrl={
+          output.file
+            ? `${API_BASE_URL}/outputs/shared/${encodeURIComponent(token)}/content`
+            : undefined
+        }
+      />
     </PageShell>
   );
 }

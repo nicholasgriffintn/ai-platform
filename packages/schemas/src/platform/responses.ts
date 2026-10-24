@@ -15,6 +15,7 @@ import {
   type ChatRunCommandReceipt,
   type ChatRunStatus,
 } from "../chat-runs.js";
+import { conversationSubjectSchema } from "../conversation-subject.js";
 import { conversationTypeSchema } from "../conversation-type.js";
 import {
   chatCompactionModeSchema,
@@ -208,6 +209,7 @@ export const responseConversationSchema = z.union([
       id: z.string().min(1).optional(),
       type: conversationTypeSchema.optional(),
       project_id: z.string().min(1).optional(),
+      subject: conversationSubjectSchema.optional(),
     })
     .strict(),
   z.null(),

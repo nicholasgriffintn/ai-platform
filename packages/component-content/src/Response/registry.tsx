@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext } from "react";
 
-export type ToolInteractionAction = "useAsPrompt" | "submitPrompt";
+export type ToolInteractionAction = "useAsPrompt" | "submitPrompt" | "openFile";
 
 export type ToolInteractionHandler = (
   toolName: string,

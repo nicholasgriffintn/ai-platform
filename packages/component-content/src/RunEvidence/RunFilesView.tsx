@@ -1,7 +1,8 @@
 import { Badge, Button, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { File, FileArchive, FileWarning } from "lucide-react";
+import { File, FileArchive, FileWarning, PanelRightOpen } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ViewerHeader } from "../Viewer/ViewerHeader";
 import { parseUnifiedDiff, type DiffFile } from "./parseUnifiedDiff";
 import type { RunEvidenceContent } from "./RunChangesView";
 import { useRunArtifactPreview, type RunArtifactItem } from "./useRunArtifactPreview";
@@ -13,6 +14,7 @@ export interface RunFilesViewProps {
   recordedFiles?: string[];
   artifacts: RunArtifactItem[];
   loadArtifact: (outputId: string) => Promise<RunEvidenceContent>;
+  onOpenArtifact?: (outputId: string) => void;
 }
 
 function ArtifactPreview({
@@ -20,7 +22,8 @@ function ArtifactPreview({
   artifact,
   content,
   errorMessage,
-}: ReturnType<typeof useRunArtifactPreview>) {
+  onOpenArtifact,
+}: ReturnType<typeof useRunArtifactPreview> & { onOpenArtifact?: (outputId: string) => void }) {
   if (status === "idle" || !artifact) {
     return (
       <EmptyState
@@ -54,23 +57,43 @@ function ArtifactPreview({
     );
   }
 
+  const header = (
+    <ViewerHeader
+      title={artifact.name}
+      icon={<FileArchive className="size-4" />}
+      detail={artifact.kind}
+      actions={
+        onOpenArtifact ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<PanelRightOpen className="size-4" />}
+            onClick={() => onOpenArtifact(artifact.outputId)}
+          >
+            Open
+          </Button>
+        ) : undefined
+      }
+    />
+  );
+
   if (content.binary) {
     return (
-      <EmptyState
-        icon={<FileWarning className="size-5 text-muted-foreground" />}
-        title="Binary artifact"
-        message="This file is recorded but cannot be previewed safely as text."
-        className="min-h-52 border-0 bg-transparent"
-      />
+      <section aria-label={`Preview of ${artifact.name}`} className="min-w-0 space-y-2">
+        {header}
+        <EmptyState
+          icon={<FileWarning className="size-5 text-muted-foreground" />}
+          title="Binary artifact"
+          message="This file is recorded but cannot be previewed safely as text."
+          className="min-h-52 border-0 bg-transparent"
+        />
+      </section>
     );
   }
 
   return (
     <section aria-label={`Preview of ${artifact.name}`} className="min-w-0 space-y-2">
-      <div className="flex items-center gap-2">
-        <h3 className="min-w-0 flex-1 truncate font-mono text-sm">{artifact.name}</h3>
-        <Badge variant="outline">{artifact.kind}</Badge>
-      </div>
+      {header}
       {content.truncated ? (
         <output className="block rounded-lg bg-attention/10 px-3 py-2 text-sm text-attention">
           This artifact is too large to render in full. Showing a bounded preview.
@@ -145,6 +168,7 @@ export function RunFilesView({
   recordedFiles = EMPTY_RECORDED_FILES,
   artifacts,
   loadArtifact,
+  onOpenArtifact,
 }: RunFilesViewProps) {
   const changedFiles = useMemo(
     () => parseUnifiedDiff(diffContent?.text ?? ""),
@@ -249,7 +273,7 @@ export function RunFilesView({
           ) : selectedFile ? (
             <ChangedFilePreview file={selectedFile} truncated={Boolean(diffContent?.truncated)} />
           ) : (
-            <ArtifactPreview {...preview} />
+            <ArtifactPreview {...preview} onOpenArtifact={onOpenArtifact} />
           )}
         </div>
       </div>

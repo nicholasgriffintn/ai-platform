@@ -37,6 +37,7 @@ import {
   formatProjectWorkbenchPreviewFeedback,
   useCancelDelegations,
   useDelegations,
+  useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -95,6 +96,7 @@ function ProjectWorkbenchConversationInner({
   const layout = useProjectWorkbenchLayout(PROJECT_WORKBENCH_LAYOUT_KEY);
   const workbench = useConversationWorkbenchContext(effectiveConversationId ?? undefined);
   const currentUserId = useChatStore((state) => state.user?.id);
+  const setOpenFile = useUIStore((state) => state.setOpenFile);
   const diff = useProjectWorkbenchDiff(runsQuery.currentRun);
   const controls = useProjectWorkbenchControls({
     runId: runsQuery.currentRun?.runId,
@@ -309,6 +311,7 @@ function ProjectWorkbenchConversationInner({
         recordedFiles={runsQuery.currentRun?.manifest?.changes.files}
         artifacts={runsQuery.currentRun?.manifest?.artifacts ?? []}
         loadArtifact={getOutputArtifactContent}
+        onOpenArtifact={(outputId) => setOpenFile({ origin: "output", id: outputId, projectId })}
       />
     ),
     proof: renderPanel("proof"),

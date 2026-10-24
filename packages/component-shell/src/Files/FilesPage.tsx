@@ -1,17 +1,19 @@
 import {
+  FILE_LOCATION_SECTIONS,
+  type FilesFilter,
   type FilesLocation,
+  getFilesFilterPath,
   getFilesPath,
+  isFilesFileLocation,
   parseFilesSubpath,
 } from "@ngriffin_uk/polychat-library-react";
-import { lazy, type ReactNode, Suspense } from "react";
+import { lazy, type ReactNode, Suspense, useState } from "react";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { FilesBreadcrumb } from "./FilesBreadcrumb.js";
 import { FolderView } from "./FolderView.js";
 import { FilesLibrary } from "./Library/FilesLibrary.js";
-import { MemoryDocumentDetail } from "./MemoryDocumentDetail.js";
-import { OutputDetail } from "./OutputDetail.js";
-import { SourceDetail } from "./Sources/SourceDetail.js";
+import { FilesPageViewer } from "./Viewer/FilesPageViewer.js";
 
 const ImageStudio = lazy(async () => ({
   default: (await import("./Studio/ImageStudio.js")).ImageStudio,
@@ -19,6 +21,22 @@ const ImageStudio = lazy(async () => ({
 const ReplicateStudio = lazy(async () => ({
   default: (await import("./Studio/Replicate/ReplicateStudio.js")).ReplicateStudio,
 }));
+
+function useLibraryFilter(location: FilesLocation): FilesFilter {
+  const [filter, setFilter] = useState<FilesFilter>(
+    location.view === "library"
+      ? location.filter
+      : isFilesFileLocation(location)
+        ? FILE_LOCATION_SECTIONS[location.view]
+        : "all",
+  );
+
+  if (location.view === "library" && location.filter !== filter) {
+    setFilter(location.filter);
+  }
+
+  return filter;
+}
 
 function FilesView({
   location,
@@ -29,16 +47,30 @@ function FilesView({
   basePath: string;
   projectId?: string;
 }) {
-  switch (location.view) {
-    case "library":
-      return (
+  const libraryFilter = useLibraryFilter(location);
+
+  if (location.view === "library" || isFilesFileLocation(location)) {
+    return (
+      <>
         <FilesLibrary
-          key={`${projectId ?? "personal"}-${location.filter}`}
+          key={`${projectId ?? "personal"}-${libraryFilter}`}
           basePath={basePath}
           projectId={projectId}
-          filter={location.filter}
+          filter={libraryFilter}
         />
-      );
+        {isFilesFileLocation(location) ? (
+          <FilesPageViewer
+            location={location}
+            basePath={basePath}
+            projectId={projectId}
+            returnPath={getFilesFilterPath(basePath, libraryFilter)}
+          />
+        ) : null}
+      </>
+    );
+  }
+
+  switch (location.view) {
     case "folder":
       return (
         <FolderView
@@ -46,23 +78,6 @@ function FilesView({
           basePath={basePath}
           projectId={projectId}
           folderId={location.folderId}
-        />
-      );
-    case "output":
-      return (
-        <OutputDetail basePath={basePath} projectId={projectId} outputId={location.outputId} />
-      );
-    case "source":
-      return (
-        <SourceDetail basePath={basePath} projectId={projectId} sourceId={location.sourceId} />
-      );
-    case "memory":
-      return (
-        <MemoryDocumentDetail
-          key={location.name}
-          basePath={basePath}
-          projectId={projectId}
-          name={location.name}
         />
       );
     case "studio":

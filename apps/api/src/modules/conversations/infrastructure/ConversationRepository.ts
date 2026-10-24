@@ -1,6 +1,7 @@
 import {
   type ConversationThread,
   type ConversationArchiveFilter,
+  type ConversationSubject,
   type ConversationSortBy,
   type ConversationType,
   type ListPage,
@@ -52,6 +53,7 @@ export interface CreateConversationOptions {
   model_id?: string | null;
   model_tier?: ModelTier | null;
   permission_mode?: PermissionMode;
+  subject?: ConversationSubject | null;
 }
 
 export interface GlobalConversationSearchRow {
@@ -100,6 +102,7 @@ export class ConversationRepository extends BaseRepository {
     const modelId = options.model_id ?? null;
     const modelTier = options.model_tier ?? null;
     const permissionMode = options.permission_mode ?? "auto_accept_edits";
+    const subject = options.subject ?? null;
 
     const result = this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
@@ -113,10 +116,12 @@ export class ConversationRepository extends BaseRepository {
          model_id,
          model_tier,
          permission_mode,
+         subject_type,
+         subject_id,
          created_at, 
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         conversationId,
@@ -129,11 +134,33 @@ export class ConversationRepository extends BaseRepository {
         modelId,
         modelTier,
         permissionMode,
+        subject?.type ?? null,
+        subject?.id ?? null,
       ],
       true,
     );
 
     return result;
+  }
+
+  public async listSubjectConversations(
+    userId: number,
+    subject: ConversationSubject,
+    limit: number,
+  ): Promise<ListPage<Record<string, unknown>>> {
+    const rows = await this.runQuery<Record<string, unknown>>(
+      `SELECT c.*
+       FROM conversation c
+       WHERE c.user_id = ?
+         AND c.subject_type = ?
+         AND c.subject_id = ?
+         AND COALESCE(c.is_archived, 0) = 0
+       ORDER BY COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
+       LIMIT ?`,
+      [userId, subject.type, subject.id, limit + 1],
+    );
+
+    return toListPage(rows, limit, conversationRowId);
   }
 
   public async getConversation(conversationId: string): Promise<Record<string, unknown> | null> {

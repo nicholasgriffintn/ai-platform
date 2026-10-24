@@ -3,6 +3,7 @@ import {
   totalChatRunCredits,
   type ChatContextBreakdownEntry,
   type ChatContextBreakdownKind,
+  type ChatContextDocument,
   type ChatContextOmission,
   type ChatRunDelegatedUsage,
   type ChatRunUsage,
@@ -26,9 +27,16 @@ const SEGMENT_PRESENTATION: Record<ContextSegmentKey, { label: string; swatch: s
   conversation: { label: "Messages", swatch: "bg-accent-emerald" },
   tool_results: { label: "Tool results", swatch: "bg-accent-orange" },
   summary: { label: "Summary", swatch: "bg-accent-pink" },
+  subject: { label: "The file", swatch: "bg-accent-cyan" },
   used: { label: "Last reply's input", swatch: "bg-accent-blue" },
   reserved: { label: "Reserved for the reply", swatch: "bg-border-strong" },
   free: { label: "Free space", swatch: "bg-selection" },
+};
+
+export const CONTEXT_DOCUMENT_LABELS: Record<ChatContextDocument["kind"], string> = {
+  conversation_brief: "Conversation brief",
+  memory: "Memory",
+  subject: "The file this conversation is about",
 };
 
 function segment(key: ContextSegmentKey, tokens: number): ContextSegment {

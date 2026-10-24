@@ -19,38 +19,31 @@ import {
 import type { FileItem } from "./file-items.js";
 import type { FileActions } from "./useFileActions.js";
 
-export function FileItemMenu({
+function hasMenuItems(item: FileItem): boolean {
+  return (
+    Boolean(item.downloadUrl) ||
+    item.origin === "output" ||
+    item.canRename ||
+    item.canMoveToFolder ||
+    item.canDelete
+  );
+}
+
+export function FileItemMenuItems({
   item,
   actions,
   folders,
-  className,
 }: {
   item: FileItem;
   actions: FileActions;
   folders: SourceCollection[];
-  className?: string;
 }) {
   const generalFolders = folders.filter((folder) => folder.kind === "general");
   const hasLinks = Boolean(item.downloadUrl) || item.origin === "output";
   const hasEdits = item.canRename || item.canMoveToFolder;
 
-  if (!hasLinks && !hasEdits && !item.canDelete) {
-    return null;
-  }
-
   return (
-    <OptionsMenu
-      align="end"
-      trigger={
-        <Button
-          variant="icon"
-          size="icon"
-          icon={<MoreHorizontal size={16} />}
-          aria-label={`More for ${item.title}`}
-          className={className}
-        />
-      }
-    >
+    <>
       {item.downloadUrl ? (
         <OptionsMenuAction
           onSelect={() => window.open(item.downloadUrl, "_blank", "noopener,noreferrer")}
@@ -111,6 +104,39 @@ export function FileItemMenu({
           </OptionsMenuAction>
         </>
       ) : null}
+    </>
+  );
+}
+
+export function FileItemMenu({
+  item,
+  actions,
+  folders,
+  className,
+}: {
+  item: FileItem;
+  actions: FileActions;
+  folders: SourceCollection[];
+  className?: string;
+}) {
+  if (!hasMenuItems(item)) {
+    return null;
+  }
+
+  return (
+    <OptionsMenu
+      align="end"
+      trigger={
+        <Button
+          variant="icon"
+          size="icon"
+          icon={<MoreHorizontal size={16} />}
+          aria-label={`More for ${item.title}`}
+          className={className}
+        />
+      }
+    >
+      <FileItemMenuItems item={item} actions={actions} folders={folders} />
     </OptionsMenu>
   );
 }

@@ -8,6 +8,7 @@ import {
   teammateStatements,
   usageStatements,
 } from "./identity.mjs";
+import { SEED_SOURCE_FILES, sourceStatements } from "./sources.mjs";
 import { workStatements } from "./work.mjs";
 
 export async function buildSeed({ serverKey }) {
@@ -18,6 +19,7 @@ export async function buildSeed({ serverKey }) {
     ...(await identityStatements({ serverKey })),
     ...teammates.statements,
     ...chat.statements,
+    ...sourceStatements(),
     ...guideStatements(),
     ...work.statements,
     ...continuityStatements({ teammates, chat }),
@@ -27,6 +29,7 @@ export async function buildSeed({ serverKey }) {
   return {
     statements,
     guide: seedGuideMarkdown(),
+    files: Object.values(SEED_SOURCE_FILES),
     scenarios: SCENARIOS,
     login: {
       email: OWNER.email,

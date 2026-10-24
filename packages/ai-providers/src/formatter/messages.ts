@@ -181,7 +181,26 @@ export class MessageFormatter {
       );
     }
 
+    if (provider === "workers-ai") {
+      formattedMessages = MessageFormatter.alignWorkersContent(formattedMessages);
+    }
+
     return formattedMessages;
+  }
+
+  private static alignWorkersContent(messages: Message[]): Message[] {
+    if (!messages.some((message) => Array.isArray(message.content))) {
+      return messages;
+    }
+
+    return messages.map((message) =>
+      typeof message.content === "string"
+        ? {
+            ...message,
+            content: message.content ? [{ type: "text", text: message.content }] : [],
+          }
+        : message,
+    );
   }
 
   private static formatTranscriptRole(role: string): string {
@@ -533,13 +552,20 @@ export class MessageFormatter {
                 }
               : item;
           });
-      case "workers-ai":
-        return content.filter(
-          (item) =>
-            typeof item === "object" &&
-            "type" in item &&
-            (item.type === "text" || item.type === "image_url"),
-        );
+      case "workers-ai": {
+        const parts = content.flatMap((item): MessageContent[] => {
+          if (item.type === "selection" && item.selection) {
+            return [{ type: "text", text: MessageFormatter.formatSelectionText(item.selection) }];
+          }
+
+          return item.type === "text" || item.type === "image_url" ? [item] : [];
+        });
+
+        return parts.some((item) => item.type === "image_url")
+          ? parts
+          : parts.map((item) => item.text ?? "").join("\n");
+      }
+
       case "ollama":
       case "github-models": {
         const imageItem = content.find(

@@ -6,6 +6,8 @@ import {
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { FileTarget } from "../../lib/files-route.js";
+
 function initialIsMobile(): boolean {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return false;
@@ -45,6 +47,8 @@ export interface UIStore {
   setPolyDockWidth: (width: number) => void;
   polySpeaks: boolean;
   setPolySpeaks: (polySpeaks: boolean) => void;
+  openFile: FileTarget | null;
+  setOpenFile: (openFile: FileTarget | null) => void;
   projectPicker: ProjectPickerDestination | null;
   openProjectPicker: (destination: ProjectPickerDestination) => void;
   closeProjectPicker: () => void;
@@ -88,6 +92,8 @@ export const useUIStore = create<UIStore>()(
         }),
       polySpeaks: false,
       setPolySpeaks: (polySpeaks) => set({ polySpeaks }),
+      openFile: null,
+      setOpenFile: (openFile) => set({ openFile }),
       projectPicker: null,
       openProjectPicker: (destination) => set({ projectPicker: destination }),
       closeProjectPicker: () => set({ projectPicker: null }),
@@ -121,6 +127,7 @@ export const useUIStore = create<UIStore>()(
           sidebarVisible: _s,
           showPoly: _a,
           projectPicker: _p,
+          openFile: _f,
           showModelSources: _ms,
           chatConversationListFilters,
           workConversationListFilters,

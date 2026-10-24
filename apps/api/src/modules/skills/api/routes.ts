@@ -12,6 +12,7 @@ import {
   listPageOf,
   setSkillEnabledSchema,
   skillAvailabilitySchema,
+  skillGuideListResponseSchema,
   skillIdSchema,
   teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -27,6 +28,7 @@ import {
   getPersonalSkillAvailability,
   setPersonalSkillEnabled,
 } from "../application";
+import { listGuides } from "../application/guides";
 import {
   createScopedSkill,
   deleteScopedSkill,
@@ -69,6 +71,15 @@ defineResource(app, { idParam: "skill_id", tags: ["skills"] }, (skills) => {
       handler: ({ body, params, serviceContext, user }) =>
         setPersonalSkillEnabled(serviceContext, user.id, params.skill_id, body.enabled),
     });
+
+  skills.collection("guides", "place").list({
+    auth: "user-or-anonymous",
+    summary: "List place guides",
+    description:
+      "The built-in guide skill for each place, with the opening shown as its first message and its starter prompts.",
+    responses: { 200: { description: "Place guides", schema: skillGuideListResponseSchema } },
+    handler: () => listGuides(),
+  });
 
   const documents = skills.collection("documents", "document_id");
 

@@ -2,6 +2,7 @@ import type {
   CreateMemoryDocumentInput,
   ListPage,
   MemoryDocument,
+  MemoryDocumentRevision,
   MemoryDocumentSummary,
   UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -41,4 +42,18 @@ export async function deleteMemoryDocument(name: string, projectId?: string): Pr
     withQuery(`${documents.path}/${encodeURIComponent(name)}`, { project_id: projectId }),
     "DELETE",
   );
+}
+
+export async function listMemoryDocumentRevisions(
+  name: string,
+  projectId?: string,
+): Promise<MemoryDocumentRevision[]> {
+  const page = await requestJson<ListPage<MemoryDocumentRevision>>(
+    withQuery(`${documents.path}/${encodeURIComponent(name)}/revisions`, {
+      project_id: projectId,
+    }),
+    "GET",
+  );
+
+  return page.data;
 }

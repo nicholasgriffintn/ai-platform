@@ -1,5 +1,9 @@
 import z from "zod/v4";
 
+import {
+  conversationSubjectSchema,
+  conversationSubjectTypeSchema,
+} from "../conversation-subject.js";
 import { conversationTypeSchema } from "../conversation-type.js";
 import { messagePartsSchema } from "../message-parts.js";
 import { modelTierSchema } from "../model-lineup.js";
@@ -38,6 +42,8 @@ export type ConversationActivityWindow = z.infer<typeof conversationActivityWind
 
 export const listConversationsQuerySchema = listQuerySchema.extend({
   archived: conversationArchiveFilterSchema.optional(),
+  subject_type: conversationSubjectTypeSchema.optional(),
+  subject_id: z.string().min(1).max(128).optional(),
   q: z.string().trim().max(200).optional(),
   sort_by: conversationSortBySchema.optional().default("updated"),
   updated_after: z.iso.datetime().optional(),
@@ -63,6 +69,7 @@ export const conversationSummarySchema = z
     is_archived: z.boolean(),
     user_id: z.union([z.string(), z.number()]).nullable().optional(),
     share_id: z.string().nullable().optional(),
+    subject: conversationSubjectSchema.nullable().optional(),
   })
   .passthrough();
 
@@ -104,6 +111,7 @@ export const conversationSchema = z.object({
   project_id: z.string().nullable().optional(),
   parent_conversation_id: z.string().nullable().optional(),
   parent_message_id: z.string().nullable().optional(),
+  subject: conversationSubjectSchema.nullable().optional(),
   settings: z.record(z.string(), z.any()).optional(),
   items: z.array(storedItemSchema).optional(),
   item_count: z.number().int().nonnegative().optional(),

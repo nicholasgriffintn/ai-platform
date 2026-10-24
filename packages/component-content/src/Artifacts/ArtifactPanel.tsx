@@ -1,9 +1,10 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, OptionsMenuAction } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 
 import { MemoizedMarkdown } from "../markdown";
+import { ViewerHeader } from "../Viewer/ViewerHeader";
 import type { ArtifactProps } from "./artifact";
 import {
   isCodeArtifact,
@@ -52,17 +53,7 @@ const FileTabs = ({
   );
 };
 
-const ContentViewer = ({
-  artifact,
-  showCopyButton,
-  onCopy,
-  copied,
-}: {
-  artifact: ArtifactProps;
-  showCopyButton: boolean;
-  onCopy: () => void;
-  copied: boolean;
-}) => {
+const ContentViewer = ({ artifact }: { artifact: ArtifactProps }) => {
   const isMarkdown =
     artifact.type === "text/markdown" ||
     artifact.language?.toLowerCase() === "markdown" ||
@@ -70,28 +61,6 @@ const ContentViewer = ({
 
   return (
     <div className="flex-1 overflow-auto p-3">
-      {(artifact.language || showCopyButton) && (
-        <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-          <div>
-            {artifact.language && (
-              <span className="rounded bg-surface-elevated px-2 py-1 text-foreground">
-                {artifact.language}
-              </span>
-            )}
-          </div>
-          {showCopyButton && (
-            <Button
-              variant="icon"
-              size="sm"
-              onClick={onCopy}
-              title={copied ? "Copied!" : "Copy file"}
-              aria-label={copied ? "Copied to clipboard" : "Copy file"}
-            >
-              <Copy size={14} className={copied ? "text-success" : ""} />
-            </Button>
-          )}
-        </div>
-      )}
       <div className="artifact-content-full min-w-0">
         <div className="prose max-w-none overflow-x-auto dark:prose-invert">
           <MemoizedMarkdown>
@@ -225,28 +194,37 @@ const ArtifactPanelContent = ({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-foreground">
-          {icon}
-          <span id={titleId} className="truncate text-sm font-semibold text-foreground">
-            {allArtifacts.length > 1
-              ? `Combined Artifacts (${allArtifacts.length})`
-              : currentArtifact.title || "Artifact"}
-          </span>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-0.5">
-          {!showFileTabs && !isDocument && (
-            <Button
-              variant="icon"
-              size="sm"
-              onClick={handleCopyCurrentFile}
-              title={copied ? "Copied!" : "Copy content"}
-              aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
-            >
-              <Copy size={14} className={copied ? "text-success" : ""} />
-            </Button>
-          )}
-          {onClose ? (
+      <ViewerHeader
+        className="min-h-11 border-b border-border px-3 py-1"
+        title={
+          allArtifacts.length > 1
+            ? `Combined artifacts (${allArtifacts.length})`
+            : currentArtifact.title || "Artifact"
+        }
+        titleId={titleId}
+        icon={icon}
+        location="Artifact"
+        detail={currentArtifact.language}
+        menu={
+          isDocument && !showFileTabs ? undefined : (
+            <>
+              {!isDocument ? (
+                <OptionsMenuAction onSelect={handleCopyCurrentFile}>
+                  <Copy size={14} aria-hidden="true" />
+                  {copied ? "Copied" : "Copy this file"}
+                </OptionsMenuAction>
+              ) : null}
+              {showFileTabs ? (
+                <OptionsMenuAction onSelect={handleCopyAllFiles}>
+                  <Copy size={14} aria-hidden="true" />
+                  Copy all files
+                </OptionsMenuAction>
+              ) : null}
+            </>
+          )
+        }
+        actions={
+          onClose ? (
             <Button
               variant="icon"
               size="sm"
@@ -256,9 +234,9 @@ const ArtifactPanelContent = ({
             >
               <X size={14} />
             </Button>
-          ) : null}
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
       {showPreviewTab && (
         <div className="flex border-b border-border">
@@ -290,19 +268,6 @@ const ArtifactPanelContent = ({
               Preview
             </div>
           </button>
-          {activeTab === "preview" && showFileTabs && (
-            <div className="ml-auto flex items-center pr-1">
-              <Button
-                variant="icon"
-                size="sm"
-                onClick={handleCopyAllFiles}
-                title={copied ? "Copied!" : "Copy all files"}
-                aria-label={copied ? "Copied to clipboard" : "Copy all files"}
-              >
-                <Copy size={14} className={copied ? "text-success" : ""} />
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
@@ -323,12 +288,7 @@ const ArtifactPanelContent = ({
                 onAddSelectionToChat={onAddSelectionToChat}
               />
             ) : (
-              <ContentViewer
-                artifact={currentArtifact}
-                showCopyButton={showFileTabs}
-                onCopy={handleCopyCurrentFile}
-                copied={copied}
-              />
+              <ContentViewer artifact={currentArtifact} />
             )}
           </>
         )}

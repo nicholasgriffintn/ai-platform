@@ -9,6 +9,7 @@ import {
 import { conversationChannelRequestOptionsSchema } from "./chat-mode.js";
 import { chatRunCommandIdSchema, chatRunIdSchema } from "./chat-runs.js";
 import { computeSiteSchema } from "./compute-sites.js";
+import { conversationSubjectSchema } from "./conversation-subject.js";
 import { conversationTypeSchema } from "./conversation-type.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
@@ -568,6 +569,9 @@ export const engineRequestFieldsSchema = z.object({
   conversation_type: conversationTypeSchema
     .optional()
     .describe("The product conversation type that owns this completion."),
+  conversation_subject: conversationSubjectSchema
+    .optional()
+    .describe("The file a new conversation is about. Ignored once the conversation exists."),
   command_payload: recordSchema
     .optional()
     .describe("Durable command metadata for resumable or approval-gated runs."),
@@ -624,6 +628,7 @@ export const responseSettingsSchema = engineRequestFieldsSchema.omit({
   messages: true,
   completion_id: true,
   conversation_type: true,
+  conversation_subject: true,
   command_id: true,
   run_id: true,
   stream: true,

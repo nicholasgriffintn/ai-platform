@@ -15,6 +15,7 @@ import { ComputerObservationView } from "./ComputerObservationView.js";
 import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
 import { ConversationSearchView } from "./ConversationSearchView.js";
 import { createDelegationFollowUpInteraction, DelegationCard } from "./DelegationCard.js";
+import { DocumentOutputMessageView } from "./DocumentOutputMessageView.js";
 import { DocumentSearchView } from "./DocumentSearchView.js";
 import { EvidenceAuditView } from "./EvidenceAuditView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
@@ -64,7 +65,16 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
-  work_output: ({ data }) => <WorkOutputMessageView data={data} />,
+  document_output: ({ data, onToolInteraction, toolName }) => (
+    <DocumentOutputMessageView
+      data={data}
+      toolName={toolName}
+      onToolInteraction={onToolInteraction}
+    />
+  ),
+  work_output: ({ data, onToolInteraction, toolName }) => (
+    <WorkOutputMessageView data={data} toolName={toolName} onToolInteraction={onToolInteraction} />
+  ),
   delegation_card: ({ data, onToolInteraction }) => {
     const parsed = delegationCardDataSchema.safeParse(data);
 

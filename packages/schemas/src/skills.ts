@@ -13,6 +13,7 @@ export const skillCategorySchema = z.enum([
   "Development",
   "Communication",
   "Data",
+  "Guide",
   "Other",
 ]);
 

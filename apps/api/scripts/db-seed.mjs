@@ -195,6 +195,38 @@ function dropAllTables(target, persist) {
   console.log(`Dropped ${drops.length} objects from ${target.database}`);
 }
 
+function privateAssetsBucket(targetName) {
+  const config = JSON.parse(readFileSync(path.join(API_ROOT, "wrangler.json"), "utf8"));
+  const binding = config.r2_buckets.find((bucket) => bucket.binding === "PRIVATE_ASSETS_BUCKET");
+
+  return {
+    name: targetName === "preview" ? binding.preview_bucket_name : binding.bucket_name,
+    location: targetName === "preview" || binding.remote ? "--remote" : "--local",
+  };
+}
+
+function uploadFiles(files, targetName, persist) {
+  const bucket = privateAssetsBucket(targetName);
+  const persistArgs = bucket.location === "--local" ? persist : [];
+
+  for (const file of files) {
+    wrangler([
+      "r2",
+      "object",
+      "put",
+      `${bucket.name}/${file.key}`,
+      "--file",
+      file.path,
+      "--content-type",
+      file.contentType,
+      bucket.location,
+      ...persistArgs,
+    ]);
+  }
+
+  console.log(`Uploaded ${files.length} seed files to ${bucket.name}`);
+}
+
 function chunkStatements(statements) {
   const chunks = [];
   let current = [];
@@ -293,6 +325,7 @@ async function main() {
   });
 
   rmSync(directory, { force: true, recursive: true });
+  uploadFiles(seed.files, options.target, persist);
   printSummary(seed, target, options);
 }
 

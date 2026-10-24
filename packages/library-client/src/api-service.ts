@@ -40,6 +40,7 @@ import type {
   TeammateResponse,
   TeammateRosterEntry,
   Tool,
+  ConversationSubject,
   UpdateMemoryDocumentInput,
   UpdatePolyLookAround,
   UpdateTeammateInput,
@@ -108,6 +109,9 @@ class ApiService {
 
   listChats = (options?: ConversationListOptions): Promise<ConversationListPage> =>
     this.conversationsService.list(options);
+
+  listSubjectConversations = (subject: ConversationSubject) =>
+    this.conversationsService.listAboutSubject(subject);
 
   setAllConversationsArchived = (options: {
     archived: boolean;

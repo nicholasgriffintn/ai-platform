@@ -13,6 +13,7 @@ export {
   type SkillRuntimeAuthorisation,
 } from "./catalogue.js";
 export { builtInSkillDocumentSources } from "./generated/documents.js";
+export { findSkillGuide, listSkillGuides, readSkillGuide } from "./guides.js";
 export {
   blockingSkillScanFindings,
   scanSkillDocument,

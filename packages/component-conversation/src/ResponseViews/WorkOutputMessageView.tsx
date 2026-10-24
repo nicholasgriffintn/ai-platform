@@ -1,9 +1,22 @@
-import { WorkOutputView } from "@ngriffin_uk/polychat-component-content";
+import {
+  type ToolInteractionHandler,
+  WorkOutputView,
+} from "@ngriffin_uk/polychat-component-content";
 import { DECK_OUTPUT_KIND } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Presentation, Table } from "lucide-react";
 
-export function WorkOutputMessageView({ data }: { data: unknown }) {
+import { OpenFileButton } from "./OpenFileButton.js";
+
+export function WorkOutputMessageView({
+  data,
+  toolName,
+  onToolInteraction,
+}: {
+  data: unknown;
+  toolName?: string;
+  onToolInteraction?: ToolInteractionHandler;
+}) {
   if (!isRecord(data) || typeof data.kind !== "string" || typeof data.title !== "string") {
     return null;
   }
@@ -18,6 +31,15 @@ export function WorkOutputMessageView({ data }: { data: unknown }) {
         {typeof data.revision === "number" && data.revision > 1 ? (
           <span className="text-xs font-normal text-muted-foreground">
             revision {data.revision}
+          </span>
+        ) : null}
+        {typeof data.outputId === "string" ? (
+          <span className="ml-auto">
+            <OpenFileButton
+              toolName={toolName ?? "work_output"}
+              outputId={data.outputId}
+              onToolInteraction={onToolInteraction}
+            />
           </span>
         ) : null}
       </div>

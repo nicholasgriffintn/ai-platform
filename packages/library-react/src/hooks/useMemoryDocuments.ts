@@ -2,6 +2,7 @@ import {
   createMemoryDocument,
   deleteMemoryDocument,
   fetchMemoryDocument,
+  listMemoryDocumentRevisions,
   listMemoryDocuments,
   updateMemoryDocument,
 } from "@ngriffin_uk/polychat-library-client";
@@ -64,6 +65,14 @@ export function useMemoryDocument(name: string | undefined, projectId?: string) 
   return useQuery<MemoryDocument>({
     queryKey: [MEMORY_DOCUMENT_QUERY_KEY, projectId, name],
     queryFn: () => fetchMemoryDocument(name ?? "", projectId),
+    enabled: Boolean(name),
+  });
+}
+
+export function useMemoryDocumentRevisions(name: string | undefined, projectId?: string) {
+  return useQuery({
+    queryKey: [MEMORY_DOCUMENT_QUERY_KEY, projectId, name, "revisions"],
+    queryFn: () => listMemoryDocumentRevisions(name ?? "", projectId),
     enabled: Boolean(name),
   });
 }

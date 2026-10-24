@@ -15,6 +15,7 @@ import { ChatSuggestionList } from "../ChatSuggestionList.js";
 
 interface ChatSuggestionsProps {
   setInput: (text: string) => void;
+  onSubmitPrompt?: (prompt: string) => void;
   suggestionsOverride?: ChatSuggestion[] | null;
   isLoading?: boolean;
   modeCommands?: ComposerCommandAction[];
@@ -24,6 +25,7 @@ interface ChatSuggestionsProps {
 
 export const ChatSuggestions = ({
   setInput,
+  onSubmitPrompt,
   suggestionsOverride,
   isLoading = false,
   modeCommands,
@@ -91,10 +93,14 @@ export const ChatSuggestions = ({
       }
 
       if (suggestion.prompt) {
-        setInput(suggestion.prompt);
+        if (onSubmitPrompt) {
+          onSubmitPrompt(suggestion.prompt);
+        } else {
+          setInput(suggestion.prompt);
+        }
       }
     },
-    [isToolEnabled, modeCommands, setInput, toggleTool, trackEvent],
+    [isToolEnabled, modeCommands, onSubmitPrompt, setInput, toggleTool, trackEvent],
   );
 
   if (suggestionsOverride === null || (hasOverride && suggestions.length === 0)) {

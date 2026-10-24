@@ -2,6 +2,8 @@ import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
+  buildGuideOpening,
+  buildGuideSuggestions,
   buildPolyUiContext,
   type ChatSuggestion,
   ComposerDraftProvider,
@@ -11,6 +13,7 @@ import {
   useLocalComposerDraft,
   useLocalConversationScope,
   usePolyStandingApprovals,
+  useSkillGuide,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { POLY_TEAMMATE_ID, type ResponseAgent } from "@ngriffin_uk/polychat-schemas";
@@ -75,6 +78,8 @@ export function PolyThread({
     [openConversationId, pathname],
   );
 
+  const placeGuide = useSkillGuide(uiContext.place);
+
   usePolyNavigation(conversation, scope.currentConversationId, onNavigate);
 
   return (
@@ -90,7 +95,10 @@ export function PolyThread({
                 welcomeTitle: "This is Poly.",
                 welcomeDescription:
                   "Ask it to find or tidy anything in Polychat, look things up, remember what matters, or hand longer work to a teammate. This conversation carries on, so pick up wherever you left off.",
-                welcomeSuggestions: POLY_SUGGESTIONS,
+                welcomeOpening: placeGuide ? buildGuideOpening(placeGuide) : undefined,
+                welcomeSuggestions: placeGuide
+                  ? buildGuideSuggestions(placeGuide)
+                  : POLY_SUGGESTIONS,
                 welcomeCapabilitySuggestions: false,
                 inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
                 focusComposerOnOpen: true,

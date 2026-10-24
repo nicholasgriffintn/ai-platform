@@ -2,7 +2,7 @@ import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { SourceMediaMetadata, SourceMediaType } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { Captions, FileText } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 
 import {
   formatTranscriptCaptions,
@@ -24,7 +24,6 @@ export interface SourceMediaDetailProps extends Pick<
   mediaUrl: string;
   coverUrl?: string;
   media: SourceMediaMetadata;
-  actions?: ReactNode;
   onDownloadTranscript?: () => void;
   onDownloadCaptions?: (format: CaptionFormat) => void;
 }
@@ -40,7 +39,13 @@ function MediaPlayer({
   const captionTrackRef = useCaptionTrack(captionsVtt);
 
   if (mediaType === "image") {
-    return <img src={mediaUrl} alt={title} className="w-full rounded-lg border border-border" />;
+    return (
+      <img
+        src={mediaUrl}
+        alt={title}
+        className="mx-auto max-h-full w-auto max-w-full rounded-lg object-contain"
+      />
+    );
   }
 
   if (mediaType === "video") {
@@ -65,7 +70,6 @@ export function SourceMediaDetail({
   mediaUrl,
   coverUrl,
   media,
-  actions,
   onDownloadTranscript,
   onDownloadCaptions,
   onAddActionItem,
@@ -83,30 +87,39 @@ export function SourceMediaDetail({
   );
   const duration = formatDuration(media.durationSeconds);
 
+  if (mediaType === "image" && !media.notes?.summary) {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <MediaPlayer mediaType={mediaType} mediaUrl={mediaUrl} title={title} captionsVtt={null} />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-8 lg:flex-row">
-      <div className="w-full space-y-4 lg:sticky lg:top-4 lg:w-1/3 lg:self-start">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {mediaType === "audio" ? (
-          <div className="aspect-square overflow-hidden rounded-lg bg-selection">
+          <div className="size-28 shrink-0 overflow-hidden rounded-xl bg-selection">
             {coverUrl ? (
               <img src={coverUrl} alt={title} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                 No cover yet
               </div>
             )}
           </div>
         ) : null}
-        <MediaPlayer
-          mediaType={mediaType}
-          mediaUrl={mediaUrl}
-          title={title}
-          captionsVtt={captionsVtt}
-        />
-        {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+        <div className="min-w-0 flex-1">
+          <MediaPlayer
+            mediaType={mediaType}
+            mediaUrl={mediaUrl}
+            title={title}
+            captionsVtt={captionsVtt}
+          />
+        </div>
       </div>
 
-      <div className="w-full lg:w-2/3">
+      <div>
         <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <span>{new Date(createdAt).toLocaleDateString()}</span>
           {duration ? (
@@ -183,7 +196,7 @@ export function SourceMediaDetail({
                 ) : null}
               </div>
             </div>
-            <div className="max-h-[500px] overflow-y-auto rounded-lg border border-border bg-surface p-5">
+            <div className="rounded-lg border border-border bg-surface p-5">
               <TranscriptViewer
                 transcript={readyTranscript}
                 speakerNames={transcriptSpeakerNames(readyTranscript)}

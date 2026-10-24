@@ -10,6 +10,7 @@ import type {
 import type {
   AgentMode,
   ComputeSite,
+  ConversationSubject,
   ConversationType,
   PolyRequest,
   PermissionMode,
@@ -55,6 +56,7 @@ export type {
 export interface IBody {
   completion_id: string;
   conversation_type?: ConversationType;
+  conversation_subject?: ConversationSubject;
   poly?: PolyRequest;
   input: ChatInput;
   attachments?: Attachment[];

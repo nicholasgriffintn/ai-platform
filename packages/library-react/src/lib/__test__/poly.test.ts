@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 import {
   getFilesFilterPath,
   getFilesPath,
-  getOutputPath,
   getProjectFilesPath,
   parseFilesSubpath,
 } from "../files-route.js";
@@ -146,8 +145,5 @@ describe("places and files routes", () => {
     expect(getFilesPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
     expect(getFilesFilterPath("/chat/files", "all")).toBe("/chat/files");
     expect(getProjectFilesPath("w1", "p1", "sources")).toBe("/work/w1/projects/p1/files/sources");
-    expect(getOutputPath("/work/w1/projects/p1/chat", "o 1")).toBe(
-      "/work/w1/projects/p1/files/made/o%201",
-    );
   });
 });

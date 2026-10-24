@@ -1,4 +1,5 @@
 import {
+  type ConversationSubject,
   isStoredItem,
   itemsToMessages,
   resolveToolSelection,
@@ -61,6 +62,7 @@ function mapConversation(conversation: ParsedCreateResponseRequest["conversation
   completionId?: string;
   conversationType?: ResponseCommand["conversationType"];
   projectId?: string;
+  subject?: ConversationSubject;
   ephemeral: boolean;
 } {
   if (conversation === null) {
@@ -79,6 +81,7 @@ function mapConversation(conversation: ParsedCreateResponseRequest["conversation
     completionId: conversation.id,
     conversationType: conversation.type,
     projectId: conversation.project_id,
+    subject: conversation.subject,
     ephemeral: false,
   };
 }
@@ -188,6 +191,7 @@ export function toResponseCommand(
     ...omitUndefinedProperties({
       conversationId: conversation.completionId,
       conversationType: conversation.conversationType,
+      conversationSubject: conversation.subject,
       commandId: request.idempotency_key,
       runId: request.response_id,
       stream: request.stream,

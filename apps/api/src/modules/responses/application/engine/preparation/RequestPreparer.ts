@@ -41,6 +41,10 @@ import {
   resolveSkillScope,
 } from "~/modules/responses/application/engine/preparation/skills";
 import {
+  requireSubjectInScope,
+  resolveSubjectProjection,
+} from "~/modules/responses/application/engine/preparation/subject";
+import {
   buildSystemPrompt,
   projectRunMemory,
 } from "~/modules/responses/application/engine/preparation/system-prompt";
@@ -65,6 +69,7 @@ import {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/modules/skills/application";
+import { resolveTurnGuide, withTurnGuide } from "~/modules/skills/application/guides";
 import {
   listPerMessageSkillCandidates,
   selectPerMessageSkills,
@@ -454,6 +459,21 @@ export class RequestPreparer {
       ? toolIntentRequest
       : this.resolveMessageText(validationContext);
 
+    const requestedSubject = scope.options.conversation_subject ?? null;
+    const requestedSubjectProjectId = scope.options.metadata?.project_id ?? null;
+
+    if (requestedSubject) {
+      if (!scope.options.context) {
+        throw new AssistantError("Sign in to ask about a file", ErrorType.AUTHENTICATION_ERROR);
+      }
+
+      await requireSubjectInScope(
+        scope.options.context,
+        requestedSubject,
+        requestedSubjectProjectId,
+      );
+    }
+
     const storeMessagesTask = shouldStoreMessages
       ? storeUserTurn({
           options: scope.options,
@@ -534,13 +554,32 @@ export class RequestPreparer {
       primaryModelConfig.contextWindow,
       baseSystemPrompt.prompt,
     );
-    const contextDocuments = memoryProjection.documents;
-    const systemPrompt = [baseSystemPrompt.prompt, memoryProjection.section]
+    const subjectProjection = await resolveSubjectProjection({
+      context: scope.options.context,
+      conversationId: shouldStoreMessages ? completionId : undefined,
+      requested: requestedSubject,
+      requestedProjectId: requestedSubjectProjectId,
+      contextWindow: primaryModelConfig.contextWindow,
+    });
+    const contextDocuments = subjectProjection.document
+      ? [...memoryProjection.documents, subjectProjection.document]
+      : memoryProjection.documents;
+    const systemPrompt = [
+      baseSystemPrompt.prompt,
+      memoryProjection.section,
+      subjectProjection.section,
+    ]
       .filter(Boolean)
       .join("\n\n");
-    const systemPromptSections: ContextBudgetSystemSection[] = memoryProjection.section
-      ? [...baseSystemPrompt.sections, { kind: "memory", text: memoryProjection.section }]
-      : baseSystemPrompt.sections;
+    const systemPromptSections: ContextBudgetSystemSection[] = [
+      ...baseSystemPrompt.sections,
+      ...(memoryProjection.section
+        ? [{ kind: "memory" as const, text: memoryProjection.section }]
+        : []),
+      ...(subjectProjection.section
+        ? [{ kind: "subject" as const, text: subjectProjection.section }]
+        : []),
+    ];
     const skillTools = hasFixedToolScope
       ? enabledTools
       : mergeSkillLoadToolName({ enabledTools: enabledTools ?? [], skills });
@@ -557,11 +596,16 @@ export class RequestPreparer {
         isProUser: scope.isProUser,
       });
 
-      preparedTools = mergeSkillSuggestedToolNames({
-        enabledTools: goalTools,
-        skills,
-        deferSuggestedTools: enabledTools !== undefined,
-      });
+      preparedTools = [
+        ...new Set([
+          ...mergeSkillSuggestedToolNames({
+            enabledTools: goalTools,
+            skills,
+            deferSuggestedTools: enabledTools !== undefined,
+          }),
+          ...subjectProjection.tools,
+        ]),
+      ];
     }
 
     const toolOptions = this.resolveToolOptions(scope, savedToolConfigurations, enabledTools);
@@ -594,7 +638,7 @@ export class RequestPreparer {
       poly: scope.options.poly,
       agenda: polyAgenda,
       activeGoal,
-      skills: perMessageSkills,
+      skills: withTurnGuide(resolveTurnGuide(scope.options), perMessageSkills),
     });
     const messages = await buildProviderContext({
       conversationManager,

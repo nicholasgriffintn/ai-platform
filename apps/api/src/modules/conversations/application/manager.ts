@@ -12,6 +12,7 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   mapListPage,
   permissionModeSchema,
+  type ConversationSubject,
   type ConversationType,
   type ListPage,
   type ModelTier,
@@ -40,6 +41,7 @@ import {
   type TurnAdmissionRequest,
   type TurnAdmissionScope,
 } from "~/modules/conversations/application/turn-admission";
+import { readStoredSubject } from "~/modules/conversations/domain/subject";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
@@ -72,6 +74,7 @@ export interface ConversationListOptions {
   sortBy?: ConversationSortBy;
   updatedAfter?: string;
   teammateThreads?: "include" | "exclude";
+  subject?: ConversationSubject;
 }
 
 export interface ConversationDetails extends Record<string, unknown> {
@@ -85,6 +88,7 @@ interface ConversationWriteOptions {
   model_id?: string | null;
   model_tier?: ModelTier | null;
   permission_mode?: PermissionMode;
+  subject?: ConversationSubject;
 }
 
 export class ConversationManager {
@@ -352,6 +356,7 @@ export class ConversationManager {
             model_id: options?.model_id,
             model_tier: options?.model_tier,
             permission_mode: permissionMode,
+            subject: options?.subject,
           },
         );
     }
@@ -947,14 +952,27 @@ export class ConversationManager {
       );
     }
 
-    const page = await this.repositories
-      .get(ConversationRepository)
-      .listUserConversations(this.user.id, options);
+    const repository = this.repositories.get(ConversationRepository);
+    const page = options.subject
+      ? await repository.listSubjectConversations(
+          this.user.id,
+          options.subject,
+          options.limit ?? 25,
+        )
+      : await repository.listUserConversations(this.user.id, options);
 
-    return mapListPage(page, (conversation) => ({
-      ...conversation,
-      model: conversation.model_id ?? null,
-    }));
+    return mapListPage(
+      page,
+      ({ subject_type: _subjectType, subject_id: _subjectId, ...conversation }) => {
+        const subject = readStoredSubject({ subject_type: _subjectType, subject_id: _subjectId });
+
+        return {
+          ...conversation,
+          model: conversation.model_id ?? null,
+          ...(subject ? { subject } : {}),
+        };
+      },
+    );
   }
 
   async setArchivedForAll(options: SetConversationsArchivedOptions): Promise<number> {

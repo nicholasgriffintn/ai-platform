@@ -24,6 +24,7 @@ interface ArtifactDocumentEditorProps extends DocumentEditorOptions {
   saveErrorMessage?: string;
   isRewriting?: boolean;
   rewriteErrorMessage?: string;
+  embedded?: boolean;
   renderDiscussion?: (selection: TextAnchor | null, hasUnsavedChanges: boolean) => ReactNode;
 }
 
@@ -39,6 +40,7 @@ export const ArtifactDocumentEditor = ({
   onRewrite,
   isRewriting,
   rewriteErrorMessage,
+  embedded = false,
 }: ArtifactDocumentEditorProps) => {
   const {
     editorContainerRef,
@@ -72,32 +74,34 @@ export const ArtifactDocumentEditor = ({
   return (
     <div className="flex h-full flex-col bg-surface-elevated text-foreground">
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2 text-xs">
-        <div className="flex rounded-md border border-border bg-surface-elevated p-0.5">
-          <button
-            type="button"
-            onClick={() => setActiveView("edit")}
-            className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
-              activeView === "edit"
-                ? "bg-surface text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Pencil size={13} />
-            Edit
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView("preview")}
-            className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
-              activeView === "preview"
-                ? "bg-surface text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Eye size={13} />
-            Preview
-          </button>
-        </div>
+        {embedded ? null : (
+          <div className="flex rounded-md border border-border bg-surface-elevated p-0.5">
+            <button
+              type="button"
+              onClick={() => setActiveView("edit")}
+              className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
+                activeView === "edit"
+                  ? "bg-surface text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Pencil size={13} />
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView("preview")}
+              className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium transition-colors ${
+                activeView === "preview"
+                  ? "bg-surface text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Eye size={13} />
+              Preview
+            </button>
+          </div>
+        )}
 
         {activeView === "edit" && (
           <div className="flex rounded-md border border-border bg-surface-elevated p-0.5">
@@ -178,9 +182,11 @@ export const ArtifactDocumentEditor = ({
           </Button>
         ) : null}
 
-        <Button size="xs" onClick={handleDownload} icon={<Download size={13} />}>
-          Download
-        </Button>
+        {embedded ? null : (
+          <Button size="xs" onClick={handleDownload} icon={<Download size={13} />}>
+            Download
+          </Button>
+        )}
       </div>
 
       {remoteChanged && isDirty ? (
