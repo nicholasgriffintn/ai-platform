@@ -136,7 +136,7 @@ defineResource(app, { idParam: "connector_id", tags: ["connectors"] }, (connecto
         context: serviceContext,
         userId: user.id,
         provider: params.connector_id,
-        apiKey: body.apiKey,
+        credentials: body.credentials,
       }),
   });
 

@@ -22,7 +22,7 @@ function readServerCredential(credential: string): { server: URL; token: string 
 
   if (!address || !token) {
     throw new AssistantError(
-      "Save the Audiobookshelf credential as server address|API token",
+      "Reconnect Audiobookshelf with its server address and API token",
       ErrorType.PARAMS_ERROR,
       400,
     );

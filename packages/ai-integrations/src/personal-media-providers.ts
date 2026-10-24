@@ -34,7 +34,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     ],
-    auth: { authType: "api_key", credentialLabel: "Access token", scopes: ["highlights:read"] },
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "Access token", secret: true }],
+      scopes: ["highlights:read"],
+    },
   },
   {
     id: "lastfm",
@@ -58,7 +62,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     })),
-    auth: { authType: "api_key", credentialLabel: "API key", scopes: ["scrobbles:read"] },
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "API key", secret: true }],
+      scopes: ["scrobbles:read"],
+    },
   },
   {
     id: "trakt",
@@ -79,7 +87,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     })),
-    auth: { authType: "api_key", credentialLabel: "Client ID", scopes: ["history:read"] },
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "Client ID", secret: true }],
+      scopes: ["history:read"],
+    },
   },
   {
     id: "hardcover",
@@ -100,7 +112,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     ],
-    auth: { authType: "api_key", credentialLabel: "API token", scopes: ["books:read"] },
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "API token", secret: true }],
+      scopes: ["books:read"],
+    },
   },
   {
     id: "podcastindex",
@@ -136,7 +152,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     ],
     auth: {
       authType: "api_key",
-      credentialLabel: "API key and secret, as key:secret",
+      credentialFields: [
+        { label: "API key", secret: true },
+        { label: "API secret", secret: true },
+      ],
+      credentialSeparator: ":",
       scopes: ["search:read"],
     },
   },
@@ -157,7 +177,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     })),
-    auth: { authType: "api_key", credentialLabel: "Personal access token", scopes: ["daily"] },
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "Personal access token", secret: true }],
+      scopes: ["daily"],
+    },
   },
   {
     id: "audiobookshelf",
@@ -176,7 +200,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     ],
     auth: {
       authType: "api_key",
-      credentialLabel: "Server address and API token, as https://server|token",
+      credentialFields: [
+        { label: "Server address", secret: false },
+        { label: "API token", secret: true },
+      ],
+      credentialSeparator: "|",
       scopes: ["library:read"],
     },
   },

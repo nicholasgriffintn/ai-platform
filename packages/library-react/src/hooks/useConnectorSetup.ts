@@ -18,7 +18,8 @@ interface ApiKeyDialogState {
   open: boolean;
   providerId: RecipeConnectorProvider | null;
   providerName: string;
-  credentialLabel?: string;
+  credentialFields?: RecipeConnectorManifest["credentialFields"];
+  callbackUrl?: string;
 }
 
 type AuthConfig = NonNullable<RecipeConnectorManifest["authConfigs"]>[number];
@@ -181,7 +182,8 @@ export function useConnectorSetup({
         open: true,
         providerId: connector.id,
         providerName: connector.name,
-        credentialLabel: connector.credentialLabel,
+        credentialFields: connector.credentialFields,
+        callbackUrl: connector.callbackUrl,
       });
 
       return;

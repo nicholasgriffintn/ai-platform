@@ -1189,7 +1189,8 @@ export const recipeConnectorManifestSchema = z.object({
   status: recipeConnectorStatusSchema,
   setupUrl: z.string().optional(),
   authorizationUrl: externalHttpUrlSchema.optional(),
-  credentialLabel: z.string().optional(),
+  credentialFields: z.array(z.object({ label: z.string(), secret: z.boolean() })).optional(),
+  callbackUrl: z.url().optional(),
   connectedAt: z.string().optional(),
   updatedAt: z.string().optional(),
   scopes: z.array(z.string()),
@@ -1228,7 +1229,7 @@ export const recipeConnectorStartRequestSchema = z.object({
 });
 
 export const recipeConnectorApiKeyRequestSchema = z.object({
-  apiKey: z.string().min(1).max(4000),
+  credentials: z.array(z.string().min(1).max(4000)).min(1).max(4),
 });
 
 export const recipeConnectorAccountSchema = z.object({

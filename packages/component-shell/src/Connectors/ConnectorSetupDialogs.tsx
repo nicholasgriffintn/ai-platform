@@ -11,7 +11,8 @@ export function ConnectorSetupDialogs({ controller }: { controller: ConnectorSet
         onOpenChange={controller.closeApiKeyDialog}
         providerId={controller.apiKeyDialog.providerId}
         providerName={controller.apiKeyDialog.providerName}
-        credentialLabel={controller.apiKeyDialog.credentialLabel}
+        credentialFields={controller.apiKeyDialog.credentialFields}
+        callbackUrl={controller.apiKeyDialog.callbackUrl}
         onStored={controller.onApiKeyStored}
       />
       <ConnectorAuthConfigModal

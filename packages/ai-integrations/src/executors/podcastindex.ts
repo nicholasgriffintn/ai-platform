@@ -12,7 +12,7 @@ async function podcastIndexHeaders(credential: string): Promise<Record<string, s
 
   if (!key || !secret) {
     throw new AssistantError(
-      "Save the Podcast Index credential as key:secret",
+      "Reconnect Podcast Index with its API key and secret",
       ErrorType.CONFIGURATION_ERROR,
       400,
     );

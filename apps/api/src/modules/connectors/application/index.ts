@@ -7,6 +7,7 @@ import {
   isComposioConfigured,
   isComposioOAuthAuthConfig,
   isComposioProviderConfigured,
+  joinConnectorCredential,
   listComposioConnectedAccounts,
   RECIPE_CONNECTOR_CONNECTION_KIND,
   type ComposioConnectedAccount,
@@ -43,6 +44,7 @@ import {
 } from "./connector-adapters";
 
 const COMPOSIO_CONNECTION_SESSION_TTL_MS = 60 * 60 * 1000;
+const PLUGINS_PATH = "/chat/plugins";
 
 export interface ConnectorTokenPayload {
   accessToken: string;
@@ -77,19 +79,19 @@ function getConnectorKeyMaterial(params: {
 
 function normaliseReturnTo(returnTo?: string): string {
   if (!returnTo?.trim()) {
-    return "/chat/plugins";
+    return PLUGINS_PATH;
   }
 
   try {
     const parsed = new URL(returnTo, "https://polychat.local");
 
     if (parsed.origin !== "https://polychat.local") {
-      return "/chat/plugins";
+      return PLUGINS_PATH;
     }
 
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
-    return "/chat/plugins";
+    return PLUGINS_PATH;
   }
 }
 
@@ -298,8 +300,14 @@ export async function listRecipeConnectors(params: {
       authorizationUrl: undefined,
       connectedAt: state.connectedAt,
       updatedAt: state.updatedAt,
-      credentialLabel:
-        provider.auth.authType === "api_key" ? provider.auth.credentialLabel : undefined,
+      credentialFields:
+        provider.auth.authType === "api_key"
+          ? provider.auth.credentialFields.map((field) => ({ ...field }))
+          : undefined,
+      callbackUrl:
+        provider.auth.authType === "api_key"
+          ? new URL(PLUGINS_PATH, getAppBaseUrl(params.context)).toString()
+          : undefined,
       scopes: [...provider.auth.scopes],
       toolCount: provider.operations.length,
       operations: provider.operations.map((operation) => ({
@@ -504,7 +512,7 @@ export async function verifyComposioConnectorAuthorization(params: {
     account: completedAccount,
   });
 
-  const redirectUrl = new URL("/chat/plugins", getAppBaseUrl(params.context));
+  const redirectUrl = new URL(PLUGINS_PATH, getAppBaseUrl(params.context));
 
   redirectUrl.searchParams.set("connector", provider.id);
   redirectUrl.searchParams.set("connected", "1");
@@ -563,7 +571,7 @@ export async function storeRecipeConnectorApiKey(params: {
   context: ServiceContext;
   userId: number;
   provider: RecipeConnectorProvider;
-  apiKey: string;
+  credentials: readonly string[];
 }) {
   const provider = getRecipeConnectorProviderConfig(params.provider);
 
@@ -571,12 +579,7 @@ export async function storeRecipeConnectorApiKey(params: {
     throw new AssistantError("Connector does not use API-key setup", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const apiKey = params.apiKey.trim();
-
-  if (!apiKey) {
-    throw new AssistantError("Connector API key is required", ErrorType.PARAMS_ERROR, 400);
-  }
-
+  const apiKey = joinConnectorCredential(provider.auth, params.credentials);
   const now = new Date().toISOString();
 
   await writeStoredToken({

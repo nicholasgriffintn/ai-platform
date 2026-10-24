@@ -6,9 +6,15 @@ import { personalMediaConnectorProviders } from "./personal-media-providers.js";
 export type ConnectorAuthType = "api_key" | "composio";
 export type ConnectorOperationAccess = "read" | "write";
 
+export interface ConnectorCredentialField {
+  label: string;
+  secret: boolean;
+}
+
 export interface ApiKeyConnectorConfig {
   authType: "api_key";
-  credentialLabel: string;
+  credentialFields: readonly ConnectorCredentialField[];
+  credentialSeparator?: string;
   scopes: readonly string[];
 }
 
@@ -167,7 +173,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     ],
     auth: {
       authType: "api_key",
-      credentialLabel: "Service user API key",
+      credentialFields: [{ label: "Service user API key", secret: true }],
       scopes: ["sessions:read", "sessions:write"],
     },
   },
@@ -180,7 +186,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     operations: [],
     auth: {
       authType: "api_key",
-      credentialLabel: "API key",
+      credentialFields: [{ label: "API key", secret: true }],
       scopes: ["memory:retain", "memory:recall", "memory:reflect"],
     },
   },
@@ -193,7 +199,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     operations: [],
     auth: {
       authType: "api_key",
-      credentialLabel: "API key",
+      credentialFields: [{ label: "API key", secret: true }],
       scopes: ["workspaces:write", "sessions:write", "messages:write", "peers:read"],
     },
   },
@@ -240,7 +246,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     ],
     auth: {
       authType: "api_key",
-      credentialLabel: "Personal access token",
+      credentialFields: [{ label: "Personal access token", secret: true }],
       scopes: ["sites:read", "deploys:read"],
     },
   },

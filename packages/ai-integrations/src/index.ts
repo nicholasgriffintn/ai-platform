@@ -53,6 +53,7 @@ export {
   type ApiKeyConnectorConfig,
   type ComposioAuthConfigDefinition,
   type ComposioConnectorConfig,
+  type ConnectorCredentialField,
   type ConnectorAuthType,
   type ConnectorOperationAccess,
   type ConnectorOperationConfig,
@@ -91,6 +92,7 @@ export { executeNetlifyOperation } from "./executors/netlify.js";
 export { executeReadwiseOperation } from "./executors/readwise.js";
 export { executeLastfmOperation } from "./executors/lastfm.js";
 export { executeTraktOperation } from "./executors/trakt.js";
+export { joinConnectorCredential } from "./connector-credentials.js";
 export { executeHardcoverOperation } from "./executors/hardcover.js";
 export { executePodcastIndexOperation } from "./executors/podcastindex.js";
 export { executeOuraOperation } from "./executors/oura.js";

@@ -78,11 +78,11 @@ export function useStoreRecipeConnectorApiKey() {
   return useMutation({
     mutationFn: ({
       provider,
-      apiKey,
+      credentials,
     }: {
       provider: Parameters<typeof storeRecipeConnectorApiKey>[0];
-      apiKey: string;
-    }) => storeRecipeConnectorApiKey(provider, { apiKey }),
+      credentials: string[];
+    }) => storeRecipeConnectorApiKey(provider, { credentials }),
   });
 }
 
