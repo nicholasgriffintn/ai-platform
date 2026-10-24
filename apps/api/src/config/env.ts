@@ -106,6 +106,7 @@ export type IEnv = {
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
   BEACON_SITE_ID?: string;
+  TEAMMATE_TRUST_CHECK_USER_ID?: string;
   OLLAMA_CLOUD_API_KEY?: string;
   ZAI_API_KEY?: string;
   MOONSHOT_API_KEY?: string;
