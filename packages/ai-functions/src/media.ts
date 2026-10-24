@@ -9,8 +9,6 @@ import {
   type OcrExtractionRequest,
   type OcrExtractionResult,
   type ProviderRuntime,
-  type SpeechGenerationRequest,
-  type SpeechGenerationResult,
   type TranscriptionRequest,
   type TranscriptionResult,
   type VideoGenerationRequest,
@@ -24,11 +22,7 @@ export interface MediaRoutingOptions {
   allowFallback?: boolean;
 }
 
-type GenerationRequest =
-  | ImageGenerationRequest
-  | MusicGenerationRequest
-  | SpeechGenerationRequest
-  | VideoGenerationRequest;
+type GenerationRequest = ImageGenerationRequest | MusicGenerationRequest | VideoGenerationRequest;
 
 async function resolveMediaProvider(
   runtime: ProviderRuntime,
@@ -69,7 +63,7 @@ export function createMediaFunctions(runtime: ProviderRuntime) {
 
   return {
     resolveMediaProvider: (
-      category: "image" | "music" | "speech" | "video",
+      category: "image" | "music" | "video",
       request: Pick<GenerationRequest, "env" | "model">,
       routing: MediaRoutingOptions = {},
     ) =>
@@ -87,13 +81,6 @@ export function createMediaFunctions(runtime: ProviderRuntime) {
     ): Promise<MusicGenerationResult> =>
       route(request, routing, MODEL_DEFAULTS.music.workersAi.provider, (name) =>
         runtime.providers.resolve("music", name, scope(request)),
-      ),
-    speech: (
-      request: SpeechGenerationRequest,
-      routing: MediaRoutingOptions = {},
-    ): Promise<SpeechGenerationResult> =>
-      route(request, routing, MODEL_DEFAULTS.speech.workersAi.provider, (name) =>
-        runtime.providers.resolve("speech", name, scope(request)),
       ),
     video: (
       request: VideoGenerationRequest,

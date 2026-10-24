@@ -20,7 +20,7 @@ export function PolyMemoryView({ contextId }: { contextId: string }) {
   if (isEditing) {
     return (
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
-        <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+        <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
           Back to the list
         </Button>
         <TeammateMemoryPanel contextId={contextId} />
@@ -93,7 +93,7 @@ export function PolyMemoryView({ contextId }: { contextId: string }) {
               >
                 <span className="min-w-0 flex-1 text-sm text-foreground">{block.text}</span>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="xs"
                   className="shrink-0 opacity-70 group-hover:opacity-100"
                   isLoading={forgetting === block.start}

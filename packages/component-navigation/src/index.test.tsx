@@ -247,18 +247,18 @@ describe("ConversationListItemActions", () => {
     );
 
     await openMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to notebook" }));
     fireEvent.click(await screen.findByRole("menuitemradio", { name: "Design" }));
     expect(organisation.onMoveToGroup).toHaveBeenCalledWith("g2");
 
     await openMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
-    fireEvent.click(await screen.findByRole("menuitemradio", { name: "No group" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to notebook" }));
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "No notebook" }));
     expect(organisation.onMoveToGroup).toHaveBeenCalledWith(null);
 
     await openMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: "Move to group" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Manage groups…" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Move to notebook" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Manage notebooks…" }));
     expect(organisation.onManageGroups).toHaveBeenCalledTimes(1);
   });
 });

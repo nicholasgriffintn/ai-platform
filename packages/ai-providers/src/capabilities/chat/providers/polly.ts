@@ -28,6 +28,7 @@ interface PollyStorageService {
 interface PollyProviderOptions {
   returnAudio?: boolean;
   slug?: string;
+  engine?: string;
   storageService?: PollyStorageService;
 }
 
@@ -43,6 +44,7 @@ function readPollyProviderOptions(options: unknown): PollyProviderOptions {
   return {
     returnAudio: options.returnAudio === true,
     slug: typeof options.slug === "string" ? options.slug : undefined,
+    engine: typeof options.engine === "string" ? options.engine : undefined,
     storageService: isPollyStorageService(options.storageService)
       ? options.storageService
       : undefined,
@@ -124,7 +126,7 @@ export class PollyProvider extends BaseProvider {
             Text: params.message,
             OutputFormat: "mp3",
             VoiceId: params.model,
-            Engine: "long-form",
+            Engine: options.engine ?? "generative",
             TextType: "ssml",
             OutputS3BucketName: "polly-text-to-speech-input",
             OutputS3KeyPrefix: `polly/${options.slug}`,

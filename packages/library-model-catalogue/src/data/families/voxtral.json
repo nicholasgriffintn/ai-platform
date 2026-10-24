@@ -15,10 +15,11 @@
         "maxTokens": 0,
         "modalities": {
           "input": [
-            "text"
+            "text",
+            "audio"
           ],
           "output": [
-            "speech"
+            "text"
           ]
         },
         "releaseDate": "February 4, 2026",
@@ -37,9 +38,12 @@
             "text"
           ],
           "output": [
-            "audio"
+            "speech"
           ]
         },
+        "strengths": [
+          "audio"
+        ],
         "releaseDate": "March 23, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -95,10 +99,11 @@
         "maxTokens": 32000,
         "modalities": {
           "input": [
-            "text"
+            "text",
+            "audio"
           ],
           "output": [
-            "speech"
+            "text"
           ]
         },
         "releaseDate": "July 15, 2025",
@@ -128,6 +133,44 @@
         "releaseDate": "October 20, 2026",
         "supportsAttachments": false,
         "supportsTemperature": true
+      }
+    },
+    "voxtral-3-tts": {
+      "defaults": {
+        "name": "Voxtral 3 TTS",
+        "description": "Mistral's Voxtral speech model with preset and cloned voices.",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1219,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 15
+            }
+          ]
+        }
       }
     }
   }

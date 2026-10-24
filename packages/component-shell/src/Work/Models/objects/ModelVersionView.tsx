@@ -234,7 +234,7 @@ function VersionBody({ data }: { data: VersionDetail }) {
           {can("import") && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() =>
                 void runWithToast("Inspection queued", () =>
                   mutations.reinspect.mutateAsync(versionId),

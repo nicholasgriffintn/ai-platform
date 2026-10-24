@@ -55,6 +55,24 @@ export function getTeammateSettingsPath(surface: CapabilitySurface, teammateId: 
   return `${getTeammateHomePath(surface, teammateId)}/settings`;
 }
 
+export function getNotebookPath(
+  surface: CapabilitySurface,
+  notebookId: string,
+  conversationId?: string,
+): string {
+  const base = `${surface.basePath}/notebooks/${encodeURIComponent(notebookId)}`;
+
+  return conversationId ? `${base}/${encodeURIComponent(conversationId)}` : base;
+}
+
+const NOTEBOOK_PATH_PATTERN = /\/notebooks\/([^/]+)/;
+
+export function matchNotebookId(pathname: string): string | undefined {
+  const match = NOTEBOOK_PATH_PATTERN.exec(pathname);
+
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
 export function getSkillEditorPath(surface: CapabilitySurface, skillId: string): string {
   return `${surface.basePath}/skills/${encodeURIComponent(skillId)}`;
 }

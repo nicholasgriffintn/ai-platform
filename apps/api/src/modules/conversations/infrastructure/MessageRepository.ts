@@ -912,6 +912,7 @@ export class MessageRepository extends BaseRepository {
   public async searchConversationExcerpts(params: {
     userId: number;
     projectId: string | null;
+    groupId?: string;
     terms: readonly string[];
     excludeConversationId?: string;
     limit: number;
@@ -929,12 +930,14 @@ export class MessageRepository extends BaseRepository {
          )`
       : "c.project_id IS NULL AND c.user_id = ?";
     const scopeValues = params.projectId ? [params.projectId, params.userId] : [params.userId];
+    const groupClause = params.groupId ? "AND c.group_id = ?" : "";
 
     return this.runQuery<ConversationExcerptRow>(
       `SELECT m.conversation_id, c.title, m.role, m.content, m.created_at
        FROM message m
        JOIN conversation c ON m.conversation_id = c.id
        WHERE ${scopeClause}
+         ${groupClause}
          AND c.is_archived = 0
          AND c.type IN (${searchableConversationTypesSql})
          AND c.id != ?
@@ -944,6 +947,7 @@ export class MessageRepository extends BaseRepository {
        LIMIT ?`,
       [
         ...scopeValues,
+        ...(params.groupId ? [params.groupId] : []),
         params.excludeConversationId ?? "",
         ...params.terms.map((term) => `%${escapeSqlLikePattern(term)}%`),
         params.limit,

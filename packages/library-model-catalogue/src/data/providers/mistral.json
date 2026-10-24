@@ -473,6 +473,13 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
       }
+    },
+    "voxtral-mini-tts-3": {
+      "model": "voxtral/voxtral-3-tts",
+      "matchingModel": "voxtral-mini-tts-3",
+      "overrides": {
+        "hiddenFromDefaultList": true
+      }
     }
   }
 }

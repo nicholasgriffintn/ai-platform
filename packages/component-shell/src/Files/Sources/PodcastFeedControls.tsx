@@ -31,7 +31,7 @@ export function PodcastFeedControls({ show }: { show: SourceCollection }) {
           {show.hasFeed ? "Get a new feed link" : "Get feed link"}
         </Button>
         {show.hasFeed ? (
-          <Button variant="ghost" size="sm" onClick={() => setConfirmingTurnOff(true)}>
+          <Button variant="outline" size="sm" onClick={() => setConfirmingTurnOff(true)}>
             Turn off feed
           </Button>
         ) : null}

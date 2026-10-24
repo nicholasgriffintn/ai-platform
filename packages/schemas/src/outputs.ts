@@ -32,6 +32,7 @@ export const outputSchema = z
     parentOutputId: z.string().nullable(),
     capabilityId: z.string().trim().min(1).max(160),
     groupId: z.string().max(200).nullable(),
+    collectionId: z.string().nullable(),
     kind: outputKindSchema,
     title: z.string().trim().min(1).max(200),
     status: outputStatusSchema,

@@ -33,6 +33,7 @@ import modelRegistry from "~/modules/model-registry/api/routes";
 import modelServing from "~/modules/model-serving/api/routes";
 import modelTraining from "~/modules/model-training/api/routes";
 import models from "~/modules/models/api/routes";
+import notebooks from "~/modules/notebooks/api/routes";
 import notifications from "~/modules/notifications/api/routes";
 import outputs from "~/modules/outputs/api/routes";
 import pets from "~/modules/pets/api/routes";
@@ -109,6 +110,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/billing", billing);
   app.route("/skills", skills);
   app.route("/sources", sources);
+  app.route("/notebooks", notebooks);
   app.route("/realtime", realtime);
   app.route("/sync", sync);
   app.route("/search", search);

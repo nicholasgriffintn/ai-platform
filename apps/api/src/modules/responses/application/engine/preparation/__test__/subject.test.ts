@@ -47,6 +47,31 @@ function outputRecord(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function sourceRecord(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "source-1",
+    created_by_user_id: 7,
+    project_id: null,
+    conversation_id: null,
+    connection_id: null,
+    kind: "text",
+    title: "Source",
+    status: "available",
+    content: "",
+    provider: null,
+    external_uri: null,
+    vector_id: null,
+    metadata: "{}",
+    storage_key: null,
+    mime_type: null,
+    filename: null,
+    byte_size: null,
+    created_at: "2026-10-01T00:00:00.000Z",
+    updated_at: null,
+    ...overrides,
+  };
+}
+
 const context: ServiceContext = Object.assign(Object.create(null), {
   user: { id: 7 },
   requireUser: () => ({ id: 7 }),
@@ -120,5 +145,62 @@ describe("conversation subjects", () => {
     expect(projection.section).toContain("no longer available");
     expect(projection.document).toBeNull();
     expect(projection.tools).toEqual([]);
+  });
+
+  it("pins a recording's notes, timed transcript and the sources it was made from", async () => {
+    mocks.getConversation.mockResolvedValue({
+      id: "conversation-1",
+      project_id: null,
+      subject_type: "source",
+      subject_id: "episode-1",
+    });
+    mocks.requireSourceAccess.mockImplementation(async (_context, _userId, id: string) => {
+      if (id === "episode-1") {
+        return sourceRecord({
+          id,
+          kind: "podcast",
+          title: "One Tiny Task",
+          content: null,
+          metadata: JSON.stringify({
+            generation: { type: "podcast", sourceIds: ["brief-1", "secret-1"] },
+            media: {
+              notes: {
+                summary: "Ava and Leo review a sandbox run.",
+                decisions: [],
+                actionItems: [],
+              },
+              transcript: {
+                status: "ready",
+                speakers: { a: "Ava" },
+                segments: [{ speaker: "a", text: "Welcome back.", start: 84, end: 86 }],
+              },
+            },
+          }),
+        });
+      }
+
+      if (id === "brief-1") {
+        return sourceRecord({
+          id,
+          title: "Sandbox run record",
+          content: "Repo: ai-platform-tester",
+        });
+      }
+
+      throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
+    });
+
+    const projection = await resolveSubjectProjection({
+      context,
+      conversationId: "conversation-1",
+      requested: null,
+      requestedProjectId: null,
+      contextWindow: 8000,
+    });
+
+    expect(projection.section).toContain("Summary: Ava and Leo review a sandbox run.");
+    expect(projection.section).toContain("[1:24] Ava: Welcome back.");
+    expect(projection.section).toContain("Title: Sandbox run record");
+    expect(projection.section).not.toContain("secret-1");
   });
 });

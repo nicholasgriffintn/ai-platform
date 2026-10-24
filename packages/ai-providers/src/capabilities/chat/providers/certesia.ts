@@ -1,3 +1,5 @@
+import { SPEECH_PROVIDER_VOICES } from "@ngriffin_uk/polychat-schemas";
+
 import { fetchAIResponse } from "../../../fetch.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
@@ -6,7 +8,6 @@ import { BaseProvider } from "./base.js";
 export class CertesiaProvider extends BaseProvider {
   name = "cartesia";
   supportsStreaming = false;
-  voice_id = "4f7f1324-1853-48a6-b294-4e78e8036a83";
   isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
@@ -45,10 +46,10 @@ export class CertesiaProvider extends BaseProvider {
     const body = {
       transcript: params.message,
       model_id: params.model,
-      language: "en",
+      language: params.lang?.slice(0, 2) || "en",
       voice: {
         mode: "id",
-        id: this.voice_id,
+        id: params.voice ?? SPEECH_PROVIDER_VOICES.cartesia.roles.narrator,
       },
       output_format: {
         container: "mp3",

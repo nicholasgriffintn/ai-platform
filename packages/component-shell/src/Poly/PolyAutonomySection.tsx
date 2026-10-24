@@ -46,7 +46,7 @@ export function PolyAutonomySection({ agenda }: { agenda: PolyAgenda }) {
               </span>
               <Button
                 size="xs"
-                variant="ghost"
+                variant="outline"
                 disabled={revoke.isPending}
                 onClick={() => revoke.mutate(approval)}
               >

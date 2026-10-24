@@ -4,6 +4,7 @@ import {
   UnsafeUrlError,
   fetchFollowingSafeRedirects,
   isPublicHttpUrl,
+  parseByteRange,
   parsePublicHttpUrl,
   parseBearerToken,
   readHttpResponseBody,
@@ -226,5 +227,21 @@ describe("fetchFollowingSafeRedirects", () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe("parseByteRange", () => {
+  it.each([
+    ["bytes=0-99", { start: 0, end: 99 }],
+    ["bytes=900-", { start: 900, end: 999 }],
+    ["bytes=-100", { start: 900, end: 999 }],
+    ["bytes=500-5000", { start: 500, end: 999 }],
+    ["bytes=1000-", null],
+    ["bytes=9-3", null],
+    ["bytes=0-1,5-9", null],
+    ["items=0-9", null],
+    [null, null],
+  ])("reads %s against a 1,000 byte file", (header, expected) => {
+    expect(parseByteRange(header, 1000)).toEqual(expected);
   });
 });

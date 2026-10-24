@@ -1,3 +1,5 @@
+import { SPEECH_PROVIDER_VOICES } from "@ngriffin_uk/polychat-schemas";
+
 import { fetchAIResponse } from "../../../fetch.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
@@ -6,7 +8,6 @@ import { BaseProvider } from "./base.js";
 export class ElevenLabsProvider extends BaseProvider {
   name = "elevenlabs";
   supportsStreaming = false;
-  private readonly voiceId = "JBFqnCBsd6RMkjVDRZzb";
   isOpenAiCompatible = false;
 
   protected getProviderKeyName(): string {
@@ -18,8 +19,10 @@ export class ElevenLabsProvider extends BaseProvider {
     this.validateAiGatewayToken(params);
   }
 
-  protected async getEndpoint(): Promise<string> {
-    return `v1/text-to-speech/${this.voiceId}`;
+  protected async getEndpoint(params?: ChatCompletionParameters): Promise<string> {
+    const voice = params?.voice ?? SPEECH_PROVIDER_VOICES.elevenlabs.roles.narrator;
+
+    return `v1/text-to-speech/${encodeURIComponent(voice)}`;
   }
 
   protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
@@ -38,7 +41,7 @@ export class ElevenLabsProvider extends BaseProvider {
   async getResponse(params: ChatCompletionParameters, userId?: number): Promise<any> {
     this.validateParams(params);
 
-    const endpoint = await this.getEndpoint();
+    const endpoint = await this.getEndpoint(params);
     const headers = await this.getHeaders(params);
 
     const body = {

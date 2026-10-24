@@ -75,7 +75,7 @@ export function AgeGateDateForm({ onConfirm, onSkip, isConfirming, error }: AgeG
       ) : null}
 
       <DialogFooter>
-        <Button type="button" variant="ghost" onClick={onSkip} disabled={isConfirming}>
+        <Button type="button" variant="outline" onClick={onSkip} disabled={isConfirming}>
           Skip
         </Button>
         <Button type="submit" variant="primary" isLoading={isConfirming} disabled={!birthDate}>

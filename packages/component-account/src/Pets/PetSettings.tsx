@@ -174,7 +174,7 @@ export function PetSettings({
           <div className="flex items-center justify-center gap-3">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={isBusy || !hasPreviousCustomPets}
               onClick={onPreviousCustomPets}
             >
@@ -183,7 +183,7 @@ export function PetSettings({
             <span className="text-sm text-muted-foreground">Custom pets, page {customPetPage}</span>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={isBusy || !hasNextCustomPets}
               onClick={onNextCustomPets}
             >

@@ -138,6 +138,5 @@ export * from "./capabilities/batch/index.js";
 export * from "./capabilities/research/index.js";
 export * from "./capabilities/reranking/index.js";
 export * from "./capabilities/search/index.js";
-export * from "./capabilities/speech/index.js";
 export * from "./capabilities/transcription/index.js";
 export * from "./capabilities/video/index.js";

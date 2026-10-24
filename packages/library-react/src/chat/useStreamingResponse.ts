@@ -193,8 +193,9 @@ export function useStreamingResponse(
         useStreamActivityStore.getState().streams[conversationId]?.controller?.signal ??
         new AbortController().signal;
       const effectiveRequestOptions = overrideRequestOptions ?? requestOptions;
+      const surfaceModelTier = effectiveRequestOptions?.model_tier;
       const requestedModelId = normalizeSelectedModel(
-        options?.models?.[0] ?? options?.model ?? model,
+        options?.models?.[0] ?? options?.model ?? (surfaceModelTier ? null : model),
       );
       const availableModels =
         computeSite === "browser" ? { ...webLLMModels, ...apiModels } : apiModels;
@@ -668,7 +669,7 @@ export function useStreamingResponse(
               modelTier:
                 selectedModel && !isAgentModelId(modelToSend)
                   ? undefined
-                  : (modelTier ?? undefined),
+                  : (surfaceModelTier ?? modelTier ?? undefined),
               permissionMode,
               models: modelsToSend?.length ? modelsToSend : undefined,
               onProgress: streamProgress.handleUpdate,

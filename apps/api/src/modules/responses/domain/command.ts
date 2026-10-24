@@ -1,5 +1,6 @@
 import type {
   ChatRunTrigger,
+  ConversationNotebook,
   ConversationSubject,
   ConversationType,
   DelegationContext,
@@ -19,6 +20,7 @@ export interface ResponseCommand {
   conversationId?: string;
   conversationType?: ConversationType;
   conversationSubject?: ConversationSubject;
+  conversationNotebook?: ConversationNotebook;
   commandId?: string;
   runId?: string;
   messages: EngineRequest["messages"] | Message[];

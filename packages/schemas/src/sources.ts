@@ -56,11 +56,12 @@ export const projectKnowledgeSearchQuerySchema = z
     query: z.string().trim().min(1).max(1000),
     type: creatableSourceKindSchema.optional(),
     top_k: z.coerce.number().int().min(1).max(30).optional(),
+    sourceIds: z.array(z.string().min(1)).max(300).optional(),
   })
   .strict();
 
 export const knowledgeSearchQuerySchema = projectKnowledgeSearchQuerySchema
-  .omit({ projectId: true })
+  .omit({ projectId: true, sourceIds: true })
   .extend({ project_id: z.string().min(1).optional() });
 
 export const projectKnowledgeSearchResponseSchema = z.object({

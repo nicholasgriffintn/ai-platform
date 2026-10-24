@@ -4,6 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-component-account";
 import {
   useAuthStatus,
+  useSpeechModels,
   useSpeechVoiceLibrary,
   useTrackEvent,
   useUIStore,
@@ -29,6 +30,7 @@ export function UserSettingsForm({
   const { trackError } = useTrackEvent();
   const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
   const { createVoice, deleteVoice, isCreatingVoice, isDeletingVoice } = useSpeechVoiceLibrary();
+  const speechModels = useSpeechModels(isAuthenticated);
 
   return (
     <ControlledUserSettingsForm
@@ -43,6 +45,7 @@ export function UserSettingsForm({
         await updateUserSettings(settings);
       }}
       onSaveError={(error) => trackError("settings_save_failed", error)}
+      speechModels={speechModels.data}
       speechVoiceLibrary={
         isAuthenticated
           ? {

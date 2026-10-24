@@ -7,8 +7,12 @@ import {
   getModels,
   getModelsByOutputModality,
   getExecutableModelsForAccount,
+  rankPolicyModelsByMediaScore,
+  readMediaScore,
   resolveDefaultChatModel,
   resolvePolicyModel,
+  resolveTierModel,
+  TEXT_TO_SPEECH_ARENA_SCORE,
 } from "@ngriffin_uk/polychat-ai-models";
 import {
   isProviderPlatformEnabled,
@@ -20,11 +24,16 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   searchProviderSchema,
+  getModelDisplayName,
   getSystemModelLineup,
+  speechProviderSchema,
   modelHasInputModalities,
   type ModelConfigItem,
   type ModelModality,
+  type ModelTier,
+  type ModelTierRole,
   type ReasoningEffort,
+  type SpeechProvider,
   type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -50,6 +59,7 @@ export interface ResolveModelProviderOptions {
 }
 
 export interface ResolvedSystemModel {
+  id?: string;
   model: string;
   provider: string;
   effort?: ReasoningEffort;
@@ -343,7 +353,6 @@ const MODALITY_SYSTEM_ROLE_MODALITIES: Partial<Record<SystemModelRole, ModelModa
   image: "image",
   video: "video",
   music: "audio",
-  speech: "speech",
 };
 
 const CAPABILITY_SYSTEM_ROLE_KEYS: Partial<Record<SystemModelRole, keyof ModelConfigItem>> = {
@@ -399,6 +408,7 @@ async function resolveModalitySystemModel(
 
   return selected
     ? {
+        id: selected.id,
         model: selected.config.matchingModel,
         provider: selected.config.provider,
         effort: selected.effort,
@@ -462,6 +472,12 @@ export async function getSystemModel(
     return resolveRerankingModel(env, user);
   }
 
+  if (role === "speech") {
+    const speech = await getSpeechModel(env, user).catch(() => null);
+
+    return speech && { id: speech.id, model: speech.model, provider: speech.provider };
+  }
+
   if (role === "transcription") {
     const transcription = await getAuxiliarySpeechModel(env, undefined, user);
 
@@ -476,6 +492,29 @@ export async function getSystemModel(
   }
 
   return resolveModalitySystemModel(env, user, role);
+}
+
+export async function getTierModel(
+  env: IEnv,
+  user: IUser,
+  tier: ModelTier,
+  role: ModelTierRole = "agent",
+): Promise<ResolvedSystemModel> {
+  const selected = resolveTierModel(await getLineupModelsForUser(env, user), user, tier, role);
+
+  if (!selected) {
+    throw new AssistantError(
+      `No model in the ${tier} tier is available for this account`,
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  return {
+    id: selected.id,
+    model: selected.config.matchingModel,
+    provider: selected.config.provider,
+    effort: selected.effort,
+  };
 }
 
 export async function getAuxiliaryModel(env: IEnv, user?: IUser): Promise<ResolvedSystemModel> {
@@ -546,10 +585,89 @@ export const getVideoModel = async (env: IEnv, user?: IUser): Promise<ResolvedSy
 export const getMusicModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
   resolveModalitySystemModel(env, user, "music");
 
-export const getSpeechSynthesisModel = async (
+export interface ResolvedSpeechModel {
+  id: string;
+  name: string;
+  model: string;
+  provider: SpeechProvider;
+  arenaScore: number | null;
+}
+
+export async function rankSpeechModels(env: IEnv, user?: IUser): Promise<ResolvedSpeechModel[]> {
+  const accessible = await filterModelsForUserAccess(
+    getModelsByOutputModality("speech"),
+    env,
+    user?.id,
+    { shouldUseCache: true },
+  );
+  const voices = Object.fromEntries(
+    Object.entries(accessible).filter(
+      ([, model]) =>
+        isModelRuntimeAvailable(model, env) &&
+        modelHasInputModalities(model, ["text"]) &&
+        speechProviderSchema.safeParse(model.provider).success,
+    ),
+  );
+
+  return rankPolicyModelsByMediaScore(
+    voices,
+    TEXT_TO_SPEECH_ARENA_SCORE,
+    getSystemModelLineup("speech").candidates,
+    user,
+  ).flatMap(({ id, config }) => {
+    const provider = speechProviderSchema.safeParse(config.provider);
+
+    return provider.success
+      ? [
+          {
+            id,
+            name: getModelDisplayName(config),
+            model: config.matchingModel,
+            provider: provider.data,
+            arenaScore: readMediaScore(config, TEXT_TO_SPEECH_ARENA_SCORE) ?? null,
+          },
+        ]
+      : [];
+  });
+}
+
+export interface SpeechModelPreference {
+  provider?: SpeechProvider | null;
+  model?: string | null;
+  required?: boolean;
+}
+
+export async function getSpeechModel(
   env: IEnv,
-  user?: IUser,
-): Promise<ResolvedSystemModel | null> => resolveModalitySystemModel(env, user, "speech");
+  user: IUser | undefined,
+  preference: SpeechModelPreference = {},
+): Promise<ResolvedSpeechModel> {
+  const ranked = await rankSpeechModels(env, user);
+  const preferred =
+    ranked.find(
+      (entry) =>
+        preference.model && (entry.id === preference.model || entry.model === preference.model),
+    ) ?? ranked.find((entry) => preference.provider && entry.provider === preference.provider);
+
+  if (preference.required && (preference.model || preference.provider) && !preferred) {
+    throw new AssistantError(
+      `${preference.model ?? preference.provider} is not available for this account`,
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
+  const selected = preferred ?? ranked[0];
+
+  if (!selected) {
+    throw new AssistantError(
+      "No voice is available for this account. Add a speech provider key in settings.",
+      ErrorType.CONFIGURATION_ERROR,
+    );
+  }
+
+  return selected;
+}
 
 export const getFimModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
   resolveCapabilitySystemModel(env, user, "fim");

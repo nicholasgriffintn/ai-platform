@@ -95,6 +95,7 @@ describe("project task plan evidence", () => {
         parent_output_id: null,
         capability_id: "articles",
         group_id: null,
+        collection_id: null,
         title: "Report",
         kind: "report",
         status: "ready",

@@ -11,6 +11,11 @@ export type AppSurfacePresentation =
   | { layout: "contained"; loading: "content" }
   | { layout: "workspace"; loading: "editor" | "studio" };
 
+export const CONTAINED_APP_PRESENTATION: AppSurfacePresentation = {
+  layout: "contained",
+  loading: "content",
+};
+
 export function getAppSurfacePresentation(appId: string, subpath: string): AppSurfacePresentation {
   if (appId === "sites") {
     return { layout: "workspace", loading: "studio" };
@@ -20,7 +25,7 @@ export function getAppSurfacePresentation(appId: string, subpath: string): AppSu
     return { layout: "workspace", loading: "editor" };
   }
 
-  return { layout: "contained", loading: "content" };
+  return CONTAINED_APP_PRESENTATION;
 }
 
 export function AppSurface({

@@ -178,7 +178,7 @@ function SandboxEventView({
           <Button
             type="button"
             size="xs"
-            variant="ghost"
+            variant="outline"
             onClick={() => void resolveApproval("rejected")}
             disabled={isResolving}
             className="text-failure hover:text-failure/80"

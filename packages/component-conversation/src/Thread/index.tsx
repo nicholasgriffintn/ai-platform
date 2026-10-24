@@ -6,7 +6,10 @@ import {
 import { cn, Pet, usePetStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
-import type { ChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/conversation-types";
+import type {
+  ChatRequestOptions,
+  Message,
+} from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { resolveGoalSubmission } from "@ngriffin_uk/polychat-library-chat/goal-command";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import {
@@ -153,6 +156,7 @@ export interface ThreadModeConfig {
   onClearContextAttachments?: () => void;
   pendingUserQuestions?: UserQuestionSet | null;
   onFileAsTask?: (objective: string) => Promise<boolean>;
+  onSaveToNote?: (message: Message) => void;
   composerBanner?: ReactNode;
   agentApprovals?: ConversationAgentApprovals;
   runSteering?: ConversationRunSteering;
@@ -1055,6 +1059,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
             onRequestSecondOpinion={(messageId) => void requestSecondOpinion(messageId)}
             isRequestingSecondOpinion={isRequestingSecondOpinion}
             onQuoteSelection={handleQuoteSelection}
+            onSaveToNote={modeConfig?.onSaveToNote}
           />
         </ConversationMessageColumn>
       )}

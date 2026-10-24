@@ -7,7 +7,7 @@
         "text"
       ],
       "output": [
-        "audio"
+        "speech"
       ]
     },
     "strengths": [
@@ -20,7 +20,7 @@
     "supportsAttachments": false,
     "supportsTemperature": true
   },
-  "description": "The workers ai/@cf/myshell ai/melotts family includes models that produce audio.",
+  "description": "The workers ai/@cf/myshell ai/melotts family includes models that produce speech.",
   "models": {
     "myshell-melotts": {
       "defaults": {

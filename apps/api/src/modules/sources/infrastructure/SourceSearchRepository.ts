@@ -9,6 +9,7 @@ import type { SourceRecord } from "./SourceRepository";
 export interface KnowledgeScope {
   userId: number;
   projectId?: string;
+  sourceIds?: readonly string[];
 }
 
 export interface SearchableSource extends SourceRecord {
@@ -50,6 +51,21 @@ const PASSAGE_COLUMNS = `c.id, s.id AS sourceId, d.source_revision AS sourceRevi
   CASE WHEN json_type(s.metadata, '$.lastSyncedAt') = 'text' THEN json_extract(s.metadata, '$.lastSyncedAt') ELSE NULL END AS lastSyncedAt`;
 const CURRENT_SOURCE = `d.document_type = 'source' AND s.id = d.source_id AND s.search_revision = d.source_revision
   AND s.status = 'available' AND s.kind != 'memory' AND ${sourceVisibilitySql("s")}`;
+
+function scopeFilter(scope: KnowledgeScope): { sql: string; values: unknown[] } {
+  const owner = scope.projectId
+    ? { sql: "s.project_id = ?", values: [scope.projectId] }
+    : { sql: "s.project_id IS NULL AND s.created_by_user_id = ?", values: [scope.userId] };
+
+  if (!scope.sourceIds) {
+    return owner;
+  }
+
+  return {
+    sql: `${owner.sql} AND s.id IN (SELECT value FROM json_each(?))`,
+    values: [...owner.values, JSON.stringify(scope.sourceIds)],
+  };
+}
 
 export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   getSource(sourceId: string): Promise<SearchableSource | null> {
@@ -152,16 +168,18 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   }
 
   lexical(scope: KnowledgeScope, query: string, type?: string): Promise<SourceSearchPassage[]> {
+    const filter = scopeFilter(scope);
+
     return this.runQuery<SourceSearchPassage>(
       `SELECT ${PASSAGE_COLUMNS}
        FROM search_fts
        JOIN search_chunk c ON c.rowid = search_fts.rowid
        JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id
        JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
-       WHERE search_fts MATCH ? AND ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"}
+       WHERE search_fts MATCH ? AND ${filter.sql}
          AND d.status IN ('lexical', 'active') AND (? IS NULL OR s.kind = ?)
        ORDER BY bm25(search_fts, 3.0, 1.0), c.id LIMIT 30`,
-      [query, scope.projectId ?? scope.userId, type ?? null, type ?? null],
+      [query, ...filter.values, type ?? null, type ?? null],
     );
   }
 
@@ -171,23 +189,27 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     type?: string,
     activeOnly = false,
   ): Promise<SourceSearchPassage[]> {
+    const filter = scopeFilter(scope);
+
     return this.runQuery<SourceSearchPassage>(
       `SELECT ${PASSAGE_COLUMNS}
        FROM search_chunk c
        JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id AND ${activeOnly ? "d.status = 'active'" : "d.status IN ('lexical', 'active')"}
        JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
-       WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND c.id IN (SELECT value FROM json_each(?))
+       WHERE ${filter.sql} AND c.id IN (SELECT value FROM json_each(?))
          AND (? IS NULL OR s.kind = ?)`,
-      [scope.projectId ?? scope.userId, JSON.stringify(vectorIds), type ?? null, type ?? null],
+      [...filter.values, JSON.stringify(vectorIds), type ?? null, type ?? null],
     );
   }
 
   getTargets(scope: KnowledgeScope): Promise<{ target: string; userId: number }[]> {
+    const filter = scopeFilter(scope);
+
     return this.runQuery<{ target: string; userId: number }>(
       `SELECT DISTINCT d.target, d.user_id AS userId FROM search_document d
        JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
-       WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND d.status = 'active' LIMIT 9`,
-      [scope.projectId ?? scope.userId],
+       WHERE ${filter.sql} AND d.status = 'active' LIMIT 9`,
+      filter.values,
     );
   }
 

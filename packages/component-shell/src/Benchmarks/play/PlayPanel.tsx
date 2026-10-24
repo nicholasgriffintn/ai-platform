@@ -112,7 +112,7 @@ export function PlayPanel({ benchmark }: { benchmark: BenchmarkSummary }) {
       />
       <div className="flex flex-wrap justify-end gap-2">
         {play.index > 0 ? (
-          <Button type="button" variant="ghost" onClick={() => play.setIndex(play.index - 1)}>
+          <Button type="button" variant="outline" onClick={() => play.setIndex(play.index - 1)}>
             Back
           </Button>
         ) : null}

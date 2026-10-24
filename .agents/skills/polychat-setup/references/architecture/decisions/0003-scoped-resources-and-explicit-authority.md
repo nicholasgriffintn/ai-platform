@@ -14,6 +14,8 @@ Media is source material, whoever made it. Uploaded images, audio and video, and
 
 Podcast shows are source collections of kind `podcast`. A show's RSS feed is the only unauthenticated path to source bytes: it is addressed by a hashed token on the collection, serves only available audio sources in that show, and a new link revokes the old one.
 
+Notebooks are conversation groups. The same collection that groups conversations also links the sources those conversations read, and outputs made for it carry its `collection_id`; deleting a notebook unlinks both without deleting either. A notebook narrows retrieval and never grants authority: a turn reads only the notebook's linked, available sources, each still authorised by its own personal or project scope, and a personal notebook holds only its owner's personal sources.
+
 Keep file bytes private. Authorise source and output access on the server; output shares use hashed, expiring, revocable tokens. Do not publish project conversations through personal conversation sharing. Use the owning service's creator and administrator mutation rules rather than inferring write permission from read access.
 
 Store validated settings in `capability_configuration`, keyed by scope, capability kind and ID. Configuration does not enable a capability. `project_capability` owns project associations; app and recipe associations are member-created and creator-managed, while project tools remain administrator-managed.

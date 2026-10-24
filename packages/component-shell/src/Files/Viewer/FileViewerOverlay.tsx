@@ -22,6 +22,7 @@ function useFilesBasePath(target: FileTarget): string | null {
 
 function OverlayViewer({ target, onClose }: { target: FileTarget; onClose: () => void }) {
   const basePath = useFilesBasePath(target);
+  const setOpenFile = useUIStore((state) => state.setOpenFile);
 
   if (!basePath) {
     return null;
@@ -31,7 +32,11 @@ function OverlayViewer({ target, onClose }: { target: FileTarget; onClose: () =>
     <FileViewer
       target={target}
       basePath={basePath}
-      chrome={{ fullPageHref: getFileTargetPath(basePath, target), onClose }}
+      chrome={{
+        fullPageHref: getFileTargetPath(basePath, target),
+        onClose,
+        onOpenFile: setOpenFile,
+      }}
       onDeleted={onClose}
     />
   );

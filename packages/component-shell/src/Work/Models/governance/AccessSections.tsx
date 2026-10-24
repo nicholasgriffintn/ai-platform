@@ -147,7 +147,7 @@ export function AuditSection() {
       title="Audit trail"
       description="Every import, upload, run, deployment, promotion, decision and export, with who did it."
       actions={
-        <Button size="sm" variant="ghost" onClick={() => void exportInventory()}>
+        <Button size="sm" variant="outline" onClick={() => void exportInventory()}>
           Export AI inventory
         </Button>
       }

@@ -1,4 +1,4 @@
-import { Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Card } from "@ngriffin_uk/polychat-component-ui";
 import type { ConversationHandle } from "@ngriffin_uk/polychat-schemas";
 
 interface ConversationHandleSettingsProps {
@@ -40,14 +40,15 @@ export function ConversationHandleSettings({
                   Granted {handle.grantedBy === "user" ? "by you" : "when spawned"}
                 </div>
               </div>
-              <button
-                type="button"
-                className="shrink-0 text-xs text-failure"
+              <Button
+                variant="outline"
+                size="xs"
+                className="shrink-0 text-failure hover:text-failure"
                 disabled={isRevoking}
                 onClick={() => onRevoke(handle.id)}
               >
                 Revoke
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

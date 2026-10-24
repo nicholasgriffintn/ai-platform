@@ -22,6 +22,7 @@ function output(overrides: Partial<OutputRecord>): OutputRecord {
     parent_output_id: null,
     capability_id: "articles",
     group_id: null,
+    collection_id: null,
     kind: "analysis",
     title: "Analysis",
     status: "pending",

@@ -23,6 +23,7 @@ import {
   connectorChatRequestOptionsSchema,
 } from "../engine-request.js";
 import { modelTierSchema } from "../model-lineup.js";
+import { conversationNotebookSchema } from "../notebooks.js";
 import { polyUiContextSchema } from "../poly.js";
 import { permissionModeSchema } from "../providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "../reasoning.js";
@@ -210,6 +211,7 @@ export const responseConversationSchema = z.union([
       type: conversationTypeSchema.optional(),
       project_id: z.string().min(1).optional(),
       subject: conversationSubjectSchema.optional(),
+      notebook: conversationNotebookSchema.optional(),
     })
     .strict(),
   z.null(),

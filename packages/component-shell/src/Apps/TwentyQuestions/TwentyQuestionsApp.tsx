@@ -243,14 +243,15 @@ export function TwentyQuestionsApp({ projectId }: { projectId?: string }) {
         )}
         {game.error && <p className="text-sm text-failure">{game.error}</p>}
         {game.phase === "playing" && (
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="xs"
             disabled={game.busy}
             onClick={() => void game.giveUp()}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            icon={<Flag size={12} />}
           >
-            <Flag size={12} /> Give up and reveal
-          </button>
+            Give up and reveal
+          </Button>
         )}
       </div>
 

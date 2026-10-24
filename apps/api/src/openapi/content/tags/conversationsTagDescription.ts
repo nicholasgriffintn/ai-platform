@@ -27,5 +27,5 @@ Items are the only content contract. A stored conversation is a list of items, a
 - \`PATCH /conversations/{id}\` updates the title, archive state, permission mode, branch parent or items. \`POST /conversations/archive\` archives in bulk.
 - \`POST /conversations/{id}/title\` generates a title. \`POST /conversations/{id}/share\` publishes a share link read at \`GET /conversations/shared/{token}\`.
 - \`/goal\`, \`/delegations\`, \`/queue\`, \`/organisation\`, \`/reactions\`, \`/check\` and \`/artifact_bindings/read\` live under the conversation they belong to.
-- \`/conversations/groups\` and \`/conversations/saved_items\` organise conversations across the account. \`/conversations/handles\` lists the agent handles granted to delegations.
+- \`/conversations/saved_items\` organises conversations across the account, and \`/notebooks\` groups them with shared sources. \`/conversations/handles\` lists the agent handles granted to delegations.
 `;

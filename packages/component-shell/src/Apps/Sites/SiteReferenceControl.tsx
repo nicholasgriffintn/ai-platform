@@ -77,7 +77,7 @@ export function SiteReferenceControl({
               <Button
                 type="button"
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={() => {
                   onChange(null);
                   setOpen(false);

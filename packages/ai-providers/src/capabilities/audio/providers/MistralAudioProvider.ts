@@ -164,7 +164,7 @@ export class MistralAudioProvider extends BaseAudioProvider implements AudioProv
         "Content-Type": "application/json",
       },
       {
-        model: MISTRAL_TTS_MODEL,
+        model: request.model ?? MISTRAL_TTS_MODEL,
         input: request.input,
         response_format: responseFormat,
         expressiveness: request.expressiveness,
@@ -182,7 +182,7 @@ export class MistralAudioProvider extends BaseAudioProvider implements AudioProv
     return {
       ...request.metadata,
       engine: "mistral",
-      model: MISTRAL_TTS_MODEL,
+      model: request.model ?? MISTRAL_TTS_MODEL,
       voice: request.refAudio ? undefined : (request.voice ?? DEFAULT_VOICE_ID),
       responseFormat,
       expressiveness: request.expressiveness,

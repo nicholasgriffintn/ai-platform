@@ -3,6 +3,7 @@ import type { ComputeSite } from "./compute-sites.js";
 import type { ModelTier } from "./model-lineup.js";
 import type { PetModelOverrides } from "./pets.js";
 import type { ResponseStyleSettings } from "./response-style.js";
+import type { SpeechProvider } from "./speech-voices.js";
 import type { ToolRule } from "./tool-rules.js";
 import type { GuardrailsProviderId, LastModelSelection } from "./user/userSettings.js";
 
@@ -69,8 +70,9 @@ export interface UserSettings {
   transcription_provider?: string;
   transcription_model?: string;
   transcription_vocabulary?: string[];
-  speech_provider?: string;
-  speech_model?: string;
+  speech_provider?: SpeechProvider | null;
+  speech_model?: string | null;
+  speech_voice?: string | null;
   speech_expressiveness?: number | null;
   speech_voices?: SavedSpeechVoice[];
   search_provider?: string;

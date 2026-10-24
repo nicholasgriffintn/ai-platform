@@ -3,6 +3,7 @@ import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { useSite } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
+import { PageShell } from "../../Shell/PageShell.js";
 import { AppSurfaceLoading } from "../AppSurface.js";
 import { SiteStudio } from "./SiteStudio.js";
 
@@ -45,12 +46,18 @@ function SiteStudioRoute({
 
   if (isAuthenticationError(error)) {
     return (
-      <SignInEmptyState title="Sign in to open this site" message="Sign in to open this site." />
+      <PageShell.Content className="max-w-6xl">
+        <SignInEmptyState title="Sign in to open this site" message="Sign in to open this site." />
+      </PageShell.Content>
     );
   }
 
   if (error || !site) {
-    return <EmptyState title="Site unavailable" message={error?.message ?? "Site not found"} />;
+    return (
+      <PageShell.Content className="max-w-6xl">
+        <EmptyState title="Site unavailable" message={error?.message ?? "Site not found"} />
+      </PageShell.Content>
+    );
   }
 
   return <SiteStudio key={site.id} basePath={basePath} projectId={projectId} site={site} />;

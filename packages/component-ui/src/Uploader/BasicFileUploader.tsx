@@ -26,14 +26,15 @@ export function BasicFileUploader({ id, accept = "*/*" }: { id: string; accept?:
           <p className="truncate text-muted-foreground" aria-live="polite">
             {fileName}
           </p>{" "}
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="xs"
             onClick={() => removeFile(files[0]?.id)}
-            className="font-medium text-destructive hover:underline"
+            className="text-failure hover:text-failure"
             aria-label={`Remove ${fileName}`}
           >
             Remove
-          </button>
+          </Button>
         </div>
       )}
     </div>

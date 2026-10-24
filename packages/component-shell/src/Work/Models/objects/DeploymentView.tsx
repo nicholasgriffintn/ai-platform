@@ -155,7 +155,7 @@ function DeploymentBody({ detail }: { detail: DeploymentDetail }) {
         </span>
         <Button
           size="sm"
-          variant="ghost"
+          variant="outline"
           onClick={() => open("versions", deployment.spec.versionId)}
         >
           Open the model

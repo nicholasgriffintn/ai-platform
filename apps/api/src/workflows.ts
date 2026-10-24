@@ -12,6 +12,7 @@ import { registerModelAnalysisQueue } from "~/modules/model-analysis/application
 import { registerModelDatasetsQueue } from "~/modules/model-datasets/application/queue/register";
 import { registerModelPlatformQueue } from "~/modules/model-governance/application/queue/register";
 import { registerModelRegistryQueue } from "~/modules/model-registry/application/queue/register";
+import { registerNotebooksQueue } from "~/modules/notebooks/application/queue/register";
 import { registerProjectTasksQueue } from "~/modules/project-tasks/application/queue/register";
 import { QueueExecutor } from "~/modules/queue/application/QueueExecutor";
 import { registerQueueMaintenance } from "~/modules/queue/application/register";
@@ -37,6 +38,7 @@ import type { IEnv } from "~/types";
 const logger = getLogger({ prefix: "queue/consumer" });
 
 registerSourcesQueue(workflows);
+registerNotebooksQueue(workflows);
 registerQueueMaintenance(workflows);
 registerTaskNotificationsQueue(workflows);
 registerResponsesQueue(workflows);

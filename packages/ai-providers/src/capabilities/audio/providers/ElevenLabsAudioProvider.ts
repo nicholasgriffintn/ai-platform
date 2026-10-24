@@ -4,6 +4,8 @@ import { ElevenLabsProvider } from "../../chat/providers/elevenlabs.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
 
+const DEFAULT_MODEL = "eleven_v4";
+
 export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioProvider {
   name = "elevenlabs";
   private readonly provider = new ElevenLabsProvider(this.runtime);
@@ -13,7 +15,8 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
     const objectKey = this.buildObjectKey(slugBase);
 
     const response = await this.provider.getResponse({
-      model: request.voice ?? "eleven_multilingual_v2",
+      model: request.model ?? DEFAULT_MODEL,
+      voice: request.voice,
       message: request.input,
       env: request.env,
       messages: [],

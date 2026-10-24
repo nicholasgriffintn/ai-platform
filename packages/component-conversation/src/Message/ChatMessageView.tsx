@@ -23,6 +23,7 @@ import { MessageSelectionQuote } from "./MessageSelectionQuote.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { ToolMessage } from "./ToolMessage.js";
 import { useMessageReactions, type MessageReactionHandler } from "./useMessageReactions.js";
+import { useSourceCitationClick } from "./useSourceCitationClick.js";
 
 const EMPTY_RESOLVED_TOOL_CALL_IDS: ReadonlySet<string> = new Set();
 
@@ -126,6 +127,7 @@ export const ChatMessageView = ({
   isStartingThread = false,
   isSaved = false,
   onToggleSaved,
+  onSaveToNote,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
@@ -164,6 +166,7 @@ export const ChatMessageView = ({
   isStartingThread?: boolean;
   isSaved?: boolean;
   onToggleSaved?: (messageId: string, isSaved: boolean) => void;
+  onSaveToNote?: (message: Message) => void;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -180,6 +183,7 @@ export const ChatMessageView = ({
     onCancel: () => void;
   }) => ReactNode;
 }) => {
+  const openSourceCitation = useSourceCitationClick();
   const reactionsEnabled =
     canReact && Boolean(conversationId) && !isSharedView && message.role === "assistant";
   const reactions = useMessageReactions({
@@ -267,7 +271,7 @@ export const ChatMessageView = ({
                 </div>
               )
             )}
-            <div className="flex-1 overflow-x-auto">
+            <div className="flex-1 overflow-x-auto" onClickCapture={openSourceCitation}>
               {isToolResponse ? (
                 <ToolMessage
                   message={message}
@@ -324,6 +328,7 @@ export const ChatMessageView = ({
                 isStartingThread={isStartingThread}
                 isSaved={isSaved}
                 onToggleSaved={onToggleSaved}
+                onSaveToNote={onSaveToNote}
                 onRequestSecondOpinion={onRequestSecondOpinion}
                 isRequestingSecondOpinion={isRequestingSecondOpinion}
                 isArchivedByCompaction={isArchivedByCompaction}

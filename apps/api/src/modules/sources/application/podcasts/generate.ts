@@ -20,6 +20,7 @@ import { StorageService } from "~/infrastructure/storage";
 import { assertPlanEntitlement } from "~/middleware/requirePlan";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { buildSourceMaterial } from "~/modules/sources/application/material";
 import { storeSourceCover } from "~/modules/sources/application/media/cover";
 import {
   publishSourceChanged,
@@ -39,7 +40,7 @@ import {
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { estimateSpokenSeconds, PODCAST_HOSTS, synthesisePodcastAudio } from "./audio";
-import { buildPodcastMaterial, writePodcastScript } from "./script";
+import { writePodcastScript } from "./script";
 
 const logger = getLogger({ prefix: "sources/podcasts" });
 
@@ -78,7 +79,7 @@ export async function startPodcastGeneration(
     }
   });
 
-  if (!input.material && !buildPodcastMaterial(chosenSources)) {
+  if (!input.material && !buildSourceMaterial(chosenSources)) {
     throw new AssistantError(
       "The chosen sources have no text to talk about. Transcribe or add text first.",
       ErrorType.PARAMS_ERROR,

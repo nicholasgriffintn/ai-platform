@@ -1,9 +1,18 @@
-import type { SavedSpeechVoice } from "@ngriffin_uk/polychat-schemas";
+import {
+  speechModelListResponseSchema,
+  type SavedSpeechVoice,
+  type SpeechModelOption,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
 export const speechVoicesService = {
+  async listModels(): Promise<SpeechModelOption[]> {
+    const response = await fetchApiOrThrow("/audio/speech/models", { method: "GET" });
+
+    return speechModelListResponseSchema.parse(await returnFetchedData<unknown>(response)).models;
+  },
   async create({
     name,
     sample,

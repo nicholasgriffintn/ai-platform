@@ -178,7 +178,7 @@ export class ConversationOrganisationRepository extends BaseRepository {
 
     if (!row) {
       throw new AssistantError(
-        "A group with this name already exists",
+        "A notebook with this name already exists",
         ErrorType.CONFLICT_ERROR,
         409,
       );

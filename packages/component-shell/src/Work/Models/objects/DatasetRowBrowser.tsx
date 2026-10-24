@@ -99,7 +99,7 @@ export function DatasetRowBrowser({ versionId }: { versionId: string }) {
           <span className="text-sm font-medium">
             {selected.length} row{selected.length === 1 ? "" : "s"} selected
           </span>
-          <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+          <Button size="sm" variant="outline" onClick={() => setSelected([])}>
             Clear
           </Button>
           <div className="ml-auto flex flex-wrap gap-2">
@@ -179,7 +179,7 @@ export function DatasetRowBrowser({ versionId }: { versionId: string }) {
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Button
           size="sm"
-          variant="ghost"
+          variant="outline"
           disabled={offset === 0}
           onClick={() => setOffset(Math.max(0, offset - PAGE))}
         >
@@ -190,7 +190,7 @@ export function DatasetRowBrowser({ versionId }: { versionId: string }) {
         </span>
         <Button
           size="sm"
-          variant="ghost"
+          variant="outline"
           disabled={offset + PAGE >= total}
           onClick={() => setOffset(offset + PAGE)}
         >

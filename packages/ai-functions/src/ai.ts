@@ -4,7 +4,7 @@ import {
   type Message,
   type ProviderRuntime,
 } from "@ngriffin_uk/polychat-ai-providers";
-import { flattenObjectRootSchema } from "@ngriffin_uk/polychat-library-tools";
+import { toStructuredOutputSchema } from "@ngriffin_uk/polychat-library-tools";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseAIResponseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -87,27 +87,13 @@ export function extractCompletionMetadata(response: unknown): CompletionMetadata
   };
 }
 
-function requiresEveryProperty(schema: Record<string, unknown>): boolean {
-  if (!isRecord(schema.properties)) {
-    return false;
-  }
-
-  const required = new Set(Array.isArray(schema.required) ? schema.required : []);
-
-  return Object.keys(schema.properties).every((key) => required.has(key));
-}
-
 function toJsonSchema(schema: z.ZodType, name: string) {
   const { $schema: _schema, ...jsonSchema } = z.toJSONSchema(schema, { io: "input" });
-  const flattened = flattenObjectRootSchema(jsonSchema);
+  const structured = toStructuredOutputSchema(jsonSchema);
 
   return {
     type: "json_schema" as const,
-    json_schema: {
-      name,
-      strict: requiresEveryProperty(flattened),
-      schema: flattened,
-    },
+    json_schema: { name, strict: structured.strict, schema: structured.schema },
   };
 }
 

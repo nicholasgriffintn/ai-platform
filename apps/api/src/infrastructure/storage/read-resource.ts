@@ -1,4 +1,5 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseByteRange } from "@ngriffin_uk/polychat-utility-server/http";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
@@ -116,17 +117,30 @@ export async function readPrivateFile(params: {
 }
 
 export async function getPrivateFileResponse(
-  record: PrivateFileRecord,
+  record: Pick<PrivateFileRecord, "mime_type" | "filename">,
   object: { arrayBuffer(): Promise<ArrayBuffer> },
+  rangeHeader?: string | null,
 ): Promise<Response> {
   const disposition = canRenderInline(record.mime_type) ? "inline" : "attachment";
+  const bytes = await object.arrayBuffer();
+  const range = parseByteRange(rangeHeader, bytes.byteLength);
+  const headers = {
+    "Content-Type": record.mime_type || "application/octet-stream",
+    "Content-Disposition": `${disposition}; filename="${(record.filename || "file").replace(/["\\\r\n]/g, "_")}"`,
+    "Cache-Control": "private, max-age=300",
+    "X-Content-Type-Options": "nosniff",
+    "Accept-Ranges": "bytes",
+  };
 
-  return new Response(await object.arrayBuffer(), {
+  if (!range) {
+    return new Response(bytes, { headers });
+  }
+
+  return new Response(bytes.slice(range.start, range.end + 1), {
+    status: 206,
     headers: {
-      "Content-Type": record.mime_type || "application/octet-stream",
-      "Content-Disposition": `${disposition}; filename="${(record.filename || "file").replace(/["\\\r\n]/g, "_")}"`,
-      "Cache-Control": "private, max-age=300",
-      "X-Content-Type-Options": "nosniff",
+      ...headers,
+      "Content-Range": `bytes ${range.start}-${range.end}/${bytes.byteLength}`,
     },
   });
 }

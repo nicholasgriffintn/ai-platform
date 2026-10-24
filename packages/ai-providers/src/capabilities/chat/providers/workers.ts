@@ -186,8 +186,9 @@ export class WorkersProvider extends BaseProvider {
 
     if (params.body?.input && modelConfig.inputSchema?.fields?.length) {
       const { input } = buildInputSchemaInput(params, modelConfig);
+      const fields = typeof input === "string" ? { prompt: input } : input;
 
-      return typeof input === "string" ? { prompt: input } : input;
+      return modelConfig.inputFormat === "multipart" ? buildMultipartInput(fields) : fields;
     }
 
     const flags = getModalityFlags(modelConfig);
@@ -297,8 +298,10 @@ export class WorkersProvider extends BaseProvider {
       }
 
       if (modelConfig.inputFormat === "multipart") {
+        const requested = isRecord(params.body?.input) ? params.body.input : {};
+
         return await buildMultipartInput(
-          { prompt },
+          { prompt, width: requested.width, height: requested.height, seed: requested.seed },
           imageData ? [toMultipartImage(imageData)] : [],
         );
       }
@@ -373,14 +376,20 @@ export class WorkersProvider extends BaseProvider {
       provider: "workers-ai",
       model,
       operation: async () => {
-        const modelResponse = await ai.run(model, body, {
-          gateway: {
-            id: resolveAiGatewayId(),
-            skipCache: shouldSkipAiGatewayCache(params),
-            cacheTtl: 7200,
-            metadata: getAiGatewayMetadataHeaders(params),
-          },
-        });
+        const modelResponse = await ai.run(
+          model,
+          body,
+          "multipart" in body
+            ? {}
+            : {
+                gateway: {
+                  id: resolveAiGatewayId(),
+                  skipCache: shouldSkipAiGatewayCache(params),
+                  cacheTtl: 7200,
+                  metadata: getAiGatewayMetadataHeaders(params),
+                },
+              },
+        );
 
         const modelConfig = await this.runtime.host.models.getModelConfigByMatchingModel(
           model,

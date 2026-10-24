@@ -10,7 +10,7 @@ function BackToPlace({ place, label }: { place: ModelPlace; label: string }) {
   const { goTo } = useModelsScope();
 
   return (
-    <Button size="sm" variant="ghost" onClick={() => goTo(place)}>
+    <Button size="sm" variant="outline" onClick={() => goTo(place)}>
       ← {label}
     </Button>
   );

@@ -54,6 +54,7 @@ export interface CreateConversationOptions {
   model_tier?: ModelTier | null;
   permission_mode?: PermissionMode;
   subject?: ConversationSubject | null;
+  group_id?: string;
 }
 
 export interface GlobalConversationSearchRow {
@@ -118,10 +119,13 @@ export class ConversationRepository extends BaseRepository {
          permission_mode,
          subject_type,
          subject_id,
+         group_id,
+         group_assigned_by_user_id,
+         group_assigned_at,
          created_at, 
          updated_at
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN ? IS NULL THEN NULL ELSE datetime('now') END, datetime('now'), datetime('now'))
        RETURNING *`,
       [
         conversationId,
@@ -136,6 +140,9 @@ export class ConversationRepository extends BaseRepository {
         permissionMode,
         subject?.type ?? null,
         subject?.id ?? null,
+        options.group_id ?? null,
+        options.group_id ? userId : null,
+        options.group_id ?? null,
       ],
       true,
     );

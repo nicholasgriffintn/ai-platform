@@ -1,5 +1,6 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
   ComposerDraftProvider,
@@ -7,7 +8,7 @@ import {
   useLocalComposerDraft,
   useLocalConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
-import type { ConversationSubject } from "@ngriffin_uk/polychat-schemas";
+import { DEFAULT_MODEL_TIER, type ConversationSubject } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 import type { FileItem } from "../Library/file-items.js";
@@ -32,6 +33,7 @@ export function FileAskPanel({
   attachment?: AttachmentData;
 }) {
   const scope = useLocalConversationScope(conversation.conversationId);
+  const modelTier = useChatStore((state) => state.modelTier);
   const draft = useLocalComposerDraft();
   const [attachmentDismissed, setAttachmentDismissed] = useState(false);
   const isNew = !scope.currentConversationId;
@@ -60,6 +62,7 @@ export function FileAskPanel({
                 onRemoveContextAttachment: () => setAttachmentDismissed(true),
                 requestOptions: {
                   conversation_subject: subject,
+                  model_tier: modelTier ?? DEFAULT_MODEL_TIER,
                   ...(projectId ? { metadata: { project_id: projectId } } : {}),
                 },
               }}

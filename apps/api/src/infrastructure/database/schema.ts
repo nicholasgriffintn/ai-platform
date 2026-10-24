@@ -731,6 +731,9 @@ export const resource = sqliteTable(
     tokens_used: integer(),
     is_active: integer({ mode: "boolean" }).default(true),
     superseded_by: text(),
+    collection_id: text().references((): AnySQLiteColumn => resourceCollection.id, {
+      onDelete: "set null",
+    }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -774,6 +777,9 @@ export const resource = sqliteTable(
     outputGroupIdx: index("resource_output_group_idx")
       .on(table.group_id)
       .where(sql`resource_type = 'output'`),
+    collectionIdx: index("resource_collection_idx")
+      .on(table.collection_id)
+      .where(sql`collection_id IS NOT NULL`),
     outputLookupIdx: index("resource_output_lookup_idx")
       .on(table.created_by_user_id, table.capability_id, table.group_id, table.kind)
       .where(sql`resource_type = 'output'`),
@@ -1931,6 +1937,9 @@ export const resourceCollection = sqliteTable(
       .default("general")
       .notNull(),
     feed_token_hash: text(),
+    instructions: text(),
+    settings: text({ mode: "json" }).$type<Record<string, unknown>>(),
+    guide: text({ mode: "json" }).$type<Record<string, unknown>>(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -2607,6 +2616,7 @@ export const tasks = sqliteTable(
         "model_upload_finalise",
         "model_platform_reconcile",
         "benchmark_run",
+        "notebook_job",
       ],
     }).notNull(),
     status: text({

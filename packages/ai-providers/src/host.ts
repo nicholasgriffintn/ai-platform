@@ -82,7 +82,6 @@ export interface ProviderModelResolver {
   getImageModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
   getVideoModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
   getMusicModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
-  getSpeechSynthesisModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
   getFimModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
   getNextEditModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;
   getApplyEditModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef | null>;

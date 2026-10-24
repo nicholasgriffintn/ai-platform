@@ -138,7 +138,7 @@ export function SpendSection() {
               {budget && (
                 <Button
                   size="sm"
-                  variant="ghost"
+                  variant="outline"
                   onClick={() =>
                     void runWithToast("Budget removed", () =>
                       mutations.deleteBudget.mutateAsync(projectId),

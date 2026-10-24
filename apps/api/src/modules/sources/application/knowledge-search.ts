@@ -26,12 +26,13 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 export async function requireKnowledgeScope(
   context: ServiceContext,
   projectId?: string,
+  sourceIds?: readonly string[],
 ): Promise<KnowledgeScope> {
   if (projectId) {
     await requireProjectAccess(context, projectId);
   }
 
-  return { userId: context.requireUser().id, projectId };
+  return { userId: context.requireUser().id, projectId, sourceIds };
 }
 
 async function semanticTargetPassages(
@@ -128,7 +129,7 @@ export async function searchProjectKnowledge(
   context: ServiceContext,
   input: ProjectKnowledgeSearchQuery,
 ): Promise<ProjectKnowledgeSearchResponse> {
-  const scope = await requireKnowledgeScope(context, input.projectId);
+  const scope = await requireKnowledgeScope(context, input.projectId, input.sourceIds);
   const fts = toFtsQuery(input.query);
   const [lexical, semantic] = await Promise.all([
     fts

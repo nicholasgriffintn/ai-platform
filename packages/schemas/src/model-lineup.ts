@@ -515,8 +515,13 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
   {
     id: "speech",
     label: "Voice",
-    description: "Reads responses aloud.",
-    candidates: [MODEL_DEFAULTS.speech.workersAi, MODEL_DEFAULTS.speech.replicate],
+    description:
+      "Reads responses aloud, narrates and voices podcasts. Scored voices rank by the text-to-speech arena; these order the unscored ones.",
+    candidates: [
+      { model: "aura-1", provider: "workers-ai" },
+      { model: "@cf/deepgram/aura-2-en", provider: "workers-ai" },
+      { model: "melotts", provider: "workers-ai" },
+    ],
   },
   {
     id: "fim",

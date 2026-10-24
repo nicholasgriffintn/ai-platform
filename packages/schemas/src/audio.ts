@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { queryBooleanSchema } from "./platform/query.js";
+import { speechProviderSchema } from "./speech-voices.js";
 
 export const transcribeQuerySchema = z.object({
   provider: z.enum(["workers", "mistral", "replicate", "greenpt"]).optional(),
@@ -91,13 +92,15 @@ export const textToSpeechSchema = z.object({
     description:
       "The text to generate audio for. Long text may be truncated to the selected provider limit.",
   }),
-  provider: z.enum(["polly", "cartesia", "elevenlabs", "melotts", "mistral"]).optional(),
+  provider: speechProviderSchema.optional().meta({
+    description: "The speech provider. Leave it out to use the best voice your account can reach.",
+  }),
   model: z.string().optional().meta({
-    description: "The speech model or voice to use with the selected provider.",
+    description: "A speech model ID from the model catalogue, such as eleven_v4.",
   }),
   lang: z.string().optional(),
   voice_id: z.string().optional().meta({
-    description: "Saved voice identifier for providers that support reusable voices.",
+    description: "A preset or saved voice for the selected provider.",
   }),
   ref_audio: z.string().optional().meta({
     description: "Base64-encoded reference audio for providers that support one-off voice cloning.",

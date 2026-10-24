@@ -580,8 +580,8 @@ Everything else, including the section order and the destructive action styling,
           speech: {
             audioDataUrl: SILENT_AUDIO_DATA_URL,
             audioMimeType: "audio/wav",
-            provider: "melotts",
-            model: "@cf/myshell-ai/melotts",
+            provider: "workers-ai",
+            model: "aura-1",
             generatedAt: Date.parse(at({ days: 2, hours: 3, minutes: 58 })),
           },
         },
@@ -1579,18 +1579,19 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     ["sourdough", "Sourdough starter rescue", at({ days: 8 }), { unread: true }],
     ["knives", "Which chef's knife", at({ days: 15 }), { snoozedUntil: ahead({ days: 2 }) }],
   ]) {
-    const built = thread(
+    thread(
       statements,
       {
         id: seedId("chat", slug),
         title: scenario(
           "Groups",
           title,
-          "Open the Cooking group in the sidebar. This one is " +
+          "Open the Cooking notebook from the sidebar. This one is " +
             (flags.unread ? "unread." : "snoozed for two days."),
-          "The group filter lists three cooking conversations with unread and snoozed indicators.",
+          "The notebook lists three cooking conversations with unread and snoozed indicators.",
         ),
         createdAt,
+        groupId: cookingGroup,
         ...flags,
       },
       [
@@ -1610,10 +1611,6 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
               : "The Victorinox Fibrox 20cm. Light, sharp out of the box and easy to maintain on a whetstone.",
         },
       ],
-    );
-
-    statements.push(
-      `UPDATE conversation SET group_id = ${sqlValue(cookingGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(createdAt)} WHERE id = ${sqlValue(built.conversationId)};`,
     );
   }
 
@@ -2169,6 +2166,12 @@ export function seedGuideMarkdown() {
     "**Try:** Open the Northstar Studio workspace. The Autumn launch project has a task in every board column, a coding sandbox run with evidence, and a pending invitation.",
     "",
     "**Expect:** Attention lists the blocked and review tasks, the run evidence panel shows changed files and the quality gate, and the audit log records each change.",
+    "",
+    "## Notebooks",
+    "",
+    "**Try:** Open Build Better Habits, Progress, Work and Loneliness, or Films of the Century So Far from the sidebar, and Launch research inside the Autumn launch project. Play the audio and video overviews, flip the flashcards, and click a citation in a notebook chat.",
+    "",
+    "**Expect:** Each notebook opens with its guide and suggested questions, citations open the cited source, flashcard and quiz progress is already partly filled in, and the habits notebook answers as a coach.",
     "",
   );
 

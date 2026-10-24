@@ -306,7 +306,7 @@ export function SpendRequestList({
           render: (request) =>
             request.state === "pending" && canResolve ? (
               <span className="inline-flex justify-end gap-2">
-                <Button size="xs" variant="ghost" onClick={() => onResolve(request, "rejected")}>
+                <Button size="xs" variant="outline" onClick={() => onResolve(request, "rejected")}>
                   Reject
                 </Button>
                 <Button size="xs" variant="outline" onClick={() => onResolve(request, "approved")}>

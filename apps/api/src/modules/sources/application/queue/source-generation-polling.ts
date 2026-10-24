@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
+import { loadUserContext } from "~/modules/queue/application/user-context";
 import { definePoll } from "~/modules/queue/application/workflows";
 import {
   failSourceGeneration,
@@ -13,8 +14,6 @@ import {
 } from "~/modules/sources/application/generation/finalise";
 import { readSourcePending } from "~/modules/sources/application/media/metadata";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
-
-import { loadUserContext } from "./user-context";
 
 export const sourceGenerationPolling = definePoll({
   payload: z.object({

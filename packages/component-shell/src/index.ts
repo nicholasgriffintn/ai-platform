@@ -34,6 +34,7 @@ export * from "./Delegations/DelegationTimelineView.js";
 export * from "./Files/FilesPage.js";
 export * from "./Files/Viewer/SharedOutputViewer.js";
 export * from "./Files/MemorySynthesisPanel.js";
+export * from "./Notebooks/NotebookPage.js";
 export * from "./Conversations/ConversationWorkbenchLayout.js";
 export * from "./Conversations/SharedConversationView.js";
 export * from "./Header/ConversationProductHeader.js";

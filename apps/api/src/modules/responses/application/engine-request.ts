@@ -141,6 +141,9 @@ export function toEngineRequest(
       ...(command.conversationId ? { completion_id: command.conversationId } : {}),
       ...(command.conversationType ? { conversation_type: command.conversationType } : {}),
       ...(command.conversationSubject ? { conversation_subject: command.conversationSubject } : {}),
+      ...(command.conversationNotebook
+        ? { conversation_notebook: command.conversationNotebook }
+        : {}),
       ...(command.commandId ? { command_id: command.commandId } : {}),
       ...(command.runId ? { run_id: command.runId } : {}),
       ...(command.stream !== undefined ? { stream: command.stream } : {}),

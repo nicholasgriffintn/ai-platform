@@ -173,12 +173,14 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     type: "output.changed",
     apply: (context) => {
       context.invalidate(["outputs"]);
+      context.invalidate(["notebooks"]);
     },
   },
   {
     type: "source.changed",
     apply: (context) => {
       context.invalidate(["sources"]);
+      context.invalidate(["notebooks"]);
     },
   },
   {

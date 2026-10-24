@@ -128,3 +128,24 @@ export function toQueryString(
 
   return text ? `?${text}` : "";
 }
+
+const YOUTUBE_VIDEO_ID_PATTERN = /^[\w-]{11}$/;
+
+export function readYouTubeVideoId(value: string): string | null {
+  if (!URL.canParse(value)) {
+    return null;
+  }
+
+  const url = new URL(value);
+  const host = url.hostname.replace(/^(www|m)\./, "");
+  const candidate =
+    host === "youtu.be"
+      ? url.pathname.slice(1).split("/")[0]
+      : host === "youtube.com" && url.pathname === "/watch"
+        ? url.searchParams.get("v")
+        : host === "youtube.com" && /^\/(shorts|embed|live)\//.test(url.pathname)
+          ? url.pathname.split("/")[2]
+          : null;
+
+  return candidate && YOUTUBE_VIDEO_ID_PATTERN.test(candidate) ? candidate : null;
+}

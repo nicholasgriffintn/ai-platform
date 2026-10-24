@@ -54,19 +54,19 @@ export function ConversationGroupsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Groups</DialogTitle>
+          <DialogTitle>Notebooks</DialogTitle>
           <DialogDescription>
-            Move this conversation into a group, or manage the groups available here. Groups never
-            change who can access a conversation.
+            Move this conversation into a notebook, or manage the notebooks here. A notebook shares
+            its sources with every conversation in it, and never changes who can see them.
           </DialogDescription>
         </DialogHeader>
 
         {isLoading || !availableGroups ? (
-          <p className="py-6 text-sm text-muted-foreground">Loading groups…</p>
+          <p className="py-6 text-sm text-muted-foreground">Loading notebooks…</p>
         ) : (
           <div className="space-y-3">
             {availableGroups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No groups yet.</p>
+              <p className="text-sm text-muted-foreground">No notebooks yet.</p>
             ) : (
               <ul className="space-y-1">
                 {availableGroups.map((group) => {
@@ -89,7 +89,7 @@ export function ConversationGroupsDialog({
                       {canManageGroups && (
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           disabled={isSaving}
                           onClick={() => onDeleteGroup(group)}
@@ -107,8 +107,8 @@ export function ConversationGroupsDialog({
                 <Input
                   value={groupName}
                   maxLength={40}
-                  placeholder="New group"
-                  aria-label="New group name"
+                  placeholder="New notebook"
+                  aria-label="New notebook name"
                   onChange={(event) => setGroupName(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {

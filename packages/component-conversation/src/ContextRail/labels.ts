@@ -28,6 +28,7 @@ const SEGMENT_PRESENTATION: Record<ContextSegmentKey, { label: string; swatch: s
   tool_results: { label: "Tool results", swatch: "bg-accent-orange" },
   summary: { label: "Summary", swatch: "bg-accent-pink" },
   subject: { label: "The file", swatch: "bg-accent-cyan" },
+  notebook: { label: "Notebook sources", swatch: "bg-accent-indigo" },
   used: { label: "Last reply's input", swatch: "bg-accent-blue" },
   reserved: { label: "Reserved for the reply", swatch: "bg-border-strong" },
   free: { label: "Free space", swatch: "bg-selection" },

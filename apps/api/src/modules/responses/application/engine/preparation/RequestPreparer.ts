@@ -27,6 +27,7 @@ import {
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { resolveNotebookProjection } from "~/modules/notebooks/application/projection";
 import { isRecipeExecutionRequest } from "~/modules/recipes/application/toolContext";
 import { loadActiveGoal } from "~/modules/responses/application/engine/preparation/goal";
 import {
@@ -106,6 +107,7 @@ import type {
   IUserSettings,
   MemoryScope,
   Message,
+  NotebookRunScope,
   Platform,
 } from "~/types";
 
@@ -146,6 +148,7 @@ export interface PreparedRequest {
   toolOptions?: ChatHostedToolSettings;
   requestOptions: CoreChatOptions["options"];
   memoryScope: MemoryScope;
+  notebook: NotebookRunScope | null;
   connectedConnectorProviders?: RecipeConnectorProvider[];
   contextSkills: Array<{ id: string; name: string }>;
   contextDocuments: ChatContextDocument[];
@@ -561,6 +564,13 @@ export class RequestPreparer {
       requestedProjectId: requestedSubjectProjectId,
       contextWindow: primaryModelConfig.contextWindow,
     });
+    const notebookProjection = await resolveNotebookProjection({
+      context: scope.options.context,
+      conversationId: shouldStoreMessages ? completionId : undefined,
+      requested: scope.options.conversation_notebook ?? null,
+      requestedProjectId: requestedSubjectProjectId,
+      contextWindow: primaryModelConfig.contextWindow,
+    });
     const contextDocuments = subjectProjection.document
       ? [...memoryProjection.documents, subjectProjection.document]
       : memoryProjection.documents;
@@ -568,6 +578,7 @@ export class RequestPreparer {
       baseSystemPrompt.prompt,
       memoryProjection.section,
       subjectProjection.section,
+      notebookProjection.section,
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -578,6 +589,9 @@ export class RequestPreparer {
         : []),
       ...(subjectProjection.section
         ? [{ kind: "subject" as const, text: subjectProjection.section }]
+        : []),
+      ...(notebookProjection.section
+        ? [{ kind: "notebook" as const, text: notebookProjection.section }]
         : []),
     ];
     const skillTools = hasFixedToolScope
@@ -604,6 +618,7 @@ export class RequestPreparer {
             deferSuggestedTools: enabledTools !== undefined,
           }),
           ...subjectProjection.tools,
+          ...notebookProjection.tools,
         ]),
       ];
     }
@@ -620,7 +635,10 @@ export class RequestPreparer {
       }),
     });
 
-    preparedTools = withoutSettingsDisabledTools(preparedTools, settingsDisabledTools);
+    preparedTools = withoutSettingsDisabledTools(preparedTools, [
+      ...settingsDisabledTools,
+      ...notebookProjection.disabledTools,
+    ]);
 
     if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
       toolIntentRequest = resolveToolIntentRequest(
@@ -671,6 +689,7 @@ export class RequestPreparer {
       toolOptions,
       requestOptions: scope.options.options,
       memoryScope: scope.memoryScope,
+      notebook: notebookProjection.scope,
       connectedConnectorProviders,
       contextSkills: skills
         .filter((skill) => skill.state === "ready")

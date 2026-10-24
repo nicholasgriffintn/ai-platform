@@ -2,6 +2,7 @@ import { projectKnowledgeSearchQuerySchema } from "@ngriffin_uk/polychat-schemas
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
+import { formatSourceCitation } from "~/modules/sources/domain/citation";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -11,17 +12,26 @@ export const search_documents: ApiToolDefinition = {
   ...search_documentsDescriptor,
   execute: async (args, context) => {
     const request = context.request;
+    const notebook = request.notebook;
 
     const response = await searchProjectKnowledge(
       resolveServiceContext(request),
       projectKnowledgeSearchQuerySchema.parse({
         query: args.query,
         type: args.type,
-        top_k: args.top_k ?? 3,
-        projectId: resolveRequestProjectId(request) ?? undefined,
+        top_k: args.top_k ?? (notebook ? 6 : 3),
+        projectId: notebook
+          ? (notebook.projectId ?? undefined)
+          : (resolveRequestProjectId(request) ?? undefined),
+        sourceIds: notebook?.sourceIds,
       }),
     );
-    const documents = response.data;
+    const documents = notebook
+      ? response.data.map((document) => ({
+          ...document,
+          cite: formatSourceCitation({ id: document.sourceId, title: document.title }),
+        }))
+      : response.data;
 
     if (documents.length === 0) {
       return {

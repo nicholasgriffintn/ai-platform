@@ -70,7 +70,7 @@ function GradersSection({ onCreate }: { onCreate: () => void }) {
                 can("build_datasets") && (
                   <Button
                     size="xs"
-                    variant="ghost"
+                    variant="outline"
                     onClick={() =>
                       void runWithToast("Grader deleted", () =>
                         mutations.deleteGrader.mutateAsync(grader.id),

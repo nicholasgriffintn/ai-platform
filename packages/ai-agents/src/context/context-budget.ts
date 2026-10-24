@@ -26,7 +26,7 @@ export interface ContextBudgetSkill {
 }
 
 export interface ContextBudgetSystemSection {
-  kind: "memory" | "project" | "subject";
+  kind: "memory" | "project" | "subject" | "notebook";
   text: string;
 }
 

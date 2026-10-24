@@ -11,9 +11,11 @@ export const UPLOAD_ACCEPT = "image/*,audio/*,video/*,.pdf,.md,.csv,.txt,.docx,.
 export function useFileCreation({
   projectId,
   folderId,
+  onUploaded,
 }: {
   projectId?: string;
   folderId?: string;
+  onUploaded?: (sourceId: string) => Promise<unknown>;
 }) {
   const [uploadInput, setUploadInput] = useState<HTMLInputElement | null>(null);
   const [dialog, setDialog] = useState<CreateDialog | null>(null);
@@ -39,6 +41,8 @@ export function useFileCreation({
             sourceId: uploaded.sourceId,
           });
         }
+
+        await onUploaded?.(uploaded.sourceId);
 
         toast.success(`${file.name} added`);
       } catch (error) {

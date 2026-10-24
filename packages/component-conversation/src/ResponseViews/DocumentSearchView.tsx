@@ -1,9 +1,11 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
+import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { FileText } from "lucide-react";
 
 interface RetrievedDocument {
   id: string;
+  projectId?: string;
   chunkId?: string;
   type?: string;
   title?: string;
@@ -28,9 +30,11 @@ const readDocument = (value: unknown): RetrievedDocument | null => {
   }
 
   const reranking = isRecord(value.reranking) ? value.reranking : undefined;
+  const provenance = isRecord(value.provenance) ? value.provenance : undefined;
 
   return {
     id: value.id,
+    projectId: typeof provenance?.projectId === "string" ? provenance.projectId : undefined,
     content: value.content,
     chunkId: typeof value.chunkId === "string" ? value.chunkId : undefined,
     type: typeof value.type === "string" ? value.type : undefined,
@@ -73,6 +77,7 @@ const readSearchData = (data: unknown): DocumentSearchData => {
 
 export function DocumentSearchView({ data }: { data: unknown }) {
   const { query, documents = [] } = readSearchData(data);
+  const setOpenFile = useUIStore((state) => state.setOpenFile);
 
   if (documents.length === 0) {
     return (
@@ -98,9 +103,16 @@ export function DocumentSearchView({ data }: { data: unknown }) {
           >
             <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <FileText size={13} aria-hidden="true" />
-              <span className="truncate font-medium text-foreground">
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenFile({ origin: "source", id: document.id, projectId: document.projectId })
+                }
+                className="cursor-pointer truncate font-medium text-foreground underline-offset-2 hover:underline"
+                title="Open this source"
+              >
                 {document.title || "Untitled"}
-              </span>
+              </button>
               {document.type && <span>{document.type}</span>}
               {typeof document.score === "number" &&
                 document.rankingMethod === "provider-score" && (

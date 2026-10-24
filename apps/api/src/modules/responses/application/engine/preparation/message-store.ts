@@ -159,5 +159,6 @@ export async function storeUserTurn({
     model_tier: modelTier,
     permission_mode: permissionMode,
     subject: options.conversation_subject,
+    notebookId: options.conversation_notebook?.id,
   });
 }

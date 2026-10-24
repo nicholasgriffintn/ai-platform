@@ -81,6 +81,7 @@ interface MessageListProps {
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   onQuoteSelection?: (selection: ChatMessageSelection) => void;
+  onSaveToNote?: (message: Message) => void;
   hideInlineUserQuestions?: boolean;
   retention?: ConversationRetention;
 }
@@ -108,6 +109,7 @@ export const MessageList = ({
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
   onQuoteSelection,
+  onSaveToNote,
   hideInlineUserQuestions = false,
   retention = "kept",
 }: MessageListProps) => {
@@ -414,6 +416,7 @@ export const MessageList = ({
                             canAccessProFeatures ? onRequestSecondOpinion : undefined
                           }
                           onQuoteSelection={onQuoteSelection}
+                          onSaveToNote={isPartialMessage ? undefined : onSaveToNote}
                           isRequestingSecondOpinion={isRequestingSecondOpinion}
                           isArchivedByCompaction={
                             latestCompactionMarkerIndex !== -1 &&

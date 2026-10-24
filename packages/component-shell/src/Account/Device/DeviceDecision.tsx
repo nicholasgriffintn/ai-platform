@@ -58,7 +58,7 @@ function PendingRequest({
           <ButtonLink href={API_KEYS_HREF} variant="secondary" size="lg" fullWidth>
             Manage API keys
           </ButtonLink>
-          <Button variant="ghost" size="lg" fullWidth onClick={onReset}>
+          <Button variant="outline" size="lg" fullWidth onClick={onReset}>
             Connect another
           </Button>
         </div>
@@ -74,7 +74,7 @@ function PendingRequest({
         title={`${clientName} was turned away`}
         description="Nothing was shared with the device. You can close this page."
       >
-        <Button variant="ghost" size="lg" fullWidth onClick={onReset}>
+        <Button variant="outline" size="lg" fullWidth onClick={onReset}>
           Enter another code
         </Button>
       </DevicePairingCard>

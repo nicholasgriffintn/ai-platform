@@ -7,6 +7,7 @@ import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
 import { responseStyleSchema } from "../response-style.js";
 import { searchProviderSchema } from "../search.js";
+import { speechProviderSchema } from "../speech-voices.js";
 import { toolRulesSchema } from "../tool-rules.js";
 
 export const guardrailsProviderIds = [
@@ -107,8 +108,9 @@ export const updateUserSettingsSchema = z
     transcription_provider: z.string().optional(),
     transcription_model: z.string().optional(),
     transcription_vocabulary: transcriptionVocabularySchema.optional(),
-    speech_provider: z.string().optional(),
-    speech_model: z.string().optional(),
+    speech_provider: speechProviderSchema.nullable().optional(),
+    speech_model: z.string().trim().min(1).nullable().optional(),
+    speech_voice: z.string().trim().min(1).max(128).nullable().optional(),
     speech_expressiveness: speechExpressivenessSchema.nullable().optional(),
     search_provider: z.union([searchProviderSchema, z.literal("")]).optional(),
     sandbox_model: z.string().optional(),

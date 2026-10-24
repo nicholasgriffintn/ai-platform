@@ -155,7 +155,7 @@ export function HireTeammateDialog({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button

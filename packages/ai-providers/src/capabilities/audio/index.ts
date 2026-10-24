@@ -9,6 +9,7 @@ export interface AudioSynthesisRequest {
   slug?: string;
   storage?: ProviderStorage;
   store?: boolean;
+  model?: string;
   voice?: string;
   locale?: string;
   refAudio?: string;

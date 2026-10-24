@@ -172,6 +172,21 @@ export class StorageService {
     await this.requireBucket().delete(normalizedKey);
   }
 
+  async deletePrefix(prefix: string): Promise<void> {
+    let cursor: string | undefined;
+
+    do {
+      const page = await this.requireBucket().list({ prefix, cursor });
+      const keys = page.objects.map((object) => object.key);
+
+      if (keys.length > 0) {
+        await this.requireBucket().delete(keys);
+      }
+
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+  }
+
   async storeSourceFile({
     key,
     data,

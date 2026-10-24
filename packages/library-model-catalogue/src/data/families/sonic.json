@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "speech"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ]
+  },
+  "description": "Cartesia Sonic text-to-speech models.",
+  "models": {
+    "sonic-3-6": {
+      "defaults": {
+        "name": "Sonic 3.6",
+        "description": "Cartesia's current Sonic speech model, tracking the latest stable snapshot.",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1292,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 14
+            }
+          ]
+        }
+      }
+    }
+  }
+}

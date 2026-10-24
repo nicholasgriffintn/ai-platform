@@ -90,7 +90,7 @@ export function ConnectorDetailsModal({
             </Button>
             {isConnected && (
               <Button
-                variant="ghost"
+                variant="outline"
                 className="w-full text-failure hover:text-failure"
                 disabled={isDisconnecting}
                 onClick={() => onDisconnect(connector)}

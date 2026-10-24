@@ -1,9 +1,12 @@
 import { extendPreservingAccessors } from "@ngriffin_uk/polychat-utility-core";
+import z from "zod/v4";
 
-import { generateSpeech } from "~/modules/generate/application/speech";
+import { handleTextToSpeech } from "~/modules/audio/application/speech";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_speech as create_speechDescriptor } from "./definitions/speech";
+
+const createSpeechArgsSchema = z.object({ prompt: z.string(), lang: z.string().optional() });
 
 export const create_speech: ApiToolDefinition = extendPreservingAccessors<
   typeof create_speechDescriptor,
@@ -11,18 +14,15 @@ export const create_speech: ApiToolDefinition = extendPreservingAccessors<
 >(create_speechDescriptor, {
   execute: async (args, context) => {
     const req = context.request;
-    const completion_id = context.completionId;
-    const app_url = context.appUrl;
-
-    const response = await generateSpeech({
-      completion_id,
-      app_url,
+    const { prompt, lang } = createSpeechArgsSchema.parse(args);
+    const response = await handleTextToSpeech({
       env: req.env,
       context: req.context,
-      args,
       user: req.user,
+      input: prompt,
+      lang: lang?.slice(0, 2),
     });
 
-    return response;
+    return Array.isArray(response) ? response[0] : response;
   },
 });

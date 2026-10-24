@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PageShell } from "../Shell/PageShell.js";
 import { useAppChrome } from "./AppChrome.js";
 import { createNoteSaver } from "./Notes/note-saver.js";
 import { NoteEditor } from "./Notes/NoteEditor.js";
@@ -94,13 +95,20 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
 
     if (noteId && isAuthenticationError(noteError)) {
       return (
-        <SignInEmptyState title="Sign in to view this note" message="Sign in to open this note." />
+        <PageShell.Content className="max-w-6xl">
+          <SignInEmptyState
+            title="Sign in to view this note"
+            message="Sign in to open this note."
+          />
+        </PageShell.Content>
       );
     }
 
     if (noteId && !isNoteLoading && (noteError || !note)) {
       return (
-        <EmptyState title="Note unavailable" message={noteError?.message ?? "Note not found"} />
+        <PageShell.Content className="max-w-6xl">
+          <EmptyState title="Note unavailable" message={noteError?.message ?? "Note not found"} />
+        </PageShell.Content>
       );
     }
 

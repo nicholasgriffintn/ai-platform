@@ -52,7 +52,7 @@ export function ProjectWorkbenchRunControls({
       {controlState === "paused" ? (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
           collapseLabel="xl"
           disabled={disabled}
@@ -66,7 +66,7 @@ export function ProjectWorkbenchRunControls({
       ) : (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
           collapseLabel="xl"
           disabled={disabled || controlState !== "running"}
@@ -87,7 +87,7 @@ export function ProjectWorkbenchRunControls({
       {controlState === "running" ? (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
           collapseLabel="xl"
           disabled={disabled}
@@ -102,7 +102,7 @@ export function ProjectWorkbenchRunControls({
 
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
         collapseLabel="xl"
         disabled={disabled || controlState === "cancelled"}

@@ -16,7 +16,12 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AppChromeProvider } from "./AppChrome.js";
 import { AppRuntime } from "./AppRuntime.js";
-import { AppSurface, AppSurfaceLoading, getAppSurfacePresentation } from "./AppSurface.js";
+import {
+  AppSurface,
+  AppSurfaceLoading,
+  CONTAINED_APP_PRESENTATION,
+  getAppSurfacePresentation,
+} from "./AppSurface.js";
 
 export function AppRoute({
   appId,
@@ -64,9 +69,34 @@ export function AppRoute({
     </AppChromeProvider>
   );
 
+  const unavailable =
+    needsSignIn || isAuthenticationError(pageError) ? (
+      <SignInEmptyState
+        title="Sign in to open this app"
+        message="This app keeps your work, so it needs an account."
+        className="min-h-[300px]"
+      />
+    ) : pageError ? (
+      <EmptyState title="App unavailable" message={pageError.message} />
+    ) : !definition ? (
+      <EmptyState title="App not found" message="This app does not exist." />
+    ) : !isEnabled ? (
+      <EmptyState
+        icon={<Puzzle size={24} className="text-muted-foreground" />}
+        title="App not enabled"
+        message={`Add ${title} to the project before opening it.`}
+        action={
+          <ButtonLink variant="primary" href={getPluginsPath(surface)}>
+            Open plugins
+          </ButtonLink>
+        }
+      />
+    ) : null;
+  const surfacePresentation = !isLoading && unavailable ? CONTAINED_APP_PRESENTATION : presentation;
+
   return (
-    <AppSurface presentation={presentation}>
-      {presentation.layout === "contained" && (
+    <AppSurface presentation={surfacePresentation}>
+      {surfacePresentation.layout === "contained" && (
         <>
           <PageShell.Header title={title ?? "App"} />
           {backLink && <BackLink href={backLink.to} label={backLink.label} />}
@@ -76,32 +106,7 @@ export function AppRoute({
         </>
       )}
 
-      {isLoading ? (
-        <AppSurfaceLoading presentation={presentation} />
-      ) : needsSignIn || isAuthenticationError(pageError) ? (
-        <SignInEmptyState
-          title="Sign in to open this app"
-          message="This app keeps your work, so it needs an account."
-          className="min-h-[300px]"
-        />
-      ) : pageError ? (
-        <EmptyState title="App unavailable" message={pageError.message} />
-      ) : !definition ? (
-        <EmptyState title="App not found" message="This app does not exist." />
-      ) : !isEnabled ? (
-        <EmptyState
-          icon={<Puzzle size={24} className="text-muted-foreground" />}
-          title="App not enabled"
-          message={`Add ${title} to the project before opening it.`}
-          action={
-            <ButtonLink variant="primary" href={getPluginsPath(surface)}>
-              Open plugins
-            </ButtonLink>
-          }
-        />
-      ) : (
-        runtime
-      )}
+      {isLoading ? <AppSurfaceLoading presentation={presentation} /> : (unavailable ?? runtime)}
     </AppSurface>
   );
 }

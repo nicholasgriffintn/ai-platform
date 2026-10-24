@@ -446,7 +446,7 @@ export function FlowEditorDialog({
           ) : null}
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSaving || stages.some((stage) => !stage.name.trim())}>

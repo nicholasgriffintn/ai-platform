@@ -77,7 +77,7 @@ export function TaskBoardFilters({
             {matchCount === totalCount ? `${totalCount} items` : `${matchCount} of ${totalCount}`}
           </span>
           {isFiltered ? (
-            <Button variant="ghost" size="sm" onClick={onClear}>
+            <Button variant="outline" size="sm" onClick={onClear}>
               Clear filters
             </Button>
           ) : null}

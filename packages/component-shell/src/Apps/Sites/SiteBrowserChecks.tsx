@@ -59,14 +59,14 @@ export function SiteBrowserChecks({
         Check browsers
       </Button>
       {verification.isPending && (
-        <Button size="sm" variant="ghost" onClick={() => controller.current?.abort()}>
+        <Button size="sm" variant="outline" onClick={() => controller.current?.abort()}>
           Cancel
         </Button>
       )}
       {evidence && (
         <Popover>
           <PopoverTrigger asChild>
-            <Button size="sm" variant="ghost">
+            <Button size="sm" variant="outline">
               {evidence.status === "passed"
                 ? "Browsers passed"
                 : evidence.status === "failed"

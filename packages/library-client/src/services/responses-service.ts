@@ -226,6 +226,7 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
       type: requestOptionFields.conversation_type,
       project_id: projectId,
       subject: requestOptionFields.conversation_subject,
+      notebook: requestOptionFields.conversation_notebook,
     }),
     input,
     instructions: requestOptionFields.system_prompt,

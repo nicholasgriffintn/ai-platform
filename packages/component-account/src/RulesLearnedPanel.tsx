@@ -76,7 +76,7 @@ export function RulesLearnedPanel({
                   </p>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="xs"
                   isLoading={dismissingId === correction.id}
                   onClick={() => onDismiss(correction.id)}

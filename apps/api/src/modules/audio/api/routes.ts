@@ -1,6 +1,7 @@
 import {
   apiResponseSchema,
   createSpeechVoiceFormSchema,
+  speechModelListResponseSchema,
   speechVoiceListResponseSchema,
   speechVoiceResponseSchema,
   textToSpeechSchema,
@@ -16,16 +17,14 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { checkSpeechAccess } from "~/modules/audio/application/access";
-import {
-  defaultSpeechModelsByProvider,
-  handleTextToSpeech,
-} from "~/modules/audio/application/speech";
+import { handleTextToSpeech } from "~/modules/audio/application/speech";
 import { handleTranscribe } from "~/modules/audio/application/transcribe";
 import {
   createSpeechVoice,
   deleteSpeechVoice,
   listSpeechVoices,
 } from "~/modules/audio/application/voices";
+import { rankSpeechModels } from "~/modules/models/application/resolve";
 
 const app = new Hono();
 
@@ -120,6 +119,22 @@ addRoute(app, "post", "/speech", {
   },
 });
 
+addRoute(app, "get", "/speech/models", {
+  tags: ["audio"],
+  summary: "List speech models",
+  description:
+    "Lists the speech models you can use, best first by text-to-speech arena score. The first one is what Polychat picks when you leave speech on automatic.",
+  auth: true,
+  responses: {
+    200: { description: "Ranked speech models", schema: speechModelListResponseSchema },
+  },
+  handler: async ({ serviceContext, user }) => ({
+    models: (await rankSpeechModels(serviceContext.env, user)).map(
+      ({ id, name, provider, arenaScore }) => ({ id, name, provider, arenaScore }),
+    ),
+  }),
+});
+
 addRoute(app, "get", "/voices", {
   tags: ["audio"],
   summary: "List saved voices",
@@ -172,7 +187,6 @@ addRoute(app, "delete", "/voices/:voice_id", {
       env: serviceContext.env,
       user,
       voiceId: params.voice_id,
-      defaultVoice: defaultSpeechModelsByProvider.mistral,
     });
 
     return { deleted: true as const };

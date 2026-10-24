@@ -18,6 +18,7 @@ import {
   Bookmark,
   GitBranch,
   MessageSquareQuote,
+  NotebookPen,
   Volume2,
   VolumeX,
   RefreshCw,
@@ -46,6 +47,7 @@ export interface MessageActionsProps {
   isStartingThread?: boolean;
   isSaved?: boolean;
   onToggleSaved?: (messageId: string, isSaved: boolean) => void;
+  onSaveToNote?: (message: Message) => void;
   onRequestSecondOpinion?: (messageId: string) => void;
   isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
@@ -74,6 +76,7 @@ export const MessageActions = ({
   onStartThread,
   isSaved = false,
   onToggleSaved,
+  onSaveToNote,
   isStartingThread = false,
   onRequestSecondOpinion,
   isRequestingSecondOpinion = false,
@@ -329,6 +332,18 @@ export const MessageActions = ({
             aria-label={isSaved ? "Stop keeping this" : "Keep this for later"}
           >
             <Bookmark size={14} fill={isSaved ? "currentColor" : "none"} />
+          </Button>
+        )}
+        {onSaveToNote && !isSharedView && message.role === "assistant" && hasText && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onSaveToNote(message)}
+            className={messageActionButtonClassName}
+            title="Save to note"
+            aria-label="Save to note"
+          >
+            <NotebookPen size={14} />
           </Button>
         )}
         {message.role !== "user" && (message.created || message.timestamp) && (

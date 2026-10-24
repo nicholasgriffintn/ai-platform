@@ -46,7 +46,7 @@ export function McpConnectionManager({
             </span>
           </span>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             disabled={connections.remove.isPending}
             onClick={() => connections.remove.mutate(connection.id)}

@@ -29,18 +29,16 @@ function OpeningMessage({
   suggestions: ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-4 pb-2 text-left">
-      <div className="flex items-end gap-3">
-        <div className="shrink-0">{pet}</div>
-        <p className="polychat-eyebrow pb-2">{opening.label}</p>
-      </div>
+    <div className="polychat-conversation-opening mx-auto flex w-full max-w-2xl flex-col items-start gap-3 px-4 pt-4 pb-2 text-left">
+      {pet}
+      <p className="polychat-eyebrow">{opening.label}</p>
       <div className="polychat-motion-enter prose max-w-none text-foreground dark:prose-invert">
         <MemoizedMarkdown>{opening.markdown}</MemoizedMarkdown>
       </div>
-      <p className="polychat-motion-enter polychat-motion-stagger-1 pt-2 text-sm text-muted-foreground">
+      <p className="polychat-motion-enter polychat-motion-stagger-1 pt-1 text-sm text-muted-foreground">
         Start with one of these, or say what you have in mind.
       </p>
-      {suggestions}
+      <div className="w-full">{suggestions}</div>
     </div>
   );
 }

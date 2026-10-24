@@ -5,9 +5,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
 
 const deleteObject = vi.hoisted(() => vi.fn());
+const deletePrefix = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock("~/infrastructure/storage", () => ({
-  StorageService: { forPrivateAssets: vi.fn(() => ({ deleteObject })) },
+  StorageService: { forPrivateAssets: vi.fn(() => ({ deleteObject, deletePrefix })) },
 }));
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
@@ -44,6 +45,7 @@ const output: OutputRecord = {
   parent_output_id: null,
   capability_id: "notes",
   group_id: null,
+  collection_id: null,
   kind: "note",
   title: "Launch notes",
   status: "ready",

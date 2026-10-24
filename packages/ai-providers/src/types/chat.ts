@@ -216,6 +216,7 @@ export type ProviderExecutionParams = {
     longitude: number;
   };
   lang?: string;
+  voice?: string;
   body?: Record<string, any>;
   require_approval_for?: ToolPermission[];
   denied_tools?: string[];

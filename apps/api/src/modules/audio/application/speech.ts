@@ -1,35 +1,24 @@
 import type { AudioResponseFormat } from "@ngriffin_uk/polychat-ai-providers";
-import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
+import type { SpeechProvider } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { getAudioProvider } from "~/infrastructure/providers/capabilities/audio";
-import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { StorageService } from "~/infrastructure/storage";
-import { requiresAuthenticatedSpeechProvider } from "~/modules/audio/application/access";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { IEnv, IFunctionResponse, IUser, IUserSettings } from "~/types";
+import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { prepareSpeechInput } from "./input";
-import { resolveMistralSpeechVoice } from "./voices";
-
-export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";
-
-export const defaultSpeechModelsByProvider: Record<SpeechProvider, string> = {
-  polly: "Ruth",
-  cartesia: "sonic-3.5",
-  elevenlabs: "eleven_multilingual_v2",
-  melotts: "@cf/myshell-ai/melotts",
-  mistral: "voice_1787",
-};
+import { resolveSpeechVoice, type SpeechVoiceSelection } from "./speech-voice";
 
 type TextToSpeechRequest = {
   env: IEnv;
   input: string;
-  user: IUser;
+  user?: IUser;
   provider?: SpeechProvider;
   model?: string;
   lang?: string;
@@ -41,55 +30,34 @@ type TextToSpeechRequest = {
   context?: ServiceContext;
 };
 
-function isSpeechProvider(provider: unknown): provider is SpeechProvider {
-  return (
-    provider === "polly" ||
-    provider === "cartesia" ||
-    provider === "elevenlabs" ||
-    provider === "melotts" ||
-    provider === "mistral"
-  );
-}
+export async function synthesiseSpeech(
+  context: ServiceContext,
+  selection: SpeechVoiceSelection,
+  text: string,
+  language: string,
+): Promise<Uint8Array> {
+  const user = context.requireUser();
+  const result = await getAudioProvider(selection.provider, { env: context.env, user }).synthesize({
+    input: text,
+    env: context.env,
+    user,
+    store: false,
+    model: selection.model,
+    voice: selection.voice,
+    locale: language,
+  });
 
-function resolveSpeechSettings({
-  provider,
-  model,
-  voiceId,
-  userSettings,
-}: Pick<TextToSpeechRequest, "provider" | "model"> & {
-  voiceId?: string;
-  userSettings: IUserSettings | null;
-}): {
-  provider: SpeechProvider;
-  model: string;
-} {
-  const settingsProvider = userSettings?.speech_provider;
-  const resolvedProvider =
-    provider ?? (isSpeechProvider(settingsProvider) ? settingsProvider : "melotts");
-  const configuredModel = provider ? undefined : userSettings?.speech_model;
-
-  if (resolvedProvider === "mistral") {
-    return {
-      provider: resolvedProvider,
-      model: resolveMistralSpeechVoice({
-        requestedVoice: voiceId ?? (provider ? model : undefined),
-        configuredVoice: configuredModel,
-        defaultVoice: defaultSpeechModelsByProvider.mistral,
-        savedVoices: userSettings?.speech_voices ?? [],
-      }),
-    };
+  if (!result.audioBase64) {
+    throw new AssistantError("No speech was generated", ErrorType.PROVIDER_ERROR);
   }
 
-  return {
-    provider: resolvedProvider,
-    model: (provider ? model : configuredModel) || defaultSpeechModelsByProvider[resolvedProvider],
-  };
+  return new Uint8Array(base64ToBuffer(result.audioBase64));
 }
 
 export const handleTextToSpeech = async (
   req: TextToSpeechRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
-  const { input: rawInput, env, user, provider, model, lang = "en", store = true } = req;
+  const { input: rawInput, env, user, lang = "en", store = true } = req;
 
   const input = sanitiseInput(rawInput);
 
@@ -100,35 +68,19 @@ export const handleTextToSpeech = async (
   const userSettings = user?.id
     ? await new UserSettingsRepository(env).getUserSettings(user.id)
     : null;
-  const speechSettings = resolveSpeechSettings({
-    provider,
-    model,
-    voiceId: req.voice_id,
-    userSettings,
+  const selection = await resolveSpeechVoice(env, user, {
+    role: "narrator",
+    settings: userSettings,
+    provider: req.provider,
+    model: req.model,
+    voice: req.voice_id,
   });
 
-  if (!user?.id && requiresAuthenticatedSpeechProvider(speechSettings.provider)) {
-    throw new AssistantError(
-      `Speech generation with ${speechSettings.provider} requires an authenticated account.`,
-      ErrorType.AUTHENTICATION_ERROR,
-    );
-  }
-
-  if (user?.id && !hasProEntitlement(user)) {
-    if (!(await hasUserProviderApiKey({ env, user, providerName: speechSettings.provider }))) {
-      throw new AssistantError(
-        `Speech generation requires a configured ${speechSettings.provider} provider key`,
-        ErrorType.AUTHORISATION_ERROR,
-        403,
-      );
-    }
-  }
-
-  const preparedInput = prepareSpeechInput(input, speechSettings.provider);
+  const preparedInput = prepareSpeechInput(input, selection.provider);
   const storage = store ? new StorageService(env.PRIVATE_ASSETS_BUCKET) : undefined;
   const slug = `tts/${generateId()}`;
 
-  const audioProvider = getAudioProvider(speechSettings.provider, { env, user });
+  const audioProvider = getAudioProvider(selection.provider, { env, user });
   const synthesisResult = await audioProvider.synthesize({
     input: preparedInput.input,
     env,
@@ -136,10 +88,8 @@ export const handleTextToSpeech = async (
     slug,
     storage,
     store,
-    voice:
-      speechSettings.provider === "mistral"
-        ? speechSettings.model
-        : (req.voice_id ?? speechSettings.model),
+    model: selection.model,
+    voice: selection.voice,
     locale: lang,
     refAudio: req.ref_audio,
     responseFormat: req.response_format,
@@ -156,7 +106,7 @@ export const handleTextToSpeech = async (
   let audioOutputId: string | undefined;
   let audioUrl = synthesisResult.url;
 
-  if (store && normalizedKey && !audioUrl) {
+  if (store && normalizedKey && !audioUrl && user) {
     const storedAsset = await StorageService.forPrivateAssets(
       resolveServiceContext({ context: req.context, env, user }),
     ).recordOutputFile({
@@ -165,7 +115,7 @@ export const handleTextToSpeech = async (
       capabilityId: "speech",
       kind: "speech",
       title: "Generated speech",
-      content: { provider: speechSettings.provider, model: speechSettings.model },
+      content: { provider: selection.provider, model: selection.id, voice: selection.voice },
       mimeType: synthesisResult.audioMimeType || "audio/mpeg",
       filename: normalizedKey.split("/").at(-1) ?? null,
     });
@@ -202,8 +152,9 @@ export const handleTextToSpeech = async (
     status: "success",
     content,
     data: {
-      provider: speechSettings.provider,
-      model: speechSettings.model,
+      provider: selection.provider,
+      model: selection.id,
+      voice: selection.voice,
       audioOutputId,
       audioKey,
       audioUrl,

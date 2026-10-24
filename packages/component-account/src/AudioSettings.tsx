@@ -1,13 +1,17 @@
 import { FormSelect, type FormSelectOption, Textarea } from "@ngriffin_uk/polychat-component-ui";
-import { MAX_TRANSCRIPTION_VOCABULARY_TERMS } from "@ngriffin_uk/polychat-schemas";
+import {
+  MAX_TRANSCRIPTION_VOCABULARY_TERMS,
+  SPEECH_PROVIDER_VOICES,
+  SPEECH_PROVIDERS,
+  type SpeechModelOption,
+} from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
 import { SettingsSection } from "./SettingsSection";
 import { SpeechVoiceLibrary, type SpeechVoiceLibraryActions } from "./SpeechVoiceLibrary";
 import {
-  getSpeechModelOptions,
+  getSpeechVoiceOptions,
   getTranscriptionModelOptions,
-  speechProviderOptions,
   transcriptionProviderOptions,
 } from "./transcription-settings";
 import type { UserSettingsFormData } from "./user-settings";
@@ -25,7 +29,12 @@ interface AudioSettingsProps {
   updateFormData: (patch: Partial<UserSettingsFormData>) => void;
   onTranscriptionProviderChange: (value: string) => void;
   onSpeechProviderChange: (value: string) => void;
+  speechModels: readonly SpeechModelOption[];
   speechVoiceLibrary?: SpeechVoiceLibraryActions;
+}
+
+function speechModelLabel(model: SpeechModelOption): string {
+  return model.arenaScore ? `${model.name} · arena ${model.arenaScore}` : model.name;
 }
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: string }) {
@@ -45,10 +54,21 @@ export function AudioSettings({
   updateFormData,
   onTranscriptionProviderChange,
   onSpeechProviderChange,
+  speechModels,
   speechVoiceLibrary,
 }: AudioSettingsProps) {
   const savedVoices = formData.speech_voices ?? [];
-  const isMistralSpeech = formData.speech_provider === "mistral";
+  const speechProvider = formData.speech_provider ?? null;
+  const isMistralSpeech = speechProvider === "mistral";
+  const [automatic] = speechModels;
+  const providerModels = speechModels.filter((model) => model.provider === speechProvider);
+  const speechProviderOptions: FormSelectOption[] = [
+    { value: "", label: automatic ? `Automatic - ${automatic.name}` : "Automatic" },
+    ...SPEECH_PROVIDERS.filter(
+      (provider) =>
+        provider === speechProvider || speechModels.some((model) => model.provider === provider),
+    ).map((provider) => ({ value: provider, label: SPEECH_PROVIDER_VOICES[provider].label })),
+  ];
 
   return (
     <SettingsSection title="Audio">
@@ -109,36 +129,64 @@ export function AudioSettings({
         <div>
           <FieldLabel htmlFor="speech_provider">Speech Provider</FieldLabel>
           <FieldDescription>
-            Choose the provider for text-to-speech response audio.
+            Automatic uses the best-rated voice your account can reach, so adding a provider key
+            such as ElevenLabs upgrades read-aloud, podcasts and video narration.
           </FieldDescription>
           <FormSelect
             id="speech_provider"
             name="speech_provider"
-            value={formData.speech_provider}
-            options={speechProviderOptions.map((provider) => ({
-              value: provider.id,
-              label: provider.label,
-            }))}
+            value={speechProvider ?? ""}
+            options={speechProviderOptions}
             onValueChange={onSpeechProviderChange}
           />
         </div>
 
-        <div>
-          <FieldLabel htmlFor="speech_model">Speech Model</FieldLabel>
-          <FieldDescription>
-            Select from the available voices or models for the {formData.speech_provider} provider.
-          </FieldDescription>
-          <FormSelect
-            id="speech_model"
-            name="speech_model"
-            value={formData.speech_model}
-            options={getSpeechModelOptions(formData.speech_provider, savedVoices).map((model) => ({
-              value: model.id,
-              label: model.label,
-            }))}
-            onValueChange={(value) => updateFormData({ speech_model: value })}
-          />
-        </div>
+        {speechProvider && (
+          <div>
+            <FieldLabel htmlFor="speech_model">Speech Model</FieldLabel>
+            <FieldDescription>
+              Scores come from the Artificial Analysis text-to-speech arena.
+            </FieldDescription>
+            <FormSelect
+              id="speech_model"
+              name="speech_model"
+              value={formData.speech_model ?? ""}
+              options={[
+                {
+                  value: "",
+                  label: providerModels[0]
+                    ? `Best available - ${providerModels[0].name}`
+                    : "Best available",
+                },
+                ...providerModels.map((model) => ({
+                  value: model.id,
+                  label: speechModelLabel(model),
+                })),
+              ]}
+              onValueChange={(value) => updateFormData({ speech_model: value || null })}
+            />
+          </div>
+        )}
+
+        {speechProvider && (
+          <div>
+            <FieldLabel htmlFor="speech_voice">Voice</FieldLabel>
+            <FieldDescription>Used when Polychat reads to you or narrates.</FieldDescription>
+            <FormSelect
+              id="speech_voice"
+              name="speech_voice"
+              value={formData.speech_voice ?? ""}
+              options={[
+                { value: "", label: "Default voice" },
+                ...getSpeechVoiceOptions(speechProvider, savedVoices).map((voice) => ({
+                  value: voice.id,
+                  label: voice.label,
+                })),
+              ]}
+              onValueChange={(value) => updateFormData({ speech_voice: value || null })}
+            />
+          </div>
+        )}
 
         {isMistralSpeech && (
           <div>

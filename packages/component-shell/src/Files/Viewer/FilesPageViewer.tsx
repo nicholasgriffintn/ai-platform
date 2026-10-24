@@ -1,6 +1,7 @@
 import {
   type FilesFileLocation,
   fileTargetFromLocation,
+  getFileTargetPath,
 } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
 
@@ -26,7 +27,10 @@ export function FilesPageViewer({
       <FileViewer
         target={fileTargetFromLocation(location, projectId)}
         basePath={basePath}
-        chrome={{ onClose: close }}
+        chrome={{
+          onClose: close,
+          onOpenFile: (target) => void navigate(getFileTargetPath(basePath, target)),
+        }}
         onDeleted={close}
       />
     </FileViewerDialog>

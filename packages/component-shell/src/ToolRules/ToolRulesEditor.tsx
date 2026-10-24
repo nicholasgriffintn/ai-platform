@@ -64,7 +64,7 @@ export function ToolRulesEditor() {
                 />
                 <Button
                   size="xs"
-                  variant="ghost"
+                  variant="outline"
                   disabled={isSaving}
                   onClick={() => void save(rule.toolName, null, `Rule for ${name} removed`)}
                 >

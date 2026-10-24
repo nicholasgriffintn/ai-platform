@@ -75,7 +75,7 @@ export function OverviewPlace() {
         title="Aliases"
         description="What chat, teammates and apps actually call. Promote behind an alias; never repoint a client."
         actions={
-          <Button size="sm" variant="ghost" onClick={() => goTo("deployments")}>
+          <Button size="sm" variant="outline" onClick={() => goTo("deployments")}>
             All serving
           </Button>
         }
@@ -93,7 +93,7 @@ export function OverviewPlace() {
       <ModelsSection
         title="Recent training"
         actions={
-          <Button size="sm" variant="ghost" onClick={() => goTo("training")}>
+          <Button size="sm" variant="outline" onClick={() => goTo("training")}>
             All runs
           </Button>
         }

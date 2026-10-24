@@ -14,6 +14,7 @@ export * from "./chat-stream-response.js";
 export * from "./compact-conversation-response.js";
 export * from "./connectors.js";
 export * from "./conversation-organisation.js";
+export * from "./notebooks.js";
 export * from "./conversation-response.js";
 export * from "./conversation-threads.js";
 export * from "./desktop-downloads.js";

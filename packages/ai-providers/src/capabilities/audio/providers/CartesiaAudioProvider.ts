@@ -4,6 +4,8 @@ import { CertesiaProvider } from "../../chat/providers/certesia.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
 
+const DEFAULT_MODEL = "sonic-3.6";
+
 export class CartesiaAudioProvider extends BaseAudioProvider implements AudioProvider {
   name = "cartesia";
   private readonly provider = new CertesiaProvider(this.runtime);
@@ -13,7 +15,9 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
     const objectKey = this.buildObjectKey(slugBase);
 
     const response = await this.provider.getResponse({
-      model: request.voice ?? "sonic-3.5",
+      model: request.model ?? DEFAULT_MODEL,
+      voice: request.voice,
+      lang: request.locale,
       message: request.input,
       env: request.env,
       messages: [],

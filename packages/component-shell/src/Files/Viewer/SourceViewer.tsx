@@ -34,12 +34,14 @@ import {
   ImagePlus,
   Info,
   Link2,
+  Library,
 } from "lucide-react";
 
 import { sourceToFileItem } from "../Library/file-items.js";
 import { useFileActions } from "../Library/useFileActions.js";
 import { useSourceActionItemTasks } from "../Sources/useSourceActionItemTasks.js";
 import { FileNoPreview } from "./FileNoPreview.js";
+import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
@@ -342,6 +344,9 @@ export function SourceViewer({
   }
 
   const item = sourceToFileItem(source, basePath);
+  const linkedSources = (readSourceGeneration(source.metadata)?.sourceIds ?? [])
+    .filter((id) => id !== source.id)
+    .map((id) => ({ id, name: null }));
   const sourceAttachment = createSourceAttachment(source, getSourceContentUrl(source.id));
 
   return (
@@ -371,6 +376,23 @@ export function SourceViewer({
           icon: <Info size={14} aria-hidden="true" />,
           content: <SourceInfo source={source} detail={item.detail} />,
         },
+        ...(linkedSources.length > 0
+          ? [
+              {
+                key: "sources" as const,
+                label: "Sources",
+                detail: String(linkedSources.length),
+                icon: <Library size={14} aria-hidden="true" />,
+                content: (
+                  <FileSourcesList
+                    sources={linkedSources}
+                    projectId={projectId}
+                    onOpen={(id) => chrome.onOpenFile({ origin: "source", id, projectId })}
+                  />
+                ),
+              },
+            ]
+          : []),
       ]}
     />
   );

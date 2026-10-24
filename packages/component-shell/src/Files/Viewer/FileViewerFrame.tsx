@@ -5,7 +5,11 @@ import {
   OptionsMenuSeparator,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
-import { useSourceCollections, useSubjectConversations } from "@ngriffin_uk/polychat-library-react";
+import {
+  type FileTarget,
+  useSourceCollections,
+  useSubjectConversations,
+} from "@ngriffin_uk/polychat-library-react";
 import type { ConversationSubject } from "@ngriffin_uk/polychat-schemas";
 import { History, Maximize2, MessageSquare, MessagesSquare, SquarePen } from "lucide-react";
 import type { ReactNode } from "react";
@@ -31,6 +35,7 @@ export interface FileViewerDrawerEntry {
 export interface FileViewerChrome {
   fullPageHref?: string;
   onClose: () => void;
+  onOpenFile: (target: FileTarget) => void;
 }
 
 function buildSidePanel({

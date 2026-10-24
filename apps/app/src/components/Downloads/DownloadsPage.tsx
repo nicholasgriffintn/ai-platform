@@ -1,4 +1,4 @@
-import { buttonClassName, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Button, buttonClassName, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useDesktopDownloads } from "@ngriffin_uk/polychat-library-react";
 import type { DesktopDownload, DesktopPlatform } from "@ngriffin_uk/polychat-schemas";
 import { DESKTOP_PLATFORMS } from "@ngriffin_uk/polychat-schemas";
@@ -163,14 +163,14 @@ export function DownloadsPage() {
           {isError ? (
             <span className="inline-flex items-center gap-2">
               The download list is not answering right now.
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="xs"
                 onClick={() => void refetch()}
-                className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+                icon={<RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />}
               >
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 Try again
-              </button>
+              </Button>
             </span>
           ) : null}
         </div>

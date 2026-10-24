@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
+  rankPolicyModelsByMediaScore,
   resolveDefaultChatModel,
   resolveHostedAgentModel,
   resolveTierModel,
@@ -159,6 +160,42 @@ describe("resolveHostedAgentModel", () => {
     expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
       "@cf/moonshotai/kimi-k2.7-code",
     );
+  });
+});
+
+describe("rankPolicyModelsByMediaScore", () => {
+  const arena = (value: number) => ({
+    mediaScores: [{ key: "text_to_speechElo", label: "Text-to-speech arena", value }],
+  });
+
+  it("ranks scored voices by arena score, then unscored ones by lineup order", () => {
+    const models: ModelConfig = {
+      melotts: model({ matchingModel: "melotts", provider: "workers-ai", isFree: true }),
+      "aura-1": model({ matchingModel: "aura-1", provider: "workers-ai", isFree: true }),
+      polly: model({ provider: "polly", isByokEnabled: true, artificialAnalysis: arena(1067) }),
+      eleven: model({
+        provider: "elevenlabs",
+        isByokEnabled: true,
+        artificialAnalysis: arena(1332),
+      }),
+      sonic: model({
+        provider: "cartesia",
+        isPlatformEnabled: false,
+        artificialAnalysis: arena(1292),
+      }),
+    };
+
+    const ranked = rankPolicyModelsByMediaScore(
+      models,
+      "text_to_speechElo",
+      [
+        { model: "aura-1", provider: "workers-ai" },
+        { model: "melotts", provider: "workers-ai" },
+      ],
+      { plan_id: "free" },
+    );
+
+    expect(ranked.map((entry) => entry.id)).toEqual(["eleven", "polly", "aura-1", "melotts"]);
   });
 });
 

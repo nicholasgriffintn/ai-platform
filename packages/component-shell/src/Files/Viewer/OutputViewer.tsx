@@ -1,5 +1,6 @@
 import {
   DocumentMetadataPanel,
+  isStudyOutputKind,
   isWorkOutputKind,
   ViewerStatus,
 } from "@ngriffin_uk/polychat-component-content";
@@ -27,11 +28,21 @@ import {
   type Output,
 } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
-import { Check, Download, History, Info, Link2, MessageSquareText, Share2 } from "lucide-react";
+import {
+  Check,
+  Download,
+  History,
+  Info,
+  Library,
+  Link2,
+  MessageSquareText,
+  Share2,
+} from "lucide-react";
 import { useState } from "react";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../../Content/ResponseRenderer.js";
+import { StudyOutputStage } from "../../Notebooks/StudyOutputStage.js";
 import { DocumentOutputDiscussion } from "../DocumentOutputDiscussion.js";
 import { DocumentOutputWorkbench } from "../DocumentOutputWorkbench.js";
 import { outputToFileItem } from "../Library/file-items.js";
@@ -42,6 +53,7 @@ import { useOutputSharing } from "../useOutputSharing.js";
 import { WorkOutputWorkbench } from "../WorkOutputWorkbench.js";
 import { EditToggleButton } from "./EditToggleButton.js";
 import { FileNoPreview } from "./FileNoPreview.js";
+import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { GenerationStage, hasGenerationMedia } from "./GenerationStage.js";
@@ -72,6 +84,14 @@ function OutputStage({
     return (
       <div className="mx-auto max-w-5xl px-6 py-8">
         <WorkOutputWorkbench key={output.id} output={output} />
+      </div>
+    );
+  }
+
+  if (isStudyOutputKind(output.kind)) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-8">
+        <StudyOutputStage key={output.id} output={output} />
       </div>
     );
   }
@@ -270,6 +290,7 @@ export function OutputViewer({
   }
 
   const item = outputToFileItem(output, basePath);
+  const linkedSources = output.provenance?.sources ?? [];
   const documentBody = readDocumentBody(output.content);
   const isDocument = documentBody !== null && output.kind === DOCUMENT_OUTPUT_KIND;
   const hasCopiedLink = sharing.copiedOutputId === output.id;
@@ -328,6 +349,23 @@ export function OutputViewer({
           icon: <Info size={14} aria-hidden="true" />,
           content: <OutputInfo output={output} />,
         },
+        ...(linkedSources.length > 0
+          ? [
+              {
+                key: "sources" as const,
+                label: "Sources",
+                detail: String(linkedSources.length),
+                icon: <Library size={14} aria-hidden="true" />,
+                content: (
+                  <FileSourcesList
+                    sources={linkedSources}
+                    projectId={projectId}
+                    onOpen={(id) => chrome.onOpenFile({ origin: "source", id, projectId })}
+                  />
+                ),
+              },
+            ]
+          : []),
         {
           key: "history",
           label: "Version history",

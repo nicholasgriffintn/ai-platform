@@ -1,4 +1,5 @@
 import {
+  type ConversationNotebook,
   type ConversationSubject,
   isStoredItem,
   itemsToMessages,
@@ -63,6 +64,7 @@ function mapConversation(conversation: ParsedCreateResponseRequest["conversation
   conversationType?: ResponseCommand["conversationType"];
   projectId?: string;
   subject?: ConversationSubject;
+  notebook?: ConversationNotebook;
   ephemeral: boolean;
 } {
   if (conversation === null) {
@@ -82,6 +84,7 @@ function mapConversation(conversation: ParsedCreateResponseRequest["conversation
     conversationType: conversation.type,
     projectId: conversation.project_id,
     subject: conversation.subject,
+    notebook: conversation.notebook,
     ephemeral: false,
   };
 }
@@ -192,6 +195,7 @@ export function toResponseCommand(
       conversationId: conversation.completionId,
       conversationType: conversation.conversationType,
       conversationSubject: conversation.subject,
+      conversationNotebook: conversation.notebook,
       commandId: request.idempotency_key,
       runId: request.response_id,
       stream: request.stream,

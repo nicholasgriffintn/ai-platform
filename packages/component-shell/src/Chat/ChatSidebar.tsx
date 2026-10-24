@@ -12,9 +12,13 @@ import { shouldExplainStorage } from "@ngriffin_uk/polychat-library-chat/convers
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   buildConversationSections,
+  getNotebookPath,
   getPersonalConversationPath,
+  matchNotebookId,
   MODE_BASE_PATHS,
+  PERSONAL_SURFACE,
   useChats,
+  useNotebooks,
   useDeleteChat,
   useSetAllChatsArchived,
   useTrackEvent,
@@ -92,6 +96,8 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     sortBy: conversationListFilters.sortBy,
     teammateThreads: "exclude",
   });
+  const { data: notebooks } = useNotebooks(undefined, isAuthenticated);
+  const activeNotebookId = matchNotebookId(pathname);
   const deleteChat = useDeleteChat();
   const conversationStreams = useStreamActivityStore((state) => state.streams);
   const updateTitle = useUpdateChatTitle();
@@ -240,6 +246,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     {
       groupBy: conversationListFilters.groupBy,
       sortBy: conversationListFilters.sortBy,
+      notebooks: notebooks ?? [],
     },
   );
 
@@ -322,6 +329,11 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                   ) : null
                 }
                 onSelect={handleConversationClick}
+                activeNotebookId={activeNotebookId}
+                onOpenNotebook={(notebookId) => {
+                  void navigate(getNotebookPath(PERSONAL_SURFACE, notebookId));
+                  closeOnMobile();
+                }}
                 renderItemActions={(conversation) => (
                   <ConversationItemActions
                     conversation={conversation}

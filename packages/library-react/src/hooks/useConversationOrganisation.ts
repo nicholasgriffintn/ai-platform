@@ -1,7 +1,7 @@
 import {
   CHATS_QUERY_KEY,
-  createConversationGroup,
-  deleteConversationGroup,
+  createNotebook,
+  deleteNotebook,
   getConversationOrganisation,
   moveConversationToGroup,
   updateConversationOrganisation,
@@ -14,6 +14,7 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
+import { NOTEBOOKS_QUERY_KEY } from "./useNotebooks.js";
 import { projectQueryKey } from "./useWorkspaces.js";
 
 const organisationQueryKey = (conversationId: string) => [
@@ -35,6 +36,7 @@ export function useConversationOrganisation(conversationId: string | null, proje
       queryClient.invalidateQueries({ queryKey: ["global-search"] }),
       queryClient.invalidateQueries({ queryKey: ["work-attention"] }),
       queryClient.invalidateQueries({ queryKey: TEAMMATE_ROSTER_QUERY_KEY }),
+      queryClient.invalidateQueries({ queryKey: [NOTEBOOKS_QUERY_KEY] }),
       ...(projectId
         ? [queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) })]
         : []),
@@ -76,7 +78,7 @@ export function useConversationOrganisation(conversationId: string | null, proje
 
   const createGroup = useMutation({
     mutationFn: ({ name, scope }: { name: string; scope: ConversationGroupScope }) =>
-      createConversationGroup(name, scope),
+      createNotebook({ name, scope }),
     onSuccess: async () => {
       await query.refetch();
       await invalidateLists();
@@ -84,7 +86,7 @@ export function useConversationOrganisation(conversationId: string | null, proje
   });
 
   const deleteGroup = useMutation({
-    mutationFn: (group: ConversationGroup) => deleteConversationGroup(group.id),
+    mutationFn: (group: ConversationGroup) => deleteNotebook(group.id),
     onSuccess: async () => {
       await query.refetch();
       await invalidateLists();

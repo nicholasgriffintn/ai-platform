@@ -6,6 +6,7 @@ import {
   normaliseSameOriginRoute,
   readUrlExtension,
   readUrlPath,
+  readYouTubeVideoId,
 } from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
@@ -86,5 +87,18 @@ describe("isCookieSameSite", () => {
     [undefined, "https://api.polychat.app", false],
   ])("treats %s calling %s as same-site: %s", (page, api, expected) => {
     expect(isCookieSameSite(page, api)).toBe(expected);
+  });
+});
+
+describe("readYouTubeVideoId", () => {
+  it.each([
+    ["https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42", "dQw4w9WgXcQ"],
+    ["https://youtu.be/dQw4w9WgXcQ?si=share", "dQw4w9WgXcQ"],
+    ["https://m.youtube.com/shorts/dQw4w9WgXcQ", "dQw4w9WgXcQ"],
+    ["https://www.youtube.com/channel/UCabc", null],
+    ["https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ", null],
+    ["https://www.youtube.com/watch?v=short", null],
+  ])("reads %s as %s", (url, expected) => {
+    expect(readYouTubeVideoId(url)).toBe(expected);
   });
 });

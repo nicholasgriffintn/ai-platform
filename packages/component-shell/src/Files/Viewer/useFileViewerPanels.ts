@@ -2,7 +2,13 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useMediaQuery } from "@ngriffin_uk/polychat-utility-react";
 import { useState } from "react";
 
-export type FileViewerDrawer = "info" | "history" | "comments" | "conversations" | "sharing";
+export type FileViewerDrawer =
+  | "info"
+  | "sources"
+  | "history"
+  | "comments"
+  | "conversations"
+  | "sharing";
 
 export interface FileConversationState {
   key: string;

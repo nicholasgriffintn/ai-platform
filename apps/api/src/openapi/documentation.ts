@@ -33,6 +33,7 @@ import { modelRegistryTagDescription } from "./content/tags/modelRegistryTagDesc
 import { modelServingTagDescription } from "./content/tags/modelServingTagDescription.js";
 import { modelsTagDescription } from "./content/tags/modelsTagDescription.js";
 import { modelTrainingTagDescription } from "./content/tags/modelTrainingTagDescription.js";
+import { notebooksTagDescription } from "./content/tags/notebooksTagDescription.js";
 import { notificationsTagDescription } from "./content/tags/notificationsTagDescription.js";
 import { outputsTagDescription } from "./content/tags/outputsTagDescription.js";
 import { petsTagDescription } from "./content/tags/petsTagDescription.js";
@@ -82,6 +83,7 @@ export const tagDescriptions = {
   outputs: outputsTagDescription,
   documents: documentsTagDescription,
   sources: sourcesTagDescription,
+  notebooks: notebooksTagDescription,
   uploads: uploadsTagDescription,
   sites: sitesTagDescription,
   capabilities: capabilitiesTagDescription,

@@ -1,6 +1,5 @@
+import type { SpeechProvider } from "@ngriffin_uk/polychat-schemas";
 import { truncateToWords } from "@ngriffin_uk/polychat-utility-core";
-
-import type { SpeechProvider } from "./speech";
 
 const defaultSpeechInputLimit = {
   maxCharacters: 4096,

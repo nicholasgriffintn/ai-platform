@@ -14,6 +14,7 @@ import { conversationTypeSchema } from "./conversation-type.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { conversationNotebookSchema } from "./notebooks.js";
 import { polyRequestSchema } from "./poly.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
@@ -572,6 +573,11 @@ export const engineRequestFieldsSchema = z.object({
   conversation_subject: conversationSubjectSchema
     .optional()
     .describe("The file a new conversation is about. Ignored once the conversation exists."),
+  conversation_notebook: conversationNotebookSchema
+    .optional()
+    .describe(
+      "The notebook a new conversation joins, and the notebook sources this turn may read. The notebook id is ignored once the conversation exists.",
+    ),
   command_payload: recordSchema
     .optional()
     .describe("Durable command metadata for resumable or approval-gated runs."),
@@ -629,6 +635,7 @@ export const responseSettingsSchema = engineRequestFieldsSchema.omit({
   completion_id: true,
   conversation_type: true,
   conversation_subject: true,
+  conversation_notebook: true,
   command_id: true,
   run_id: true,
   stream: true,

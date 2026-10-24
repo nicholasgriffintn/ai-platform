@@ -51,7 +51,8 @@
         "speed": 4,
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFree": true
       }
     },
     "@cf/moonshotai/kimi-k2.6": {
@@ -425,7 +426,8 @@
       "model": "workers-ai/@cf/deepgram/aura-1/deepgram-aura-1",
       "matchingModel": "@cf/deepgram/aura-1",
       "overrides": {
-        "speed": 4
+        "speed": 4,
+        "isFree": true
       },
       "unset": [
         "supportsAttachments",
@@ -497,7 +499,8 @@
       "overrides": {
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFree": true
       }
     },
     "@cf/deepgram/aura-2-es": {
@@ -506,7 +509,8 @@
       "overrides": {
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFree": true
       }
     },
     "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b": {

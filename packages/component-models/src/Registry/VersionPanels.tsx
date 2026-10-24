@@ -231,12 +231,12 @@ export function RouteList({
             <div className="font-mono text-xs text-muted-foreground">{route.providerModelId}</div>
           </button>
           {onExportBom && (
-            <Button size="sm" variant="ghost" onClick={() => onExportBom(route)}>
+            <Button size="sm" variant="outline" onClick={() => onExportBom(route)}>
               ML-BOM
             </Button>
           )}
           {canGovern && onRetire && route.status === "active" && (
-            <Button size="sm" variant="ghost" onClick={() => onRetire(route)}>
+            <Button size="sm" variant="outline" onClick={() => onRetire(route)}>
               Retire
             </Button>
           )}

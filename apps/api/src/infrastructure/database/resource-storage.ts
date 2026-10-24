@@ -4,7 +4,7 @@ export const sourceResourceColumns =
 export const sourceResourceSql = `(SELECT ${sourceResourceColumns} FROM resource WHERE resource_type = 'source')`;
 
 export const outputResourceColumns =
-  "id, created_by_user_id, project_id, conversation_id, parent_output_id, capability_id, group_id, kind, title, status, sensitivity, content, storage_key, mime_type, filename, byte_size, revision, created_at, updated_at, provenance_json, revision_created_by_user_id, revision_created_at, revision_operation, restored_from_revision";
+  "id, created_by_user_id, project_id, conversation_id, parent_output_id, capability_id, group_id, collection_id, kind, title, status, sensitivity, content, storage_key, mime_type, filename, byte_size, revision, created_at, updated_at, provenance_json, revision_created_by_user_id, revision_created_at, revision_operation, restored_from_revision";
 
 export const outputResourceSql = `(SELECT ${outputResourceColumns} FROM resource WHERE resource_type = 'output')`;
 

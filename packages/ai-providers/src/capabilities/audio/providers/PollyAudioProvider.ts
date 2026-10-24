@@ -1,6 +1,10 @@
+import { SPEECH_PROVIDER_VOICES } from "@ngriffin_uk/polychat-schemas";
+
 import { PollyProvider } from "../../chat/providers/polly.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
+
+const DEFAULT_ENGINE = "generative";
 
 export class PollyAudioProvider extends BaseAudioProvider implements AudioProvider {
   name = "polly";
@@ -11,7 +15,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
     const storage = !request.store ? undefined : this.requireStorage(request);
 
     const response = await this.provider.getResponse({
-      model: request.voice ?? "Ruth",
+      model: request.voice ?? SPEECH_PROVIDER_VOICES.polly.roles.narrator,
       message: request.input,
       env: request.env,
       messages: [],
@@ -20,6 +24,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
         slug: slugBase,
         storageService: storage,
         returnAudio: !request.store,
+        engine: request.model ?? DEFAULT_ENGINE,
       },
     });
 
@@ -38,7 +43,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
             ? response.audioMimeType
             : "audio/mpeg",
         metadata: {
-          voice: request.voice ?? "Ruth",
+          voice: request.voice ?? SPEECH_PROVIDER_VOICES.polly.roles.narrator,
           engine: "amazon-polly",
         },
       };
@@ -49,7 +54,7 @@ export class PollyAudioProvider extends BaseAudioProvider implements AudioProvid
     return {
       key,
       metadata: {
-        voice: request.voice ?? "Ruth",
+        voice: request.voice ?? SPEECH_PROVIDER_VOICES.polly.roles.narrator,
         engine: "amazon-polly",
       },
     };

@@ -3,13 +3,14 @@ import type {
   ConversationGroup,
   ConversationOrganisation,
   ConversationSnooze,
-  CreateConversationGroup,
+  CreateNotebookInput,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
+import { groupMatchesConversationScope } from "~/modules/conversations/domain/group-scope";
 import type {
   ConversationGroupRow,
   ConversationUserStateRow,
@@ -153,7 +154,7 @@ async function updateConversationOrganisation(
 
 export async function createConversationGroup(
   context: ServiceContext,
-  input: CreateConversationGroup,
+  input: CreateNotebookInput,
 ): Promise<{ group: ConversationGroup }> {
   const user = context.requireUser();
   const projectId = input.scope.kind === "project" ? input.scope.projectId : null;
@@ -172,7 +173,7 @@ export async function createConversationGroup(
 
   if (existing) {
     throw new AssistantError(
-      "A group with this name already exists",
+      "A notebook with this name already exists",
       ErrorType.CONFLICT_ERROR,
       409,
     );
@@ -200,7 +201,7 @@ async function authoriseGroupManagement(
   }
 
   if (!ownsResource(user.id, group.owner_user_id)) {
-    throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
+    throw new AssistantError("Notebook not found", ErrorType.NOT_FOUND, 404);
   }
 }
 
@@ -213,7 +214,7 @@ export async function deleteConversationGroup(
     .getGroup(groupId);
 
   if (!group) {
-    throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
+    throw new AssistantError("Notebook not found", ErrorType.NOT_FOUND, 404);
   }
 
   await authoriseGroupManagement(context, group);
@@ -233,14 +234,9 @@ async function moveConversationToGroup(
     const group = await context.repositories
       .get(ConversationOrganisationRepository)
       .getGroup(groupId);
-    const groupMatchesScope = group
-      ? projectId
-        ? group.project_id === projectId
-        : ownsResource(user.id, group.owner_user_id) && group.project_id === null
-      : false;
 
-    if (!group || !groupMatchesScope) {
-      throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
+    if (!group || !groupMatchesConversationScope(group, { userId: user.id, projectId })) {
+      throw new AssistantError("Notebook not found", ErrorType.NOT_FOUND, 404);
     }
   }
 

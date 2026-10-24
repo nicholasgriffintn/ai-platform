@@ -50,16 +50,8 @@ export const updateConversationOrganisationSchema = z
     "expectedRevision is required when changing pin, unread or snooze state",
   );
 
-export const createConversationGroupSchema = z.object({
-  name: z.string().trim().min(1).max(40),
-  scope: conversationGroupScopeSchema,
-});
-
-export const conversationGroupParamsSchema = z.object({ group_id: z.string().min(1) });
-
 export type ConversationGroupScope = z.infer<typeof conversationGroupScopeSchema>;
 export type ConversationGroup = z.infer<typeof conversationGroupSchema>;
 export type ConversationSnooze = z.infer<typeof conversationSnoozeSchema>;
 export type ConversationOrganisation = z.infer<typeof conversationOrganisationSchema>;
 export type UpdateConversationOrganisation = z.infer<typeof updateConversationOrganisationSchema>;
-export type CreateConversationGroup = z.infer<typeof createConversationGroupSchema>;

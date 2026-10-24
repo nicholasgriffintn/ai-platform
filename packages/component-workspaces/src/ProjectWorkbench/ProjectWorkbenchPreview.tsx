@@ -466,13 +466,18 @@ export function ProjectWorkbenchPreview({
                     {regionSelection.isSelecting ? "Cancel region" : "Mark region"}
                   </Button>
                   {regionSelection.region ? (
-                    <Button type="button" variant="ghost" size="xs" onClick={regionSelection.clear}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={regionSelection.clear}
+                    >
                       Clear region
                     </Button>
                   ) : null}
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="xs"
                     icon={<ExternalLink className="size-3.5" />}
                     disabled={busy}
@@ -482,7 +487,7 @@ export function ProjectWorkbenchPreview({
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="xs"
                     icon={<RefreshCw className="size-3.5" />}
                     disabled={!canCreate || busy}
@@ -497,7 +502,7 @@ export function ProjectWorkbenchPreview({
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="xs"
                     icon={<Square className="size-3.5" />}
                     disabled={busy}

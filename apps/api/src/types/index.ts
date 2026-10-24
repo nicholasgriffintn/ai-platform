@@ -5,6 +5,7 @@ export * from "./database";
 export * from "./embeddings";
 export * from "./metrics";
 export * from "./memory";
+export * from "./notebook";
 export * from "./shared";
 export * from "./user";
 export type {

@@ -217,7 +217,7 @@ export function ProviderApiKeyModal({
             {hasStoredCredentials && onDelete && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 className="text-failure hover:bg-failure/12 hover:text-failure"
                 onClick={onDelete}
                 disabled={isSubmitting || isDeleting}

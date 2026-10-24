@@ -1,6 +1,7 @@
 import { authorise, createAuthorisationPass } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_MODEL_TIER,
+  findModelByReference,
   getModelDisplayName,
   isActiveModel,
   isLineupEligibleModel,
@@ -14,10 +15,13 @@ import {
   type ModelTier,
   type ModelTierRole,
   type ResolvedLineupCandidate,
+  type ResolvedModelReference,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { AccountPlan, CredentialAuthority } from "./types.js";
+
+export const TEXT_TO_SPEECH_ARENA_SCORE = "text_to_speechElo";
 
 export function getExecutableModelsForAccount(
   models: ModelConfig,
@@ -193,4 +197,38 @@ export function resolvePolicyModel(
   user?: AccountPlan,
 ): ResolvedLineupCandidate | null {
   return resolveLineupCandidate(getExecutableModelsForAccount(models, user), references);
+}
+
+export function readMediaScore(model: ModelConfigItem, key: string): number | undefined {
+  return model.artificialAnalysis?.mediaScores?.find((score) => score.key === key)?.value;
+}
+
+export function rankPolicyModelsByMediaScore(
+  models: ModelConfig,
+  scoreKey: string,
+  unscoredOrder: readonly ModelLineupCandidate[],
+  user?: AccountPlan,
+): ResolvedModelReference[] {
+  const lineupRank = (id: string, config: ModelConfigItem) => {
+    const index = unscoredOrder.findIndex((candidate) =>
+      findModelByReference({ [id]: config }, candidate),
+    );
+
+    return index === -1 ? unscoredOrder.length : index;
+  };
+
+  return Object.entries(getExecutableModelsForAccount(models, user))
+    .map(([id, config]) => ({
+      id,
+      config,
+      score: readMediaScore(config, scoreKey) ?? Number.NEGATIVE_INFINITY,
+      rank: lineupRank(id, config),
+    }))
+    .sort(
+      (left, right) =>
+        (left.score === right.score ? 0 : right.score - left.score) ||
+        left.rank - right.rank ||
+        Number(right.config.isByokEnabled === true) - Number(left.config.isByokEnabled === true),
+    )
+    .map(({ id, config }) => ({ id, config }));
 }

@@ -302,14 +302,15 @@ function ModelRow({
           </div>
         </div>
         {missing.length > 1 ? (
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="xs"
             disabled={busy}
             onClick={() => onQueue(missing, row.modelId)}
-            className="mt-1.5 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+            className="mt-1.5"
           >
             Queue all {missing.length}
-          </button>
+          </Button>
         ) : null}
       </th>
       {benchmarks.map((benchmark) => {

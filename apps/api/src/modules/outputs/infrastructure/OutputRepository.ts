@@ -33,6 +33,7 @@ export interface OutputRecord {
   parent_output_id: string | null;
   capability_id: string;
   group_id: string | null;
+  collection_id: string | null;
   kind: string;
   title: string;
   status: OutputStatus;
@@ -60,6 +61,7 @@ export interface CreateOutputRecord {
   parentOutputId?: string | null;
   capabilityId: string;
   groupId?: string | null;
+  collectionId?: string | null;
   kind: string;
   title: string;
   status?: OutputStatus;
@@ -150,6 +152,7 @@ export class OutputRepository extends BaseRepository {
         parent_output_id: input.parentOutputId ?? null,
         capability_id: input.capabilityId,
         group_id: input.groupId ?? null,
+        collection_id: input.collectionId ?? null,
         kind: input.kind,
         title: input.title,
         status: input.status ?? "ready",
@@ -384,6 +387,18 @@ export class OutputRepository extends BaseRepository {
     return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
+  async listCollectionOutputs(collectionId: string): Promise<OutputRecord[]> {
+    const outputs = await this.runQuery<OutputRecord>(
+      `SELECT * FROM ${outputResourceSql} output
+       WHERE output.collection_id = ?
+          OR output.conversation_id IN (SELECT id FROM conversation WHERE group_id = ?)
+       ORDER BY created_at DESC, id DESC LIMIT 200`,
+      [collectionId, collectionId],
+    );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
+  }
+
   private async listScopedOutputs(
     scopeField: "created_by_user_id" | "project_id",
     scopeValue: number | string,
@@ -580,6 +595,42 @@ export class OutputRepository extends BaseRepository {
     await publishOutputChanged({ env: this.env }, updated);
 
     return updated;
+  }
+
+  async attachOutputFile(
+    outputId: string,
+    file: { storageKey: string; mimeType: string; filename: string; byteSize: number },
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE resource SET storage_key = ?, mime_type = ?, filename = ?, byte_size = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE resource_type = 'output' AND id = ?`,
+      [file.storageKey, file.mimeType, file.filename, file.byteSize, outputId],
+    );
+    await this.cache?.delete(KVCache.createKey("output", outputId));
+  }
+
+  async readViewerState(outputId: string, userId: number): Promise<string | null> {
+    const row = await this.runQuery<{ state: string | null }>(
+      `SELECT json_extract(metadata, '$.viewerState."' || ? || '"') AS state
+       FROM resource WHERE resource_type = 'output' AND id = ?`,
+      [String(userId), outputId],
+      true,
+    );
+
+    return row?.state ?? null;
+  }
+
+  async writeViewerState(
+    outputId: string,
+    userId: number,
+    state: Record<string, unknown>,
+  ): Promise<void> {
+    await this.executeRun(
+      `UPDATE resource
+       SET metadata = json_set(COALESCE(metadata, '{}'), '$.viewerState."' || ? || '"', json(?))
+       WHERE resource_type = 'output' AND id = ?`,
+      [String(userId), JSON.stringify(state), outputId],
+    );
   }
 
   async deleteOutput(outputId: string): Promise<void> {

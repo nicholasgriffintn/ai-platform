@@ -5,7 +5,6 @@ import type { ImageProvider } from "./capabilities/image/index.js";
 import type { MusicProvider } from "./capabilities/music/index.js";
 import type { OcrProvider } from "./capabilities/ocr/types.js";
 import type { RealtimeProvider } from "./capabilities/realtime/index.js";
-import type { SpeechProvider } from "./capabilities/speech/index.js";
 import type { TranscriptionProvider } from "./capabilities/transcription/index.js";
 import type { VideoProvider } from "./capabilities/video/index.js";
 import type { ProviderEnv, ProviderUser } from "./env.js";
@@ -33,7 +32,6 @@ export type AiProviderMap = {
   research: ResearchProvider;
   reranking: RerankingProvider;
   search: SearchProvider;
-  speech: SpeechProvider;
   transcription: TranscriptionProvider;
   video: VideoProvider;
 };

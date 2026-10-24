@@ -19,7 +19,6 @@ import { registerRealtimeProviders } from "./registrations/realtime.js";
 import { registerRerankingProviders } from "./registrations/reranking.js";
 import { registerResearchProviders } from "./registrations/research.js";
 import { registerSearchProviders } from "./registrations/search.js";
-import { registerSpeechProviders } from "./registrations/speech.js";
 import { registerTranscriptionProviders } from "./registrations/transcription.js";
 import { registerVideoProviders } from "./registrations/video.js";
 import type {
@@ -57,7 +56,6 @@ export function createAiProviderBootstrappers(
     research: [(registry) => registerResearchProviders(registry, runtime)],
     reranking: [(registry) => registerRerankingProviders(registry, runtime)],
     search: [(registry) => registerSearchProviders(registry, runtime)],
-    speech: [(registry) => registerSpeechProviders(registry, runtime)],
     transcription: [(registry) => registerTranscriptionProviders(registry, runtime)],
     video: [(registry) => registerVideoProviders(registry, runtime)],
   };

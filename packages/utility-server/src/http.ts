@@ -256,3 +256,29 @@ export async function readHttpResponseBody(
     format: parsed === null ? "text" : "json",
   };
 }
+
+export interface ByteRange {
+  start: number;
+  end: number;
+}
+
+const BYTE_RANGE_PATTERN = /^bytes=(\d*)-(\d*)$/;
+
+export function parseByteRange(header: string | null | undefined, size: number): ByteRange | null {
+  const match = header ? BYTE_RANGE_PATTERN.exec(header.trim()) : null;
+
+  if (!match || size <= 0 || (!match[1] && !match[2])) {
+    return null;
+  }
+
+  if (!match[1]) {
+    const suffix = Number(match[2]);
+
+    return suffix > 0 ? { start: Math.max(0, size - suffix), end: size - 1 } : null;
+  }
+
+  const start = Number(match[1]);
+  const end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+
+  return start <= end && start < size ? { start, end } : null;
+}

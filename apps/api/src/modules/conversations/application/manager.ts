@@ -41,9 +41,11 @@ import {
   type TurnAdmissionRequest,
   type TurnAdmissionScope,
 } from "~/modules/conversations/application/turn-admission";
+import { groupMatchesConversationScope } from "~/modules/conversations/domain/group-scope";
 import { readStoredSubject } from "~/modules/conversations/domain/subject";
 import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
+import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import type {
   ConversationArchiveFilter,
@@ -89,6 +91,7 @@ interface ConversationWriteOptions {
   model_tier?: ModelTier | null;
   permission_mode?: PermissionMode;
   subject?: ConversationSubject;
+  notebookId?: string;
 }
 
 export class ConversationManager {
@@ -300,6 +303,17 @@ export class ConversationManager {
     }
   }
 
+  private async requireNotebookGroup(groupId: string, projectId: string | null): Promise<string> {
+    const userId = this.user?.id;
+    const group = await this.repositories.get(ConversationOrganisationRepository).getGroup(groupId);
+
+    if (!userId || !group || !groupMatchesConversationScope(group, { userId, projectId })) {
+      throw new AssistantError("Notebook not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    return group.id;
+  }
+
   private async ensureWritableConversation(
     conversation_id: string,
     authErrorMessage: string,
@@ -341,6 +355,9 @@ export class ConversationManager {
         options?.permission_mode ??
         (await this.getInheritedPermissionMode(parentConversationId)) ??
         undefined;
+      const groupId = options?.notebookId
+        ? await this.requireNotebookGroup(options.notebookId, projectId ?? null)
+        : undefined;
 
       return await this.repositories
         .get(ConversationRepository)
@@ -357,6 +374,7 @@ export class ConversationManager {
             model_tier: options?.model_tier,
             permission_mode: permissionMode,
             subject: options?.subject,
+            group_id: groupId,
           },
         );
     }

@@ -31,6 +31,7 @@ export async function searchPastConversations(
   params: {
     query: string;
     projectId: string | null;
+    groupId?: string;
     excludeConversationId?: string;
     limit: number;
   },
@@ -49,6 +50,7 @@ export async function searchPastConversations(
   const rows = await context.repositories.get(MessageRepository).searchConversationExcerpts({
     userId: user.id,
     projectId: params.projectId,
+    groupId: params.groupId,
     terms,
     excludeConversationId: params.excludeConversationId,
     limit: params.limit * CANDIDATE_MULTIPLIER,

@@ -17,5 +17,6 @@ export interface ConversationSummary {
 export interface ConversationSection {
   id: string;
   title?: string;
+  notebookId?: string;
   conversations: ConversationSummary[];
 }

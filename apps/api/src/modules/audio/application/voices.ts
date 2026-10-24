@@ -115,12 +115,10 @@ export async function deleteSpeechVoice({
   env,
   user,
   voiceId,
-  defaultVoice,
 }: {
   env: IEnv;
   user: IUser;
   voiceId: string;
-  defaultVoice: string;
 }): Promise<void> {
   const repository = new UserSettingsRepository(env);
   const settings = await repository.getUserSettings(user.id);
@@ -138,7 +136,7 @@ export async function deleteSpeechVoice({
     savedVoices.filter((voice) => voice.id !== voiceId),
   );
 
-  if (settings?.speech_model === voiceId) {
-    await repository.updateUserSettings(user.id, { speech_model: defaultVoice });
+  if (settings?.speech_voice === voiceId) {
+    await repository.updateUserSettings(user.id, { speech_voice: null });
   }
 }

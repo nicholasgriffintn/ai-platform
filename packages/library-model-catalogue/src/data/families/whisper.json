@@ -67,34 +67,18 @@
     "openai-whisper": {
       "defaults": {
         "name": "OpenAI Whisper",
-        "description": "OpenAI Whisper accepts text and produces speech.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "speech"
-          ]
-        },
+        "description": "OpenAI Whisper transcribes spoken audio into text.",
         "strengths": [
-          "audio"
+          "transcription"
         ]
       }
     },
     "openai-whisper-large-v3-turbo": {
       "defaults": {
         "name": "OpenAI Whisper Large v3 Turbo",
-        "description": "A faster, more accurate speech-to-text model when compared to the base Whisper model.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "speech"
-          ]
-        },
+        "description": "OpenAI Whisper transcribes spoken audio into text.",
         "strengths": [
-          "audio"
+          "transcription"
         ],
         "contextComplexity": 4,
         "reliability": 5

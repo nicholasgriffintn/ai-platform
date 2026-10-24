@@ -165,7 +165,7 @@ export function ApprovalRequestView({
               {approval.allowRuleLifts ? (
                 <Button
                   size="xs"
-                  variant="ghost"
+                  variant="outline"
                   disabled={isSubmitting}
                   onClick={() => void choose(approveOption, "act")}
                 >
@@ -174,7 +174,7 @@ export function ApprovalRequestView({
               ) : null}
               <Button
                 size="xs"
-                variant="ghost"
+                variant="outline"
                 disabled={isSubmitting}
                 onClick={() => void choose(rejectOption, "hand_off")}
               >

@@ -301,7 +301,6 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
     getImageModel: async (env) => resolveModalityRole(env, "image", "image"),
     getVideoModel: async (env) => resolveModalityRole(env, "video", "video"),
     getMusicModel: async (env) => resolveModalityRole(env, "music", "audio"),
-    getSpeechSynthesisModel: async (env) => resolveModalityRole(env, "speech", "speech"),
     getFimModel: async (env) => resolveCapabilityRole(env, "fim"),
     getNextEditModel: async (env) => resolveCapabilityRole(env, "nextEdit"),
     getApplyEditModel: async (env) => resolveCapabilityRole(env, "applyEdit"),

@@ -1,6 +1,14 @@
 import { ListItem } from "@ngriffin_uk/polychat-component-ui";
 import type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
-import { CircleQuestionMark, Ghost, GitBranch, LoaderCircle, Mail, Pin } from "lucide-react";
+import {
+  CircleQuestionMark,
+  Ghost,
+  GitBranch,
+  LoaderCircle,
+  Mail,
+  NotebookTabs,
+  Pin,
+} from "lucide-react";
 import type { ReactNode, Ref } from "react";
 
 export type { ConversationSection, ConversationSummary } from "@ngriffin_uk/polychat-utility-react";
@@ -13,6 +21,8 @@ export interface ConversationListProps {
   loadMoreSlot?: ReactNode;
   onSelect: (conversationId: string | undefined) => void;
   renderItemActions?: (conversation: ConversationSummary & { id: string }) => ReactNode;
+  activeNotebookId?: string;
+  onOpenNotebook?: (notebookId: string) => void;
 }
 
 export function ConversationList({
@@ -23,16 +33,30 @@ export function ConversationList({
   loadMoreSlot,
   onSelect,
   renderItemActions,
+  activeNotebookId,
+  onOpenNotebook,
 }: ConversationListProps) {
   return (
     <>
-      {sections.map(({ id, title, conversations }) =>
-        conversations.length === 0 ? null : (
+      {sections.map(({ id, title, notebookId, conversations }) =>
+        conversations.length === 0 && !(notebookId && onOpenNotebook) ? null : (
           <div key={id}>
-            {title && (
-              <h3 className="px-2 py-1 text-xs font-semibold tracking-wider text-muted-foreground">
-                {title}
-              </h3>
+            {title && notebookId && onOpenNotebook ? (
+              <button
+                type="button"
+                aria-current={activeNotebookId === notebookId ? "page" : undefined}
+                className="flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-left text-xs font-semibold tracking-wider text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground aria-[current=page]:text-foreground"
+                onClick={() => onOpenNotebook(notebookId)}
+              >
+                <NotebookTabs size={13} aria-hidden="true" />
+                <span className="truncate">{title}</span>
+              </button>
+            ) : (
+              title && (
+                <h3 className="px-2 py-1 text-xs font-semibold tracking-wider text-muted-foreground">
+                  {title}
+                </h3>
+              )
             )}
             <ul className="mb-3 space-y-1">
               {conversations.map((conversation) => (

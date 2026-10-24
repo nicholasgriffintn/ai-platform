@@ -28,9 +28,11 @@ export const search_conversations: ApiToolDefinition = {
       typeof args.limit === "number" && Number.isFinite(args.limit)
         ? Math.max(1, Math.min(Math.floor(args.limit), MAX_LIMIT))
         : DEFAULT_LIMIT;
+    const notebook = context.request.notebook;
     const matches = await searchPastConversations(resolveServiceContext(context.request), {
       query,
-      projectId: resolveRequestProjectId(context.request),
+      projectId: notebook ? notebook.projectId : resolveRequestProjectId(context.request),
+      groupId: notebook?.notebookId,
       excludeConversationId: context.completionId,
       limit,
     });

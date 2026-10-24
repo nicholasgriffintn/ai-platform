@@ -7,6 +7,7 @@ import type {
   PetModelOverrides,
   ResponseStyleSettings,
   SavedSpeechVoice,
+  SpeechProvider,
   ToolRule,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -70,8 +71,9 @@ export interface IUserSettings {
   transcription_provider: string;
   transcription_model: string;
   transcription_vocabulary: string[];
-  speech_provider: string | null;
+  speech_provider: SpeechProvider | null;
   speech_model: string | null;
+  speech_voice: string | null;
   speech_expressiveness: number | null;
   speech_voices: SavedSpeechVoice[];
   search_provider: string | null;

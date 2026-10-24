@@ -55,7 +55,7 @@ export function WorkAccessEmptyState() {
             >
               Upgrade to Pro
             </ButtonLink>
-            <ButtonLink variant="ghost" size="lg" href="/chat">
+            <ButtonLink variant="outline" size="lg" href="/chat">
               Open Chat
               <ArrowUpRight size={15} />
             </ButtonLink>

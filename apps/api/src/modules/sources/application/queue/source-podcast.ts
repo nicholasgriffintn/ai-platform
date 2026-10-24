@@ -1,9 +1,8 @@
 import { z } from "zod/v4";
 
+import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
 import { runPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
-
-import { loadUserContext } from "./user-context";
 
 export const sourcePodcastGeneration = defineTask({
   payload: z.object({ sourceId: z.string().min(1) }),

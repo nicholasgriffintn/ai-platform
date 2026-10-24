@@ -1,9 +1,8 @@
 import { z } from "zod/v4";
 
+import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
 import { runSourceTranscription } from "~/modules/sources/application/media/transcribe";
-
-import { loadUserContext } from "./user-context";
 
 export const sourceMediaTranscription = defineTask({
   payload: z.object({ sourceId: z.string().min(1) }),

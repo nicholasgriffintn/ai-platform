@@ -240,12 +240,14 @@ export async function deleteOutputResources(
   const records = [...tombstonedDescendants].reverse().concat(root);
   const storageKeys = records.flatMap((record) => (record.storage_key ? [record.storage_key] : []));
 
-  if (storageKeys.length > 0) {
-    const storage = StorageService.forPrivateAssets(context);
+  const storage = StorageService.forPrivateAssets(context);
 
-    for (const storageKey of storageKeys) {
-      await storage.deleteObject(storageKey);
-    }
+  for (const storageKey of storageKeys) {
+    await storage.deleteObject(storageKey);
+  }
+
+  for (const record of records) {
+    await storage.deletePrefix(`outputs/${record.id}/`);
   }
 
   for (const record of records) {

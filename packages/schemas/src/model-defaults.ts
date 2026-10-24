@@ -17,8 +17,4 @@ export const MODEL_DEFAULTS = {
     replicate: { model: "replicate-stable-audio", provider: "replicate" },
     workersAi: { model: "workers-ai-minimax-music-2-6", provider: "workers-ai" },
   },
-  speech: {
-    replicate: { model: "replicate-chatterbox-turbo", provider: "replicate" },
-    workersAi: { model: "melotts", provider: "workers-ai" },
-  },
 } as const satisfies Record<string, unknown>;

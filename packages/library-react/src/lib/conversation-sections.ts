@@ -90,19 +90,25 @@ function sortConversations(
   });
 }
 
-function buildGroupSections(conversations: ConversationSectionSource[]): ConversationSection[] {
-  const sectionsByGroup = new Map<string, ConversationSection>();
+function notebookSection(group: Pick<ConversationGroup, "id" | "name">): ConversationSection {
+  return { id: `group:${group.id}`, title: group.name, notebookId: group.id, conversations: [] };
+}
+
+function buildGroupSections(
+  conversations: ConversationSectionSource[],
+  notebooks: readonly Pick<ConversationGroup, "id" | "name">[],
+): ConversationSection[] {
+  const sectionsByGroup = new Map<string, ConversationSection>(
+    notebooks.map((notebook) => [notebook.id, notebookSection(notebook)]),
+  );
 
   for (const conversation of conversations) {
     if (!conversation.group) {
       continue;
     }
 
-    const section = sectionsByGroup.get(conversation.group.id) ?? {
-      id: `group:${conversation.group.id}`,
-      title: conversation.group.name,
-      conversations: [],
-    };
+    const section =
+      sectionsByGroup.get(conversation.group.id) ?? notebookSection(conversation.group);
 
     section.conversations.push(toSummary(conversation));
     sectionsByGroup.set(conversation.group.id, section);
@@ -153,13 +159,17 @@ function buildUngroupedSections(
 
 export function buildConversationSections(
   conversations: ConversationSectionSource[],
-  options: { groupBy: ConversationGroupBy; sortBy: ConversationSortBy },
+  options: {
+    groupBy: ConversationGroupBy;
+    sortBy: ConversationSortBy;
+    notebooks?: readonly Pick<ConversationGroup, "id" | "name">[];
+  },
 ): ConversationSection[] {
   const sortedConversations = sortConversations(conversations, options.sortBy);
   const ungrouped = sortedConversations.filter((conversation) => !conversation.group);
 
   return [
-    ...buildGroupSections(sortedConversations),
+    ...buildGroupSections(sortedConversations, options.notebooks ?? []),
     ...buildUngroupedSections(ungrouped, options),
   ];
 }

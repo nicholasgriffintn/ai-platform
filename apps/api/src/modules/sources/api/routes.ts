@@ -289,7 +289,7 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
     summary: "Download a source's file",
     paramSchema: sourceParamsSchema,
     responses: { 200: { description: "Source file" } },
-    handler: async ({ params, serviceContext, user }) => {
+    handler: async ({ params, raw, serviceContext, user }) => {
       const file = await readPrivateFile({
         context: serviceContext,
         kind: "source",
@@ -297,7 +297,7 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
         userId: user?.id,
       });
 
-      return getPrivateFileResponse(file.record, file.object);
+      return getPrivateFileResponse(file.record, file.object, raw.req.header("range"));
     },
   });
 

@@ -1,0 +1,12 @@
+{
+  "defaults": {
+    "hiddenFromDefaultList": true
+  },
+  "models": {
+    "polly-generative": {
+      "model": "polly/polly-generative",
+      "matchingModel": "generative",
+      "overrides": {}
+    }
+  }
+}

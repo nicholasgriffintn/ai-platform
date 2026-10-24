@@ -64,7 +64,7 @@ function AgendaGroup({
             </span>
             {onDisagree ? (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="xs"
                 className="shrink-0"
                 isLoading={disagreeingId === item.id}

@@ -390,6 +390,7 @@ export class ChatOrchestrator {
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
       memoryScope: prepared.memoryScope,
+      notebook: prepared.notebook,
     });
 
     const replayConversationId = chatOptions.completion_id;

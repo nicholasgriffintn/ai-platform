@@ -12,6 +12,7 @@ export function outputRecord(overrides: Partial<OutputRecord> = {}): OutputRecor
     parent_output_id: null,
     capability_id: "articles",
     group_id: "session-1",
+    collection_id: null,
     kind: "analysis",
     title: "Article analysis",
     status: "ready",

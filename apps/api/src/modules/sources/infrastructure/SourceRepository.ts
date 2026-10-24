@@ -465,6 +465,35 @@ export class SourceRepository extends BaseRepository {
     );
   }
 
+  async listCollectionSourceSummaries(collectionId: string): Promise<SourceSummaryRecord[]> {
+    return this.runQuery<SourceSummaryRecord>(
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.map((column) => `s.${column}`).join(", ")}
+       FROM ${sourceResourceSql} s
+       JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.source_id = s.id
+       WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")}
+       ORDER BY s.created_at DESC`,
+      [collectionId],
+    );
+  }
+
+  async listConversationGroupGenerations(groupId: string): Promise<SourceSummaryRecord[]> {
+    return this.runQuery<SourceSummaryRecord>(
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.map((column) => `s.${column}`).join(", ")}
+       FROM ${sourceResourceSql} s
+       WHERE s.conversation_id IN (SELECT id FROM conversation WHERE group_id = ?)
+         AND json_type(s.metadata, '$.generation') = 'object' AND ${sourceVisibilitySql("s")}
+       ORDER BY s.created_at DESC LIMIT 100`,
+      [groupId],
+    );
+  }
+
+  async removeCollectionSource(collectionId: string, sourceId: string): Promise<void> {
+    await this.executeRun(
+      "DELETE FROM resource_link WHERE kind = 'source_collection' AND collection_id = ? AND source_id = ?",
+      [collectionId, sourceId],
+    );
+  }
+
   async addCollectionSources(collectionId: string, sourceIds: string[]): Promise<number> {
     if (!this.env.DB || sourceIds.length === 0) {
       return 0;

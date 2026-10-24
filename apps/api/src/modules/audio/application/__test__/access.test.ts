@@ -55,7 +55,7 @@ describe("checkSpeechAccess", () => {
     const { repositories } = makeRepositories(0);
 
     await expect(
-      checkSpeechAccess({ repositories, anonymousUser, provider: "melotts" }),
+      checkSpeechAccess({ repositories, anonymousUser, provider: "workers-ai" }),
     ).resolves.toBeUndefined();
   });
 

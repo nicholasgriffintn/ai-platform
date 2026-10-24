@@ -15,7 +15,11 @@ import {
   getProjectConversationPath,
   isProjectConversationPath,
   buildConversationSections,
+  getNotebookPath,
   getPlacePaths,
+  getProjectSurface,
+  matchNotebookId,
+  useNotebooks,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
@@ -75,6 +79,8 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
   const canManageGroups = workspace?.role === "owner" || workspace?.role === "admin";
+  const { data: notebooks } = useNotebooks(projectId, Boolean(projectId));
+  const activeNotebookId = matchNotebookId(pathname);
   const workPlaces = getPlacePaths("work");
   const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
   const projectChatPath = getProjectChatPath(workspaceId ?? "", projectId ?? "");
@@ -115,6 +121,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     {
       groupBy: workConversationListFilters.groupBy,
       sortBy: workConversationListFilters.sortBy,
+      notebooks: notebooks ?? [],
     },
   );
 
@@ -203,6 +210,19 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                         activeConversationId={activeConversationId}
                         isConversationRoute={isConversationRoute}
                         onSelect={selectConversation}
+                        activeNotebookId={activeNotebookId}
+                        onOpenNotebook={(notebookId) => {
+                          if (workspaceId && projectId) {
+                            void navigate(
+                              getNotebookPath(
+                                getProjectSurface(workspaceId, projectId),
+                                notebookId,
+                              ),
+                            );
+                          }
+
+                          closeOnMobile();
+                        }}
                         renderItemActions={(conversation) => (
                           <ConversationItemActions
                             conversation={conversation}

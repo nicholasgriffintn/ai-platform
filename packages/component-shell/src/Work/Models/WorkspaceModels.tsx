@@ -80,16 +80,22 @@ export function WorkspaceModels({
   const scopeName = projectId ? projectQuery.data?.name : workspaceQuery.data?.name;
 
   if (workspaceQuery.isLoading || (projectId && projectQuery.isLoading)) {
-    return <CardSkeleton />;
+    return (
+      <PageShell.Content className="max-w-6xl">
+        <CardSkeleton />
+      </PageShell.Content>
+    );
   }
 
   if (workspaceQuery.error || (projectId && projectQuery.error)) {
     return (
-      <EmptyState
-        title="Models unavailable"
-        message="This workspace or project could not be loaded."
-        className="min-h-[240px]"
-      />
+      <PageShell.Content className="max-w-6xl">
+        <EmptyState
+          title="Models unavailable"
+          message="This workspace or project could not be loaded."
+          className="min-h-[240px]"
+        />
+      </PageShell.Content>
     );
   }
 

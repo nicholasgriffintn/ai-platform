@@ -84,7 +84,7 @@ export function MemoryDocumentEditor({
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="sm"
           disabled={!editor.isDirty || editor.status === "saving"}
           onClick={editor.discard}

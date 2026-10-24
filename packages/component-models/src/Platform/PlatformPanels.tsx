@@ -243,7 +243,7 @@ export function ProviderCatalogueList({
             {canManage && (
               <div className="mt-auto flex items-center justify-end gap-2 border-t border-border pt-3">
                 {connection && (
-                  <Button size="sm" variant="ghost" onClick={() => onDisconnect(entry)}>
+                  <Button size="sm" variant="outline" onClick={() => onDisconnect(entry)}>
                     Disconnect
                   </Button>
                 )}

@@ -9,9 +9,10 @@ import {
   type PetModelOverrides,
   type ResponseStyleSettings,
   type SavedSpeechVoice,
+  type SpeechProvider,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { resolveSpeechSettings, resolveTranscriptionSettings } from "./transcription-settings";
+import { resolveTranscriptionSettings } from "./transcription-settings";
 
 export function resolveGuardrailsProviderId(value: string): GuardrailsProviderId {
   return (
@@ -52,8 +53,9 @@ export interface UserSettings {
   transcription_provider?: string;
   transcription_model?: string;
   transcription_vocabulary?: string[];
-  speech_provider?: string;
-  speech_model?: string;
+  speech_provider?: SpeechProvider | null;
+  speech_model?: string | null;
+  speech_voice?: string | null;
   speech_expressiveness?: number | null;
   speech_voices?: SavedSpeechVoice[];
   search_provider?: string;
@@ -123,11 +125,6 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     userSettings?.transcription_provider,
     userSettings?.transcription_model,
   );
-  const speechSettings = resolveSpeechSettings(
-    userSettings?.speech_provider,
-    userSettings?.speech_model,
-    userSettings?.speech_voices,
-  );
 
   return {
     nickname: userSettings?.nickname || "",
@@ -166,8 +163,9 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     transcription_provider: transcriptionSettings.transcription_provider,
     transcription_model: transcriptionSettings.transcription_model,
     transcription_vocabulary: userSettings?.transcription_vocabulary ?? [],
-    speech_provider: speechSettings.speech_provider,
-    speech_model: speechSettings.speech_model,
+    speech_provider: userSettings?.speech_provider ?? null,
+    speech_model: userSettings?.speech_model ?? null,
+    speech_voice: userSettings?.speech_voice ?? null,
     speech_expressiveness: userSettings?.speech_expressiveness ?? null,
     speech_voices: userSettings?.speech_voices ?? [],
     search_provider: userSettings?.search_provider || "",

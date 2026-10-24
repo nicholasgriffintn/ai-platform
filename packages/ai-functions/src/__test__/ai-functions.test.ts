@@ -206,6 +206,50 @@ describe("createAiFunctions", () => {
     });
   });
 
+  it("closes nested objects so fully required schemas run in strict mode", async () => {
+    const getResponse = vi.fn<GetResponse>(async () => ({
+      response: '{"title": "Perch", "slides": [{"heading": "Feathers"}]}',
+    }));
+    const { runtime } = createRuntime(getResponse);
+    const ai = createAiFunctions(runtime);
+
+    await ai.generateObject({
+      env,
+      model: "gpt-5",
+      prompt: "describe",
+      schema: z.object({ title: z.string(), slides: z.array(z.object({ heading: z.string() })) }),
+    });
+
+    expect(lastParams(getResponse).response_format).toMatchObject({
+      json_schema: {
+        strict: true,
+        schema: {
+          additionalProperties: false,
+          properties: { slides: { items: { additionalProperties: false } } },
+        },
+      },
+    });
+  });
+
+  it.each<[string, z.ZodType]>([
+    [
+      "a nested optional property",
+      z.object({ slides: z.array(z.object({ note: z.string().optional() })) }),
+    ],
+    ["an open record", z.object({ counts: z.record(z.string(), z.number()) })],
+  ])("relaxes strict mode for %s", async (_label, schema) => {
+    const getResponse = vi.fn<GetResponse>(async () => ({ response: "{}" }));
+    const { runtime } = createRuntime(getResponse);
+
+    await createAiFunctions(runtime)
+      .generateObject({ env, model: "gpt-5", prompt: "describe", schema })
+      .catch(() => undefined);
+
+    expect(lastParams(getResponse).response_format).toMatchObject({
+      json_schema: { strict: false },
+    });
+  });
+
   it("reports schema mismatches as provider errors", async () => {
     const { runtime } = createRuntime(
       vi.fn<GetResponse>(async () => ({ response: '{"label": "other"}' })),

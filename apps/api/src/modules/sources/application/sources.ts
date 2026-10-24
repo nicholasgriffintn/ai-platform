@@ -71,7 +71,13 @@ export function formatSource(record: SourceRecord): Source {
   };
 }
 
-function formatSourceSummary(record: SourceSummaryRecord): SourceSummary {
+export function toSourceSummary(source: Source): SourceSummary {
+  const { content: _content, ...summary } = source;
+
+  return summary;
+}
+
+export function formatSourceSummary(record: SourceSummaryRecord): SourceSummary {
   const { content: _content, ...summary } = formatSource({ ...record, content: null });
 
   return summary;

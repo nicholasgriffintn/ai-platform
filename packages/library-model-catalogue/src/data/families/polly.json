@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "speech"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ]
+  },
+  "description": "Amazon Polly text-to-speech engines.",
+  "models": {
+    "polly-generative": {
+      "defaults": {
+        "name": "Polly Generative",
+        "description": "Amazon Polly's generative engine for natural, expressive speech.",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1067,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    }
+  }
+}

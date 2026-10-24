@@ -3,29 +3,16 @@ import z from "zod/v4";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { describeOwnSources, findOwnSources } from "~/modules/research/application/grounding";
+import { researchOptionsFor } from "~/modules/research/application/options";
 import { handleResearchTask, startResearchTask } from "~/modules/research/application/task";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
-import type { ResearchOptions } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
   RESEARCH_DEPTHS,
   RESEARCH_FORMATS,
   research as researchDescriptor,
-  type ResearchDepth,
 } from "./definitions/research";
-
-const PARALLEL_PROCESSORS: Record<ResearchDepth, string> = {
-  quick: "base",
-  standard: "pro",
-  deep: "ultra",
-};
-
-const EXA_MODELS: Record<ResearchDepth, string> = {
-  quick: "exa-research",
-  standard: "exa-research",
-  deep: "exa-research-pro",
-};
 
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 
@@ -39,22 +26,6 @@ const researchArgsSchema = z.object({
 });
 
 type ResearchArgs = z.infer<typeof researchArgsSchema>;
-
-export function researchOptionsFor(args: ResearchArgs): ResearchOptions {
-  if (args.provider === "exa") {
-    return { model: EXA_MODELS[args.depth] };
-  }
-
-  return {
-    processor: PARALLEL_PROCESSORS[args.depth],
-    task_spec: {
-      output_schema: {
-        type: args.format === "data" ? "auto" : "text",
-        ...(args.output_description ? { description: args.output_description } : {}),
-      },
-    },
-  };
-}
 
 function parseResearchArgs(args: unknown): ResearchArgs {
   const parsed = researchArgsSchema.safeParse(args ?? {});

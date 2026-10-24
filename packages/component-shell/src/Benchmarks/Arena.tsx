@@ -135,7 +135,7 @@ export function Arena({ benchmark }: { benchmark: BenchmarkSummary }) {
           <>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={vote.isPending}
               onClick={() => cast("tie")}
             >

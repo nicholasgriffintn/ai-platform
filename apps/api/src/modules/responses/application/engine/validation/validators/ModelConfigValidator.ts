@@ -62,7 +62,7 @@ export class ModelConfigValidator implements Validator {
       requestedModel ??
       (!requestedModels?.length
         ? (storedSelection.modelId ??
-          (!storedSelection.conversationExists
+          (!storedSelection.conversationExists && !options.model_tier
             ? (userSettings?.default_model_id ?? undefined)
             : undefined))
         : undefined);

@@ -7,9 +7,9 @@ import { at, insert, seedId } from "./sql.mjs";
 
 const ASSET_DIRECTORY = path.join(path.dirname(fileURLToPath(import.meta.url)), "assets");
 
-function seedFile(filename, contentType) {
+export function seedFile(filename, contentType, key = `seed/sources/${filename}`) {
   return {
-    key: `seed/sources/${filename}`,
+    key,
     path: path.join(ASSET_DIRECTORY, filename),
     contentType,
     byteSize: statSync(path.join(ASSET_DIRECTORY, filename)).size,

@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/tool-names";
 
 import { withExecutionRunContext } from "~/infrastructure/context/serviceContext";
-import type { CoreChatOptions, IRequest, ChatMode, MemoryScope } from "~/types";
+import type { CoreChatOptions, IRequest, ChatMode, MemoryScope, NotebookRunScope } from "~/types";
 
 interface ToolDefinition extends ToolDefinitionLike {
   permissions?: unknown;
@@ -47,6 +47,7 @@ export function buildToolRequestContext(params: {
   runId?: string;
   runAttempt?: number;
   memoryScope: MemoryScope;
+  notebook?: NotebookRunScope | null;
 }): IRequest {
   const { chatOptions, input, mode, model, provider, memoryScope, provenance } = params;
   const user = resolveRequestUser(chatOptions);
@@ -99,5 +100,6 @@ export function buildToolRequestContext(params: {
     user,
     context,
     memoryScope,
+    ...(params.notebook ? { notebook: params.notebook } : {}),
   };
 }

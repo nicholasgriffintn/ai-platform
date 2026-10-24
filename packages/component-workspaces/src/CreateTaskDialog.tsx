@@ -141,7 +141,7 @@ export function CreateTaskDialog({
                   ) : null}
                 </div>
               ))}
-              <Button type="button" variant="ghost" size="sm" onClick={addCriterion}>
+              <Button type="button" variant="outline" size="sm" onClick={addCriterion}>
                 <Plus size={14} /> Add criterion
               </Button>
             </div>
@@ -302,7 +302,7 @@ export function CreateTaskDialog({
           <DialogFooter className="gap-2 sm:justify-between">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >

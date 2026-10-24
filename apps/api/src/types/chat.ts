@@ -26,6 +26,7 @@ import type {
 import type { ServiceContext } from "../infrastructure/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
 import type { MemoryScope } from "./memory";
+import type { NotebookRunScope } from "./notebook";
 import type { IEnv } from "./shared";
 import type { IUser } from "./user";
 
@@ -102,6 +103,7 @@ export interface IRequest {
   provenance?: RunProvenance | null;
   context?: ServiceContext;
   memoryScope?: MemoryScope;
+  notebook?: NotebookRunScope;
 }
 
 export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "env" | "context"> & {

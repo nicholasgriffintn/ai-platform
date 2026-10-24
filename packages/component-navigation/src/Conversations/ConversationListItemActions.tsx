@@ -48,7 +48,7 @@ const NO_GROUP = "__none__";
 
 function groupOptions(groups: ConversationGroup[]) {
   return [
-    { value: NO_GROUP, label: "No group" },
+    { value: NO_GROUP, label: "No notebook" },
     ...groups.map((group) => ({ value: group.id, label: group.name })),
   ];
 }
@@ -126,7 +126,7 @@ export function ConversationListItemActions({
               trigger={
                 <span className="flex items-center">
                   <FolderInput size={14} className="mr-2 shrink-0" aria-hidden="true" />
-                  Move to group
+                  Move to notebook
                 </span>
               }
             >
@@ -147,7 +147,7 @@ export function ConversationListItemActions({
                 <>
                   <OptionsMenuSeparator />
                   <OptionsMenuAction onSelect={organisation.onManageGroups}>
-                    Manage groups…
+                    Manage notebooks…
                   </OptionsMenuAction>
                 </>
               )}

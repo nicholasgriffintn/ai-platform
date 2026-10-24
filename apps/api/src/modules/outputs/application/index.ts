@@ -66,6 +66,7 @@ export function formatOutput(record: OutputRecord): Output {
     parentOutputId: record.parent_output_id,
     capabilityId: record.capability_id,
     groupId: record.group_id,
+    collectionId: record.collection_id,
     kind: record.kind,
     title: record.title,
     status: record.status,
@@ -101,10 +102,14 @@ export function formatSharedOutput(record: OutputRecord): SharedOutput {
   };
 }
 
-function formatOutputSummary(record: OutputRecord): OutputSummary {
-  const { content: _content, provenance: _provenance, ...summary } = formatOutput(record);
+export function toOutputSummary(output: Output): OutputSummary {
+  const { content: _content, provenance: _provenance, ...summary } = output;
 
   return summary;
+}
+
+export function formatOutputSummary(record: OutputRecord): OutputSummary {
+  return toOutputSummary(formatOutput(record));
 }
 
 async function resolveProvenanceSourceAccess(
@@ -185,7 +190,7 @@ export async function createOutput(
   context: ServiceContext,
   userId: number,
   input: CreateOutputInput,
-  options: { id?: string; provenance?: OutputProvenance } = {},
+  options: { id?: string; provenance?: OutputProvenance; collectionId?: string } = {},
 ): Promise<Output> {
   let workspaceId: string | undefined;
 
@@ -221,6 +226,7 @@ export async function createOutput(
       parentOutputId: input.parentOutputId,
       capabilityId: input.capabilityId,
       groupId: input.groupId,
+      collectionId: options.collectionId,
       kind: input.kind,
       title: input.title,
       status: input.status,

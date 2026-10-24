@@ -9,6 +9,7 @@ import {
   parseToolRules,
   savedSpeechVoiceSchema,
   speechExpressivenessSchema,
+  speechProviderSchema,
   transcriptionVocabularyTermSchema,
   type SavedSpeechVoice,
 } from "@ngriffin_uk/polychat-schemas";
@@ -304,6 +305,7 @@ export class UserSettingsRepository extends BaseRepository {
         : result.onboarding_seen,
     );
     const speechExpressiveness = speechExpressivenessSchema.safeParse(result.speech_expressiveness);
+    const speechProvider = speechProviderSchema.safeParse(result.speech_provider);
 
     return {
       ...result,
@@ -326,6 +328,7 @@ export class UserSettingsRepository extends BaseRepository {
       transcription_vocabulary:
         parseJsonArrayColumn(result.transcription_vocabulary, transcriptionVocabularyTermSchema) ??
         [],
+      speech_provider: speechProvider.success ? speechProvider.data : null,
       speech_expressiveness: speechExpressiveness.success ? speechExpressiveness.data : null,
       speech_voices: parseJsonArrayColumn(result.speech_voices, savedSpeechVoiceSchema) ?? [],
       tool_rules: parseToolRules(result.tool_rules),

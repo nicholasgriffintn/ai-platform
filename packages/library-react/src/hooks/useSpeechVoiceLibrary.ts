@@ -3,9 +3,20 @@ import {
   speechVoicesService,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { AUTH_QUERY_KEYS } from "./useAuth.js";
+
+const SPEECH_MODELS_QUERY_KEY = ["speech-models"];
+
+export function useSpeechModels(enabled: boolean) {
+  return useQuery({
+    queryKey: SPEECH_MODELS_QUERY_KEY,
+    queryFn: speechVoicesService.listModels,
+    enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+}
 
 export function useSpeechVoiceLibrary() {
   const queryClient = useQueryClient();

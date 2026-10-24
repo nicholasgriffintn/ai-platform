@@ -106,7 +106,7 @@ function ConnectorAccountRow({
                 </Button>
                 <Button
                   size="xs"
-                  variant="ghost"
+                  variant="outline"
                   disabled={isUpdating}
                   onClick={cancelEditing}
                   icon={<X className="size-3" />}

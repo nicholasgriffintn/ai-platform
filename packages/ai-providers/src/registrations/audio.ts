@@ -2,9 +2,9 @@ import type { AudioProvider } from "../capabilities/audio/index.js";
 import {
   CartesiaAudioProvider,
   ElevenLabsAudioProvider,
-  MelottsAudioProvider,
   MistralAudioProvider,
   PollyAudioProvider,
+  WorkersAiAudioProvider,
 } from "../capabilities/audio/providers/index.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
 
@@ -27,13 +27,9 @@ function audioProviders(runtime: ProviderRuntime): AiProviderRegistration<AudioP
       metadata: { vendor: "Cartesia", categories: ["audio"], tags: ["tts"] },
     },
     {
-      name: "melotts",
-      create: () => new MelottsAudioProvider(runtime),
-      metadata: {
-        vendor: "Cloudflare",
-        categories: ["audio"],
-        tags: ["tts", "workers-ai"],
-      },
+      name: "workers-ai",
+      create: () => new WorkersAiAudioProvider(runtime),
+      metadata: { vendor: "Cloudflare", categories: ["audio"], tags: ["tts", "aura", "melotts"] },
     },
     {
       name: "mistral",

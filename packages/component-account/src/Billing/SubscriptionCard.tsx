@@ -85,7 +85,7 @@ export function SubscriptionCard({
                 Reactivate
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" isLoading={isCancelling} onClick={onCancel}>
+              <Button variant="outline" size="sm" isLoading={isCancelling} onClick={onCancel}>
                 Cancel plan
               </Button>
             ))}

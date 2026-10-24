@@ -7,19 +7,22 @@ export interface MultipartInputFile {
 
 export interface MultipartInputPayload {
   multipart: {
-    body: ArrayBuffer;
+    body: ReadableStream<Uint8Array>;
     contentType: string;
   };
 }
 
 export async function buildMultipartInput(
-  fields: Record<string, string | number | undefined>,
+  fields: Record<string, unknown>,
   files: MultipartInputFile[] = [],
 ): Promise<MultipartInputPayload> {
   const form = new FormData();
 
   for (const [name, value] of Object.entries(fields)) {
-    if (value === undefined || value === null || value === "") {
+    if (
+      value === "" ||
+      (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean")
+    ) {
       continue;
     }
 
@@ -33,13 +36,13 @@ export async function buildMultipartInput(
   const encoded = new Request("https://workers-ai.invalid/", { method: "POST", body: form });
   const contentType = encoded.headers.get("content-type");
 
-  if (!contentType) {
+  if (!contentType || !encoded.body) {
     throw new Error("Failed to encode a multipart body");
   }
 
   return {
     multipart: {
-      body: await encoded.arrayBuffer(),
+      body: encoded.body,
       contentType,
     },
   };

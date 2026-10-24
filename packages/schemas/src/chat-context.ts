@@ -18,6 +18,7 @@ export const CHAT_CONTEXT_BREAKDOWN_KINDS = [
   "tool_results",
   "summary",
   "subject",
+  "notebook",
 ] as const;
 
 export const chatContextBreakdownEntrySchema = z.object({

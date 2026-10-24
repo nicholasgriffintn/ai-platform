@@ -144,7 +144,7 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
         summary: "Download a shared output's file",
         paramSchema: sharedParamsSchema,
         responses: { 200: { description: "Shared output file" } },
-        handler: async ({ params, serviceContext }) => {
+        handler: async ({ params, raw, serviceContext }) => {
           const record = await getSharedOutputRecord(serviceContext, params.token);
 
           if (!record.storage_key || !record.mime_type) {
@@ -159,7 +159,7 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
             throw new AssistantError("Shared output file not found", ErrorType.NOT_FOUND, 404);
           }
 
-          return getPrivateFileResponse(record, object);
+          return getPrivateFileResponse(record, object, raw.req.header("range"));
         },
       },
       "content",
@@ -172,7 +172,7 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
     description: "Returns the stored file, or a document output as Markdown.",
     paramSchema: outputParamsSchema,
     responses: { 200: { description: "Output file or Markdown document" } },
-    handler: async ({ params, serviceContext, user }) => {
+    handler: async ({ params, raw, serviceContext, user }) => {
       const record = await serviceContext.repositories
         .get(OutputRepository)
         .getOutput(params.output_id);
@@ -201,7 +201,7 @@ defineResource(app, { idParam: "output_id", tags: ["outputs"] }, (outputs) => {
         userId: user?.id,
       });
 
-      return getPrivateFileResponse(file.record, file.object);
+      return getPrivateFileResponse(file.record, file.object, raw.req.header("range"));
     },
   });
 

@@ -61,7 +61,7 @@ export function ProjectWorkbenchApprovals({
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 disabled={disabled}
                 title={actionTitle}

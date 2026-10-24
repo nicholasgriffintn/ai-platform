@@ -47,3 +47,43 @@ export function parseJsonLines(text: string): unknown[] {
 export function formatJsonLines(values: readonly unknown[]): string {
   return values.map((value) => JSON.stringify(value)).join("\n");
 }
+
+export function readBalancedJson(text: string, startIndex: number): string | null {
+  const open = text[startIndex];
+  const close = open === "[" ? "]" : open === "{" ? "}" : null;
+
+  if (!close) {
+    return null;
+  }
+
+  let depth = 0;
+  let inString = false;
+
+  for (let index = startIndex; index < text.length; index++) {
+    const character = text[index];
+
+    if (inString) {
+      if (character === "\\") {
+        index++;
+      } else if (character === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (character === '"') {
+      inString = true;
+    } else if (character === open) {
+      depth++;
+    } else if (character === close) {
+      depth--;
+
+      if (depth === 0) {
+        return text.slice(startIndex, index + 1);
+      }
+    }
+  }
+
+  return null;
+}

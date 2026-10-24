@@ -13,6 +13,8 @@ import {
   modelTierSchema,
   responseStyleSchema,
   type ResponseStyleSettings,
+  speechProviderSchema,
+  type SpeechModelOption,
 } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
@@ -22,9 +24,7 @@ import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
 import type { SpeechVoiceLibraryActions } from "./SpeechVoiceLibrary";
 import {
-  getSpeechModelOptions,
   getTranscriptionModelOptions,
-  getSpeechProviderOption,
   getTranscriptionProviderOption,
 } from "./transcription-settings";
 import {
@@ -149,6 +149,7 @@ export interface UserSettingsFormProps {
   onSave: (settings: Partial<UserSettings>) => Promise<void>;
   onSaveError?: (error: unknown) => void;
   speechVoiceLibrary?: SpeechVoiceLibraryActions;
+  speechModels?: readonly SpeechModelOption[];
 }
 
 export function UserSettingsForm({
@@ -162,6 +163,7 @@ export function UserSettingsForm({
   onSave,
   onSaveError,
   speechVoiceLibrary,
+  speechModels = [],
 }: UserSettingsFormProps) {
   const analytics = useAnalytics();
   const { formData, updateFormData: updateDraft } = useUserSettingsForm(userSettings);
@@ -227,21 +229,18 @@ export function UserSettingsForm({
   };
 
   const handleSpeechProviderChange = (value: string) => {
-    const newProvider = getSpeechProviderOption(value).id;
-    const [firstModelForProvider] = getSpeechModelOptions(newProvider);
+    const provider = speechProviderSchema.safeParse(value);
 
     updateFormData({
-      speech_provider: newProvider,
-      speech_model: firstModelForProvider.id,
+      speech_provider: provider.success ? provider.data : null,
+      speech_model: null,
+      speech_voice: null,
     });
 
     analytics.track({
       name: "speech_provider_changed",
       category: "ui_interaction",
-      properties: {
-        provider: newProvider,
-        auto_selected_model: firstModelForProvider.id,
-      },
+      properties: { provider: provider.success ? provider.data : "automatic" },
     });
   };
 
@@ -866,6 +865,7 @@ export function UserSettingsForm({
         updateFormData={updateFormData}
         onTranscriptionProviderChange={handleTranscriptionProviderChange}
         onSpeechProviderChange={handleSpeechProviderChange}
+        speechModels={speechModels}
         speechVoiceLibrary={speechVoiceLibrary}
       />
 

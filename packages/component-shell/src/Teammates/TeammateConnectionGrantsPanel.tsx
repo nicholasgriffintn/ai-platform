@@ -168,7 +168,7 @@ function ConnectionGrantEditor({
           {dirty && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               icon={<RotateCcw className="size-4" />}
               disabled={disabled}
               onClick={() => setSelected(new Set(savedOperations))}

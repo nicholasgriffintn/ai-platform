@@ -112,7 +112,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
           </Button>
           <Button
             size="xs"
-            variant="ghost"
+            variant="outline"
             disabled={isResolving}
             className="text-failure hover:text-failure"
             onClick={() => void resolve("rejected")}

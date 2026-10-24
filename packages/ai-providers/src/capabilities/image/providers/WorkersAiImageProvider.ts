@@ -44,25 +44,23 @@ export class WorkersAiImageProvider implements ImageProvider {
 
     const stylePrompt = resolveStylePrompt(request.style);
     const prompt = stylePrompt ? `${stylePrompt}\n\n${request.prompt}` : request.prompt;
-    const input = buildInputSchemaInput(
-      {
-        messages: [{ role: "user", content: prompt }],
-        body: {
-          input: {
-            prompt,
-            style: request.style,
-            aspect_ratio: request.aspectRatio,
-            width: request.width,
-            height: request.height,
-            steps: request.steps,
-            num_steps: request.steps,
-            seed: request.seed,
-            ...request.metadata,
-          },
-        },
-      },
-      modelConfig,
-    ).input;
+    const requestedInput = {
+      prompt,
+      style: request.style,
+      aspect_ratio: request.aspectRatio,
+      width: request.width,
+      height: request.height,
+      steps: request.steps,
+      num_steps: request.steps,
+      seed: request.seed,
+      ...request.metadata,
+    };
+    const input = modelConfig.inputSchema?.fields?.length
+      ? buildInputSchemaInput(
+          { messages: [{ role: "user", content: prompt }], body: { input: requestedInput } },
+          modelConfig,
+        ).input
+      : requestedInput;
 
     const response = await provider.getResponse({
       completion_id: request.completion_id,

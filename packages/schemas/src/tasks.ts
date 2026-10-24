@@ -20,6 +20,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
+import { NOTEBOOK_JOB_TASK_TYPE } from "./notebooks.js";
 import { listSchema } from "./platform/list.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
@@ -83,6 +84,7 @@ export const TASK_TYPES = [
   MODEL_PLATFORM_RECONCILE_TASK_TYPE,
   BENCHMARK_RUN_TASK_TYPE,
   WEBHOOK_DELIVERY_TASK_TYPE,
+  NOTEBOOK_JOB_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({
