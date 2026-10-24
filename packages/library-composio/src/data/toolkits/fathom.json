@@ -23,26 +23,31 @@
 		}
 	],
 	"toolkitSlug": "fathom",
-	"toolkitVersion": "20260724_00",
-	"toolCount": 7,
-	"readToolCount": 5,
-	"writeToolCount": 2,
+	"toolkitVersion": "20261023_00",
+	"toolCount": 10,
+	"readToolCount": 7,
+	"writeToolCount": 3,
 	"scopes": [
 		"public_api"
 	],
 	"operations": {
 		"read": [
+			"FATHOM_GET_RECORDING_DOWNLOAD",
 			"FATHOM_GET_RECORDING_SUMMARY",
 			"FATHOM_GET_RECORDING_TRANSCRIPT",
+			"FATHOM_LIST_MEETING_TYPES",
 			"FATHOM_LIST_MEETINGS",
 			"FATHOM_LIST_TEAM_MEMBERS",
 			"FATHOM_LIST_TEAMS"
 		],
 		"write": [
 			"FATHOM_CREATE_WEBHOOK",
-			"FATHOM_DELETE_WEBHOOK"
+			"FATHOM_DELETE_WEBHOOK",
+			"FATHOM_DOWNLOAD_RECORDING"
 		],
 		"important": [
+			"FATHOM_DOWNLOAD_RECORDING",
+			"FATHOM_GET_RECORDING_DOWNLOAD",
 			"FATHOM_GET_RECORDING_SUMMARY",
 			"FATHOM_GET_RECORDING_TRANSCRIPT",
 			"FATHOM_LIST_MEETINGS",
@@ -54,8 +59,10 @@
 		"idempotent": [
 			"FATHOM_CREATE_WEBHOOK",
 			"FATHOM_DELETE_WEBHOOK",
+			"FATHOM_GET_RECORDING_DOWNLOAD",
 			"FATHOM_GET_RECORDING_SUMMARY",
 			"FATHOM_GET_RECORDING_TRANSCRIPT",
+			"FATHOM_LIST_MEETING_TYPES",
 			"FATHOM_LIST_MEETINGS",
 			"FATHOM_LIST_TEAM_MEMBERS",
 			"FATHOM_LIST_TEAMS"

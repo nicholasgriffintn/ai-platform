@@ -4,6 +4,7 @@ export * from "./activity.js";
 export * from "./agentApprovalStore.js";
 export * from "./apps.js";
 export * from "./attention.js";
+export * from "./discover.js";
 export * from "./age-gate.js";
 export * from "./auth-service.js";
 export * from "./bounded-response.js";

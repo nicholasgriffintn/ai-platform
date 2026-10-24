@@ -11,6 +11,7 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { notifyMobilePoly } from "~/modules/mobile-push/application";
 import { sendPolyNotificationToChannels } from "~/modules/poly/application/channel-delivery";
 import { admitRoutineHandoff } from "~/modules/poly/application/handoffs";
 import { isPolyContextPaused } from "~/modules/poly/domain/pause";
@@ -20,6 +21,7 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { CreateChatCompletionsResponse, IUser } from "~/types";
 
+import { getAssistantRecipes } from "./catalog";
 import { parseRecipeInstallationRecord } from "./index";
 
 export async function ensureRecipeOccurrenceConversation(params: {
@@ -157,9 +159,12 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     : needsAttention
       ? "Routine needs attention"
       : "Routine completed";
-  const resultPath = project
-    ? `/work/${encodeURIComponent(project.workspace_id)}/projects/${encodeURIComponent(project.id)}/chat/${encodeURIComponent(params.conversationId)}`
-    : `/chat/${encodeURIComponent(params.conversationId)}`;
+  const recipe = getAssistantRecipes().find((entry) => entry.id === installation.recipeId);
+  const resultPath =
+    recipe?.resultPath ??
+    (project
+      ? `/work/${encodeURIComponent(project.workspace_id)}/projects/${encodeURIComponent(project.id)}/chat/${encodeURIComponent(params.conversationId)}`
+      : `/chat/${encodeURIComponent(params.conversationId)}`);
 
   await params.context.repositories
     .get(MessageRepository)
@@ -192,6 +197,14 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
       polyContextId: currentContext.id,
       notificationId: messageId,
       body: `${heading}: ${params.recipeTitle}\n\n${summary}`,
+    });
+    await notifyMobilePoly({
+      context: params.context,
+      userId: params.user.id,
+      notificationId: messageId,
+      title: "Poly",
+      body: `${heading}: ${params.recipeTitle}`,
+      path: recipe?.resultPath,
     });
   }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calendarDateFromParts, isDeadlinePassed, wholeYearsSince } from "./dates.js";
+import { calendarDateFromParts, isDeadlinePassed, wholeYearsSince, isoWeekKey } from "./dates.js";
 
 const now = new Date("2026-06-07T12:00:00.000Z");
 
@@ -45,5 +45,13 @@ describe("calendarDateFromParts", () => {
     expect(calendarDateFromParts(2008, 13, 1)).toBeNull();
     expect(calendarDateFromParts(208, 1, 1)).toBeNull();
     expect(calendarDateFromParts(Number.NaN, 1, 1)).toBeNull();
+  });
+});
+
+describe("isoWeekKey", () => {
+  it("names the ISO week, counting year-end days into the week they belong to", () => {
+    expect(isoWeekKey("2026-10-24")).toBe("2026-w43");
+    expect(isoWeekKey("2027-01-01")).toBe("2026-w53");
+    expect(isoWeekKey("2025-12-29")).toBe("2026-w01");
   });
 });

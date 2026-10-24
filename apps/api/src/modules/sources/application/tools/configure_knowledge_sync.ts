@@ -1,6 +1,7 @@
 import { createKnowledgeSyncSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { getActiveRecipeSetup } from "~/modules/recipes/application/toolContext";
 import { createKnowledgeSync } from "~/modules/sources/application/knowledge-sync";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
@@ -10,7 +11,7 @@ import { configure_knowledge_sync as descriptor } from "./definitions/configure_
 
 export const configure_knowledge_sync: ApiToolDefinition = {
   ...descriptor,
-  execute: async (args, { request }) => {
+  execute: async (args, { request, completionId }) => {
     if (!request.context) {
       throw new AssistantError(
         "Sign in to configure knowledge sync",
@@ -20,15 +21,16 @@ export const configure_knowledge_sync: ApiToolDefinition = {
     }
 
     const input = createKnowledgeSyncSchema.parse(args);
-    const projectId = resolveRequestProjectId(request);
+    const conversation = completionId
+      ? await request.context.repositories.get(ConversationRepository).getConversation(completionId)
+      : null;
+    const inDestination = input.projectId
+      ? resolveRequestProjectId(request) === input.projectId
+      : Boolean(input.notebookId) && conversation?.group_id === input.notebookId;
 
-    if (
-      !projectId ||
-      projectId !== input.projectId ||
-      getActiveRecipeSetup(request.request?.options)?.id !== input.recipeId
-    ) {
+    if (!inDestination || getActiveRecipeSetup(request.request?.options)?.id !== input.recipeId) {
       throw new AssistantError(
-        "Configure knowledge sync within the destination project",
+        "Configure knowledge sync within the destination project or notebook",
         ErrorType.AUTHORISATION_ERROR,
         403,
       );
@@ -39,7 +41,9 @@ export const configure_knowledge_sync: ApiToolDefinition = {
     return {
       status: "success",
       name: "configure_knowledge_sync",
-      content: "Knowledge sync saved. Review freshness or pause the sync in project Files.",
+      content: input.projectId
+        ? "Knowledge sync saved. Review freshness or pause the sync in project Files."
+        : "Knowledge sync saved. Its documents arrive in the notebook as sources.",
       data: sync,
     };
   },

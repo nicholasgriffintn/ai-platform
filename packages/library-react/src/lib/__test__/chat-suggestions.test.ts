@@ -40,6 +40,25 @@ describe("createChatSuggestions", () => {
     ]);
   });
 
+  it("leads with at most two of today's Discover picks, in edition order", () => {
+    const suggestions = createChatSuggestions(
+      contextWith({
+        today: [
+          { id: "lisbon", label: "Lisbon after dark", prompt: "Plan my Lisbon evenings." },
+          { id: "habits", label: "Why streaks break", prompt: "Explain streaks." },
+          { id: "groceries", label: "Automate groceries", prompt: "Set up groceries." },
+        ],
+      }),
+      0.4,
+    );
+
+    expect(suggestions.slice(0, 2).map((suggestion) => suggestion.id)).toEqual([
+      "today-lisbon",
+      "today-habits",
+    ]);
+    expect(suggestions.slice(2).some((suggestion) => suggestion.tier === "today")).toBe(false);
+  });
+
   it("only offers capabilities the context actually supports", () => {
     const suggestions = createChatSuggestions(
       contextWith({ availableModes: ["live"], availableToolIds: ["web_search"] }),

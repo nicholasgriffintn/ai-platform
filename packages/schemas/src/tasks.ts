@@ -8,6 +8,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { DISCOVER_JOB_TASK_TYPE } from "./discover.js";
 import { MEMORY_REFLECTION_TASK_TYPE } from "./memory-documents.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
@@ -85,6 +86,7 @@ export const TASK_TYPES = [
   BENCHMARK_RUN_TASK_TYPE,
   WEBHOOK_DELIVERY_TASK_TYPE,
   NOTEBOOK_JOB_TASK_TYPE,
+  DISCOVER_JOB_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({

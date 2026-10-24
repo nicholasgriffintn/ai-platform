@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "cal",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20261015_00",
 	"toolCount": 168,
 	"readToolCount": 79,
 	"writeToolCount": 89,
@@ -31,10 +31,10 @@
 		"*",
 		"EVENT_TYPE_READ",
 		"EVENT_TYPE_WRITE",
-		"READ_BOOKING",
-		"SCHEDULE_READ",
 		"eventType.update",
 		"organization.attributes.read",
+		"READ_BOOKING",
+		"SCHEDULE_READ",
 		"workflow.read"
 	],
 	"operations": {

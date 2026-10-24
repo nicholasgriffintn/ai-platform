@@ -28,6 +28,7 @@ export * from "./Content/customResponseViews.js";
 export * from "./Conversations/ConversationGroupsDialog.js";
 export * from "./Conversations/ConversationItemActions.js";
 export * from "./Conversations/ConversationPage.js";
+export * from "./Discover/DiscoverPage.js";
 export * from "./Discover/HomeDiscover.js";
 export * from "./Delegations/DelegatePanel.js";
 export * from "./Delegations/DelegationTimelineView.js";

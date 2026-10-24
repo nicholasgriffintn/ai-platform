@@ -73,6 +73,7 @@ export const deviceSyncEventTypeSchema = z.enum([
   "job.changed",
   "connector_approval.changed",
   "attention.changed",
+  "discover.changed",
 ]);
 
 export type DeviceSyncEventType = z.infer<typeof deviceSyncEventTypeSchema>;

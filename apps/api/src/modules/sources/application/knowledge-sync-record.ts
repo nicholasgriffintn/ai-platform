@@ -14,6 +14,7 @@ export function formatKnowledgeSync(record: KnowledgeSyncRecord, userId: number)
   return {
     id: record.id,
     projectId: record.project_id,
+    notebookId: record.collection_id,
     title: record.title,
     status: record.status,
     resourceCount: parseKnowledgeSyncResources(record).length,

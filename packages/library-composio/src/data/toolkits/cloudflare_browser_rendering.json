@@ -6,6 +6,10 @@
 	"appUrl": "https://developers.cloudflare.com/browser-rendering/",
 	"categories": [
 		{
+			"id": "web-scraping-&-browser",
+			"name": "Web Scraping & Browser"
+		},
+		{
 			"id": "ai-web-scraping",
 			"name": "AI Web Scraping"
 		},
@@ -23,7 +27,7 @@
 		}
 	],
 	"toolkitSlug": "cloudflare_browser_rendering",
-	"toolkitVersion": "20260707_00",
+	"toolkitVersion": "20261014_00",
 	"toolCount": 4,
 	"readToolCount": 4,
 	"writeToolCount": 0,

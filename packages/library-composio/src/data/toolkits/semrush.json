@@ -6,6 +6,10 @@
 	"appUrl": "https://www.semrush.com/",
 	"categories": [
 		{
+			"id": "seo-&-ai-visibility",
+			"name": "SEO & AI Visibility"
+		},
+		{
 			"id": "marketing",
 			"name": "Marketing"
 		},
@@ -23,7 +27,7 @@
 		}
 	],
 	"toolkitSlug": "semrush",
-	"toolkitVersion": "20260623_00",
+	"toolkitVersion": "20261014_00",
 	"toolCount": 37,
 	"readToolCount": 37,
 	"writeToolCount": 0,

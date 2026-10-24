@@ -6,6 +6,10 @@
 	"appUrl": "https://www.hyperbrowser.ai/",
 	"categories": [
 		{
+			"id": "web-scraping-&-browser",
+			"name": "Web Scraping & Browser"
+		},
+		{
 			"id": "ai-web-scraping",
 			"name": "AI Web Scraping"
 		},
@@ -23,7 +27,7 @@
 		}
 	],
 	"toolkitSlug": "hyperbrowser",
-	"toolkitVersion": "20260615_00",
+	"toolkitVersion": "20261014_00",
 	"toolCount": 42,
 	"readToolCount": 25,
 	"writeToolCount": 17,

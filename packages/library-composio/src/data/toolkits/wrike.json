@@ -23,12 +23,11 @@
 		}
 	],
 	"toolkitSlug": "wrike",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20261010_00",
 	"toolCount": 144,
 	"readToolCount": 78,
 	"writeToolCount": 66,
 	"scopes": [
-		"Default",
 		"amReadOnlyGroup",
 		"amReadOnlyInvitation",
 		"amReadOnlyTimelogCategory",
@@ -39,6 +38,7 @@
 		"amReadWriteTimelogCategory",
 		"amReadWriteUser",
 		"amReadWriteWorkflow",
+		"Default",
 		"wsReadOnly",
 		"wsReadWrite"
 	],

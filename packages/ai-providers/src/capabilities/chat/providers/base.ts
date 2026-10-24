@@ -153,7 +153,7 @@ export abstract class BaseProvider implements AIProvider {
     modelConfig: ModelConfigItem,
   ): FetchAIResponseOptions {
     return {
-      requestTimeout: modelConfig.timeout || 100000,
+      requestTimeout: modelConfig.timeout,
       maxAttempts: 1,
     };
   }

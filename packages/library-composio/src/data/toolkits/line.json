@@ -23,15 +23,17 @@
 		}
 	],
 	"toolkitSlug": "line",
-	"toolkitVersion": "00000000_00",
-	"toolCount": 13,
-	"readToolCount": 6,
-	"writeToolCount": 7,
+	"toolkitVersion": "20261013_00",
+	"toolCount": 17,
+	"readToolCount": 8,
+	"writeToolCount": 9,
 	"scopes": [],
 	"operations": {
 		"read": [
 			"LINE_DOWNLOAD_MESSAGE_CONTENT_PREVIEW",
+			"LINE_GET_FOLLOWER_INSIGHT",
 			"LINE_GET_MESSAGE_DELIVERY_COUNT",
+			"LINE_GET_MESSAGE_DELIVERY_INSIGHT",
 			"LINE_GET_RICH_MENU",
 			"LINE_LIST_CHAT_MEMBER_IDS",
 			"LINE_LIST_FOLLOWER_IDS",
@@ -43,6 +45,8 @@
 			"LINE_DELETE_RICH_MENU",
 			"LINE_LINK_OR_UNLINK_USER_RICH_MENU",
 			"LINE_MARK_MESSAGES_AS_READ",
+			"LINE_REPLY_TO_MESSAGE",
+			"LINE_SEND_PUSH_MESSAGE",
 			"LINE_SET_OR_CLEAR_DEFAULT_RICH_MENU",
 			"LINE_UPLOAD_RICH_MENU_IMAGE"
 		],
@@ -51,6 +55,8 @@
 			"LINE_CREATE_RICH_MENU_WITH_IMAGE",
 			"LINE_DELETE_RICH_MENU",
 			"LINE_MARK_MESSAGES_AS_READ",
+			"LINE_REPLY_TO_MESSAGE",
+			"LINE_SEND_PUSH_MESSAGE",
 			"LINE_UPLOAD_RICH_MENU_IMAGE"
 		],
 		"idempotent": [

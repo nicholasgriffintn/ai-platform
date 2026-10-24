@@ -62,8 +62,14 @@ function requestsSupportedHostedTool(
   );
 }
 
-function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): boolean {
-  if (!params.reasoning_effort || params.reasoning_effort === "none") {
+function requestsFunctionToolsWithReasoning(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  if (
+    !params.reasoning_effort ||
+    (params.reasoning_effort === "none" && modelConfig.prefersResponsesApiForReasoning !== true)
+  ) {
     return false;
   }
 
@@ -113,7 +119,7 @@ export function shouldUseOpenAIResponsesApi(
     requestsPreferredReasoningApi(params, modelConfig) ||
     containsDocumentInput(params) ||
     requestsSupportedHostedTool(params, modelConfig) ||
-    requestsFunctionToolsWithReasoning(params)
+    requestsFunctionToolsWithReasoning(params, modelConfig)
   );
 }
 

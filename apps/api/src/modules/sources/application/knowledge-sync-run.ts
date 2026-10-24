@@ -80,8 +80,11 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
 
     await publishResourceEvent(
       context,
-      { kind: "project", projectId: sync.project_id },
+      sync.project_id
+        ? { kind: "project", projectId: sync.project_id }
+        : { kind: "personal", userId: sync.user_id },
       "knowledge_sync.changed",
+      sync.collection_id ? { notebookId: sync.collection_id } : {},
     );
     const latest = await context.repositories.get(KnowledgeSyncRepository).get(sync.id);
 
@@ -135,8 +138,11 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
       await knowledgeSyncs.release(id, token, errorMessage, pause);
       await publishResourceEvent(
         context,
-        { kind: "project", projectId: sync.project_id },
+        sync.project_id
+          ? { kind: "project", projectId: sync.project_id }
+          : { kind: "personal", userId: sync.user_id },
         "knowledge_sync.changed",
+        sync.collection_id ? { notebookId: sync.collection_id } : {},
       );
     } finally {
       await closeComposioConnectorRun(context);

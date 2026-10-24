@@ -2623,6 +2623,7 @@
       "model": "gpt-sol/gpt-6-sol",
       "matchingModel": "gpt-6-sol",
       "overrides": {
+        "prefersResponsesApiForReasoning": true,
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
@@ -2669,6 +2670,7 @@
       "model": "gpt-sol/gpt-6-1-sol",
       "matchingModel": "gpt-6.1-sol",
       "overrides": {
+        "prefersResponsesApiForReasoning": true,
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",

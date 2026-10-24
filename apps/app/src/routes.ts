@@ -64,6 +64,7 @@ export default [
   ]),
   route("/pets", "pages/pets.tsx"),
   route("/discover", "pages/discover.tsx"),
+  route("/tour", "pages/tour.tsx"),
   route("/models", "pages/models.tsx"),
   route("/benchmarks", "pages/benchmarks/index.tsx"),
   route("/benchmarks/shared/:token", "pages/benchmarks/shared.tsx"),

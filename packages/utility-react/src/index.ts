@@ -1,5 +1,8 @@
 export * from "./dom.js";
 export * from "./link.js";
+export * from "./useAmbientBed.js";
+export * from "./useCaptionTrack.js";
+export * from "./useMediaTrack.js";
 export * from "./useCopyToClipboard.js";
 export * from "./useDebouncedValue.js";
 export * from "./useElementWidth.js";
@@ -7,5 +10,6 @@ export * from "./useFileUpload.js";
 export * from "./useHeaderScrollEdge.js";
 export * from "./useLoadMoreOnIntersect.js";
 export * from "./useMediaQuery.js";
+export * from "./useObjectUrl.js";
 export * from "./useSecondsUntil.js";
 export * from "./view-models/index.js";

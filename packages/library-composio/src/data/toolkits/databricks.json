@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "databricks",
-	"toolkitVersion": "20260729_00",
+	"toolkitVersion": "20260821_00",
 	"toolCount": 410,
 	"readToolCount": 164,
 	"writeToolCount": 246,

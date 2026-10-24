@@ -62,6 +62,10 @@ export function formatDuration(
   return `${padMinutes ? minutesPart : String(minutes)}:${secondsPart}`;
 }
 
+export function formatRoundedMinutes(seconds: number): string {
+  return `${Math.max(1, Math.round(seconds / 60))} min`;
+}
+
 export function formatCompactCount(value: number): string {
   if (!Number.isFinite(value) || value < 0) {
     return "0";

@@ -23,19 +23,30 @@
 		}
 	],
 	"toolkitSlug": "digital_ocean",
-	"toolkitVersion": "20260721_00",
-	"toolCount": 48,
-	"readToolCount": 21,
+	"toolkitVersion": "20261023_00",
+	"toolCount": 55,
+	"readToolCount": 28,
 	"writeToolCount": 27,
 	"scopes": [
+		"account:read",
+		"actions:read",
 		"api:read",
 		"app:read",
+		"billing:read",
 		"domain:delete",
 		"droplet:read",
-		"image:create"
+		"image:create",
+		"monitoring:read",
+		"regions:read",
+		"reserved_ip:read",
+		"sizes:read"
 	],
 	"operations": {
 		"read": [
+			"DIGITAL_OCEAN_GET_ACCOUNT",
+			"DIGITAL_OCEAN_GET_ACTION",
+			"DIGITAL_OCEAN_GET_CUSTOMER_BALANCE",
+			"DIGITAL_OCEAN_GET_DROPLET_METRICS",
 			"DIGITAL_OCEAN_LIST_ALL_DATABASES",
 			"DIGITAL_OCEAN_LIST_ALL_DOMAINS",
 			"DIGITAL_OCEAN_LIST_ALL_DROPLETS",
@@ -51,8 +62,11 @@
 			"DIGITAL_OCEAN_LIST_APPS",
 			"DIGITAL_OCEAN_LIST_DATABASE_OPTIONS",
 			"DIGITAL_OCEAN_LIST_DOMAIN_RECORDS",
+			"DIGITAL_OCEAN_LIST_DROPLET_SIZES",
+			"DIGITAL_OCEAN_LIST_RESERVED_IPS",
 			"DIGITAL_OCEAN_RETRIEVE_DOMAIN",
 			"DIGITAL_OCEAN_RETRIEVE_DOMAIN_RECORD",
+			"DIGITAL_OCEAN_RETRIEVE_DROPLET_ACTION",
 			"DIGITAL_OCEAN_RETRIEVE_EXISTING_DROPLET",
 			"DIGITAL_OCEAN_RETRIEVE_EXISTING_IMAGE",
 			"DIGITAL_OCEAN_RETRIEVE_TAG",
@@ -88,6 +102,8 @@
 			"DIGITAL_OCEAN_UPDATE_VPC"
 		],
 		"important": [
+			"DIGITAL_OCEAN_GET_ACCOUNT",
+			"DIGITAL_OCEAN_GET_CUSTOMER_BALANCE",
 			"DIGITAL_OCEAN_LIST_APPS"
 		],
 		"destructive": [
@@ -105,6 +121,8 @@
 		],
 		"idempotent": [],
 		"openWorld": [
+			"DIGITAL_OCEAN_GET_ACCOUNT",
+			"DIGITAL_OCEAN_GET_CUSTOMER_BALANCE",
 			"DIGITAL_OCEAN_LIST_APPS"
 		]
 	}

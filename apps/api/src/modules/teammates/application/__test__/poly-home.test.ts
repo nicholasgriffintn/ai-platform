@@ -55,6 +55,24 @@ describe("requirePolyHomeRun", () => {
     ).not.toThrow();
   });
 
+  it("runs Poly's own routines in their occurrence conversation", () => {
+    const invocation = {
+      source: "routine" as const,
+      installationId: "installation_1",
+      occurrenceId: "occurrence_1",
+    };
+
+    expect(() =>
+      requirePolyHomeRun(resolution({ invocation }), "recipe_occurrence_1"),
+    ).not.toThrow();
+    expect(() =>
+      requirePolyHomeRun(
+        resolution({ invocation }, { ...polyContext, scope: { type: "project", id: "project_1" } }),
+        "recipe_occurrence_1",
+      ),
+    ).toThrow();
+  });
+
   it("keeps Poly out of every other conversation and invocation", () => {
     expect(() => requirePolyHomeRun(resolution(), "chat_elsewhere")).toThrow(
       "Poly only works in its own conversation",

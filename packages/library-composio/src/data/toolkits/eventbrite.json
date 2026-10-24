@@ -24,10 +24,10 @@
 	"readToolCount": 56,
 	"writeToolCount": 39,
 	"scopes": [
-		"No granular scopes documented",
+		"event:read",
 		"event.details:read",
 		"event.orders:read",
-		"event:read"
+		"No granular scopes documented"
 	],
 	"operations": {
 		"read": [

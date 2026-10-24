@@ -23,17 +23,17 @@
 		}
 	],
 	"toolkitSlug": "alpaca",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20260826_00",
 	"toolCount": 100,
 	"readToolCount": 84,
 	"writeToolCount": 16,
 	"scopes": [
-		"N/A - API key authentication used, not OAuth",
-		"N/A - API uses API Key auth, not OAuth",
-		"N/A - Alpaca uses API key authentication, not OAuth",
 		"account:write",
 		"data",
 		"market_data:read",
+		"N/A - Alpaca uses API key authentication, not OAuth",
+		"N/A - API key authentication used, not OAuth",
+		"N/A - API uses API Key auth, not OAuth",
 		"trading"
 	],
 	"operations": {

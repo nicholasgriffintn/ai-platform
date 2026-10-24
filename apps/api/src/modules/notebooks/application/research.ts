@@ -82,6 +82,7 @@ async function createWebSources(
   context: ServiceContext,
   projectId: string | null,
   results: ImportNotebookResearchInput["results"],
+  metadata: Record<string, unknown>,
 ): Promise<string[]> {
   const user = context.requireUser();
   const extracted = await extractContent(
@@ -117,7 +118,7 @@ async function createWebSources(
       content: truncateForModel(content, MAX_SOURCE_CHARACTERS),
       externalUri: result.url,
       provider: "web",
-      metadata: {},
+      metadata,
     });
 
     sourceIds.push(source.id);
@@ -130,6 +131,7 @@ export async function importNotebookResearch(
   context: ServiceContext,
   notebookId: string,
   input: ImportNotebookResearchInput,
+  metadata: Record<string, unknown> = {},
 ): Promise<NotebookDetail> {
   const access = await requireNotebookAccess(context, notebookId);
   const sourceIds: string[] = [];
@@ -140,6 +142,7 @@ export async function importNotebookResearch(
         context,
         access.notebook.project_id,
         input.results.slice(start, start + 10),
+        metadata,
       )),
     );
   }

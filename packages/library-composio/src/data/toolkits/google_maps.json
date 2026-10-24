@@ -6,6 +6,10 @@
 	"appUrl": "https://www.google.com/maps",
 	"categories": [
 		{
+			"id": "places-&-weather",
+			"name": "Places & Weather"
+		},
+		{
 			"id": "developer-tools",
 			"name": "Developer Tools"
 		}
@@ -19,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "google_maps",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20261021_00",
 	"toolCount": 20,
 	"readToolCount": 18,
 	"writeToolCount": 2,

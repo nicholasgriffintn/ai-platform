@@ -2,6 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import { joinAudioSegments, splitForSpeech, stripId3Tag } from "../audio";
 
+function infoTagged(audio: number[]): Uint8Array {
+  const frame = new Uint8Array(417);
+
+  frame.set([0xff, 0xfb, 0x90, 0xc0]);
+  frame.set(
+    [..."Info"].map((character) => character.charCodeAt(0)),
+    21,
+  );
+
+  return new Uint8Array([...frame, ...audio]);
+}
+
 function id3Tagged(payload: number[], tagBodyLength: number): Uint8Array {
   return new Uint8Array([
     0x49,
@@ -34,6 +46,13 @@ describe("joinAudioSegments", () => {
     const joined = joinAudioSegments([id3Tagged([1, 2], 3), id3Tagged([3], 2)]);
 
     expect([...joined]).toEqual([1, 2, 3]);
+  });
+
+  it("drops each segment's Info frame so players time and seek the whole stream", () => {
+    const audio = [0xff, 0xfb, 0x90, 0xc0, 7, 8];
+    const joined = joinAudioSegments([infoTagged(audio), infoTagged(audio)]);
+
+    expect([...joined]).toEqual([...audio, ...audio]);
   });
 });
 

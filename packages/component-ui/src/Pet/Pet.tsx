@@ -146,7 +146,7 @@ export function Pet({
   const glance = gaze && !look && !isTravelling ? glanceTilt(gaze.angle) : 0;
   const faces = gaze && !look ? gaze.facing : facing;
   const glanceStyle: GlanceStyle = { "--polychat-pet-glance": `${glance}deg` };
-  const showHint = nudge === null && isHinting;
+  const showHint = nudge === null && isHinting && Boolean(onActivate || href);
   const accessibleName = label ?? `${pet.name}. ${presence.status}`;
 
   if (!activePet.isReady || !pet.isReady) {

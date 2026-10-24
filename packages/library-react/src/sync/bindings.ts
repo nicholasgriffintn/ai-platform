@@ -196,10 +196,11 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   {
     type: "knowledge_sync.changed",
     apply: (context, event) => {
-      const projectId = readOptionalString(event.data.projectId);
+      const target =
+        readOptionalString(event.data.projectId) ?? readOptionalString(event.data.notebookId);
 
-      if (projectId) {
-        context.invalidate(["knowledge-syncs", projectId]);
+      if (target) {
+        context.invalidate(["knowledge-syncs", target]);
         context.invalidate(["sources"]);
       }
     },
@@ -239,6 +240,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
   { type: "attention.changed", apply: (context) => context.invalidate(TASK_ATTENTION_QUERY_KEY) },
+  { type: "discover.changed", apply: (context) => context.invalidate(["discover"]) },
 ];
 
 const BINDINGS_BY_TYPE = new Map(SYNC_BINDINGS.map((binding) => [binding.type, binding]));

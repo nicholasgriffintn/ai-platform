@@ -23,30 +23,75 @@
 		}
 	],
 	"toolkitSlug": "agent_mail",
-	"toolkitVersion": "20260615_00",
-	"toolCount": 5,
-	"readToolCount": 3,
-	"writeToolCount": 2,
-	"scopes": [],
+	"toolkitVersion": "20261023_00",
+	"toolCount": 23,
+	"readToolCount": 14,
+	"writeToolCount": 9,
+	"scopes": [
+		"api_key_create",
+		"api_key_read",
+		"draft_create",
+		"draft_read",
+		"draft_send",
+		"draft_update",
+		"inbox_read",
+		"inbox_update",
+		"message_delete",
+		"message_read",
+		"message_send",
+		"metrics_read",
+		"webhook_read"
+	],
 	"operations": {
 		"read": [
+			"AGENT_MAIL_GET_API_KEY",
+			"AGENT_MAIL_GET_DRAFT",
+			"AGENT_MAIL_GET_INBOX",
 			"AGENT_MAIL_GET_MESSAGE",
+			"AGENT_MAIL_GET_THREAD",
+			"AGENT_MAIL_LIST_DRAFTS",
+			"AGENT_MAIL_LIST_INBOX_API_KEYS",
+			"AGENT_MAIL_LIST_INBOX_EVENTS",
 			"AGENT_MAIL_LIST_INBOXES",
-			"AGENT_MAIL_LIST_MESSAGES"
+			"AGENT_MAIL_LIST_MESSAGES",
+			"AGENT_MAIL_LIST_THREADS",
+			"AGENT_MAIL_LIST_WEBHOOKS",
+			"AGENT_MAIL_QUERY_INBOX_EVENT_METRICS",
+			"AGENT_MAIL_QUERY_RATE_METRICS"
 		],
 		"write": [
+			"AGENT_MAIL_CREATE_DRAFT",
 			"AGENT_MAIL_CREATE_INBOX",
-			"AGENT_MAIL_SEND_EMAIL"
+			"AGENT_MAIL_CREATE_INBOX_API_KEY",
+			"AGENT_MAIL_DELETE_THREAD",
+			"AGENT_MAIL_REPLY_TO_MESSAGE",
+			"AGENT_MAIL_SEND_DRAFT",
+			"AGENT_MAIL_SEND_EMAIL",
+			"AGENT_MAIL_UPDATE_DRAFT",
+			"AGENT_MAIL_UPDATE_INBOX"
 		],
 		"important": [
 			"AGENT_MAIL_CREATE_INBOX",
+			"AGENT_MAIL_CREATE_INBOX_API_KEY",
 			"AGENT_MAIL_LIST_INBOXES"
 		],
-		"destructive": [],
+		"destructive": [
+			"AGENT_MAIL_CREATE_DRAFT",
+			"AGENT_MAIL_DELETE_THREAD",
+			"AGENT_MAIL_REPLY_TO_MESSAGE",
+			"AGENT_MAIL_SEND_DRAFT",
+			"AGENT_MAIL_UPDATE_DRAFT",
+			"AGENT_MAIL_UPDATE_INBOX"
+		],
 		"idempotent": [],
 		"openWorld": [
+			"AGENT_MAIL_CREATE_DRAFT",
 			"AGENT_MAIL_CREATE_INBOX",
-			"AGENT_MAIL_LIST_INBOXES"
+			"AGENT_MAIL_LIST_INBOXES",
+			"AGENT_MAIL_REPLY_TO_MESSAGE",
+			"AGENT_MAIL_SEND_DRAFT",
+			"AGENT_MAIL_UPDATE_DRAFT",
+			"AGENT_MAIL_UPDATE_INBOX"
 		]
 	}
 }

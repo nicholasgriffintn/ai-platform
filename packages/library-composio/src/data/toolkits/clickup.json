@@ -27,9 +27,9 @@
 		}
 	],
 	"toolkitSlug": "clickup",
-	"toolkitVersion": "20260807_00",
-	"toolCount": 162,
-	"readToolCount": 63,
+	"toolkitVersion": "20261007_00",
+	"toolCount": 163,
+	"readToolCount": 64,
 	"writeToolCount": 99,
 	"scopes": [],
 	"operations": {
@@ -50,6 +50,7 @@
 			"CLICKUP_GET_CHAT_VIEW_COMMENTS",
 			"CLICKUP_GET_CUSTOM_ROLES",
 			"CLICKUP_GET_CUSTOM_TASK_TYPES",
+			"CLICKUP_GET_DOC",
 			"CLICKUP_GET_DOC_CONTENT",
 			"CLICKUP_GET_DOC_PAGE_CONTENT",
 			"CLICKUP_GET_DOC_PAGE_LISTING",
@@ -337,6 +338,7 @@
 			"CLICKUP_GET_CHAT_VIEW_COMMENTS",
 			"CLICKUP_GET_CUSTOM_ROLES",
 			"CLICKUP_GET_CUSTOM_TASK_TYPES",
+			"CLICKUP_GET_DOC",
 			"CLICKUP_GET_DOC_CONTENT",
 			"CLICKUP_GET_DOC_PAGE_CONTENT",
 			"CLICKUP_GET_DOC_PAGE_LISTING",

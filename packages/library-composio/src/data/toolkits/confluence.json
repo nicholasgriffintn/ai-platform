@@ -23,9 +23,9 @@
 		}
 	],
 	"toolkitSlug": "confluence",
-	"toolkitVersion": "20260813_00",
-	"toolCount": 69,
-	"readToolCount": 43,
+	"toolkitVersion": "20260915_00",
+	"toolCount": 70,
+	"readToolCount": 44,
 	"writeToolCount": 26,
 	"scopes": [
 		"delete:page:confluence",
@@ -49,8 +49,8 @@
 		"write:confluence-content",
 		"write:confluence-space",
 		"write:page:confluence",
-		"write:space.permission:confluence",
 		"write:space:confluence",
+		"write:space.permission:confluence",
 		"write:task:confluence",
 		"write:whiteboard:confluence"
 	],
@@ -98,7 +98,8 @@
 			"CONFLUENCE_SEARCH_PAGES",
 			"CONFLUENCE_SEARCH_SPACES",
 			"CONFLUENCE_SEARCH_USERS",
-			"CONFLUENCE_VALIDATE_CREDENTIAL"
+			"CONFLUENCE_VALIDATE_CREDENTIAL",
+			"CONFLUENCE_WHO_AM_I"
 		],
 		"write": [
 			"CONFLUENCE_ADD_CONTENT_LABEL",
@@ -169,7 +170,8 @@
 			"CONFLUENCE_UPDATE_BLOGPOST",
 			"CONFLUENCE_UPDATE_PAGE",
 			"CONFLUENCE_UPDATE_TASK",
-			"CONFLUENCE_VALIDATE_CREDENTIAL"
+			"CONFLUENCE_VALIDATE_CREDENTIAL",
+			"CONFLUENCE_WHO_AM_I"
 		],
 		"destructive": [
 			"CONFLUENCE_DELETE_BLOGPOST",
@@ -231,7 +233,8 @@
 			"CONFLUENCE_SEARCH_SPACES",
 			"CONFLUENCE_SEARCH_USERS",
 			"CONFLUENCE_UPDATE_TASK",
-			"CONFLUENCE_VALIDATE_CREDENTIAL"
+			"CONFLUENCE_VALIDATE_CREDENTIAL",
+			"CONFLUENCE_WHO_AM_I"
 		],
 		"openWorld": [
 			"CONFLUENCE_ADD_CONTENT_LABEL",

@@ -1,6 +1,7 @@
 import {
   buildConnectorSuggestions,
   buildRecipeSuggestions,
+  buildTodaySuggestions,
   CAPABILITY_SUGGESTIONS,
   EVERYDAY_SUGGESTIONS,
   FOCUS_SUGGESTIONS,
@@ -15,12 +16,13 @@ import type {
 export const CHAT_SUGGESTION_COUNT = 4;
 
 const MAX_PER_TIER: Record<ChatSuggestionTier, number> = {
+  today: 2,
   capability: 2,
   focus: 2,
   everyday: CHAT_SUGGESTION_COUNT,
 };
 
-const TIER_ORDER: ChatSuggestionTier[] = ["capability", "focus", "everyday"];
+const TIER_ORDER: ChatSuggestionTier[] = ["today", "capability", "focus", "everyday"];
 
 export interface CreateChatSuggestionsOptions {
   exclude?: ReadonlySet<string>;
@@ -67,6 +69,7 @@ function buildTierPools(
   ];
 
   return {
+    today: buildTodaySuggestions(context),
     capability: shuffle(capability, random),
     focus: shuffle(context.focusRole ? FOCUS_SUGGESTIONS[context.focusRole] : [], random),
     everyday: shuffle(EVERYDAY_SUGGESTIONS, random),

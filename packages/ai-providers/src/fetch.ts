@@ -76,7 +76,6 @@ export async function fetchAIResponse<
   body: Record<string, any> | FormData,
   env?: ProviderEnv,
   options: FetchAIResponseOptions = {
-    requestTimeout: 100000,
     retryDelay: 500,
     maxAttempts: 1,
     backoff: "exponential",
@@ -94,10 +93,10 @@ export async function fetchAIResponse<
   let responseHeadersReceived = false;
 
   const controller = new AbortController();
-  const headersTimeout = setTimeout(
-    () => controller.abort(),
-    options.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
-  );
+  const requestTimeout =
+    options.requestTimeout ?? (isStreaming ? DEFAULT_REQUEST_TIMEOUT_MS : undefined);
+  const headersTimeout =
+    requestTimeout === undefined ? undefined : setTimeout(() => controller.abort(), requestTimeout);
   const timeoutIncludesBody = options.timeoutIncludesBody === true;
 
   try {

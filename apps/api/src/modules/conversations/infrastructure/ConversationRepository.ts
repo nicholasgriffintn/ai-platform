@@ -25,6 +25,8 @@ export interface PersonalConversationFilter {
   archiveFilter?: ConversationArchiveFilter;
   query?: string;
   updatedAfter?: string;
+  createdAfter?: string;
+  createdBefore?: string;
   teammateThreads?: "include" | "exclude";
 }
 
@@ -245,7 +247,14 @@ export class ConversationRepository extends BaseRepository {
     userId: number,
     options: PersonalConversationFilter,
   ): { whereClause: string; values: unknown[] } {
-    const { archiveFilter = "active", query, updatedAfter, teammateThreads = "include" } = options;
+    const {
+      archiveFilter = "active",
+      query,
+      updatedAfter,
+      createdAfter,
+      createdBefore,
+      teammateThreads = "include",
+    } = options;
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
@@ -276,6 +285,16 @@ export class ConversationRepository extends BaseRepository {
       whereClauses.push("c.is_archived = 0");
     } else if (archiveFilter === "archived") {
       whereClauses.push("c.is_archived = 1");
+    }
+
+    if (createdAfter) {
+      whereClauses.push("datetime(c.created_at) >= datetime(?)");
+      values.push(createdAfter);
+    }
+
+    if (createdBefore) {
+      whereClauses.push("datetime(c.created_at) < datetime(?)");
+      values.push(createdBefore);
     }
 
     if (updatedAfter) {

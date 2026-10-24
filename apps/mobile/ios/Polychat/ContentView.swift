@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var selectedConversationID: String?
     @State private var showingSettings = false
     @State private var showingRecipes = false
+    @State private var showingDiscover = false
     @State private var showingInbox = false
     @State private var outputReviewTarget: OutputReviewTarget?
     @State private var showingWork = false
@@ -56,6 +57,9 @@ struct ContentView: View {
                         },
                         onShowTeammates: {
                             showingTeammates = true
+                        },
+                        onShowDiscover: {
+                            showingDiscover = true
                         }
                     )
                 } detail: {
@@ -74,6 +78,12 @@ struct ContentView: View {
                     RecipesView { setup in
                         showingRecipes = false
                         startRecipeConversation(setup)
+                    }
+                }
+                .sheet(isPresented: $showingDiscover) {
+                    DiscoverView { prompt in
+                        showingDiscover = false
+                        startDiscoverConversation(prompt)
                     }
                 }
                 .sheet(isPresented: $showingInbox) {
@@ -157,6 +167,11 @@ struct ContentView: View {
                     guard let target else { return }
                     openWorkTarget(target)
                 }
+                .onChange(of: pushNotificationManager.linkToOpen) { _, url in
+                    guard let url else { return }
+                    pushNotificationManager.linkToOpen = nil
+                    openIncomingURL(url)
+                }
                 .onChange(of: selectedConversationID) { _, conversationID in
                     guard let conversationID else {
                         return
@@ -177,15 +192,39 @@ struct ContentView: View {
             }
         }
         .onOpenURL { url in
-            if !pushNotificationManager.handleOpenURL(url) {
-                authManager.handleOpenURL(url)
-                notificationManager.handleDeepLink(url)
-                if let outputId = OutputReviewDeepLink.outputId(from: url) {
-                    outputReviewTarget = OutputReviewTarget(id: outputId)
-                }
-                if PolyDeepLink.matches(url) {
-                    showingPoly = true
-                }
+            openIncomingURL(url)
+        }
+    }
+
+    private func openIncomingURL(_ url: URL) {
+        if !pushNotificationManager.handleOpenURL(url) {
+            authManager.handleOpenURL(url)
+            notificationManager.handleDeepLink(url)
+            if let outputId = OutputReviewDeepLink.outputId(from: url) {
+                outputReviewTarget = OutputReviewTarget(id: outputId)
+            }
+            if PolyDeepLink.matches(url) {
+                showingPoly = true
+            }
+            if DiscoverDeepLink.matches(url) {
+                showingDiscover = true
+            }
+        }
+    }
+
+    private func startDiscoverConversation(_ prompt: String) {
+        let conversation = conversationManager.startNewConversation()
+        selectedConversationID = conversation.id
+
+        Task {
+            guard await ageGateStore.ensureConfirmed() else {
+                return
+            }
+
+            do {
+                try await conversationManager.addMessage(ChatMessage(role: "user", content: prompt))
+            } catch {
+                conversationManager.error = "Failed to start the conversation: \(error.localizedDescription)"
             }
         }
     }

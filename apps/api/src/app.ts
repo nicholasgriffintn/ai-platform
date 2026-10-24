@@ -16,6 +16,7 @@ import conversations from "~/modules/conversations/api/routes";
 import corrections from "~/modules/corrections/api/routes";
 import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
+import discover from "~/modules/discover/api/routes";
 import environments from "~/modules/environments/api/routes";
 import experiences from "~/modules/experiences/api/routes";
 import flags from "~/modules/experiments/api/routes";
@@ -110,6 +111,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/billing", billing);
   app.route("/skills", skills);
   app.route("/sources", sources);
+  app.route("/discover", discover);
   app.route("/notebooks", notebooks);
   app.route("/realtime", realtime);
   app.route("/sync", sync);

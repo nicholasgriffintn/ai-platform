@@ -227,7 +227,7 @@ async function collectToolkits(apiKey, verbose) {
     [...authConfigsByToolkit.entries()],
     4,
     async ([toolkitSlug, configs]) => {
-      const [toolkit, configTools] = await Promise.all([
+      const [toolkit, configResults] = await Promise.all([
         request(apiKey, `/toolkits/${encodeURIComponent(toolkitSlug)}?version=latest`),
         mapConcurrent(configs, 4, async (authConfig) => {
           const [tools, importantTools] = await Promise.all([
@@ -236,12 +236,22 @@ async function collectToolkits(apiKey, verbose) {
           ]);
 
           if (tools.length === 0) {
-            throw new Error(`${authConfig.id} exposes no current tools`);
+            console.warn(`${toolkitSlug} auth config ${authConfig.id} exposes no current tools`);
+
+            return null;
           }
 
           return { authConfig, tools, importantTools };
         }),
       ]);
+      const configTools = configResults.filter(Boolean);
+
+      if (configTools.length === 0) {
+        console.warn(`${toolkitSlug} has no current tools, so it is left out of the catalogue`);
+
+        return null;
+      }
+
       const allTools = configTools.flatMap(({ tools }) => tools);
       const versions = [...new Set(allTools.map((tool) => tool.version))];
 
@@ -324,7 +334,7 @@ async function collectToolkits(apiKey, verbose) {
               name: authConfig.name,
               authScheme: authConfig.authScheme,
               isManaged: authConfig.isManaged,
-              ...(configs.length > 1
+              ...(configTools.length > 1
                 ? { operationIds: tools.map((tool) => tool.slug).sort() }
                 : {}),
             }))
@@ -366,7 +376,9 @@ async function collectToolkits(apiKey, verbose) {
     },
   );
 
-  return Object.fromEntries(entries.sort(([left], [right]) => left.localeCompare(right)));
+  return Object.fromEntries(
+    entries.filter(Boolean).sort(([left], [right]) => left.localeCompare(right)),
+  );
 }
 
 async function readSnapshot(snapshotPath) {

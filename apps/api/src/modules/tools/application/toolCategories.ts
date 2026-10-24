@@ -4,6 +4,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   Research: [
     "audit_evidence",
     "get_hacker_news_stories",
+    "get_on_this_day",
     "capture_screenshot",
     "extract_content",
     "extract_text_from_document",

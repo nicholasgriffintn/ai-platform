@@ -123,6 +123,18 @@ describe("shouldUseOpenAIResponsesApi", () => {
     ).toBe(true);
   });
 
+  it("sends function tools with any explicit effort to the responses API on models that prefer it", () => {
+    for (const modelId of ["gpt-5.5", "gpt-6.1-sol"]) {
+      expect(
+        shouldUseOpenAIResponsesApi(
+          { ...baseParams, enabled_tools: ["get_weather"], reasoning_effort: "none" },
+          catalogueModel("openai", modelId),
+        ),
+        modelId,
+      ).toBe(true);
+    }
+  });
+
   it("prefers the responses API for GPT-5.5 and later reasoning requests", () => {
     for (const modelId of ["gpt-5.5", "gpt-5.6", "gpt-5.6-terra"]) {
       expect(

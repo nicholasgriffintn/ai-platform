@@ -18,6 +18,7 @@ import {
   podcastFormatSchema,
   podcastLengthSchema,
   videoOverviewStyleSchema,
+  VIDEO_OVERVIEW_STYLE_LABELS,
   type NotebookStudioKind,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -144,16 +145,7 @@ export const STUDIO_TILES: readonly StudioTile[] = [
       {
         name: "style",
         label: "Visual style",
-        options: options(videoOverviewStyleSchema.options, {
-          classic: "Classic",
-          whiteboard: "Whiteboard",
-          watercolour: "Watercolour",
-          retro_print: "Retro print",
-          heritage: "Heritage",
-          papercraft: "Papercraft",
-          kawaii: "Kawaii",
-          anime: "Anime",
-        }),
+        options: options(videoOverviewStyleSchema.options, VIDEO_OVERVIEW_STYLE_LABELS),
       },
     ],
   },

@@ -1,4 +1,9 @@
-import { Card, SignInEmptyState, textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Card,
+  MediaPlayer,
+  SignInEmptyState,
+  textLinkClassName,
+} from "@ngriffin_uk/polychat-component-ui";
 import {
   formatUnknownValue,
   getStringProperty,
@@ -294,11 +299,7 @@ function OutputItem({ item }: OutputItemProps) {
   if (isVideo) {
     return (
       <div>
-        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- model-generated video has no captions track available */}
-        <video controls className="max-w-full rounded-lg">
-          <source src={url} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        <MediaPlayer kind="video" src={url} title="Generated video" />
         <a
           href={url}
           target="_blank"
@@ -314,11 +315,7 @@ function OutputItem({ item }: OutputItemProps) {
   if (isAudio) {
     return (
       <div>
-        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- model-generated audio has no captions track available */}
-        <audio controls className="w-full">
-          <source src={url} />
-          Your browser does not support the audio tag.
-        </audio>
+        <MediaPlayer kind="audio" layout="compact" src={url} title="Generated audio" />
         <a
           href={url}
           target="_blank"

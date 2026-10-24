@@ -17,16 +17,19 @@ export function requirePolyHomeRun(
   conversationId: string,
 ): void {
   const home = resolution?.context;
+  const source = resolution?.invocation.source;
+  const inOwnConversation =
+    source === "routine" ||
+    ((source === "conversation" || source === "channel") &&
+      home?.homeConversationId === conversationId);
 
   if (
     !resolution ||
-    (resolution.invocation.source !== "conversation" &&
-      resolution.invocation.source !== "channel") ||
+    !inOwnConversation ||
     !home ||
     !isPolyTeammateId(home.teammateId) ||
     home.scope.type !== "personal" ||
-    home.status !== "active" ||
-    home.homeConversationId !== conversationId
+    home.status !== "active"
   ) {
     throw new AssistantError("Poly only works in its own conversation", ErrorType.FORBIDDEN, 403);
   }

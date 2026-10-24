@@ -5,6 +5,7 @@ export const RECIPE_LOOKUP_TOOL = "get_recipe";
 export const RECIPE_TRIGGER_TOOL = "trigger_recipe";
 export const RECIPE_SETUP_TOOL = "configure_recipe";
 export const WEATHER_TOOL = "get_weather";
+export const ON_THIS_DAY_TOOL = "get_on_this_day";
 export const WEB_SEARCH_TOOL = "web_search";
 export const IMAGE_TOOL = "create_image";
 export const QR_TOOL = "create_qr_code";

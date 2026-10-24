@@ -16,6 +16,7 @@ final class PushNotificationManager: ObservableObject {
     static let shared = PushNotificationManager()
 
     @Published var targetToOpen: MobileWorkTarget?
+    @Published var linkToOpen: URL?
     @Published private(set) var permission: UNAuthorizationStatus = .notDetermined
     @Published private(set) var registrationState: RegistrationState = .idle
 
@@ -79,6 +80,13 @@ final class PushNotificationManager: ObservableObject {
     }
 
     func receiveNotification(_ userInfo: [AnyHashable: Any]) {
+        if let polychat = userInfo["polychat"] as? [String: Any],
+           let link = polychat["link"] as? String,
+           let url = URL(string: link) {
+            linkToOpen = url
+            return
+        }
+
         guard let polychat = userInfo["polychat"] as? [String: Any],
               let target = polychat["target"] as? [String: Any],
               let workspaceId = target["workspaceId"] as? String,

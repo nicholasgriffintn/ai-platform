@@ -1,6 +1,49 @@
+import { WIND_DOWN_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+
 import type { CatalogRecipe } from "./shared";
 
 export const wellbeingRecipes: CatalogRecipe[] = [
+  {
+    id: "evening-wind-down",
+    title: "Evening Wind Down",
+    summary: "Have a guided breathing, body scan or unwind session ready each evening.",
+    description:
+      "Each evening Poly records a calm guided session with quiet music underneath and leaves it in Discover, ready to play. It makes no medical claims.",
+    kind: "automate",
+    category: "Health",
+    featured: false,
+    readOnly: true,
+    resultPath: "/discover",
+    enabledTools: [WIND_DOWN_TOOL_NAME],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Each evening",
+        description: "Prepare tonight's session at the time you choose.",
+      },
+    ],
+    actions: [
+      `Call ${WIND_DOWN_TOOL_NAME} once with the session kind and length from the configuration, or breathing for ten minutes when none is set`,
+      "Finish with one short sentence saying tonight's session is ready in Discover",
+    ],
+    setupPrompt:
+      "Set up the Evening Wind Down recipe. Ask what time in the evening suits, which kind of session (breathing, body scan or unwind) and how long (five, ten or twenty minutes).",
+    configurationFields: [
+      {
+        key: "kind",
+        label: "Session",
+        type: "text",
+        placeholder: "breathing, body_scan or unwind",
+      },
+      {
+        key: "minutes",
+        label: "Length in minutes",
+        type: "text",
+        placeholder: "5, 10 or 20",
+      },
+    ],
+  },
   {
     id: "photo-nutrition-check",
     title: "Photo Nutrition Check",

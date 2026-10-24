@@ -2,21 +2,26 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { useMemo } from "react";
+import { useLocation } from "react-router";
 
 import type {
   ChatSuggestionConnector,
   ChatSuggestionContext,
   ChatSuggestionRecipe,
+  ChatSuggestionToday,
 } from "../lib/chat-suggestions/index.js";
 import { isSelectableHomeChatModeId } from "../lib/chatModes.js";
 import type { SelectableHomeChatModeId } from "../lib/chatModes.js";
 import { resolveFocusRole } from "../lib/focus-role.js";
+import { getProductMode } from "../lib/navigation/places.js";
 import { useRecipeConnectors } from "./useConnectors.js";
+import { useDiscover } from "./useDiscover.js";
 import { useRecipeInstallations } from "./useRecipes.js";
 import { useTools } from "./useTools.js";
 
 const MAX_CONNECTOR_SIGNALS = 3;
 const MAX_RECIPE_SIGNALS = 2;
+const TODAY_FRESH_MS = 36 * 60 * 60 * 1000;
 
 interface ChatSuggestionContextOptions {
   enabled: boolean;
@@ -46,6 +51,10 @@ export function useChatSuggestionContext({
 } {
   const wantsCapabilities = enabled && includeCapabilities;
   const userSettings = useChatStore((state) => state.userSettings);
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const { pathname } = useLocation();
+  const showToday = enabled && isAuthenticated && getProductMode(pathname) === "chat";
+  const { data: discoverData } = useDiscover(showToday);
   const { data: toolsData, isLoading: isLoadingTools } = useTools({ enabled: wantsCapabilities });
   const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors({
     enabled: wantsCapabilities,
@@ -80,13 +89,33 @@ export function useChatSuggestionContext({
     }
 
     return (installationsData?.installations ?? [])
-      .filter((installation) => installation.status === "active" && !installation.projectId)
+      .filter(
+        (installation) =>
+          installation.status === "active" &&
+          !installation.projectId &&
+          !installation.teammateContextId,
+      )
       .map((installation) => ({ id: installation.recipeId, title: installation.recipe.title }))
       .slice(0, MAX_RECIPE_SIGNALS);
   }, [installationsData, wantsCapabilities]);
 
+  const today = useMemo<ChatSuggestionToday[]>(() => {
+    const edition = showToday ? discoverData?.edition : null;
+
+    if (!edition || Date.now() - Date.parse(edition.generatedAt) > TODAY_FRESH_MS) {
+      return [];
+    }
+
+    return edition.cards.flatMap((card) =>
+      card.kind === "topic" || card.kind === "action"
+        ? [{ id: card.id, label: card.title, prompt: card.prompt }]
+        : [],
+    );
+  }, [discoverData, showToday]);
+
   const context = useMemo<ChatSuggestionContext>(
     () => ({
+      today,
       focusRole: enabled ? resolveFocusRole(userSettings?.job_role) : null,
       availableModes: wantsCapabilities ? resolveAvailableModes(modeCommands) : [],
       availableToolIds,
@@ -99,6 +128,7 @@ export function useChatSuggestionContext({
       enabled,
       modeCommands,
       recipes,
+      today,
       userSettings?.job_role,
       wantsCapabilities,
     ],

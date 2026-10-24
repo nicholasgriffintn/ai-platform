@@ -72,6 +72,27 @@ export function resolveHttpUrl(value: unknown, base?: unknown): string | null {
   }
 }
 
+export function readUrlHost(value: string): string {
+  try {
+    return new URL(value).hostname.replace(/^www\./u, "");
+  } catch {
+    return value;
+  }
+}
+
+export function comparableHttpUrl(value: string): string | null {
+  const resolved = resolveHttpUrl(value);
+
+  if (!resolved) {
+    return null;
+  }
+
+  const url = new URL(resolved);
+  const path = url.pathname.replace(/\/+$/u, "");
+
+  return `${url.hostname.replace(/^www\./u, "")}${path}${url.search}`;
+}
+
 export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): boolean {
   if (!pageUrl) {
     return false;

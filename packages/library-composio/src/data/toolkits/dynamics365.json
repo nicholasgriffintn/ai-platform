@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "dynamics365",
-	"toolkitVersion": "20260724_00",
+	"toolkitVersion": "20261006_00",
 	"toolCount": 16,
 	"readToolCount": 4,
 	"writeToolCount": 12,

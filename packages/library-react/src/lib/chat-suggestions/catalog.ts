@@ -109,6 +109,16 @@ export function buildConnectorSuggestions(
   });
 }
 
+export function buildTodaySuggestions(context: ChatSuggestionContext): ChatSuggestionDefinition[] {
+  return context.today.map((item) => ({
+    id: `today-${item.id}`,
+    label: item.label,
+    prompt: item.prompt,
+    category: "discover",
+    hint: "From today's Discover",
+  }));
+}
+
 export function buildRecipeSuggestions(context: ChatSuggestionContext): ChatSuggestionDefinition[] {
   return context.recipes.map((recipe) => ({
     id: `recipe-${recipe.id}`,

@@ -2,7 +2,7 @@
 	"providerId": "ticktick",
 	"name": "Ticktick",
 	"description": "TickTick is a cross-platform task management and to-do list application designed to help users organize their tasks and schedules efficiently.",
-	"logoUrl": "https://ticktick.com/favicon.ico",
+	"logoUrl": "https://logos.composio.dev/api/ticktick",
 	"appUrl": "https://ticktick.com",
 	"categories": [
 		{
@@ -23,28 +23,38 @@
 		}
 	],
 	"toolkitSlug": "ticktick",
-	"toolkitVersion": "20260721_00",
-	"toolCount": 13,
-	"readToolCount": 6,
-	"writeToolCount": 7,
+	"toolkitVersion": "20261023_00",
+	"toolCount": 22,
+	"readToolCount": 11,
+	"writeToolCount": 11,
 	"scopes": [
-		"tasks:read"
+		"tasks:read",
+		"tasks:write"
 	],
 	"operations": {
 		"read": [
+			"TICKTICK_FILTER_TASKS",
 			"TICKTICK_GET_PROJECT_BY_ID",
 			"TICKTICK_GET_PROJECT_WITH_DATA",
 			"TICKTICK_GET_TASK_BY_PROJECT_AND_ID",
 			"TICKTICK_GET_USER_PROJECT",
 			"TICKTICK_LIST_ALL_TASKS",
+			"TICKTICK_LIST_COMPLETED_TASKS",
+			"TICKTICK_LIST_PROJECT_MEMBERS",
+			"TICKTICK_LIST_TAGS",
+			"TICKTICK_LIST_TASK_COMMENTS",
 			"TICKTICK_OAUTH2_AUTHORIZATION_STEP1"
 		],
 		"write": [
+			"TICKTICK_ADD_TASK_COMMENT",
+			"TICKTICK_BATCH_CREATE_OR_UPDATE_TASKS",
 			"TICKTICK_COMPLETE_TASK",
+			"TICKTICK_CREATE_COLUMN",
 			"TICKTICK_CREATE_PROJECT",
 			"TICKTICK_CREATE_TASK",
 			"TICKTICK_DELETE_PROJECT",
 			"TICKTICK_DELETE_TASK",
+			"TICKTICK_MOVE_TASKS",
 			"TICKTICK_UPDATE_PROJECT",
 			"TICKTICK_UPDATE_TASK"
 		],

@@ -184,3 +184,33 @@ export function describeZonedInstant(instant: Date, timeZone = "UTC"): ZonedInst
     utcOffset: offset || "+00:00",
   };
 }
+
+export function shiftCalendarDate(calendarDate: string, days: number): string {
+  const [year, month, day] = calendarDate.split("-").map(Number);
+
+  return new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, (day ?? 1) + days))
+    .toISOString()
+    .slice(0, 10);
+}
+
+export function isoWeekKey(calendarDate: string): string {
+  const date = new Date(`${calendarDate}T00:00:00Z`);
+  const day = date.getUTCDay() || 7;
+
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+
+  const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
+  const week = Math.ceil(((date.getTime() - yearStart) / 86_400_000 + 1) / 7);
+
+  return `${date.getUTCFullYear()}-w${String(week).padStart(2, "0")}`;
+}
+
+export type PartOfDay = "morning" | "afternoon" | "evening";
+
+export function partOfDay(hour: number): PartOfDay {
+  if (hour < 12) {
+    return "morning";
+  }
+
+  return hour < 18 ? "afternoon" : "evening";
+}

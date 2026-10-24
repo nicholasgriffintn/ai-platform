@@ -122,6 +122,7 @@ interface OutputListOptions {
   kind?: string;
   limit?: number;
   after?: string;
+  excludeCapabilityIds?: readonly string[];
 }
 
 const OUTPUT_CACHE_TTL = 900;
@@ -421,6 +422,13 @@ export class OutputRepository extends BaseRepository {
     if (options.kind) {
       conditions.push("kind = ?");
       values.push(options.kind);
+    }
+
+    if (options.excludeCapabilityIds?.length) {
+      conditions.push(
+        `capability_id NOT IN (${options.excludeCapabilityIds.map(() => "?").join(", ")})`,
+      );
+      values.push(...options.excludeCapabilityIds);
     }
 
     if (options.after) {

@@ -11,6 +11,7 @@ import {
   FolderOpen,
   LayoutTemplate,
   Plug,
+  Sunrise,
   UsersRound,
 } from "lucide-react";
 
@@ -26,6 +27,16 @@ export function PlacesNavLinks({
 
   return (
     <>
+      {mode === "chat" && (
+        <SidebarNavLink
+          anchor={polyPlaceAnchor("discover")}
+          href={places.discover}
+          icon={<Sunrise size={16} />}
+          onClick={onNavigate}
+        >
+          Discover
+        </SidebarNavLink>
+      )}
       <SidebarNavLink
         anchor={polyPlaceAnchor("attention")}
         href={places.attention}

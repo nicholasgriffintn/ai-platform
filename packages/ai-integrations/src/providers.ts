@@ -1,6 +1,8 @@
 import { configuredComposioToolkits } from "@ngriffin_uk/polychat-library-composio";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
+import { personalMediaConnectorProviders } from "./personal-media-providers.js";
+
 export type ConnectorAuthType = "api_key" | "composio";
 export type ConnectorOperationAccess = "read" | "write";
 
@@ -267,6 +269,7 @@ const composioConnectorProviders: ConnectorProviderConfig[] = Object.values(
 export const connectorProviders: readonly ConnectorProviderConfig[] = [
   ...composioConnectorProviders,
   ...localConnectorProviders,
+  ...personalMediaConnectorProviders,
 ];
 
 export function getConnectorProviderConfig(

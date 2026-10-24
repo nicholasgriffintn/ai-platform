@@ -94,6 +94,7 @@ CREATE TABLE "resource" (
 	"parent_output_id" text,
 	"capability_id" text,
 	"group_id" text,
+	"collection_id" text,
 	"sensitivity" text,
 	"provenance_json" text,
 	"revision_created_by_user_id" integer,

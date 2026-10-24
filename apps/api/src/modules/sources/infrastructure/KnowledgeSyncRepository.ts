@@ -8,7 +8,8 @@ import type { IEnv } from "~/types";
 export interface KnowledgeSyncRecord {
   id: string;
   user_id: number;
-  project_id: string;
+  project_id: string | null;
+  collection_id: string | null;
   connection_id: string;
   recipe_id: string;
   integration_id: string;
@@ -44,10 +45,18 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
+  listForCollection(collectionId: string): Promise<KnowledgeSyncRecord[]> {
+    return this.runQuery(
+      "SELECT * FROM source_knowledge_sync WHERE collection_id = ? ORDER BY title",
+      [collectionId],
+    );
+  }
+
   async create(input: {
     id: string;
     userId: number;
-    projectId: string;
+    projectId: string | null;
+    collectionId: string | null;
     connectionId: string;
     recipeId: string;
     integrationId: string;
@@ -56,12 +65,13 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     intervalMinutes: number;
   }): Promise<void> {
     await this.executeRun(
-      `INSERT INTO source_knowledge_sync (id, user_id, project_id, connection_id, recipe_id, integration_id, title, resources, interval_minutes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO source_knowledge_sync (id, user_id, project_id, collection_id, connection_id, recipe_id, integration_id, title, resources, interval_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.id,
         input.userId,
         input.projectId,
+        input.collectionId,
         input.connectionId,
         input.recipeId,
         input.integrationId,
@@ -118,26 +128,32 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
       AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
       AND EXISTS (SELECT 1 FROM provider_connection pc WHERE pc.id = source_knowledge_sync.connection_id
         AND pc.user_id = source_knowledge_sync.user_id AND pc.status = 'connected')
-      AND EXISTS (SELECT 1 FROM project p JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id
-        WHERE p.id = source_knowledge_sync.project_id AND wm.user_id = source_knowledge_sync.user_id AND wm.role IN ('owner', 'admin'))
-      AND EXISTS (SELECT 1 FROM scoped_configuration grant_row WHERE grant_row.kind = 'capability' AND grant_row.attached = 1 AND grant_row.project_id = source_knowledge_sync.project_id
-        AND grant_row.target_kind = 'recipe' AND grant_row.target_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))`;
+      AND ((source_knowledge_sync.project_id IS NOT NULL
+        AND EXISTS (SELECT 1 FROM project p JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id
+          WHERE p.id = source_knowledge_sync.project_id AND wm.user_id = source_knowledge_sync.user_id AND wm.role IN ('owner', 'admin'))
+        AND EXISTS (SELECT 1 FROM scoped_configuration grant_row WHERE grant_row.kind = 'capability' AND grant_row.attached = 1 AND grant_row.project_id = source_knowledge_sync.project_id
+          AND grant_row.target_kind = 'recipe' AND grant_row.target_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))
+      OR (source_knowledge_sync.collection_id IS NOT NULL
+        AND EXISTS (SELECT 1 FROM resource_collection notebook WHERE notebook.id = source_knowledge_sync.collection_id
+          AND notebook.collection_type = 'conversation' AND notebook.project_id IS NULL
+          AND notebook.owner_user_id = source_knowledge_sync.user_id))))`;
     const fenceValues = [sync.id, sync.generation, sync.cursor, token];
     const last = sync.cursor + 1 === resource.resourceCount;
     const results = await this.env.DB.batch([
       this.env.DB.prepare(
         `INSERT INTO resource AS source (resource_type, id, created_by_user_id, scope_type, scope_id, connection_id, kind, title, status,
           content, provider, external_uri, metadata)
-         SELECT 'source', ?, ?, 'project', ?, ?, 'connector', ?, ?, ?, ?, ?, ? WHERE ${fence}
+         SELECT 'source', ?, ?, ?, ?, ?, 'connector', ?, ?, ?, ?, ?, ? WHERE ${fence}
          ON CONFLICT(resource_type, id) DO UPDATE SET title = excluded.title, content = excluded.content,
            status = excluded.status, external_uri = excluded.external_uri, metadata = excluded.metadata,
            updated_at = CURRENT_TIMESTAMP
          WHERE source.created_by_user_id = excluded.created_by_user_id
-           AND source.project_id = excluded.project_id AND source.connection_id = excluded.connection_id`,
+           AND source.project_id IS excluded.project_id AND source.connection_id = excluded.connection_id`,
       ).bind(
         resource.sourceId,
         sync.user_id,
-        sync.project_id,
+        sync.project_id ? "project" : "personal",
+        sync.project_id ?? String(sync.user_id),
         sync.connection_id,
         resource.title,
         resource.status,
@@ -153,13 +169,17 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
         ...fenceValues,
       ),
       this.env.DB.prepare(
+        `INSERT OR IGNORE INTO resource_link (kind, collection_id, source_id)
+         SELECT 'source_collection', ?, ? WHERE ? IS NOT NULL AND ${fence}`,
+      ).bind(sync.collection_id, resource.sourceId, sync.collection_id, ...fenceValues),
+      this.env.DB.prepare(
         `UPDATE source_knowledge_sync SET cursor = ?, generation = generation + ?,
            next_sync_at = CASE WHEN ? THEN datetime('now', '+' || interval_minutes || ' minutes') ELSE CURRENT_TIMESTAMP END,
            last_successful_at = CASE WHEN ? THEN CURRENT_TIMESTAMP ELSE last_successful_at END,
            last_error = NULL, lease_expires_at = datetime('now', '+10 minutes')
          WHERE id = ? AND generation = ? AND cursor = ? AND lease_token = ?
            AND status = 'active' AND lease_expires_at >= CURRENT_TIMESTAMP
-           AND EXISTS (SELECT 1 FROM ${sourceResourceSql} source WHERE id = ? AND project_id = ? AND created_by_user_id = ?
+           AND EXISTS (SELECT 1 FROM ${sourceResourceSql} source WHERE id = ? AND project_id IS ? AND created_by_user_id = ?
              AND connection_id = ?) AND ${fence}`,
       ).bind(
         last ? 0 : sync.cursor + 1,
@@ -175,13 +195,13 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
       ),
     ]);
 
-    return results[1]?.meta.changes === 1;
+    return results[2]?.meta.changes === 1;
   }
 
   async markUnavailable(sync: KnowledgeSyncRecord, token: string, sourceId: string): Promise<void> {
     await this.executeRun(
       `UPDATE resource SET status = 'archived', updated_at = CURRENT_TIMESTAMP
-       WHERE resource_type = 'source' AND id = ? AND project_id = ? AND created_by_user_id = ? AND connection_id = ?
+       WHERE resource_type = 'source' AND id = ? AND project_id IS ? AND created_by_user_id = ? AND connection_id = ?
          AND EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
            AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`,
       [

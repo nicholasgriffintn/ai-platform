@@ -8,7 +8,10 @@ import type {
   RecipeConnectorProvider,
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
+  recipeConnectorProviderSchema,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL } from "./catalog/shared";
 import {
@@ -114,9 +117,17 @@ export function buildRecipeInvocationRuntime(params: {
     conversationStarter,
     messageUrl: createRecipeMessageUrl(params.recipe.id, params.installation ? "run" : "setup"),
     enabledTools,
-    allowedConnectorProviders: buildAllowedConnectorProviders(params.recipe),
+    allowedConnectorProviders: buildAllowedConnectorProviders(params.recipe).filter(
+      (provider) => !readExcludedConnectorProviders(params.configuration).includes(provider),
+    ),
     allowedConnectorOperations: buildAllowedConnectorOperations(params.recipe),
   };
+}
+
+export function readExcludedConnectorProviders(configuration?: RecipeConfiguration): string[] {
+  const excluded = configuration?.[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY];
+
+  return Array.isArray(excluded) ? excluded : [];
 }
 
 export function buildAllowedConnectorProviders(recipe: AssistantRecipe): RecipeConnectorProvider[] {

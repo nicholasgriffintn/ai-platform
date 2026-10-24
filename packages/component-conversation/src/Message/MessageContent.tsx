@@ -8,7 +8,7 @@ import {
   canCombineArtifacts,
   isInlinePreviewArtifact,
 } from "@ngriffin_uk/polychat-component-content";
-import { textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
+import { MediaPlayer, textLinkClassName } from "@ngriffin_uk/polychat-component-ui";
 import type {
   Attachment,
   Message,
@@ -319,11 +319,13 @@ const renderAudioContent = (audioUrl: string, audioName?: string, index?: number
         <span className="text-foreground">{audioName || "Audio"}</span>
       </div>
       {audioUrl && (
-        <audio controls crossOrigin="use-credentials" className="w-full rounded-lg">
-          <source src={audioUrl} type="audio/mpeg" />
-          <track kind="captions" />
-          Your browser does not support the audio element.
-        </audio>
+        <MediaPlayer
+          kind="audio"
+          layout="compact"
+          src={audioUrl}
+          title="Spoken reply"
+          crossOrigin="use-credentials"
+        />
       )}
     </div>
   );

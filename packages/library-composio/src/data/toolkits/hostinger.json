@@ -19,10 +19,10 @@
 		}
 	],
 	"toolkitSlug": "hostinger",
-	"toolkitVersion": "20260615_00",
-	"toolCount": 24,
-	"readToolCount": 20,
-	"writeToolCount": 4,
+	"toolkitVersion": "20261022_00",
+	"toolCount": 26,
+	"readToolCount": 21,
+	"writeToolCount": 5,
 	"scopes": [],
 	"operations": {
 		"read": [
@@ -42,6 +42,7 @@
 			"HOSTINGER_LIST_SUBSCRIPTIONS",
 			"HOSTINGER_LIST_TEMPLATES",
 			"HOSTINGER_LIST_VIRTUAL_MACHINES",
+			"HOSTINGER_LIST_WEBSITE_SETUPS",
 			"HOSTINGER_LIST_WEBSITES",
 			"HOSTINGER_LIST_WHOIS_PROFILES",
 			"HOSTINGER_VALIDATE_DNS_RECORDS",
@@ -51,7 +52,8 @@
 			"HOSTINGER_CREATE_PUBLIC_KEY",
 			"HOSTINGER_CREATE_WHOIS_PROFILE",
 			"HOSTINGER_DELETE_PUBLIC_KEY",
-			"HOSTINGER_GENERATE_FREE_SUBDOMAIN"
+			"HOSTINGER_GENERATE_FREE_SUBDOMAIN",
+			"HOSTINGER_UPDATE_PRODUCT"
 		],
 		"important": [
 			"HOSTINGER_CHECK_DOMAIN_AVAILABILITY",
@@ -69,7 +71,8 @@
 			"HOSTINGER_DELETE_PUBLIC_KEY"
 		],
 		"idempotent": [
-			"HOSTINGER_DELETE_PUBLIC_KEY"
+			"HOSTINGER_DELETE_PUBLIC_KEY",
+			"HOSTINGER_UPDATE_PRODUCT"
 		],
 		"openWorld": []
 	}

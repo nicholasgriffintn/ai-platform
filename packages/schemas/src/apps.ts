@@ -3,7 +3,7 @@ import z from "zod/v4";
 import { isSupportedCronExpression } from "./cron.js";
 import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
-import { externalHttpUrlSchema } from "./navigation.js";
+import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
 import { listSchema } from "./platform/list.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
@@ -1011,7 +1011,19 @@ export const recipeConnectionStatusSchema = z.enum([
   "unknown",
 ]);
 
-const nonComposioRecipeConnectorProviders = ["devin", "hindsight", "honcho", "netlify"];
+const nonComposioRecipeConnectorProviders = [
+  "devin",
+  "hindsight",
+  "honcho",
+  "netlify",
+  "readwise",
+  "lastfm",
+  "trakt",
+  "hardcover",
+  "podcastindex",
+  "oura",
+  "audiobookshelf",
+];
 
 const recipeConnectorProviders = [
   ...composioRecipeConnectorProviders,
@@ -1047,6 +1059,8 @@ const recipeConfigurationRecordSchema = z.record(
 );
 
 export const recipeConfigurationSchema = recipeConfigurationRecordSchema.default({});
+
+export const RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY = "excludedConnectorProviders";
 
 export const recipeConfigurationFieldSchema = z.object({
   key: z.string().min(1).max(80),
@@ -1085,6 +1099,7 @@ export const assistantRecipeSchema = z.object({
   triggers: z.array(recipeTriggerSchema),
   actions: z.array(z.string()),
   setupPrompt: z.string(),
+  resultPath: internalNavigationPathSchema.optional(),
   enabledTools: z.array(z.string()).default([]),
   configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
   connectorPolicy: z

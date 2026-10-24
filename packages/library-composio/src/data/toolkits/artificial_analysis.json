@@ -6,10 +6,6 @@
 	"appUrl": "https://artificialanalysis.ai/",
 	"categories": [
 		{
-			"id": "developer-tools",
-			"name": "Developer Tools"
-		},
-		{
 			"id": "artificial-intelligence",
 			"name": "Artificial Intelligence"
 		}
@@ -23,7 +19,7 @@
 		}
 	],
 	"toolkitSlug": "artificial_analysis",
-	"toolkitVersion": "00000000_00",
+	"toolkitVersion": "20261021_00",
 	"toolCount": 12,
 	"readToolCount": 12,
 	"writeToolCount": 0,

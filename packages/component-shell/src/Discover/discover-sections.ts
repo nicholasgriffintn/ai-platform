@@ -1,5 +1,3 @@
-export const DISCOVER_PATH = "/discover";
-
 export interface DiscoverSection {
   id: string;
   label: string;

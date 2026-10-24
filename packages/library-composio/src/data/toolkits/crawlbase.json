@@ -6,6 +6,10 @@
 	"appUrl": "https://crawlbase.com",
 	"categories": [
 		{
+			"id": "web-scraping-&-browser",
+			"name": "Web Scraping & Browser"
+		},
+		{
 			"id": "ai-web-scraping",
 			"name": "AI Web Scraping"
 		},
@@ -23,7 +27,7 @@
 		}
 	],
 	"toolkitSlug": "crawlbase",
-	"toolkitVersion": "00000000_00",
+	"toolkitVersion": "20261014_00",
 	"toolCount": 8,
 	"readToolCount": 6,
 	"writeToolCount": 2,

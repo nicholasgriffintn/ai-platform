@@ -27,17 +27,17 @@
 		}
 	],
 	"toolkitSlug": "notion",
-	"toolkitVersion": "20260730_00",
-	"toolCount": 53,
-	"readToolCount": 25,
-	"writeToolCount": 28,
+	"toolkitVersion": "20261018_00",
+	"toolCount": 57,
+	"readToolCount": 28,
+	"writeToolCount": 29,
 	"scopes": [
-		"Insert content",
 		"comment:write",
 		"databases.read",
+		"Insert content",
 		"insert_content",
-		"read:content",
 		"read_content",
+		"read:content",
 		"update_content"
 	],
 	"operations": {
@@ -53,9 +53,11 @@
 			"NOTION_GET_ABOUT_USER",
 			"NOTION_GET_PAGE_MARKDOWN",
 			"NOTION_GET_PAGE_PROPERTY_ACTION",
+			"NOTION_GET_PLUGIN",
 			"NOTION_GET_VIEW_QUERY_RESULTS",
 			"NOTION_LIST_DATA_SOURCE_TEMPLATES",
 			"NOTION_LIST_FILE_UPLOADS",
+			"NOTION_LIST_PLUGINS",
 			"NOTION_LIST_USERS",
 			"NOTION_LIST_VIEWS",
 			"NOTION_QUERY_DATA_SOURCE",
@@ -66,7 +68,8 @@
 			"NOTION_RETRIEVE_FILE_UPLOAD",
 			"NOTION_RETRIEVE_PAGE",
 			"NOTION_RETRIEVE_VIEW",
-			"NOTION_SEARCH_NOTION_PAGE"
+			"NOTION_SEARCH_NOTION_PAGE",
+			"NOTION_WHO_AM_I"
 		],
 		"write": [
 			"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
@@ -93,6 +96,7 @@
 			"NOTION_SEND_FILE_UPLOAD",
 			"NOTION_UPDATE_BLOCK",
 			"NOTION_UPDATE_PAGE",
+			"NOTION_UPDATE_PAGE_MARKDOWN",
 			"NOTION_UPDATE_ROW_DATABASE",
 			"NOTION_UPDATE_SCHEMA_DATABASE",
 			"NOTION_UPDATE_VIEW",
@@ -136,7 +140,8 @@
 			"NOTION_UPDATE_ROW_DATABASE",
 			"NOTION_UPDATE_SCHEMA_DATABASE",
 			"NOTION_UPDATE_VIEW",
-			"NOTION_UPSERT_ROW_DATABASE"
+			"NOTION_UPSERT_ROW_DATABASE",
+			"NOTION_WHO_AM_I"
 		],
 		"destructive": [
 			"NOTION_ARCHIVE_NOTION_PAGE",
@@ -147,7 +152,8 @@
 			"NOTION_UPDATE_ROW_DATABASE"
 		],
 		"idempotent": [
-			"NOTION_MOVE_PAGE"
+			"NOTION_MOVE_PAGE",
+			"NOTION_WHO_AM_I"
 		],
 		"openWorld": [
 			"NOTION_ADD_MULTIPLE_PAGE_CONTENT",
@@ -184,6 +190,7 @@
 			"NOTION_SEARCH_NOTION_PAGE",
 			"NOTION_SEND_FILE_UPLOAD",
 			"NOTION_UPDATE_BLOCK",
+			"NOTION_UPDATE_PAGE_MARKDOWN",
 			"NOTION_UPDATE_ROW_DATABASE",
 			"NOTION_UPDATE_SCHEMA_DATABASE"
 		]

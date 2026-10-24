@@ -6,6 +6,10 @@
 	"appUrl": "https://openweathermap.org/",
 	"categories": [
 		{
+			"id": "places-&-weather",
+			"name": "Places & Weather"
+		},
+		{
 			"id": "developer-tools",
 			"name": "Developer Tools"
 		}
@@ -19,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "openweather_api",
-	"toolkitVersion": "20260707_00",
+	"toolkitVersion": "20261014_00",
 	"toolCount": 21,
 	"readToolCount": 17,
 	"writeToolCount": 4,

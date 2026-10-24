@@ -126,7 +126,7 @@ export async function startPodcastGeneration(
     task_type: SOURCE_PODCAST_GENERATION_TASK_TYPE,
     user_id: user.id,
     project_id: projectId ?? undefined,
-    task_data: { sourceId: episode.id },
+    task_data: { sourceId: episode.id, runId: context.executionRunId },
     priority: 6,
   });
 

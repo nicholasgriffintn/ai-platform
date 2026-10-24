@@ -29,6 +29,7 @@ export const promptTasks = [
   "notebook-chat",
   "notebook-guide",
   "notebook-studio",
+  "discover-episode",
   "image-style",
   "web-search-questions",
   "web-search-answer",

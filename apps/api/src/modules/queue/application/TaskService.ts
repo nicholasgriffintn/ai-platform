@@ -110,6 +110,8 @@ export class TaskService {
       throw new Error("TASK_QUEUE binding is not available; pending tasks cannot be recovered");
     }
 
+    await this.taskRepository.releaseAbandonedTasks();
+
     const tasks = await this.taskRepository.getPendingTasks(limit);
     let dispatched = 0;
 

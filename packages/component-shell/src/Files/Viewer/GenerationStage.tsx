@@ -1,4 +1,5 @@
 import { getMediaPreview } from "@ngriffin_uk/polychat-component-experiences/media";
+import { MediaPlayer } from "@ngriffin_uk/polychat-component-ui";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 const GENERATION_MODES = new Set(["image", "video", "audio"]);
@@ -45,15 +46,13 @@ export function GenerationStage({
 
   return (
     <figure className="flex h-full flex-col items-center justify-center gap-4 p-6">
-      {generation.type === "video" ? (
-        <video
-          controls
+      {generation.type === "video" || generation.type === "audio" ? (
+        <MediaPlayer
+          kind={generation.type}
           src={generation.url}
-          aria-label={title}
-          className="min-h-0 max-w-full flex-1 rounded-lg"
+          title={title}
+          className="w-full max-w-3xl"
         />
-      ) : generation.type === "audio" ? (
-        <audio controls src={generation.url} aria-label={title} className="w-full max-w-xl" />
       ) : (
         <img
           src={generation.url}

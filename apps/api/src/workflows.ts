@@ -5,6 +5,7 @@ import { registerChannelsQueue } from "~/modules/channels/application/queue/regi
 import { registerConnectorsQueue } from "~/modules/connectors/application/queue/register";
 import { registerConversationsQueue } from "~/modules/conversations/application/queue/register";
 import { registerDelegationsQueue } from "~/modules/delegations/application/queue/register";
+import { registerDiscoverQueue } from "~/modules/discover/application/queue/register";
 import { registerInfraQueue } from "~/modules/infra/application/queue/register";
 import { registerJobsQueue } from "~/modules/jobs/application/queue/register";
 import { registerMemoryQueue } from "~/modules/memory/application/queue/register";
@@ -39,6 +40,7 @@ const logger = getLogger({ prefix: "queue/consumer" });
 
 registerSourcesQueue(workflows);
 registerNotebooksQueue(workflows);
+registerDiscoverQueue(workflows);
 registerQueueMaintenance(workflows);
 registerTaskNotificationsQueue(workflows);
 registerResponsesQueue(workflows);

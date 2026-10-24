@@ -12,6 +12,7 @@ import {
   getApnsProviderToken,
   isApnsConfigured,
   sendApnsAlert,
+  type MobileAlert,
 } from "~/modules/mobile-push/infrastructure/apns-client";
 import type { MobilePushDeviceRecord } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
@@ -58,11 +59,11 @@ async function deliveryId(notificationId: string, deviceId: string): Promise<str
 async function sendToDevice(params: {
   context: ServiceContext;
   device: MobilePushDeviceRecord;
-  notification: MobileWorkNotification;
+  alert: MobileAlert;
   providerToken: string;
   topic: string;
 }): Promise<void> {
-  const id = await deliveryId(params.notification.id, params.device.id);
+  const id = await deliveryId(params.alert.id, params.device.id);
 
   if (
     !(await params.context.repositories
@@ -74,7 +75,7 @@ async function sendToDevice(params: {
 
   const result = await sendApnsAlert({
     device: params.device,
-    notification: params.notification,
+    alert: params.alert,
     providerToken: params.providerToken,
     topic: params.topic,
     collapseId: id,
@@ -95,16 +96,16 @@ async function sendToDevice(params: {
   }
 
   logger.warn("Mobile push delivery failed", {
-    notificationId: params.notification.id,
+    notificationId: params.alert.id,
     deviceId: params.device.id,
     reason: result.reason,
   });
 }
 
-export async function sendMobileWorkNotification(params: {
+export async function sendMobileAlert(params: {
   context: ServiceContext;
   userId: number;
-  notification: MobileWorkNotification;
+  alert: MobileAlert;
 }): Promise<void> {
   if (!isApnsConfigured(params.context.env)) {
     return;
@@ -128,12 +129,57 @@ export async function sendMobileWorkNotification(params: {
       sendToDevice({
         context: params.context,
         device,
-        notification: params.notification,
+        alert: params.alert,
         providerToken,
         topic: params.context.env.APNS_TOPIC ?? "",
       }),
     ),
   );
+}
+
+export async function sendMobileWorkNotification(params: {
+  context: ServiceContext;
+  userId: number;
+  notification: MobileWorkNotification;
+}): Promise<void> {
+  const { id, title, body, kind, target } = params.notification;
+
+  await sendMobileAlert({
+    context: params.context,
+    userId: params.userId,
+    alert: { id, title, body, data: { kind, target } },
+  });
+}
+
+export async function notifyMobilePoly(params: {
+  context: ServiceContext;
+  userId: number;
+  notificationId: string;
+  title: string;
+  body: string;
+  path?: string;
+}): Promise<void> {
+  try {
+    await sendMobileAlert({
+      context: params.context,
+      userId: params.userId,
+      alert: {
+        id: params.notificationId,
+        title: params.title.slice(0, 80),
+        body: params.body.slice(0, 160),
+        data: {
+          kind: "poly",
+          link: params.path ? `polychat:/${params.path}` : "polychat://poly",
+        },
+      },
+    });
+  } catch (error) {
+    logger.warn("Poly could not reach the phone", {
+      notificationId: params.notificationId,
+      userId: params.userId,
+      error,
+    });
+  }
 }
 
 export async function notifyMobileWork(params: {

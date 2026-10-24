@@ -1,21 +1,19 @@
-import { PageShell, StandardSidebarContent } from "@ngriffin_uk/polychat-component-shell";
-import { DiscoverBands } from "@ngriffin_uk/polychat-component-shell/discover-bands";
+import { ChatPlaceShell, DiscoverPage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [
     { title: "Discover - Polychat" },
     {
       name: "description",
-      content:
-        "A short tour of Polychat: every model in one picker, capabilities beyond the reply, shared Work for projects, and credits that follow what you actually run.",
+      content: "Your morning edition from Poly: a brief, topics, links and things worth doing.",
     },
   ];
 }
 
 export default function Discover() {
   return (
-    <PageShell title="Discover" sidebarContent={<StandardSidebarContent />} className="max-w-6xl">
-      <DiscoverBands variant="page" />
-    </PageShell>
+    <ChatPlaceShell>
+      <DiscoverPage />
+    </ChatPlaceShell>
   );
 }

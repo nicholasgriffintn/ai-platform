@@ -1888,9 +1888,8 @@ export const sourceKnowledgeSync = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    project_id: text()
-      .notNull()
-      .references(() => project.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    collection_id: text().references(() => resourceCollection.id, { onDelete: "cascade" }),
     connection_id: text()
       .notNull()
       .references(() => providerConnection.id, { onDelete: "cascade" }),
@@ -1915,6 +1914,9 @@ export const sourceKnowledgeSync = sqliteTable(
   (table) => ({
     dueIdx: index("source_knowledge_sync_due_idx").on(table.status, table.next_sync_at),
     projectIdx: index("source_knowledge_sync_project_idx").on(table.project_id),
+    collectionIdx: index("source_knowledge_sync_collection_idx")
+      .on(table.collection_id)
+      .where(sql`collection_id IS NOT NULL`),
   }),
 );
 
@@ -2617,6 +2619,7 @@ export const tasks = sqliteTable(
         "model_platform_reconcile",
         "benchmark_run",
         "notebook_job",
+        "discover_job",
       ],
     }).notNull(),
     status: text({

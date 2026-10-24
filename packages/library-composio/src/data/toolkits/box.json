@@ -23,15 +23,15 @@
 		}
 	],
 	"toolkitSlug": "box",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20261020_00",
 	"toolCount": 284,
 	"readToolCount": 131,
 	"writeToolCount": 153,
 	"scopes": [
-		"Manage AI",
 		"ai.readwrite",
 		"enterprise_content",
 		"item_read",
+		"Manage AI",
 		"manage enterprise properties",
 		"manage users",
 		"manage_ai",

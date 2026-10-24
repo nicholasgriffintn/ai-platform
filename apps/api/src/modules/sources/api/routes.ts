@@ -12,6 +12,7 @@ import {
   createKnowledgeSyncSchema,
   createSourceCollectionSchema,
   createSourceSchema,
+  knowledgeSyncListQuerySchema,
   knowledgeSyncListSchema,
   knowledgeSyncSchema,
   projectKnowledgeSearchResponseSchema,
@@ -76,7 +77,6 @@ const sourceParamsSchema = z.object({ source_id: z.string().min(1) });
 const collectionParamsSchema = z.object({ collection_id: z.string().min(1) });
 const syncParamsSchema = z.object({ sync_id: z.string().min(1) });
 const projectQuerySchema = z.object({ project_id: z.string().min(1).optional() });
-const requiredProjectQuerySchema = z.object({ project_id: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
 const feedParamsSchema = z.object({ token: z.string().min(32) });
 const feedFileParamsSchema = feedParamsSchema.extend({ source_id: z.string().min(1) });
@@ -426,10 +426,14 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
     .collection("knowledge_syncs", "sync_id")
     .list({
       auth: true,
-      summary: "List a project's knowledge syncs",
-      querySchema: requiredProjectQuerySchema,
+      summary: "List a project's or a notebook's knowledge syncs",
+      querySchema: knowledgeSyncListQuerySchema,
       responses: { 200: { description: "Knowledge syncs", schema: knowledgeSyncListSchema } },
-      handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.project_id),
+      handler: ({ query, serviceContext }) =>
+        listKnowledgeSyncs(serviceContext, {
+          projectId: query.project_id,
+          notebookId: query.notebook_id,
+        }),
     })
     .create({
       auth: true,

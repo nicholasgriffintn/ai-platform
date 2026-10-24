@@ -19,7 +19,7 @@
 		}
 	],
 	"toolkitSlug": "gmail",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20261023_00",
 	"toolCount": 61,
 	"readToolCount": 28,
 	"writeToolCount": 33,
@@ -35,11 +35,11 @@
 		"https://www.googleapis.com/auth/gmail.readonly",
 		"https://www.googleapis.com/auth/gmail.send",
 		"https://www.googleapis.com/auth/gmail.settings.basic",
-		"https://www.googleapis.com/auth/gmail.settings.sharing"
+		"https://www.googleapis.com/auth/gmail.settings.sharing",
+		"https://www.googleapis.com/auth/userinfo.profile"
 	],
 	"operations": {
 		"read": [
-			"GMAIL_CREATE_PROMPT_POST",
 			"GMAIL_FETCH_EMAILS",
 			"GMAIL_FETCH_MESSAGE_BY_MESSAGE_ID",
 			"GMAIL_FETCH_MESSAGE_BY_THREAD_ID",
@@ -66,7 +66,8 @@
 			"GMAIL_SEARCH_PEOPLE",
 			"GMAIL_SETTINGS_GET_IMAP",
 			"GMAIL_SETTINGS_GET_POP",
-			"GMAIL_SETTINGS_SEND_AS_GET"
+			"GMAIL_SETTINGS_SEND_AS_GET",
+			"GMAIL_WHO_AM_I"
 		],
 		"write": [
 			"GMAIL_ADD_LABEL_TO_EMAIL",
@@ -94,13 +95,13 @@
 			"GMAIL_STOP_WATCH",
 			"GMAIL_UNTRASH_MESSAGE",
 			"GMAIL_UNTRASH_THREAD",
+			"GMAIL_UPDATE_CONTACT",
 			"GMAIL_UPDATE_DRAFT",
 			"GMAIL_UPDATE_IMAP_SETTINGS",
 			"GMAIL_UPDATE_LABEL",
 			"GMAIL_UPDATE_LANGUAGE_SETTINGS",
 			"GMAIL_UPDATE_POP_SETTINGS",
 			"GMAIL_UPDATE_SEND_AS",
-			"GMAIL_UPDATE_USER_ATTRIBUTES_VALUES",
 			"GMAIL_UPDATE_VACATION_SETTINGS"
 		],
 		"important": [
@@ -124,8 +125,10 @@
 			"GMAIL_SEND_EMAIL",
 			"GMAIL_UNTRASH_MESSAGE",
 			"GMAIL_UNTRASH_THREAD",
+			"GMAIL_UPDATE_CONTACT",
 			"GMAIL_UPDATE_DRAFT",
-			"GMAIL_UPDATE_LABEL"
+			"GMAIL_UPDATE_LABEL",
+			"GMAIL_WHO_AM_I"
 		],
 		"destructive": [
 			"GMAIL_BATCH_DELETE_MESSAGES",
@@ -142,7 +145,8 @@
 			"GMAIL_DELETE_DRAFT",
 			"GMAIL_MODIFY_THREAD_LABELS",
 			"GMAIL_PATCH_LABEL",
-			"GMAIL_PATCH_SEND_AS"
+			"GMAIL_PATCH_SEND_AS",
+			"GMAIL_WHO_AM_I"
 		],
 		"openWorld": [
 			"GMAIL_ADD_LABEL_TO_EMAIL",
@@ -195,6 +199,7 @@
 			"GMAIL_STOP_WATCH",
 			"GMAIL_UNTRASH_MESSAGE",
 			"GMAIL_UNTRASH_THREAD",
+			"GMAIL_UPDATE_CONTACT",
 			"GMAIL_UPDATE_DRAFT",
 			"GMAIL_UPDATE_IMAP_SETTINGS",
 			"GMAIL_UPDATE_LABEL",

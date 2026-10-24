@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "cloudflare_api_key",
-	"toolkitVersion": "20260615_00",
+	"toolkitVersion": "20260826_00",
 	"toolCount": 25,
 	"readToolCount": 8,
 	"writeToolCount": 17,

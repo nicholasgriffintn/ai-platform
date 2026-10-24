@@ -101,12 +101,15 @@ export async function disablePodcastFeed(collectionId: string): Promise<void> {
   });
 }
 
-export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {
-  return (
-    await request<ListPage<KnowledgeSync>>(
-      `/sources/knowledge_syncs?project_id=${encodeURIComponent(projectId)}`,
-    )
-  ).data;
+export async function listKnowledgeSyncs(
+  target: { projectId: string } | { notebookId: string },
+): Promise<KnowledgeSync[]> {
+  const query =
+    "projectId" in target
+      ? `project_id=${encodeURIComponent(target.projectId)}`
+      : `notebook_id=${encodeURIComponent(target.notebookId)}`;
+
+  return (await request<ListPage<KnowledgeSync>>(`/sources/knowledge_syncs?${query}`)).data;
 }
 
 export async function createKnowledgeSync(input: CreateKnowledgeSync): Promise<KnowledgeSync> {

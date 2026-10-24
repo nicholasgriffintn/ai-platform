@@ -1,7 +1,14 @@
 import {
   connectorProviders,
   executeDevinOperation,
+  executeAudiobookshelfOperation,
+  executeHardcoverOperation,
+  executeOuraOperation,
+  executeLastfmOperation,
   executeNetlifyOperation,
+  executePodcastIndexOperation,
+  executeReadwiseOperation,
+  executeTraktOperation,
   type ComposioConnectedAccount,
   type ConnectorProviderConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
@@ -29,6 +36,13 @@ export interface RecipeConnectorAdapter {
 const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperationExecutor>> = {
   devin: executeDevinOperation,
   netlify: executeNetlifyOperation,
+  readwise: executeReadwiseOperation,
+  lastfm: executeLastfmOperation,
+  trakt: executeTraktOperation,
+  hardcover: executeHardcoverOperation,
+  podcastindex: executePodcastIndexOperation,
+  oura: executeOuraOperation,
+  audiobookshelf: executeAudiobookshelfOperation,
 };
 
 const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((provider) => ({

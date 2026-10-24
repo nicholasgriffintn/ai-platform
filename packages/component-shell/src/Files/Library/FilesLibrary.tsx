@@ -60,7 +60,7 @@ export function FilesLibrary({
       <div className="space-y-8">
         <CreateTiles basePath={basePath} creation={creation} />
         {projectId && (filter === "all" || filter === "sources") ? (
-          <KnowledgeSyncPanel projectId={projectId} />
+          <KnowledgeSyncPanel target={{ projectId }} />
         ) : null}
         <FilesBrowser
           basePath={basePath}

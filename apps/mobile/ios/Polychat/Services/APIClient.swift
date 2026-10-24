@@ -92,6 +92,49 @@ final class APIClient: ObservableObject {
         try await send(path: "/poly/agenda", method: "GET")
     }
 
+    func fetchDiscover() async throws -> DiscoverResponse {
+        try await send(path: "/discover", method: "GET")
+    }
+
+    func refreshDiscover() async throws -> DiscoverRefreshResponse {
+        try await send(path: "/discover/refresh", method: "POST", emptyBody: true)
+    }
+
+    func updateDiscoverSettings(enabled: Bool) async throws -> DiscoverSettings {
+        try await send(
+            path: "/discover/settings",
+            method: "PATCH",
+            body: DiscoverSettingsRequest(enabled: enabled, timezone: TimeZone.current.identifier)
+        )
+    }
+
+    func shareDiscoverHealth(_ summary: DiscoverHealthSummary) async throws {
+        let _: DiscoverHealthSummary = try await send(path: "/discover/health", method: "PUT", body: summary)
+    }
+
+    func stopSharingDiscoverHealth() async throws {
+        let _: EmptyResponse = try await send(path: "/discover/health", method: "DELETE")
+    }
+
+    func sendDiscoverFeedback(_ request: DiscoverFeedbackRequest) async throws -> DiscoverFeedbackResponse {
+        try await send(path: "/discover/feedback", method: "POST", body: request)
+    }
+
+    func fetchDiscoverCover(coverId: String) async throws -> Data {
+        try await fetchData(path: "/discover/covers/\(coverId)")
+    }
+
+    func authorisedRequest(path: String) -> URLRequest {
+        makeRequest(path: path, method: "GET", bodyData: nil, contentType: nil)
+    }
+
+    private func fetchData(path: String) async throws -> Data {
+        let request = makeRequest(path: path, method: "GET", bodyData: nil, contentType: nil)
+        let (data, response) = try await session.data(for: request)
+        try validate(response: response, data: data)
+        return data
+    }
+
     func fetchTeammates() async throws -> [TeammateSummary] {
         let response: TeammateListResponse = try await send(path: "/teammates", method: "GET")
         return response.data

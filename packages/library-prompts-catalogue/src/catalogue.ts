@@ -2,6 +2,7 @@ import { agentPromptEntries } from "./data/agents.js";
 import { appPromptEntries } from "./data/apps.js";
 import { assistantPromptEntries } from "./data/assistant.js";
 import { chatPromptEntries } from "./data/chat.js";
+import { discoverPromptEntries } from "./data/discover.js";
 import { functionPromptEntries } from "./data/functions.js";
 import { notebookPromptEntries } from "./data/notebooks.js";
 import { providerPromptEntries } from "./data/providers.js";
@@ -19,6 +20,7 @@ const allPromptEntries = [
   ...sandboxPromptEntries,
   ...teammatePromptEntries,
   ...notebookPromptEntries,
+  ...discoverPromptEntries,
 ] as const;
 
 export type PromptId = (typeof allPromptEntries)[number]["id"];

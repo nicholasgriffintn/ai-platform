@@ -1,4 +1,3 @@
-import type { MobileWorkNotification } from "@ngriffin_uk/polychat-schemas";
 import { base64ToBuffer, stringToBase64Url } from "@ngriffin_uk/polychat-utility-server/base64";
 import { encodeBase64Url } from "@ngriffin_uk/polychat-utility-server/base64url";
 
@@ -72,9 +71,16 @@ export type ApnsAlertResult =
   | { status: "sent" }
   | { status: "failed"; reason: string; invalidateDevice: boolean };
 
+export interface MobileAlert {
+  id: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown>;
+}
+
 export async function sendApnsAlert(params: {
   device: MobilePushDeviceRecord;
-  notification: MobileWorkNotification;
+  alert: MobileAlert;
   providerToken: string;
   topic: string;
   collapseId: string;
@@ -95,14 +101,10 @@ export async function sendApnsAlert(params: {
       },
       body: JSON.stringify({
         aps: {
-          alert: { title: params.notification.title, body: params.notification.body },
+          alert: { title: params.alert.title, body: params.alert.body },
           sound: "default",
         },
-        polychat: {
-          id: params.notification.id,
-          kind: params.notification.kind,
-          target: params.notification.target,
-        },
+        polychat: { id: params.alert.id, ...params.alert.data },
       }),
     });
   } catch (error) {

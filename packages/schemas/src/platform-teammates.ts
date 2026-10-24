@@ -1,4 +1,5 @@
 import type { AgentMode } from "./agent-modes.js";
+import { DISCOVER_COMPOSE_TOOL_NAME, DISCOVER_CONTEXT_TOOL_NAME } from "./discover.js";
 import { POLY_NAVIGATION_TOOL_NAMES } from "./poly.js";
 import { REACT_TOOL_NAME } from "./reactions.js";
 import type { TeammateKind } from "./teammate-roles.js";
@@ -268,6 +269,9 @@ export const POLY_TEAMMATE: PlatformTeammate = {
     "get_note",
     "get_task_status",
     "list_saved_messages",
+    DISCOVER_CONTEXT_TOOL_NAME,
+    DISCOVER_COMPOSE_TOOL_NAME,
+    "use_recipe_connector",
   ],
   skillIds: [],
   mode: "chat",

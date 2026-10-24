@@ -15,6 +15,7 @@ struct ConversationListView: View {
     let onShowPoly: () -> Void
     let onShowWork: () -> Void
     let onShowTeammates: () -> Void
+    let onShowDiscover: () -> Void
 
     init(
         selectedConversationID: Binding<String?>,
@@ -23,7 +24,8 @@ struct ConversationListView: View {
         onShowInbox: @escaping () -> Void = {},
         onShowWork: @escaping () -> Void = {},
         onShowPoly: @escaping () -> Void = {},
-        onShowTeammates: @escaping () -> Void = {}
+        onShowTeammates: @escaping () -> Void = {},
+        onShowDiscover: @escaping () -> Void = {}
     ) {
         self._selectedConversationID = selectedConversationID
         self.onShowSettings = onShowSettings
@@ -32,6 +34,7 @@ struct ConversationListView: View {
         self.onShowPoly = onShowPoly
         self.onShowWork = onShowWork
         self.onShowTeammates = onShowTeammates
+        self.onShowDiscover = onShowDiscover
     }
 
     private var filteredConversations: [Conversation] {
@@ -153,6 +156,14 @@ struct ConversationListView: View {
                     Image(systemName: "square.and.pencil")
                 }
                 .accessibilityLabel("New Message")
+            }
+
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    onShowDiscover()
+                } label: {
+                    Label("Discover", systemImage: "sunrise")
+                }
             }
 
             ToolbarItem(placement: .secondaryAction) {

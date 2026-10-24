@@ -1,6 +1,7 @@
 import { getSourceContentUrl, getSourceCoverUrl } from "@ngriffin_uk/polychat-library-client";
 import { getFilesPath, type FilesSort } from "@ngriffin_uk/polychat-library-react";
 import {
+  DISCOVER_EPISODE_KIND,
   getSourceMediaType,
   readSourceGeneration,
   readSourceMedia,
@@ -161,7 +162,7 @@ export function outputToFileItem(output: OutputSummary, basePath: string): FileI
     origin: "output",
     id: output.id,
     title: output.title,
-    type: mediaType ?? "result",
+    type: output.kind === DISCOVER_EPISODE_KIND ? "video" : (mediaType ?? "result"),
     detail: humaniseIdentifier(output.capabilityId),
     updatedAt: output.updatedAt ?? output.createdAt,
     href: getFilesPath(basePath, "made", encodeURIComponent(output.id)),

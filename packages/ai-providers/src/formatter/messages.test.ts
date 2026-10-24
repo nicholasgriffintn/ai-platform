@@ -336,4 +336,28 @@ describe("tool result images", () => {
       content: [{ type: "input_text" }, { type: "input_image", image_url: image.image_url.url }],
     });
   });
+
+  it("gives the model a tool's data, not just its status line", () => {
+    const items = MessageFormatter.formatOpenAIResponsesInput([
+      { role: "user", content: "What changed in D1?" },
+      {
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          { id: "call_1", type: "function", function: { name: "web_search", arguments: "{}" } },
+        ],
+      },
+      {
+        role: "tool",
+        name: "web_search",
+        tool_call_id: "call_1",
+        content: "Web search completed",
+        data: { sources: [{ url: "https://example.com/d1" }] },
+      },
+    ]);
+    const output = items.find((item) => item.type === "function_call_output");
+
+    expect(output).toMatchObject({ call_id: "call_1" });
+    expect(JSON.stringify(output)).toContain("https://example.com/d1");
+  });
 });

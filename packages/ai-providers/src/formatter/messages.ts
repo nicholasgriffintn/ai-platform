@@ -77,6 +77,24 @@ export class MessageFormatter {
     return "";
   }
 
+  private static isHiddenToolResult(message: Message): boolean {
+    return isRecord(message.data) && message.data.modelContext === false;
+  }
+
+  private static formatToolResultText(message: Message, content: unknown): string {
+    let stringifiedData = "";
+
+    if (message.data) {
+      try {
+        stringifiedData = JSON.stringify(message.data);
+      } catch {}
+    }
+
+    return `[Tool Response: ${message.name || "unknown"}] ${
+      typeof content === "string" ? content : JSON.stringify(content)
+    }${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
+  }
+
   static formatOpenAIResponsesInput(messages: Message[]): OpenAIResponsesInputItem[] {
     const items: OpenAIResponsesInputItem[] = [];
     let pendingToolImages: MessageContent[] = [];
@@ -245,12 +263,7 @@ export class MessageFormatter {
       const content = MessageFormatter.formatContent(toolImages.content, provider);
 
       if (message.role === "tool") {
-        if (
-          message.data &&
-          typeof message.data === "object" &&
-          !Array.isArray(message.data) &&
-          (message.data as { modelContext?: unknown }).modelContext === false
-        ) {
+        if (MessageFormatter.isHiddenToolResult(message)) {
           continue;
         }
 
@@ -258,19 +271,7 @@ export class MessageFormatter {
           continue;
         }
 
-        let stringifiedData = "";
-
-        if (message.data) {
-          try {
-            stringifiedData = JSON.stringify(message.data);
-          } catch {}
-        }
-
-        const toolResultContent = `[Tool Response: ${
-          message.name || "unknown"
-        }] ${typeof content === "string" ? content : JSON.stringify(content)}${
-          stringifiedData ? `\n\nData: ${stringifiedData}` : ""
-        }`;
+        const toolResultContent = MessageFormatter.formatToolResultText(message, content);
 
         if (provider === "anthropic") {
           const toolCallArguments =
@@ -967,10 +968,14 @@ export class MessageFormatter {
         return null;
       }
 
+      const output = MessageFormatter.stringifyMessageContent(message.content);
+
       return {
         type: "function_call_output",
         call_id: message.tool_call_id,
-        output: MessageFormatter.stringifyMessageContent(message.content),
+        output: MessageFormatter.isHiddenToolResult(message)
+          ? output
+          : MessageFormatter.formatToolResultText(message, output),
       };
     }
 

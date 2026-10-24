@@ -1,6 +1,6 @@
 {
 	"providerId": "wolfram_alpha_api",
-	"name": "Wolfram Alpha Api",
+	"name": "Wolfram|Alpha API",
 	"description": "Integrate computational knowledge into applications via Wolfram|Alpha's APIs.",
 	"logoUrl": "https://logos.composio.dev/api/wolfram_alpha_api",
 	"appUrl": "https://developer.wolframalpha.com/portal/myapps/",
@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "wolfram_alpha_api",
-	"toolkitVersion": "20260615_00",
+	"toolkitVersion": "20261008_00",
 	"toolCount": 11,
 	"readToolCount": 10,
 	"writeToolCount": 1,

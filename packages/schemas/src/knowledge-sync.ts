@@ -50,7 +50,8 @@ export const knowledgeSyncResourceSchema = z
 
 export const createKnowledgeSyncSchema = z
   .object({
-    projectId: z.string().min(1),
+    projectId: z.string().min(1).optional(),
+    notebookId: z.string().min(1).optional(),
     recipeId: z.string().min(1).max(200),
     integrationId: z.string().min(1).max(200),
     title: z.string().trim().min(1).max(200),
@@ -68,12 +69,25 @@ export const createKnowledgeSyncSchema = z
       ),
     intervalMinutes: z.number().int().min(5).max(1440).default(60),
   })
-  .strict();
+  .strict()
+  .refine((value) => Boolean(value.projectId) !== Boolean(value.notebookId), {
+    error: "Sync into either a project or a notebook",
+  });
+
+export const knowledgeSyncListQuerySchema = z
+  .object({
+    project_id: z.string().min(1).optional(),
+    notebook_id: z.string().min(1).optional(),
+  })
+  .refine((value) => Boolean(value.project_id) !== Boolean(value.notebook_id), {
+    error: "List a project's or a notebook's syncs",
+  });
 
 export const knowledgeSyncSchema = z
   .object({
     id: z.string(),
-    projectId: z.string(),
+    projectId: z.string().nullable(),
+    notebookId: z.string().nullable(),
     title: z.string(),
     status: z.enum(["active", "paused"]),
     resourceCount: z.number().int().nonnegative(),

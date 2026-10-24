@@ -66,8 +66,49 @@ export function stripId3Tag(bytes: Uint8Array): Uint8Array {
   return bytes.subarray(Math.min(tagLength, bytes.length));
 }
 
+const MPEG1_LAYER3_KBPS = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+const MPEG2_LAYER3_KBPS = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
+const MPEG1_SAMPLE_RATES = [44100, 48000, 32000];
+
+function matchesAscii(bytes: Uint8Array, offset: number, text: string): boolean {
+  return [...text].every((character, index) => bytes[offset + index] === character.charCodeAt(0));
+}
+
+export function stripMp3InfoFrame(bytes: Uint8Array): Uint8Array {
+  if (bytes.length < 4 || bytes[0] !== 0xff || (bytes[1] & 0xe0) !== 0xe0) {
+    return bytes;
+  }
+
+  const version = (bytes[1] >> 3) & 0x03;
+  const layer = (bytes[1] >> 1) & 0x03;
+  const mpeg1 = version === 0x03;
+  const kbps = (mpeg1 ? MPEG1_LAYER3_KBPS : MPEG2_LAYER3_KBPS)[(bytes[2] >> 4) & 0x0f] ?? 0;
+  const baseRate = MPEG1_SAMPLE_RATES[(bytes[2] >> 2) & 0x03] ?? 0;
+  const sampleRate = mpeg1 ? baseRate : version === 0x02 ? baseRate / 2 : baseRate / 4;
+
+  if (layer !== 0x01 || !kbps || !sampleRate) {
+    return bytes;
+  }
+
+  const mono = bytes[3] >> 6 === 0x03;
+  const sideInfo = mpeg1 ? (mono ? 17 : 32) : mono ? 9 : 17;
+  const tagged =
+    matchesAscii(bytes, 4 + sideInfo, "Xing") ||
+    matchesAscii(bytes, 4 + sideInfo, "Info") ||
+    matchesAscii(bytes, 36, "VBRI");
+
+  if (!tagged) {
+    return bytes;
+  }
+
+  const frameLength =
+    Math.floor(((mpeg1 ? 144 : 72) * kbps * 1000) / sampleRate) + ((bytes[2] >> 1) & 0x01);
+
+  return bytes.subarray(Math.min(frameLength, bytes.length));
+}
+
 export function joinAudioSegments(segments: Uint8Array[]): Uint8Array {
-  const frames = segments.map(stripId3Tag);
+  const frames = segments.map((segment) => stripMp3InfoFrame(stripId3Tag(segment)));
   const joined = new Uint8Array(frames.reduce((total, frame) => total + frame.length, 0));
   let offset = 0;
 

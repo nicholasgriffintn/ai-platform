@@ -93,6 +93,20 @@ export const videoOverviewStyleSchema = z.enum([
   "anime",
 ]);
 
+export const VIDEO_OVERVIEW_STYLE_LABELS: Record<
+  z.infer<typeof videoOverviewStyleSchema>,
+  string
+> = {
+  classic: "Classic",
+  whiteboard: "Whiteboard",
+  watercolour: "Watercolour",
+  retro_print: "Retro print",
+  heritage: "Heritage",
+  papercraft: "Papercraft",
+  kawaii: "Kawaii",
+  anime: "Anime",
+};
+
 export const videoOverviewSceneDraftSchema = z
   .object({
     title: z

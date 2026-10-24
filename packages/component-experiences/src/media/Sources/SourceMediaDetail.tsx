@@ -1,4 +1,4 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, MediaPlayer } from "@ngriffin_uk/polychat-component-ui";
 import type { SourceMediaMetadata, SourceMediaType } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { Captions, FileText } from "lucide-react";
@@ -12,7 +12,6 @@ import {
 } from "./captions";
 import { MediaNotes, type MediaNotesProps } from "./MediaNotes";
 import { TranscriptViewer } from "./TranscriptViewer";
-import { useCaptionTrack } from "./useCaptionTrack";
 
 export interface SourceMediaDetailProps extends Pick<
   MediaNotesProps,
@@ -28,38 +27,13 @@ export interface SourceMediaDetailProps extends Pick<
   onDownloadCaptions?: (format: CaptionFormat) => void;
 }
 
-function MediaPlayer({
-  mediaType,
-  mediaUrl,
-  title,
-  captionsVtt,
-}: Pick<SourceMediaDetailProps, "mediaType" | "mediaUrl" | "title"> & {
-  captionsVtt: string | null;
-}) {
-  const captionTrackRef = useCaptionTrack(captionsVtt);
-
-  if (mediaType === "image") {
-    return (
-      <img
-        src={mediaUrl}
-        alt={title}
-        className="mx-auto max-h-full w-auto max-w-full rounded-lg object-contain"
-      />
-    );
-  }
-
-  if (mediaType === "video") {
-    return (
-      <video controls className="w-full rounded-lg border border-border" src={mediaUrl}>
-        <track ref={captionTrackRef} kind="captions" srcLang="en" label="Captions" default />
-      </video>
-    );
-  }
-
+function ImagePreview({ mediaUrl, title }: { mediaUrl: string; title: string }) {
   return (
-    <audio controls className="w-full" src={mediaUrl}>
-      <track ref={captionTrackRef} kind="captions" srcLang="en" label="Captions" default />
-    </audio>
+    <img
+      src={mediaUrl}
+      alt={title}
+      className="mx-auto max-h-full w-auto max-w-full rounded-lg object-contain"
+    />
   );
 }
 
@@ -90,34 +64,33 @@ export function SourceMediaDetail({
   if (mediaType === "image" && !media.notes?.summary) {
     return (
       <div className="flex h-full items-center justify-center p-6">
-        <MediaPlayer mediaType={mediaType} mediaUrl={mediaUrl} title={title} captionsVtt={null} />
+        <ImagePreview mediaUrl={mediaUrl} title={title} />
       </div>
     );
   }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        {mediaType === "audio" ? (
-          <div className="size-28 shrink-0 overflow-hidden rounded-xl bg-selection">
-            {coverUrl ? (
-              <img src={coverUrl} alt={title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                No cover yet
-              </div>
-            )}
-          </div>
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <MediaPlayer
-            mediaType={mediaType}
-            mediaUrl={mediaUrl}
-            title={title}
-            captionsVtt={captionsVtt}
-          />
-        </div>
-      </div>
+      {mediaType === "image" ? (
+        <ImagePreview mediaUrl={mediaUrl} title={title} />
+      ) : (
+        <MediaPlayer
+          kind={mediaType}
+          src={mediaUrl}
+          title={title}
+          art={coverUrl}
+          captionsVtt={captionsVtt}
+          transcript={
+            readyTranscript
+              ? {
+                  segments: readyTranscript.segments,
+                  speakers: transcriptSpeakerNames(readyTranscript),
+                }
+              : undefined
+          }
+          showTranscriptList={false}
+        />
+      )}
 
       <div>
         <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">

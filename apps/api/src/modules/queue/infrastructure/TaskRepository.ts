@@ -169,6 +169,29 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return result ? result.map((task) => this.parseTask(task)) : [];
   }
 
+  public async releaseAbandonedTasks(now = new Date()): Promise<number> {
+    const released = await this.runQuery<{ id: string }>(
+      `UPDATE tasks
+       SET status = CASE WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN 'failed' ELSE 'pending' END,
+           attempts = COALESCE(attempts, 0) + 1,
+           execution_owner_token = NULL,
+           execution_lease_expires_at = NULL,
+           error_message = CASE
+             WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN 'The worker stopped before the task finished'
+             ELSE error_message
+           END,
+           completed_at = CASE WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN ? ELSE completed_at END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE status = 'running'
+         AND execution_lease_expires_at IS NOT NULL
+         AND datetime(execution_lease_expires_at) <= datetime(?)
+       RETURNING id`,
+      [now.toISOString(), now.toISOString()],
+    );
+
+    return released?.length ?? 0;
+  }
+
   public async requeueFailedTasksByType(
     taskType: TaskType,
     cutoff: Date,

@@ -1,4 +1,5 @@
 import {
+  DISCOVER_CAPABILITY_ID,
   listPageOf,
   mapListPage,
   toListPage,
@@ -43,6 +44,8 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import { getOutputRestoreCapability } from "../domain/revision-policy";
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
 import { deleteOutputResources } from "./delete-resources";
+
+const LIBRARY_HIDDEN_CAPABILITY_IDS = [DISCOVER_CAPABILITY_ID];
 
 function formatFile(record: OutputRecord): Output["file"] {
   if (!record.storage_key || !record.mime_type) {
@@ -294,7 +297,12 @@ export async function listOutputs(
   userId: number,
   query: OutputListQuery,
 ): Promise<ListPage<OutputSummary>> {
-  const options = { kind: query.kind, limit: query.limit + 1, after: query.after };
+  const options = {
+    kind: query.kind,
+    limit: query.limit + 1,
+    after: query.after,
+    ...(query.capability_id ? {} : { excludeCapabilityIds: LIBRARY_HIDDEN_CAPABILITY_IDS }),
+  };
   const records = query.project_id
     ? (await requireProjectAccess(context, query.project_id),
       await context.repositories

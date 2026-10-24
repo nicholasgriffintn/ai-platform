@@ -21,6 +21,7 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { requireNotebookAccess } from "~/modules/notebooks/application/access";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
@@ -39,7 +40,7 @@ export async function requireKnowledgeSyncAuthority(
   context: ServiceContext,
   sync: Pick<
     KnowledgeSyncRecord,
-    "user_id" | "project_id" | "recipe_id" | "integration_id" | "connection_id"
+    "user_id" | "project_id" | "collection_id" | "recipe_id" | "integration_id" | "connection_id"
   >,
   resources: readonly KnowledgeSyncResource[],
 ) {
@@ -76,8 +77,7 @@ export async function requireKnowledgeSyncAuthority(
     }
   }
 
-  await requireProjectAccess(context, sync.project_id, ["owner", "admin"]);
-  await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipe.id);
+  await requireSyncTargetAccess(context, sync, recipe.id);
   const connection = await context.repositories
     .get(ProviderConnectionRepository)
     .getConnectionById(sync.connection_id);
@@ -99,6 +99,33 @@ export async function requireKnowledgeSyncAuthority(
   return { connection, provider };
 }
 
+async function requireSyncTargetAccess(
+  context: ServiceContext,
+  sync: Pick<KnowledgeSyncRecord, "project_id" | "collection_id">,
+  recipeId: string,
+): Promise<void> {
+  if (sync.project_id) {
+    await requireProjectAccess(context, sync.project_id, ["owner", "admin"]);
+    await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipeId);
+
+    return;
+  }
+
+  const notebook = sync.collection_id
+    ? await requireNotebookAccess(context, sync.collection_id, { manage: true })
+    : null;
+
+  if (!notebook || notebook.notebook.project_id) {
+    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
+  }
+}
+
+function syncEventScope(sync: KnowledgeSyncRecord) {
+  return sync.project_id
+    ? { kind: "project" as const, projectId: sync.project_id }
+    : { kind: "personal" as const, userId: sync.user_id };
+}
+
 export async function enqueueKnowledgeSync(
   env: IEnv,
   repositories: Repositories,
@@ -109,7 +136,7 @@ export async function enqueueKnowledgeSync(
       id: `knowledge_sync_${sync.id}_${sync.generation}_${sync.cursor}`,
       task_type: SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
       user_id: sync.user_id,
-      project_id: sync.project_id,
+      project_id: sync.project_id ?? undefined,
       task_data: { syncId: sync.id, generation: sync.generation },
     });
   } catch {
@@ -119,9 +146,18 @@ export async function enqueueKnowledgeSync(
   }
 }
 
-export async function listKnowledgeSyncs(context: ServiceContext, projectId: string) {
-  await requireProjectAccess(context, projectId);
-  const records = await context.repositories.get(KnowledgeSyncRepository).list(projectId);
+export async function listKnowledgeSyncs(
+  context: ServiceContext,
+  target: { projectId?: string; notebookId?: string },
+) {
+  const repository = context.repositories.get(KnowledgeSyncRepository);
+  const records = target.projectId
+    ? (await requireProjectAccess(context, target.projectId),
+      await repository.list(target.projectId))
+    : target.notebookId
+      ? (await requireNotebookAccess(context, target.notebookId),
+        await repository.listForCollection(target.notebookId))
+      : [];
 
   return listPageOf(
     records.map((record) => formatKnowledgeSync(record, context.requireUser().id)),
@@ -137,7 +173,8 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
     context,
     {
       user_id: userId,
-      project_id: parsed.projectId,
+      project_id: parsed.projectId ?? null,
+      collection_id: parsed.notebookId ?? null,
       recipe_id: parsed.recipeId,
       integration_id: parsed.integrationId,
       connection_id: parsed.connectionId,
@@ -163,7 +200,8 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
   await context.repositories.get(KnowledgeSyncRepository).create({
     id,
     userId,
-    projectId: parsed.projectId,
+    projectId: parsed.projectId ?? null,
+    collectionId: parsed.notebookId ?? null,
     connectionId: connection.id,
     recipeId: parsed.recipeId,
     integrationId: parsed.integrationId,
@@ -181,8 +219,9 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
 
   await publishResourceEvent(
     context,
-    { kind: "project", projectId: saved.project_id },
+    syncEventScope(saved),
     "knowledge_sync.changed",
+    saved.collection_id ? { notebookId: saved.collection_id } : {},
   );
 
   return formatKnowledgeSync(saved, userId);
@@ -199,7 +238,7 @@ export async function controlKnowledgeSync(
     throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await requireProjectAccess(context, sync.project_id);
+  await requireSyncTargetAccess(context, sync, sync.recipe_id);
   if (input.action !== "pause") {
     await requireKnowledgeSyncAuthority(context, sync, parseKnowledgeSyncResources(sync));
   }
@@ -217,8 +256,9 @@ export async function controlKnowledgeSync(
 
   await publishResourceEvent(
     context,
-    { kind: "project", projectId: saved.project_id },
+    syncEventScope(saved),
     "knowledge_sync.changed",
+    saved.collection_id ? { notebookId: saved.collection_id } : {},
   );
 
   return formatKnowledgeSync(saved, context.requireUser().id);

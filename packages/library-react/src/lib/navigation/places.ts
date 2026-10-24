@@ -2,6 +2,7 @@ export type ProductMode = "chat" | "work";
 
 export type ProductPlace =
   | "conversations"
+  | "discover"
   | "sites"
   | "attention"
   | "files"
@@ -20,8 +21,11 @@ export const PET_SETTINGS_PATH = `${PROFILE_PATH}?tab=pets`;
 
 export const DISCOVER_PATH = "/discover";
 
+export const TOUR_PATH = "/tour";
+
 export interface PlacePaths {
   conversations: string;
+  discover: string;
   sites: string;
   attention: string;
   files: string;
@@ -35,6 +39,7 @@ export function getPlacePaths(mode: ProductMode): PlacePaths {
 
   return {
     conversations: base,
+    discover: DISCOVER_PATH,
     sites: `${base}/apps/sites`,
     attention: `${base}/attention`,
     files: `${base}/files`,
@@ -73,6 +78,10 @@ const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, str
 export function getActivePlace(pathname: string): ProductPlace | undefined {
   if (pathname === PROFILE_PATH || pathname.startsWith(`${PROFILE_PATH}/`)) {
     return "you";
+  }
+
+  if (pathname === DISCOVER_PATH) {
+    return "discover";
   }
 
   const mode = getProductMode(pathname);

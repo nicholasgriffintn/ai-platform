@@ -57,6 +57,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   extract_content: { icon: "file-text" },
   extract_text_from_document: { icon: "file-text" },
   get_hacker_news_stories: { icon: "globe" },
+  get_on_this_day: { icon: "globe" },
   call_api: { icon: "braces", responseType: ToolResponseType.JSON },
   get_task_status: { icon: "terminal" },
   create_task: { icon: "list-checks" },

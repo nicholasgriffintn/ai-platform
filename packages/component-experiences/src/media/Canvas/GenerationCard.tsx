@@ -1,5 +1,5 @@
 import { ImageModal } from "@ngriffin_uk/polychat-component-content";
-import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { cn, MediaPlayer } from "@ngriffin_uk/polychat-component-ui";
 import type { CanvasMode } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Clock3 } from "lucide-react";
 
@@ -94,19 +94,16 @@ export function GenerationCard({
       )}
 
       {preview?.type === "video" && (
-        <div className={cn("overflow-hidden rounded-xl border border-border", aspectClass)}>
-          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- AI-generated video has no captions track available */}
-          <video controls className="h-full w-full object-cover">
-            <source src={preview.url} type="video/mp4" />
-          </video>
-        </div>
+        <MediaPlayer kind="video" src={preview.url} title={run.modelName ?? "Generated video"} />
       )}
 
       {preview?.type === "audio" && (
-        // oxlint-disable-next-line jsx-a11y/media-has-caption -- AI-generated audio has no captions track available
-        <audio controls className="w-full">
-          <source src={preview.url} />
-        </audio>
+        <MediaPlayer
+          kind="audio"
+          layout="compact"
+          src={preview.url}
+          title={run.modelName ?? "Generated audio"}
+        />
       )}
 
       {run.error && (

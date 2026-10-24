@@ -1,0 +1,62 @@
+{
+	"providerId": "raindrop",
+	"name": "Raindrop.io",
+	"description": "Raindrop.io is a bookmark manager for organizing, searching, tagging, highlighting, sharing, importing, and exporting saved web content.",
+	"logoUrl": "https://logos.composio.dev/api/raindrop",
+	"appUrl": "https://raindrop.io",
+	"categories": [
+		{
+			"id": "bookmark-managers",
+			"name": "Bookmark Managers"
+		},
+		{
+			"id": "productivity",
+			"name": "Productivity"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_ewhWQZXTRgxL",
+			"name": "raindrop",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "raindrop",
+	"toolkitVersion": "20261021_00",
+	"toolCount": 17,
+	"readToolCount": 7,
+	"writeToolCount": 10,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"RAINDROP_EXPORT_BOOKMARKS_CSV",
+			"RAINDROP_GET_BOOKMARK",
+			"RAINDROP_GET_COLLECTION",
+			"RAINDROP_LIST_BOOKMARKS",
+			"RAINDROP_LIST_COLLECTIONS",
+			"RAINDROP_LIST_TAGS",
+			"RAINDROP_PARSE_URL_METADATA"
+		],
+		"write": [
+			"RAINDROP_CREATE_BOOKMARK",
+			"RAINDROP_CREATE_BOOKMARKS",
+			"RAINDROP_CREATE_COLLECTION",
+			"RAINDROP_DELETE_BOOKMARK",
+			"RAINDROP_DELETE_COLLECTION",
+			"RAINDROP_DELETE_EMPTY_COLLECTION",
+			"RAINDROP_SET_BOOKMARK_COVER",
+			"RAINDROP_UPDATE_BOOKMARK",
+			"RAINDROP_UPDATE_BOOKMARKS",
+			"RAINDROP_UPDATE_COLLECTION"
+		],
+		"important": [],
+		"destructive": [
+			"RAINDROP_DELETE_BOOKMARK",
+			"RAINDROP_DELETE_COLLECTION",
+			"RAINDROP_DELETE_EMPTY_COLLECTION"
+		],
+		"idempotent": [],
+		"openWorld": []
+	}
+}

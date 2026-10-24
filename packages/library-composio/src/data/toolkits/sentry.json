@@ -23,7 +23,7 @@
 		}
 	],
 	"toolkitSlug": "sentry",
-	"toolkitVersion": "20260721_00",
+	"toolkitVersion": "20260826_00",
 	"toolCount": 209,
 	"readToolCount": 112,
 	"writeToolCount": 97,

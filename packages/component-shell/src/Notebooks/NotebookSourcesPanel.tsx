@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { sourceToFileItem } from "../Files/Library/file-items.js";
 import { FileTypeIcon } from "../Files/Library/FilePreview.js";
+import { KnowledgeSyncPanel } from "../Files/Library/KnowledgeSyncPanel.js";
 import { NotebookAddSourcesDialog } from "./NotebookAddSourcesDialog.js";
 import { NotebookResearchBox } from "./NotebookResearchBox.js";
 import type { NotebookSourceSelection } from "./useNotebookSourceSelection.js";
@@ -145,6 +146,9 @@ export function NotebookSourcesPanel({
           </li>
         ) : null}
       </ul>
+      {notebook.scope.kind === "personal" ? (
+        <KnowledgeSyncPanel target={{ notebookId: notebook.id }} />
+      ) : null}
       <NotebookAddSourcesDialog
         open={isAdding}
         onOpenChange={setIsAdding}

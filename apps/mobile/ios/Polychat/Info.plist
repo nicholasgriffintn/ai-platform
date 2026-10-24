@@ -35,6 +35,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Discover reads yesterday's sleep, mindful and exercise minutes for one line in your brief. It never uses them to choose topics.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to your microphone to record your voice for transcription.</string>
 	<key>NSSiriUsageDescription</key>

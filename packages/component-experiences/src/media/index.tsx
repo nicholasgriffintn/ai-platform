@@ -1,3 +1,5 @@
+import { MediaPlayer } from "@ngriffin_uk/polychat-component-ui";
+
 import "../styles.css";
 
 export type MediaPreviewModel =
@@ -27,20 +29,14 @@ export function MediaPreview({
   if (preview.type === "video") {
     return (
       <div className="polychat-experience-media-preview">
-        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided video has no captions track available */}
-        <video controls aria-label={preview.title}>
-          <source src={preview.url} type="video/mp4" />
-        </video>
+        <MediaPlayer kind="video" src={preview.url} title={preview.title} />
       </div>
     );
   }
 
   return (
     <div className="polychat-experience-media-preview">
-      {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided audio has no captions track available */}
-      <audio controls aria-label={preview.title}>
-        <source src={preview.url} />
-      </audio>
+      <MediaPlayer kind="audio" layout="compact" src={preview.url} title={preview.title} />
     </div>
   );
 }

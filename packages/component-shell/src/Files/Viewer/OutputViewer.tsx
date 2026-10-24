@@ -20,8 +20,11 @@ import {
   useRunnableTool,
 } from "@ngriffin_uk/polychat-library-react";
 import {
+  DISCOVER_EPISODE_KIND,
+  DISCOVER_SEASON_KIND,
   DOCUMENT_OUTPUT_KIND,
   deriveDocumentStatistics,
+  discoverSeasonContentSchema,
   documentExportFilename,
   readDocumentBody,
   readDocumentMetadata,
@@ -42,6 +45,8 @@ import { useState } from "react";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../../Content/ResponseRenderer.js";
+import { EpisodePlayer } from "../../Discover/Episode/EpisodePlayer.js";
+import { SeasonView } from "../../Discover/Episode/SeasonView.js";
 import { StudyOutputStage } from "../../Notebooks/StudyOutputStage.js";
 import { DocumentOutputDiscussion } from "../DocumentOutputDiscussion.js";
 import { DocumentOutputWorkbench } from "../DocumentOutputWorkbench.js";
@@ -78,6 +83,27 @@ function OutputStage({
 
   if (markdownBody !== null) {
     return <MarkdownStage markdown={markdownBody} />;
+  }
+
+  if (output.kind === DISCOVER_EPISODE_KIND) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-8">
+        <EpisodePlayer key={output.id} episodeId={output.id} />
+      </div>
+    );
+  }
+
+  const season =
+    output.kind === DISCOVER_SEASON_KIND
+      ? discoverSeasonContentSchema.safeParse(output.content)
+      : null;
+
+  if (season?.success) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-8">
+        <SeasonView key={output.id} season={season.data} />
+      </div>
+    );
   }
 
   if (isWorkOutputKind(output.kind)) {

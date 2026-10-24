@@ -19,9 +19,9 @@
 		}
 	],
 	"toolkitSlug": "dropbox",
-	"toolkitVersion": "20260721_00",
-	"toolCount": 174,
-	"readToolCount": 93,
+	"toolkitVersion": "20261001_00",
+	"toolCount": 175,
+	"readToolCount": 94,
 	"writeToolCount": 81,
 	"scopes": [
 		"account_info.read",
@@ -144,7 +144,8 @@
 			"DROPBOX_READ_FILE",
 			"DROPBOX_SEARCH_CONTINUE",
 			"DROPBOX_SEARCH_FILE_OR_FOLDER",
-			"DROPBOX_SEARCH_FILE_PROPERTIES"
+			"DROPBOX_SEARCH_FILE_PROPERTIES",
+			"DROPBOX_WHO_AM_I"
 		],
 		"write": [
 			"DROPBOX_ACTIVATE_TEAM_FOLDER",
@@ -268,7 +269,8 @@
 			"DROPBOX_UPDATE_FILE_MEMBER",
 			"DROPBOX_UPDATE_FILE_PROPERTIES",
 			"DROPBOX_UPDATE_TEAM_GROUP",
-			"DROPBOX_UPDATE_TEAM_MEMBER_ADMIN_PERMISSIONS"
+			"DROPBOX_UPDATE_TEAM_MEMBER_ADMIN_PERMISSIONS",
+			"DROPBOX_WHO_AM_I"
 		],
 		"destructive": [
 			"DROPBOX_ARCHIVE_TEAM_FOLDER",
@@ -303,7 +305,8 @@
 			"DROPBOX_DELETE_TEAM_GROUP",
 			"DROPBOX_GET_THUMBNAIL",
 			"DROPBOX_MOUNT_FOLDER",
-			"DROPBOX_UNMOUNT_FOLDER"
+			"DROPBOX_UNMOUNT_FOLDER",
+			"DROPBOX_WHO_AM_I"
 		],
 		"openWorld": [
 			"DROPBOX_ACTIVATE_TEAM_FOLDER",

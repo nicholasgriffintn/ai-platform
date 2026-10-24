@@ -3,7 +3,7 @@ import type { ChatSuggestion as ChatSuggestionView } from "@ngriffin_uk/polychat
 import type { SelectableHomeChatModeId } from "../../lib/chatModes.js";
 import type { FocusRole } from "../../lib/focus-role.js";
 
-export type ChatSuggestionTier = "capability" | "focus" | "everyday";
+export type ChatSuggestionTier = "today" | "capability" | "focus" | "everyday";
 
 export type ChatSuggestionAction =
   | { type: "mode"; modeId: SelectableHomeChatModeId }
@@ -24,7 +24,14 @@ export interface ChatSuggestionRecipe {
   title: string;
 }
 
+export interface ChatSuggestionToday {
+  id: string;
+  label: string;
+  prompt: string;
+}
+
 export interface ChatSuggestionContext {
+  today: readonly ChatSuggestionToday[];
   focusRole: FocusRole | null;
   availableModes: readonly SelectableHomeChatModeId[];
   availableToolIds: readonly string[];
@@ -37,6 +44,7 @@ export interface ChatSuggestionDefinition extends Omit<ChatSuggestion, "tier"> {
 }
 
 export const EMPTY_CHAT_SUGGESTION_CONTEXT: ChatSuggestionContext = {
+  today: [],
   focusRole: null,
   availableModes: [],
   availableToolIds: [],

@@ -37,7 +37,11 @@ export async function synthesiseSpeech(
   language: string,
 ): Promise<Uint8Array> {
   const user = context.requireUser();
-  const result = await getAudioProvider(selection.provider, { env: context.env, user }).synthesize({
+  const result = await getAudioProvider(selection.provider, {
+    env: context.env,
+    user,
+    serviceContext: context,
+  }).synthesize({
     input: text,
     env: context.env,
     user,

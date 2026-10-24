@@ -15,6 +15,11 @@ import {
 import { decide } from "~/modules/decisions/application/tools/decide";
 import { delegate } from "~/modules/delegations/application/tools/delegate";
 import { messageParent } from "~/modules/delegations/application/tools/message-parent";
+import {
+  compose_discover_edition,
+  prepare_wind_down,
+  read_discover_context,
+} from "~/modules/discover/application/tools/discover";
 import { get_document } from "~/modules/documents/application/tools/get_document";
 import { grade_writing } from "~/modules/documents/application/tools/grade_writing";
 import { write_deck, write_sheet } from "~/modules/documents/application/tools/work_outputs";
@@ -69,6 +74,7 @@ import { hostedMcpApproval } from "~/modules/tools/application/builtin/hosted_mc
 import { ask_user, request_approval } from "~/modules/tools/application/builtin/human_in_the_loop";
 import { mcp_call_tool, mcp_list_tools } from "~/modules/tools/application/builtin/mcp_gateway";
 import { extract_text_from_document } from "~/modules/tools/application/builtin/ocr";
+import { get_on_this_day } from "~/modules/tools/application/builtin/on_this_day";
 import { run_pashi_tools, search_pashi_tools } from "~/modules/tools/application/builtin/pashi";
 import { create_qr_code } from "~/modules/tools/application/builtin/qr";
 import { capture_screenshot } from "~/modules/tools/application/builtin/screenshot";
@@ -148,6 +154,7 @@ registerTools([
   select_council_members,
   second_opinion,
   get_hacker_news_stories,
+  get_on_this_day,
   request_approval,
   ask_user,
   run_sandbox_task,
@@ -155,6 +162,9 @@ registerTools([
   run_code,
   use_computer,
   ...polyNavigationTools,
+  read_discover_context,
+  compose_discover_edition,
+  prepare_wind_down,
 ]);
 
 registerTools([hostedMcpApproval], { listed: false });

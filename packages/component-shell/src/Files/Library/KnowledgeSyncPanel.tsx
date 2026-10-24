@@ -1,9 +1,13 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useKnowledgeSyncs, useKnowledgeSyncControl } from "@ngriffin_uk/polychat-library-react";
+import {
+  useKnowledgeSyncs,
+  useKnowledgeSyncControl,
+  type KnowledgeSyncTarget,
+} from "@ngriffin_uk/polychat-library-react";
 
-export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
-  const query = useKnowledgeSyncs(projectId);
-  const control = useKnowledgeSyncControl(projectId);
+export function KnowledgeSyncPanel({ target }: { target: KnowledgeSyncTarget }) {
+  const query = useKnowledgeSyncs(target);
+  const control = useKnowledgeSyncControl(target);
 
   if (!query.data?.length && !query.error) {
     return null;
@@ -14,8 +18,9 @@ export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
       <div>
         <h2 className="text-sm font-medium">Connected knowledge</h2>
         <p className="text-xs text-muted-foreground">
-          Synced from your connections and shared with project members. Search catches up after
-          indexing.
+          {"projectId" in target
+            ? "Synced from your connections and shared with project members. Search catches up after indexing."
+            : "Synced from your connections into this notebook as sources. New items arrive on each sync."}
         </p>
       </div>
       {query.error || control.error ? (
