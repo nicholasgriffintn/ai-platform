@@ -1717,10 +1717,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1079,
+              "value": 1076,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 13
+              "confidenceInterval95": 12
             }
           ]
         }

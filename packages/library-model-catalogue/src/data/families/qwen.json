@@ -611,10 +611,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 891,
+              "value": 903,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 18
             }
           ]
         }
@@ -657,10 +657,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 920,
+              "value": 889,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 20
             }
           ]
         }
@@ -697,10 +697,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 1020,
+              "value": 991,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 18
             }
           ]
         }

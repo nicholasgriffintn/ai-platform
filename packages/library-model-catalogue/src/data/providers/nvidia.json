@@ -529,7 +529,7 @@
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
         "maxTokens": 32768,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -653,6 +653,8 @@
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 262144,
         "maxTokens": 262144,
+        "contextComplexity": 4,
+        "speed": 3,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -675,7 +677,7 @@
       "model": "nvidia/stepfun-ai/step-5-preview/step-5-preview",
       "matchingModel": "stepfun-ai/step-5-preview",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

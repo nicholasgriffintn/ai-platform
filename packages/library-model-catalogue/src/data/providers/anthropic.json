@@ -240,8 +240,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP",
         "supportsResponseFormat",
+        "supportsTopP",
         "reliability",
         "supportsCodeExecution"
       ]
@@ -335,7 +335,7 @@
           "search",
           "research"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,

@@ -67,7 +67,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -175,9 +175,9 @@
       },
       "unset": [
         "supportsAttachments",
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "flux-2-dev": {
@@ -190,9 +190,9 @@
       },
       "unset": [
         "supportsAttachments",
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -205,9 +205,9 @@
       },
       "unset": [
         "supportsAttachments",
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -219,9 +219,9 @@
       },
       "unset": [
         "supportsAttachments",
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -660,7 +660,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0003
@@ -941,6 +941,7 @@
       "model": "deepseek/deepseek-v4-1-flash-1017",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
       "overrides": {
+        "speed": 4,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

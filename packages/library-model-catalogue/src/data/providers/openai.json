@@ -281,7 +281,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -395,7 +395,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -933,7 +933,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -1160,7 +1160,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
         "dataRetention": {
@@ -1249,7 +1249,7 @@
           "search",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1798,7 +1798,7 @@
           "document",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "April 23, 2026",
         "dataRetention": {

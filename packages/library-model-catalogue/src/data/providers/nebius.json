@@ -99,7 +99,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -438,6 +438,13 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -451,6 +458,15 @@
         "description": "NVIDIA vision-language reasoning model for coding, visual understanding, and agentic tool use",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -461,6 +477,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -469,6 +491,12 @@
       "matchingModel": "reflection/beam",
       "overrides": {
         "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "speed": 5,
         "lastUpdated": "October 16, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
@@ -482,6 +510,12 @@
             "max"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

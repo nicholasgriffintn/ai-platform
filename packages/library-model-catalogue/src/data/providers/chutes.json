@@ -35,7 +35,7 @@
         "description": "Advanced DeepSeek V3 model hosted on Chutes.",
         "contextWindow": 75000,
         "maxTokens": 163840,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "August 1, 2025",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00018,
@@ -104,7 +104,7 @@
       "overrides": {
         "description": "Qwen3 30B A3B model with reasoning support.",
         "maxTokens": 40960,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
@@ -135,7 +135,7 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008
@@ -237,7 +237,7 @@
         "name": "DeepSeek V3",
         "maxTokens": 163840,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -442,7 +442,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00002,

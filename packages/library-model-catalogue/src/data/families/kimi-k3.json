@@ -61,6 +61,7 @@
         "name": "Kimi K3.1 Pro",
         "openWeights": false,
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -71,6 +72,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -79,6 +88,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -86,8 +101,18 @@
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed",
         "openWeights": false,
-        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -313,6 +338,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -322,6 +355,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 55.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     }

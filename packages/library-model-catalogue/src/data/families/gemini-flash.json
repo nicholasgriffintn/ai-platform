@@ -134,7 +134,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1060,
+              "value": 1063,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -587,10 +587,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1274,
+              "value": 1279,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 15
+              "confidenceInterval95": 14
             }
           ]
         }
@@ -836,10 +836,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 984,
+              "value": 985,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -864,10 +864,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1125,
+              "value": 1140,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -898,10 +898,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1159,
+              "value": 1176,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 10
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -957,10 +957,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 984,
+              "value": 985,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }

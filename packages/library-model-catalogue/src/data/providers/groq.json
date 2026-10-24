@@ -169,7 +169,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "maxDays": 30,

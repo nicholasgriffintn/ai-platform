@@ -1468,6 +1468,7 @@
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
         "maxTokens": 32768,
+        "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01

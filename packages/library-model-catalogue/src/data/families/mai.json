@@ -86,10 +86,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1152,
+              "value": 1166,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -121,10 +121,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1108,
+              "value": 1119,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -147,7 +147,7 @@
           "transcription"
         ],
         "contextComplexity": 4,
-        "reliability": 5,
+        "reliability": 4,
         "releaseDate": "June 1, 2026",
         "supportsTemperature": true,
         "artificialAnalysis": {
@@ -159,7 +159,7 @@
             {
               "key": "aaWerIndex",
               "label": "Word Error Rate",
-              "value": 0,
+              "value": 0.024,
               "min": 0,
               "max": 1,
               "lowerIsBetter": true
@@ -198,7 +198,7 @@
             {
               "key": "aaWerIndex",
               "label": "Word Error Rate",
-              "value": 0,
+              "value": 0.02,
               "min": 0,
               "max": 1,
               "lowerIsBetter": true

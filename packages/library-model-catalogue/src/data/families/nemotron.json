@@ -212,6 +212,14 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
         "releaseDate": "October 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -220,6 +228,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -811,8 +825,15 @@
     "nvidia-nemotron-3-5-super-vl": {
       "defaults": {
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
+        "reliability": 1,
         "releaseDate": "October 15, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 26.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "nvidia-nemotron-3-5-super-vl-free": {

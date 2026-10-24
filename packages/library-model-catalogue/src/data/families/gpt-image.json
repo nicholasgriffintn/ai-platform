@@ -40,10 +40,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1011,
+              "value": 1013,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -74,10 +74,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1109,
+              "value": 1123,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -96,10 +96,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 920,
+              "value": 936,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 7
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -129,10 +129,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1172,
+              "value": 1186,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -163,10 +163,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1192,
+              "value": 1207,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 10
             }
           ]
         }
@@ -187,10 +187,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1199,
+              "value": 1222,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 10
             }
           ]
         }

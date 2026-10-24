@@ -509,7 +509,7 @@
           "document"
         ],
         "contextComplexity": 3,
-        "reliability": 5,
+        "reliability": 4,
         "releaseDate": "August 26, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
@@ -522,7 +522,7 @@
             {
               "key": "aaWerIndex",
               "label": "Word Error Rate",
-              "value": 0,
+              "value": 0.026,
               "min": 0,
               "max": 1,
               "lowerIsBetter": true

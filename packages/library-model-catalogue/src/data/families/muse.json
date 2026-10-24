@@ -167,10 +167,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1115,
+              "value": 1127,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 9
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -325,6 +325,8 @@
         "name": "Muse Spark Open",
         "openWeights": true,
         "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "contextComplexity": 5,
+        "reliability": 2,
         "knowledgeCutoffDate": "January 4, 2026",
         "releaseDate": "October 15, 2026",
         "reasoningConfig": {
@@ -335,6 +337,12 @@
             "xhigh"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 38.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },

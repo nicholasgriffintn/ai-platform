@@ -543,7 +543,7 @@
         "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 9.3,
           "codingIndex": 16.3,
           "agenticIndex": 0.6,
           "intelligenceIndexVersion": 4.3
@@ -615,7 +615,7 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.1,
+          "intelligenceIndex": 6.5,
           "codingIndex": 8.2,
           "agenticIndex": 0.5,
           "intelligenceIndexVersion": 4.3
@@ -688,7 +688,7 @@
         "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.1,
+          "intelligenceIndex": 6.5,
           "codingIndex": 8.2,
           "agenticIndex": 0.5,
           "intelligenceIndexVersion": 4.3
@@ -722,7 +722,7 @@
         "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.1,
+          "intelligenceIndex": 6.5,
           "codingIndex": 8.2,
           "agenticIndex": 0.5,
           "intelligenceIndexVersion": 4.3
@@ -998,7 +998,7 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 10,
+          "intelligenceIndex": 9.3,
           "codingIndex": 16.3,
           "agenticIndex": 0.6,
           "intelligenceIndexVersion": 4.3
@@ -1033,7 +1033,7 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.1,
+          "intelligenceIndex": 6.5,
           "codingIndex": 8.2,
           "agenticIndex": 0.5,
           "intelligenceIndexVersion": 4.3

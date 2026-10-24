@@ -83,7 +83,7 @@
       "model": "kimi-k2/kimi-k2-0905",
       "matchingModel": "kimi-k2-0905-preview",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -145,7 +145,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -230,7 +230,7 @@
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
-        "maxTokens": 1048576,
+        "speed": 3,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
@@ -240,17 +240,6 @@
       "model": "kimi-k3/kimi-k3-1-pro-highspeed",
       "matchingModel": "kimi-k3.1-pro-highspeed",
       "overrides": {
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02

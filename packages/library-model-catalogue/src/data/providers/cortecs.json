@@ -44,7 +44,7 @@
       "matchingModel": "claude-4-6-sonnet",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003196,
         "costPer1kOutputTokens": 0.01594,
@@ -211,7 +211,7 @@
         "name": "DeepSeek V3 0324",
         "contextWindow": 128000,
         "maxTokens": 128000,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "March 24, 2025",
         "costPer1kInputTokens": 0.000551,
@@ -567,7 +567,7 @@
           "document",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.000475,
         "costPer1kOutputTokens": 0.00297
@@ -825,7 +825,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262000,
         "maxTokens": 262000,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "July 25, 2025",
@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1533,7 +1533,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "name": "GPT 5",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -1577,7 +1577,7 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.000167,
@@ -1954,7 +1954,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "name": "GPT 5 Nano",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.000439,
@@ -2078,7 +2078,7 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -2730,6 +2730,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1000000,
         "contextComplexity": 5,
+        "speed": 3,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.000765,
         "costPer1kOutputTokens": 0.002351
@@ -2771,6 +2772,7 @@
             "text"
           ]
         },
+        "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.00225,
         "costPer1kOutputTokens": 0.011249,

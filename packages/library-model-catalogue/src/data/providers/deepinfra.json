@@ -10,7 +10,7 @@
       "model": "kimi/kimi-k2",
       "matchingModel": "moonshotai/Kimi-K2-Instruct",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002,
@@ -42,7 +42,7 @@
           "instruction",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "isFeatured": false,
         "releaseDate": "July 23, 2025",
         "lastUpdated": "July 23, 2025",
@@ -225,7 +225,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 16384,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00014,
@@ -429,7 +429,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0035
@@ -487,7 +487,7 @@
       "model": "deepinfra/xiaomi/mimo-v2.5/mimo-v2-5",
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002
@@ -500,7 +500,7 @@
       "model": "deepinfra/xiaomi/mimo-v2.5-pro/mimo-v2-5-pro",
       "matchingModel": "xiaomi/mimo-v2.5-pro",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003,
@@ -582,7 +582,7 @@
       "overrides": {
         "contextWindow": 524288,
         "maxTokens": 512000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.00028,
         "costPer1kOutputTokens": 0.0011
@@ -799,7 +799,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -915,7 +915,7 @@
       "model": "qwen/qwen3-30b-a3b",
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005,
@@ -1092,7 +1092,7 @@
       "model": "mimo/mimo-v2-6-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.6-Pro",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
@@ -1125,7 +1125,7 @@
       "model": "mistral-small/mistral-small-3",
       "matchingModel": "mistralai/Mistral-Small-24B-Instruct-2501",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 30, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00008,
@@ -1159,7 +1159,7 @@
       "model": "deepinfra/stepfun-ai/Step-5-Preview/step-5-preview",
       "matchingModel": "stepfun-ai/Step-5-Preview",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0027

@@ -32,7 +32,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "August 5, 2025",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
@@ -81,7 +81,7 @@
       "model": "deepseek/deepseek-v3-03-24",
       "matchingModel": "accounts/fireworks/models/deepseek-v3-0324",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "March 24, 2025",
         "costPer1kInputTokens": 0.0009,
         "costPer1kOutputTokens": 0.0009
@@ -219,7 +219,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003,
@@ -232,8 +232,8 @@
         }
       },
       "unset": [
-        "supportsResponseFormat",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/kimi-k2-thinking": {
@@ -299,7 +299,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 256000,
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0018
@@ -455,7 +455,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -879,6 +879,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -900,6 +906,12 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,

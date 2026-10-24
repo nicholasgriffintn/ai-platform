@@ -38,10 +38,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1085,
+              "value": 1086,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 12
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -92,10 +92,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1085,
+              "value": 1086,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 12
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -379,7 +379,7 @@
           "creative"
         ],
         "contextComplexity": 2,
-        "reliability": 4,
+        "reliability": 5,
         "releaseDate": "September 22, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -393,10 +393,10 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1248,
+              "value": 1251,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 14
+              "confidenceInterval95": 13
             }
           ]
         }
@@ -438,10 +438,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1096,
+              "value": 1107,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 8
+              "confidenceInterval95": 10
             }
           ]
         }

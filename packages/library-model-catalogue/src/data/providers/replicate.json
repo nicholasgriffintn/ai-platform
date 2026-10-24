@@ -1560,9 +1560,9 @@
         }
       },
       "unset": [
+        "maxTokens",
         "supportsToolCalls",
         "supportsTemperature",
-        "maxTokens",
         "releaseDate"
       ]
     },
@@ -1665,9 +1665,9 @@
         }
       },
       "unset": [
+        "maxTokens",
         "supportsToolCalls",
         "supportsTemperature",
-        "maxTokens",
         "contextComplexity",
         "releaseDate"
       ]
@@ -1789,9 +1789,9 @@
         }
       },
       "unset": [
+        "maxTokens",
         "supportsToolCalls",
         "supportsTemperature",
-        "maxTokens",
         "releaseDate"
       ]
     },
@@ -1881,9 +1881,9 @@
         }
       },
       "unset": [
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "replicate-flux-1.1-pro": {
@@ -1960,9 +1960,9 @@
       },
       "unset": [
         "reliability",
+        "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature",
-        "maxTokens"
+        "supportsTemperature"
       ]
     },
     "replicate-sd3.5large": {
@@ -2462,9 +2462,9 @@
         }
       },
       "unset": [
+        "openWeights",
         "supportsToolCalls",
         "supportsTemperature",
-        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -4438,9 +4438,9 @@
         }
       },
       "unset": [
+        "openWeights",
         "supportsToolCalls",
         "supportsTemperature",
-        "openWeights",
         "supportsResponseFormat"
       ]
     },
