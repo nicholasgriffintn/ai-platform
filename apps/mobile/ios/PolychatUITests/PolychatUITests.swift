@@ -13,7 +13,7 @@ final class PolychatUITests: XCTestCase {
         let didReachKnownState = waitForAnyElement(
             [
                 app.staticTexts["Polychat"],
-                app.navigationBars["Conversations"],
+                app.tabBars.buttons["Home"],
                 app.staticTexts["Loading Polychat..."]
             ],
             timeout: 10

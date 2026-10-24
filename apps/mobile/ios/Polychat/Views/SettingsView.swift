@@ -1,195 +1,185 @@
 import SwiftUI
-import UserNotifications
 
 struct SettingsView: View {
-    @EnvironmentObject var authManager: AuthenticationManager
-    @EnvironmentObject var modelsStore: ModelsStore
-    @EnvironmentObject var notificationManager: TaskNotificationManager
-    @EnvironmentObject var pushNotificationManager: PushNotificationManager
+    @EnvironmentObject private var authManager: AuthenticationManager
+    @EnvironmentObject private var modelsStore: ModelsStore
+    @EnvironmentObject private var notificationManager: TaskNotificationManager
+    @EnvironmentObject private var pushNotificationManager: PushNotificationManager
+    @EnvironmentObject private var discoverStore: DiscoverStore
+    @EnvironmentObject private var healthSync: HealthSyncController
+    @AppStorage("autoTitleGeneration") private var autoTitleGeneration = true
     @State private var showingModelSelector = false
-    @State private var autoTitleGeneration = true
-    @State private var showingPrivacyPolicy = false
-    @State private var showingTerms = false
-    @State private var showingHelp = false
-    
+    @State private var confirmingSignOut = false
+
     var body: some View {
         NavigationStack {
-            List {
-            Section(header: Text("Model Settings")) {
-                HStack {
-                    Text("Current Model")
-                    Spacer()
-                    Button(action: {
-                        showingModelSelector = true
-                    }) {
-                        HStack {
-                            if let selectedModel = modelsStore.getSelectedModel() {
-                                Text(selectedModel.name ?? selectedModel.id)
-                                    .foregroundColor(.blue)
-                            } else {
-                                Text("Select Model")
-                                    .foregroundColor(.blue)
-                            }
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
-                                .font(.caption)
-                        }
-                    }
-                }
-                
-                if let selectedModel = modelsStore.getSelectedModel() {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Provider: \(selectedModel.provider)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        if let strengths = selectedModel.strengths, !strengths.isEmpty {
-                            Text("Strengths: \(strengths.joined(separator: ", "))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            if selectedModel.supportsToolCalls == true {
-                                Text("Functions")
-                                    .font(.caption2)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.green.opacity(0.1))
-                                    .foregroundColor(.green)
-                                    .cornerRadius(4)
-                            }
-                            
-                            if selectedModel.multimodal == true {
-                                Text("Multimodal")
-                                    .font(.caption2)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.purple.opacity(0.1))
-                                    .foregroundColor(.purple)
-                                    .cornerRadius(4)
-                            }
-                        }
-                    }
-                }
+            Form {
+                accountSection
+                chatSection
+                discoverSection
+                notificationSection
+                aboutSection
             }
-            
-            Section(header: Text("Chat Settings")) {
-                Toggle("Auto-generate titles", isOn: $autoTitleGeneration)
-                    .onChange(of: autoTitleGeneration) { _, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "autoTitleGeneration")
-                    }
-            }
-
-            Section(header: Text("Task Notifications")) {
-                Toggle("Push notifications", isOn: notificationToggle)
-                    .disabled(pushNotificationManager.registrationState == .registering)
-
-                Text(notificationStatus)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                notificationCategoryToggle("Decisions and approvals", category: "decisions")
-                notificationCategoryToggle("Meaningful failures", category: "failures")
-                notificationCategoryToggle("Useful completions", category: "completions")
-                notificationCategoryToggle("New assignments", category: "assignments")
-            }
-            
-            Section(header: Text("Account")) {
-                if authManager.isAuthenticated {
-                    if let user = authManager.user {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(user.email)
-                                .font(.subheadline)
-                            if let name = user.name {
-                                Text(name)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    Button("Log Out", role: .destructive) {
-                        authManager.logout()
-                    }
-                } else {
-                    Button("Refresh Login") {
-						authManager.logout()
-                    }
-                }
-            }
-            
-            Section(header: Text("Legal")) {
-                Button(action: {
-                    showingPrivacyPolicy = true
-                }) {
-                    HStack {
-                        Text("Privacy Policy")
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                            .font(.caption)
-                    }
-                }
-
-                Button(action: {
-                    showingTerms = true
-                }) {
-                    HStack {
-                        Text("Terms of Service")
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                            .font(.caption)
-                    }
-                }
-
-                Button(action: {
-                    showingHelp = true
-                }) {
-                    HStack {
-                        Text("Help & Support")
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.gray)
-                            .font(.caption)
-                    }
-                }
-            }
-            
-            Section {
-                Text("Version 1.0.0")
-                    .foregroundColor(.gray)
-            }
-            }
+            .scrollContentBackground(.hidden)
+            .background(Color.polychat.background)
             .navigationTitle("Settings")
             .sheet(isPresented: $showingModelSelector) {
                 ModelSelectorView()
             }
-            .sheet(isPresented: $showingPrivacyPolicy) {
-                WebViewScreen(
-                    url: URL(string: "https://polychat.app/privacy")!,
-                    title: "Privacy Policy"
-                )
+            .confirmationDialog("Sign out of Polychat?", isPresented: $confirmingSignOut, titleVisibility: .visible) {
+                Button("Sign out", role: .destructive) {
+                    authManager.logout()
+                }
             }
-            .sheet(isPresented: $showingTerms) {
-                WebViewScreen(
-                    url: URL(string: "https://polychat.app/terms")!,
-                    title: "Terms of Service"
-                )
-            }
-            .sheet(isPresented: $showingHelp) {
-                WebViewScreen(
-                    url: URL(string: "https://nicholasgriffin.dev/contact")!,
-                    title: "Help & Support"
-                )
-            }
-            .onAppear {
-                autoTitleGeneration = UserDefaults.standard.object(forKey: "autoTitleGeneration") as? Bool ?? true
+            .task {
+                await notificationManager.refresh()
+                if discoverStore.discover == nil {
+                    await discoverStore.refresh()
+                }
             }
         }
+    }
+
+    private var accountSection: some View {
+        Section {
+            if let user = authManager.user {
+                HStack(spacing: 12) {
+                    Text(String((user.name ?? user.email).prefix(1)).uppercased())
+                        .font(.headline)
+                        .foregroundStyle(Color.polychat.primaryForeground)
+                        .frame(width: 40, height: 40)
+                        .background(Color.polychat.primary, in: Circle())
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(user.name ?? user.email)
+                            .font(.body.weight(.medium))
+                        if user.name != nil {
+                            Text(user.email)
+                                .font(.caption)
+                                .foregroundStyle(Color.polychat.textMuted)
+                        }
+                    }
+                }
+            }
+            Button("Sign out", role: .destructive) {
+                confirmingSignOut = true
+            }
+        }
+    }
+
+    private var chatSection: some View {
+        Section {
+            Button {
+                showingModelSelector = true
+            } label: {
+                HStack {
+                    Text("Default model")
+                        .foregroundStyle(Color.polychat.text)
+                    Spacer()
+                    Text(modelsStore.getSelectedModel()?.name ?? modelsStore.selectedModelTier?.capitalized ?? "Auto")
+                        .foregroundStyle(Color.polychat.textMuted)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.polychat.textMuted)
+                }
+            }
+            Toggle("Name new chats automatically", isOn: $autoTitleGeneration)
+        } header: {
+            Text("Chat")
+        }
+    }
+
+    private var discoverSection: some View {
+        Section {
+            Toggle(
+                "Daily editions",
+                isOn: Binding(
+                    get: { discoverStore.discover?.settings.enabled == true },
+                    set: { enabled in Task { await discoverStore.setEnabled(enabled) } }
+                )
+            )
+            .disabled(discoverStore.discover == nil)
+
+            if discoverStore.discover?.settings.enabled == true {
+                Toggle(
+                    "Evening edition",
+                    isOn: Binding(
+                        get: { discoverStore.discover?.settings.evening == true },
+                        set: { enabled in Task { await discoverStore.setPreference(DiscoverSettingsRequest(evening: enabled)) } }
+                    )
+                )
+                Toggle(
+                    "The Perch",
+                    isOn: Binding(
+                        get: { discoverStore.discover?.settings.listen == true },
+                        set: { enabled in Task { await discoverStore.setPreference(DiscoverSettingsRequest(listen: enabled)) } }
+                    )
+                )
+            }
+
+            if healthSync.isAvailable {
+                Toggle(
+                    "Apple Health",
+                    isOn: Binding(
+                        get: { healthSync.isEnabled },
+                        set: { enabled in Task { await healthSync.setEnabled(enabled) } }
+                    )
+                )
+                .disabled(healthSync.isWorking)
+
+                if let summary = healthSync.lastSummary {
+                    LabeledContent("Last shared", value: healthSummaryLine(summary))
+                        .font(.footnote)
+                }
+            }
+
+            if let error = healthSync.error ?? discoverStore.error {
+                Text(error)
+                    .font(.footnote)
+                    .foregroundStyle(Color.polychat.error)
+            }
+        } header: {
+            Text("Discover")
+        } footer: {
+            Text(healthSync.isAvailable
+                 ? "The evening edition arrives at 19:00 and looks at tomorrow. Apple Health shares yesterday's sleep, mindful and exercise minutes each morning for one line in your brief, and is never used to choose topics."
+                 : "Poly writes an edition each morning from what you've been working on, and a shorter one at 19:00 when the evening edition is on.")
+        }
+    }
+
+    private var notificationSection: some View {
+        Section {
+            Toggle("Push notifications", isOn: notificationToggle)
+                .disabled(pushNotificationManager.registrationState == .registering)
+            notificationCategoryToggle("Decisions and approvals", category: "decisions")
+            notificationCategoryToggle("Failures", category: "failures")
+            notificationCategoryToggle("Completions", category: "completions")
+            notificationCategoryToggle("New assignments", category: "assignments")
+        } header: {
+            Text("Notifications")
+        } footer: {
+            Text(notificationStatus)
+        }
+    }
+
+    private var aboutSection: some View {
+        Section {
+            Link("Privacy policy", destination: URL(string: "https://polychat.app/privacy")!)
+            Link("Terms of service", destination: URL(string: "https://polychat.app/terms")!)
+            Link("Open Polychat on the web", destination: URL(string: "https://polychat.app")!)
+            LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
+        } header: {
+            Text("About")
+        }
+    }
+
+    private func healthSummaryLine(_ summary: DiscoverHealthSummary) -> String {
+        let parts = [
+            summary.sleepMinutes.map { "\($0 / 60)h \($0 % 60)m sleep" },
+            summary.exerciseMinutes.map { "\($0)m exercise" },
+            summary.mindfulMinutes.map { "\($0)m mindful" }
+        ].compactMap { $0 }
+
+        return parts.isEmpty ? "No data for \(summary.date)" : parts.joined(separator: " · ")
     }
 
     private var notificationToggle: Binding<Bool> {
@@ -216,33 +206,32 @@ struct SettingsView: View {
 
     private var notificationStatus: String {
         if notificationManager.settings?.preferences.enabled != true {
-            return "Task notifications are disabled for this account."
+            return "Notifications are off for this account."
         }
 
         switch pushNotificationManager.permission {
         case .denied:
-            return "iOS permission is blocked. Allow notifications in Settings, then retry."
+            return "iOS is blocking notifications. Allow them for Polychat in the Settings app."
         case .notDetermined:
-            return "iOS has not asked for notification permission yet."
+            return "iOS hasn't asked for permission yet."
         default:
             break
         }
 
         switch pushNotificationManager.registrationState {
         case .registered:
-            return "iOS permission and server registration are active."
+            return "This iPhone gets approvals, questions and finished work as they happen."
         case .awaitingDeviceToken, .registering:
-            return "iOS permission is active. Waiting for server registration."
+            return "Registering this iPhone…"
         case .failed(let message):
-            return "iOS permission and server registration differ: \(message)"
+            return "Registration failed: \(message)"
         case .disabled:
-            return "This device is not registered for notifications."
+            return "This iPhone isn't registered for notifications."
         case .idle:
-            return "Enable notifications to register this device."
+            return "Turn on to get approvals and questions on this iPhone."
         }
     }
 
-    @ViewBuilder
     private func notificationCategoryToggle(_ label: String, category: String) -> some View {
         Toggle(
             label,
@@ -269,30 +258,4 @@ struct SettingsView: View {
         default: return false
         }
     }
-}
-
-#Preview {
-    let modelsStore = ModelsStore()
-    modelsStore.models = [
-        ModelConfigItem(
-            id: "gpt-4o",
-            name: "GPT-4o",
-            provider: "openai",
-            description: "Fast multimodal model for everyday work.",
-            strengths: ["Reasoning", "Vision", "Code"],
-            contextWindow: 128000,
-            pricing: nil,
-            modalities: nil,
-            supportsToolCalls: true,
-            multimodal: true,
-            isFeatured: true
-        )
-    ]
-    modelsStore.selectModel("gpt-4o")
-
-    return SettingsView()
-        .environmentObject(AuthenticationManager())
-        .environmentObject(modelsStore)
-        .environmentObject(TaskNotificationManager())
-        .environmentObject(PushNotificationManager.shared)
 }

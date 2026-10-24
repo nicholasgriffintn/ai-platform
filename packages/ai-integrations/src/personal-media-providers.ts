@@ -224,7 +224,7 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     id: "marquee",
     name: "Marquee",
     description:
-      "Read your Marquee shelf, what is on tonight and the week ahead, and search its film and television catalogue.",
+      "Read your Marquee shelf, what is on tonight and the week ahead, and search its film and television catalogue. Record what you have watched, are watching or want to watch with a rating out of five and your thoughts: find the title with search_catalogue, then save_to_shelf.",
     categories: [{ id: "video", name: "Film and TV" }],
     appUrl: "https://marquee.pashi.app",
     setupUrl: "/chat/plugins?connector=marquee",
@@ -295,11 +295,10 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
           type: "object",
           required: ["titleId"],
           properties: {
-            titleId: { type: "string" },
-            status: { type: "string" },
+            titleId: { type: "string", description: "A Marquee id such as movie:550." },
+            status: { type: "string", enum: ["watchlist", "watching", "watched", "dropped"] },
             rating: { type: "integer", minimum: 1, maximum: 5 },
             thoughts: { type: "string" },
-            confirm: { type: "boolean", description: "True applies the change." },
           },
         },
       },
@@ -312,7 +311,6 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
           properties: {
             name: { type: "string" },
             follow: { type: "boolean" },
-            confirm: { type: "boolean", description: "True applies the change." },
           },
         },
       },

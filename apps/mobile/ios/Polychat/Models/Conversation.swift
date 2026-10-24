@@ -14,8 +14,7 @@ struct Conversation: Identifiable, Equatable {
     var hasMoreMessages = false
     var oldestMessageId: String? = nil
     var isTemporary: Bool = false
-
-    static func == (lhs: Conversation, rhs: Conversation) -> Bool {
-        lhs.id == rhs.id
-    }
+    var projectId: String? = nil
+    var isPinned = false
+    var isUnread = false
 }

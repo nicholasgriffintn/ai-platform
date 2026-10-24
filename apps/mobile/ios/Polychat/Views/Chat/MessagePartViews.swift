@@ -1,26 +1,5 @@
 import SwiftUI
 
-struct ToolUsePartView: View {
-    let part: ChatMessagePart
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Tool call: \(part.name ?? "tool")")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Color.orange)
-            ScrollView(.horizontal) {
-                Text(part.input?.prettyString ?? "{}")
-                    .font(.system(.caption, design: .monospaced))
-                    .textSelection(.enabled)
-            }
-        }
-        .padding(12)
-        .background(Color.orange.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Color.orange.opacity(0.25), lineWidth: 1))
-    }
-}
-
 struct ToolResultPartView: View {
     let part: ChatMessagePart
 

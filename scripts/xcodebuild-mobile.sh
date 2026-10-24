@@ -53,7 +53,7 @@ case "$action" in
 		xcodebuild test -scheme "$scheme" -destination "$(simulator_destination)" -parallel-testing-enabled NO
 		;;
 	release)
-		xcodebuild -scheme "$scheme" -configuration Release build
+		xcodebuild -scheme "$scheme" -configuration Release -destination "generic/platform=iOS" -allowProvisioningUpdates build
 		;;
 	*)
 		echo "Unknown mobile action: $action" >&2

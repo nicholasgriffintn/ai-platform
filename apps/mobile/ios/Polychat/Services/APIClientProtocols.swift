@@ -10,21 +10,6 @@ extension ModelsAPIClient {
     func fetchMachines() async throws -> [MachineRecord] { [] }
 }
 
-protocol RecipesAPIClient {
-    func fetchAssistantRecipes() async throws -> AssistantRecipesResponse
-    func installAssistantRecipe(
-        id: String,
-        triggers: [RecipeInstallationTrigger]?,
-        configuration: RecipeConfiguration?
-    ) async throws -> AssistantRecipeInstallResponse
-}
-
-extension RecipesAPIClient {
-    func installAssistantRecipe(id: String) async throws -> AssistantRecipeInstallResponse {
-        try await installAssistantRecipe(id: id, triggers: nil, configuration: nil)
-    }
-}
-
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, after: String?, includeArchived: Bool) async throws -> ConversationListResponse
     func fetchConversation(
@@ -41,7 +26,8 @@ protocol ConversationAPIClient {
         idempotencyKey: String,
         modelTier: String?,
         computeSite: String,
-        agentTeammateId: String?
+        agentTeammateId: String?,
+        projectId: String?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func fetchResponseSnapshot(id: String) async throws -> ResponseSnapshot
     func fetchResponseEvents(id: String, after: Int, limit: Int) async throws -> ResponseReplayResponse
@@ -57,7 +43,13 @@ protocol ConversationAPIClient {
         approvalId: String,
         idempotencyKey: String,
         modelTier: String?,
-        computeSite: String
+        computeSite: String,
+        projectId: String?
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error>
+    func streamApprovalDecisions(
+        responseId: String,
+        decisions: [ToolApprovalDecision],
+        idempotencyKey: String
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func fetchProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskDetailResponse
     func answerProjectTaskQuestions(
@@ -73,7 +65,6 @@ protocol ConversationAPIClient {
         resolution: String
     ) async throws -> ProjectTaskResponse
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse
-    func reactToItem(conversationId: String, itemId: String, emoji: String, remove: Bool) async throws -> ItemReactionEnvelope
     func updateConversation(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?) async throws
     func deleteConversation(id: String) async throws
 }
@@ -141,4 +132,4 @@ protocol AgeGateAPIClient {
     func confirmAge(birthDate: String) async throws -> AgeGateResponse
 }
 
-extension APIClient: ModelsAPIClient, RecipesAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient, AgeGateAPIClient {}
+extension APIClient: ModelsAPIClient, ConversationAPIClient, TaskNotificationsAPIClient, OutputRevisionsAPIClient, WorkAPIClient, AgeGateAPIClient {}

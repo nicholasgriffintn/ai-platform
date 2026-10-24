@@ -419,7 +419,7 @@ export class ChatOrchestrator {
     }
 
     const continuedRequestOptions = approvalReplay
-      ? { ...prepared.requestOptions, toolInteraction: undefined }
+      ? { ...prepared.requestOptions, toolInteraction: undefined, toolInteractions: undefined }
       : prepared.requestOptions;
 
     if (approvalReplay) {
@@ -483,8 +483,8 @@ export class ChatOrchestrator {
       mode: currentMode,
       ...(approvalReplay
         ? {
-            initialToolCalls: [approvalReplay.toolCall],
-            initialToolResults: [approvalReplay.toolResult],
+            initialToolCalls: approvalReplay.toolCalls,
+            initialToolResults: approvalReplay.toolResults,
           }
         : {}),
       memoryScope: prepared.memoryScope,

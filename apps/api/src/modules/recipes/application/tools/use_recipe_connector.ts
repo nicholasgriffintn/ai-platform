@@ -238,6 +238,24 @@ export const use_recipe_connector: ApiToolDefinition = {
       };
     }
 
+    if (!operation && providerConfig && providerConfig.auth.authType !== "composio") {
+      return {
+        status: "success",
+        name: "use_recipe_connector",
+        content: `${providerConfig.name} operations are listed. Call again with an exact operation and schema-valid params.`,
+        data: {
+          provider,
+          operations: providerConfig.operations
+            .filter((candidate) => operationIsGranted(effectiveAllowedOperations, candidate.id))
+            .map((candidate) => ({
+              id: candidate.id,
+              access: candidate.access,
+              inputSchema: candidate.inputSchema ?? null,
+            })),
+        },
+      };
+    }
+
     if (!operation) {
       try {
         const discovery = await discoverRecipeConnectorTools({

@@ -310,17 +310,34 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
       ),
   },
   {
-    id: "youtube-uploads",
+    id: "youtube-subscriptions",
     providerId: "youtube",
     group: "watching",
     title: "YouTube",
-    description: "Reads the newest uploads on your own channel's feed.",
-    operation: "YOUTUBE_LIST_CHANNEL_VIDEOS",
-    parameters: () => ({ mine: true, maxResults: 10, part: "snippet" }),
+    description: "Reads the channels you subscribe to.",
+    operation: "YOUTUBE_LIST_USER_SUBSCRIPTIONS",
+    parameters: () => ({ part: "snippet", maxResults: 30 }),
+    digest: (result) =>
+      lines(items(result, ["data", "items"], ["items"]), (subscription) =>
+        joinParts(
+          first(subscription, ["snippet", "title"]),
+          first(subscription, ["snippet", "description"]).slice(0, 80),
+        ),
+      ),
+  },
+  {
+    id: "youtube-liked",
+    providerId: "youtube",
+    group: "watching",
+    title: "YouTube likes",
+    description: "Reads the videos you liked most recently.",
+    operation: "YOUTUBE_LIST_RATED_VIDEOS",
+    parameters: () => ({ part: "snippet", rating: "like", max_results: 15 }),
     digest: (result) =>
       lines(items(result, ["data", "items"], ["items"]), (video) =>
         joinParts(
           first(video, ["snippet", "title"]),
+          first(video, ["snippet", "channelTitle"]),
           first(video, ["snippet", "publishedAt"]).slice(0, 10),
         ),
       ),

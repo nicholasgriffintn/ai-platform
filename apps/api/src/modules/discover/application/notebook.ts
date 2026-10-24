@@ -24,6 +24,7 @@ export interface DiscoverSignalDocument {
   providerId: string;
   title: string;
   readAt: string | null;
+  attemptedAt: string | null;
   error: string | null;
   lines: string[];
 }
@@ -105,6 +106,7 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
         providerId: source.provider ?? "",
         title: source.title,
         readAt: stringOrNull(metadata.readAt),
+        attemptedAt: stringOrNull(metadata.attemptedAt),
         error: stringOrNull(metadata.error),
         lines: Array.isArray(metadata.lines)
           ? metadata.lines.filter((line): line is string => typeof line === "string")

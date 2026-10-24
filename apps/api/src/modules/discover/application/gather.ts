@@ -5,7 +5,6 @@ import {
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
-  DISCOVER_FRESH_HOURS,
   discoverInterestInferenceSchema,
   DISCOVER_GATHER_HOUR,
   DISCOVER_JOB_TASK_TYPE,
@@ -28,12 +27,14 @@ import { closeComposioConnectorRun } from "~/modules/connectors/application/comp
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
+import { isDiscoverGatherFresh } from "~/modules/discover/domain/freshness";
 import {
   chooseResearchTopics,
   describeInterestMaterial,
 } from "~/modules/discover/domain/interests";
 import { mergeResearchDocument } from "~/modules/discover/domain/research";
 import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
 import { findWebResults } from "~/modules/notebooks/application/research";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -116,32 +117,6 @@ export function curateTopics(curate: string): string[] {
     .map((line) => line.replace(/^[-*\d.)\s]+/u, "").trim())
     .filter((line) => line.length > 2 && line.length <= 120)
     .slice(0, CURATE_TOPIC_LIMIT);
-}
-
-function isFresh(readAt: string | null, now: number): boolean {
-  return (
-    readAt !== null &&
-    Number.isFinite(Date.parse(readAt)) &&
-    now - Date.parse(readAt) < DISCOVER_FRESH_HOURS * 60 * 60 * 1000
-  );
-}
-
-export function isDiscoverGatherFresh(
-  documents: DiscoverDocuments,
-  topics: readonly string[],
-  now: number,
-): boolean {
-  const researched = new Set(
-    documents.research
-      .filter((document) => isFresh(document.readAt, now))
-      .map((document) => discoverTopicKey(document.topic)),
-  );
-  const topicsFresh = topics.every((topic) => researched.has(discoverTopicKey(topic)));
-  const signalsFresh =
-    documents.signals.length === 0 ||
-    documents.signals.some((document) => isFresh(document.readAt, now));
-
-  return topicsFresh && signalsFresh;
 }
 
 async function signalSourceId(userId: number, signalId: string): Promise<string> {
@@ -227,7 +202,13 @@ async function readSignal(
       kind: "connector",
       title: signal.title,
       provider: signal.providerId,
-      content: truncateForModel(JSON.stringify(result, null, 1) ?? "", SIGNAL_CONTENT_LIMIT),
+      content: renderSignalDocument({
+        title: signal.title,
+        readAt,
+        lines,
+        error: null,
+        raw: truncateForModel(JSON.stringify(result, null, 1) ?? "", SIGNAL_CONTENT_LIMIT),
+      }),
       metadata: {
         [DISCOVER_SIGNAL_METADATA_KEY]: signal.id,
         providerId: signal.providerId,
@@ -245,16 +226,27 @@ async function readSignal(
       signal: signal.id,
       error_message: message,
     });
+    const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
+
     await upsertDocument(context, notebookId, {
       id: sourceId,
       kind: "connector",
       title: signal.title,
       provider: signal.providerId,
-      content: undefined,
+      content: existing?.content
+        ? undefined
+        : renderSignalDocument({
+            title: signal.title,
+            readAt: null,
+            lines: [],
+            error: message,
+            raw: null,
+          }),
       metadata: {
         [DISCOVER_SIGNAL_METADATA_KEY]: signal.id,
         providerId: signal.providerId,
         readAt: null,
+        attemptedAt: readAt,
         error: message.slice(0, 200),
         lines: [],
       },
@@ -424,10 +416,21 @@ export async function ensureDiscoverGathered(
 ): Promise<DiscoverDocuments> {
   const user = context.requireUser();
   const settings = await readDiscoverRoutine(context);
-  const topics = await listDiscoverTopics(context, settings.curate);
-  const documents = await listDiscoverDocuments(context, user.id);
+  const [topics, documents, { selected }] = await Promise.all([
+    listDiscoverTopics(context, settings.curate),
+    listDiscoverDocuments(context, user.id),
+    resolveDiscoverSignals(context, settings),
+  ]);
 
-  if (isDiscoverGatherFresh(documents, topics, now.getTime())) {
+  if (
+    isDiscoverGatherFresh({
+      signals: documents.signals,
+      research: documents.research,
+      topics,
+      expectedSignals: selected.length,
+      now: now.getTime(),
+    })
+  ) {
     return documents;
   }
 

@@ -32,6 +32,7 @@ export function buildUserMessageData(
   const conversationMode = buildConversationModeMetadataFromRequestOptions(options);
   const codingTaskType = options?.sandbox?.enabled ? options.sandbox.taskType : undefined;
   const toolInteraction = options?.toolInteraction;
+  const toolInteractions = options?.toolInteractions;
 
   if (!conversationMode && !codingTaskType && !toolInteraction) {
     return undefined;
@@ -41,6 +42,7 @@ export function buildUserMessageData(
     ...(conversationMode ? { conversationMode } : {}),
     ...(codingTaskType ? { codingTaskType } : {}),
     ...(toolInteraction ? { toolInteraction } : {}),
+    ...(toolInteractions ? { toolInteractions } : {}),
   };
 }
 

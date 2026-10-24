@@ -29,7 +29,7 @@ struct ReasoningSectionView: View {
                         content: reasoning.content,
                         isUser: false,
                         font: .caption,
-                        foregroundColor: Color(light: Color.polychat.zinc500, dark: Color.polychat.zinc400),
+                        foregroundColor: Color.polychat.textMuted,
                         lineSpacing: 3,
                         paragraphSpacing: 8,
                         splitsSingleNewlinesIntoParagraphs: true

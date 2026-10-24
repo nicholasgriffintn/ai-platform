@@ -155,6 +155,73 @@ export function collectApprovalToolCallIds(messages: readonly Message[]): Set<st
   return toolCallIds;
 }
 
+export interface PendingApproval {
+  interactionId: string;
+  toolName: string;
+  approvalRequired: boolean;
+  runId?: string;
+}
+
+function readPendingApproval(
+  data: unknown,
+  status: string | undefined,
+  runId: string | undefined,
+): PendingApproval | null {
+  if (status !== "pending" || !isRecord(data) || !isApprovalRequestData(data) || data.resolved) {
+    return null;
+  }
+
+  const approval = isRecord(data.approval) ? data.approval : undefined;
+  const interactionId = approval?.interactionId;
+  const toolName = approval?.toolName;
+
+  if (typeof interactionId !== "string" || typeof toolName !== "string") {
+    return null;
+  }
+
+  if (data.approvalRequired !== true && toolName !== "request_approval") {
+    return null;
+  }
+
+  return {
+    interactionId,
+    toolName,
+    approvalRequired: data.approvalRequired === true,
+    ...(runId ? { runId } : {}),
+  };
+}
+
+export function collectPendingApprovals(messages: readonly Message[]): PendingApproval[] {
+  const pending = new Map<string, PendingApproval>();
+
+  for (const message of messages) {
+    const direct =
+      message.role === "tool"
+        ? readPendingApproval(message.data, message.status, message.run_id)
+        : null;
+
+    if (direct) {
+      pending.set(direct.interactionId, direct);
+    }
+
+    for (const part of message.parts ?? []) {
+      const fromPart =
+        part.type === "tool_result"
+          ? readPendingApproval(part.data, part.status, message.run_id)
+          : null;
+
+      if (fromPart && !pending.has(fromPart.interactionId)) {
+        pending.set(fromPart.interactionId, fromPart);
+      }
+    }
+  }
+
+  const approvals = [...pending.values()];
+  const latestRunId = approvals.at(-1)?.runId;
+
+  return latestRunId ? approvals.filter((approval) => approval.runId === latestRunId) : approvals;
+}
+
 export function collectApprovalToolResponseContents(messages: readonly Message[]): Set<string> {
   const contents = new Set<string>();
 

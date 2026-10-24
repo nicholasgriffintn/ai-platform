@@ -43,24 +43,6 @@ struct PolyAgenda: Decodable, Equatable {
     }
 }
 
-struct PolyPauseRequest: Encodable {
-    let pausedUntil: String?
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(pausedUntil, forKey: .pausedUntil)
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case pausedUntil
-    }
-}
-
-struct PolyLookAroundRequest: Encodable {
-    let enabled: Bool
-    let timezone: String
-}
-
 struct PolyContextResponse: Decodable {
     let id: String
 }

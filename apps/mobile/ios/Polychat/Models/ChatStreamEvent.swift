@@ -14,7 +14,15 @@ enum ChatStreamEvent: Equatable {
     case turnActivity(ChatTurnActivityEvent)
     case usageLimits(ChatUsageLimits)
     case metadata(ChatStreamMetadata)
+    case assistantStarted(ChatStreamAssistantStart)
+    case messageStop
+    case toolOutputsDone
     case done
+}
+
+struct ChatStreamAssistantStart: Equatable {
+    let messageId: String?
+    let model: String?
 }
 
 enum ChatTurnActivityEvent: Equatable {

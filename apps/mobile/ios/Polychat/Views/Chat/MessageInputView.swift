@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct MessageInputView: View {
     @Binding var messageText: String
     @Binding var selectedAttachments: [ComposerAttachment]
@@ -6,182 +7,123 @@ struct MessageInputView: View {
     let isUploadingAttachments: Bool
     let isRecordingVoice: Bool
     let isTranscribingVoice: Bool
-    let uploadError: String?
-    let voiceError: String?
+    let notice: String?
     let activeModelName: String
     let activeModelProvider: String?
-    let isTemporaryConversation: Bool
-    let modelReadinessMessage: String?
     let isRunActive: Bool
     let isCancellationPending: Bool
     let onFilesPicked: ([PickedComposerFile]) -> Void
     let onVoiceTapped: () -> Void
     let onModelTapped: () -> Void
-    let onSettingsTapped: () -> Void
     let onStopRun: () -> Void
     let sendMessage: () -> Void
 
+    private var hasContent: Bool {
+        !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty
+    }
+
     private var canSend: Bool {
-        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments && !isRunActive
+        hasContent && !isUploadingAttachments && !isRunActive
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if !selectedAttachments.isEmpty || isUploadingAttachments {
-                SelectedAttachmentsView(
-                    attachments: selectedAttachments,
-                    isUploading: isUploadingAttachments
-                ) { attachmentId in
-                    selectedAttachments.removeAll { $0.id == attachmentId }
+        VStack(spacing: 8) {
+            if let notice {
+                Text(notice)
+                    .font(.caption)
+                    .foregroundStyle(Color.polychat.error)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                if !selectedAttachments.isEmpty || isUploadingAttachments {
+                    SelectedAttachmentsView(
+                        attachments: selectedAttachments,
+                        isUploading: isUploadingAttachments
+                    ) { attachmentId in
+                        selectedAttachments.removeAll { $0.id == attachmentId }
+                    }
                 }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
 
-            if let inputError = uploadError ?? voiceError {
-                Text(inputError)
-                    .font(.caption)
-                    .foregroundStyle(Color.polychat.error)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-            }
-
-            if let modelReadinessMessage {
-                Text(modelReadinessMessage)
-                    .font(.caption)
-                    .foregroundStyle(Color.polychat.error)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-            }
-
-            VStack(spacing: 0) {
-                TextField("Ask me anything...", text: $messageText, axis: .vertical)
+                TextField(isRecordingVoice ? "Listening…" : "Message Polychat", text: $messageText, axis: .vertical)
                     .focused(inputFocus)
                     .textFieldStyle(.plain)
                     .font(.body)
-                    .lineLimit(1...4)
-                    .frame(minHeight: 30, alignment: .topLeading)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
-                    .onSubmit {
-                        if canSend {
-                            sendMessage()
-                        }
-                    }
+                    .lineLimit(1...6)
+                    .padding(.horizontal, 4)
+                    .padding(.top, 4)
 
-                Rectangle()
-                    .fill(Color.polychat.border)
-                    .frame(height: 1)
-
-                HStack(spacing: 10) {
+                HStack(spacing: 6) {
                     AttachmentPickerView(disabled: isUploadingAttachments, onFilesPicked: onFilesPicked)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(Color.polychat.textMuted)
+                        .frame(width: 32, height: 32)
 
                     Button(action: onModelTapped) {
-                        HStack(spacing: 6) {
-                            ModelIconView(
-                                modelName: activeModelName,
-                                provider: activeModelProvider,
-                                size: 18
-                            )
-
+                        HStack(spacing: 5) {
+                            ModelIconView(modelName: activeModelName, provider: activeModelProvider, size: 16)
                             Text(activeModelName)
-                                .font(.subheadline.weight(.medium))
+                                .font(.footnote.weight(.medium))
                                 .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(maxWidth: 150, alignment: .leading)
                             Image(systemName: "chevron.down")
-                                .font(.caption.weight(.semibold))
+                                .font(.caption2.weight(.semibold))
                         }
-                        .foregroundColor(.primary)
+                        .foregroundStyle(Color.polychat.text)
                         .padding(.horizontal, 10)
-                        .frame(height: 34)
-                        .background(Color.polychat.elevatedBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .frame(height: 30)
+                        .background(Color.polychat.surfaceElevated, in: Capsule())
                     }
                     .buttonStyle(.plain)
                     .disabled(isRunActive)
-                    .accessibilityLabel("Select model")
-
-                    if isTemporaryConversation {
-                        Label("Session only", systemImage: "theatermasks")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 8)
-                            .frame(height: 34)
-                            .background(Color.polychat.elevatedBackground)
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            .accessibilityLabel("Temporary conversation, kept for this session only")
-                    }
-
-                    Button(action: onSettingsTapped) {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .frame(width: 34, height: 34)
-                    }
-                    .accessibilityLabel("Chat settings")
+                    .accessibilityLabel("Model: \(activeModelName)")
 
                     Spacer(minLength: 4)
 
                     Button(action: onVoiceTapped) {
-                        Image(systemName: voiceButtonIcon)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(isRecordingVoice ? .white : .secondary)
-                            .frame(width: 34, height: 34)
-                            .background(isRecordingVoice ? Color.red : Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        Image(systemName: isRecordingVoice ? "stop.fill" : isTranscribingVoice ? "waveform" : "mic")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(isRecordingVoice ? Color.white : Color.polychat.textMuted)
+                            .frame(width: 32, height: 32)
+                            .background(isRecordingVoice ? Color.polychat.error : Color.clear, in: Circle())
                     }
                     .disabled(isTranscribingVoice)
+                    .accessibilityLabel(isRecordingVoice ? "Stop dictation" : "Dictate")
 
-                    if isRunActive {
+                    if isRunActive && !hasContent {
                         Button(action: onStopRun) {
                             Image(systemName: isCancellationPending ? "hourglass" : "stop.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color.polychat.prominentControlForeground)
-                                .frame(width: 38, height: 38)
-                                .background(Color.polychat.prominentControlBackground)
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(Color.polychat.primaryForeground)
+                                .frame(width: 32, height: 32)
+                                .background(Color.polychat.text, in: Circle())
                         }
                         .disabled(isCancellationPending)
-                        .accessibilityLabel(isCancellationPending ? "Stop requested" : "Stop task")
+                        .accessibilityLabel(isCancellationPending ? "Stop requested" : "Stop")
                     } else {
                         Button(action: sendMessage) {
-                            Image(systemName: "paperplane.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Color.polychat.prominentControlForeground)
-                                .frame(width: 38, height: 38)
-                                .background(canSend ? Color.polychat.prominentControlBackground : Color.polychat.zinc500.opacity(0.55))
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(Color.polychat.primaryForeground)
+                                .frame(width: 32, height: 32)
+                                .background(canSend ? Color.polychat.primary : Color.polychat.borderStrong.opacity(0.5), in: Circle())
                         }
                         .disabled(!canSend)
+                        .accessibilityLabel("Send")
                     }
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
             }
-            .background(Color.polychat.composerBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(10)
+            .background(Color.polychat.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(inputFocus.wrappedValue ? Color.polychat.zinc500 : Color.polychat.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(inputFocus.wrappedValue ? Color.polychat.borderStrong : Color.polychat.border, lineWidth: 1)
             )
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .frame(maxWidth: 900)
         }
+        .padding(.horizontal, 12)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+        .frame(maxWidth: 760)
         .frame(maxWidth: .infinity)
         .background(Color.polychat.background)
-    }
-
-    private var voiceButtonIcon: String {
-        if isRecordingVoice {
-            return "stop.fill"
-        }
-        if isTranscribingVoice {
-            return "waveform"
-        }
-        return "mic"
     }
 }

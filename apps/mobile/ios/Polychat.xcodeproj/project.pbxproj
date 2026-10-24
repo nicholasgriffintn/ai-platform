@@ -11,13 +11,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		7A11000C2F00000000000001 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6433D1E42E1F37C6000E4A43 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7A1100052F00000000000001;
-			remoteInfo = PolychatWidgets;
-		};
 		6433D1FE2E1F37C7000E4A43 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 6433D1E42E1F37C6000E4A43 /* Project object */;
@@ -31,6 +24,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 6433D1EB2E1F37C6000E4A43;
 			remoteInfo = Polychat;
+		};
+		7A11000C2F00000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6433D1E42E1F37C6000E4A43 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A1100052F00000000000001;
+			remoteInfo = PolychatWidgets;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -664,6 +664,7 @@
 		7A11000A2F00000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = PolychatWidgets/PolychatWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JA9F67V6P5;
@@ -693,6 +694,7 @@
 		7A11000B2F00000000000001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = PolychatWidgets/PolychatWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JA9F67V6P5;

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { Message } from "./conversation-types.js";
 import {
   applyToolInteractionResolutions,
+  collectPendingApprovals,
   COMPUTER_OBSERVATION_RENDERER,
   getComputerObservations,
   getResolvedToolUseIndexes,
@@ -222,6 +223,75 @@ describe("applyToolInteractionResolutions", () => {
       ],
     });
     expect(messages[0].status).toBe("pending");
+  });
+});
+
+function pendingApproval(callId: string, runId: string): Message {
+  return {
+    id: `tool-${callId}`,
+    role: "tool",
+    name: "send_email",
+    content: "Send it?",
+    status: "pending",
+    run_id: runId,
+    tool_call_id: callId,
+    data: {
+      renderer: "approval_request",
+      approvalRequired: true,
+      approval: { interactionId: callId, toolName: "send_email" },
+    },
+  };
+}
+
+describe("collectPendingApprovals", () => {
+  it("gathers the open approvals of the latest run only", () => {
+    const pending = collectPendingApprovals([
+      pendingApproval("old", "run-0"),
+      pendingApproval("call-1", "run-1"),
+      pendingApproval("call-2", "run-1"),
+      { ...pendingApproval("call-3", "run-1"), status: "success" },
+    ]);
+
+    expect(pending.map((approval) => approval.interactionId)).toEqual(["call-1", "call-2"]);
+  });
+});
+
+describe("applyToolInteractionResolutions with a batch", () => {
+  it("resolves each same-tool approval by its interaction id", () => {
+    const resolution = (callId: string, value: string) => ({
+      toolName: "send_email",
+      response: { interactionId: callId, resolution: value },
+    });
+    const projected = applyToolInteractionResolutions([
+      pendingApproval("call-1", "run-1"),
+      pendingApproval("call-2", "run-1"),
+      {
+        id: "user-1",
+        role: "user",
+        content: "",
+        data: {
+          toolInteraction: resolution("call-1", "approved"),
+          toolInteractions: [resolution("call-1", "approved"), resolution("call-2", "rejected")],
+        },
+      },
+    ]);
+
+    expect(projected.slice(0, 2).map((message) => message.status)).toEqual([
+      "completed",
+      "completed",
+    ]);
+    expect(
+      projected
+        .slice(0, 2)
+        .map((message) =>
+          typeof message.data === "object" && message.data && "resolution" in message.data
+            ? message.data.resolution
+            : null,
+        ),
+    ).toEqual([
+      resolution("call-1", "approved").response,
+      resolution("call-2", "rejected").response,
+    ]);
   });
 });
 

@@ -14,4 +14,5 @@ export const API_LOCAL_HOST = "localhost:8787";
 export const API_PROD_HOST = "api.polychat.app";
 
 export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1_000;
+export const AUTH_SESSION_RENEWAL_INTERVAL_MS = 24 * 60 * 60 * 1_000;
 export const MAGIC_LINK_EXPIRATION_MINUTES = 15;

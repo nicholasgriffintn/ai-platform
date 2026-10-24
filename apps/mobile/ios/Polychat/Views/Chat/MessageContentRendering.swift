@@ -57,14 +57,14 @@ private struct MessagePartsView: View {
                 switch part.type {
                 case "text":
                     if let text = part.text {
-                        TextContentSection(role: message.role, text: text, reasoning: nil, citations: nil, data: nil)
+                        TextContentSection(role: message.role, text: text, reasoning: nil, citations: nil, data: nil, isStreaming: message.status == "in_progress")
                     }
                 case "reasoning":
                     if let text = part.text {
                         ReasoningSectionView(reasoning: ChatReasoning(collapsed: part.collapsed ?? true, content: text))
                     }
                 case "tool_use":
-                    ToolUsePartView(part: part)
+                    EmptyView()
                 case "tool_result":
                     ToolResultPartView(part: part)
                 case "snapshot":
@@ -106,7 +106,8 @@ private struct MessageContentBlocksView: View {
                     text: text,
                     reasoning: message.reasoning ?? (thinkingContent.isEmpty ? nil : ChatReasoning(collapsed: true, content: thinkingContent)),
                     citations: message.citations,
-                    data: message.data
+                    data: message.data,
+                    isStreaming: message.status == "in_progress"
                 )
             case .multimodal(let blocks):
                 ForEach(Array(blocks.enumerated()), id: \.offset) { index, block in
@@ -117,7 +118,8 @@ private struct MessageContentBlocksView: View {
                             text: text.text,
                             reasoning: message.reasoning ?? (thinkingContent.isEmpty ? nil : ChatReasoning(collapsed: true, content: thinkingContent)),
                             citations: message.citations,
-                            data: message.data
+                            data: message.data,
+                            isStreaming: false
                         )
                     case .imageUrl(let image):
                         RemoteImageView(urlString: image.imageUrl.url)
@@ -153,6 +155,7 @@ private struct TextContentSection: View {
     let reasoning: ChatReasoning?
     let citations: [ChatCitation]?
     let data: ChatMessageData?
+    let isStreaming: Bool
 
     private var formatted: FormattedMessageContent {
         MessageFormatting.formattedMessageContent(role: role, originalContent: text)
@@ -182,7 +185,7 @@ private struct TextContentSection: View {
             if role == "tool" {
                 BoundedToolOutputView(content: text)
             } else {
-                ArtifactSplitContentView(formatted: formatted, isUser: role == "user")
+                ArtifactSplitContentView(formatted: formatted, isUser: role == "user", isStreaming: isStreaming)
             }
 
             if let data {
@@ -195,6 +198,7 @@ private struct TextContentSection: View {
 private struct ArtifactSplitContentView: View {
     let formatted: FormattedMessageContent
     let isUser: Bool
+    let isStreaming: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -202,7 +206,7 @@ private struct ArtifactSplitContentView: View {
                 switch segment {
                 case .text(let text):
                     if !text.isEmpty {
-                        MarkdownText(content: MessageFormatting.processCustomXmlTags(text), isUser: isUser)
+                        MarkdownText(content: MessageFormatting.processCustomXmlTags(text), isUser: isUser, isStreaming: isStreaming)
                     }
                 case .artifact(let artifact):
                     InlineArtifactCalloutView(artifact: artifact)

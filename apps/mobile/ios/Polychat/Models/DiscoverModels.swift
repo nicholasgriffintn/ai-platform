@@ -4,6 +4,9 @@ struct DiscoverSettings: Decodable, Equatable {
     let enabled: Bool
     let timezone: String?
     let curate: String
+    let listen: Bool?
+    let evening: Bool?
+    let episode: String?
 }
 
 struct DiscoverFollow: Decodable, Equatable, Identifiable {
@@ -45,12 +48,41 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     let summary: String?
     let detail: String?
     let when: String?
+    let `where`: String?
     let question: String?
     let href: String?
     let reason: String
     let coverId: String?
 
     var headline: String { question ?? title ?? "" }
+
+    var section: DiscoverSection {
+        switch kind {
+        case "topic": return .topics
+        case "event": return .comingUp
+        case "read", "inbox": return .reading
+        case "watch", "listen": return .watching
+        default: return .forYou
+        }
+    }
+
+    var systemImage: String {
+        switch kind {
+        case "read": return "doc.text"
+        case "watch": return "play.rectangle"
+        case "listen": return "headphones"
+        case "event": return "calendar"
+        case "inbox": return "envelope"
+        case "action": return "bolt"
+        case "check_in": return "bubble.left.and.text.bubble.right"
+        case "resurface": return "arrow.uturn.backward"
+        default: return "sparkles"
+        }
+    }
+
+    var externalURL: URL? {
+        (url ?? href).flatMap(URL.init(string:)).flatMap { $0.scheme?.hasPrefix("http") == true ? $0 : nil }
+    }
 
     var body: String? { angle ?? summary ?? detail }
 
@@ -66,20 +98,50 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     }
 }
 
+enum DiscoverSection: CaseIterable {
+    case topics
+    case forYou
+    case comingUp
+    case reading
+    case watching
+
+    var title: String {
+        switch self {
+        case .topics: return "Worth a look"
+        case .forYou: return "For you"
+        case .comingUp: return "Coming up"
+        case .reading: return "Reading"
+        case .watching: return "Watching and listening"
+        }
+    }
+}
+
+struct DiscoverInterest: Decodable, Equatable {
+    let topic: String
+    let reason: String
+}
+
 struct DiscoverEdition: Decodable, Equatable {
     let id: String
     let date: String
     let greeting: String
+    let interests: [DiscoverInterest]?
     let brief: [DiscoverBriefLine]
     let cards: [DiscoverCard]
     let feedback: [String: [String]]
     let listenSourceId: String?
+    let weekSourceId: String?
+    let edition: String?
+    let episodeId: String?
+    let episodeOverBudget: Bool?
+    let episodeFailed: Bool?
 }
 
 struct DiscoverResponse: Decodable, Equatable {
     let settings: DiscoverSettings
     let edition: DiscoverEdition?
     let follows: [DiscoverFollow]
+    let windDownId: String?
 }
 
 struct DiscoverRefreshResponse: Decodable {
@@ -99,6 +161,121 @@ struct DiscoverFeedbackResponse: Decodable {
 }
 
 struct DiscoverSettingsRequest: Encodable {
-    let enabled: Bool
-    let timezone: String?
+    var enabled: Bool?
+    var timezone: String?
+    var listen: Bool?
+    var evening: Bool?
+}
+
+enum DiscoverMediaItem: String, Identifiable, CaseIterable {
+    case episode
+    case perch
+    case week
+    case windDown
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .episode: return "Today's episode"
+        case .perch: return "The Perch"
+        case .week: return "Your week"
+        case .windDown: return "Wind down"
+        }
+    }
+}
+
+struct DiscoverMediaState: Equatable {
+    var title: String
+    var status: String
+    var isReady: Bool
+    var coverKey: String?
+    var isWorking = false
+}
+
+struct DiscoverEpisode: Decodable, Equatable {
+    struct Shot: Decodable, Equatable {
+        let image: Bool
+    }
+
+    struct Scene: Decodable, Equatable {
+        let title: String
+        let caption: String?
+        let shots: [Shot]
+    }
+
+    struct Timing: Decodable, Equatable {
+        let start: Double
+        let end: Double
+    }
+
+    struct Chapter: Decodable, Equatable {
+        let title: String
+        let scenes: [Scene]
+        let status: String
+        let timings: [Timing]
+
+        var isReady: Bool { status == "ready" }
+
+        func shot(at seconds: Double) -> (scene: Int, shot: Int) {
+            let current = timings.firstIndex { seconds < $0.end }
+            let sceneIndex = current ?? max(0, timings.count - 1)
+            guard scenes.indices.contains(sceneIndex), timings.indices.contains(sceneIndex) else {
+                return (0, 0)
+            }
+            let timing = timings[sceneIndex]
+            let shots = max(1, scenes[sceneIndex].shots.count)
+            let shotSeconds = max(1, (timing.end - timing.start) / Double(shots))
+            let shot = min(shots - 1, max(0, Int((seconds - timing.start) / shotSeconds)))
+            return (sceneIndex, shot)
+        }
+    }
+
+    let id: String
+    let title: String
+    let recap: String
+    let topic: String
+    let part: Int
+    let parts: Int
+    let chapters: [Chapter]
+}
+
+struct DiscoverWindDown: Decodable, Equatable {
+    struct Step: Decodable, Equatable {
+        let text: String
+        let pauseSeconds: Int
+        let audio: Bool
+    }
+
+    let id: String
+    let kind: String
+    let minutes: Int
+    let title: String
+    let steps: [Step]
+    let status: String
+    let ambient: Bool?
+
+    var isReady: Bool { steps.first?.audio == true }
+}
+
+struct DiscoverWindDownRequest: Encodable {
+    let kind: String
+    let minutes: Int
+}
+
+struct DiscoverListenResponse: Decodable {
+    let sourceId: String
+}
+
+struct MediaSource: Decodable, Equatable {
+    struct File: Decodable, Equatable {
+        let mimeType: String?
+    }
+
+    let id: String
+    let title: String
+    let status: String
+    let file: File?
+
+    var isPlayable: Bool { status == "available" && file != nil }
 }

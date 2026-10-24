@@ -1,4 +1,7 @@
-import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "@ngriffin_uk/polychat-ai-integrations";
+import {
+  COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN,
+  getConnectorProviderConfig,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   recipeConnectorProviderSchema,
@@ -7,19 +10,32 @@ import {
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
+function describeProviders(providers: readonly RecipeConnectorProvider[]): string {
+  return providers
+    .map((provider) => {
+      const config = getConnectorProviderConfig(provider);
+
+      return config ? `${provider}: ${config.description}` : provider;
+    })
+    .join("\n");
+}
+
 export function createUseRecipeConnectorInputSchema(
-  providers: readonly RecipeConnectorProvider[] = recipeConnectorProviderSchema.options,
+  providers?: readonly RecipeConnectorProvider[],
 ) {
+  const connected = providers ?? recipeConnectorProviderSchema.options;
+  const summary =
+    connected.length === 1
+      ? `Use the connected provider: ${connected[0]}.`
+      : "The connected provider to use.";
+
   return jsonSchemaToZod({
     type: "object",
     properties: {
       provider: {
         type: "string",
-        enum: [...providers],
-        description:
-          providers.length === 1
-            ? `Use the connected provider: ${providers[0]}.`
-            : "The connected provider to use.",
+        enum: [...connected],
+        description: providers ? `${summary}\n${describeProviders(providers)}` : summary,
       },
       operation: {
         type: "string",
@@ -51,7 +67,7 @@ export const use_recipe_connector: FunctionToolDescriptor = {
   name: "use_recipe_connector",
   maxIdenticalCalls: 2,
   description:
-    "Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
+    "Discover and use the exact tools available from a connector. Start with useCase to receive the operations and their schemas (and, for Composio connectors, a sessionId), then call again with an exact operation, its params, and that sessionId where one was given. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
   type: "premium",
   permissions: ["network", "read", "write"],
   effects: {

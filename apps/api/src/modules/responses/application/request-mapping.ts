@@ -24,6 +24,7 @@ export interface ResponseCommandMappingOptions {
 interface MappedInput {
   messages: CommandMessages;
   toolInteraction?: CommandOptions["toolInteraction"];
+  toolInteractions?: CommandOptions["toolInteractions"];
   connectorApprovalId?: string;
 }
 
@@ -33,12 +34,12 @@ function mapInput(input: ParsedCreateResponseRequest["input"]): MappedInput {
   }
 
   const stored: StoredItem[] = [];
-  let toolInteraction: CommandOptions["toolInteraction"];
+  const toolInteractions: NonNullable<CommandOptions["toolInteractions"]> = [];
   let connectorApprovalId: string | undefined;
 
   for (const item of input ?? []) {
     if (item.type === "interaction_response") {
-      toolInteraction = { toolName: item.tool_name, response: item.response };
+      toolInteractions.push({ toolName: item.tool_name, response: item.response });
       continue;
     }
 
@@ -52,9 +53,12 @@ function mapInput(input: ParsedCreateResponseRequest["input"]): MappedInput {
     }
   }
 
+  const [toolInteraction] = toolInteractions;
+
   return {
     messages: itemsToMessages(stored) as CommandMessages,
     ...(toolInteraction ? { toolInteraction } : {}),
+    ...(toolInteractions.length > 1 ? { toolInteractions } : {}),
     ...(connectorApprovalId ? { connectorApprovalId } : {}),
   };
 }
@@ -139,6 +143,7 @@ export function toResponseCommand(
     agent: request.options?.agent,
     sandbox: environment.sandbox,
     toolInteraction: input.toolInteraction,
+    toolInteractions: input.toolInteractions,
   });
   const settings = omitUndefinedProperties({
     system_prompt: request.instructions,

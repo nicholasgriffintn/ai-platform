@@ -270,6 +270,12 @@ enum ResponseInputItem: Encodable {
 public struct CreateResponseRequest: Encodable {
     struct ConversationReference: Encodable {
         let id: String
+        let projectId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case projectId = "project_id"
+        }
     }
 
     struct Environment: Encodable {
@@ -381,9 +387,10 @@ public struct CreateResponseRequest: Encodable {
         idempotencyKey: String = UUID().uuidString,
         responseId: String? = nil,
         connectorApprovalId: String? = nil,
-        agentTeammateId: String? = nil
+        agentTeammateId: String? = nil,
+        projectId: String? = nil
     ) {
-        self.conversation = conversationId.map(ConversationReference.init)
+        self.conversation = conversationId.map { ConversationReference(id: $0, projectId: projectId) }
         self.input = ConversationItem.inputItems(from: messages).map(ResponseInputItem.item)
             + (connectorApprovalId.map { [ResponseInputItem.approval(approvalId: $0)] } ?? [])
         self.model = model
@@ -430,26 +437,6 @@ public struct TitleGenerationRequest: Encodable {
 
 public struct TitleGenerationResponse: Codable {
     public let title: String
-}
-
-public struct ItemReactionRequest: Encodable {
-    let itemId: String
-    let emoji: String
-    let remove: Bool
-
-    enum CodingKeys: String, CodingKey {
-        case itemId = "item_id"
-        case emoji
-        case remove
-    }
-}
-
-public struct ItemReactionEnvelope: Decodable {
-    public let response: ItemReactionResult
-
-    public struct ItemReactionResult: Decodable {
-        public let reactions: [ChatMessageData.MessageReaction]
-    }
 }
 
 public struct UpdateConversationRequest: Encodable {
@@ -500,6 +487,8 @@ public struct ConversationListResponse: Decodable {
         public let shareId: String?
         public let lastMessageAt: String?
         public let messageCount: Int?
+        public let isPinned: Bool
+        public let isUnread: Bool
 
         enum CodingKeys: String, CodingKey {
             case id, title, model
@@ -511,6 +500,9 @@ public struct ConversationListResponse: Decodable {
             case shareId = "share_id"
             case lastMessageAt = "last_message_at"
             case messageCount = "item_count"
+            case isPinned = "is_pinned"
+            case isUnread = "is_unread"
+            case nextResponseArrived = "next_response_arrived"
         }
 
         public init(from decoder: Decoder) throws {
@@ -526,6 +518,9 @@ public struct ConversationListResponse: Decodable {
             shareId = try container.decodeIfPresent(String.self, forKey: .shareId)
             lastMessageAt = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
             messageCount = try container.decodeIfPresent(Int.self, forKey: .messageCount)
+            isPinned = try container.decodeFlexibleBool(forKey: .isPinned)
+            isUnread = try container.decodeFlexibleBool(forKey: .isUnread)
+                || container.decodeFlexibleBool(forKey: .nextResponseArrived)
         }
     }
 }
@@ -545,9 +540,11 @@ public struct ConversationDetailResponse: Decodable {
     public let latestResponse: PlatformResponse?
     public let hasMoreMessages: Bool
     public let oldestMessageId: String?
+    public let projectId: String?
 
     enum CodingKeys: String, CodingKey {
         case id, title, model, items
+        case projectId = "project_id"
         case modelTier = "model_tier"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -576,6 +573,7 @@ public struct ConversationDetailResponse: Decodable {
         latestResponse = try container.decodeIfPresent(PlatformResponse.self, forKey: .latestResponse)
         hasMoreMessages = try container.decodeIfPresent(Bool.self, forKey: .hasMoreMessages) ?? false
         oldestMessageId = try container.decodeIfPresent(String.self, forKey: .oldestMessageId)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId)
     }
 }
 

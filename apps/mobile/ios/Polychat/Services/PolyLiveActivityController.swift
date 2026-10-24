@@ -5,16 +5,11 @@ import ActivityKit
 
 @MainActor
 final class PolyLiveActivityController {
-    func sync(agenda: PolyAgenda?, presence: PolyPresence) async {
+    func sync(needsYou: Int, workingOn: Int, headline: String?) async {
         #if canImport(ActivityKit) && os(iOS)
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            return
-        }
-
         let active = Activity<PolyActivityAttributes>.activities
-        let shouldShow = agenda.map { !$0.needsYou.isEmpty || !$0.workingOn.isEmpty } ?? false
 
-        guard let agenda, shouldShow else {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled, needsYou > 0 || workingOn > 0 else {
             for activity in active {
                 await activity.end(nil, dismissalPolicy: .immediate)
             }
@@ -22,11 +17,13 @@ final class PolyLiveActivityController {
         }
 
         let state = PolyActivityAttributes.ContentState(
-            mood: presence.mood.rawValue,
-            status: presence.status,
-            needsYou: agenda.needsYou.count,
-            workingOn: agenda.workingOn.count,
-            headline: (agenda.needsYou.first ?? agenda.workingOn.first)?.title
+            mood: needsYou > 0 ? PolyMood.wait.rawValue : PolyMood.work.rawValue,
+            status: needsYou > 0
+                ? "\(needsYou) waiting on you"
+                : "\(workingOn) running",
+            needsYou: needsYou,
+            workingOn: workingOn,
+            headline: headline
         )
         let content = ActivityContent(state: state, staleDate: Date().addingTimeInterval(60 * 60))
 

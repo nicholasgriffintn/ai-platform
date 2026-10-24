@@ -119,4 +119,30 @@ struct ViewPresentationTests {
         #expect(formatted.contains("**Analysis**"))
         #expect(formatted.contains("<analysis>Do not touch this</analysis>"))
     }
+
+    @Test func discoverEpisodeTileReportsPartialAndFinishedChaptersLikeTheWeb() throws {
+        let edition = try JSONDecoder().decode(DiscoverEdition.self, from: Data("""
+        {"id":"e1","date":"2026-10-24","greeting":"Evening","brief":[],"cards":[],"feedback":{},
+         "episodeId":"ep1","edition":"evening"}
+        """.utf8))
+        func episode(_ statuses: [String]) throws -> DiscoverEpisode {
+            let chapters = statuses.map { status in
+                #"{"title":"c","status":"\#(status)","timings":[{"start":0,"end":90}],"scenes":[{"title":"s","shots":[{"image":true}]}]}"#
+            }.joined(separator: ",")
+            return try JSONDecoder().decode(DiscoverEpisode.self, from: Data("""
+            {"id":"ep1","title":"Debate","recap":"","topic":"Debate","part":2,"parts":5,"chapters":[\(chapters)]}
+            """.utf8))
+        }
+
+        let partial = DiscoverMediaPresentation.episode(edition: edition, episode: try episode(["ready", "rendering"]))
+        let finished = DiscoverMediaPresentation.episode(edition: edition, episode: try episode(["ready", "ready"]))
+        let recording = DiscoverMediaPresentation.episode(edition: edition, episode: try episode(["rendering"]))
+
+        #expect(partial.status == "Part 2 of 5 · 1 of 2 chapters")
+        #expect(partial.isReady)
+        #expect(finished.status == "Part 2 of 5 · 3 min")
+        #expect(recording.isWorking)
+        #expect(!recording.isReady)
+        #expect(finished.coverKey == "episode:ep1:0:0:0")
+    }
 }

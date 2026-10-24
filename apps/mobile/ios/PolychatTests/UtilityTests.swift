@@ -188,26 +188,6 @@ struct UtilityTests {
         #expect(presentation.detail == "Attempt 2 of 2 · run retry 1 of 2 · The model provider connection failed temporarily.")
     }
 
-    @Test func chatContextPresentationLabelsEstimatesAndBoundedToolOutput() {
-        #expect(
-            ChatContextPresentation.usageLabel(
-                ChatContextUsage(inputTokens: 4200, contextWindow: 32000, source: "estimated")
-            ) == "4,200 estimated tokens of 32,000"
-        )
-        #expect(
-            ChatContextPresentation.omissionLabel(
-                ChatContextOmission(
-                    id: "tool-result:1",
-                    kind: "tool_result",
-                    reason: "bounded",
-                    count: 1,
-                    messageId: "message-1",
-                    retrievalPath: "/chat/messages/message-1"
-                )
-            ) == "Tool result shortened"
-        )
-    }
-
     @Test func projectTaskActivityPresentationKeepsWaitingFailureInterruptionAndFutureKindsDistinct() {
         let waiting = ProjectTaskActivityPresentation.resolve(makeProjectTaskActivityItem())
         let failed = ProjectTaskActivityPresentation.resolve(
@@ -280,40 +260,110 @@ struct UtilityTests {
         #expect(!replaced.contains("<artifact"))
     }
 
-    @Test func markdownParserSplitsProseCodeAndTables() throws {
+    @Test func markdownParserBuildsStructuredBlocks() {
         let markdown = """
-        Intro
+        ## Plan
+
+        Intro with `code` and **bold**.
+
+        1. First
+        2. Second
+           - Nested point
+        - [x] Done
+        - [ ] Open
+
+        > Quoted line
+
+        ---
 
         ```swift
         let value = 1
         ```
 
         | Feature | Status |
-        | --- | --- |
+        | :--- | ---: |
         | Tables | Done |
         """
 
         let blocks = MarkdownBlock.blocks(from: markdown)
 
-        #expect(blocks.count == 3)
-        #expect(blocks[0].kind == .markdown)
-        #expect(blocks[1].kind == .code(language: "swift"))
-        #expect(blocks[1].content == "let value = 1")
-
-        guard case .table(let table) = blocks[2].kind else {
-            Issue.record("Expected table block")
+        #expect(blocks.count == 8)
+        #expect(blocks[0] == .heading(level: 2, text: "Plan"))
+        #expect(blocks[1] == .paragraph("Intro with `code` and **bold**."))
+        guard case .list(true, 1, let ordered) = blocks[2] else {
+            Issue.record("Expected an ordered list")
             return
         }
-
-        #expect(table.headers == ["Feature", "Status"])
-        #expect(table.rows == [["Tables", "Done"]])
+        #expect(ordered.count == 2)
+        #expect(ordered[1].blocks.count == 2)
+        guard case .list(false, _, let tasks) = blocks[3] else {
+            Issue.record("Expected a task list")
+            return
+        }
+        #expect(tasks.map(\.checked) == [true, false])
+        #expect(blocks[4] == .quote([.paragraph("Quoted line")]))
+        #expect(blocks[5] == .rule)
+        #expect(blocks[6] == .code(language: "swift", code: "let value = 1"))
+        #expect(blocks[7] == .table(MarkdownTable(
+            headers: ["Feature", "Status"],
+            alignments: [.leading, .trailing],
+            rows: [["Tables", "Done"]]
+        )))
     }
 
-    @Test func markdownFixerCompletesLikelyStreamingMarkdown() {
-        #expect(MarkdownFixer.fix("# Title") == "## Title")
+    @Test func markdownParserKeepsAnUnclosedStreamingFenceAsCode() {
+        let blocks = MarkdownBlock.blocks(from: MarkdownFixer.fix("Look:\n```js\nconst a = 1", isStreaming: true))
+
+        #expect(blocks == [.paragraph("Look:"), .code(language: "js", code: "const a = 1")])
         #expect(MarkdownFixer.fix("Value is `partial").contains("`partial`"))
-        #expect(MarkdownFixer.fix("```swift\nlet x = 1").hasSuffix("\n```"))
-        #expect(MarkdownFixer.fix("| A | B\n| --- | --- |\n| 1 | 2", isStreaming: true).hasSuffix(" |"))
+    }
+
+    @Test func responseTurnAssemblerKeepsEachModelStepAsItsOwnMessage() {
+        var ids = ["generated-1", "generated-2"].makeIterator()
+        var assembler = ResponseTurnAssembler(
+            completionId: "conversation-1",
+            initialMessageId: "placeholder",
+            model: "model-1",
+            makeId: { ids.next() ?? "extra" }
+        )
+        let firstParts = [ChatMessagePart(type: "text", text: "Searching now.")]
+
+        assembler.apply(.assistantStarted(ChatStreamAssistantStart(messageId: "step-1", model: "model-1")))
+        assembler.apply(.content("Searching "))
+        assembler.apply(.content("now."))
+        assembler.apply(.toolUseStart(ChatToolCallEvent(toolCallId: "call-1", name: "web_search")))
+        assembler.apply(.toolUseStop("call-1"))
+        assembler.apply(.metadata(ChatStreamMetadata(
+            messageId: "step-1", content: nil, model: "model-1", parts: firstParts, reasoning: nil,
+            citations: nil, data: nil, name: nil, status: "completed", logId: nil, created: nil
+        )))
+        assembler.apply(.messageStop)
+        assembler.apply(.toolResult(ChatToolResultEvent(
+            id: "result-1", toolCallId: "call-1", name: "web_search", status: "success",
+            content: .string("3 results"), data: nil, logId: nil, model: nil, timestamp: 1
+        )))
+        assembler.apply(.toolOutputsDone)
+        assembler.apply(.assistantStarted(ChatStreamAssistantStart(messageId: "step-2", model: "model-1")))
+        assembler.apply(.content("Here is "))
+        assembler.apply(.content("the answer."))
+
+        let messages = assembler.messages
+
+        #expect(messages.map(\.id) == ["step-1", "result-1", "step-2"])
+        #expect(messages[0].parts == firstParts)
+        #expect(messages[1].role == "tool")
+        #expect(messages[2].textContent == "Here is the answer.")
+        #expect(messages[2].parts == nil)
+        #expect(messages[2].status == "in_progress")
+    }
+
+    @Test func contentPartDoneEndsAMessageRatherThanTheStream() throws {
+        #expect(try ChatStreamEventParser.events(
+            from: #"{"type":"response.content_part.done","item_id":"m1","sequence_number":4}"#
+        ) == [.messageStop])
+        #expect(try ChatStreamEventParser.events(
+            from: #"{"type":"response.output_item.added","output_index":0,"item":{"type":"message","role":"assistant","id":"m2","metadata":{"model":"model-1"}},"sequence_number":5}"#
+        ) == [.assistantStarted(ChatStreamAssistantStart(messageId: "m2", model: "model-1"))])
     }
 
     @Test func chatStreamParserHandlesPlatformEventsAndErrors() throws {
@@ -352,9 +402,6 @@ struct UtilityTests {
         #expect(metadata.content == "Final")
         #expect(metadata.status == "complete")
         #expect(metadata.logId == "log-1")
-        #expect(try ChatStreamEventParser.events(
-            from: #"{"type":"response.content_part.done","item_id":"m1","sequence_number":4}"#
-        ) == [.done])
 
         do {
             _ = try ChatStreamEventParser.events(
@@ -477,26 +524,7 @@ struct UtilityTests {
         }
     }
 
-    @MainActor
-    @Test func chatStreamProgressCoalescesBurstsAndFlushesBeforeBoundaries() {
-        var updates: [ChatStreamProgressUpdate] = []
-        let coalescer = ChatStreamProgressCoalescer { updates.append($0) }
-
-        for index in 1...10_000 {
-            coalescer.update(ChatStreamProgressUpdate(
-                conversationId: "conversation-1",
-                messageId: "message-1",
-                content: "token-\(index)",
-                modelId: "model-1",
-                fallbackMessageId: "fallback-1"
-            ))
-        }
-
-        coalescer.flush()
-
-        #expect(updates.count == 1)
-        #expect(updates.first?.content == "token-10000")
-
+    @Test func chatStreamResponsivenessGateYieldsDuringLongDeltaRuns() {
         var gate = ChatStreamResponsivenessGate()
         let yields = (1...128).filter { _ in gate.shouldYield(after: .content("x")) }
 

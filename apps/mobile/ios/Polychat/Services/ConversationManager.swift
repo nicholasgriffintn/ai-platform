@@ -16,25 +16,32 @@ class ConversationManager: ObservableObject {
     @Published private(set) var currentTaskActivity: ProjectTaskActivityTimeline?
     @Published private(set) var currentConnectorApproval: ConnectorApprovalControl?
     @Published private(set) var turnActivities: [String: TurnActivityProjection] = [:]
+    @Published private(set) var approvalDecisions: [String: ToolApprovalDecision] = [:]
+    @Published private(set) var isSubmittingApprovals = false
 
     private var apiClient: (any ConversationAPIClient)?
     private var modelsStore: ModelsStore?
     private var responseReplayPolicy = ResponseReplayPolicy()
+    private var streamPublishInterval: Duration = .milliseconds(50)
     private var locallyStreamingConversationIds: Set<String> = []
+    private var knownConversations: [String: Conversation] = [:]
 
     func configure(
         apiClient: any ConversationAPIClient,
         modelsStore: ModelsStore? = nil,
-        responseReplayPolicy: ResponseReplayPolicy = ResponseReplayPolicy()
+        responseReplayPolicy: ResponseReplayPolicy = ResponseReplayPolicy(),
+        streamPublishInterval: Duration = .milliseconds(50)
     ) {
         self.apiClient = apiClient
         self.modelsStore = modelsStore
         self.responseReplayPolicy = responseReplayPolicy
+        self.streamPublishInterval = streamPublishInterval
     }
 
     func reset() {
         currentConversation = nil
         conversations = []
+        knownConversations = [:]
         teammateIdsByConversation = [:]
         selectedModelId = nil
         isLoading = false
@@ -46,12 +53,80 @@ class ConversationManager: ObservableObject {
         currentTaskActivity = nil
         currentConnectorApproval = nil
         turnActivities = [:]
+        approvalDecisions = [:]
+        isSubmittingApprovals = false
         locallyStreamingConversationIds = []
+    }
+
+    var pendingApprovals: [ToolApprovalRequest] {
+        let pending = (currentConversation?.messages ?? []).filter { message in
+            message.role == "tool" && message.status == "pending"
+                && message.approvalRequest.map { !$0.isResolved && $0.isDirectResolution } == true
+        }
+        let runId = pending.last?.runId
+        return pending
+            .filter { runId == nil || $0.runId == runId }
+            .compactMap(\.approvalRequest)
+    }
+
+    func decideApproval(_ request: ToolApprovalRequest, option: String) async {
+        approvalDecisions[request.interactionId] = request.decision(for: option)
+        await submitApprovalsIfReady()
+    }
+
+    func decideRemainingApprovals(approve: Bool) async {
+        for request in pendingApprovals where approvalDecisions[request.interactionId] == nil && request.approvalRequired {
+            let option = request.options.first { $0.lowercased() == (approve ? "approve" : "reject") }
+                ?? (approve ? "Approve" : "Reject")
+            approvalDecisions[request.interactionId] = request.decision(for: option)
+        }
+        await submitApprovalsIfReady()
+    }
+
+    func submitApprovalsIfReady() async {
+        guard let conversation = currentConversation,
+              !isSubmittingApprovals,
+              !isStreaming(conversation.id) else {
+            return
+        }
+
+        let pending = pendingApprovals
+        let decisions = pending.compactMap { approvalDecisions[$0.interactionId] }
+        let runId = conversation.messages.last { $0.approvalRequest?.interactionId == pending.last?.interactionId }?.runId
+            ?? conversation.latestResponse?.id
+
+        guard !pending.isEmpty, decisions.count == pending.count, let runId else {
+            return
+        }
+
+        isSubmittingApprovals = true
+        defer { isSubmittingApprovals = false }
+
+        await generateAssistantResponse(
+            conversationId: conversation.id,
+            requestMessages: conversation.messages,
+            settings: nil,
+            generateTitle: false,
+            kind: .approvals(responseId: runId, decisions: decisions)
+        )
+        approvalDecisions = [:]
+    }
+
+    func conversation(withId id: String) -> Conversation? {
+        if currentConversation?.id == id {
+            return currentConversation
+        }
+
+        return knownConversations[id] ?? conversations.first { $0.id == id }
+    }
+
+    func isStreaming(_ conversationId: String) -> Bool {
+        locallyStreamingConversationIds.contains(conversationId)
     }
 
     func loadConversations() async {
         isLoading = true
-        error = nil
+        defer { isLoading = false }
 
         do {
             guard let apiClient = apiClient else {
@@ -60,9 +135,8 @@ class ConversationManager: ObservableObject {
             }
 
             let response = try await apiClient.fetchConversations()
-
-            conversations = response.conversations.map { summary in
-                Conversation(
+            let fetched = response.conversations.map { summary in
+                var conversation = Conversation(
                     id: summary.id,
                     title: summary.title ?? "New Conversation",
                     messages: [],
@@ -73,61 +147,41 @@ class ConversationManager: ObservableObject {
                     lastMessageAt: AppDateParser.parse(summary.lastMessageAt ?? summary.updatedAt),
                     messageCount: summary.messageCount ?? 0
                 )
-            }
+                conversation.isPinned = summary.isPinned
+                conversation.isUnread = summary.isUnread && currentConversation?.id != summary.id
 
-            if currentConversation == nil && conversations.isEmpty {
-                _ = startNewConversation()
+                if let known = knownConversations[summary.id],
+                   known.lastMessageAt == conversation.lastMessageAt || isStreaming(summary.id) {
+                    conversation.messages = known.messages
+                    conversation.latestResponse = known.latestResponse
+                    conversation.hasMoreMessages = known.hasMoreMessages
+                    conversation.oldestMessageId = known.oldestMessageId
+                }
+
+                return conversation
             }
+            let fetchedIds = Set(fetched.map(\.id))
+            let localOnly = conversations.filter { !$0.isLoadedFromAPI && !fetchedIds.contains($0.id) }
+
+            conversations = localOnly + fetched.sorted { lhs, rhs in
+                lhs.isPinned != rhs.isPinned
+                    ? lhs.isPinned
+                    : (lhs.lastMessageAt ?? lhs.createdAt) > (rhs.lastMessageAt ?? rhs.createdAt)
+            }
+            error = nil
         } catch {
             self.error = "Failed to load conversations: \(error.localizedDescription)"
-            if conversations.isEmpty {
-                _ = startNewConversation()
-            }
         }
-
-        isLoading = false
     }
 
     func refreshConversations() async {
         await loadConversations()
     }
 
-    func react(to message: ChatMessage, emoji: String, remove: Bool) async {
-        guard let apiClient, let conversation = currentConversation else {
-            return
-        }
-
-        do {
-            _ = try await apiClient.reactToItem(
-                conversationId: conversation.id,
-                itemId: message.id,
-                emoji: emoji,
-                remove: remove
-            )
-            await loadConversationMessages(conversation)
-        } catch {
-            self.error = "That reaction did not go through."
-        }
-    }
-
     func loadConversationMessages(id conversationId: String) async {
-        guard let conversation = conversations.first(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        await loadConversationMessages(conversation)
-    }
-    
-    func bindTeammates(_ teammateIds: [String: String]) {
-        teammateIdsByConversation.merge(teammateIds) { _, latest in latest }
-    }
-
-    func openTeammateConversation(id conversationId: String, teammateId: String, title: String) async {
-        bindTeammates([conversationId: teammateId])
-
-        let conversation = conversations.first(where: { $0.id == conversationId }) ?? Conversation(
+        let conversation = self.conversation(withId: conversationId) ?? Conversation(
             id: conversationId,
-            title: title,
+            title: "Conversation",
             messages: [],
             createdAt: Date(),
             isLoadedFromAPI: true,
@@ -137,11 +191,17 @@ class ConversationManager: ObservableObject {
         await loadConversationMessages(conversation)
     }
 
+    func bindTeammates(_ teammateIds: [String: String]) {
+        teammateIdsByConversation.merge(teammateIds) { _, latest in latest }
+    }
+
     func loadConversationMessages(_ conversation: Conversation) async {
         guard !Task.isCancelled else {
             return
         }
 
+        var conversation = knownConversations[conversation.id] ?? conversation
+        conversation.isUnread = false
         let shouldLoadMessages = conversation.messages.isEmpty && conversation.isLoadedFromAPI
         loadingConversationID = shouldLoadMessages ? conversation.id : nil
         if currentConversation?.id != conversation.id {
@@ -150,51 +210,64 @@ class ConversationManager: ObservableObject {
             currentConnectorApproval = nil
         }
         currentConversation = conversation
+        store(conversation)
 
-        if !conversation.messages.isEmpty {
+        guard conversation.isLoadedFromAPI, !isStreaming(conversation.id) else {
+            loadingConversationID = nil
             return
         }
 
-        guard let apiClient = apiClient, conversation.isLoadedFromAPI else {
-            if loadingConversationID == conversation.id {
-                loadingConversationID = nil
-            }
-            return
-        }
-
-        do {
-            let detail = try await apiClient.fetchConversation(id: conversation.id)
-            guard !Task.isCancelled else {
-                if loadingConversationID == conversation.id {
-                    loadingConversationID = nil
-                }
-                return
-            }
-
-            let updatedConversation = applying(detail, to: conversation)
-
-            if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-                conversations[index] = updatedConversation
-            }
-
-            if loadingConversationID == conversation.id || currentConversation?.id == conversation.id {
-                currentConversation = updatedConversation
-            }
-        } catch is CancellationError {
-            if loadingConversationID == conversation.id {
-                loadingConversationID = nil
-            }
-            return
-        } catch {
-            self.error = "Failed to load conversation: \(error.localizedDescription)"
-            if loadingConversationID == conversation.id || currentConversation?.id == conversation.id {
-                currentConversation = conversation
-            }
-        }
+        await refreshConversation(id: conversation.id, refreshPending: true)
 
         if loadingConversationID == conversation.id {
             loadingConversationID = nil
         }
+    }
+
+    func refreshCurrentConversation() async {
+        guard let conversation = currentConversation,
+              conversation.isLoadedFromAPI,
+              !isStreaming(conversation.id) else {
+            return
+        }
+
+        await refreshConversation(id: conversation.id, refreshPending: false)
+    }
+
+    private func refreshConversation(id conversationId: String, refreshPending: Bool) async {
+        guard let apiClient else {
+            return
+        }
+
+        do {
+            let detail = try await apiClient.fetchConversation(id: conversationId, refreshPending: refreshPending)
+            guard !Task.isCancelled,
+                  !isStreaming(conversationId),
+                  let conversation = conversation(withId: conversationId) else {
+                return
+            }
+
+            store(applying(detail, to: conversation))
+        } catch is CancellationError {
+            return
+        } catch {
+            if currentConversation?.id == conversationId {
+                self.error = "Failed to load conversation: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    func conversationChangedRemotely(id conversationId: String) async {
+        if currentConversation?.id == conversationId {
+            await refreshCurrentConversation()
+        } else if knownConversations[conversationId] != nil {
+            knownConversations[conversationId]?.messages = []
+        }
+    }
+
+    func conversationDeletedRemotely(id conversationId: String) {
+        conversations.removeAll { $0.id == conversationId }
+        knownConversations.removeValue(forKey: conversationId)
     }
 
     func loadEarlierMessages() async {
@@ -220,11 +293,7 @@ class ConversationManager: ObservableObject {
             conversation.messages = earlierMessages + conversation.messages
             conversation.hasMoreMessages = page.hasMore
             conversation.oldestMessageId = page.oldestMessageId ?? earlierMessages.first?.id ?? oldestMessageId
-            updateConversationInArray(conversation)
-
-            if currentConversation?.id == conversation.id {
-                currentConversation = conversation
-            }
+            store(conversation)
         } catch {
             self.error = "Failed to load earlier messages: \(error.localizedDescription)"
         }
@@ -237,7 +306,7 @@ class ConversationManager: ObservableObject {
             guard let apiClient,
                   let conversation = currentConversation,
                   let response = conversation.latestResponse,
-                  !locallyStreamingConversationIds.contains(conversation.id) else {
+                  !isStreaming(conversation.id) else {
                 return
             }
 
@@ -283,14 +352,13 @@ class ConversationManager: ObservableObject {
                     return
                 }
 
-                _ = applyResponseSnapshot(
-                    conversationId: conversation.id,
-                    snapshot: replayState.snapshot
-                )
+                applyResponseSnapshot(conversationId: conversation.id, snapshot: replayState.snapshot)
 
                 if replayState.snapshot.response.isTerminal {
                     return
                 }
+            } catch is CancellationError {
+                return
             } catch {
                 self.error = "Task status could not be refreshed: \(error.localizedDescription)"
             }
@@ -417,7 +485,7 @@ class ConversationManager: ObservableObject {
                     requestMessages: conversation.messages,
                     settings: nil,
                     generateTitle: false,
-                    connectorApprovalId: approvalId
+                    kind: .connectorApproval(approvalId)
                 )
             }
 
@@ -441,7 +509,7 @@ class ConversationManager: ObservableObject {
             requestMessages: conversation.messages,
             settings: nil,
             generateTitle: false,
-            connectorApprovalId: control.approval.id
+            kind: .connectorApproval(control.approval.id)
         )
         await refreshCurrentConnectorApproval()
     }
@@ -471,37 +539,23 @@ class ConversationManager: ObservableObject {
         }
     }
 
-    func startNewConversation() -> Conversation {
-        let modelId = selectedModelId ?? modelsStore?.selectedModelId
-        let modelTier = modelId == nil ? modelsStore?.selectedModelTier : nil
-        let newConversation = Conversation(
+    func startNewConversation(projectId: String? = nil) -> Conversation {
+        var newConversation = Conversation(
             id: UUID().uuidString,
             title: "New Conversation",
             messages: [],
             createdAt: Date(),
-            modelId: modelId,
-            modelTier: modelTier,
             isLoadedFromAPI: false,
             lastMessageAt: nil,
             messageCount: 0
         )
+        newConversation.projectId = projectId
         currentTaskInteraction = nil
         currentTaskActivity = nil
         currentConnectorApproval = nil
         currentConversation = newConversation
-        conversations.insert(newConversation, at: 0)
+        knownConversations[newConversation.id] = newConversation
         return newConversation
-    }
-    
-    func startTeammateConversation(teammateId: String, title: String) -> Conversation {
-        var conversation = startNewConversation()
-        conversation.title = title
-        bindTeammates([conversation.id: teammateId])
-        currentConversation = conversation
-        if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-            conversations[index] = conversation
-        }
-        return conversation
     }
 
     func addMessage(_ message: ChatMessage, settings: ChatSettings? = nil) async throws {
@@ -513,8 +567,10 @@ class ConversationManager: ObservableObject {
         conversation.messages.append(message)
         conversation.lastMessageAt = Date()
         conversation.messageCount = conversation.messages.count
-        currentConversation = conversation
-        updateConversationInArray(conversation)
+        if conversation.projectId == nil, !conversations.contains(where: { $0.id == conversation.id }) {
+            conversations.insert(conversation, at: 0)
+        }
+        store(conversation)
 
         await generateAssistantResponse(
             conversationId: conversation.id,
@@ -522,78 +578,6 @@ class ConversationManager: ObservableObject {
             settings: settings,
             generateTitle: true
         )
-    }
-
-
-    func branchConversation(from messageId: String, settings: ChatSettings? = nil) async {
-        guard let parentConversation = currentConversation else {
-            error = "Unable to branch: conversation not found"
-            return
-        }
-
-        guard let messageIndex = parentConversation.messages.firstIndex(where: { $0.id == messageId }) else {
-            error = "Unable to branch: message not found"
-            return
-        }
-
-        let branchMessage = parentConversation.messages[messageIndex]
-        guard !branchMessage.isCompactionMarker,
-              branchMessage.role == "user" || branchMessage.role == "assistant" else {
-            error = "Only user and assistant messages can start a branch"
-            return
-        }
-
-        let branchId = UUID().uuidString
-        let branchMessages = parentConversation.messages
-            .prefix(messageIndex + 1)
-            .map { $0.replacingCompletionId(with: branchId) }
-        var branch = Conversation(
-            id: branchId,
-            title: parentConversation.title.isEmpty ? "Branched Conversation" : parentConversation.title,
-            messages: branchMessages,
-            createdAt: Date(),
-            modelId: parentConversation.modelId,
-            modelTier: parentConversation.modelTier,
-            isLoadedFromAPI: false,
-            lastMessageAt: Date(),
-            messageCount: branchMessages.count
-        )
-
-        conversations.insert(branch, at: 0)
-        currentConversation = branch
-
-        if parentConversation.isLoadedFromAPI {
-            do {
-                guard let apiClient else {
-                    throw NSError(domain: "com.polychat.app", code: 1,
-                                  userInfo: [NSLocalizedDescriptionKey: "API client not configured"])
-                }
-
-                try await apiClient.updateConversation(
-                    id: branchId,
-                    title: branch.title,
-                    messages: branchMessages,
-                    parentConversationId: parentConversation.id,
-                    parentMessageId: messageId
-                )
-                branch.isLoadedFromAPI = true
-                updateConversationInArray(branch)
-                if currentConversation?.id == branchId {
-                    currentConversation = branch
-                }
-            } catch {
-                self.error = "Branch was created locally, but could not be synced: \(error.localizedDescription)"
-            }
-        }
-
-        if branchMessage.role == "user" {
-            await generateAssistantResponse(
-                conversationId: branchId,
-                requestMessages: branchMessages,
-                settings: settings,
-                generateTitle: true
-            )
-        }
     }
 
     func regenerateAssistantMessage(_ messageId: String, settings: ChatSettings? = nil) async {
@@ -612,7 +596,7 @@ class ConversationManager: ObservableObject {
         }
 
         if message.role == "assistant" {
-            retryEndIndex = messageIndex
+            retryEndIndex = conversation.messages[..<messageIndex].lastIndex { $0.role == "user" }.map { $0 + 1 } ?? messageIndex
         } else if message.role == "user" {
             retryEndIndex = messageIndex + 1
         } else {
@@ -674,8 +658,7 @@ class ConversationManager: ObservableObject {
         conversation.messages = requestMessages
         conversation.lastMessageAt = Date()
         conversation.messageCount = requestMessages.count
-        currentConversation = conversation
-        updateConversationInArray(conversation)
+        store(conversation)
 
         await generateAssistantResponse(
             conversationId: conversation.id,
@@ -690,14 +673,13 @@ class ConversationManager: ObservableObject {
         requestMessages: [ChatMessage],
         settings: ChatSettings?,
         generateTitle: Bool,
-        connectorApprovalId: String? = nil
+        kind: TurnRequestKind = .message
     ) async {
-        guard var conversation = conversations.first(where: { $0.id == conversationId }) else {
+        guard let conversation = conversation(withId: conversationId) else {
             return
         }
 
         let commandId = UUID().uuidString
-        var toolActivity = StreamingToolActivity()
         locallyStreamingConversationIds.insert(conversationId)
         turnActivities[conversationId] = TurnActivityProjection()
         defer {
@@ -705,35 +687,30 @@ class ConversationManager: ObservableObject {
             turnActivities.removeValue(forKey: conversationId)
         }
 
-        let assistantMessageId = UUID().uuidString
-        let loadingMessage = ChatMessage(
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
+        var assembler = ResponseTurnAssembler(
             completionId: conversationId,
-            status: "in_progress"
+            initialMessageId: UUID().uuidString,
+            model: conversation.modelId
         )
-        conversation.messages.append(loadingMessage)
-        conversation.lastMessageAt = Date()
-        conversation.messageCount = conversation.messages.count
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-        updateConversationInArray(conversation)
-
-        var finalMessageId = assistantMessageId
+        var compactionStatus: ChatMessage?
         var didReceiveStreamEvent = false
-        var streamedContent = ""
-        var progressCoalescer: ChatStreamProgressCoalescer?
+        let clock = ContinuousClock()
+        var lastPublishedAt = clock.now
 
-        defer {
-            progressCoalescer?.stop()
+        func publish(_ turnMessages: [ChatMessage], updateList: Bool) {
+            update(conversationId, updateList: updateList) { conversation in
+                conversation.messages = requestMessages + [compactionStatus].compactMap { $0 } + turnMessages
+                conversation.lastMessageAt = Date()
+                conversation.messageCount = conversation.messages.count
+            }
+            lastPublishedAt = clock.now
         }
+
+        publish(assembler.messages, updateList: true)
 
         do {
-            let currentSelectedModelId = await MainActor.run { modelsStore?.selectedModelId }
             let requestedModelId = conversation.modelTier == nil
-                ? conversation.modelId ?? selectedModelId ?? currentSelectedModelId
+                ? conversation.modelId ?? selectedModelId ?? modelsStore?.selectedModelId
                 : nil
             let requestedModelTier = conversation.modelId == nil
                 ? conversation.modelTier ?? (requestedModelId == nil ? modelsStore?.selectedModelTier : nil)
@@ -751,8 +728,6 @@ class ConversationManager: ObservableObject {
                     )
                 }
             }
-            let modelToUse = selectedModel?.id
-            let providerToUse = selectedModel?.provider
 
             guard let apiClient else {
                 throw NSError(domain: "com.polychat.app", code: 1,
@@ -760,137 +735,84 @@ class ConversationManager: ObservableObject {
             }
 
             let computeSite = selectedModel?.machineId == nil ? "hosted" : "machine"
-            let stream = connectorApprovalId.map {
-                apiClient.streamApprovedConnectorOperation(
+            let stream: AsyncThrowingStream<ChatStreamEvent, Error>
+            switch kind {
+            case .message:
+                stream = apiClient.streamResponse(
                     messages: requestMessages,
-                    modelId: modelToUse,
-                    provider: providerToUse,
+                    modelId: selectedModel?.id,
+                    provider: selectedModel?.provider,
                     conversationId: conversationId,
                     settings: settings,
-                    approvalId: $0,
                     idempotencyKey: commandId,
                     modelTier: requestedModelTier,
-                    computeSite: computeSite
+                    computeSite: computeSite,
+                    agentTeammateId: teammateIdsByConversation[conversationId],
+                    projectId: conversation.projectId
                 )
-            } ?? apiClient.streamResponse(
-                messages: requestMessages,
-                modelId: modelToUse,
-                provider: providerToUse,
-                conversationId: conversationId,
-                settings: settings,
-                idempotencyKey: commandId,
-                modelTier: requestedModelTier,
-                computeSite: computeSite,
-                agentTeammateId: teammateIdsByConversation[conversationId]
-            )
-
-            var streamedReasoning = ""
-            var responseModelId = modelToUse ?? "auto"
-            var responsivenessGate = ChatStreamResponsivenessGate()
-            progressCoalescer = ChatStreamProgressCoalescer { [weak self] update in
-                self?.updateAssistantMessage(
-                    conversationId: update.conversationId,
-                    messageId: update.messageId,
-                    content: update.content,
-                    modelId: update.modelId,
-                    fallbackMessageId: update.fallbackMessageId
+            case .connectorApproval(let approvalId):
+                stream = apiClient.streamApprovedConnectorOperation(
+                    messages: requestMessages,
+                    modelId: selectedModel?.id,
+                    provider: selectedModel?.provider,
+                    conversationId: conversationId,
+                    settings: settings,
+                    approvalId: approvalId,
+                    idempotencyKey: commandId,
+                    modelTier: requestedModelTier,
+                    computeSite: computeSite,
+                    projectId: conversation.projectId
+                )
+            case .approvals(let responseId, let decisions):
+                stream = apiClient.streamApprovalDecisions(
+                    responseId: responseId,
+                    decisions: decisions,
+                    idempotencyKey: commandId
                 )
             }
+
+            var responsivenessGate = ChatStreamResponsivenessGate()
 
             for try await event in stream {
                 didReceiveStreamEvent = true
 
-                if !event.isProgressDelta {
-                    progressCoalescer?.flush()
-                }
-
                 switch event {
-                case .content(let delta):
-                    completePendingCompactionMessage(conversationId: conversationId)
-                    streamedContent += delta
-                    progressCoalescer?.update(ChatStreamProgressUpdate(
-                        conversationId: conversationId,
-                        messageId: finalMessageId,
-                        content: streamedContent,
-                        modelId: responseModelId,
-                        fallbackMessageId: assistantMessageId
-                    ))
-                case .reasoning(let delta):
-                    completePendingCompactionMessage(conversationId: conversationId)
-                    streamedReasoning += delta
-                    if streamedContent.isEmpty {
-                        progressCoalescer?.update(ChatStreamProgressUpdate(
-                            conversationId: conversationId,
-                            messageId: finalMessageId,
-                            content: "<think>\n\(streamedReasoning)",
-                            modelId: responseModelId,
-                            fallbackMessageId: assistantMessageId
-                        ))
-                    }
-                case .state(let state):
-                    if state == "compaction" {
-                        insertPendingCompactionMessage(
-                            conversationId: conversationId,
-                            beforeMessageId: assistantMessageId
+                case .state(let state) where state == "compaction":
+                    compactionStatus = compactionStatusMessage(
+                        id: CompactionStatusMarker.pendingId(for: conversationId),
+                        completionId: conversationId,
+                        label: CompactionStatusLabels.automaticPending,
+                        status: CompactionPartStatus.pending
+                    )
+                case .compaction(let message) where message.isCompactionMarker:
+                    compactionStatus = message
+                case .content, .reasoning, .metadata:
+                    if let pending = compactionStatus, CompactionStatusMarker.isPendingId(pending.id) {
+                        compactionStatus = compactionStatusMessage(
+                            id: pending.id,
+                            completionId: conversationId,
+                            label: CompactionStatusLabels.automaticCompleted,
+                            status: CompactionPartStatus.completed
                         )
                     }
                 case .response(let response):
                     updateResponse(response, conversationId: conversationId)
-                case .toolUseStart(let toolCall):
-                    toolActivity.start(toolCall)
-                case .toolUseDelta(let toolCall):
-                    toolActivity.applyDelta(toolCall)
-                case .toolUseStop(let toolCallId):
-                    if let update = toolActivity.stop(toolCallId: toolCallId, completionId: conversationId) {
-                        applyToolActivityUpdate(
-                            update,
-                            conversationId: conversationId,
-                            beforeMessageId: assistantMessageId
-                        )
-                    }
-                case .toolResult(let result):
-                    if let update = toolActivity.resolve(result, completionId: conversationId) {
-                        applyToolActivityUpdate(
-                            update,
-                            conversationId: conversationId,
-                            beforeMessageId: assistantMessageId
-                        )
-                    }
-                case .turnActivity(let event):
+                case .turnActivity(let activity):
                     var projection = turnActivities[conversationId] ?? TurnActivityProjection()
-                    projection.apply(event)
+                    projection.apply(activity)
                     turnActivities[conversationId] = projection
                 case .usageLimits(let limits):
                     usageLimits = limits
                 case .conversationTitle(let title):
                     applyConversationTitle(conversationId, title: title)
-                case .compaction(let message):
-                    insertCompactionMessage(
-                        conversationId: conversationId,
-                        message: message,
-                        beforeMessageId: assistantMessageId
-                    )
-                case .metadata(let metadata):
-                    completePendingCompactionMessage(conversationId: conversationId)
-                    if let model = metadata.model {
-                        responseModelId = model
-                    }
-                    if let messageId = metadata.messageId {
-                        finalMessageId = messageId
-                    }
-                    if let content = metadata.content, !content.isEmpty {
-                        streamedContent = content
-                    }
-                    updateAssistantMessage(
-                        conversationId: conversationId,
-                        messageId: finalMessageId,
-                        content: streamedContent,
-                        modelId: responseModelId,
-                        metadata: metadata,
-                        fallbackMessageId: assistantMessageId
-                    )
-                case .done:
+                default:
                     break
+                }
+
+                if assembler.apply(event) {
+                    if !event.isProgressDelta || clock.now - lastPublishedAt >= streamPublishInterval {
+                        publish(assembler.messages, updateList: false)
+                    }
                 }
 
                 if responsivenessGate.shouldYield(after: event) {
@@ -898,58 +820,46 @@ class ConversationManager: ObservableObject {
                 }
             }
 
-            progressCoalescer?.flush()
-            completePendingCompactionMessage(conversationId: conversationId)
-            removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
-
-            if streamedContent.isEmpty {
-                streamedContent = streamedReasoning.isEmpty ? "No response" : "<think>\n\(streamedReasoning)"
-                updateAssistantMessage(
-                    conversationId: conversationId,
-                    messageId: finalMessageId,
-                    content: streamedContent,
-                    modelId: responseModelId,
-                    fallbackMessageId: assistantMessageId
-                )
+            var finished = assembler.finishedMessages
+            if !finished.contains(where: { $0.role == "assistant" }) {
+                finished.append(ChatMessage(
+                    id: assembler.currentMessageId ?? UUID().uuidString,
+                    role: "assistant",
+                    content: "No response",
+                    completionId: conversationId,
+                    status: "completed"
+                ))
             }
+            publish(finished, updateList: true)
+            update(conversationId) { $0.isLoadedFromAPI = true }
 
-            if selectedModel?.machineId != nil,
-               let stored = conversations.first(where: { $0.id == conversationId }) {
+            if selectedModel?.machineId != nil, let stored = self.conversation(withId: conversationId) {
                 try await apiClient.updateConversation(
                     id: conversationId, title: stored.title, messages: stored.messages,
                     parentConversationId: nil, parentMessageId: nil
                 )
             }
 
-            if let detail = try? await apiClient.fetchConversation(
-                id: conversationId,
-                refreshPending: false
-            ), let storedConversation = conversations.first(where: { $0.id == conversationId }) {
-                let refreshedConversation = applying(detail, to: storedConversation)
-                updateConversationInArray(refreshedConversation)
-
-                if currentConversation?.id == conversationId {
-                    currentConversation = refreshedConversation
-                }
+            locallyStreamingConversationIds.remove(conversationId)
+            if let detail = try? await apiClient.fetchConversation(id: conversationId, refreshPending: false),
+               let stored = self.conversation(withId: conversationId) {
+                store(applying(detail, to: stored))
             }
 
-            if generateTitle,
-               let updatedConversation = currentConversation,
-               updatedConversation.id == conversationId {
-                await generateTitleIfNeeded(for: updatedConversation)
+            if generateTitle, let updated = self.conversation(withId: conversationId) {
+                await generateTitleIfNeeded(for: updated)
             }
         } catch {
-            removePendingCompactionMessages(conversationId: conversationId)
-            removeMessages(conversationId: conversationId, ids: toolActivity.interimMessageIds)
-
-            updateAssistantMessage(
-                conversationId: conversationId,
-                messageId: finalMessageId,
+            let failure = ChatMessage(
+                id: assembler.currentMessageId ?? UUID().uuidString,
+                role: "assistant",
                 content: "Error: \(error.localizedDescription)",
-                modelId: conversation.modelId,
-                fallbackMessageId: assistantMessageId,
-                markLoadedFromAPI: didReceiveStreamEvent
+                completionId: conversationId,
+                status: "failed"
             )
+            compactionStatus = compactionStatus.flatMap { CompactionStatusMarker.isPendingId($0.id) ? nil : $0 }
+            publish(assembler.finishedMessages.filter { $0.id != failure.id } + [failure], updateList: true)
+            update(conversationId) { $0.isLoadedFromAPI = $0.isLoadedFromAPI || didReceiveStreamEvent }
         }
     }
 
@@ -961,166 +871,55 @@ class ConversationManager: ObservableObject {
         return turnActivities[conversationId]?.label
     }
 
-    private func applyResponseSnapshot(
-        conversationId: String,
-        snapshot: ResponseSnapshot,
-        placeholderIds: Set<String> = []
-    ) -> Bool {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return false
-        }
-
-        var conversation = conversations[index]
-        let authoritativeIds = Set(snapshot.messages.map(\.id))
-        conversation.messages.removeAll { message in
-            !authoritativeIds.contains(message.id)
-                && (placeholderIds.contains(message.id) || message.runId == snapshot.response.id)
-        }
-
-        for message in snapshot.messages {
-            if let messageIndex = conversation.messages.firstIndex(where: { $0.id == message.id }) {
-                conversation.messages[messageIndex] = message
-            } else {
-                conversation.messages.append(message)
+    private func applyResponseSnapshot(conversationId: String, snapshot: ResponseSnapshot) {
+        update(conversationId) { conversation in
+            let authoritativeIds = Set(snapshot.messages.map(\.id))
+            conversation.messages.removeAll { message in
+                !authoritativeIds.contains(message.id) && message.runId == snapshot.response.id
             }
+
+            for message in snapshot.messages {
+                if let messageIndex = conversation.messages.firstIndex(where: { $0.id == message.id }) {
+                    conversation.messages[messageIndex] = message
+                } else {
+                    conversation.messages.append(message)
+                }
+            }
+
+            conversation.latestResponse = snapshot.response
+            conversation.isLoadedFromAPI = true
+            conversation.messageCount = conversation.messages.count
+            conversation.lastMessageAt = Date()
         }
-
-        conversation.latestResponse = snapshot.response
-        conversation.isLoadedFromAPI = true
-        conversation.messageCount = conversation.messages.count
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-
-        return true
     }
 
     private func updateResponse(_ response: PlatformResponse, conversationId: String) {
-        if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
-            conversations[index].latestResponse = response
+        update(conversationId) { $0.latestResponse = response }
+    }
+
+    private func store(_ conversation: Conversation, updateList: Bool = true) {
+        knownConversations[conversation.id] = conversation
+
+        if updateList, let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
+            conversations[index] = conversation
         }
-        if currentConversation?.id == conversationId {
-            currentConversation?.latestResponse = response
+
+        if currentConversation?.id == conversation.id {
+            currentConversation = conversation
         }
     }
 
-    private func applyToolActivityUpdate(
-        _ update: StreamingToolActivity.Update,
-        conversationId: String,
-        beforeMessageId: String
+    private func update(
+        _ conversationId: String,
+        updateList: Bool = true,
+        _ change: (inout Conversation) -> Void
     ) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
+        guard var conversation = conversation(withId: conversationId) else {
             return
         }
 
-        var conversation = conversations[index]
-        let replacedIndex = update.replacingMessageId.flatMap { replacingMessageId in
-            conversation.messages.firstIndex { $0.id == replacingMessageId }
-        } ?? conversation.messages.firstIndex { $0.id == update.message.id }
-
-        if let replacedIndex {
-            conversation.messages[replacedIndex] = update.message
-        } else {
-            let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
-                ?? conversation.messages.count
-            conversation.messages.insert(update.message, at: insertionIndex)
-        }
-
-        conversation.messageCount = conversation.messages.count
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-    }
-
-    private func removeMessages(conversationId: String, ids: [String]) {
-        guard !ids.isEmpty,
-              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        let removableIds = Set(ids)
-        var conversation = conversations[index]
-        let originalCount = conversation.messages.count
-        conversation.messages.removeAll { removableIds.contains($0.id) }
-
-        guard conversation.messages.count != originalCount else {
-            return
-        }
-
-        conversation.messageCount = conversation.messages.count
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-    }
-
-    private func updateAssistantMessage(
-        conversationId: String,
-        messageId: String,
-        content: String,
-        modelId: String?,
-        metadata: ChatStreamMetadata? = nil,
-        fallbackMessageId: String? = nil,
-        markLoadedFromAPI: Bool = true
-    ) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        var conversation = conversations[index]
-        let messageIndex = assistantMessageIndex(
-            in: conversation,
-            messageId: messageId,
-            fallbackMessageId: fallbackMessageId
-        )
-
-        guard let messageIndex else {
-            return
-        }
-
-        let existingMessage = conversation.messages[messageIndex]
-        let created = metadata?.created ?? existingMessage.created
-        let contentParts = metadata?.parts ?? existingMessage.parts
-        let reasoning = metadata?.reasoning ?? existingMessage.reasoning
-        let citations = metadata?.citations ?? existingMessage.citations
-        let data = metadata?.data ?? existingMessage.data
-        let name = metadata?.name ?? existingMessage.name
-        let status = metadata?.status ?? existingMessage.status
-        let logId = metadata?.logId ?? existingMessage.logId
-        let timestamp = created ?? existingMessage.timestamp
-
-        conversation.messages[messageIndex] = ChatMessage(
-            id: messageId,
-            role: "assistant",
-            content: content,
-            model: modelId ?? existingMessage.model,
-            parts: contentParts,
-            reasoning: reasoning,
-            citations: citations,
-            data: data,
-            completionId: existingMessage.completionId,
-            name: name,
-            status: status,
-            logId: logId,
-            created: created,
-            timestamp: timestamp
-        )
-        conversation.isLoadedFromAPI = conversation.isLoadedFromAPI || markLoadedFromAPI
-        conversation.modelId = modelId ?? conversation.modelId
-        conversation.lastMessageAt = Date()
-        conversation.messageCount = conversation.messages.count
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
+        change(&conversation)
+        store(conversation, updateList: updateList)
     }
 
     private func applying(
@@ -1138,109 +937,10 @@ class ConversationManager: ObservableObject {
         updatedConversation.latestResponse = detail.latestResponse
         updatedConversation.hasMoreMessages = detail.hasMoreMessages
         updatedConversation.oldestMessageId = detail.oldestMessageId ?? detail.messages.first?.id
+        updatedConversation.projectId = detail.projectId ?? conversation.projectId
+        updatedConversation.isLoadedFromAPI = true
 
         return updatedConversation
-    }
-
-    private func insertCompactionMessage(
-        conversationId: String,
-        message: ChatMessage,
-        beforeMessageId: String
-    ) {
-        guard message.isCompactionMarker,
-              let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        var conversation = conversations[index]
-        conversation.messages.removeAll { $0.id == CompactionStatusMarker.pendingId(for: beforeMessageId) }
-        conversation.messages.removeAll { $0.id == message.id }
-        let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
-            ?? conversation.messages.count
-        conversation.messages.insert(message, at: insertionIndex)
-        conversation.messageCount = conversation.messages.count
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-    }
-
-    private func insertPendingCompactionMessage(
-        conversationId: String,
-        beforeMessageId: String
-    ) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        let message = compactionStatusMessage(
-            id: CompactionStatusMarker.pendingId(for: beforeMessageId),
-            completionId: conversationId,
-            label: CompactionStatusLabels.automaticPending,
-            status: CompactionPartStatus.pending
-        )
-
-        var conversation = conversations[index]
-        conversation.messages.removeAll { $0.id == message.id }
-        let insertionIndex = conversation.messages.firstIndex { $0.id == beforeMessageId }
-            ?? conversation.messages.count
-        conversation.messages.insert(message, at: insertionIndex)
-        conversation.messageCount = conversation.messages.count
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-    }
-
-    private func completePendingCompactionMessage(conversationId: String) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        var conversation = conversations[index]
-        guard let messageIndex = conversation.messages.firstIndex(where: { message in
-            CompactionStatusMarker.isPendingId(message.id)
-        }) else {
-            return
-        }
-
-        conversation.messages[messageIndex] = compactionStatusMessage(
-            id: conversation.messages[messageIndex].id,
-            completionId: conversationId,
-            label: CompactionStatusLabels.automaticCompleted,
-            status: CompactionPartStatus.completed
-        )
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
-    }
-
-    private func removePendingCompactionMessages(conversationId: String) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
-
-        var conversation = conversations[index]
-        let originalCount = conversation.messages.count
-        conversation.messages.removeAll { CompactionStatusMarker.isPendingId($0.id) }
-        guard conversation.messages.count != originalCount else {
-            return
-        }
-
-        conversation.messageCount = conversation.messages.count
-        conversation.lastMessageAt = Date()
-        conversations[index] = conversation
-
-        if currentConversation?.id == conversationId {
-            currentConversation = conversation
-        }
     }
 
     private func compactionStatusMessage(
@@ -1267,52 +967,27 @@ class ConversationManager: ObservableObject {
             timestamp: timestamp
         )
     }
-    
-    private func assistantMessageIndex(
-        in conversation: Conversation,
-        messageId: String,
-        fallbackMessageId: String?
-    ) -> Int? {
-        if let index = conversation.messages.lastIndex(where: { $0.id == messageId }) {
-            return index
-        }
 
-        if let fallbackMessageId,
-           let index = conversation.messages.lastIndex(where: { $0.id == fallbackMessageId }) {
-            return index
-        }
-
-        return fallbackMessageId == nil
-            ? conversation.messages.lastIndex(where: { $0.role == "assistant" })
-            : nil
-    }
-
-    private func updateConversationInArray(_ conversation: Conversation) {
-        if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-            conversations[index] = conversation
-        }
-    }
-    
     func setModelForCurrentConversation(_ modelId: String) {
         selectedModelId = modelId
         modelsStore?.selectModel(modelId)
-        currentConversation?.modelId = modelId
-        currentConversation?.modelTier = nil
-        if let conversation = currentConversation {
-            updateConversationInArray(conversation)
+        guard let id = currentConversation?.id else { return }
+        update(id) { conversation in
+            conversation.modelId = modelId
+            conversation.modelTier = nil
         }
     }
 
     func setTierForCurrentConversation(_ tier: String) {
         selectedModelId = nil
         modelsStore?.selectTier(tier)
-        currentConversation?.modelId = nil
-        currentConversation?.modelTier = tier
-        if let conversation = currentConversation {
-            updateConversationInArray(conversation)
+        guard let id = currentConversation?.id else { return }
+        update(id) { conversation in
+            conversation.modelId = nil
+            conversation.modelTier = tier
         }
     }
-    
+
     func generateTitleIfNeeded(for conversation: Conversation) async {
         let shouldGenerateTitles = UserDefaults.standard.object(forKey: "autoTitleGeneration") as? Bool ?? true
         guard shouldGenerateTitles else {
@@ -1323,7 +998,7 @@ class ConversationManager: ObservableObject {
               conversation.title == "New Conversation" || conversation.title.hasPrefix("New Conversation") else {
             return
         }
-        
+
         do {
             let titleResponse = try await apiClient?.generateTitle(conversationId: conversation.id, messages: conversation.messages)
             if let title = titleResponse?.title {
@@ -1336,23 +1011,15 @@ class ConversationManager: ObservableObject {
             }
         }
     }
-    
-    func applyConversationTitle(_ conversationId: String, title: String) {
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }) else {
-            return
-        }
 
-        conversations[index].title = title
-        if currentConversation?.id == conversationId {
-            currentConversation?.title = title
-        }
+    func applyConversationTitle(_ conversationId: String, title: String) {
+        update(conversationId) { $0.title = title }
     }
 
     func updateConversationTitle(_ conversationId: String, title: String) async {
         applyConversationTitle(conversationId, title: title)
 
-        guard let index = conversations.firstIndex(where: { $0.id == conversationId }),
-              conversations[index].isLoadedFromAPI else {
+        guard conversation(withId: conversationId)?.isLoadedFromAPI == true else {
             return
         }
 
@@ -1571,9 +1238,8 @@ class ConversationManager: ObservableObject {
             }
         }
 
-        if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
-            conversations.remove(at: index)
-        }
+        conversations.removeAll { $0.id == conversation.id }
+        knownConversations.removeValue(forKey: conversation.id)
 
         if currentConversation?.id == conversation.id {
             currentConversation = nil
@@ -1582,4 +1248,10 @@ class ConversationManager: ObservableObject {
             currentConnectorApproval = nil
         }
     }
+}
+
+enum TurnRequestKind {
+    case message
+    case connectorApproval(String)
+    case approvals(responseId: String, decisions: [ToolApprovalDecision])
 }

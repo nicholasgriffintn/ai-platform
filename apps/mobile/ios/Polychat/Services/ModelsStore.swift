@@ -213,6 +213,10 @@ class ModelsStore: ObservableObject {
             return "Your selected model is no longer available to this account. Choose another model before sending."
         }
 
+        guard model.isAvailableForSelection else {
+            return "This model is not available to this account right now. Choose another model."
+        }
+
         if let readiness = model.readiness {
             if !readiness.isFresh() {
                 return "Model readiness has expired. Refresh the model list before sending."
@@ -221,9 +225,7 @@ class ModelsStore: ObservableObject {
             return readiness.isReady ? nil : readiness.reason
         }
 
-        return model.isAvailableForSelection
-            ? nil
-            : "This model cannot run under the current account and provider policy."
+        return nil
     }
     
     private func loadSelectedModel() {

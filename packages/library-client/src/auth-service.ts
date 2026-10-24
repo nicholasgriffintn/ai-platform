@@ -114,6 +114,10 @@ class AuthService {
 
   public async getToken(): Promise<string | null> {
     try {
+      if (apiKeyService.hasTokenSource()) {
+        return await apiKeyService.getApiKey();
+      }
+
       if (this.tokenExpiry && Date.now() < this.tokenExpiry.getTime() - TOKEN_REFRESH_MARGIN_MS) {
         const existingToken = await apiKeyService.getApiKey();
 

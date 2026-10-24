@@ -206,6 +206,7 @@ export * from "./chat/usage-ledger.js";
 export * from "./chat/usage-limits.js";
 export * from "./chat/useChat.js";
 export * from "./chat/useChatManager.js";
+export * from "./chat/useToolApprovalBatch.js";
 export * from "./chat/useResponseReplay.js";
 export * from "./chat/useConversationActions.js";
 export * from "./chat/useConversationRetention.js";

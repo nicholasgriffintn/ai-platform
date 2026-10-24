@@ -19,10 +19,21 @@ interface ToolInteraction {
 }
 
 export interface ApprovedToolInteractionResult {
-  toolCall: ToolCall;
-  toolResult: Message;
+  toolCalls: ToolCall[];
+  toolResults: Message[];
   suppressedMessageIds: string[];
   updates: Message[];
+}
+
+interface PreparedApproval {
+  pending: Message;
+  pendingData: Record<string, unknown>;
+  toolCall: ToolCall;
+  toolName: string;
+  option: string;
+  resolution: "approved" | "rejected";
+  requiresActionApproval: boolean;
+  resolutionData: Record<string, unknown>;
 }
 
 function failApproval(): never {
@@ -33,12 +44,12 @@ function failApproval(): never {
   );
 }
 
-function readToolInteraction(value: unknown): ToolInteraction | undefined {
-  if (!isRecord(value) || !isRecord(value.toolInteraction)) {
+function parseToolInteraction(value: unknown): ToolInteraction | undefined {
+  if (!isRecord(value)) {
     return undefined;
   }
 
-  const { toolName, response } = value.toolInteraction;
+  const { toolName, response } = value;
 
   if (
     typeof toolName !== "string" ||
@@ -57,6 +68,41 @@ function readToolInteraction(value: unknown): ToolInteraction | undefined {
       resolution: response.resolution,
     },
   };
+}
+
+function readToolInteractions(options: unknown): ToolInteraction[] | undefined {
+  if (!isRecord(options)) {
+    return undefined;
+  }
+
+  const raw = Array.isArray(options.toolInteractions)
+    ? options.toolInteractions
+    : options.toolInteraction
+      ? [options.toolInteraction]
+      : [];
+  const interactions = raw.flatMap((value) => {
+    const interaction = parseToolInteraction(value);
+
+    return interaction ? [interaction] : [];
+  });
+
+  return interactions.length > 0 && interactions.length === raw.length ? interactions : undefined;
+}
+
+function isFirstPartyApproval(interaction: ToolInteraction): boolean {
+  return (
+    interaction.response.approvalRequired === true || interaction.toolName === "request_approval"
+  );
+}
+
+function isPendingApproval(message: Message, runId: string): boolean {
+  return (
+    message.role === "tool" &&
+    message.status === "pending" &&
+    message.run_id === runId &&
+    isRecord(message.data) &&
+    message.data.renderer === "approval_request"
+  );
 }
 
 function readArguments(value: unknown): Record<string, unknown> | undefined {
@@ -112,48 +158,20 @@ function resolveApprovalData(params: {
   };
 }
 
-export async function resolveApprovedToolInteraction(params: {
-  conversationId: string;
-  conversationManager: ConversationManager;
-  loadMessages: () => Promise<readonly Message[]>;
+function prepareApproval(params: {
+  interaction: ToolInteraction;
+  pending: Message;
+  messages: readonly Message[];
   providerMessages: readonly Message[];
-  request: IRequest;
-  run: ChatRun | null;
-}): Promise<ApprovedToolInteractionResult | undefined> {
-  const interaction = readToolInteraction(params.request.request?.options);
-
-  if (!interaction) {
-    return undefined;
-  }
-
-  const isFirstPartyApproval =
-    interaction.response.approvalRequired === true || interaction.toolName === "request_approval";
-
-  if (!isFirstPartyApproval) {
-    return undefined;
-  }
-
-  const run = params.run;
-  const userId = params.request.user?.id;
-
-  if (
-    !run ||
-    !userId ||
-    run.conversationId !== params.conversationId ||
-    run.initiatorUserId !== userId ||
-    run.status !== "running" ||
-    !run.lastMessageId
-  ) {
-    return failApproval();
-  }
-
-  const messages = await params.loadMessages();
-  const pendingIndex = messages.findIndex((message) => message.id === run.lastMessageId);
-  const pending = messages[pendingIndex];
-  const pendingData = isRecord(pending?.data) ? pending.data : undefined;
+  userId: number;
+  resolvedAt: string;
+}): PreparedApproval {
+  const { interaction, pending, messages } = params;
+  const pendingIndex = messages.indexOf(pending);
+  const pendingData = isRecord(pending.data) ? pending.data : undefined;
   const approval = isRecord(pendingData?.approval) ? pendingData.approval : undefined;
   const interactionId = interaction.response.interactionId;
-  const toolName = typeof pending?.name === "string" ? pending.name : undefined;
+  const toolName = typeof pending.name === "string" ? pending.name : undefined;
   const option = typeof interaction.response.option === "string" ? interaction.response.option : "";
   const resolution = interaction.response.resolution;
   const storedOptions = Array.isArray(pendingData?.options)
@@ -162,17 +180,9 @@ export async function resolveApprovedToolInteraction(params: {
   const options = storedOptions.length > 0 ? storedOptions : ["Approve", "Reject"];
 
   if (
-    pending?.role !== "tool" ||
-    pending.status !== "pending" ||
     !pendingData ||
-    pendingData.renderer !== "approval_request"
-  ) {
-    return failApproval();
-  }
-
-  if (
+    !toolName ||
     pendingIndex < 0 ||
-    pending.run_id !== run.id ||
     pending.tool_call_id !== interactionId ||
     approval?.interactionId !== interactionId ||
     approval.toolName !== interaction.toolName ||
@@ -237,88 +247,198 @@ export async function resolveApprovedToolInteraction(params: {
     return failApproval();
   }
 
-  const toolCall: ToolCall = {
-    id: interactionId,
-    type: ToolCallType.FUNCTION,
-    function: {
-      name: toolName,
-      arguments: canonicalJson(storedArguments),
-    },
-  };
-  const resolvedAt = new Date().toISOString();
-  const resolutionData = resolveApprovalData({
+  return {
+    pending,
     pendingData,
-    interactionId,
     toolName,
     option,
     resolution,
-    userId,
-    resolvedAt,
-  });
+    requiresActionApproval,
+    toolCall: {
+      id: interactionId,
+      type: ToolCallType.FUNCTION,
+      function: { name: toolName, arguments: canonicalJson(storedArguments) },
+    },
+    resolutionData: resolveApprovalData({
+      pendingData,
+      interactionId,
+      toolName,
+      option,
+      resolution,
+      userId: params.userId,
+      resolvedAt: params.resolvedAt,
+    }),
+  };
+}
 
-  let toolResult: Message;
+async function executeApprovedTools(
+  prepared: readonly PreparedApproval[],
+  params: { conversationId: string; conversationManager: ConversationManager; request: IRequest },
+): Promise<Map<string, Message>> {
+  const approved = prepared.filter(
+    (approval) => approval.requiresActionApproval && approval.resolution === "approved",
+  );
 
-  if (requiresActionApproval && resolution === "approved") {
-    const request = params.request.request;
+  if (approved.length === 0) {
+    return new Map();
+  }
 
-    if (!request) {
-      return failApproval();
-    }
+  const request = params.request.request;
 
-    const { toolInteraction: _toolInteraction, ...requestOptions } = request.options ?? {};
-    const results = await handleToolCalls(
-      params.conversationId,
-      { response: "", tool_calls: [toolCall] },
-      params.conversationManager,
-      {
-        ...params.request,
-        request: { ...request, approved_tools: [toolName], options: requestOptions },
+  if (!request) {
+    return failApproval();
+  }
+
+  const {
+    toolInteraction: _toolInteraction,
+    toolInteractions: _toolInteractions,
+    ...requestOptions
+  } = request.options ?? {};
+  const results = await handleToolCalls(
+    params.conversationId,
+    { response: "", tool_calls: approved.map((approval) => approval.toolCall) },
+    params.conversationManager,
+    {
+      ...params.request,
+      request: {
+        ...request,
+        approved_tools: [...new Set(approved.map((approval) => approval.toolName))],
+        options: requestOptions,
       },
-      { persistResults: "none", recoverUnknownToolCalls: false },
-    );
-    const result = results[0];
+    },
+    { persistResults: "none", recoverUnknownToolCalls: false },
+  );
+  const resultsByCallId = new Map(
+    results.flatMap((result) =>
+      typeof result.tool_call_id === "string" ? [[result.tool_call_id, result] as const] : [],
+    ),
+  );
 
-    if (results.length !== 1 || !result || result.status === "pending") {
-      return failApproval();
-    }
+  if (
+    results.length !== approved.length ||
+    approved.some((approval) => {
+      const result = resultsByCallId.get(approval.toolCall.id);
 
-    toolResult = {
-      ...result,
+      return !result || result.status === "pending";
+    })
+  ) {
+    return failApproval();
+  }
+
+  return resultsByCallId;
+}
+
+function settledToolResult(approval: PreparedApproval, executed: Message | undefined): Message {
+  const { pending, toolCall, toolName, resolutionData } = approval;
+
+  if (executed) {
+    return {
+      ...executed,
       id: pending.id,
       run_id: pending.run_id,
-      tool_call_id: interactionId,
+      tool_call_id: toolCall.id,
       tool_call_arguments: pending.tool_call_arguments,
       data: {
-        ...(isRecord(result.data) ? result.data : {}),
+        ...(isRecord(executed.data) ? executed.data : {}),
         approvalResolution: resolutionData.approvalResolution,
       },
     };
-  } else {
-    const responseMessage: Message = {
-      ...pending,
-      content:
-        toolName === "request_approval"
-          ? `The user selected: ${option}`
-          : "The user rejected the proposed action.",
-      status: "success",
-      data: resolutionData,
-    };
-
-    toolResult = { ...responseMessage, parts: buildMessageParts(responseMessage) };
   }
 
-  const hiddenApprovalContent = typeof pending.content === "string" ? pending.content.trim() : "";
-  const duplicateAssistantMessages = hiddenApprovalContent
-    ? messages.filter(
-        (message) =>
-          message.role === "assistant" &&
-          message.status === "pending" &&
-          typeof message.content === "string" &&
-          message.content.trim() === hiddenApprovalContent,
-      )
-    : [];
+  const responseMessage: Message = {
+    ...pending,
+    content:
+      toolName === "request_approval"
+        ? `The user selected: ${approval.option}`
+        : "The user rejected the proposed action.",
+    status: "success",
+    data: resolutionData,
+  };
+
+  return { ...responseMessage, parts: buildMessageParts(responseMessage) };
+}
+
+export async function resolveApprovedToolInteraction(params: {
+  conversationId: string;
+  conversationManager: ConversationManager;
+  loadMessages: () => Promise<readonly Message[]>;
+  providerMessages: readonly Message[];
+  request: IRequest;
+  run: ChatRun | null;
+}): Promise<ApprovedToolInteractionResult | undefined> {
+  const interactions = readToolInteractions(params.request.request?.options);
+
+  if (!interactions || !interactions.some(isFirstPartyApproval)) {
+    return undefined;
+  }
+
+  const run = params.run;
+  const userId = params.request.user?.id;
+
+  if (
+    !interactions.every(isFirstPartyApproval) ||
+    !run ||
+    !userId ||
+    run.conversationId !== params.conversationId ||
+    run.initiatorUserId !== userId ||
+    run.status !== "running" ||
+    !run.lastMessageId
+  ) {
+    return failApproval();
+  }
+
+  const messages = await params.loadMessages();
+  const pendingApprovals = messages.filter((message) => isPendingApproval(message, run.id));
+  const interactionsById = new Map(
+    interactions.map((interaction) => [interaction.response.interactionId, interaction]),
+  );
+
+  if (
+    !pendingApprovals.some((message) => message.id === run.lastMessageId) ||
+    interactionsById.size !== interactions.length ||
+    pendingApprovals.length !== interactions.length
+  ) {
+    return failApproval();
+  }
+
+  const resolvedAt = new Date().toISOString();
+  const prepared = pendingApprovals.map((pending) => {
+    const interaction =
+      typeof pending.tool_call_id === "string"
+        ? interactionsById.get(pending.tool_call_id)
+        : undefined;
+
+    if (!interaction) {
+      return failApproval();
+    }
+
+    return prepareApproval({
+      interaction,
+      pending,
+      messages,
+      providerMessages: params.providerMessages,
+      userId,
+      resolvedAt,
+    });
+  });
+  const executed = await executeApprovedTools(prepared, params);
+  const toolResults = prepared.map((approval) =>
+    settledToolResult(approval, executed.get(approval.toolCall.id)),
+  );
+  const hiddenApprovalContents = new Set(
+    pendingApprovals.flatMap((pending) =>
+      typeof pending.content === "string" && pending.content.trim() ? [pending.content.trim()] : [],
+    ),
+  );
+  const duplicateAssistantMessages = messages.filter(
+    (message) =>
+      message.role === "assistant" &&
+      message.status === "pending" &&
+      typeof message.content === "string" &&
+      hiddenApprovalContents.has(message.content.trim()),
+  );
   const updates = [
-    toolResult,
+    ...toolResults,
     ...duplicateAssistantMessages.map((message) => ({
       ...message,
       content: "",
@@ -330,8 +450,8 @@ export async function resolveApprovedToolInteraction(params: {
   await params.conversationManager.update(params.conversationId, updates);
 
   return {
-    toolCall,
-    toolResult,
+    toolCalls: prepared.map((approval) => approval.toolCall),
+    toolResults,
     suppressedMessageIds: duplicateAssistantMessages.flatMap((message) =>
       message.id ? [message.id] : [],
     ),

@@ -12,6 +12,11 @@ struct PolychatApp: App {
     @StateObject private var polyStore = PolyStore()
     @StateObject private var teammatesStore = TeammatesStore()
     @StateObject private var ageGateStore = AgeGateStore()
+    @StateObject private var discoverStore = DiscoverStore()
+    @StateObject private var attentionStore = AttentionStore()
+    @StateObject private var workStore = WorkStore()
+    @StateObject private var healthSync = HealthSyncController.shared
+    @StateObject private var syncClient = DeviceSyncClient()
 
     var body: some Scene {
         WindowGroup {
@@ -25,12 +30,21 @@ struct PolychatApp: App {
                 .environmentObject(polyStore)
                 .environmentObject(teammatesStore)
                 .environmentObject(ageGateStore)
+                .environmentObject(discoverStore)
+                .environmentObject(attentionStore)
+                .environmentObject(workStore)
+                .environmentObject(healthSync)
+                .environmentObject(syncClient)
+                .tint(Color.polychat.primary)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)
                     conversationManager.configure(apiClient: apiClient, modelsStore: modelsStore)
                     notificationManager.configure(apiClient: apiClient)
                     pushNotificationManager.configure(apiClient: apiClient)
                 }
+        }
+        .backgroundTask(.appRefresh(HealthSyncController.refreshTaskId)) {
+            await HealthSyncController.shared.syncIfNeeded()
         }
     }
 }

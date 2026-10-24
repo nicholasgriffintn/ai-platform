@@ -76,7 +76,9 @@ enum ChatStreamEventParser {
                 )
             )]
         case "response.content_part.done":
-            return [.done]
+            return [.messageStop]
+        case "response.tool_outputs.done":
+            return [.toolOutputsDone]
         case "response.activity":
             return extractTurnActivity(from: object).map { [.turnActivity($0)] } ?? []
         case "response.usage_limits":
@@ -111,12 +113,25 @@ enum ChatStreamEventParser {
     }
 
     private static func outputItemAdded(_ item: [String: Any]?) -> [ChatStreamEvent] {
-        guard let item, item["type"] as? String == "tool_call",
-              let toolCallId = item["call_id"] as? String else {
+        guard let item, let type = item["type"] as? String else {
             return []
         }
 
-        return [.toolUseStart(ChatToolCallEvent(toolCallId: toolCallId, name: item["name"] as? String ?? "tool"))]
+        switch type {
+        case "tool_call":
+            guard let toolCallId = item["call_id"] as? String else {
+                return []
+            }
+            return [.toolUseStart(ChatToolCallEvent(toolCallId: toolCallId, name: item["name"] as? String ?? "tool"))]
+        case "message" where item["role"] as? String == "assistant":
+            let metadata = item["metadata"] as? [String: Any]
+            return [.assistantStarted(ChatStreamAssistantStart(
+                messageId: item["id"] as? String,
+                model: metadata?["model"] as? String
+            ))]
+        default:
+            return []
+        }
     }
 
     private static func outputItemDone(_ item: [String: Any]?) -> [ChatStreamEvent] {
@@ -129,7 +144,7 @@ enum ChatStreamEventParser {
             return (item["call_id"] as? String).map { [.toolUseStop($0)] } ?? []
         case "tool_output":
             return extractToolResult(from: item).map { [.toolResult($0)] } ?? []
-        case "message":
+        case "message" where item["role"] as? String == "assistant":
             return [.metadata(extractStreamMetadata(from: item))]
         default:
             return []

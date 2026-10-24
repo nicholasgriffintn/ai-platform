@@ -6,6 +6,14 @@ struct DiscoverHealthSummary: Codable, Equatable {
     let sleepMinutes: Int?
     let mindfulMinutes: Int?
     let exerciseMinutes: Int?
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(date, forKey: .date)
+        try container.encode(sleepMinutes, forKey: .sleepMinutes)
+        try container.encode(mindfulMinutes, forKey: .mindfulMinutes)
+        try container.encode(exerciseMinutes, forKey: .exerciseMinutes)
+    }
 }
 
 @MainActor
@@ -59,8 +67,8 @@ final class HealthSummaryService {
 
         guard !counted.isEmpty else { return nil }
 
-        let seconds = counted.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
-        return Int((seconds / 60).rounded())
+        let seconds = DateIntervals.coveredSeconds(counted.map { ($0.startDate, $0.endDate) })
+        return min(1440, Int((seconds / 60).rounded()))
     }
 
     private func exerciseMinutes(from start: Date, to end: Date) async throws -> Int? {
@@ -71,6 +79,6 @@ final class HealthSummaryService {
         )
         let total = try await descriptor.result(for: store)?.sumQuantity()
 
-        return total.map { Int($0.doubleValue(for: .minute()).rounded()) }
+        return total.map { min(1440, Int($0.doubleValue(for: .minute()).rounded())) }
     }
 }

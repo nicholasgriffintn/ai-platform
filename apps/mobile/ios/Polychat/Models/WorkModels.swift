@@ -207,3 +207,125 @@ struct EnvironmentResponse<Detail: Decodable>: Decodable {
 struct EnvironmentListResponse<Detail: Decodable>: Decodable {
     let data: [EnvironmentResponse<Detail>]
 }
+
+extension WorkAttentionItem {
+    var needsAction: Bool {
+        kind == "approval" || kind == "input" || kind == "review"
+    }
+
+    var isRunning: Bool {
+        kind == "running"
+    }
+
+    var target: MobileWorkTarget {
+        MobileWorkTarget(
+            workspaceId: workspaceId,
+            projectId: projectId,
+            conversationId: conversationId,
+            taskId: type == "run" ? nil : resourceId,
+            runId: type == "run" ? resourceId : nil,
+            interactionId: nil
+        )
+    }
+}
+
+struct BackgroundTaskListResponse: Decodable {
+    let tasks: [BackgroundTask]
+
+    enum CodingKeys: String, CodingKey {
+        case tasks = "data"
+    }
+}
+
+struct BackgroundTask: Decodable, Identifiable, Equatable {
+    let id: String
+    let taskType: String
+    let status: String?
+    let errorMessage: String?
+    let createdAt: String
+    let updatedAt: String?
+    let metadata: [String: JSONValue]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, status, metadata
+        case taskType = "task_type"
+        case errorMessage = "error_message"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+
+    var isActive: Bool {
+        ["pending", "queued", "running"].contains(status ?? "")
+    }
+
+    var title: String {
+        metadata?["title"]?.stringValue ?? taskType.replacingOccurrences(of: "_", with: " ").capitalized
+    }
+}
+
+struct WorkspaceListResponse: Decodable {
+    let data: [WorkspaceSummary]
+}
+
+struct WorkspaceSummary: Decodable, Identifiable, Equatable {
+    let id: String
+    let name: String
+    let role: String
+}
+
+struct WorkspaceDetail: Decodable, Equatable {
+    let id: String
+    let name: String
+    let projects: [ProjectSummary]
+}
+
+struct ProjectSummary: Decodable, Identifiable, Equatable {
+    let id: String
+    let workspaceId: String
+    let name: String
+    let description: String
+    let colour: String
+    let conversationCount: Int?
+}
+
+struct ProjectDetail: Decodable, Equatable {
+    let id: String
+    let name: String
+    let conversations: [ProjectConversation]
+}
+
+struct ProjectConversation: Decodable, Identifiable, Equatable {
+    struct Creator: Decodable, Equatable {
+        let name: String?
+    }
+
+    let id: String
+    let title: String?
+    let createdAt: String
+    let updatedAt: String?
+    let lastMessageAt: String?
+    let messageCount: Int
+    let isPinned: Bool
+    let isUnread: Bool
+    let createdBy: Creator
+
+    var activityDate: Date {
+        AppDateParser.parse(lastMessageAt ?? updatedAt ?? createdAt, fallback: Date.distantPast)
+    }
+
+    func conversation(projectId: String) -> Conversation {
+        var conversation = Conversation(
+            id: id,
+            title: title ?? "Untitled conversation",
+            messages: [],
+            createdAt: AppDateParser.parse(createdAt, fallback: Date()),
+            isLoadedFromAPI: true,
+            lastMessageAt: AppDateParser.parse(lastMessageAt ?? updatedAt),
+            messageCount: messageCount
+        )
+        conversation.projectId = projectId
+        conversation.isPinned = isPinned
+        conversation.isUnread = isUnread
+        return conversation
+    }
+}

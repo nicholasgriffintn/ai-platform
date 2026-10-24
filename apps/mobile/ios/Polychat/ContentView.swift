@@ -1,303 +1,244 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.scenePhase) private var scenePhase
-    @EnvironmentObject var authManager: AuthenticationManager
-    @EnvironmentObject var conversationManager: ConversationManager
-    @EnvironmentObject var modelsStore: ModelsStore
-    @EnvironmentObject var notificationManager: TaskNotificationManager
-    @EnvironmentObject var pushNotificationManager: PushNotificationManager
-    @EnvironmentObject var polyStore: PolyStore
-    @EnvironmentObject var teammatesStore: TeammatesStore
-    @EnvironmentObject var ageGateStore: AgeGateStore
-    @State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
-    @State private var selectedConversationID: String?
-    @State private var showingSettings = false
-    @State private var showingRecipes = false
-    @State private var showingDiscover = false
-    @State private var showingInbox = false
-    @State private var outputReviewTarget: OutputReviewTarget?
-    @State private var showingWork = false
-    @State private var showingPoly = false
-    @State private var showingTeammates = false
-    @State private var selectedWorkTarget: MobileWorkTarget?
-    @State private var conversationLoadTask: Task<Void, Never>?
-
-    private var isLoadingSelectedConversation: Bool {
-        guard let selectedConversationID else {
-            return false
-        }
-
-        return conversationManager.currentConversation?.id != selectedConversationID ||
-        conversationManager.loadingConversationID == selectedConversationID
-    }
+    @EnvironmentObject private var authManager: AuthenticationManager
 
     var body: some View {
         Group {
             if authManager.isLoading {
                 LaunchLoadingView()
             } else if authManager.isAuthenticated {
-                NavigationSplitView(columnVisibility: $columnVisibility) {
-                    ConversationListView(
-                        selectedConversationID: $selectedConversationID,
-                        onShowSettings: {
-                            showingSettings = true
-                        },
-                        onShowRecipes: {
-                            showingRecipes = true
-                        },
-                        onShowInbox: {
-                            showingInbox = true
-                        },
-                        onShowWork: {
-                            showingWork = true
-                        },
-                        onShowPoly: {
-                            showingPoly = true
-                        },
-                        onShowTeammates: {
-                            showingTeammates = true
-                        },
-                        onShowDiscover: {
-                            showingDiscover = true
-                        }
-                    )
-                } detail: {
-                    if conversationManager.currentConversation != nil {
-                        ChatView()
-                    } else if isLoadingSelectedConversation {
-                        ConversationLoadingView()
-                    } else {
-                        EmptyConversationView()
-                    }
-                }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView()
-                }
-                .sheet(isPresented: $showingRecipes) {
-                    RecipesView { setup in
-                        showingRecipes = false
-                        startRecipeConversation(setup)
-                    }
-                }
-                .sheet(isPresented: $showingDiscover) {
-                    DiscoverView { prompt in
-                        showingDiscover = false
-                        startDiscoverConversation(prompt)
-                    }
-                }
-                .sheet(isPresented: $showingInbox) {
-                    TaskInboxView()
-                }
-                .sheet(isPresented: $showingPoly) {
-                    PolyView { conversationId in
-                        openPolyItem(conversationId)
-                    }
-                }
-                .sheet(isPresented: $showingTeammates, onDismiss: {
-                    conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
-                }) {
-                    TeammatesView(
-                        onOpenConversation: openRosterRow,
-                        onStartConversation: startTeammateConversation
-                    )
-                }
-                .sheet(item: $outputReviewTarget) { target in
-                    OutputRevisionReviewView(outputId: target.id)
-                }
-                .sheet(isPresented: $showingWork) {
-                    WorkView { conversationId in
-                        selectedConversationID = conversationId
-                    }
-                }
-                .sheet(item: $selectedWorkTarget) { target in
-                    if let runId = target.runId {
-                        WorkRunView(runId: runId)
-                    } else if let taskId = target.taskId {
-                        WorkTaskView(
-                            projectId: target.projectId,
-                            taskId: taskId,
-                            focusedInteractionId: target.interactionId
-                        ) { conversationId in
-                            selectedWorkTarget = nil
-                            selectedConversationID = conversationId
-                        }
-                    }
-                }
-                .task(id: authManager.isAuthenticated) {
-                    ageGateStore.reset()
-                    if authManager.isAuthenticated {
-                        await conversationManager.loadConversations()
-                        modelsStore.applyAccountDefaults(authManager.userSettings)
-                        await modelsStore.fetchModels()
-                        await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
-                        await pushNotificationManager.enableForAuthenticatedUser()
-                        await polyStore.refresh()
-                        await teammatesStore.refresh()
-                        conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
-                        if let polyConversationId = polyStore.agenda?.conversationId {
-                            conversationManager.bindTeammates([polyConversationId: PolyStore.teammateId])
-                        }
-                        if let target = pushNotificationManager.targetToOpen {
-                            openWorkTarget(target)
-                        }
-                    } else {
-                        await pushNotificationManager.unregisterForSignedOutUser()
-                        await polyStore.reset()
-                        teammatesStore.reset()
-                        conversationManager.reset()
-                        selectedConversationID = nil
-                        await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
-                    }
-                }
-                .onChange(of: notificationManager.requestedInboxItemId) { _, itemId in
-                    if itemId != nil {
-                        showingInbox = true
-                    }
-                }
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .active {
-                        Task {
-                            await notificationManager.refresh()
-                            await polyStore.refresh()
-                        }
-                    }
-                }
-                .onChange(of: pushNotificationManager.targetToOpen) { _, target in
-                    guard let target else { return }
-                    openWorkTarget(target)
-                }
-                .onChange(of: pushNotificationManager.linkToOpen) { _, url in
-                    guard let url else { return }
-                    pushNotificationManager.linkToOpen = nil
-                    openIncomingURL(url)
-                }
-                .onChange(of: selectedConversationID) { _, conversationID in
-                    guard let conversationID else {
-                        return
-                    }
-
-                    conversationLoadTask?.cancel()
-                    conversationLoadTask = Task {
-                        await conversationManager.loadConversationMessages(id: conversationID)
-                    }
-                }
-                .onChange(of: conversationManager.currentConversation?.id) { _, conversationID in
-                    if selectedConversationID != conversationID {
-                        selectedConversationID = conversationID
-                    }
-                }
+                RootTabView()
             } else {
                 LoginView()
             }
         }
         .onOpenURL { url in
-            openIncomingURL(url)
-        }
-    }
-
-    private func openIncomingURL(_ url: URL) {
-        if !pushNotificationManager.handleOpenURL(url) {
             authManager.handleOpenURL(url)
-            notificationManager.handleDeepLink(url)
-            if let outputId = OutputReviewDeepLink.outputId(from: url) {
-                outputReviewTarget = OutputReviewTarget(id: outputId)
-            }
-            if PolyDeepLink.matches(url) {
-                showingPoly = true
-            }
-            if DiscoverDeepLink.matches(url) {
-                showingDiscover = true
-            }
         }
     }
+}
 
-    private func startDiscoverConversation(_ prompt: String) {
-        let conversation = conversationManager.startNewConversation()
-        selectedConversationID = conversation.id
+private struct RootTabView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var authManager: AuthenticationManager
+    @EnvironmentObject private var conversationManager: ConversationManager
+    @EnvironmentObject private var modelsStore: ModelsStore
+    @EnvironmentObject private var notificationManager: TaskNotificationManager
+    @EnvironmentObject private var pushNotificationManager: PushNotificationManager
+    @EnvironmentObject private var polyStore: PolyStore
+    @EnvironmentObject private var teammatesStore: TeammatesStore
+    @EnvironmentObject private var ageGateStore: AgeGateStore
+    @EnvironmentObject private var discoverStore: DiscoverStore
+    @EnvironmentObject private var attentionStore: AttentionStore
+    @EnvironmentObject private var workStore: WorkStore
+    @EnvironmentObject private var healthSync: HealthSyncController
+    @EnvironmentObject private var syncClient: DeviceSyncClient
+    @State private var selectedTab: AppTab = .home
+    @State private var chatsPath: [ChatsRoute] = []
+    @State private var chatsMode: ChatsMode = .chat
+    @State private var workTarget: MobileWorkTarget?
+    @State private var outputReviewTarget: OutputReviewTarget?
+    @State private var companionSync: CompanionSync?
 
-        Task {
-            guard await ageGateStore.ensureConfirmed() else {
-                return
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            Tab("Home", systemImage: "sun.horizon", value: AppTab.home) {
+                HomeView(onAsk: startConversation)
             }
 
-            do {
-                try await conversationManager.addMessage(ChatMessage(role: "user", content: prompt))
-            } catch {
-                conversationManager.error = "Failed to start the conversation: \(error.localizedDescription)"
+            Tab("Chats", systemImage: "bubble.left.and.bubble.right", value: AppTab.chats) {
+                ChatsView(path: $chatsPath, mode: $chatsMode)
+            }
+
+            Tab("Attention", systemImage: "bell", value: AppTab.attention) {
+                AttentionView(selectedTarget: $workTarget, onOpenConversation: openConversation)
+            }
+            .badge(attentionStore.badgeCount(inboxUnread: notificationManager.unread))
+
+            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
+                SettingsView()
             }
         }
-    }
-
-    private func startRecipeConversation(_ setup: AssistantRecipeInstallResponse) {
-        let conversation = conversationManager.startNewConversation()
-        selectedConversationID = conversation.id
-
-        Task {
-            guard await ageGateStore.ensureConfirmed() else {
-                return
-            }
-
-            do {
-                let settings = setup.enabledTools.isEmpty
-                ? nil
-                : ChatSettings(enabledTools: setup.enabledTools)
-                try await conversationManager.addMessage(
-                    ChatMessage(role: "user", content: setup.conversationStarter),
-                    settings: settings
-                )
-            } catch {
-                conversationManager.error = "Failed to start recipe: \(error.localizedDescription)"
-            }
-        }
-    }
-
-    private func openPolyItem(_ conversationId: String) {
-        if conversationId == polyStore.agenda?.conversationId {
-            Task {
-                await conversationManager.openTeammateConversation(
-                    id: conversationId,
-                    teammateId: PolyStore.teammateId,
-                    title: "Poly"
+        .sheet(item: $workTarget) { target in
+            if let runId = target.runId {
+                WorkRunView(runId: runId)
+            } else if let taskId = target.taskId {
+                WorkTaskView(
+                    projectId: target.projectId,
+                    taskId: taskId,
+                    focusedInteractionId: target.interactionId,
+                    onOpenConversation: { conversationId in
+                        workTarget = nil
+                        openConversation(conversationId)
+                    }
                 )
             }
+        }
+        .sheet(item: $outputReviewTarget) { target in
+            OutputRevisionReviewView(outputId: target.id)
+        }
+        .task {
+            await start()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .active:
+                syncClient.resume()
+                Task { await refreshOnForeground() }
+            case .background:
+                syncClient.suspend()
+            default:
+                break
+            }
+        }
+        .onChange(of: conversationManager.currentConversation?.id) { _, conversationId in
+            syncClient.focus(conversationId: selectedTab == .chats && !chatsPath.isEmpty ? conversationId : nil)
+        }
+        .onChange(of: chatsPath) { _, path in
+            syncClient.focus(conversationId: path.isEmpty ? nil : conversationManager.currentConversation?.id)
+        }
+        .onChange(of: notificationManager.unread) { _, unread in
+            Task { await attentionStore.publish(inboxUnread: unread) }
+        }
+        .onChange(of: notificationManager.requestedInboxItemId) { _, itemId in
+            if itemId != nil {
+                selectedTab = .attention
+            }
+        }
+        .onChange(of: pushNotificationManager.targetToOpen) { _, target in
+            guard let target else { return }
+            open(target)
+        }
+        .onChange(of: pushNotificationManager.linkToOpen) { _, url in
+            guard let url else { return }
+            pushNotificationManager.linkToOpen = nil
+            handle(url)
+        }
+        .onOpenURL(perform: handle)
+        .onDisappear {
+            Task { await stop() }
+        }
+    }
+
+    private func start() async {
+        ageGateStore.reset()
+        if let userId = authManager.user?.id {
+            companionSync = CompanionSync(
+                client: syncClient,
+                conversations: conversationManager,
+                attention: attentionStore,
+                inbox: notificationManager,
+                discover: discoverStore,
+                work: workStore
+            )
+            syncClient.start(userId: userId)
+        }
+
+        async let conversations: Void = conversationManager.loadConversations()
+        modelsStore.applyAccountDefaults(authManager.userSettings)
+        async let models: Void = modelsStore.fetchModels()
+        _ = await (conversations, models)
+
+        await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
+        await attentionStore.refresh(inboxUnread: notificationManager.unread)
+        await pushNotificationManager.enableForAuthenticatedUser()
+        await healthSync.syncIfNeeded()
+        await bindTeammates()
+
+        if let target = pushNotificationManager.targetToOpen {
+            open(target)
+        }
+    }
+
+    private func stop() async {
+        syncClient.stop()
+        companionSync = nil
+        await pushNotificationManager.unregisterForSignedOutUser()
+        polyStore.reset()
+        teammatesStore.reset()
+        conversationManager.reset()
+        discoverStore.reset()
+        workStore.reset()
+        healthSync.reset()
+        WidgetPublisher.clear()
+        await attentionStore.reset()
+        await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
+        chatsPath = []
+    }
+
+    private func refreshOnForeground() async {
+        companionSync?.refreshEverything()
+        await healthSync.syncIfNeeded()
+        if selectedTab == .home {
+            await discoverStore.refresh()
+        }
+    }
+
+    private func bindTeammates() async {
+        await polyStore.refresh()
+        await teammatesStore.refresh()
+        conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
+        if let polyConversationId = polyStore.agenda?.conversationId {
+            conversationManager.bindTeammates([polyConversationId: PolyStore.teammateId])
+        }
+    }
+
+    private func startConversation(_ prompt: String) {
+        let conversation = conversationManager.startNewConversation()
+        chatsMode = .chat
+        chatsPath = [.conversation(conversation.id)]
+        selectedTab = .chats
+
+        Task {
+            guard await ageGateStore.ensureConfirmed() else { return }
+            try? await conversationManager.addMessage(ChatMessage(role: "user", content: prompt))
+        }
+    }
+
+    private func openConversation(_ conversationId: String) {
+        chatsPath = [.conversation(conversationId)]
+        selectedTab = .chats
+    }
+
+    private func open(_ target: MobileWorkTarget) {
+        pushNotificationManager.targetToOpen = nil
+        if target.runId != nil || target.taskId != nil {
+            selectedTab = .attention
+            workTarget = target
+        } else if let conversationId = target.conversationId {
+            openConversation(conversationId)
         } else {
-            selectedConversationID = conversationId
+            selectedTab = .attention
         }
     }
 
-    private func openRosterRow(_ row: TeammateRosterRow) {
-        guard let teammateId = row.entry.leadTeammateId else {
-            selectedConversationID = row.entry.conversationId
+    private func handle(_ url: URL) {
+        if pushNotificationManager.handleOpenURL(url) {
             return
         }
 
-        Task {
-            await conversationManager.openTeammateConversation(
-                id: row.entry.conversationId,
-                teammateId: teammateId,
-                title: row.title
-            )
-        }
-    }
+        notificationManager.handleDeepLink(url)
 
-    private func startTeammateConversation(_ teammate: TeammateSummary) {
-        let conversation = conversationManager.startTeammateConversation(
-            teammateId: teammate.id,
-            title: teammate.name
-        )
-        selectedConversationID = conversation.id
-    }
-
-    private func openWorkTarget(_ target: MobileWorkTarget) {
-        if target.runId != nil || target.taskId != nil {
-            selectedWorkTarget = target
-        } else if let conversationId = target.conversationId {
-            selectedConversationID = conversationId
-        } else {
-            showingWork = true
+        if let outputId = OutputReviewDeepLink.outputId(from: url) {
+            outputReviewTarget = OutputReviewTarget(id: outputId)
+            return
         }
-        pushNotificationManager.targetToOpen = nil
+
+        switch AppRoute.parse(url) {
+        case .tab(let tab):
+            selectedTab = tab
+        case .conversation(let id):
+            openConversation(id)
+        case .poly:
+            if let conversationId = polyStore.agenda?.conversationId {
+                openConversation(conversationId)
+            } else {
+                selectedTab = .chats
+            }
+        case nil:
+            break
+        }
     }
 }
 
@@ -305,64 +246,13 @@ private struct OutputReviewTarget: Identifiable {
     let id: String
 }
 
-private struct ConversationLoadingView: View {
+private struct LaunchLoadingView: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
+            PolyMark(size: 74)
             ProgressView()
-            Text("Loading conversation...")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.polychat.background)
     }
-}
-
-private struct LaunchLoadingView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            PolychatLogoView(size: 74)
-            ProgressView()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-    }
-}
-
-private struct EmptyConversationView: View {
-    @EnvironmentObject var conversationManager: ConversationManager
-
-    var body: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "bubble.left.and.text.bubble.right")
-                .font(.system(size: 52, weight: .regular))
-                .foregroundStyle(Color.polychat.primary)
-            VStack(spacing: 6) {
-                Text("Conversation")
-                    .font(.title2.weight(.semibold))
-                Text("Start a new chat or choose one from the list.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            Button {
-                _ = conversationManager.startNewConversation()
-            } label: {
-                Label("New Chat", systemImage: "square.and.pencil")
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemGroupedBackground))
-    }
-}
-
-#Preview {
-    ContentView()
-        .environmentObject(AuthenticationManager())
-        .environmentObject(ConversationManager())
-        .environmentObject(ModelsStore())
-        .environmentObject(TaskNotificationManager())
-        .environmentObject(PushNotificationManager.shared)
 }

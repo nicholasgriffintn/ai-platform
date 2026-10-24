@@ -24,7 +24,7 @@ struct InlineArtifactCalloutView: View {
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
-                    Text("Click here to open the \(isCode ? "code" : "file")")
+                    Text("Tap to open the \(isCode ? "code" : "file")")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

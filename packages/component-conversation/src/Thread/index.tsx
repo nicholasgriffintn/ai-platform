@@ -37,8 +37,9 @@ import {
   useConversationScope,
   useConversationStorage,
   getSiblingConversationPath,
+  useToolApprovalBatch,
 } from "@ngriffin_uk/polychat-library-react";
-import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
+import type { ChatSuggestion, ToolApprovalDecision } from "@ngriffin_uk/polychat-library-react";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
@@ -87,6 +88,7 @@ import { ComposerBanner } from "./ComposerBanner/index.js";
 import { FooterInfo } from "./FooterInfo.js";
 import { MessageList } from "./MessageList.js";
 import { resolveThreadModeConfig, type ThreadSurface } from "./surface-profiles.js";
+import { ToolApprovalBatchBar } from "./ToolApprovalBatchBar.js";
 import { useApprovalRules } from "./useApprovalRules.js";
 import { useAssistantActionSubmit } from "./useAssistantActionSubmit.js";
 import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
@@ -305,6 +307,35 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     },
     [currentConversationId, modeConfig?.requestOptions, respondToExistingConversation],
   );
+
+  const submitApprovalBatch = useCallback(
+    async (decisions: ToolApprovalDecision[]) => {
+      const [first] = decisions;
+
+      if (!currentConversationId || !first) {
+        throw new Error("The conversation is no longer available");
+      }
+
+      const response = await respondToExistingConversation(currentConversationId, {
+        requestOptions: mergeChatRequestOptions(modeConfig?.requestOptions, {
+          options: {
+            toolInteraction: first,
+            ...(decisions.length > 1 ? { toolInteractions: decisions } : {}),
+          },
+        }),
+      });
+
+      if (response.status === "error") {
+        throw new Error(response.response || "The approvals could not be submitted");
+      }
+    },
+    [currentConversationId, modeConfig?.requestOptions, respondToExistingConversation],
+  );
+  const approvalBatch = useToolApprovalBatch({
+    messages,
+    isStreaming: isStreamLoading || streamStarted,
+    submit: submitApprovalBatch,
+  });
 
   const chatInputRef = useRef<ChatInputHandle>(null);
   const autoSubmittedKeyRef = useRef<string | null>(null);
@@ -862,6 +893,10 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           interactionId &&
           (resolution === "approved" || resolution === "rejected")
         ) {
+          if (approvalBatch.record({ toolName, response: data })) {
+            return;
+          }
+
           if (!currentConversationId) {
             throw new Error("The conversation is no longer available");
           }
@@ -941,6 +976,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     },
     [
       applyApprovalRule,
+      approvalBatch,
       currentConversationId,
       trackFeatureUsage,
       uploadInteractionFiles,
@@ -1117,6 +1153,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           <ChatRunStatusBanner response={currentConversation.latest_response} />
         ) : null}
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
+        <ToolApprovalBatchBar batch={approvalBatch} />
         {modeConfig?.composerBanner}
         {followUpQueue ? (
           <QueuedFollowUps messages={followUpQueue.messages} onRemove={followUpQueue.onRemove} />

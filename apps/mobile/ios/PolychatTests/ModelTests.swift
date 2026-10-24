@@ -4,14 +4,6 @@ import UIKit
 @testable import Polychat
 
 struct ModelTests {
-    @Test func deploymentActionsRespectProviderPauseSupport() throws {
-        let deployment = try JSONDecoder().decode(ModelDeploymentItem.self, from: Data("""
-        {"id":"deployment","name":"Model","displayName":"Model","status":"running","provider":"google-vertex","hourlyUsd":1,"pauseSupported":false}
-        """.utf8))
-        #expect(!deployment.canPause)
-        #expect(!deployment.canResume)
-    }
-
     @Test func taskInboxDecodesReadStateAndCurrentDeepLink() throws {
         let inbox = try JSONDecoder().decode(TaskInboxResponse.self, from: Data("""
         {
@@ -489,50 +481,6 @@ struct ModelTests {
         }
         #expect(dropped.isEmpty)
         #expect(!decoded.isEmpty)
-    }
-
-    @Test func recipeInstallResponseDecodesOptionalInstallationAndNullConfigurationValues() throws {
-        let data = Data("""
-        {
-            "recipe": {
-                "id": "daily-weather",
-                "title": "Daily Weather",
-                "summary": "Forecast",
-                "description": "Forecast",
-                "kind": "automate",
-                "category": "Productivity",
-                "featured": false,
-                "integrations": [],
-                "triggers": [],
-                "actions": [],
-                "setupPrompt": "Set up weather",
-                "enabledTools": ["get_weather"],
-                "configurationFields": [
-                    {
-                        "key": "location",
-                        "label": "Location",
-                        "type": "text",
-                        "required": true,
-                        "defaultValue": null
-                    }
-                ]
-            },
-            "conversationStarter": "Set up weather",
-            "messageUrl": "/?query=Set%20up%20weather",
-            "checklist": [],
-            "connections": [],
-            "readyToRun": true,
-            "enabledTools": ["get_weather"]
-        }
-        """.utf8)
-        let configurationData = Data(#"{"location":null}"#.utf8)
-
-        let response = try JSONDecoder().decode(AssistantRecipeInstallResponse.self, from: data)
-        let configuration = try JSONDecoder().decode(RecipeConfiguration.self, from: configurationData)
-
-        #expect(response.installation == nil)
-        #expect(configuration["location"] == .null)
-        #expect(response.recipe.configurationFields.first?.defaultValue == nil)
     }
 
     @Test func createResponseRequestSerializesMessagesForAPI() throws {

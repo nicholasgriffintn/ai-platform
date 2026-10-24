@@ -139,7 +139,7 @@ struct StreamingToolActivity {
     ) -> ChatMessage {
         let resultTimestamp = result.timestamp ?? timestamp
 
-        return ChatMessage(
+        var message = ChatMessage(
             id: id,
             role: "tool",
             content: "",
@@ -163,5 +163,7 @@ struct StreamingToolActivity {
             logId: result.logId,
             timestamp: resultTimestamp
         )
+        message.approvalRequest = ToolApprovalRequest(data: result.structuredData)
+        return message
     }
 }

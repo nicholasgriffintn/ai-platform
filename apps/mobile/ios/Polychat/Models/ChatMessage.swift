@@ -280,6 +280,13 @@ public enum JSONValue: Codable, Equatable {
         return nil
     }
 
+    public var intValue: Int? {
+        if case .number(let value) = self {
+            return Int(value)
+        }
+        return nil
+    }
+
     public var boolValue: Bool? {
         if case .bool(let value) = self {
             return value
@@ -317,10 +324,6 @@ public enum JSONValue: Codable, Equatable {
 }
 
 public struct ChatMessage: Codable, Identifiable, Equatable {
-    public static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
-        lhs.id == rhs.id
-    }
-
     public let id: String
     public let role: String
     public let content: MessageContent
@@ -337,6 +340,7 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
     public let logId: String?
     public let created: Double?
     public let timestamp: Double?
+    var approvalRequest: ToolApprovalRequest?
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -585,6 +589,9 @@ public struct ChatMessage: Codable, Identifiable, Equatable {
         logId = try container.decodeIfPresent(String.self, forKey: .logId)
         created = try container.decodeIfPresent(Double.self, forKey: .created)
         timestamp = try container.decodeIfPresent(Double.self, forKey: .timestamp)
+        approvalRequest = role == "tool"
+            ? ToolApprovalRequest(data: try? container.decodeIfPresent(JSONValue.self, forKey: .data))
+            : nil
     }
 
     public mutating func extractArtifacts() {

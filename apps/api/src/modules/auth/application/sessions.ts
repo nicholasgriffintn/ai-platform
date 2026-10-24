@@ -5,6 +5,7 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { AUTH_SESSION_TTL_MS } from "~/config/app";
 import {
   resolveServiceContext,
   type ServiceContext,
@@ -303,5 +304,5 @@ export function createLogoutCookie(): string {
 }
 
 export function createSessionCookie(sessionId: string): string {
-  return `session=${sessionId}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=604800`;
+  return `session=${sessionId}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=${AUTH_SESSION_TTL_MS / 1_000}`;
 }

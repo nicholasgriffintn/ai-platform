@@ -8,68 +8,50 @@ extension Color {
 }
 
 struct PolychatColors {
-    let primary = Color(red: 37/255, green: 99/255, blue: 235/255)
-    let primaryHover = Color(red: 29/255, green: 78/255, blue: 216/255)
-    let offWhite = Color(red: 250/255, green: 250/255, blue: 248/255)
-    let offWhiteHighlight = Color(red: 244/255, green: 244/255, blue: 242/255)
+    let zinc100 = Color(rgb: 244, 244, 245)
+    let zinc400 = Color(rgb: 161, 161, 170)
+    let zinc500 = Color(rgb: 113, 113, 122)
+    let zinc800 = Color(rgb: 39, 39, 42)
 
-    let success = Color(red: 34/255, green: 197/255, blue: 94/255)
-    let warning = Color(red: 251/255, green: 191/255, blue: 36/255)
-    let error = Color(red: 239/255, green: 68/255, blue: 68/255)
+    var canvas: Color { Color(light: Color(rgb: 249, 250, 252), dark: Color(rgb: 4, 8, 16)) }
+    var surface: Color { Color(light: Color(rgb: 255, 255, 255), dark: Color(rgb: 7, 13, 21)) }
+    var surfaceElevated: Color { Color(light: Color(rgb: 242, 245, 250), dark: Color(rgb: 13, 19, 27)) }
+    var text: Color { Color(light: Color(rgb: 12, 18, 26), dark: Color(rgb: 232, 235, 241)) }
+    var textMuted: Color { Color(light: Color(rgb: 90, 100, 114), dark: Color(rgb: 164, 172, 181)) }
+    var primary: Color { Color(light: Color(rgb: 46, 98, 201), dark: Color(rgb: 57, 110, 214)) }
+    var primaryForeground: Color { Color(rgb: 248, 250, 253) }
+    var activeWork: Color { Color(light: Color(rgb: 7, 108, 146), dark: Color(rgb: 72, 191, 245)) }
+    var success: Color { Color(light: Color(rgb: 19, 119, 56), dark: Color(rgb: 111, 200, 132)) }
+    var creative: Color { Color(light: Color(rgb: 119, 80, 177), dark: Color(rgb: 180, 141, 244)) }
+    var attention: Color { Color(light: Color(rgb: 147, 105, 13), dark: Color(rgb: 237, 183, 85)) }
+    var error: Color { Color(light: Color(rgb: 201, 47, 51), dark: Color(rgb: 250, 112, 106)) }
+    var selection: Color { Color(light: Color(rgb: 218, 233, 254), dark: Color(rgb: 26, 42, 61)) }
+    var border: Color { Color(light: Color(rgb: 217, 223, 230), dark: Color(rgb: 31, 37, 44)) }
+    var borderStrong: Color { Color(light: Color(rgb: 134, 144, 157), dark: Color(rgb: 92, 100, 111)) }
 
-    let zinc50 = Color(red: 250/255, green: 250/255, blue: 250/255)
-    let zinc100 = Color(red: 244/255, green: 244/255, blue: 245/255)
-    let zinc200 = Color(red: 228/255, green: 228/255, blue: 231/255)
-    let zinc300 = Color(red: 212/255, green: 212/255, blue: 216/255)
-    let zinc400 = Color(red: 161/255, green: 161/255, blue: 170/255)
-    let zinc500 = Color(red: 113/255, green: 113/255, blue: 122/255)
-    let zinc600 = Color(red: 82/255, green: 82/255, blue: 91/255)
-    let zinc700 = Color(red: 63/255, green: 63/255, blue: 70/255)
-    let zinc800 = Color(red: 39/255, green: 39/255, blue: 42/255)
-    let zinc900 = Color(red: 24/255, green: 24/255, blue: 27/255)
-
-    var messageUserBackground: Color {
-        Color(light: offWhiteHighlight, dark: zinc800)
-    }
-
-    var messageAssistantBackground: Color {
-        Color.clear
-    }
-
-    var border: Color {
-        Color(light: zinc200, dark: zinc700)
-    }
-
-    var background: Color {
-        Color(light: offWhite, dark: Color(red: 18/255, green: 18/255, blue: 20/255))
-    }
-
-    var secondaryBackground: Color {
-        Color(light: zinc50, dark: zinc900)
-    }
-
-    var sidebarBackground: Color {
-        Color(light: zinc50, dark: Color(red: 20/255, green: 20/255, blue: 23/255))
-    }
-
-    var composerBackground: Color {
-        Color(light: offWhite, dark: Color(red: 18/255, green: 18/255, blue: 18/255))
-    }
-
-    var elevatedBackground: Color {
-        Color(light: .white, dark: zinc800)
-    }
-
-    var prominentControlBackground: Color {
-        Color(light: zinc900, dark: offWhite)
-    }
-
-    var prominentControlForeground: Color {
-        Color(light: offWhite, dark: zinc900)
-    }
+    var warning: Color { attention }
+    var background: Color { canvas }
+    var secondaryBackground: Color { surfaceElevated }
+    var elevatedBackground: Color { surface }
+    var composerBackground: Color { surface }
+    var messageUserBackground: Color { selection }
+    var prominentControlBackground: Color { primary }
+    var prominentControlForeground: Color { primaryForeground }
 }
 
 extension Color {
+    init(rgb red: Double, _ green: Double, _ blue: Double) {
+        self.init(red: red / 255, green: green / 255, blue: blue / 255)
+    }
+
+    init?(hex: String) {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        guard value.count == 6, let rgb = UInt32(value, radix: 16) else {
+            return nil
+        }
+        self.init(rgb: Double((rgb >> 16) & 0xFF), Double((rgb >> 8) & 0xFF), Double(rgb & 0xFF))
+    }
+
     init(light: Color, dark: Color) {
         #if os(iOS)
         self.init(uiColor: UIColor { traits in
@@ -81,29 +63,8 @@ extension Color {
     }
 }
 
-extension View {
-    func polychatPrimaryButton() -> some View {
-        self
-            .foregroundColor(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color.polychat.primary)
-            .cornerRadius(8)
-    }
-
-    func polychatSecondaryButton() -> some View {
-        self
-            .foregroundColor(Color.polychat.primary)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color.polychat.primary.opacity(0.1))
-            .cornerRadius(8)
-    }
-
-    func polychatCard() -> some View {
-        self
-            .background(Color.polychat.background)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+extension Font {
+    static func polychatDisplay(_ style: Font.TextStyle, weight: Font.Weight = .semibold) -> Font {
+        .system(style, design: .serif).weight(weight)
     }
 }

@@ -309,6 +309,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamCallCount = 0
     var streamedIdempotencyKey: String?
     var streamedAgentTeammateId: String?
+    var streamedProjectId: String?
+    var submittedApprovalBatches: [(responseId: String, decisions: [ToolApprovalDecision])] = []
     var streamError: Error?
     var updatedConversationTitles: [(id: String, title: String)] = []
     var updatedConversationPayloads: [(id: String, title: String?, messages: [ChatMessage]?, parentConversationId: String?, parentMessageId: String?)] = []
@@ -370,9 +372,11 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         idempotencyKey: String,
         modelTier: String?,
         computeSite: String,
-        agentTeammateId: String?
+        agentTeammateId: String?,
+        projectId: String?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         streamCallCount += 1
+        streamedProjectId = projectId
         streamedAgentTeammateId = agentTeammateId
         streamedMessages = messages
         streamedModelId = modelId
@@ -464,7 +468,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         approvalId: String,
         idempotencyKey: String,
         modelTier: String?,
-        computeSite: String
+        computeSite: String,
+        projectId: String?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         resumedConnectorApprovalId = approvalId
         return streamResponse(
@@ -476,7 +481,28 @@ final class ConversationAPIClientStub: ConversationAPIClient {
             idempotencyKey: idempotencyKey,
             modelTier: modelTier,
             computeSite: computeSite,
-            agentTeammateId: nil
+            agentTeammateId: nil,
+            projectId: projectId
+        )
+    }
+
+    func streamApprovalDecisions(
+        responseId: String,
+        decisions: [ToolApprovalDecision],
+        idempotencyKey: String
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        submittedApprovalBatches.append((responseId: responseId, decisions: decisions))
+        return streamResponse(
+            messages: [],
+            modelId: nil,
+            provider: nil,
+            conversationId: nil,
+            settings: nil,
+            idempotencyKey: idempotencyKey,
+            modelTier: nil,
+            computeSite: "hosted",
+            agentTeammateId: nil,
+            projectId: nil
         )
     }
 
@@ -532,15 +558,6 @@ final class ConversationAPIClientStub: ConversationAPIClient {
 
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse {
         TitleGenerationResponse(title: generatedTitle)
-    }
-
-    func reactToItem(
-        conversationId: String,
-        itemId: String,
-        emoji: String,
-        remove: Bool
-    ) async throws -> ItemReactionEnvelope {
-        throw URLError(.unsupportedURL)
     }
 
     func updateConversation(

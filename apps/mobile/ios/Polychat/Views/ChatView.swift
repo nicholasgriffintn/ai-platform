@@ -5,234 +5,146 @@ struct ChatView: View {
     @EnvironmentObject var modelsStore: ModelsStore
     @EnvironmentObject var apiClient: APIClient
     @EnvironmentObject var ageGateStore: AgeGateStore
+    @StateObject private var composer = ChatComposerController()
     @State private var messageText = ""
     @State private var selectedAttachments: [ComposerAttachment] = []
-    @State private var isUploadingAttachments = false
-    @State private var isTranscribingVoice = false
-    @State private var uploadError: String?
-    @State private var voiceError: String?
     @State private var showingModelSelector = false
-    @State private var showingChatSettings = false
-    @State private var showingArtifacts = false
-    @State private var showingContext = false
-    @State private var chatSettings = ChatSettings.default
-    @StateObject private var voiceRecorder = VoiceRecorder()
     @FocusState private var isMessageInputFocused: Bool
+    let projectName: String?
+    let onNewChat: (String?) -> Void
 
-    private var messages: [ChatMessage] {
-        conversationManager.currentConversation?.messages ?? []
+    private var conversation: Conversation? {
+        conversationManager.currentConversation
     }
 
-    private var isTemporaryConversation: Bool {
-        conversationManager.currentConversation?.isTemporary ?? false
+    private var messages: [ChatMessage] {
+        conversation?.messages ?? []
     }
 
     private var activeModelId: String? {
-        conversationManager.currentConversation?.modelId ??
-        conversationManager.selectedModelId ??
-        modelsStore.selectedModelId
+        conversation?.modelId ?? conversationManager.selectedModelId ?? modelsStore.selectedModelId
     }
 
     private var activeModelConfig: ModelConfigItem? {
-        guard let activeModelId else {
-            return nil
-        }
-
-        return modelsStore.model(withId: activeModelId)
+        activeModelId.flatMap { modelsStore.model(withId: $0) }
     }
 
     private var activeModelName: String {
-        guard let activeModelId else {
-            return "Select model"
+        if let activeModelId {
+            return activeModelConfig?.name ?? activeModelId
         }
-
-        return activeModelConfig?.name ?? activeModelId
-    }
-
-    private var activeModelProvider: String? {
-        activeModelConfig?.provider
-    }
-
-    private var modelReadinessMessage: String? {
-        modelsStore.readinessMessage(for: activeModelId)
+        if let tier = conversation?.modelTier ?? modelsStore.selectedModelTier {
+            return tier.capitalized
+        }
+        return "Auto"
     }
 
     private var currentResponse: PlatformResponse? {
-        conversationManager.currentConversation?.latestResponse
+        conversation?.latestResponse
     }
 
-    private var allArtifacts: [Artifact] {
-        messages.compactMap { message -> [Artifact]? in
-            var mutableMessage = message
-            if message.artifacts == nil {
-                mutableMessage.extractArtifacts()
-            }
-            return mutableMessage.artifacts
-        }.flatMap { $0 }
+    private var isStreaming: Bool {
+        conversation.map { conversationManager.isStreaming($0.id) } ?? false
     }
 
     var body: some View {
         VStack(spacing: 0) {
             MessageListView(
                 messages: messages,
-                isTemporaryConversation: isTemporaryConversation,
-                conversationModelId: activeModelId,
                 response: currentResponse,
+                activityLabel: conversationManager.turnActivityLabel(for: conversation?.id),
                 taskActivity: conversationManager.currentTaskActivity,
                 taskInteraction: conversationManager.currentTaskInteraction,
                 connectorApproval: conversationManager.currentConnectorApproval,
-                isLoadingConversation: conversationManager.loadingConversationID == conversationManager.currentConversation?.id,
-                hasMoreMessages: conversationManager.currentConversation?.hasMoreMessages == true,
+                isLoadingConversation: conversationManager.loadingConversationID == conversation?.id,
+                hasMoreMessages: conversation?.hasMoreMessages == true,
                 isLoadingEarlierMessages: conversationManager.isLoadingEarlierMessages,
-                onLoadEarlierMessages: {
-                    Task {
-                        await conversationManager.loadEarlierMessages()
-                    }
-                },
-                onAnswerTaskQuestions: { answers in
-                    Task {
-                        await conversationManager.answerCurrentTaskQuestions(answers)
-                    }
-                },
-                onResolveTaskApproval: { resolution in
-                    Task {
-                        await conversationManager.resolveCurrentTaskApproval(resolution)
-                    }
-                },
-                onRefreshTaskInteraction: {
-                    Task {
-                        await conversationManager.refreshCurrentTaskInteraction()
-                    }
-                },
-                onResolveConnectorApproval: { resolution in
-                    Task {
-                        await conversationManager.resolveCurrentConnectorApproval(resolution)
-                    }
-                },
-                onContinueConnectorApproval: {
-                    Task {
-                        await conversationManager.continueCurrentConnectorApproval()
-                    }
-                },
-                onRefreshConnectorApproval: {
-                    Task {
-                        await conversationManager.refreshCurrentConnectorApproval()
-                    }
-                },
-                onSuggestionSelected: { suggestion in
-                    messageText = suggestion
-                },
-                onDismissKeyboard: {
-                    isMessageInputFocused = false
-                }
+                emptyState: AnyView(ChatEmptyState(projectName: projectName)),
+                onLoadEarlierMessages: { Task { await conversationManager.loadEarlierMessages() } },
+                onAnswerTaskQuestions: { answers in Task { await conversationManager.answerCurrentTaskQuestions(answers) } },
+                onResolveTaskApproval: { resolution in Task { await conversationManager.resolveCurrentTaskApproval(resolution) } },
+                onRefreshTaskInteraction: { Task { await conversationManager.refreshCurrentTaskInteraction() } },
+                onResolveConnectorApproval: { resolution in Task { await conversationManager.resolveCurrentConnectorApproval(resolution) } },
+                onContinueConnectorApproval: { Task { await conversationManager.continueCurrentConnectorApproval() } },
+                onRefreshConnectorApproval: { Task { await conversationManager.refreshCurrentConnectorApproval() } },
+                onRetry: { message in Task { await conversationManager.regenerateAssistantMessage(message.id) } },
+                onEdit: { message, text in Task { await conversationManager.editUserMessage(message.id, text: text) } }
             )
+            .id(conversation?.id)
+
             if let machineResponse = currentResponse, machineResponse.provenance?.site == "machine", !machineResponse.isActive {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     Image(systemName: "desktopcomputer")
-                        .foregroundStyle(.secondary)
-                    Text("This conversation last ran on \(machineResponse.provenance?.vendor ?? "another machine").")
+                        .foregroundStyle(Color.polychat.textMuted)
+                    Text("Last ran on \(machineResponse.provenance?.vendor ?? "another machine")")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.polychat.textMuted)
                     Spacer()
                     Button("Continue here") {
                         conversationManager.setTierForCurrentConversation("medium")
                     }
-                    .buttonStyle(.bordered)
+                    .font(.caption.weight(.semibold))
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.polychat.elevatedBackground)
+                .padding(.vertical, 6)
             }
+
+            ToolApprovalBatchBar()
+
             MessageInputView(
                 messageText: $messageText,
                 selectedAttachments: $selectedAttachments,
                 inputFocus: $isMessageInputFocused,
-                isUploadingAttachments: isUploadingAttachments,
-                isRecordingVoice: voiceRecorder.isRecording,
-                isTranscribingVoice: isTranscribingVoice,
-                uploadError: uploadError,
-                voiceError: voiceError,
+                isUploadingAttachments: composer.isUploading,
+                isRecordingVoice: composer.isRecording,
+                isTranscribingVoice: composer.isTranscribing,
+                notice: composer.error ?? modelsStore.readinessMessage(for: activeModelId),
                 activeModelName: activeModelName,
-                activeModelProvider: activeModelProvider,
-                isTemporaryConversation: isTemporaryConversation,
-                modelReadinessMessage: modelReadinessMessage,
-                isRunActive: currentResponse?.isActive == true,
+                activeModelProvider: activeModelConfig?.provider,
+                isRunActive: isStreaming || currentResponse?.isActive == true,
                 isCancellationPending: currentResponse?.status == "cancelling",
-                onFilesPicked: uploadFiles,
+                onFilesPicked: { files in
+                    Task {
+                        selectedAttachments += await composer.upload(files, apiClient: apiClient)
+                    }
+                },
                 onVoiceTapped: {
                     isMessageInputFocused = false
-                    toggleVoiceRecording()
+                    Task {
+                        if let text = await composer.toggleDictation(apiClient: apiClient) {
+                            messageText += messageText.isEmpty ? text : "\n\(text)"
+                        }
+                    }
                 },
                 onModelTapped: {
                     isMessageInputFocused = false
                     showingModelSelector = true
                 },
-                onSettingsTapped: {
-                    isMessageInputFocused = false
-                    showingChatSettings = true
-                },
-                onStopRun: {
-                    Task {
-                        await conversationManager.cancelCurrentRun()
-                    }
-                },
+                onStopRun: { Task { await conversationManager.cancelCurrentRun() } },
                 sendMessage: sendMessage
             )
         }
         .background(Color.polychat.background)
-        .navigationTitle(conversationManager.currentConversation?.title ?? "New Chat")
-        #if os(iOS)
+        .navigationTitle(conversation?.title ?? "New chat")
         .navigationBarTitleDisplayMode(.inline)
-        #endif
         .toolbar {
-            if isTemporaryConversation {
-                ToolbarItem(placement: .principal) {
-                    Label("Session only", systemImage: "theatermasks")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel("Temporary conversation, kept for this session only")
-                }
-            }
-
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
+                Button {
                     isMessageInputFocused = false
-                    _ = conversationManager.startNewConversation()
-                }) {
+                    onNewChat(conversation?.projectId)
+                } label: {
                     Image(systemName: "square.and.pencil")
                 }
-                .accessibilityLabel("New Message")
-            }
-
-            ToolbarItem(placement: .secondaryAction) {
-                Button(action: {
-                    isMessageInputFocused = false
-                    showingContext = true
-                }) {
-                    Label("Context", systemImage: "book.pages")
-                }
-                .disabled(currentResponse?.context == nil && currentResponse?.usage == nil)
-            }
-
-            ToolbarItem(placement: .secondaryAction) {
-                Button(action: {
-                    isMessageInputFocused = false
-                    showingArtifacts = true
-                }) {
-                    Label("Artifacts", systemImage: "doc.text")
-                }
-                .disabled(allArtifacts.isEmpty)
+                .accessibilityLabel("New chat")
             }
         }
         .sheet(isPresented: $showingModelSelector) {
             ModelSelectorView(
                 onSelectModel: { modelId in
                     conversationManager.setModelForCurrentConversation(modelId)
-                    chatSettings.serviceTier = nil
                 },
                 onSelectTier: { tier in
                     conversationManager.setTierForCurrentConversation(tier)
-                    chatSettings.serviceTier = nil
                 },
                 validateSelection: { model in
                     let decision = ModelContinuity.evaluate(
@@ -248,36 +160,28 @@ struct ChatView: View {
         .sheet(isPresented: $ageGateStore.isPrompting) {
             AgeGateSheet()
         }
-        .sheet(isPresented: $showingChatSettings) {
-            ChatSettingsView(settings: $chatSettings, modelConfig: activeModelConfig)
-        }
-        .sheet(isPresented: $showingArtifacts) {
-            ArtifactsView(artifacts: allArtifacts)
-        }
-        .sheet(isPresented: $showingContext) {
-            if let response = currentResponse {
-                ChatContextView(context: response.context, usage: response.usage)
-            }
-        }
-        .task(id: currentResponse.map { "\($0.id):\($0.attempt)" }) {
+        .task(id: currentResponse.map { "\($0.id):\($0.attempt):\($0.status)" }) {
             await conversationManager.observeCurrentRun()
         }
         .task(id: activeModelId) {
             await modelsStore.refreshModelsIfNeeded(for: activeModelId)
         }
+        .onChange(of: isStreaming) { _, streaming in
+            if !streaming {
+                Task { await conversationManager.submitApprovalsIfReady() }
+            }
+        }
     }
-    
+
     private func sendMessage() {
-        let text = messageText
+        let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         let attachments = selectedAttachments
         let requestedModelId = activeModelId
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty else { return }
-        guard !isUploadingAttachments else { return }
+        guard !text.isEmpty || !attachments.isEmpty, !composer.isUploading else { return }
 
         Task { @MainActor in
             await modelsStore.refreshModelsIfNeeded(for: requestedModelId)
-            if modelsStore.readinessMessage(for: requestedModelId) != nil {
-                uploadError = nil
+            guard modelsStore.readinessMessage(for: requestedModelId) == nil else {
                 return
             }
 
@@ -285,146 +189,33 @@ struct ChatView: View {
                 return
             }
 
-            uploadError = nil
+            composer.error = nil
             messageText = ""
             selectedAttachments = []
 
-            do {
-                let userMessage: ChatMessage
-
-                if attachments.isEmpty {
-                    userMessage = ChatMessage(role: "user", content: text.trimmingCharacters(in: .whitespacesAndNewlines))
-                } else {
-                    var contentBlocks: [MessageContentBlock] = []
-
-                    let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !trimmedText.isEmpty {
-                        contentBlocks.append(.text(MessageContentBlock.TextBlock(text: trimmedText)))
-                    }
-
-                    for attachment in attachments {
-                        if attachment.type != .markdownDocument || attachment.markdown?.isEmpty == false {
-                            contentBlocks.append(attachment.contentBlock())
-                        }
-                    }
-
-                    userMessage = ChatMessage(role: "user", contentBlocks: contentBlocks)
-                }
-
-                try await conversationManager.addMessage(userMessage, settings: chatSettings)
-            } catch {
-                // Error is already handled in ConversationManager - shows error message in chat
-            }
+            try? await conversationManager.addMessage(ChatComposerController.message(text: text, attachments: attachments))
         }
     }
+}
 
-    private func uploadFiles(_ files: [PickedComposerFile]) {
-        guard !files.isEmpty else { return }
+private struct ChatEmptyState: View {
+    let projectName: String?
 
-        isUploadingAttachments = true
-        uploadError = nil
-
-        Task {
-            var uploadedAttachments: [ComposerAttachment] = []
-
-            do {
-                for file in files {
-                    let response = try await apiClient.uploadFile(
-                        data: file.data,
-                        fileName: file.fileName,
-                        mimeType: file.mimeType,
-                        fileType: file.fileType,
-                        convertToMarkdown: file.convertToMarkdown
-                    )
-                    uploadedAttachments.append(
-                        ComposerAttachment(
-                            type: attachmentType(from: response, fallbackFileType: file.fileType),
-                            url: response.url,
-                            name: response.name,
-                            markdown: response.markdown,
-                            thumbnail: file.thumbnail
-                        )
-                    )
-                }
-
-                await MainActor.run {
-                    selectedAttachments.append(contentsOf: uploadedAttachments)
-                    isUploadingAttachments = false
-                }
-            } catch {
-                await MainActor.run {
-                    uploadError = error.localizedDescription
-                    isUploadingAttachments = false
-                }
-            }
+    var body: some View {
+        VStack(spacing: 14) {
+            PolyMark(size: 64)
+            Text(projectName.map { "New conversation in \($0)" } ?? "What's on your mind?")
+                .font(.polychatDisplay(.title2))
+                .multilineTextAlignment(.center)
+            Text(projectName == nil
+                 ? "Ask anything. Replies sync with Polychat on your other devices."
+                 : "Everyone in the project can see this conversation.")
+                .font(.subheadline)
+                .foregroundStyle(Color.polychat.textMuted)
+                .multilineTextAlignment(.center)
         }
-    }
-
-    private func toggleVoiceRecording() {
-        if voiceRecorder.isRecording {
-            do {
-                let recordingURL = try voiceRecorder.stop()
-                transcribeRecording(at: recordingURL)
-            } catch {
-                voiceError = error.localizedDescription
-            }
-            return
-        }
-
-        voiceError = nil
-        Task {
-            do {
-                try await voiceRecorder.start()
-            } catch {
-                await MainActor.run {
-                    voiceError = error.localizedDescription
-                }
-            }
-        }
-    }
-
-    private func transcribeRecording(at url: URL) {
-        isTranscribingVoice = true
-        voiceError = nil
-
-        Task {
-            do {
-                defer {
-                    try? FileManager.default.removeItem(at: url)
-                }
-
-                let data = try Data(contentsOf: url)
-                let response = try await apiClient.transcribeAudio(
-                    data: data,
-                    fileName: url.lastPathComponent,
-                    mimeType: "audio/mp4"
-                )
-                await MainActor.run {
-                    let separator = messageText.isEmpty ? "" : "\n"
-                    messageText += "\(separator)\(response.response.content)"
-                    isTranscribingVoice = false
-                }
-            } catch {
-                await MainActor.run {
-                    voiceError = error.localizedDescription
-                    isTranscribingVoice = false
-                }
-            }
-        }
-    }
-
-    private func attachmentType(from response: UploadResponse, fallbackFileType: String) -> ComposerAttachmentType {
-        if response.type == "markdown_document" {
-            return .markdownDocument
-        }
-
-        switch fallbackFileType {
-        case "image":
-            return .image
-        case "audio":
-            return .audio
-        default:
-            return .document
-        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 120)
+        .padding(.horizontal, 24)
     }
 }

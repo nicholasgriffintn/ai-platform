@@ -28,6 +28,7 @@ const mockRepositories = {
 
 const mockGetUserByJwtToken = vi.fn();
 const mockAuthenticateSession = vi.hoisted(() => vi.fn());
+const mockTouchSession = vi.hoisted(() => vi.fn());
 const mockVerifyInternalServiceToken = vi.hoisted(() => vi.fn());
 const mockIsbot = vi.fn();
 const repositoryCtor = vi.fn();
@@ -73,6 +74,7 @@ vi.mock("~/modules/auth/application/internal-service", () => ({
 vi.mock("~/modules/auth/application/sharedAuth", () => ({
   createAssistantAuth: vi.fn(() => ({
     authenticate: mockAuthenticateSession,
+    touchSession: mockTouchSession,
   })),
 }));
 
@@ -129,6 +131,7 @@ function setInternalServiceAuthorization(context: Context): void {
 }
 
 const mockNext: Next = vi.fn();
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 describe("Auth Middleware", () => {
   beforeEach(async () => {
@@ -383,7 +386,10 @@ describe("Auth Middleware", () => {
         return null;
       });
       mockIsbot.mockReturnValue(true);
-      mockAuthenticateSession.mockResolvedValue({ user: { record: mockProUser } });
+      mockAuthenticateSession.mockResolvedValue({
+        user: { record: mockProUser },
+        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+      });
 
       await authMiddleware(context, mockNext);
 
@@ -412,13 +418,82 @@ describe("Auth Middleware", () => {
 
         return null;
       });
-      mockAuthenticateSession.mockResolvedValue({ user: { record: mockUser } });
+      mockAuthenticateSession.mockResolvedValue({
+        user: { record: mockUser },
+        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+      });
 
       await authMiddleware(context, async () => {
         await serviceContextMiddleware(context, mockNext);
       });
 
       expect(getServiceContext(context).requireUser()).toEqual(mockUser);
+      expect(mockTouchSession).not.toHaveBeenCalled();
+      expect(context.header).not.toHaveBeenCalled();
+    });
+
+    it("extends a session in use once a day so active people stay signed in", async () => {
+      const mockUser = { id: 123, email: "test@example.com" };
+      const context = createMockContext();
+
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
+
+        if (name === "Cookie") {
+          return "session=session-123";
+        }
+
+        return null;
+      });
+      mockAuthenticateSession.mockResolvedValue({
+        user: { record: mockUser },
+        expiresAt: new Date(Date.now() + 5 * DAY_MS),
+      });
+      mockTouchSession.mockResolvedValue({
+        user: { record: mockUser },
+        expiresAt: new Date(Date.now() + 7 * DAY_MS),
+      });
+
+      await authMiddleware(context, mockNext);
+
+      expect(mockTouchSession).toHaveBeenCalledWith("session-123");
+      expect(context.header).toHaveBeenCalledWith(
+        "Set-Cookie",
+        expect.stringContaining("session=session-123;"),
+        { append: true },
+      );
+      expect(context.get("user")).toEqual(mockUser);
+    });
+
+    it("keeps the person signed in when renewing their session fails", async () => {
+      const mockUser = { id: 123, email: "test@example.com" };
+      const context = createMockContext();
+
+      // @ts-expect-error - mock implementation
+      context.req.header.mockImplementation((name: string) => {
+        if (name === "user-agent") {
+          return "Mozilla/5.0";
+        }
+
+        if (name === "Cookie") {
+          return "session=session-123";
+        }
+
+        return null;
+      });
+      mockAuthenticateSession.mockResolvedValue({
+        user: { record: mockUser },
+        expiresAt: new Date(Date.now() + DAY_MS),
+      });
+      mockTouchSession.mockRejectedValue(new Error("database unavailable"));
+
+      await authMiddleware(context, mockNext);
+
+      expect(context.header).not.toHaveBeenCalled();
+      expect(context.get("user")).toEqual(mockUser);
     });
 
     it("should authenticate user with API key", async () => {

@@ -16,7 +16,8 @@ import { isbot } from "isbot";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
 import { getUserByJwtToken } from "~/modules/auth/application/jwt";
-import { createAssistantAuth } from "~/modules/auth/application/sharedAuth";
+import { authenticateSession } from "~/modules/auth/application/session-renewal";
+import { createSessionCookie } from "~/modules/auth/application/sessions";
 import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
@@ -130,9 +131,13 @@ export async function authMiddleware(context: Context, next: Next) {
     });
 
     authPromises.push(
-      createAssistantAuth(authenticationContext)
-        .authenticate(sessionId)
-        .then((session) => session?.user.record ?? null),
+      authenticateSession(authenticationContext, sessionId).then((session) => {
+        if (session?.renewed) {
+          context.header("Set-Cookie", createSessionCookie(sessionId), { append: true });
+        }
+
+        return session?.user ?? null;
+      }),
     );
   }
 

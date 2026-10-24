@@ -11,28 +11,49 @@ interface ToolInteractionResolution {
 interface PendingToolInteraction {
   messageIndex: number;
   partIndex?: number;
+  toolCallId?: string;
 }
 
-function readStructuredResolution(message: Message): ToolInteractionResolution | null {
-  if (message.role !== "user" || !isRecord(message.data)) {
-    return null;
-  }
-
-  const interaction = message.data.toolInteraction;
-
+function readResolution(interaction: unknown): ToolInteractionResolution[] {
   if (
     !isRecord(interaction) ||
     typeof interaction.toolName !== "string" ||
     !interaction.toolName ||
     !isRecord(interaction.response)
   ) {
-    return null;
+    return [];
   }
 
-  return {
-    toolName: interaction.toolName,
-    response: interaction.response,
-  };
+  return [{ toolName: interaction.toolName, response: interaction.response }];
+}
+
+function readStructuredResolutions(message: Message): ToolInteractionResolution[] {
+  if (message.role !== "user" || !isRecord(message.data)) {
+    return [];
+  }
+
+  const { toolInteraction, toolInteractions } = message.data;
+
+  return Array.isArray(toolInteractions)
+    ? toolInteractions.flatMap(readResolution)
+    : readResolution(toolInteraction);
+}
+
+function takePendingTarget(
+  pending: PendingToolInteraction[] | undefined,
+  interaction: ToolInteractionResolution,
+): PendingToolInteraction | undefined {
+  if (!pending) {
+    return undefined;
+  }
+
+  const interactionId = interaction.response.interactionId;
+  const index =
+    typeof interactionId === "string"
+      ? pending.findIndex((candidate) => candidate.toolCallId === interactionId)
+      : -1;
+
+  return index >= 0 ? pending.splice(index, 1)[0] : pending.pop();
 }
 
 function buildResolvedToolData(
@@ -103,7 +124,7 @@ export function applyToolInteractionResolutions(messages: readonly Message[]): M
     if (message.role === "tool" && message.name && message.status === "pending") {
       const pending = pendingByToolName.get(message.name) ?? [];
 
-      pending.push({ messageIndex });
+      pending.push({ messageIndex, toolCallId: message.tool_call_id });
       pendingByToolName.set(message.name, pending);
     } else {
       message.parts?.forEach((part, partIndex) => {
@@ -113,29 +134,22 @@ export function applyToolInteractionResolutions(messages: readonly Message[]): M
 
         const pending = pendingByToolName.get(part.name) ?? [];
 
-        pending.push({ messageIndex, partIndex });
+        pending.push({ messageIndex, partIndex, toolCallId: part.toolCallId });
         pendingByToolName.set(part.name, pending);
       });
     }
 
-    const interaction = readStructuredResolution(message);
+    for (const interaction of readStructuredResolutions(message)) {
+      const target = takePendingTarget(pendingByToolName.get(interaction.toolName), interaction);
 
-    if (!interaction) {
-      return;
+      if (target) {
+        projected[target.messageIndex] = resolvePendingToolInteraction(
+          projected[target.messageIndex],
+          interaction,
+          target.partIndex,
+        );
+      }
     }
-
-    const pending = pendingByToolName.get(interaction.toolName);
-    const target = pending?.pop();
-
-    if (!target) {
-      return;
-    }
-
-    projected[target.messageIndex] = resolvePendingToolInteraction(
-      projected[target.messageIndex],
-      interaction,
-      target.partIndex,
-    );
   });
 
   return projected;

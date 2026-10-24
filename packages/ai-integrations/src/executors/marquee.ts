@@ -16,6 +16,7 @@ const MARQUEE_TOOLS = new Set([
   "save_to_shelf",
   "follow_person",
 ]);
+const MARQUEE_WRITES = new Set(["save_to_shelf", "follow_person"]);
 
 export async function executeMarqueeOperation(
   token: string,
@@ -30,7 +31,10 @@ export async function executeMarqueeOperation(
     url: MARQUEE_MCP_URL,
     headers: { Authorization: `Bearer ${token}` },
   });
-  const result = await client.callTool(operation, params);
+  const result = await client.callTool(
+    operation,
+    MARQUEE_WRITES.has(operation) ? { ...params, confirm: true } : params,
+  );
   const text = result.content
     .flatMap((part) => (part.type === "text" && part.text ? [part.text] : []))
     .join("\n");

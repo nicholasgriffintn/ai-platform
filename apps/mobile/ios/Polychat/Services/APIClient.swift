@@ -108,6 +108,18 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func updateDiscoverPreferences(_ request: DiscoverSettingsRequest) async throws -> DiscoverSettings {
+        try await send(path: "/discover/settings", method: "PATCH", body: request)
+    }
+
+    func fetchSourceCover(id: String) async throws -> Data {
+        try await fetchData(path: "/sources/\(id)/cover")
+    }
+
+    func fetchDiscoverWindDownAmbient(id: String) async throws -> Data {
+        try await fetchData(path: "/discover/wind-down/\(id)/ambient")
+    }
+
     func shareDiscoverHealth(_ summary: DiscoverHealthSummary) async throws {
         let _: DiscoverHealthSummary = try await send(path: "/discover/health", method: "PUT", body: summary)
     }
@@ -128,6 +140,54 @@ final class APIClient: ObservableObject {
         makeRequest(path: path, method: "GET", bodyData: nil, contentType: nil)
     }
 
+    func fetchDiscoverEpisode(id: String) async throws -> DiscoverEpisode {
+        try await send(path: "/discover/episodes/\(id)", method: "GET")
+    }
+
+    func requestDiscoverEpisode(editionId: String) async throws {
+        let _: EmptyResponse = try await send(path: "/discover/editions/\(editionId)/episode", method: "POST", emptyBody: true)
+    }
+
+    func fetchDiscoverEpisodeAudio(id: String, chapter: Int) async throws -> Data {
+        try await fetchData(path: "/discover/episodes/\(id)/chapters/\(chapter)/audio")
+    }
+
+    func fetchDiscoverEpisodeShot(id: String, chapter: Int, scene: Int, shot: Int) async throws -> Data {
+        try await fetchData(path: "/discover/episodes/\(id)/chapters/\(chapter)/scenes/\(scene)/shots/\(shot)")
+    }
+
+    func requestDiscoverListen(editionId: String) async throws -> DiscoverListenResponse {
+        try await send(path: "/discover/editions/\(editionId)/listen", method: "POST", emptyBody: true)
+    }
+
+    func requestDiscoverWeek(editionId: String) async throws {
+        let _: EmptyResponse = try await send(path: "/discover/editions/\(editionId)/week", method: "POST", emptyBody: true)
+    }
+
+    func fetchSource(id: String) async throws -> MediaSource {
+        try await send(path: "/sources/\(id)", method: "GET")
+    }
+
+    func fetchSourceContent(id: String) async throws -> Data {
+        try await fetchData(path: "/sources/\(id)/content")
+    }
+
+    func startDiscoverWindDown(kind: String, minutes: Int) async throws -> DiscoverWindDown {
+        try await send(
+            path: "/discover/wind-down",
+            method: "POST",
+            body: DiscoverWindDownRequest(kind: kind, minutes: minutes)
+        )
+    }
+
+    func fetchDiscoverWindDown(id: String) async throws -> DiscoverWindDown {
+        try await send(path: "/discover/wind-down/\(id)", method: "GET")
+    }
+
+    func fetchDiscoverWindDownStepAudio(id: String, step: Int) async throws -> Data {
+        try await fetchData(path: "/discover/wind-down/\(id)/steps/\(step)/audio")
+    }
+
     private func fetchData(path: String) async throws -> Data {
         let request = makeRequest(path: path, method: "GET", bodyData: nil, contentType: nil)
         let (data, response) = try await session.data(for: request)
@@ -143,23 +203,6 @@ final class APIClient: ObservableObject {
     func fetchTeammateRoster() async throws -> [TeammateRosterEntry] {
         let response: TeammateRosterResponse = try await send(path: "/teammates/roster", method: "GET")
         return response.data
-    }
-
-    func setPolyPause(contextId: String, until: Date?) async throws {
-        let formatter = ISO8601DateFormatter()
-        let _: PolyContextResponse = try await send(
-            path: "/teammates/contexts/\(contextId)",
-            method: "PATCH",
-            body: PolyPauseRequest(pausedUntil: until.map { formatter.string(from: $0) })
-        )
-    }
-
-    func setPolyLookAround(enabled: Bool) async throws -> PolyLookAround {
-        try await send(
-            path: "/poly/look-around",
-            method: "PATCH",
-            body: PolyLookAroundRequest(enabled: enabled, timezone: TimeZone.current.identifier)
-        )
     }
 
     func fetchTaskNotificationSettings() async throws -> TaskNotificationSettings {
@@ -227,7 +270,8 @@ final class APIClient: ObservableObject {
         idempotencyKey: String = UUID().uuidString,
         modelTier: String? = nil,
         computeSite: String = "hosted",
-        agentTeammateId: String? = nil
+        agentTeammateId: String? = nil,
+        projectId: String? = nil
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = CreateResponseRequest(
             messages: messages,
@@ -240,7 +284,8 @@ final class APIClient: ObservableObject {
             modelTier: modelTier,
             computeSite: computeSite,
             idempotencyKey: idempotencyKey,
-            agentTeammateId: agentTeammateId
+            agentTeammateId: agentTeammateId,
+            projectId: projectId
         )
         guard requestBody.hasMessages else {
             return AsyncThrowingStream { continuation in
@@ -260,7 +305,8 @@ final class APIClient: ObservableObject {
         approvalId: String,
         idempotencyKey: String,
         modelTier: String?,
-        computeSite: String
+        computeSite: String,
+        projectId: String?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = CreateResponseRequest(
             messages: messages,
@@ -273,19 +319,32 @@ final class APIClient: ObservableObject {
             modelTier: modelTier,
             computeSite: computeSite,
             idempotencyKey: idempotencyKey,
-            connectorApprovalId: approvalId
+            connectorApprovalId: approvalId,
+            projectId: projectId
         )
 
         return responseStream(requestBody)
     }
 
-    private func responseStream(
-        _ requestBody: CreateResponseRequest
+    func streamApprovalDecisions(
+        responseId: String,
+        decisions: [ToolApprovalDecision],
+        idempotencyKey: String
+    ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
+        responseStream(
+            ResponseInputRequest(decisions: decisions, idempotencyKey: idempotencyKey),
+            path: "/responses/\(responseId)/input"
+        )
+    }
+
+    private func responseStream<Body: Encodable>(
+        _ requestBody: Body,
+        path: String = "/responses"
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task(priority: .userInitiated) {
                 do {
-                    try await self.stream(path: "/responses", method: "POST", body: requestBody, continuation: continuation)
+                    try await self.stream(path: path, method: "POST", body: requestBody, continuation: continuation)
                 } catch {
                     continuation.finish(throwing: error)
                 }
@@ -321,66 +380,21 @@ final class APIClient: ObservableObject {
         return response.data.map(\.detail)
     }
 
-    func fetchAssistantRecipes() async throws -> AssistantRecipesResponse {
-        try await send(path: "/recipes", method: "GET")
-    }
-
     func fetchWorkspaces() async throws -> [WorkspaceSummary] {
         let response: WorkspaceListResponse = try await send(path: "/workspaces", method: "GET")
         return response.data
     }
 
-    func fetchMyModelPermissions(workspaceId: String) async throws -> MyModelPermissions {
-        try await send(path: "/model_platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
+    func requestSyncGrant(deviceId: String) async throws -> DeviceSyncGrant {
+        try await send(path: "/sync/grant", method: "POST", body: DeviceSyncGrantRequest(deviceId: deviceId))
     }
 
-    func fetchPendingModelDecisions(workspaceId: String) async throws -> [ModelDecisionItem] {
-        let response: ModelDecisionsResponse = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/decisions",
-            method: "GET",
-            queryItems: [URLQueryItem(name: "state", value: "pending")]
-        )
-        return response.decisions
+    func fetchWorkspace(id: String) async throws -> WorkspaceDetail {
+        try await send(path: "/workspaces/\(id)", method: "GET")
     }
 
-    func resolveModelDecision(workspaceId: String, decisionId: String, state: String) async throws {
-        let _: ModelActionResult = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/decisions/\(decisionId)",
-            method: "PATCH",
-            body: ResolveModelDecisionRequest(state: state)
-        )
-    }
-
-    func fetchSpendRequests(workspaceId: String) async throws -> [SpendRequestItem] {
-        let response: SpendRequestsResponse = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/spend_requests",
-            method: "GET"
-        )
-        return response.requests
-    }
-
-    func resolveSpendRequest(workspaceId: String, requestId: String, state: String) async throws {
-        let _: ModelActionResult = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/spend_requests/\(requestId)",
-            method: "PATCH",
-            body: ResolveSpendRequestBody(state: state)
-        )
-    }
-
-    func fetchModelDeployments(workspaceId: String) async throws -> [ModelDeploymentItem] {
-        let response: ModelDeploymentsResponse = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/deployments",
-            method: "GET"
-        )
-        return response.deployments
-    }
-
-    func changeModelDeployment(workspaceId: String, deploymentId: String, action: String) async throws {
-        let _: ModelActionResult = try await send(
-            path: "/model_platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/actions",
-            method: "POST",
-            body: DeploymentActionRequest(action: action)
-        )
+    func fetchProject(id: String) async throws -> ProjectDetail {
+        try await send(path: "/projects/\(id)", method: "GET")
     }
 
     func fetchWorkAttention(limit: Int = 25) async throws -> WorkAttentionResponse {
@@ -389,6 +403,11 @@ final class APIClient: ObservableObject {
             method: "GET",
             queryItems: [URLQueryItem(name: "limit", value: String(limit))]
         )
+    }
+
+    func fetchBackgroundTasks() async throws -> [BackgroundTask] {
+        let response: BackgroundTaskListResponse = try await send(path: "/tasks", method: "GET")
+        return response.tasks
     }
 
     func fetchSandboxRun(id: String) async throws -> SandboxRunDetail {
@@ -473,40 +492,11 @@ final class APIClient: ObservableObject {
         let _: EmptyResponse = try await send(path: "/devices/\(token)", method: "DELETE")
     }
 
-    func installAssistantRecipe(
-        id: String,
-        triggers: [RecipeInstallationTrigger]? = nil,
-        configuration: RecipeConfiguration? = nil
-    ) async throws -> AssistantRecipeInstallResponse {
-        try await send(
-            path: "/recipes/\(id)/install",
-            method: "POST",
-            body: AssistantRecipeInstallRequest(
-                channel: "ios",
-                triggers: triggers,
-                configuration: configuration
-            )
-        )
-    }
-
     func generateTitle(conversationId: String, messages: [ChatMessage]) async throws -> TitleGenerationResponse {
         try await send(
             path: "/conversations/\(conversationId)/title",
             method: "POST",
             body: TitleGenerationRequest(messages: messages)
-        )
-    }
-
-    func reactToItem(
-        conversationId: String,
-        itemId: String,
-        emoji: String,
-        remove: Bool
-    ) async throws -> ItemReactionEnvelope {
-        try await send(
-            path: "/conversations/\(conversationId)/reactions",
-            method: "POST",
-            body: ItemReactionRequest(itemId: itemId, emoji: emoji, remove: remove)
         )
     }
 
@@ -892,6 +882,7 @@ final class APIClient: ObservableObject {
         request.httpMethod = method
         request.setValue("mobile", forHTTPHeaderField: "X-Platform")
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue(DeviceIdentity.id, forHTTPHeaderField: "X-Device-Id")
 
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")

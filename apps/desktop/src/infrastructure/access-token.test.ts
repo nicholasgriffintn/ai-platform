@@ -5,6 +5,8 @@ import { createDesktopAccessToken } from "./access-token";
 
 const FIFTEEN_MINUTES = 15 * 60;
 
+const signedIn = async () => true;
+
 function issuer(...tokens: string[]) {
   let issued = 0;
 
@@ -20,7 +22,7 @@ function issuer(...tokens: string[]) {
 describe("desktop access token", () => {
   it("stays anonymous until the session has been adopted", async () => {
     const issue = issuer("first");
-    const accessToken = createDesktopAccessToken(issue);
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn });
 
     expect(await accessToken.current()).toBeNull();
     expect(issue).not.toHaveBeenCalled();
@@ -29,7 +31,7 @@ describe("desktop access token", () => {
   it("renews a stale token before handing it to a request, so waking never sends an expired one", async () => {
     let now = 0;
     const issue = issuer("first", "second");
-    const accessToken = createDesktopAccessToken(issue, () => now);
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn, now: () => now });
 
     await accessToken.renew();
     now += 14 * 60 * 1000;
@@ -41,7 +43,7 @@ describe("desktop access token", () => {
   it("asks the host once when many requests find the token stale together", async () => {
     let now = 0;
     const issue = issuer("first", "second");
-    const accessToken = createDesktopAccessToken(issue, () => now);
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn, now: () => now });
 
     await accessToken.renew();
     now += 14 * 60 * 1000;
@@ -56,14 +58,16 @@ describe("desktop access token", () => {
     expect(issue).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps a token that has not yet expired when renewal fails, and drops one that has", async () => {
+  it("keeps a token that has not yet expired when renewal fails, and fails the request once it has", async () => {
     let now = 0;
     const issue = vi
       .fn<() => Promise<DesktopSessionToken>>()
       .mockResolvedValueOnce({ token: "first", expiresIn: FIFTEEN_MINUTES })
       .mockRejectedValue(new Error("offline"));
-    const accessToken = createDesktopAccessToken(issue, () => now);
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn, now: () => now });
+    const signedOut = vi.fn();
 
+    accessToken.onSignedOut(signedOut);
     await accessToken.renew();
     now += 14 * 60 * 1000;
 
@@ -71,6 +75,45 @@ describe("desktop access token", () => {
 
     now += 2 * 60 * 1000;
 
+    await expect(accessToken.current()).rejects.toThrow("offline");
+    expect(signedOut).not.toHaveBeenCalled();
+  });
+
+  it("recovers once the host is reachable again after waking offline", async () => {
+    let now = 0;
+    const issue = vi
+      .fn<() => Promise<DesktopSessionToken>>()
+      .mockResolvedValueOnce({ token: "first", expiresIn: FIFTEEN_MINUTES })
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ token: "second", expiresIn: FIFTEEN_MINUTES });
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn, now: () => now });
+
+    await accessToken.renew();
+    now += 60 * 60 * 1000;
+
+    await expect(accessToken.current()).rejects.toThrow("offline");
+    expect(await accessToken.current()).toBe("second");
+  });
+
+  it("signs out only when the host no longer holds a session", async () => {
+    let now = 0;
+    const issue = vi
+      .fn<() => Promise<DesktopSessionToken>>()
+      .mockResolvedValueOnce({ token: "first", expiresIn: FIFTEEN_MINUTES })
+      .mockRejectedValue(new Error("Sign-in could not be completed (status 401)."));
+    const accessToken = createDesktopAccessToken({
+      issue,
+      isSignedIn: async () => false,
+      now: () => now,
+    });
+    const signedOut = vi.fn();
+
+    accessToken.onSignedOut(signedOut);
+    await accessToken.renew();
+    now += 14 * 60 * 1000;
+
+    expect(await accessToken.current()).toBeNull();
+    expect(signedOut).toHaveBeenCalledTimes(1);
     expect(await accessToken.current()).toBeNull();
   });
 
@@ -82,7 +125,7 @@ describe("desktop access token", () => {
           release = resolve;
         }),
     );
-    const accessToken = createDesktopAccessToken(issue);
+    const accessToken = createDesktopAccessToken({ issue, isSignedIn: signedIn });
     const renewal = accessToken.renew();
 
     accessToken.forget();

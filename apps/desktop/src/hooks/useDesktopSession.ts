@@ -9,11 +9,13 @@ import { getDesktopSignInMessage } from "../infrastructure/sign-in-message";
 
 const UNCONFIRMED_ACCOUNT =
   "Polychat could not confirm your account. Check your connection and sign in again.";
+const SESSION_ENDED = "Your session ended. Sign in again to carry on.";
 
 export function useDesktopSession() {
   const [isChecking, setChecking] = useState(true);
   const [isSigningIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const setAuthenticatedUserConfiguration = useChatStore(
     (state) => state.setAuthenticatedUserConfiguration,
   );
@@ -58,6 +60,7 @@ export function useDesktopSession() {
         user: authService.getUser(),
         userSettings: authService.getUserSettings(),
       });
+      setError(null);
     } catch (cause) {
       setError(getDesktopSignInMessage(cause));
       forgetSession();
@@ -70,6 +73,27 @@ export function useDesktopSession() {
     // oxlint-disable-next-line react/set-state-in-effect -- initial session load syncs with Tauri backend (external system); state settles on async completion
     void load();
   }, [load]);
+
+  useEffect(
+    () =>
+      desktopAccessToken.onSignedOut(() => {
+        clearAuthenticatedUserConfiguration();
+        setError(SESSION_ENDED);
+      }),
+    [clearAuthenticatedUserConfiguration],
+  );
+
+  useEffect(() => {
+    if (isChecking || isAuthenticated) {
+      return undefined;
+    }
+
+    const retry = () => void load();
+
+    window.addEventListener("online", retry);
+
+    return () => window.removeEventListener("online", retry);
+  }, [isAuthenticated, isChecking, load]);
 
   const signOut = useCallback(async () => {
     setError(null);
@@ -85,7 +109,10 @@ export function useDesktopSession() {
     setSigningIn(true);
 
     try {
-      await tauriDesktopBackend.signIn();
+      if (!(await tauriDesktopBackend.isSignedIn())) {
+        await tauriDesktopBackend.signIn();
+      }
+
       await load();
     } catch (cause) {
       setError(getDesktopSignInMessage(cause));

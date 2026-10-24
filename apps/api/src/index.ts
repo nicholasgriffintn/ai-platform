@@ -11,6 +11,7 @@ import { type Context, Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
+import { HTTPException } from "hono/http-exception";
 import z from "zod/v4";
 
 import { handleAIServiceError, normaliseApiError } from "~/infrastructure/errors";
@@ -20,6 +21,7 @@ import { registerApiRoutes } from "./app";
 import { API_LOCAL_HOST, API_PROD_HOST } from "./config/app";
 import { serviceContextMiddleware } from "./infrastructure/context/serviceContext";
 import { withRequestDatabase } from "./infrastructure/database/request-session";
+import { isCsrfExempt } from "./infrastructure/http/csrf";
 import { isAllowedOrigin } from "./infrastructure/http/origins";
 import { ResponseFactory } from "./infrastructure/http/ResponseFactory";
 import { addRoute } from "./infrastructure/http/routeBuilder";
@@ -80,7 +82,7 @@ app.use(
 );
 
 app.use("*", (c, next) => {
-  if (c.req.path.startsWith("/webhooks")) {
+  if (isCsrfExempt({ path: c.req.path, authorization: c.req.header("Authorization") })) {
     return next();
   }
 
@@ -294,6 +296,10 @@ registerApiRoutes(app);
 app.notFound((c) => c.json({ status: "not found" }, 404));
 
 app.onError((err, _c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+
   const error = normaliseApiError(err);
 
   captureApiError(error, err);

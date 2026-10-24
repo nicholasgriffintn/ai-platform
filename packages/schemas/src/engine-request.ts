@@ -335,6 +335,13 @@ export const chatRequestOptionsSchema = z
     toolInteraction: toolInteractionResolutionSchema
       .optional()
       .describe("Structured resolution for a pending human-in-the-loop tool result."),
+    toolInteractions: z
+      .array(toolInteractionResolutionSchema)
+      .min(2)
+      .optional()
+      .describe(
+        "Every approval resolution for a run that is waiting on several approvals at once.",
+      ),
   })
   .strict();
 

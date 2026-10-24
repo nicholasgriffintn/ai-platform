@@ -179,15 +179,14 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
     : undefined;
   const input: Item[] = [
     ...messagesToItems(formattedMessages),
-    ...(featureOptions?.toolInteraction
-      ? [
-          {
-            type: "interaction_response" as const,
-            tool_name: featureOptions.toolInteraction.toolName,
-            response: featureOptions.toolInteraction.response,
-          },
-        ]
-      : []),
+    ...(
+      featureOptions?.toolInteractions ??
+      (featureOptions?.toolInteraction ? [featureOptions.toolInteraction] : [])
+    ).map((interaction) => ({
+      type: "interaction_response" as const,
+      tool_name: interaction.toolName,
+      response: interaction.response,
+    })),
     ...(requestOptionFields.connector_approval_id
       ? [
           {

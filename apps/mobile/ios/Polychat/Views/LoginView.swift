@@ -16,7 +16,7 @@ struct LoginView: View {
                 Spacer(minLength: 28)
 
                 VStack(spacing: 14) {
-                    PolychatLogoView(size: 82)
+                    PolyMark(size: 82)
 
                     VStack(spacing: 8) {
                         Text("Polychat")

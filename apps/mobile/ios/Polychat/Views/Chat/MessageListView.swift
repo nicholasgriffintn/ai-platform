@@ -1,15 +1,16 @@
 import SwiftUI
+
 struct MessageListView: View {
     let messages: [ChatMessage]
-    let isTemporaryConversation: Bool
-    let conversationModelId: String?
     let response: PlatformResponse?
+    let activityLabel: String?
     let taskActivity: ProjectTaskActivityTimeline?
     let taskInteraction: ProjectTaskInteractionControl?
     let connectorApproval: ConnectorApprovalControl?
     let isLoadingConversation: Bool
     let hasMoreMessages: Bool
     let isLoadingEarlierMessages: Bool
+    let emptyState: AnyView
     let onLoadEarlierMessages: () -> Void
     let onAnswerTaskQuestions: ([UserQuestionAnswer]) -> Void
     let onResolveTaskApproval: (String) -> Void
@@ -17,130 +18,131 @@ struct MessageListView: View {
     let onResolveConnectorApproval: (String) -> Void
     let onContinueConnectorApproval: () -> Void
     let onRefreshConnectorApproval: () -> Void
-    let onSuggestionSelected: (String) -> Void
-    let onDismissKeyboard: () -> Void
-    
+    let onRetry: (ChatMessage) -> Void
+    let onEdit: (ChatMessage, String) -> Void
+
+    @State private var isNearBottom = true
+    @State private var position = ScrollPosition(edge: .bottom)
+
+    private var scrollSignature: String {
+        "\(messages.count):\(messages.last?.id ?? ""):\(messages.last?.textContent.count ?? 0):\(messages.last?.status ?? "")"
+    }
+
     var body: some View {
         ScrollView {
-            ScrollViewReader { proxy in
-                LazyVStack(spacing: 22) {
-                    if isTemporaryConversation {
-                        HStack(spacing: 8) {
-                            Image(systemName: "theatermasks")
-                            Text("Temporary. This conversation stays in memory for this session.")
+            VStack(alignment: .leading, spacing: 16) {
+                if hasMoreMessages {
+                    Button(action: onLoadEarlierMessages) {
+                        if isLoadingEarlierMessages {
+                            ProgressView()
+                        } else {
+                            Text("Load earlier messages")
+                                .font(.footnote.weight(.medium))
                         }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .accessibilityElement(children: .combine)
                     }
+                    .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity)
+                    .disabled(isLoadingEarlierMessages)
+                }
 
-                    if hasMoreMessages {
-                        Button(action: onLoadEarlierMessages) {
-                            if isLoadingEarlierMessages {
-                                ProgressView()
-                            } else {
-                                Text("Load earlier messages")
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(isLoadingEarlierMessages)
+                if isLoadingConversation && messages.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 120)
+                } else if messages.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(messages) { message in
+                        row(for: message)
+                            .id(message.id)
+                            .padding(.top, message.role == "user" ? 8 : 0)
                     }
-                    if let taskActivity {
-                        ProjectTaskActivityTimelineView(timeline: taskActivity)
-                    }
-                    if let response, response.status != "completed" {
-                        ResponseStatusRow(response: response)
-                    }
-                    if let taskInteraction {
-                        ProjectTaskInteractionCard(
-                            control: taskInteraction,
-                            onAnswerQuestions: onAnswerTaskQuestions,
-                            onResolveApproval: onResolveTaskApproval,
-                            onRefresh: onRefreshTaskInteraction
-                        )
-                    }
-                    if let connectorApproval {
-                        ConnectorApprovalCard(
-                            control: connectorApproval,
-                            onResolve: onResolveConnectorApproval,
-                            onContinue: onContinueConnectorApproval,
-                            onRefresh: onRefreshConnectorApproval
-                        )
-                    }
-                    if isLoadingConversation {
-                        LoadingConversationMessagesView()
-                            .padding(.top, 150)
-                    } else if messages.isEmpty {
-                        WelcomePromptView(onSuggestionSelected: onSuggestionSelected)
-                            .padding(.top, 150)
-                    } else {
-                        ForEach(messages) { message in
-                            if message.isVisibleCompactionStatus {
-                                CompactionStatusRow(
-                                    label: message.compactionStatusLabel,
-                                    detail: message.compactionCoverageDetail
-                                )
-                                    .id(message.id)
-                            } else {
-                                MessageBubble(message: message, conversationModelId: conversationModelId)
-                                    .id(message.id)
-                            }
-                        }
-                    }
+                }
 
-                    if isTemporaryConversation {
-                        HStack(spacing: 8) {
-                            Image(systemName: "theatermasks")
-                            Text("This session ends without a trace.")
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .accessibilityElement(children: .combine)
-                    }
+                if let taskActivity {
+                    ProjectTaskActivityTimelineView(timeline: taskActivity)
                 }
-                .frame(maxWidth: 860)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 28)
-                .padding(.top, messages.isEmpty ? 28 : 72)
-                .padding(.bottom, 28)
-                .overlay(alignment: .leading) {
-                    if isTemporaryConversation {
-                        Rectangle()
-                            .stroke(
-                                Color.polychat.border,
-                                style: StrokeStyle(lineWidth: 2, dash: [3, 4])
-                            )
-                            .frame(width: 2)
-                    }
-                }
-                .onChange(of: messages.count) {
-                    guard !isLoadingEarlierMessages else {
-                        return
-                    }
 
-                    if let lastMessageId = messages.last?.id {
-                        withAnimation {
-                            proxy.scrollTo(lastMessageId, anchor: .bottom)
-                        }
-                    }
+                if let taskInteraction {
+                    ProjectTaskInteractionCard(
+                        control: taskInteraction,
+                        onAnswerQuestions: onAnswerTaskQuestions,
+                        onResolveApproval: onResolveTaskApproval,
+                        onRefresh: onRefreshTaskInteraction
+                    )
                 }
-                .onChange(of: messages.last?.textContent) {
-                    if let lastMessageId = messages.last?.id {
-                        withAnimation(.easeOut(duration: 0.18)) {
-                            proxy.scrollTo(lastMessageId, anchor: .bottom)
-                        }
-                    }
+
+                if let connectorApproval {
+                    ConnectorApprovalCard(
+                        control: connectorApproval,
+                        onResolve: onResolveConnectorApproval,
+                        onContinue: onContinueConnectorApproval,
+                        onRefresh: onRefreshConnectorApproval
+                    )
                 }
+
+                if let response, response.status != "completed", !response.isActive || response.isWaiting, !messages.isEmpty {
+                    ResponseStatusRow(response: response)
+                }
+
+            }
+            .frame(maxWidth: 760)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+        }
+        .scrollPosition($position)
+        .defaultScrollAnchor(.bottom)
+        .scrollDismissesKeyboard(.interactively)
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+            geometry.visibleRect.maxY >= geometry.contentSize.height - 120
+        } action: { _, nearBottom in
+            isNearBottom = nearBottom
+        }
+        .onChange(of: scrollSignature) {
+            if isNearBottom {
+                position.scrollTo(edge: .bottom)
+            }
+        }
+        .onChange(of: isLoadingConversation) { _, loading in
+            if !loading {
+                position.scrollTo(edge: .bottom)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if !isNearBottom && !messages.isEmpty {
+                Button {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        position.scrollTo(edge: .bottom)
+                    }
+                } label: {
+                    Image(systemName: "arrow.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.polychat.text)
+                        .frame(width: 36, height: 36)
+                        .background(.regularMaterial, in: Circle())
+                        .overlay(Circle().stroke(Color.polychat.border, lineWidth: 1))
+                }
+                .padding(.bottom, 8)
+                .transition(.opacity.combined(with: .scale))
+                .accessibilityLabel("Jump to latest")
             }
         }
         .background(Color.polychat.background)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onDismissKeyboard)
-        #if os(iOS)
-        .scrollDismissesKeyboard(.interactively)
-        #endif
+    }
+
+    @ViewBuilder
+    private func row(for message: ChatMessage) -> some View {
+        if message.isVisibleCompactionStatus {
+            CompactionStatusRow(label: message.compactionStatusLabel, detail: message.compactionCoverageDetail)
+        } else if !message.isCompactionMarker {
+            MessageBubble(
+                message: message,
+                activityLabel: message.isAwaitingFirstToken ? activityLabel : nil,
+                onRetry: { onRetry(message) },
+                onEdit: { onEdit(message, $0) }
+            )
+        }
     }
 }
 
@@ -160,43 +162,32 @@ private struct ResponseStatusRow: View {
                     .font(.subheadline.weight(.semibold))
                 Text(presentation.detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.polychat.textMuted)
             }
             Spacer()
         }
         .padding(12)
-        .background(colour.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(colour.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 
     private var colour: Color {
         switch presentation.tone {
-        case .active:
-            return .blue
-        case .attention:
-            return .orange
-        case .danger:
-            return .red
-        case .neutral:
-            return .secondary
-        case .success:
-            return .green
+        case .active: return Color.polychat.activeWork
+        case .attention: return Color.polychat.attention
+        case .danger: return Color.polychat.error
+        case .neutral: return Color.polychat.textMuted
+        case .success: return Color.polychat.success
         }
     }
 
     private var icon: String {
         switch presentation.tone {
-        case .active:
-            return "bolt.horizontal.circle"
-        case .attention:
-            return "exclamationmark.circle"
-        case .danger:
-            return "xmark.circle"
-        case .neutral:
-            return "stop.circle"
-        case .success:
-            return "checkmark.circle"
+        case .active: return "bolt.horizontal.circle"
+        case .attention: return "exclamationmark.circle"
+        case .danger: return "xmark.circle"
+        case .neutral: return "stop.circle"
+        case .success: return "checkmark.circle"
         }
     }
 }
@@ -207,91 +198,19 @@ private struct CompactionStatusRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Rectangle()
-                .fill(Color.polychat.border)
-                .frame(height: 1)
+            Rectangle().fill(Color.polychat.border).frame(height: 1)
             VStack(spacing: 2) {
                 Label(label, systemImage: "doc.text")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                 if let detail {
-                    Text(detail)
-                        .font(.caption)
+                    Text(detail).font(.caption2)
                 }
             }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.polychat.textMuted)
             .lineLimit(1)
-            Rectangle()
-                .fill(Color.polychat.border)
-                .frame(height: 1)
+            Rectangle().fill(Color.polychat.border).frame(height: 1)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .accessibilityElement(children: .combine)
-    }
-}
-
-private struct LoadingConversationMessagesView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-            Text("Loading conversation...")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
-private struct WelcomePromptView: View {
-    private let suggestions = [
-        ("shield", "Existential inquiry", "What makes an answer useful when the question is ambiguous?"),
-        ("face.smiling", "Satirical news", "Write a short satirical news brief about robots asking for coffee breaks.")
-    ]
-    let onSuggestionSelected: (String) -> Void
-
-    var body: some View {
-        VStack(spacing: 18) {
-            PolychatLogoView(size: 72)
-            VStack(spacing: 8) {
-                Text("What would you like to know?")
-                    .font(.system(size: 34, weight: .bold))
-                    .multilineTextAlignment(.center)
-                Text("I'm a helpful assistant that can answer questions about basically anything.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Try asking about...")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(suggestions, id: \.1) { icon, title, prompt in
-                        Button {
-                            onSuggestionSelected(prompt)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: icon)
-                                    .frame(width: 18)
-                                Text(title)
-                                    .lineLimit(1)
-                                Spacer()
-                            }
-                            .font(.subheadline.weight(.medium))
-                            .padding(.horizontal, 14)
-                            .frame(height: 48)
-                            .background(Color.polychat.elevatedBackground)
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .stroke(Color.polychat.border, lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-            .frame(maxWidth: 620)
-            .padding(.top, 20)
-        }
     }
 }
