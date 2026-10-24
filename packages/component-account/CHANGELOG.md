@@ -1,5 +1,90 @@
 # @ngriffin_uk/polychat-component-account
 
+## 1.0.0
+
+### Major Changes
+
+- f4841cd: Files is now one library instead of tabs inside tabs. Everything you have given Polychat, everything it made and everything it remembers sits in a single grid or list, with All, Made, Sources and Memory as quick filters.
+
+  - Make something new from the top of Files in one click: upload, write a note, start a memory, create a folder, make a podcast episode, or open Image studio and Replicate.
+  - Drop files anywhere on Files, or on a folder, to add them.
+  - Every item has a menu for opening its file, copying a share link, renaming, adding it to a folder and deleting it. Results Polychat made can now be renamed and deleted too.
+  - Collections are now folders, shown above your files. A podcast show is a folder with its RSS feed controls on the folder page.
+  - Search filters by name as you type, and a type filter, sort order and grid or list view sit beside it. In a project, search can also look inside files.
+  - Memories open on their own page, every save is a revision, and you can name them in plain words.
+
+### Minor Changes
+
+- 8b965f6: Polychat now speaks in the best voice your account can reach. Read-aloud, the speech tool, podcasts and video overviews all pick the highest-rated speech model you have access to, ranked by the Artificial Analysis text-to-speech arena. Add an ElevenLabs, Cartesia, Mistral or Amazon Polly key and your audio upgrades on its own.
+
+  - New speech models: ElevenLabs Eleven v4, v4 Turbo, v3, Multilingual v2 and Flash v2.5, Cartesia Sonic 3.6, Mistral Voxtral 3 TTS and Amazon Polly Generative.
+  - Audio settings now separate the provider, the model and the voice. Leave the provider on Automatic, or pick one and choose a model and voice from its list.
+  - Podcasts use distinct host and guest voices on every provider, and video overviews use a narrator voice.
+  - Notebook guides, Studio outputs and podcast scripts now use the medium model tier on your keys rather than the cheapest background model.
+
+- 91c7d3d: Choose what Polychat can reach for on its own.
+
+  - **Capabilities settings.** A new Capabilities section in Customise Chat has switches for web search and for documents and connected apps. Turn one off and Polychat stops using it by itself, including deep research for web search. Tools you pick in the composer, or that a project, teammate or recipe sets up, still work.
+  - **Chat history means chat history.** Searching your earlier chats now follows the chat history switch in Memories. Turn it on if you want Polychat to look back through your previous conversations.
+
+- 6efa93c: Plugins, Teammates and Scheduled now share the Files toolbar: type filters on the left, search beside them, and one filter menu in place of the wall of category chips.
+
+  - Each page opens on its first type, Integrations on Plugins, instead of a mixed All view.
+  - Your filters live in the address bar, so a refresh, a shared link or the back button keeps you where you were.
+  - Plugins opens with an Installed row of the integrations and tools you have set up. Select one to open it, or select Installed to see only those.
+  - Category and "installed only" sit in the filter menu, which lights up while either is applied.
+
+- 91c7d3d: Choose how the assistant responds without writing a prompt.
+
+  - **Style controls.** Personalised responses now has dropdowns for base style and tone (Professional, Friendly, Candid, Quirky, Efficient, Nerdy or Cynical), warmth, enthusiasm, emoji, and headers and lists. Leave any on Default to keep the assistant's usual behaviour.
+  - **Custom instructions on top.** Your own traits and preferences sit below the controls and are added to the style you pick, so you can choose a tone and still add anything the controls do not cover. Instructions you have already written carry on working unchanged.
+
+- 7b36da1: Sources is now where your media lives. Files' Given tab is renamed Sources and gains Podcasts, Image Studio and Replicate alongside the library.
+
+  - Upload images, audio and video straight into Sources. Open any audio or video source to play it, transcribe it, write notes with decisions and action items, and make cover art. The transcript becomes searchable, so recordings work as grounding like any other source. This replaces the Recording Processor app.
+  - Image Studio, sketch-to-painting and Replicate runs now save what they make into Sources, where it can be reused as material. They have moved out of Apps and the Canvas sidebar item into Files › Sources.
+  - Make podcasts from your sources: pick sources, a format (deep dive, brief, debate or critique) and a length, and two hosts talk it through. Each episode lands in Sources with its audio, transcript, show notes and cover.
+  - Group episodes into shows and create a private RSS feed link to subscribe in any podcast app. Making a new link turns off the old one.
+  - Ask Poly or a teammate to make an episode with the new podcast tool, or install the Podcast Briefing recipe to get a fresh episode on your topics or Sources on a schedule.
+
+- 7accf45: Mistral speech now runs on Voxtral 3, with a hosted voice agent for Live.
+
+  - **Transcription.** Mistral transcription uses Voxtral Mini Transcribe 3, and you can pick Voxtral Small Transcribe 3 in Settings for higher accuracy. It detects the spoken language rather than assuming English, and timed transcripts now label who said what.
+  - **Custom vocabulary.** Add names, acronyms and jargon under Settings → Audio, one per line, and Mistral transcription, live transcription and the voice agent will listen out for them.
+  - **Live transcription.** Mistral live transcription uses Voxtral Mini Transcribe Realtime 3. Notes labels each speaker as they talk, and Live conversations use Mistral's own end-of-turn detection, so a thoughtful pause no longer cuts you off.
+  - **Mistral Voice Agent.** Pick Mistral Voice in Live for a hosted Voxtral 3 agent that listens, searches the web when it needs to and answers aloud. It uses your Mistral key or the platform one, and you can interrupt it mid-sentence.
+  - **Speech.** Mistral speech uses Voxtral TTS 3 with its new preset voices in over 20 languages. The default is Mary (English, UK). Choose how expressive the delivery is under Settings → Audio.
+  - **Your voices.** Save a voice from an MP3 or WAV recording under Settings → Audio and use it for speech. Only you can use your saved voices, and you need to confirm the voice is yours or you have permission. The API offers the same through `/audio/voices`, and `/audio/speech` accepts `expressiveness`.
+
+### Patch Changes
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [a9f7c20]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [f4841cd]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [6efa93c]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-library-client@0.5.0
+  - @ngriffin_uk/polychat-library-react@0.6.0
+  - @ngriffin_uk/polychat-component-models@1.2.1
+  - @ngriffin_uk/polychat-component-capabilities@1.0.0
+  - @ngriffin_uk/polychat-component-ui@0.5.0
+  - @ngriffin_uk/polychat-utility-react@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

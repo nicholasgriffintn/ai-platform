@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-benchmarks",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Polychat benchmark definitions: frozen datasets, prompts, answer parsers, scorers, ratings and the safety gates for model-written artefacts",
   "license": "Apache-2.0",

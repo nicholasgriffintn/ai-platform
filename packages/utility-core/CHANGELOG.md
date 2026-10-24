@@ -1,5 +1,45 @@
 # @ngriffin_uk/polychat-utility-core
 
+## 0.5.0
+
+### Minor Changes
+
+- 8b2929f: Confirm your date of birth before your first message.
+
+  - **Asked once, at the right moment.** The first time you send a message, signed in or not, on the web, desktop or iPhone, Polychat asks for your date of birth. It keeps only whether you meet the minimum age of 18, never the date, and the answer can't be changed later.
+  - **Skip if you're just looking.** Skip the question and you can keep browsing, but you can't send messages until you answer it. Polychat asks again the next time you try to send one.
+  - **Why we ask.** A new page at `/age-check` explains why we ask, what we keep and your rights in the UK and EU. The Terms of Service and Privacy Policy now say plainly that Polychat is for people aged 18 or over.
+  - **Same rule on the API.** Creating a response, sending input to one and calling chat completions all return 403 until the age check is done, for API keys and anonymous sessions alike. Read or record it with `GET` and `POST /auth/age`.
+  - **Self-hosting.** Set `AGE_GATE_ENABLED` to `false` in your Worker vars to turn the check off completely.
+
+- 7accf45: Pull typed values out of text and images with Cloudflare's Clairic.
+
+  - **Extraction models.** Clairic joins the catalogue as the first extraction model. Give it some text, or up to four images, and a list of named fields, and it returns each one as the type you asked for: a span of the text, a number, a date, a duration, a list, or an estimate or forecast with an 80% range. Anything the input does not say comes back empty with a best guess, never made up.
+  - **`POST /extractions`.** Send `state`, `fields` and optional `images` and `reference_date`. Every scalar answer carries `confidence` and `p_null`, so you can decide in code which values to trust.
+  - **Extract values tool.** Chat, Poly and automations can call `extract_values` to read order numbers, totals and dates from an email or invoice in one fast call, then hand the values to `decide`.
+  - **Paperwork.** A new app for receipts, invoices and damage claims. Drop in photos or paste text, and each figure comes back with a confidence, the source highlighted where it was found, a running total and a CSV export.
+
+- bf39c94: Poly can now make slide decks and spreadsheets, not just documents. Ask for a deck or a sheet and it lands in Files, where you can flip through the slides, switch between tables, revise it in conversation and download it as Markdown or CSV. Spreadsheet downloads are safe to open, since text that looks like a formula is kept as text.
+
+  Research now checks your own Sources and synced accounts alongside the web, and shows what it found from them beside the report. Your passages stay with Polychat and are never sent to the research provider.
+
+- f4841cd: Files is now one library instead of tabs inside tabs. Everything you have given Polychat, everything it made and everything it remembers sits in a single grid or list, with All, Made, Sources and Memory as quick filters.
+
+  - Make something new from the top of Files in one click: upload, write a note, start a memory, create a folder, make a podcast episode, or open Image studio and Replicate.
+  - Drop files anywhere on Files, or on a folder, to add them.
+  - Every item has a menu for opening its file, copying a share link, renaming, adding it to a folder and deleting it. Results Polychat made can now be renamed and deleted too.
+  - Collections are now folders, shown above your files. A podcast show is a folder with its RSS feed controls on the folder page.
+  - Search filters by name as you type, and a type filter, sort order and grid or list view sit beside it. In a project, search can also look inside files.
+  - Memories open on their own page, every save is a revision, and you can name them in plain words.
+
+- 8b965f6: Conversation groups are now notebooks. Click a notebook's name in the sidebar to open it: your sources on the left, the chat in the middle and Studio on the right. Every chat in a notebook answers from the sources you tick, names the source behind each claim, and can search the notebook's earlier chats too.
+
+  - Add sources from Files, uploads, web pages or pasted text, or search the web from the notebook. Fast research finds pages to pick from; deep research writes a report in the background and brings back the pages it cites.
+  - Studio makes audio overviews, slide decks, video overviews, mind maps, reports, flashcards, quizzes, infographics and data tables from the ticked sources. The pencil on each tile lets you choose the format, length, style, language and focus.
+  - Flashcards and quizzes remember how you got on. Click any topic in a mind map to ask about it.
+  - Save any reply as a note, and turn a note into a source when you want chats to read it.
+  - Configure a notebook to answer as a learning guide or a persona of your own, at the length you like, from its sources only or with the web as well.
+
 ## 0.4.0
 
 ### Minor Changes

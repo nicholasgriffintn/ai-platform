@@ -1,5 +1,61 @@
 # @ngriffin_uk/polychat-component-capabilities
 
+## 1.0.0
+
+### Major Changes
+
+- 6efa93c: Plugins, Teammates and Scheduled now share the Files toolbar: type filters on the left, search beside them, and one filter menu in place of the wall of category chips.
+
+  - Each page opens on its first type, Integrations on Plugins, instead of a mixed All view.
+  - Your filters live in the address bar, so a refresh, a shared link or the back button keeps you where you were.
+  - Plugins opens with an Installed row of the integrations and tools you have set up. Select one to open it, or select Installed to see only those.
+  - Category and "installed only" sit in the filter menu, which lights up while either is applied.
+
+### Minor Changes
+
+- 11381a9: Teammates are now people you message, not settings you edit.
+
+  - **Teammate threads.** Opening a teammate opens its own conversation, which carries on between visits. The sidebar lists the teammates you are talking to and your groups, newest activity first, with anyone who needs you at the top. Those conversations no longer also appear in the chat list. The conversation uses the same workspace as any other chat, and its side panel sums up the teammate: what it is doing, its autonomy, and how many routines and connections it has, each a click from Working context.
+  - **Groups.** Use "Add a teammate" on a teammate's page to put two to six teammates in one conversation. Use @name, or tap a name in the header, to choose who answers. Every reply shows which teammate wrote it, and messages teammates send back while they work collapse into one "Messages from…" line you can open.
+  - **Reactions.** React to a reply from the smiley button, or long-press on iOS. 👍 and 👎 also tell the teammate how it did, and teammates react 👀 to your message when they pick it up instead of replying "On it". A reaction never approves anything.
+  - **Receipts.** When a tool sends, books, pays, deletes or changes something, the conversation shows a short receipt such as "Created routine · Friday inbox tidy · every Friday at 09:00", with the full output one click away.
+  - **Live with teammates.** Live now works in teammate and group conversations. Start it from the Live button and stop it from the same place; each spoken turn goes to the teammate with its tools, and anything it wants to do still waits for your approval.
+  - **Slack and Telegram signals.** Connected channels react 👀 when a message is picked up, show a working status in Slack threads and swap to ⚠️ if the run fails. Choose "Also ✅ when it is done" or "No reactions" when you connect a channel.
+  - **More teammates to hire.** New jobs for personal admin, productivity, sales and marketing, operations and engineering, including Inbox tidy, Trip watcher, Morning brief, Meeting prep, Bug reproduction and Expense manager. Each arrives with its own character and offers to set up its routine.
+  - **Dry runs.** Run any set-up routine as a dry run. Anything that would send, write, spend or delete returns a draft instead, so you can check a routine before it goes live.
+  - **Batch review.** When three or more approvals are waiting, tick the ones you want and approve them together. Each is still approved on its own, exactly as listed.
+
+### Patch Changes
+
+- a9f7c20: Every page now sits in the same frame.
+
+  - **Titles in the header.** Tool, skill, invitation and app pages show their name in the top bar instead of "Chat" or "Work", with the same spacing as the rest of the app.
+  - **One header for project teammates.** Opening a teammate inside a project no longer stacks a "Work" bar above the teammate's own header.
+  - **Tidier errors.** When a workspace, project or task list fails to load, or needs you to sign in, the message appears inside the page with its title rather than floating on its own.
+  - **Shared links.** Shared conversations and outputs show their title while loading.
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [a9f7c20]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [f4841cd]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [6efa93c]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-component-ui@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes

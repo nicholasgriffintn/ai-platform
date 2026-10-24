@@ -1,5 +1,37 @@
 # @ngriffin_uk/polychat-ai-integrations
 
+## 0.4.0
+
+### Minor Changes
+
+- 80fee8e: MCP tools can now show their own interface in a conversation, and Polychat can be used as a tool from other assistants.
+
+  - **Apps inside the chat.** When a connected MCP integration ships an interface for a tool (the MCP Apps extension), Polychat renders it in the reply in a sandboxed frame: pickers, tables, small dashboards. The app can refresh its own data through read-only tools; anything that would change something still goes through the conversation so it can ask you first.
+  - **Polychat as an MCP server.** Point Claude, ChatGPT, Codex or any MCP client at the /mcp endpoint with a Polychat API key and it can run the same tools you can run in Polychat, and ask any of your teammates to take on a job. Anything that needs approval waits for you in Polychat.
+
+### Patch Changes
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [f4841cd]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-library-policy@0.4.0
+  - @ngriffin_uk/polychat-utility-server@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

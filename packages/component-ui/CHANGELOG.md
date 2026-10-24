@@ -1,5 +1,49 @@
 # @ngriffin_uk/polychat-component-ui
 
+## 0.5.0
+
+### Minor Changes
+
+- 6efa93c: Plugins, Teammates and Scheduled now share the Files toolbar: type filters on the left, search beside them, and one filter menu in place of the wall of category chips.
+
+  - Each page opens on its first type, Integrations on Plugins, instead of a mixed All view.
+  - Your filters live in the address bar, so a refresh, a shared link or the back button keeps you where you were.
+  - Plugins opens with an Installed row of the integrations and tools you have set up. Select one to open it, or select Installed to see only those.
+  - Category and "installed only" sit in the filter menu, which lights up while either is applied.
+
+### Patch Changes
+
+- a9f7c20: Every page now sits in the same frame.
+
+  - **Titles in the header.** Tool, skill, invitation and app pages show their name in the top bar instead of "Chat" or "Work", with the same spacing as the rest of the app.
+  - **One header for project teammates.** Opening a teammate inside a project no longer stacks a "Work" bar above the teammate's own header.
+  - **Tidier errors.** When a workspace, project or task list fails to load, or needs you to sign in, the message appears inside the page with its title rather than floating on its own.
+  - **Shared links.** Shared conversations and outputs show their title while loading.
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [a9f7c20]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [f4841cd]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [6efa93c]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-library-react@0.6.0
+  - @ngriffin_uk/polychat-library-chat@1.2.0
+  - @ngriffin_uk/polychat-utility-react@0.4.0
+
 ## 0.4.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-library-policy
 
+## 0.4.0
+
+### Minor Changes
+
+- 91c7d3d: Choose what Polychat can reach for on its own.
+
+  - **Capabilities settings.** A new Capabilities section in Customise Chat has switches for web search and for documents and connected apps. Turn one off and Polychat stops using it by itself, including deep research for web search. Tools you pick in the composer, or that a project, teammate or recipe sets up, still work.
+  - **Chat history means chat history.** Searching your earlier chats now follows the chat history switch in Memories. Turn it on if you want Polychat to look back through your previous conversations.
+
 ## 0.3.0
 
 ### Minor Changes

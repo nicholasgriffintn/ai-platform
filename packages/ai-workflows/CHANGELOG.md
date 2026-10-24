@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-ai-workflows
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [80fee8e]
+  - @ngriffin_uk/polychat-utility-server@0.3.0
+  - @ngriffin_uk/polychat-ai-telemetry@0.2.2
+  - @ngriffin_uk/polychat-library-tasks@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
