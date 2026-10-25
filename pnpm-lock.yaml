@@ -472,8 +472,8 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
       postal-mime:
-        specifier: 4.0.8
-        version: 4.0.8
+        specifier: 4.0.9
+        version: 4.0.9
       stripe:
         specifier: 23.0.0
         version: 23.0.0(@types/node@26.6.5)
@@ -10333,8 +10333,8 @@ packages:
   postal-mime@2.7.6:
     resolution: {integrity: sha512-UUlyE2KlxmvwMGq060onF/VWU3zD6dVW31FwokQ5v26jWd35fbs2MoTFzh+jXnPwAyV2MULMKXcBInGOl5TO6Q==}
 
-  postal-mime@4.0.8:
-    resolution: {integrity: sha512-nnAgc4a9hn7zYuQmX4C7LU+fN47kR5S8cE8zvB/vZ2NimNDbaj+ISZJ9qe3CKIfn2uOTwwz4nQeIyljvdFNgOA==}
+  postal-mime@4.0.9:
+    resolution: {integrity: sha512-TLZwgOBaozyOYYkTcPVvLTKWjo+5F4vtCdxnwO9DLz37fsd/ZLQVoFzprEl7JBq1qnVq8KzQgC21S+IKUoAQcg==}
     engines: {node: '>=20'}
 
   postcss-load-config@6.0.1:
@@ -20107,7 +20107,7 @@ snapshots:
 
   postal-mime@2.7.6: {}
 
-  postal-mime@4.0.8: {}
+  postal-mime@4.0.9: {}
 
   postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.30)(tsx@4.23.15)(yaml@2.9.1):
     dependencies:
