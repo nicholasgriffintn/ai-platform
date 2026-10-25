@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "openWeights": false,
+    "openWeights": true,
     "contextWindow": 262144,
     "maxTokens": 81920,
     "modalities": {
@@ -11,7 +11,8 @@
         "text"
       ]
     },
-    "releaseDate": "October 22, 2026",
+    "knowledgeCutoffDate": "June 18, 2026",
+    "releaseDate": "October 3, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -19,7 +20,9 @@
     "reasoningConfig": {
       "supportedEffortLevels": [
         "none",
-        "thinking"
+        "low",
+        "medium",
+        "high"
       ],
       "defaultEffort": "none"
     }

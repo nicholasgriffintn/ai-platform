@@ -2461,7 +2461,7 @@
         "name": "Qwen3 Next 80B A3B Instruct",
         "maxTokens": 16384,
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.0011,
@@ -2473,7 +2473,7 @@
       "matchingModel": "qwen/qwen3-next-80b-a3b-instruct:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2985,8 +2985,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.000238,
-        "costPer1kOutputTokens": 0.016,
+        "costPer1kInputTokens": 0.00019,
+        "costPer1kOutputTokens": 0.00894,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3687,8 +3687,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00058116,
-        "costPer1kOutputTokens": 0.00116232,
+        "costPer1kInputTokens": 0.0002088,
+        "costPer1kOutputTokens": 0.0004176,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4351,10 +4351,10 @@
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 72000,
+        "maxTokens": 117964,
         "lastUpdated": "September 25, 2024",
-        "costPer1kInputTokens": 0.0000509,
-        "costPer1kOutputTokens": 0.000335,
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00033,
         "supportsToolCalls": false,
         "supportsAttachments": false
       }
@@ -4392,7 +4392,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.0001875,
         "costPer1kOutputTokens": 0.0006525
@@ -4512,11 +4512,10 @@
       "matchingModel": "minimax/minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
-        "maxTokens": 32768,
         "speed": 3,
         "lastUpdated": "February 12, 2026",
-        "costPer1kInputTokens": 0.00027,
-        "costPer1kOutputTokens": 0.00095,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": false
       }
     },
@@ -4660,7 +4659,7 @@
       "matchingModel": "mistralai/mistral-small-2603",
       "overrides": {
         "maxTokens": 209715,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -4844,20 +4843,6 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false
-      }
-    },
-    "openai/gpt-3.5-turbo": {
-      "model": "gpt/gpt-3-5-turbo",
-      "matchingModel": "openai/gpt-3.5-turbo",
-      "overrides": {
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 2,
-        "lastUpdated": "November 6, 2023",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": false
       }
     },
@@ -7795,11 +7780,10 @@
       "model": "glm/glm-latest",
       "matchingModel": "~z-ai/glm-latest",
       "overrides": {
-        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "lastUpdated": "August 19, 2026",
-        "costPer1kInputTokens": 0.000079,
-        "costPer1kOutputTokens": 0.0014,
+        "costPer1kInputTokens": 0.0000703,
+        "costPer1kOutputTokens": 0.0043843,
         "supportsAttachments": false
       }
     },
@@ -8087,8 +8071,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000262,
-        "costPer1kOutputTokens": 0.0001028
+        "costPer1kInputTokens": 0.0000511,
+        "costPer1kOutputTokens": 0.0000761
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8862,7 +8846,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002,
@@ -9121,7 +9105,6 @@
       "model": "liquid/lfm2-5-24b-a2b",
       "matchingModel": "liquid/lfm-2.5-24b-a2b",
       "overrides": {
-        "maxTokens": 8192,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0007,
@@ -9387,6 +9370,26 @@
         "lastUpdated": "October 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "liquid/lfm-2.5-2.6b": {
+      "model": "liquid/lfm2-5-2-6b",
+      "matchingModel": "liquid/lfm-2.5-2.6b",
+      "overrides": {
+        "lastUpdated": "August 11, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": false
+      }
+    },
+    "openai/gpt-3.5-turbo-0613": {
+      "model": "gpt/gpt-3-5-turbo-older-v0613",
+      "matchingModel": "openai/gpt-3.5-turbo-0613",
+      "overrides": {
+        "lastUpdated": "January 25, 2024",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.002,
         "supportsAttachments": false
       }
     }

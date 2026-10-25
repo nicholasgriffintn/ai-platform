@@ -1950,7 +1950,8 @@
         "contextWindow": 1000000,
         "maxTokens": 384000,
         "strengths": [
-          "coding"
+          "coding",
+          "tool_use"
         ],
         "speed": 4,
         "lastUpdated": "April 24, 2026",
@@ -1961,14 +1962,15 @@
         },
         "costPer1kInputTokens": 0.00019,
         "costPer1kOutputTokens": 0.00051,
-        "supportsToolCalls": false,
         "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -1982,7 +1984,8 @@
         "contextWindow": 1000000,
         "maxTokens": 384000,
         "strengths": [
-          "coding"
+          "coding",
+          "tool_use"
         ],
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -1993,14 +1996,15 @@
         },
         "costPer1kInputTokens": 0.00174,
         "costPer1kOutputTokens": 0.00348,
-        "supportsToolCalls": false,
         "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -2609,7 +2613,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }

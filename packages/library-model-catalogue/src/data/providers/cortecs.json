@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1787,7 +1787,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.000124,
         "costPer1kOutputTokens": 0.000603
@@ -2802,11 +2802,34 @@
       "model": "cortecs/kolibri-1/kolibri-1",
       "matchingModel": "kolibri-1",
       "overrides": {
-        "lastUpdated": "October 22, 2026",
+        "lastUpdated": "October 3, 2026",
         "costPer1kInputTokens": 0.000167,
         "costPer1kOutputTokens": 0.000613,
         "supportsAttachments": false,
         "supportsTemperature": false
+      }
+    },
+    "minimax-m3.1-flash": {
+      "model": "minimax/minimax-m3-1-flash",
+      "matchingModel": "minimax-m3.1-flash",
+      "overrides": {
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1048576,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "speed": 3,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.000304,
+        "costPer1kOutputTokens": 0.001219
       }
     }
   }

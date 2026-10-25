@@ -518,6 +518,40 @@
           "intelligenceIndexVersion": 4.3
         }
       }
+    },
+    "MiniMaxAI/MiniMax-M3.1-Flash": {
+      "model": "minimax/minimax-m3-1-flash",
+      "matchingModel": "MiniMaxAI/MiniMax-M3.1-Flash",
+      "overrides": {
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

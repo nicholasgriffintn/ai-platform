@@ -589,17 +589,6 @@
         "supportsAttachments": false
       }
     },
-    "gemini-4-argon-contributor": {
-      "model": "gemini/gemini-4-argon-contributor",
-      "matchingModel": "gemini-4-argon-contributor",
-      "overrides": {
-        "lastUpdated": "October 13, 2026",
-        "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false,
-        "apiBaseUrl": "https://opencode.ai/inference/go/google/v1beta"
-      }
-    },
     "kimi-k3.1-pro": {
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
@@ -619,6 +608,7 @@
       "overrides": {
         "name": "MiniMax M3.1 Flash",
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1000000,
         "maxTokens": 512000,
         "speed": 3,
         "lastUpdated": "October 19, 2026",
@@ -634,6 +624,30 @@
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0027
+      }
+    },
+    "gemini-4-argon": {
+      "model": "gemini/gemini-4-argon",
+      "matchingModel": "gemini-4-argon",
+      "overrides": {
+        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+        "maxTokens": 65536,
+        "speed": 2,
+        "lastUpdated": "October 13, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/go/google/v1beta"
+      }
+    },
+    "iceman-contributor-free": {
+      "model": "opencode-go/iceman-contributor-free/iceman-contributor-free",
+      "matchingModel": "iceman-contributor-free",
+      "overrides": {
+        "lastUpdated": "October 24, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
       }
     }
   }

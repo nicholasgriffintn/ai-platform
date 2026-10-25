@@ -266,7 +266,6 @@
       "overrides": {
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -441,6 +440,7 @@
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1000000,
         "maxTokens": 512000,
         "speed": 3,
         "lastUpdated": "October 19, 2026",
