@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-experiments",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Experimentation primitives for Polychat: define flags and experiments in code, assign users to variants with exposure telemetry, run generations under an assignment, track outcomes, and run offline variant evaluations with metrics",
   "license": "Apache-2.0",
   "files": [

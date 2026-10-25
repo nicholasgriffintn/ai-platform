@@ -1,5 +1,71 @@
 # @assistant/api
 
+## 1.6.0
+
+### Minor Changes
+
+- 11dabe3: See how the news is framed before you trust it.
+
+  - **How it's framed.** A Discover read has a How it's framed button. It shows the article's slant and tone, who it relies on, any loaded wording (quoted exactly as written) and what it leaves out, plus a writing grade. It is kept with the article, so opening it again costs nothing.
+  - **Compare the coverage.** A Discover topic with two or more articles that day can compare them: what every outlet agrees on, each outlet's angle, where they differ and what none of them mention. The comparison is filed in your Discover notebook.
+  - **Article analysis speaks the same language.** Article analysis in Apps now uses the same framing check, so its reports describe framing and omissions rather than labelling pieces left or right.
+  - Both count towards your monthly Discover budget and stop when it is spent.
+
+- ed38a63: Listen to what you read.
+
+  - **Listen.** Discover reads and text, web page and document files have a Listen button that reads them aloud in your narrator voice. It starts playing as soon as the first passage is ready and carries on while the rest are recorded. Once read, it plays again without recording anew unless the text changes.
+  - **Share.** On iPhone, a read in Discover has a Share button for sending it to another app.
+
+- 48eb3dc: Everything Polychat gathers from outside now lands in one knowledge base, and you can follow feeds and topics yourself.
+
+  - **Follow feeds and topics.** Use the Follow tile in Files, yours or a project's, or the Follow tab when adding sources to a notebook. Pick an RSS or Atom feed, a news topic or a web topic, and new pages arrive as sources on a schedule. Followed items sit in the same place with Read now, Pause and Stop following.
+  - **Pages are filed once.** Discover, notebook research, followed topics and stored page extracts share one copy of each page per personal library or project, so the same article is no longer read, summarised and indexed again for every feature.
+  - **Your feeds come first.** Discover and topic syncs check the feeds you follow before searching the web, and only widen the search when nothing fresh turns up.
+  - **Notebook syncs show their documents.** Documents synced from a connection into a personal notebook are no longer hidden.
+
+- ed38a63: Wind down is no longer the same session every night.
+
+  - **Tonight's pick.** Opening Wind down suggests one session from your day, last night's sleep and what you played recently, ready to start in one tap. It never suggests the same kind or sound two nights running.
+  - **About your day.** Unwind names a few real things from today and sets them down. Turn off Mention my day when others can hear. Apple TV always leaves your day out.
+  - **New kinds.** A slow story where nothing much happens, carried on over up to five nights; your Readwise highlights read back slowly; Park tomorrow, where what's on your mind comes back as things worth doing in the next edition; and Just the sound, with no voice at all. Sessions can now run to 30 minutes.
+  - **Tonight's story in Worth a look.** Evening editions can offer a story on a topic you follow. It's only recorded when you tap it.
+  - **Sound and voice.** One slider moves between the sound and the voice, and Sound after keeps the sound going for 15, 30 or 60 minutes after the voice ends. Pick the sound yourself (night, rain, sea, embers or aurora) or leave it to Poly. Sounds now crossfade as they loop and fade in and out when you play or pause.
+  - **Animated scenes.** Each sound has its own slow scene, with tonight's real moon, on the web, iPhone and Apple TV.
+
+### Patch Changes
+
+- Updated dependencies [ce66ee9]
+- Updated dependencies [11dabe3]
+- Updated dependencies [ed38a63]
+- Updated dependencies [48eb3dc]
+- Updated dependencies [ed38a63]
+  - @ngriffin_uk/polychat-schemas@1.8.0
+  - @ngriffin_uk/polychat-library-skills-catalogue@0.4.3
+  - @ngriffin_uk/polychat-ai-prompts@0.5.0
+  - @ngriffin_uk/polychat-utility-server@0.5.0
+  - @ngriffin_uk/polychat-utility-core@0.7.0
+  - @ngriffin_uk/polychat-ai-agents@0.4.2
+  - @ngriffin_uk/polychat-ai-functions@0.3.2
+  - @ngriffin_uk/polychat-ai-providers@0.5.1
+  - @ngriffin_uk/polychat-ai-billing@0.3.2
+  - @ngriffin_uk/polychat-ai-integrations@0.5.1
+  - @ngriffin_uk/polychat-ai-model-providers@0.3.3
+  - @ngriffin_uk/polychat-ai-models@0.3.2
+  - @ngriffin_uk/polychat-ai-telemetry@0.2.4
+  - @ngriffin_uk/polychat-ai-workflows@0.2.3
+  - @ngriffin_uk/polychat-library-benchmarks@0.2.3
+  - @ngriffin_uk/polychat-library-sandbox@0.3.4
+  - @ngriffin_uk/polychat-library-tasks@0.2.3
+  - @ngriffin_uk/polychat-library-tools@0.4.2
+  - @ngriffin_uk/polychat-ai-experiments@0.2.4
+  - @ngriffin_uk/polychat-ai-sandbox@0.2.5
+  - @ngriffin_uk/polychat-ai-skills@0.2.4
+  - @ngriffin_uk/polychat-library-chat@1.3.1
+  - @ngriffin_uk/polychat-library-flags@0.2.4
+  - @ngriffin_uk/polychat-library-interactions@0.1.5
+  - @ngriffin_uk/polychat-library-model-registry@0.3.3
+  - @ngriffin_uk/polychat-library-sites@0.3.3
+
 ## 1.5.1
 
 ### Patch Changes

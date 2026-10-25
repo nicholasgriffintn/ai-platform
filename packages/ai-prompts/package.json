@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-prompts",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Typed prompt retrieval and composition for Polychat: lookup by id, task and variant, template rendering with variables and conditionals, and the composed chat, assistant, agent and sandbox prompt builders",
   "license": "Apache-2.0",
   "files": [

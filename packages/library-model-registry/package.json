@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-model-registry",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Governed model registry mechanisms for Polychat: the pure policy evaluator, licence normalisation, static weight inspection that never executes a file, evaluation statistics, lineage and CycloneDX ML-BOM export",
   "license": "Apache-2.0",
   "files": [
