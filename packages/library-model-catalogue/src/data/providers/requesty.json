@@ -2930,7 +2930,7 @@
       "overrides": {
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066,
@@ -2950,7 +2950,7 @@
       "model": "mistral-small/mistral-small-4-eu",
       "matchingModel": "mistral-small-2603@eu",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -4308,6 +4308,7 @@
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1000000,
         "maxTokens": 128000,
         "speed": 3,
         "lastUpdated": "October 19, 2026",

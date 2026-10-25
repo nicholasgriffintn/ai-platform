@@ -787,39 +787,6 @@
         }
       }
     },
-    "gemini-4-argon-contributor": {
-      "defaults": {
-        "name": "Gemini 4 Argon Contributor",
-        "openWeights": false,
-        "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
-        "contextWindow": 1048576,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "March 2026",
-        "releaseDate": "October 13, 2026",
-        "supportsResponseFormat": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "gemini-4-argon-eu": {
       "defaults": {
         "name": "Gemini 4 Argon (EU)",

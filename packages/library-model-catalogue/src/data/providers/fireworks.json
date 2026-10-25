@@ -869,6 +869,7 @@
       "matchingModel": "accounts/fireworks/models/minimax-m3p1-flash",
       "overrides": {
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1000000,
         "maxTokens": 512000,
         "modalities": {
           "input": [

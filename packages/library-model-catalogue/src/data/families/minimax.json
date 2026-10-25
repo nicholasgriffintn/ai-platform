@@ -322,6 +322,7 @@
       "defaults": {
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -499,7 +500,6 @@
         "name": "MiniMax-M3.1-Flash",
         "openWeights": false,
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
-        "contextWindow": 1000000,
         "modalities": {
           "input": [
             "text",

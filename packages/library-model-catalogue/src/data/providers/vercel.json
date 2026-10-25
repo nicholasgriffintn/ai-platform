@@ -633,7 +633,7 @@
         "name": "Qwen3 Next 80B A3B Instruct",
         "contextWindow": 262114,
         "maxTokens": 262114,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
@@ -1533,7 +1533,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.00097,
@@ -1905,13 +1905,10 @@
       "model": "gpt/gpt-3-5-turbo",
       "matchingModel": "openai/gpt-3.5-turbo",
       "overrides": {
-        "contextComplexity": 1,
-        "knowledgeCutoffDate": "September 2021",
         "lastUpdated": "November 6, 2023",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsToolCalls": false,
-        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },

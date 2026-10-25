@@ -52,9 +52,12 @@
             "text"
           ]
         },
+        "contextComplexity": 1,
         "reliability": 1,
-        "knowledgeCutoffDate": "September 1, 2021",
+        "knowledgeCutoffDate": "September 2021",
         "releaseDate": "March 1, 2023",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
         "supportsAttachments": false,
         "supportsTemperature": true,
         "artificialAnalysis": {
@@ -100,6 +103,36 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": true
+      }
+    },
+    "gpt-3-5-turbo-older-v0613": {
+      "defaults": {
+        "name": "GPT-3.5 Turbo (older v0613)",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 4095,
+        "maxTokens": 3685,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 2,
+        "knowledgeCutoffDate": "September 30, 2021",
+        "releaseDate": "January 25, 2024",
+        "supportsAttachments": false,
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "gpt-4": {
@@ -1717,7 +1750,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1076,
+              "value": 1077,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1987,6 +2020,36 @@
         "releaseDate": "September 28, 2023",
         "supportsToolCalls": false,
         "supportsTemperature": true
+      }
+    },
+    "openai-gpt-3-5-turbo-older-v0613": {
+      "defaults": {
+        "name": "OpenAI: GPT-3.5 Turbo (older v0613)",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 4095,
+        "maxTokens": 3685,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "releaseDate": "January 25, 2024",
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
       }
     },
     "openai-gpt-4-5": {

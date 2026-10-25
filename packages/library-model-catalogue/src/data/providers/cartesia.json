@@ -1,7 +1,8 @@
 {
   "defaults": {
     "hiddenFromDefaultList": true,
-    "supportsStreaming": true
+    "supportsStreaming": true,
+    "supportsRealtimeSession": false
   },
   "models": {
     "ink-2": {
@@ -15,8 +16,7 @@
       "model": "whisper/ink-whisper",
       "matchingModel": "ink-whisper",
       "overrides": {
-        "deprecated": true,
-        "supportsRealtimeSession": false
+        "deprecated": true
       },
       "unset": [
         "supportsToolCalls",
@@ -26,9 +26,7 @@
     "sonic-3.6": {
       "model": "sonic/sonic-3-6",
       "matchingModel": "sonic-3.6",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     }
   }
 }

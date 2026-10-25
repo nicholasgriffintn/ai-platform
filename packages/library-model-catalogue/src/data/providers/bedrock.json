@@ -1313,7 +1313,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262000,
-        "speed": 4,
+        "speed": 3,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "November 25, 2025",
         "dataRetention": {

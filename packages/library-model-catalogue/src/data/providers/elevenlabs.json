@@ -2,48 +2,40 @@
   "defaults": {
     "hiddenFromDefaultList": true,
     "supportsStreaming": true,
-    "supportsRealtimeSession": true
+    "supportsRealtimeSession": false
   },
   "models": {
     "scribe_v2_realtime": {
       "model": "elevenlabs/scribe_v2_realtime/scribe-v2-realtime",
       "matchingModel": "scribe_v2_realtime",
-      "overrides": {}
+      "overrides": {
+        "supportsRealtimeSession": true
+      }
     },
     "eleven_v4": {
       "model": "eleven/eleven-v4",
       "matchingModel": "eleven_v4",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     },
     "eleven_v4_turbo": {
       "model": "eleven/eleven-v4-turbo",
       "matchingModel": "eleven_v4_turbo",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     },
     "eleven_v3": {
       "model": "eleven/eleven-v3",
       "matchingModel": "eleven_v3",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     },
     "eleven_multilingual_v2": {
       "model": "eleven/eleven-multilingual-v2",
       "matchingModel": "eleven_multilingual_v2",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     },
     "eleven_flash_v2_5": {
       "model": "eleven/eleven-flash-v2-5",
       "matchingModel": "eleven_flash_v2_5",
-      "overrides": {
-        "supportsRealtimeSession": false
-      }
+      "overrides": {}
     }
   }
 }

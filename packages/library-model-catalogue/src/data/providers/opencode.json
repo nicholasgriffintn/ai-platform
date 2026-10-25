@@ -640,7 +640,6 @@
       "overrides": {
         "name": "MiniMax M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",

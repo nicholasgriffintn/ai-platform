@@ -1,18 +1,57 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
     "supportsToolCalls": true,
-    "supportsAttachments": true
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "description": "The voxtral family includes models that produce audio, speech.",
   "models": {
+    "voxtral-3-tts": {
+      "defaults": {
+        "name": "Voxtral 3 TTS",
+        "description": "Mistral's Voxtral speech model with preset and cloned voices.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "creative",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 4,
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1219,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 15
+            }
+          ]
+        }
+      }
+    },
     "voxtral-mini-latest": {
       "defaults": {
         "name": "Voxtral Mini",
         "openWeights": false,
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "contextWindow": 0,
-        "maxTokens": 0,
         "modalities": {
           "input": [
             "text",
@@ -31,8 +70,6 @@
       "defaults": {
         "name": "Voxtral Mini TTS (latest)",
         "description": "Multilingual text-to-speech model with zero-shot voice cloning",
-        "contextWindow": 0,
-        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -67,8 +104,7 @@
           ]
         },
         "releaseDate": "July 15, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": true
+        "supportsResponseFormat": true
       }
     },
     "voxtral-small-2507": {
@@ -107,8 +143,7 @@
           ]
         },
         "releaseDate": "July 15, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": true
+        "supportsResponseFormat": true
       }
     },
     "voxtral-voice-agent": {
@@ -116,8 +151,6 @@
         "name": "Voxtral Voice Agent",
         "openWeights": false,
         "description": "Hosted voice agent that listens with Voxtral Transcribe Realtime 3, reasons with Mistral Small and answers with Voxtral TTS 3",
-        "contextWindow": 0,
-        "maxTokens": 0,
         "modalities": {
           "input": [
             "audio"
@@ -131,46 +164,7 @@
           "audio"
         ],
         "releaseDate": "October 20, 2026",
-        "supportsAttachments": false,
-        "supportsTemperature": true
-      }
-    },
-    "voxtral-3-tts": {
-      "defaults": {
-        "name": "Voxtral 3 TTS",
-        "description": "Mistral's Voxtral speech model with preset and cloned voices.",
-        "contextWindow": 0,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "speech"
-          ]
-        },
-        "strengths": [
-          "audio"
-        ],
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1219,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 15
-            }
-          ]
-        }
+        "supportsAttachments": false
       }
     }
   }

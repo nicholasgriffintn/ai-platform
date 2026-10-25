@@ -10,15 +10,92 @@
       ]
     },
     "strengths": [
-      "audio"
+      "audio",
+      "creative"
     ]
   },
   "description": "ElevenLabs text-to-speech models.",
   "models": {
+    "eleven-flash-v2-5": {
+      "defaults": {
+        "name": "Flash v2.5",
+        "description": "Fastest and lowest-cost ElevenLabs model, with about 75ms latency in 32 languages.",
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1078,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "eleven-multilingual-v2": {
+      "defaults": {
+        "name": "Multilingual v2",
+        "description": "Stable, natural ElevenLabs model suited to long-form and number-heavy text in 29 languages.",
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1096,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
+    "eleven-v3": {
+      "defaults": {
+        "name": "Eleven v3",
+        "description": "Previous-generation expressive ElevenLabs model with dramatic delivery across more than 70 languages.",
+        "reliability": 4,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1184,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
     "eleven-v4": {
       "defaults": {
         "name": "Eleven v4",
         "description": "ElevenLabs' flagship speech model, with the richest expression and strong voice cloning across more than 90 languages.",
+        "reliability": 5,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -41,6 +118,7 @@
       "defaults": {
         "name": "Eleven v4 Turbo",
         "description": "Real-time variant of Eleven v4 with about 100ms median inference latency.",
+        "reliability": 5,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -54,72 +132,6 @@
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 17
-            }
-          ]
-        }
-      }
-    },
-    "eleven-v3": {
-      "defaults": {
-        "name": "Eleven v3",
-        "description": "Previous-generation expressive ElevenLabs model with dramatic delivery across more than 70 languages.",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1184,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 10
-            }
-          ]
-        }
-      }
-    },
-    "eleven-multilingual-v2": {
-      "defaults": {
-        "name": "Multilingual v2",
-        "description": "Stable, natural ElevenLabs model suited to long-form and number-heavy text in 29 languages.",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1096,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 10
-            }
-          ]
-        }
-      }
-    },
-    "eleven-flash-v2-5": {
-      "defaults": {
-        "name": "Flash v2.5",
-        "description": "Fastest and lowest-cost ElevenLabs model, with about 75ms latency in 32 languages.",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_speechElo",
-              "label": "Text-to-speech arena",
-              "value": 1078,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 11
             }
           ]
         }

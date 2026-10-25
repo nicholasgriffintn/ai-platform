@@ -200,7 +200,7 @@
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "July 25, 2025",
