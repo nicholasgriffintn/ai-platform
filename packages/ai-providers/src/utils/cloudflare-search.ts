@@ -82,7 +82,6 @@ export async function postCloudflareSearch(
   const response = await fetch(endpoint, {
     method: "POST",
     redirect: "error",
-    signal: AbortSignal.timeout(30_000),
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   });

@@ -144,6 +144,7 @@ export class MachineRunCoordinator extends Agent<IEnv> {
 
         run.sequence = input.sequence;
         run.updatedAt = now;
+        run.expiresAt = now + RETENTION_MS;
         await this.ctx.storage.put("connectedAt", now);
         await this.ctx.storage.put(`run:${input.id}`, run);
 

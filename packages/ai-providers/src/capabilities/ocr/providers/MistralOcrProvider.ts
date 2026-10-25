@@ -293,7 +293,7 @@ export class MistralOcrProvider implements OcrProvider {
       payload,
       request.env,
       {
-        requestTimeout: timeout ?? 100000,
+        requestTimeout: timeout,
         retryDelay: 500,
         maxAttempts: 2,
         backoff: "exponential",

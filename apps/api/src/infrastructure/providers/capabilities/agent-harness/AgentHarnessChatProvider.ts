@@ -3,8 +3,6 @@ import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   AGENT_HARNESS_APPROVAL_TOOL,
   AGENT_HARNESS_DEFINITIONS,
-  AGENT_HARNESS_MAX_INPUT_CHARS,
-  AGENT_HARNESS_MAX_INSTRUCTIONS_CHARS,
   AGENT_HARNESS_PROVIDER,
   agentHarnessIdSchema,
   isHostedAgentHarness,
@@ -87,9 +85,7 @@ export class AgentHarnessChatProvider implements AIProvider {
     const resume = readApprovalResolution(params.options);
     const input = resume
       ? undefined
-      : extractTextFromMessageContent(params.messages?.at(-1)?.content)
-          .trim()
-          .slice(-AGENT_HARNESS_MAX_INPUT_CHARS);
+      : extractTextFromMessageContent(params.messages?.at(-1)?.content).trim();
 
     if (!resume && !input) {
       throw new AssistantError(`${definition.name} needs a message`, ErrorType.PARAMS_ERROR);
@@ -107,7 +103,7 @@ export class AgentHarnessChatProvider implements AIProvider {
     });
     const requestedEffort = reasoningEffortSchema.safeParse(params.reasoning_effort);
     const reasoningEffort = requestedEffort.success ? requestedEffort.data : selected.effort;
-    const instructions = params.system_prompt?.trim().slice(-AGENT_HARNESS_MAX_INSTRUCTIONS_CHARS);
+    const instructions = params.system_prompt?.trim();
 
     if (!isHostedAgentHarness(harness)) {
       return streamHarnessRecords({
@@ -121,9 +117,7 @@ export class AgentHarnessChatProvider implements AIProvider {
           ...(projectId ? { projectId } : {}),
         }),
         harnessName: definition.name,
-        deadline: Date.now() + definition.capabilities.maxTurnMinutes * 60_000,
         checkIn: async () => undefined,
-        onExpired: async () => undefined,
       });
     }
 

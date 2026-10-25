@@ -45,8 +45,6 @@ export function streamHarnessRecords(params: {
   harnessName: string;
   operationId?: string;
   checkIn: () => Promise<void>;
-  deadline: number;
-  onExpired: () => Promise<void>;
   release?: () => void;
 }): ReadableStream<Uint8Array> {
   const iterator = params.records[Symbol.asyncIterator]();
@@ -66,17 +64,6 @@ export function streamHarnessRecords(params: {
 
           if (next === null) {
             await params.checkIn();
-
-            if (Date.now() >= params.deadline) {
-              await params.onExpired();
-              controller.enqueue(
-                encodeServerSentEvent({
-                  error: { message: `${params.harnessName} did not finish in time` },
-                }),
-              );
-              break;
-            }
-
             continue;
           }
 
@@ -177,8 +164,6 @@ export async function startHostedHarnessTurn(
     release: () => reading.abort(),
     harnessName: definition.name,
     ...(operationId ? { operationId } : {}),
-    deadline: Date.now() + definition.capabilities.maxTurnMinutes * 60_000,
-    onExpired: abort,
     checkIn: async () => {
       try {
         await requireActiveExecutionRun(turn.context);

@@ -35,6 +35,7 @@ export class HindsightMemoryProvider extends BaseMemoryProvider {
     conversationIngestion: true,
     externalStorage: true,
     deletion: true,
+    semanticSearch: true,
   };
 
   constructor(config: Omit<BaseMemoryProviderConfig, "connectorProvider">) {

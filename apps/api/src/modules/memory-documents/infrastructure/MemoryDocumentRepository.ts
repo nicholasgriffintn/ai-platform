@@ -1,3 +1,4 @@
+import type { MemoryDocumentType } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -14,10 +15,16 @@ export interface MemoryDocumentScopeKey {
   scopeId: string;
 }
 
+export interface MemoryDocumentDetails {
+  description: string;
+  type: MemoryDocumentType | null;
+}
+
 export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
   kind?: "memory" | "conversation_brief" | "teammate_context";
   name: string;
   content: string;
+  details?: MemoryDocumentDetails;
   createdByUserId: number;
   operationId?: string;
 }
@@ -25,6 +32,7 @@ export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
 export interface AppendMemoryDocumentRevision {
   documentId: string;
   content: string;
+  details?: MemoryDocumentDetails;
   changeNote?: string | null;
   createdByUserId: number;
   expectedRevision: number;
@@ -82,8 +90,8 @@ export class MemoryDocumentRepository extends BaseRepository {
     await this.executeBatch([
       this.env.DB.prepare(
         `INSERT INTO resource
-           (resource_type, id, scope_type, scope_id, kind, title, content, revision, created_by_user_id)
-         VALUES ('memory', ?, ?, ?, ?, ?, ?, 1, ?)`,
+           (resource_type, id, scope_type, scope_id, kind, title, content, metadata, revision, created_by_user_id)
+         VALUES ('memory', ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
       ).bind(
         id,
         record.scopeType,
@@ -91,6 +99,7 @@ export class MemoryDocumentRepository extends BaseRepository {
         record.kind ?? "memory",
         record.name,
         record.content,
+        JSON.stringify(record.details ?? {}),
         record.createdByUserId,
       ),
       this.env.DB.prepare(
@@ -148,10 +157,11 @@ export class MemoryDocumentRepository extends BaseRepository {
     return this.runQuery<MemoryDocumentRow>(
       `SELECT * FROM ${memoryResourceSql} memory_document
        WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
-         AND (lower(name) LIKE ? OR lower(content) LIKE ?)
+         AND (lower(name) LIKE ? OR lower(content) LIKE ?
+           OR lower(COALESCE(json_extract(metadata, '$.description'), '')) LIKE ?)
        ORDER BY updated_at DESC
        LIMIT ?`,
-      [scope.scopeType, scope.scopeId, `%${query}%`, `%${query}%`, limit],
+      [scope.scopeType, scope.scopeId, `%${query}%`, `%${query}%`, `%${query}%`, limit],
     );
   }
 
@@ -237,7 +247,7 @@ export class MemoryDocumentRepository extends BaseRepository {
     return [
       this.env.DB.prepare(
         `UPDATE resource
-         SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
+         SET content = ?, metadata = COALESCE(?, metadata), revision = ?, updated_at = CURRENT_TIMESTAMP
          WHERE resource_type = 'memory' AND id = ? AND revision = ? AND deleted_at IS NULL
            AND (? IS NULL OR NOT EXISTS (
              SELECT 1 FROM resource_revision
@@ -245,6 +255,7 @@ export class MemoryDocumentRepository extends BaseRepository {
            ))${reflectionOperationId ? " AND EXISTS (SELECT 1 FROM memory_reflection WHERE record_kind = 'result' AND id = ? AND revision = ? AND status = 'applied')" : ""}`,
       ).bind(
         input.content,
+        input.details ? JSON.stringify(input.details) : null,
         nextRevision,
         input.documentId,
         input.expectedRevision,

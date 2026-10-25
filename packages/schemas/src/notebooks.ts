@@ -65,12 +65,11 @@ export const notebookGuideDraftSchema = z
       .string()
       .trim()
       .min(1)
-      .max(2_000)
       .describe(
         "One paragraph on what the sources cover together. Bold the four to six most important terms with **double asterisks**.",
       ),
     questions: z
-      .array(z.string().trim().min(1).max(200))
+      .array(z.string().trim().min(1))
       .min(1)
       .max(3)
       .describe(

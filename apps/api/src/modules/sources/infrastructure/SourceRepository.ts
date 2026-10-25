@@ -1,8 +1,10 @@
-import type {
-  SourceCollectionKind,
-  SourceGenerationType,
-  SourceKind,
-  SourceStatus,
+import {
+  SOURCE_SUMMARY_METADATA_KEY,
+  type SourceCollectionKind,
+  type SourceGenerationType,
+  type SourceKind,
+  type SourceStatus,
+  type SourceContentSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -295,6 +297,16 @@ export class SourceRepository extends BaseRepository {
     if (result) {
       await this.executeRun(result.query, result.values);
     }
+  }
+
+  async setSourceSummary(sourceId: string, summary: SourceContentSummary): Promise<void> {
+    await this.executeRun(
+      `UPDATE resource SET metadata = json_set(COALESCE(metadata, '{}'), '$.${SOURCE_SUMMARY_METADATA_KEY}', json(?))
+       WHERE resource_type = 'source' AND id = ?
+         AND json_extract(metadata, '$.immutableSnapshot') IS NOT 1
+         AND NOT EXISTS (SELECT 1 FROM project_task_integration WHERE source_id = resource.id)`,
+      [JSON.stringify(summary), sourceId],
+    );
   }
 
   async attachSourceFile(

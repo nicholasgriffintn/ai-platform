@@ -17,13 +17,8 @@ export interface MindMapNode {
 }
 
 const mindMapNodeFields = {
-  label: z.string().trim().min(1).max(120).describe("A short topic name."),
-  summary: z
-    .string()
-    .trim()
-    .max(400)
-    .optional()
-    .describe("One sentence on what the sources say about it."),
+  label: z.string().trim().min(1).describe("A short topic name."),
+  summary: z.string().trim().optional().describe("One sentence on what the sources say about it."),
 };
 
 function mindMapBranchSchema<TChild extends z.ZodType<MindMapNode>>(child: TChild) {
@@ -50,8 +45,8 @@ export const mindMapOutputContentSchema = z
 
 export const flashcardSchema = z
   .object({
-    front: z.string().trim().min(1).max(300).describe("A question or term."),
-    back: z.string().trim().min(1).max(800).describe("The answer, as the sources give it."),
+    front: z.string().trim().min(1).describe("A question or term."),
+    back: z.string().trim().min(1).describe("The answer, as the sources give it."),
   })
   .strict();
 
@@ -64,10 +59,10 @@ export const flashcardsOutputContentSchema = z
 
 export const quizQuestionSchema = z
   .object({
-    question: z.string().trim().min(1).max(400),
-    options: z.array(z.string().trim().min(1).max(240)).min(2).max(5),
+    question: z.string().trim().min(1),
+    options: z.array(z.string().trim().min(1)).min(2).max(5),
     answerIndex: z.number().int().min(0).max(4).describe("Zero-based index of the right option."),
-    explanation: z.string().trim().min(1).max(800).describe("Why that answer is right."),
+    explanation: z.string().trim().min(1).describe("Why that answer is right."),
   })
   .strict()
   .refine((question) => question.answerIndex < question.options.length, {
@@ -109,23 +104,16 @@ export const VIDEO_OVERVIEW_STYLE_LABELS: Record<
 
 export const videoOverviewSceneDraftSchema = z
   .object({
-    title: z
-      .string()
-      .trim()
-      .min(1)
-      .max(120)
-      .describe("What the scene is about, as a short headline."),
+    title: z.string().trim().min(1).describe("What the scene is about, as a short headline."),
     caption: z
       .string()
       .trim()
-      .max(90)
       .default("")
       .describe("At most one short line of on-screen text, such as a key figure. Often empty."),
     visual: z
       .string()
       .trim()
       .min(1)
-      .max(600)
       .describe(
         "The illustration for this scene: the subject, setting and composition, as a picture with no words in it.",
       ),
@@ -133,7 +121,6 @@ export const videoOverviewSceneDraftSchema = z
       .string()
       .trim()
       .min(1)
-      .max(1200)
       .describe("What the narrator says over this scene, written to be spoken."),
   })
   .strict();

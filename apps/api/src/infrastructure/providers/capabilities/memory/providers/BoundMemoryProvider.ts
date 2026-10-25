@@ -23,6 +23,7 @@ export class BoundMemoryProvider implements MemoryProvider {
         (baseline?.capabilities.conversationIngestion ?? false),
       externalStorage:
         documents.capabilities.externalStorage || (baseline?.capabilities.externalStorage ?? false),
+      semanticSearch: (baseline ?? documents).capabilities.semanticSearch,
     };
   }
 

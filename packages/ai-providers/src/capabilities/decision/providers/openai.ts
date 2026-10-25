@@ -59,7 +59,7 @@ export class OpenAIDecisionProvider implements DecisionProvider {
           { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
           body,
           this.env,
-          { includeErrorBodyInLogs: false, timeoutIncludesBody: true, maxResponseBytes: 1_048_576 },
+          { includeErrorBodyInLogs: false, maxResponseBytes: 1_048_576 },
         );
 
         return normaliseOpenAIDecisionResponse(raw, request.questions);

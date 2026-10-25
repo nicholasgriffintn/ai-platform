@@ -5,6 +5,7 @@ import {
   useMemoryDocumentRevisions,
   useUpdateMemoryDocument,
 } from "@ngriffin_uk/polychat-library-react";
+import type { MemoryDocumentType } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { History, Info } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +19,13 @@ import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
 import { useFileViewerPanels } from "./useFileViewerPanels.js";
+
+const MEMORY_TYPE_LABELS: Record<MemoryDocumentType, string> = {
+  user: "About you",
+  feedback: "How to work with you",
+  project: "Ongoing work",
+  reference: "Where to find things",
+};
 
 function MemoryHistory({ name, projectId }: { name: string; projectId?: string }) {
   const revisions = useMemoryDocumentRevisions(name, projectId);
@@ -108,7 +116,7 @@ export function MemoryViewer({
 
   return (
     <FileViewerFrame
-      item={memoryToFileItem({ ...memory, excerpt: "" }, basePath)}
+      item={memoryToFileItem({ ...memory, excerpt: memory.description }, basePath)}
       subject={{ type: "memory", id: memory.id }}
       location="Files · Memory"
       projectId={projectId}
@@ -159,6 +167,18 @@ export function MemoryViewer({
           icon: <Info size={14} aria-hidden="true" />,
           content: (
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+              {memory.description ? (
+                <>
+                  <dt className="text-muted-foreground">About</dt>
+                  <dd className="text-foreground">{memory.description}</dd>
+                </>
+              ) : null}
+              {memory.type ? (
+                <>
+                  <dt className="text-muted-foreground">Kind</dt>
+                  <dd className="text-foreground">{MEMORY_TYPE_LABELS[memory.type]}</dd>
+                </>
+              ) : null}
               <dt className="text-muted-foreground">Updated</dt>
               <dd className="text-foreground">{formatRelativeTime(memory.updatedAt)}</dd>
               <dt className="text-muted-foreground">Kept for</dt>

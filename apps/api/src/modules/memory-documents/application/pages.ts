@@ -6,6 +6,7 @@ import { sliceTextAtCodePointBoundaries } from "@ngriffin_uk/polychat-utility-se
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { readMemoryDocumentDetails } from "~/modules/memory-documents/domain/details";
 import type { MemoryScope } from "~/types";
 
 import { requireRunMemoryDocument } from "./run-access";
@@ -73,7 +74,9 @@ export function memorySearchPassage(document: MemoryDocumentRow, query: string) 
 
   return {
     id: document.id,
-    text: `${document.name}\n${page.content}`,
+    text: [document.name, readMemoryDocumentDetails(document).description, page.content]
+      .filter(Boolean)
+      .join("\n"),
     score: 1,
     metadata: {
       name: document.name,

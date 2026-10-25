@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { parseDailyLog } from "../daily-log";
 import {
   DEVICE_ACTIVITY_DAYS_KEPT,
   describeDeviceActivityItems,
   listDeviceActivityProviders,
   mergeDeviceActivityPages,
-  parseDeviceActivityHistory,
   readDeviceActivityPages,
   readDeviceActivitySource,
   renderDeviceActivityHistory,
@@ -44,7 +44,7 @@ describe("device activity providers", () => {
       lines: [],
     });
 
-    const days = parseDeviceActivityHistory(content);
+    const days = parseDailyLog(content);
 
     expect(days).toHaveLength(DEVICE_ACTIVITY_DAYS_KEPT);
     expect(days[0]).toEqual({

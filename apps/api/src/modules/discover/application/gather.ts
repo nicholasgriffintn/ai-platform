@@ -17,7 +17,6 @@ import {
   describeZonedInstant,
   shiftCalendarDate,
   sha256Hex,
-  truncateForModel,
   zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -65,7 +64,6 @@ import { readDiscoverRoutine, type DiscoverRoutineSettings } from "./settings";
 import { discoverSignalSourceId, writeDiscoverDocument } from "./signal-documents";
 
 const logger = getLogger({ prefix: "discover/gather" });
-const SIGNAL_CONTENT_LIMIT = 120_000;
 const RESEARCH_RESULT_LIMIT = 8;
 const HEADLINE_NEWS_DAYS = 1;
 const TOPIC_NEWS_DAYS = 3;
@@ -171,7 +169,6 @@ async function readSignal(
         readAt,
         lines,
         error: null,
-        raw: truncateForModel(JSON.stringify(result, null, 1) ?? "", SIGNAL_CONTENT_LIMIT),
       }),
       metadata: {
         [DISCOVER_SIGNAL_METADATA_KEY]: signal.id,
@@ -205,7 +202,6 @@ async function readSignal(
             readAt: null,
             lines: [],
             error: message,
-            raw: null,
           }),
       metadata: {
         [DISCOVER_SIGNAL_METADATA_KEY]: signal.id,

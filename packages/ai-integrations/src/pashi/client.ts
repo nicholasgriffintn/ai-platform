@@ -128,16 +128,20 @@ export class PashiClient {
       };
     }
 
-    const data = await this.requestJson(tool.endpoint, {
-      body: JSON.stringify({
-        fields,
-        input: operation.input ?? "",
-      }),
-      headers: {
-        "Content-Type": "application/json",
+    const data = await this.requestJson(
+      tool.endpoint,
+      {
+        body: JSON.stringify({
+          fields,
+          input: operation.input ?? "",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
       },
-      method: "POST",
-    });
+      false,
+    );
 
     return {
       data,
@@ -189,10 +193,11 @@ export class PashiClient {
   private async requestJson(
     path: string,
     init: Omit<RequestInit, "headers"> & { headers?: Record<string, string> },
+    bounded = true,
   ): Promise<unknown> {
     const url = resolvePashiUrl(path);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+    const timeoutId = bounded ? setTimeout(() => controller.abort(), this.timeoutMs) : undefined;
 
     let response: Response;
 

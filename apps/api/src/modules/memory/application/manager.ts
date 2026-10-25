@@ -254,7 +254,15 @@ export class MemoryManager {
               `${operationPrefix}:classified`,
             );
 
-            if (NORMALISED_MEMORY_CATEGORIES.has(category)) {
+            const { capabilities } = getMemoryProvider({
+              env: this.env,
+              user: this.user,
+              userSettings,
+              serviceContext: this.serviceContext,
+              memoryScope: this.memoryScope,
+            });
+
+            if (NORMALISED_MEMORY_CATEGORIES.has(category) && capabilities.semanticSearch) {
               try {
                 const { object: normalised } = await ai.generateObject({
                   ...scope,

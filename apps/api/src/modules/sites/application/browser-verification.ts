@@ -131,9 +131,7 @@ export async function verifySiteInBrowser(
               "https://fonts.gstatic.com",
             ],
           }),
-          signal: signal
-            ? AbortSignal.any([signal, AbortSignal.timeout(90_000)])
-            : AbortSignal.timeout(90_000),
+          signal,
         },
       );
       const parsed = response.ok

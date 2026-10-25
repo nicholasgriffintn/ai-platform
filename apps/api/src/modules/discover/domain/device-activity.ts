@@ -7,14 +7,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 
+import { mergeDailyLog, parseDailyLog, renderDailyLog, type DailyLogDay } from "./daily-log";
 import type { DiscoverResearchResult } from "./research";
 import type { DiscoverSignalGroup } from "./signal-catalogue";
 
 export const DEVICE_ACTIVITY_MACHINE_METADATA_KEY = "deviceMachineId";
 export const DEVICE_ACTIVITY_DAYS_KEPT = 7;
 export const DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY = "attemptedPages";
-
-const DAY_HEADING = /^## (\d{4}-\d{2}-\d{2})$/u;
 
 const DEVICE_SOURCE_DETAILS: Record<
   DeviceActivitySource,
@@ -94,52 +93,16 @@ export function deviceActivityGroup(providerId: string): DiscoverSignalGroup | n
   return source ? DEVICE_SOURCE_DETAILS[source].group : null;
 }
 
-export interface DeviceActivityDay {
-  date: string;
-  lines: readonly string[];
-}
-
-export function parseDeviceActivityHistory(content: string): DeviceActivityDay[] {
-  const days: { date: string; lines: string[] }[] = [];
-
-  for (const line of content.split("\n")) {
-    const heading = DAY_HEADING.exec(line.trim());
-    const current = days.at(-1);
-
-    if (heading?.[1]) {
-      days.push({ date: heading[1], lines: [] });
-    } else if (current && line.startsWith("- ")) {
-      current.lines.push(line.slice(2).trim());
-    }
-  }
-
-  return days;
-}
-
 export function renderDeviceActivityHistory(
   title: string,
   existing: string,
-  today: DeviceActivityDay,
+  today: DailyLogDay,
 ): string {
-  const days = [
-    ...(today.lines.length > 0 ? [today] : []),
-    ...parseDeviceActivityHistory(existing).filter(
-      (day) => today.lines.length === 0 || day.date !== today.date,
-    ),
-  ]
-    .sort((left, right) => (left.date < right.date ? 1 : -1))
-    .slice(0, DEVICE_ACTIVITY_DAYS_KEPT);
+  const days = mergeDailyLog(parseDailyLog(existing), today, DEVICE_ACTIVITY_DAYS_KEPT);
 
-  return [
-    `# ${title}`,
-    ...(days.length > 0
-      ? days.map((day) =>
-          [`## ${day.date}`, ...day.lines.map((line) => `- ${line.replace(/\s+/gu, " ")}`)].join(
-            "\n",
-          ),
-        )
-      : ["Nothing shared yet."]),
-  ].join("\n\n");
+  return [`# ${title}`, days.length > 0 ? renderDailyLog(days) : "Nothing shared yet."].join(
+    "\n\n",
+  );
 }
 
 export function listDeviceActivityProviders(

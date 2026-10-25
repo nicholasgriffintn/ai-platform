@@ -12,6 +12,7 @@ export const promptTasks = [
   "memory-normaliser",
   "memory-summariser",
   "memory-synthesis",
+  "memory-writer",
   "conversation-summary",
   "conversation-title",
   "document-metadata",

@@ -8,6 +8,7 @@ export function memoryDocumentFixture(
     name: "working-memory",
     kind: "teammate_context",
     content: "Prefer concise answers",
+    metadata: null,
     revision: 1,
     scope_type: "personal",
     scope_id: "1",

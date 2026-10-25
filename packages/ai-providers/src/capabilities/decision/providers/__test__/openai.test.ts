@@ -103,7 +103,7 @@ describe("OpenAI decisions", () => {
         ],
       },
       { OPENAI_API_KEY: "platform-key" },
-      expect.objectContaining({ includeErrorBodyInLogs: false, timeoutIncludesBody: true }),
+      expect.objectContaining({ includeErrorBodyInLogs: false }),
     );
     expect(result).toEqual({
       provider: "openai",

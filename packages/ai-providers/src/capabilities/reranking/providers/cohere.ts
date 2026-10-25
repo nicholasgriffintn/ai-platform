@@ -115,12 +115,10 @@ export class CohereRerankingProvider implements RerankingProvider {
             },
             this.env,
             {
-              requestTimeout: 30_000,
               maxAttempts: 1,
               responseType: "json",
               maxResponseBytes: 1_024 * 1_024,
               includeErrorBodyInLogs: false,
-              timeoutIncludesBody: true,
             },
           );
         } catch (error) {

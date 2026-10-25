@@ -3,15 +3,14 @@ import { buildGoalContractSection, renderPrompt } from "@ngriffin_uk/polychat-ai
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { collectPersonReactions } from "@ngriffin_uk/polychat-library-chat/reactions";
-import {
-  excerptMemoryDocument,
-  type ChatContextDocument,
-  type Goal,
-  type SkillAvailability,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ChatContextDocument, Goal, SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
+import {
+  describeMemoryDocument,
+  readMemoryDocumentDetails,
+} from "~/modules/memory-documents/domain/details";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { getSystemPrompt } from "~/modules/responses/application/engine/prompts";
 import {
@@ -320,7 +319,8 @@ export function projectRunMemory(
       name: document.name,
       revision: document.revision,
       access,
-      excerpt: excerptMemoryDocument(document.content),
+      type: readMemoryDocumentDetails(document).type,
+      description: describeMemoryDocument(document),
     });
 
     if (estimateTextTokens(`${header}${[...index, line].join("\n")}`) > Math.floor(budget * 0.4)) {

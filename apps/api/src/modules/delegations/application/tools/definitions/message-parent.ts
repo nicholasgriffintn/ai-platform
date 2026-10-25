@@ -3,7 +3,7 @@ import z from "zod/v4";
 import type { FunctionToolDescriptor } from "~/types/functions";
 
 const messageParentInputSchema = z.object({
-  message: z.string().trim().min(1).max(8000),
+  message: z.string().trim().min(1),
 });
 
 export const messageParent: FunctionToolDescriptor = {

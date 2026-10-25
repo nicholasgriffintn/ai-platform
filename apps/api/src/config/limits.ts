@@ -10,7 +10,6 @@ export const MAX_OCR_DOCUMENT_BYTES = 25 * 1024 * 1024;
 
 // Connectors
 export const COMPOSIO_FILE_MAX_BYTES = 25 * 1024 * 1024;
-export const COMPOSIO_FILE_TRANSFER_TIMEOUT_MS = 15_000;
 
 // Tasks and interactions
 export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;

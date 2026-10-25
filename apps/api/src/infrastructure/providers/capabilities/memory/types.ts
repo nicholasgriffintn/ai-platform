@@ -44,6 +44,7 @@ export interface MemoryProviderCapabilities {
   conversationIngestion: boolean;
   externalStorage: boolean;
   deletion: boolean;
+  semanticSearch: boolean;
 }
 
 export interface MemoryProvider {

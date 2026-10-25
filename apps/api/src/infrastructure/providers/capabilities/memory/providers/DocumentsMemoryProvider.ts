@@ -1,8 +1,11 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { memorySearchPassage } from "~/modules/memory-documents/application/pages";
+import {
+  rememberInDocument,
+  rememberInScope,
+} from "~/modules/memory-documents/application/remember";
 import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
@@ -19,10 +22,8 @@ import type {
   MemoryStoreResult,
 } from "../types";
 
-export const MEMORY_JOURNAL_DOCUMENT = "what-you-have-told-me";
 const DEFAULT_TOP_K = 5;
 const MAX_SEARCH_RESULTS = 20;
-const MAX_APPEND_ATTEMPTS = 3;
 
 export interface DocumentsMemoryProviderConfig {
   env: IEnv;
@@ -36,11 +37,12 @@ export class DocumentsMemoryProvider implements MemoryProvider {
   readonly name = "documents" as const;
 
   readonly capabilities: MemoryProviderCapabilities = {
-    deduplication: false,
+    deduplication: true,
     reasoning: false,
     conversationIngestion: false,
     externalStorage: false,
     deletion: true,
+    semanticSearch: false,
   };
 
   constructor(private readonly config: DocumentsMemoryProviderConfig) {}
@@ -48,7 +50,12 @@ export class DocumentsMemoryProvider implements MemoryProvider {
   async storeMemory(input: MemoryStoreInput): Promise<MemoryStoreResult> {
     const { context, userId } = this.requireContext();
     const memoryScope = this.config.memoryScope;
-    const entry = this.formatEntry(input);
+    const note = {
+      text: input.text,
+      category: input.metadata.category,
+      conversationId: input.conversationId,
+      operationId: input.operationId,
+    };
 
     if (memoryScope?.type === "bound") {
       const writable = memoryScope.documents.filter((binding) => binding.access === "read-write");
@@ -81,84 +88,19 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
-      const result = await this.appendEntry(document, entry, userId, undefined, input.operationId);
+      const written = await rememberInDocument(context, document, userId, note);
 
       if (memoryScope.conversationId) {
         await publishConversationChanged(context, memoryScope.conversationId);
       }
 
-      return result;
+      return { id: written.id, provider: this.name };
     }
 
     const { scope } = await this.requireScope();
-    const repository = context.repositories.get(MemoryDocumentRepository);
-    const existing = await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT);
+    const written = await rememberInScope(context, scope, userId, note);
 
-    if (!existing) {
-      try {
-        const created = await repository.createDocument({
-          ...scope,
-          name: MEMORY_JOURNAL_DOCUMENT,
-          content: entry,
-          createdByUserId: userId,
-          operationId: input.operationId,
-        });
-
-        return { id: created.id, provider: this.name };
-      } catch (error) {
-        const raced = await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT);
-
-        if (!raced) {
-          throw error;
-        }
-
-        return this.appendEntry(raced, entry, userId, scope, input.operationId);
-      }
-    }
-
-    return this.appendEntry(existing, entry, userId, scope, input.operationId);
-  }
-
-  private async appendEntry(
-    initial: MemoryDocumentRow,
-    entry: string,
-    userId: number,
-    scope?: MemoryDocumentScopeKey,
-    operationId?: string,
-  ): Promise<MemoryStoreResult> {
-    const repository = this.requireContext().context.repositories.get(MemoryDocumentRepository);
-    let existing = initial;
-
-    for (let attempt = 0; attempt < MAX_APPEND_ATTEMPTS; attempt += 1) {
-      const appended = await repository.appendRevision({
-        documentId: existing.id,
-        content: `${existing.content.trimEnd()}\n${entry}`.trim(),
-        changeNote: "Remembered something from a conversation",
-        createdByUserId: userId,
-        expectedRevision: existing.revision,
-        operationId,
-      });
-
-      if (appended) {
-        return { id: appended.id, provider: this.name };
-      }
-
-      const current = scope
-        ? await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT)
-        : await repository.getDocumentById(existing.id);
-
-      if (!current || current.id !== existing.id) {
-        break;
-      }
-
-      existing = current;
-    }
-
-    throw new AssistantError(
-      "This memory changed repeatedly while it was being saved. Try again.",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
+    return { id: written.id, provider: this.name };
   }
 
   async retrieveMemories(
@@ -245,12 +187,6 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     await context.repositories.get(MemoryDocumentRepository).softDeleteDocument(memoryId);
 
     return true;
-  }
-
-  private formatEntry(input: MemoryStoreInput): string {
-    const source = input.conversationId ? ` (from conversation ${input.conversationId})` : "";
-
-    return `- ${input.text.trim()}${source}`;
   }
 
   private async requireScope(): Promise<{

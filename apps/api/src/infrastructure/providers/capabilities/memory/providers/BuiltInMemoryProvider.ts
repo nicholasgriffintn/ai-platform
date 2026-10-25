@@ -60,6 +60,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
     conversationIngestion: false,
     externalStorage: false,
     deletion: true,
+    semanticSearch: true,
   };
 
   constructor(

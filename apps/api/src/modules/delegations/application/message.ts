@@ -136,7 +136,7 @@ export async function deliverDelegationResult(
     .createProjectedMessage(delegation.parentConversationId, {
       id: `delegation_result_${delegation.id}`,
       role: "assistant",
-      content: `**${heading}**\n\n${delegation.result.summary.slice(0, 2000)}\n\n[Open result](${resultPath})`,
+      content: `**${heading}**\n\n${delegation.result.summary}\n\n[Open result](${resultPath})`,
       data: {
         platform: "api",
         data: {

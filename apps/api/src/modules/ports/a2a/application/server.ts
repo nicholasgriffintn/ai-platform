@@ -32,7 +32,6 @@ import {
 
 import { createA2aStreamProjection, toA2aTask } from "./tasks";
 
-const MAX_MESSAGE_CHARS = 8_000;
 const A2A_PLATFORM = "a2a";
 const MAX_IDEMPOTENCY_KEY_CHARS = 200;
 
@@ -68,13 +67,6 @@ export function readA2aMessageText(message: A2aMessage): string {
 
   if (!text) {
     throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, "The message has no text");
-  }
-
-  if (text.length > MAX_MESSAGE_CHARS) {
-    throw new JsonRpcError(
-      JSON_RPC_ERRORS.invalidParams,
-      `Keep messages under ${MAX_MESSAGE_CHARS} characters`,
-    );
   }
 
   return text;

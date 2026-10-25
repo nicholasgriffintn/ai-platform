@@ -6,6 +6,8 @@ import {
   markdownToPlainText,
 } from "@ngriffin_uk/polychat-utility-core";
 
+import { mergeDailyLog, parseDailyLog, renderDailyLog } from "./daily-log";
+
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 
 export interface DiscoverResearchResult {
@@ -21,9 +23,8 @@ export interface DiscoverResearchSection {
   results: DiscoverResearchResult[];
 }
 
-const SECTION_HEADING = /^## (\d{4}-\d{2}-\d{2})$/u;
 const RESULT_LINE =
-  /^- \[(.+?)\]\((https?:\/\/\S+?)\)(?: _\((.+?)(?: · (\d{4}-\d{2}-\d{2}))?\)_)?(?: — (.*))?$/u;
+  /^\[(.+?)\]\((https?:\/\/\S+?)\)(?: _\((.+?)(?: · (\d{4}-\d{2}-\d{2}))?\)_)?(?: — (.*))?$/u;
 
 function cleanSnippet(value: string): string {
   const text = markdownToPlainText(value).replace(/\s+/gu, " ").trim();
@@ -65,67 +66,59 @@ export function readResearchResults(value: unknown): DiscoverResearchResult[] {
   );
 }
 
-export function renderResearchSection(section: DiscoverResearchSection): string {
-  return [
-    `## ${section.date}`,
-    ...section.results.map(
-      (result) =>
-        `- [${result.title.replace(/[[\]]/gu, "")}](${result.url})${describeOrigin(result)}${
-          result.snippet ? ` — ${result.snippet.replace(/\s+/gu, " ").trim()}` : ""
-        }`,
-    ),
-  ].join("\n");
+function renderResearchLine(result: DiscoverResearchResult): string {
+  return `[${result.title.replace(/[[\]]/gu, "")}](${result.url})${describeOrigin(result)}${
+    result.snippet ? ` — ${result.snippet}` : ""
+  }`;
+}
+
+function parseResearchLine(line: string): DiscoverResearchResult[] {
+  const result = RESULT_LINE.exec(line);
+
+  return result
+    ? [
+        {
+          title: result[1] ?? "",
+          url: result[2] ?? "",
+          snippet: cleanSnippet(result[5] ?? ""),
+          ...(result[3] ? { source: result[3] } : {}),
+          ...(result[4] ? { date: result[4] } : {}),
+        },
+      ]
+    : [];
 }
 
 export function parseResearchDocument(content: string): DiscoverResearchSection[] {
-  const sections: DiscoverResearchSection[] = [];
-
-  for (const line of content.split("\n")) {
-    const heading = SECTION_HEADING.exec(line.trim());
-
-    if (heading?.[1]) {
-      sections.push({ date: heading[1], results: [] });
-      continue;
-    }
-
-    const result = RESULT_LINE.exec(line.trim());
-    const current = sections.at(-1);
-
-    if (result && current) {
-      current.results.push({
-        title: result[1] ?? "",
-        url: result[2] ?? "",
-        snippet: cleanSnippet(result[5] ?? ""),
-        ...(result[3] ? { source: result[3] } : {}),
-        ...(result[4] ? { date: result[4] } : {}),
-      });
-    }
-  }
-
-  return sections;
+  return parseDailyLog(content).map((day) => ({
+    date: day.date,
+    results: day.lines.flatMap(parseResearchLine),
+  }));
 }
 
 export function mergeResearchDocument(existing: string, section: DiscoverResearchSection): string {
-  const kept = parseResearchDocument(existing).filter((item) => item.date !== section.date);
-  const seen = new Set(kept.flatMap((item) => item.results.map((result) => result.url)));
-  const fresh = {
-    date: section.date,
-    results: section.results.filter((result) => {
-      if (seen.has(result.url)) {
-        return false;
-      }
+  const days = parseDailyLog(existing);
+  const seen = new Set(
+    parseResearchDocument(existing)
+      .filter((kept) => kept.date !== section.date)
+      .flatMap((kept) => kept.results.map((result) => result.url)),
+  );
+  const fresh = section.results.filter((result) => {
+    if (seen.has(result.url)) {
+      return false;
+    }
 
-      seen.add(result.url);
+    seen.add(result.url);
 
-      return true;
-    }),
-  };
+    return true;
+  });
 
-  return [fresh, ...kept]
-    .sort((left, right) => (left.date < right.date ? 1 : -1))
-    .slice(0, DISCOVER_RESEARCH_DAYS_KEPT)
-    .map(renderResearchSection)
-    .join("\n\n");
+  return renderDailyLog(
+    mergeDailyLog(
+      days,
+      { date: section.date, lines: fresh.map(renderResearchLine) },
+      DISCOVER_RESEARCH_DAYS_KEPT,
+    ),
+  );
 }
 
 export function latestResearchSection(content: string): DiscoverResearchSection | null {

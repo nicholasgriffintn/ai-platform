@@ -55,7 +55,6 @@ const titleField = z
   .string()
   .trim()
   .min(1)
-  .max(200)
   .describe("What the reader would call this, as a short title.");
 
 export const STUDIO_OUTPUT_SHAPES: Record<OutputStudioRequest["kind"], StudioOutputShape> = {

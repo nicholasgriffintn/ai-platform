@@ -18,11 +18,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import type { ChatCompletionParameters } from "~/types";
 
-import {
-  MACHINE_RUN_MAX_DURATION_MS,
-  parseMachineSnapshot,
-  pollMachineRun,
-} from "./machine-run-polling";
+import { parseMachineSnapshot, pollMachineRun } from "./machine-run-polling";
 import { callMachineRun } from "./runs";
 
 function machineMessages(messages: ChatCompletionParameters["messages"]): MachineRunMessages {
@@ -37,7 +33,7 @@ function machineMessages(messages: ChatCompletionParameters["messages"]): Machin
   });
 }
 
-async function machineRunDeadline(params: ChatCompletionParameters): Promise<number> {
+async function machineRunDeadline(params: ChatCompletionParameters): Promise<number | undefined> {
   const runId = params.context?.executionRunId;
   const run = runId
     ? await params.context?.repositories.get(ConversationRunRepository).getById(runId)
@@ -47,9 +43,7 @@ async function machineRunDeadline(params: ChatCompletionParameters): Promise<num
     ? Date.parse(configuration.data.deadline ?? "")
     : NaN;
 
-  return Number.isFinite(configuredDeadline)
-    ? Math.min(configuredDeadline, Date.now() + MACHINE_RUN_MAX_DURATION_MS)
-    : Date.now() + MACHINE_RUN_MAX_DURATION_MS;
+  return Number.isFinite(configuredDeadline) ? configuredDeadline : undefined;
 }
 
 export async function executeMachineChatResponse(

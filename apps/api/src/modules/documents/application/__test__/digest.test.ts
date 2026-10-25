@@ -42,7 +42,7 @@ describe("digestDocument", () => {
     KVCache.clearMemoryCache();
   });
 
-  it("summarises every part, builds the overview from them and caches a complete digest", async () => {
+  it("summarises every part, builds the summary from them and caches a complete digest", async () => {
     generateObject.mockImplementation(async ({ name, prompt }: { name: string; prompt: string }) =>
       name === "document_section"
         ? {
@@ -51,7 +51,7 @@ describe("digestDocument", () => {
               summary: `About ${prompt.trim().slice(0, 6)}`,
             },
           }
-        : { object: { overview: `Overview of: ${prompt}` } },
+        : { object: { summary: `Summary of: ${prompt}`, keyPoints: [], topics: [] } },
     );
     const cache = kv();
     const env = { CACHE: cache.binding } as unknown as IEnv;
@@ -63,9 +63,23 @@ describe("digestDocument", () => {
       { title: "Part-1", summary: "About Part-1" },
       { title: "Part-2", summary: "About Part-2" },
     ]);
-    expect(digest.overview).toContain("## Part-2\n\nAbout Part-2");
+    expect(digest.summary.summary).toContain("## Part-2\n\nAbout Part-2");
     expect(again).toEqual(digest);
     expect(generateObject).toHaveBeenCalledTimes(3);
+  });
+
+  it("summarises a short document in one call without splitting it", async () => {
+    generateObject.mockResolvedValue({
+      object: { summary: "A short note.", keyPoints: ["One point"], topics: ["notes"] },
+    });
+
+    const digest = await digestDocument({ env: {} as IEnv, user: USER, markdown: "A short note." });
+
+    expect(digest).toEqual({
+      summary: { summary: "A short note.", keyPoints: ["One point"], topics: ["notes"] },
+      sections: [],
+    });
+    expect(generateObject).toHaveBeenCalledTimes(1);
   });
 
   it("keeps going when a part fails, says so, and does not cache the gap", async () => {
@@ -77,7 +91,7 @@ describe("digestDocument", () => {
 
         return name === "document_section"
           ? { object: { title: prompt.trim().slice(0, 6), summary: "Kept" } }
-          : { object: { overview: "Partial overview" } };
+          : { object: { summary: "Partial summary", keyPoints: [], topics: [] } };
       },
     );
     const cache = kv();

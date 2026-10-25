@@ -88,7 +88,7 @@ export function getHuggingFaceFetchOptions(
   modelConfig: ModelConfigItem,
 ): FetchAIResponseOptions {
   return {
-    requestTimeout: modelConfig.timeout || 100000,
+    requestTimeout: modelConfig.timeout || undefined,
     maxAttempts: 1,
   };
 }

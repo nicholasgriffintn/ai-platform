@@ -86,7 +86,7 @@ export const delegationSchema = z.object({
   parentRunId: chatRunIdSchema,
   depth: z.number().int().min(1).max(DELEGATION_MAX_DEPTH),
   teammateId: z.string().min(1),
-  goal: z.string().min(1).max(2000),
+  goal: z.string().min(1),
   waitFor: delegationWaitForSchema,
   budget: delegationBudgetSchema,
   state: delegationStateSchema,
@@ -165,7 +165,7 @@ export type DelegationWakeTaskData = z.infer<typeof delegationWakeTaskDataSchema
 
 export const delegationMessageTaskDataSchema = z.object({
   delegationId: z.string().min(1),
-  message: z.string().min(1).max(20_000),
+  message: z.string().min(1),
 });
 export type DelegationMessageTaskData = z.infer<typeof delegationMessageTaskDataSchema>;
 

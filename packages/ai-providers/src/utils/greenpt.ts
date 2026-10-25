@@ -14,7 +14,6 @@ import type { ProviderHost } from "../host.js";
 export const GREENPT_PROVIDER_NAME = "greenpt";
 export const GREENPT_API_KEY_ENV = "GREENPT_API_KEY";
 export const GREENPT_API_BASE_URL = "https://api.greenpt.ai/v1";
-const GREENPT_REQUEST_TIMEOUT_MS = 100_000;
 const MAX_GREENPT_ERROR_BYTES = 64 * 1024;
 const MAX_GREENPT_RESPONSE_BYTES = 20 * 1024 * 1024;
 
@@ -59,80 +58,65 @@ export async function greenPtRequest(options: {
     headers["Content-Type"] = options.contentType;
   }
 
-  const controller = new AbortController();
-  const abortRequest = () => controller.abort(options.signal?.reason);
-  const timeout = setTimeout(() => controller.abort(), GREENPT_REQUEST_TIMEOUT_MS);
+  const response = await fetch(buildGreenPtUrl(options.path), {
+    method: "POST",
+    headers,
+    body: options.body,
+    signal: options.signal,
+  });
 
-  if (options.signal?.aborted) {
-    abortRequest();
-  } else {
-    options.signal?.addEventListener("abort", abortRequest, { once: true });
-  }
-
-  try {
-    const response = await fetch(buildGreenPtUrl(options.path), {
-      method: "POST",
-      headers,
-      body: options.body,
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      let detail = `${response.status} ${response.statusText}`.trim();
-
-      try {
-        const body = await readResponseTextWithinLimit(response, MAX_GREENPT_ERROR_BYTES);
-
-        if (body) {
-          detail = `${detail} - ${redactSensitiveTokens(body)}`;
-        }
-      } catch (error) {
-        if (!(error instanceof ResponseBodyTooLargeError)) {
-          throw error;
-        }
-      }
-
-      throw new AssistantError(
-        `${options.label} failed${detail ? `: ${detail}` : ""}`,
-        ErrorType.EXTERNAL_API_ERROR,
-        response.status,
-      );
-    }
-
-    let responseText: string;
+  if (!response.ok) {
+    let detail = `${response.status} ${response.statusText}`.trim();
 
     try {
-      responseText = await readResponseTextWithinLimit(
-        response,
-        options.maxResponseBytes ?? MAX_GREENPT_RESPONSE_BYTES,
-      );
-    } catch (error) {
-      if (error instanceof ResponseBodyTooLargeError) {
-        throw new AssistantError(
-          `${options.label} returned a response larger than the configured limit`,
-          ErrorType.PROVIDER_ERROR,
-          502,
-        );
-      }
+      const body = await readResponseTextWithinLimit(response, MAX_GREENPT_ERROR_BYTES);
 
-      throw error;
+      if (body) {
+        detail = `${detail} - ${redactSensitiveTokens(body)}`;
+      }
+    } catch (error) {
+      if (!(error instanceof ResponseBodyTooLargeError)) {
+        throw error;
+      }
     }
 
-    const body = safeParseJson<unknown>(responseText);
+    throw new AssistantError(
+      `${options.label} failed${detail ? `: ${detail}` : ""}`,
+      ErrorType.EXTERNAL_API_ERROR,
+      response.status,
+    );
+  }
 
-    if (body === null && responseText.trim() !== "null") {
+  let responseText: string;
+
+  try {
+    responseText = await readResponseTextWithinLimit(
+      response,
+      options.maxResponseBytes ?? MAX_GREENPT_RESPONSE_BYTES,
+    );
+  } catch (error) {
+    if (error instanceof ResponseBodyTooLargeError) {
       throw new AssistantError(
-        `${options.label} returned invalid JSON`,
+        `${options.label} returned a response larger than the configured limit`,
         ErrorType.PROVIDER_ERROR,
         502,
       );
     }
 
-    return body;
-  } finally {
-    clearTimeout(timeout);
-    options.signal?.removeEventListener("abort", abortRequest);
+    throw error;
   }
+
+  const body = safeParseJson<unknown>(responseText);
+
+  if (body === null && responseText.trim() !== "null") {
+    throw new AssistantError(
+      `${options.label} returned invalid JSON`,
+      ErrorType.PROVIDER_ERROR,
+      502,
+    );
+  }
+
+  return body;
 }
 
 export function greenPtJsonRequest(options: {

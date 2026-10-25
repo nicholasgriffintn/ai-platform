@@ -22,24 +22,23 @@ export const deckSlideSchema = z
       .describe(
         "title opens the deck, section introduces a part, content carries points, two_column compares, quote features one line.",
       ),
-    title: z.string().trim().min(1).max(160).describe("The slide headline, as a statement."),
-    subtitle: z.string().trim().max(240).optional(),
+    title: z.string().trim().min(1).describe("The slide headline, as a statement."),
+    subtitle: z.string().trim().optional(),
     bullets: z
-      .array(z.string().trim().min(1).max(300))
+      .array(z.string().trim().min(1))
       .max(8)
       .default([])
       .describe("Short points, one idea each. Keep to five or fewer."),
     body: z
       .string()
-      .max(4_000)
       .optional()
       .describe("Optional Markdown for the slide when bullets are not enough."),
     columns: z
-      .array(z.string().max(2_000))
+      .array(z.string())
       .length(2)
       .optional()
       .describe("Left and right Markdown for two_column slides."),
-    notes: z.string().max(4_000).optional().describe("Speaker notes, not shown on the slide."),
+    notes: z.string().optional().describe("Speaker notes, not shown on the slide."),
   })
   .strict();
 
@@ -69,7 +68,7 @@ export const sheetColumnTypeSchema = z.enum([
 export const sheetColumnSchema = z
   .object({
     key: columnKeySchema,
-    label: z.string().trim().min(1).max(80),
+    label: z.string().trim().min(1),
     type: sheetColumnTypeSchema.default("text"),
     currency: z
       .string()
@@ -79,11 +78,11 @@ export const sheetColumnSchema = z
   })
   .strict();
 
-export const sheetCellSchema = z.union([z.string().max(2_000), z.number(), z.boolean(), z.null()]);
+export const sheetCellSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
 export const sheetTableSchema = z
   .object({
-    name: z.string().trim().min(1).max(80),
+    name: z.string().trim().min(1),
     columns: z.array(sheetColumnSchema).min(1).max(SHEET_MAX_COLUMNS),
     rows: z.array(z.record(columnKeySchema, sheetCellSchema)).max(SHEET_MAX_ROWS).default([]),
   })
@@ -120,12 +119,7 @@ export const sheetOutputContentSchema = z
   .strict();
 
 const revisionFields = {
-  title: z
-    .string()
-    .trim()
-    .min(1)
-    .max(200)
-    .describe("What the file is called, as the reader would name it."),
+  title: z.string().trim().min(1).describe("What the file is called, as the reader would name it."),
   outputId: z
     .string()
     .min(1)

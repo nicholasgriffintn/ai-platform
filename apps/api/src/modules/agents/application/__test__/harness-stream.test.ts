@@ -36,9 +36,7 @@ describe("harnessRecordToProviderChunks", () => {
           { seq: 43, event: { type: "text-delta", partId: "p", delta: "ignored" } },
         ),
         harnessName: "Pi",
-        deadline: Date.now() + 60_000,
         checkIn: async () => undefined,
-        onExpired: async () => undefined,
       }),
     );
     const [toolCall] = collected.toolCalls;
@@ -99,9 +97,7 @@ describe("streamHarnessRecords", () => {
       ),
       harnessName: "OpenCode Cloud",
       operationId: "op",
-      deadline: Date.now() + 60_000,
       checkIn: async () => undefined,
-      onExpired: async () => undefined,
     });
 
     await expect(collectHarnessProviderStream(stream)).resolves.toEqual({
@@ -119,9 +115,7 @@ describe("streamHarnessRecords", () => {
       ),
       harnessName: "Pi",
       operationId: "op",
-      deadline: Date.now() + 60_000,
       checkIn: async () => undefined,
-      onExpired: async () => undefined,
     });
     const usage: unknown[] = [];
 
@@ -157,9 +151,7 @@ describe("hosted harness event streams", () => {
         records: readHarnessRecords(source, reading.signal),
         harnessName: "Pi",
         operationId: "op",
-        deadline: Date.now() + 60_000,
         checkIn: async () => undefined,
-        onExpired: async () => undefined,
         release: () => reading.abort(),
       }),
     );

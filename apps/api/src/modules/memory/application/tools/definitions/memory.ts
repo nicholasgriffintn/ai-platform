@@ -37,13 +37,13 @@ export const search_memories: FunctionToolDescriptor = {
 export const store_memory: FunctionToolDescriptor = {
   name: MEMORY_STORE_TOOL_NAME,
   description:
-    "Stores concise, durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, or important context that should be remembered in future conversations. For a teammate's private memory, queues source-backed maintenance from the current user message; the returned task ID does not mean the correction is saved yet.",
+    "Remembers durable context in the current personal or workspace-project scope. Use only for stable facts, preferences, schedules, corrections, or important context that should shape future conversations. With document memory it is filed into the memory document for that subject, which is rewritten whole with why it matters and how to apply it. For a teammate's private memory, queues source-backed maintenance from the current user message; the returned task ID does not mean the correction is saved yet.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
       text: {
         type: "string",
-        description: "A concise memory to store.",
+        description: "What to remember, with the reason behind it when you know it.",
       },
       category: {
         type: "string",

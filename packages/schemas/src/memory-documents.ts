@@ -12,6 +12,14 @@ export const memoryDocumentNameSchema = z
     "Memory document names are kebab-case, so they read the same everywhere",
   );
 
+export const MEMORY_DOCUMENT_TYPES = ["user", "feedback", "project", "reference"] as const;
+
+export const memoryDocumentTypeSchema = z
+  .enum(MEMORY_DOCUMENT_TYPES)
+  .describe(
+    "user: who the person is and how they like things. feedback: guidance on how to work with them, both corrections and approaches they confirmed. project: ongoing work, goals, decisions and constraints. reference: pointers to people, places, accounts or resources.",
+  );
+
 export const memoryDocumentScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
@@ -20,6 +28,8 @@ export const memoryDocumentScopeSchema = z.discriminatedUnion("type", [
 export const memoryDocumentSchema = z.object({
   id: z.string(),
   name: memoryDocumentNameSchema,
+  description: z.string(),
+  type: memoryDocumentTypeSchema.nullable(),
   content: z.string(),
   revision: z.number().int().positive(),
   scopeType: z.enum(["personal", "project"]),
@@ -42,12 +52,16 @@ export const memoryDocumentRevisionSchema = z.object({
 
 export const createMemoryDocumentSchema = z.object({
   name: memoryDocumentNameSchema,
+  description: z.string().trim().optional(),
+  type: memoryDocumentTypeSchema.nullable().optional(),
   content: z.string().max(MEMORY_DOCUMENT_MAX_CONTENT).default(""),
   projectId: z.string().min(1).optional(),
 });
 
 export const updateMemoryDocumentSchema = z.object({
   content: z.string().max(MEMORY_DOCUMENT_MAX_CONTENT),
+  description: z.string().trim().optional(),
+  type: memoryDocumentTypeSchema.nullable().optional(),
   changeNote: z.string().trim().min(1).max(500).optional(),
   expectedRevision: z.number().int().positive(),
   projectId: z.string().min(1).optional(),
@@ -83,6 +97,32 @@ export const memoryDocumentPageSchema = z.object({
 
 export type MemoryDocumentPage = z.infer<typeof memoryDocumentPageSchema>;
 
+export const memoryPlacementSchema = z.object({
+  name: memoryDocumentNameSchema.describe(
+    "The name of the existing memory document this belongs in, or a new short kebab-case name when none covers it.",
+  ),
+});
+
+export const memoryDocumentDraftSchema = z.object({
+  description: z
+    .string()
+    .trim()
+    .min(1)
+    .describe(
+      "One line saying what this memory holds, specific enough to judge from an index whether it matters to a conversation.",
+    ),
+  type: memoryDocumentTypeSchema,
+  content: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MEMORY_DOCUMENT_MAX_CONTENT)
+    .describe(
+      "The whole memory document in Markdown: the fact or rule, then a **Why:** line and a **How to apply:** line, and [[name]] links to related memories.",
+    ),
+  changeNote: z.string().trim().min(1).describe("What changed, in one short sentence."),
+});
+
 export const MEMORY_REFLECTION_TASK_TYPE = "memory_reflection";
 export const memoryReflectionTaskDataSchema = z.object({
   contextId: z.string().min(1),
@@ -96,13 +136,13 @@ export const memoryReflectionProposalSchema = z.object({
   edits: z
     .array(
       z.object({
-        before: z.string().max(8000),
-        after: z.string().max(8000),
+        before: z.string(),
+        after: z.string(),
         evidence: z
           .array(
             z.object({
               messageId: z.string().min(1),
-              quote: z.string().min(1).max(2000),
+              quote: z.string().min(1),
             }),
           )
           .min(1)
@@ -110,11 +150,13 @@ export const memoryReflectionProposalSchema = z.object({
       }),
     )
     .max(20),
-  changeNote: z.string().trim().min(1).max(500),
+  changeNote: z.string().trim().min(1),
 });
 export type MemoryReflectionProposal = z.infer<typeof memoryReflectionProposalSchema>;
 
 export type MemoryDocumentSummary = z.infer<typeof memoryDocumentSummarySchema>;
+export type MemoryDocumentType = z.infer<typeof memoryDocumentTypeSchema>;
+export type MemoryDocumentDraft = z.infer<typeof memoryDocumentDraftSchema>;
 export type MemoryDocumentRevision = z.infer<typeof memoryDocumentRevisionSchema>;
 export type MemoryDocumentScope = z.infer<typeof memoryDocumentScopeSchema>;
 export type CreateMemoryDocumentInput = z.infer<typeof createMemoryDocumentSchema>;

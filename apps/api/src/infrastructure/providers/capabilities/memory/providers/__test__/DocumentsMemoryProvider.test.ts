@@ -5,21 +5,25 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
-import { DocumentsMemoryProvider, MEMORY_JOURNAL_DOCUMENT } from "../DocumentsMemoryProvider";
+import { DocumentsMemoryProvider } from "../DocumentsMemoryProvider";
+
+const rememberInScope = vi.hoisted(() => vi.fn(async () => ({ id: "document-1" })));
 
 vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess: vi.fn() }));
+vi.mock("~/modules/memory-documents/application/remember", () => ({
+  rememberInScope,
+  rememberInDocument: vi.fn(),
+}));
 
-function createContext(existing: { id: string; content: string; revision: number } | null) {
+function createContext() {
   const memoryDocuments = {
-    getDocumentByName: vi.fn(async () => existing),
-    createDocument: vi.fn(async () => ({ id: "document-1" })),
-    appendRevision: vi.fn(async () => ({ id: existing?.id ?? "document-1" })),
     softDeleteDocument: vi.fn(async () => undefined),
     searchDocuments: vi.fn(async () => [
       {
         id: "document-1",
-        name: MEMORY_JOURNAL_DOCUMENT,
-        content: "- Prefers British English",
+        name: "british-english",
+        content: "Prefers British English",
+        metadata: null,
         revision: 3,
       },
     ]),
@@ -34,11 +38,8 @@ function createContext(existing: { id: string; content: string; revision: number
   };
 }
 
-function createProvider(
-  existing: { id: string; content: string; revision: number } | null,
-  scope?: { type: "project"; projectId: string },
-) {
-  const { context, memoryDocuments } = createContext(existing);
+function createProvider(scope?: { type: "project"; projectId: string }) {
+  const { context, memoryDocuments } = createContext();
   const provider = new DocumentsMemoryProvider({
     env: {} as never,
     user: { id: 7 } as never,
@@ -54,59 +55,45 @@ describe("DocumentsMemoryProvider", () => {
     vi.clearAllMocks();
   });
 
-  it("starts a journal document the first time it remembers something", async () => {
-    const { provider, memoryDocuments } = createProvider(null);
+  it("files a memory through the document writer in the personal scope", async () => {
+    const { provider } = createProvider();
 
     const result = await provider.storeMemory({
       text: "Prefers British English",
-      metadata: {},
+      metadata: { category: "preference" },
       conversationId: "conversation-1",
+      operationId: "operation-1",
     });
 
-    expect(result.provider).toBe("documents");
-    expect(memoryDocuments.createDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        scopeType: "personal",
-        scopeId: "7",
-        name: MEMORY_JOURNAL_DOCUMENT,
-        content: "- Prefers British English (from conversation conversation-1)",
-      }),
-    );
-  });
-
-  it("appends a revision rather than replacing what is already there", async () => {
-    const { provider, memoryDocuments } = createProvider({
-      id: "document-1",
-      content: "- Already known",
-      revision: 4,
-    });
-
-    await provider.storeMemory({ text: "Also this", metadata: {} });
-
-    expect(memoryDocuments.appendRevision).toHaveBeenCalledWith(
-      expect.objectContaining({
-        documentId: "document-1",
-        expectedRevision: 4,
-        content: "- Already known\n- Also this",
-      }),
+    expect(result).toEqual({ id: "document-1", provider: "documents" });
+    expect(rememberInScope).toHaveBeenCalledWith(
+      expect.anything(),
+      { scopeType: "personal", scopeId: "7" },
+      7,
+      {
+        text: "Prefers British English",
+        category: "preference",
+        conversationId: "conversation-1",
+        operationId: "operation-1",
+      },
     );
   });
 
   it("keeps project memories in the project's scope", async () => {
-    const { provider, memoryDocuments } = createProvider(null, {
-      type: "project",
-      projectId: "project-1",
-    });
+    const { provider } = createProvider({ type: "project", projectId: "project-1" });
 
     await provider.storeMemory({ text: "Ship on Thursdays", metadata: {} });
 
-    expect(memoryDocuments.createDocument).toHaveBeenCalledWith(
-      expect.objectContaining({ scopeType: "project", scopeId: "project-1" }),
+    expect(rememberInScope).toHaveBeenCalledWith(
+      expect.anything(),
+      { scopeType: "project", scopeId: "project-1" },
+      7,
+      expect.objectContaining({ text: "Ship on Thursdays" }),
     );
   });
 
   it("returns what it found in words rather than as a score", async () => {
-    const { provider } = createProvider(null);
+    const { provider } = createProvider();
 
     const results = await provider.retrieveMemories("british");
 
@@ -121,7 +108,7 @@ describe("DocumentsMemoryProvider", () => {
   });
 
   it("returns nothing for an empty query rather than everything", async () => {
-    const { provider, memoryDocuments } = createProvider(null);
+    const { provider, memoryDocuments } = createProvider();
 
     await expect(provider.retrieveMemories("   ")).resolves.toEqual([]);
     expect(memoryDocuments.searchDocuments).not.toHaveBeenCalled();

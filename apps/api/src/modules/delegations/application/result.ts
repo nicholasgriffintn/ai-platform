@@ -43,7 +43,7 @@ export async function buildDelegationResultFromMessage(
 
   return {
     result: {
-      summary: summary.slice(0, 2000),
+      summary,
       outputIds,
       finalMessageId: message.id ?? lastMessageId ?? null,
       citations: (message.citations ?? []).filter((citation): citation is string =>
@@ -63,7 +63,7 @@ export function buildDelegationPendingResult(message: DelegationResultMessage): 
   );
 
   return {
-    summary: extractTextFromMessageContent(message.content).trim().slice(0, 2000),
+    summary: extractTextFromMessageContent(message.content).trim(),
     outputIds: [],
     finalMessageId: message.id ?? null,
     citations: [],

@@ -9,7 +9,7 @@ export const outputResourceColumns =
 export const outputResourceSql = `(SELECT ${outputResourceColumns} FROM resource WHERE resource_type = 'output')`;
 
 export const memoryResourceColumns =
-  "id, scope_type, scope_id, title AS name, content, revision, created_by_user_id AS created_by, deleted_at, created_at, updated_at, kind";
+  "id, scope_type, scope_id, title AS name, content, metadata, revision, created_by_user_id AS created_by, deleted_at, created_at, updated_at, kind";
 
 export const memoryResourceSql = `(SELECT ${memoryResourceColumns} FROM resource WHERE resource_type = 'memory')`;
 

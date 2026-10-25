@@ -5,7 +5,7 @@ import {
 import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { COMPOSIO_FILE_MAX_BYTES, COMPOSIO_FILE_TRANSFER_TIMEOUT_MS } from "~/config/limits";
+import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
@@ -506,18 +506,9 @@ async function requireImportScope(params: {
 
 async function transfer(fetcher: Fetcher, url: string, init: RequestInit): Promise<Response> {
   try {
-    return await fetcher(url, {
-      ...init,
-      signal: AbortSignal.timeout(COMPOSIO_FILE_TRANSFER_TIMEOUT_MS),
-    });
-  } catch (error) {
-    throw new AssistantError(
-      error instanceof DOMException && error.name === "TimeoutError"
-        ? "Composio file transfer timed out"
-        : "Composio file transfer failed",
-      ErrorType.NETWORK_ERROR,
-      502,
-    );
+    return await fetcher(url, init);
+  } catch {
+    throw new AssistantError("Composio file transfer failed", ErrorType.NETWORK_ERROR, 502);
   }
 }
 

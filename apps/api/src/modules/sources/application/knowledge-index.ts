@@ -1,7 +1,12 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { SOURCE_KNOWLEDGE_INDEX_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { generateId, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { chunkText } from "@ngriffin_uk/polychat-utility-server/embeddings";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -20,6 +25,9 @@ import type { IEnv } from "~/types";
 
 import { cleanupStaleIndexes, insertSourceVectors } from "./knowledge-vectors";
 import { requireSourceAccess } from "./sources";
+import { summariseStoredSource } from "./summary";
+
+const logger = getLogger({ prefix: "sources/knowledge-index" });
 
 async function prepareSourceSearchDocument(
   source: SearchableSource,
@@ -69,6 +77,16 @@ export async function indexProjectSource(
   }
 
   await requireSourceAccess(context, context.requireUser().id, source.id);
+
+  try {
+    await summariseStoredSource(context, source);
+  } catch (error) {
+    logger.warn("A source could not be summarised", {
+      source_id: source.id,
+      error_message: getErrorMessage(error),
+    });
+  }
+
   const existing = await context.repositories
     .get(SourceSearchRepository)
     .getDocument(source.id, source.search_revision);

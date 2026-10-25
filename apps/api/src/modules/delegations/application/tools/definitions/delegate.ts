@@ -19,7 +19,7 @@ export const delegateInputSchema = z
   .object({
     teammate_id: z.string().min(1).optional(),
     teammate: inlineTeammateSchema.optional(),
-    goal: z.string().trim().min(1).max(2000),
+    goal: z.string().trim().min(1),
     wait_for: z.enum(["all", "any", "none"]).default("none"),
     budget: delegationBudgetInputSchema.optional(),
     child_conversation_id: z.string().min(1).optional(),

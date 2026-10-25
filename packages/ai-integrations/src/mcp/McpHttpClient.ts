@@ -141,7 +141,11 @@ export class McpHttpClient {
 
   private async request(method: string, params: unknown, operation: string): Promise<unknown> {
     const id = this.nextId++;
-    const response = await this.send({ jsonrpc: "2.0", id, method, params }, operation);
+    const response = await this.send(
+      { jsonrpc: "2.0", id, method, params },
+      operation,
+      method !== "tools/call",
+    );
     let body: string;
 
     try {
@@ -176,14 +180,18 @@ export class McpHttpClient {
     return message.result;
   }
 
-  private async send(payload: Record<string, unknown>, operation: string): Promise<Response> {
+  private async send(
+    payload: Record<string, unknown>,
+    operation: string,
+    bounded = true,
+  ): Promise<Response> {
     let response: Response;
 
     try {
       response = await this.fetchImpl(this.url.toString(), {
         method: "POST",
         redirect: "error",
-        signal: AbortSignal.timeout(this.timeoutMs),
+        ...(bounded ? { signal: AbortSignal.timeout(this.timeoutMs) } : {}),
         headers: {
           ...this.headers,
           "Content-Type": "application/json",

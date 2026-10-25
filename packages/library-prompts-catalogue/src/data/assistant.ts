@@ -70,6 +70,39 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
     text: "You are a memory summarizer. Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
   },
   {
+    id: "memory/documents/placement",
+    task: "memory-writer",
+    title: "Memory placement",
+    description:
+      "Chooses which memory document a new memory belongs in, or names a new one, from the index of existing documents.",
+    text: `You keep an assistant's long-term memory as a set of named documents, one subject per document. You are given the index of existing documents and something new to remember.
+
+- Choose the existing document whose subject this belongs to, so related facts stay together and nothing is duplicated.
+- When no document covers it, give a new name: short, kebab-case, naming the subject rather than the wording, such as "work-schedule" or "prefers-british-english".
+- Return the name only.`,
+  },
+  {
+    id: "memory/documents/write",
+    task: "memory-writer",
+    title: "Memory document writer",
+    description:
+      "Writes a whole memory document from what it already says and something new to remember, with a description, type, why and how to apply.",
+    text: `You keep an assistant's long-term memory as a set of named documents. Write the whole document named below, folding the new memory into what it already says.
+
+- The content opens with the fact, preference, rule or pointer itself, then a **Why:** line with the reason or context, then a **How to apply:** line saying when and how it should shape future answers. Leave out a line only when nothing supports it.
+- Keep everything the document already says that is still true. When the new memory contradicts it, replace the old statement rather than keeping both.
+- Link related documents from the index by writing [[name]].
+- Convert relative dates to absolute dates. Today's date is {{todaysDate}}.
+- The description is one line saying what the document holds, specific enough to decide from an index alone whether it matters.
+- Write only what the memory and the existing document support. Do not invent reasons.`,
+    variables: [
+      {
+        name: "todaysDate",
+        description: "Today's date as YYYY-MM-DD, used to make relative dates absolute.",
+      },
+    ],
+  },
+  {
     id: "memory/synthesis",
     task: "memory-synthesis",
     title: "Memory synthesis",
@@ -181,19 +214,23 @@ Return only the JSON object, with no markdown fence around it.`,
 
 - Preserve names, dates, quantities, decisions and causal relationships exactly as written.
 - Do not add facts that are absent from the excerpt.
-- Keep the summary under 400 words, as plain Markdown paragraphs and bullet lists without headings, links or tables.
+- Write as much as the excerpt needs, as plain Markdown paragraphs and bullet lists without headings, links or tables.
 - Give the excerpt a short descriptive title that names what it covers.`,
   },
   {
-    id: "document/digest/overview",
+    id: "document/digest/summary",
     task: "document-digest",
-    title: "Document digest: overview",
-    description: "Combines the section summaries of a long document into one short overview.",
-    text: `You are given the section summaries of one long document, in order. Write an overview of the whole document.
+    title: "Document digest: summary",
+    description:
+      "Summarises a document, or the section summaries of a long one, into a summary, key points and topics.",
+    text: `You are given a document, or the section summaries of one long document in order. Summarise the whole document.
 
-- One short paragraph saying what the document is and what it concludes, then up to five bullets with the most important points.
-- Keep names, dates and figures exactly as the summaries state them, and add nothing they do not say.
-- Stay under 250 words, in plain Markdown without headings.`,
+- The summary says what the document is and what it says or concludes. Make it as long as the document needs, and no longer.
+- Key points hold the facts, figures, decisions and claims a reader would come back for, one per entry.
+- Topics are short names for the subjects it covers.
+- Keep names, dates and figures exactly as written, and add nothing the text does not say.
+- Skip navigation, cookie notices, bylines and other page chrome.
+- Use plain sentences without headings or links.`,
   },
   {
     id: "document/format",

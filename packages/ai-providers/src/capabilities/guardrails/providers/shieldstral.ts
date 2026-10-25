@@ -221,7 +221,6 @@ export class ShieldstralGuardProvider implements GuardrailsProvider {
         },
         undefined,
         {
-          requestTimeout: 120_000,
           retryDelay: 500,
           maxAttempts: 2,
           backoff: "exponential",

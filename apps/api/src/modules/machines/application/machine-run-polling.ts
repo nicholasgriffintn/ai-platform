@@ -9,8 +9,6 @@ import { callMachineRun } from "./runs";
 
 const MACHINE_RUN_POLL_INTERVAL_MS = 1000;
 
-export const MACHINE_RUN_MAX_DURATION_MS = 10 * 60 * 1000;
-
 export async function parseMachineSnapshot(response: Response): Promise<MachineRunSnapshot> {
   if (!response.ok) {
     throw new AssistantError(
@@ -28,7 +26,7 @@ export async function pollMachineRun(
   machineId: string,
   machineRunId: string,
   created: MachineRunSnapshot,
-  deadline: number,
+  deadline: number | undefined,
   onText: (text: string) => void,
 ): Promise<string> {
   let snapshot = created;
@@ -36,7 +34,7 @@ export async function pollMachineRun(
   onText(snapshot.text);
 
   while (snapshot.state === "pending" || snapshot.state === "running") {
-    if (Date.now() >= deadline) {
+    if (deadline !== undefined && Date.now() >= deadline) {
       await callMachineRun(context, machineId, `/cancel/${machineRunId}`).catch(() => undefined);
       throw new AssistantError(
         "Machine execution exceeded its deadline",

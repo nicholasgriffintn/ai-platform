@@ -1,10 +1,9 @@
-import {
-  excerptMemoryDocument,
-  type CreateMemoryDocumentInput,
-  type MemoryDocument,
-  type MemoryDocumentRevision,
-  type MemoryDocumentSummary,
-  type UpdateMemoryDocumentInput,
+import type {
+  CreateMemoryDocumentInput,
+  MemoryDocument,
+  MemoryDocumentRevision,
+  MemoryDocumentSummary,
+  UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -14,6 +13,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import {
+  describeMemoryDocument,
+  readMemoryDocumentDetails,
+} from "~/modules/memory-documents/domain/details";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -48,6 +51,7 @@ export function formatMemoryDocument(row: MemoryDocumentRow): MemoryDocument {
   return {
     id: row.id,
     name: row.name,
+    ...readMemoryDocumentDetails(row),
     content: row.content,
     revision: row.revision,
     scopeType: row.scope_type,
@@ -161,9 +165,9 @@ export async function copyConversationBrief(
 }
 
 function toSummary(row: MemoryDocumentRow): MemoryDocumentSummary {
-  const { content, ...rest } = formatMemoryDocument(row);
+  const { content: _content, ...rest } = formatMemoryDocument(row);
 
-  return { ...rest, excerpt: excerptMemoryDocument(content) };
+  return { ...rest, excerpt: describeMemoryDocument(row) };
 }
 
 export async function listMemoryDocuments(
@@ -218,6 +222,7 @@ export async function createMemoryDocument(
     ...scope,
     name: input.name,
     content: input.content ?? "",
+    details: { description: input.description ?? "", type: input.type ?? null },
     createdByUserId: user.id,
   });
 
@@ -243,6 +248,11 @@ export async function updateMemoryDocument(
   const updated = await context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: existing.id,
     content: input.content,
+    details: {
+      ...readMemoryDocumentDetails(existing),
+      ...(input.description === undefined ? {} : { description: input.description }),
+      ...(input.type === undefined ? {} : { type: input.type }),
+    },
     changeNote: input.changeNote ?? null,
     createdByUserId: user.id,
     expectedRevision: input.expectedRevision,

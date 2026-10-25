@@ -2,7 +2,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const COMPOSIO_API_BASE_URL = "https://backend.composio.dev/api/v3.1";
-const COMPOSIO_REQUEST_TIMEOUT_MS = 20_000;
 
 export interface ComposioEnvironment {
   COMPOSIO_API_KEY?: string;
@@ -58,16 +57,9 @@ export async function composioRequest<T>(params: {
         "x-api-key": requireComposioApiKey(params.env),
       },
       body: params.body ? JSON.stringify(params.body) : undefined,
-      signal: AbortSignal.timeout(COMPOSIO_REQUEST_TIMEOUT_MS),
     });
-  } catch (error) {
-    throw new AssistantError(
-      error instanceof DOMException && error.name === "TimeoutError"
-        ? "Composio request timed out"
-        : "Could not reach Composio",
-      ErrorType.NETWORK_ERROR,
-      502,
-    );
+  } catch {
+    throw new AssistantError("Could not reach Composio", ErrorType.NETWORK_ERROR, 502);
   }
 
   let payload: unknown;

@@ -131,7 +131,7 @@ export class OpenAIAgentsClient {
   }): Promise<{ result?: string; diff?: string }> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(params.sessionId)}/artifacts?limit=100&order=desc`,
-      { headers: this.headers(), redirect: "error", signal: AbortSignal.timeout(30_000) },
+      { headers: this.headers(), redirect: "error" },
     );
 
     if (!response.ok) {
@@ -167,7 +167,7 @@ export class OpenAIAgentsClient {
   ): Promise<string> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(sessionId)}/artifacts/${encodeURIComponent(artifactId)}/content`,
-      { headers: this.headers(), redirect: "error", signal: AbortSignal.timeout(30_000) },
+      { headers: this.headers(), redirect: "error" },
     );
 
     if (!response.ok) {

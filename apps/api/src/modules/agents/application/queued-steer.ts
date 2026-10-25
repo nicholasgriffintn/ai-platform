@@ -1,6 +1,5 @@
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import {
-  AGENT_HARNESS_MAX_INPUT_CHARS,
   MAX_QUEUED_CHAT_MESSAGES,
   QUEUED_CHAT_MESSAGE_TASK_TYPE,
   queuedChatTaskDataSchema,
@@ -35,7 +34,7 @@ export async function takeQueuedSteer(params: {
       continue;
     }
 
-    if (!(await params.steer(text.slice(0, AGENT_HARNESS_MAX_INPUT_CHARS)))) {
+    if (!(await params.steer(text))) {
       return false;
     }
 

@@ -21,7 +21,6 @@ export const MAX_OCR_BATCH_PAYLOAD_BYTES = 20 * 1024 * 1024;
 export const MAX_OCR_BATCH_RESULT_BYTES = 20 * 1024 * 1024;
 const MAX_OCR_BATCH_JOB_BYTES = 2 * 1024 * 1024;
 const MAX_OCR_BATCH_ERROR_BYTES = 64 * 1024;
-const OCR_BATCH_REQUEST_TIMEOUT_MS = 30_000;
 
 export type MistralOcrBatchStatus =
   | "QUEUED"
@@ -363,24 +362,15 @@ export class MistralOcrBatchClient implements OcrBatchClient {
       logger,
     });
     const url = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId()}/mistral${path}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OCR_BATCH_REQUEST_TIMEOUT_MS);
-    let response: Response;
-
-    try {
-      response = await fetch(url, {
-        ...init,
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${apiKey}`,
-          "cf-aig-authorization": env.AI_GATEWAY_TOKEN,
-          ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
-        },
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        "cf-aig-authorization": env.AI_GATEWAY_TOKEN,
+        ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+    });
 
     if (!response.ok && !(allowNotFound && response.status === 404)) {
       let responseText = "";

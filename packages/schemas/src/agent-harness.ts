@@ -21,8 +21,6 @@ export type AgentHarnessId = z.infer<typeof agentHarnessIdSchema>;
 
 export const AGENT_HARNESS_PROVIDER = "agent-harness" as const;
 export const AGENT_HARNESS_APPROVAL_TOOL = "request_approval" as const;
-export const AGENT_HARNESS_MAX_INPUT_CHARS = 100_000;
-export const AGENT_HARNESS_MAX_INSTRUCTIONS_CHARS = 12_000;
 
 export const agentHarnessRuntimeSchema = z.enum(["worker", "container", "remote"]);
 export type AgentHarnessRuntime = z.infer<typeof agentHarnessRuntimeSchema>;
@@ -34,7 +32,6 @@ export const agentHarnessCapabilitiesSchema = z
     fork: z.boolean(),
     workspaceTools: z.boolean(),
     ownsEnvironment: z.boolean(),
-    maxTurnMinutes: z.number().int().positive(),
   })
   .strict();
 export type AgentHarnessCapabilities = z.infer<typeof agentHarnessCapabilitiesSchema>;
@@ -62,7 +59,6 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
       fork: true,
       workspaceTools: true,
       ownsEnvironment: false,
-      maxTurnMinutes: 15,
     },
     permissionModes: GATED_PERMISSION_MODES,
   },
@@ -77,7 +73,6 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
       fork: true,
       workspaceTools: true,
       ownsEnvironment: false,
-      maxTurnMinutes: 60,
     },
     permissionModes: GATED_PERMISSION_MODES,
   },
@@ -92,7 +87,6 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
       fork: true,
       workspaceTools: false,
       ownsEnvironment: true,
-      maxTurnMinutes: 60,
     },
     permissionModes: ["full_access"],
   },
@@ -107,7 +101,6 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
       fork: false,
       workspaceTools: false,
       ownsEnvironment: true,
-      maxTurnMinutes: 60,
     },
     permissionModes: ["full_access"],
   },
@@ -122,7 +115,6 @@ export const AGENT_HARNESS_DEFINITIONS: Record<AgentHarnessId, AgentHarnessDefin
       fork: false,
       workspaceTools: false,
       ownsEnvironment: true,
-      maxTurnMinutes: 60,
     },
     permissionModes: ["full_access"],
   },
@@ -142,8 +134,8 @@ export const agentHarnessTurnRequestSchema = z
       .string()
       .trim()
       .regex(/^[A-Za-z0-9._~-]{1,120}$/u),
-    input: z.string().trim().min(1).max(AGENT_HARNESS_MAX_INPUT_CHARS),
-    instructions: z.string().max(AGENT_HARNESS_MAX_INSTRUCTIONS_CHARS).optional(),
+    input: z.string().trim().min(1),
+    instructions: z.string().optional(),
     model: z.string().trim().min(1).max(200),
     reasoningEffort: reasoningEffortSchema.optional(),
     permissionMode: permissionModeSchema,

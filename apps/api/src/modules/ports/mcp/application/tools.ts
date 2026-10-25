@@ -31,7 +31,7 @@ const TEAMMATE_TOOL_PREFIX = "teammate.";
 const MCP_AUTHORITY: DirectToolRunAuthority = { trigger: "channel", autonomyLevel: "assistant" };
 
 const teammateMessageSchema = z.object({
-  message: z.string().trim().min(1).max(8_000).describe("What you want the teammate to do"),
+  message: z.string().trim().min(1).describe("What you want the teammate to do"),
 });
 
 export interface McpPortTool {

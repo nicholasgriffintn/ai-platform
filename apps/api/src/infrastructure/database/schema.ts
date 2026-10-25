@@ -804,6 +804,7 @@ export interface MemoryDocumentRow {
   kind: "memory" | "conversation_brief" | "teammate_context";
   name: string;
   content: string;
+  metadata: string | null;
   revision: number;
   created_by: number;
   deleted_at: string | null;

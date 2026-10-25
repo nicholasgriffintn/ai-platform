@@ -10,7 +10,7 @@ export function chunkText(text: string, maxChars = 2000): string[] {
     let end = Math.min(start + maxChars, text.length);
     const splitPos = Math.max(text.lastIndexOf("\n", end), text.lastIndexOf(" ", end));
 
-    if (splitPos > start) {
+    if (end < text.length && splitPos > start) {
       end = splitPos;
     }
 

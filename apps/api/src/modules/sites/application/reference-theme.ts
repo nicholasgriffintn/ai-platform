@@ -14,7 +14,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-const CAPTURE_TIMEOUT_MS = 60_000;
 const FONT_CHECK_TIMEOUT_MS = 5_000;
 
 async function isGoogleFont(name: string, signal?: AbortSignal): Promise<boolean> {
@@ -74,14 +73,13 @@ export async function readSiteReferenceTheme(
     );
   }
 
-  const timeout = AbortSignal.timeout(CAPTURE_TIMEOUT_MS);
   const response = await context.env.SANDBOX_WORKER.fetch(
     "https://computer.internal/computer/site-reference",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ resourceId: `site-reference-${generateId()}`, url }),
-      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+      signal,
     },
   );
   const capture = response.ok

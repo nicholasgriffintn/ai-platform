@@ -65,6 +65,8 @@ describe("McpHttpClient", () => {
     expect(new Headers(fetch.mock.calls.at(-1)?.[1]?.headers).get("mcp-session-id")).toBe(
       "session-1",
     );
+    expect(fetch.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal);
+    expect(fetch.mock.calls.at(-1)?.[1]?.signal).toBeUndefined();
   });
 
   it("refuses private or plain HTTP servers before sending anything", () => {

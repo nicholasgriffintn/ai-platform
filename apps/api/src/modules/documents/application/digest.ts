@@ -1,5 +1,9 @@
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  sourceContentSummaryDraftSchema,
+  type SourceContentSummaryDraft,
+} from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { chunkText } from "@ngriffin_uk/polychat-utility-server/embeddings";
@@ -22,16 +26,12 @@ const SECTION_CONCURRENCY = 4;
 const DIGEST_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 const sectionSchema = z.object({
-  title: z.string().min(1).max(300),
-  summary: z.string().min(1).max(5_000),
-});
-
-const overviewSchema = z.object({
-  overview: z.string().min(1).max(3_000),
+  title: z.string().trim().min(1),
+  summary: z.string().trim().min(1),
 });
 
 const documentDigestSchema = z.object({
-  overview: z.string(),
+  summary: sourceContentSummaryDraftSchema,
   sections: z.array(z.union([sectionSchema, z.null()])),
 });
 
@@ -44,9 +44,11 @@ interface DigestRequest {
   markdown: string;
 }
 
+type DigestModel = Awaited<ReturnType<typeof getAuxiliaryModel>>;
+
 async function summariseSection(
   { env, user }: Omit<DigestRequest, "markdown">,
-  target: Awaited<ReturnType<typeof getAuxiliaryModel>>,
+  target: DigestModel,
   excerpt: string,
 ): Promise<DocumentDigestSection | null> {
   try {
@@ -71,9 +73,35 @@ async function summariseSection(
   }
 }
 
+async function summariseWhole(
+  { env, user }: Omit<DigestRequest, "markdown">,
+  target: DigestModel,
+  material: string,
+): Promise<SourceContentSummaryDraft> {
+  const { object } = await ai.generateObject({
+    env,
+    user,
+    model: target.model,
+    provider: target.provider,
+    reasoning_effort: target.effort,
+    disable_functions: true,
+    name: "document_summary",
+    schema: sourceContentSummaryDraftSchema,
+    system: getPromptText("document/digest/summary"),
+    prompt: material,
+  });
+
+  return object;
+}
+
 async function buildDigest({ env, user, markdown }: DigestRequest): Promise<DocumentDigest> {
   const target = await getAuxiliaryModel(env, user);
   const excerpts = chunkText(markdown, DOCUMENT_DIGEST_CHUNK_CHARS);
+
+  if (excerpts.length <= 1) {
+    return { summary: await summariseWhole({ env, user }, target, markdown), sections: [] };
+  }
+
   const sections = await mapWithConcurrency(excerpts, SECTION_CONCURRENCY, (excerpt) =>
     summariseSection({ env, user }, target, excerpt),
   );
@@ -86,20 +114,13 @@ async function buildDigest({ env, user, markdown }: DigestRequest): Promise<Docu
     );
   }
 
-  const { object } = await ai.generateObject({
-    env,
-    user,
-    model: target.model,
-    provider: target.provider,
-    reasoning_effort: target.effort,
-    disable_functions: true,
-    name: "document_overview",
-    schema: overviewSchema,
-    system: getPromptText("document/digest/overview"),
-    prompt: completed.map((section) => `## ${section.title}\n\n${section.summary}`).join("\n\n"),
-  });
+  const summary = await summariseWhole(
+    { env, user },
+    target,
+    completed.map((section) => `## ${section.title}\n\n${section.summary}`).join("\n\n"),
+  );
 
-  return { overview: object.overview, sections };
+  return { summary, sections };
 }
 
 export async function digestDocument(request: DigestRequest): Promise<DocumentDigest> {
@@ -135,12 +156,22 @@ export function formatDocumentDigest(name: string | undefined, digest: DocumentD
     .join("\n\n");
   const notice = [
     `This is a digest of ${name ? `"${name}"` : "an attached document"}, which is too long to include in full for this model.`,
-    `It was split into ${digest.sections.length} parts and each part summarised.`,
+    digest.sections.length > 0
+      ? `It was split into ${digest.sections.length} parts and each part summarised.`
+      : "",
     missing > 0 ? `${missing} part(s) could not be summarised and are missing.` : "",
     "Say when an answer needs detail the digest does not contain.",
   ]
     .filter(Boolean)
     .join(" ");
+  const keyPoints = digest.summary.keyPoints.map((point) => `- ${point}`).join("\n");
 
-  return `${notice}\n\n## Overview\n\n${digest.overview}\n\n## Sections\n\n${sections}`;
+  return [
+    notice,
+    `## Summary\n\n${digest.summary.summary}`,
+    keyPoints ? `## Key points\n\n${keyPoints}` : "",
+    sections ? `## Sections\n\n${sections}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
