@@ -190,7 +190,6 @@ playwright-report
 .claude
 
 xcshareddata/
-!**/*.xcodeproj/xcshareddata/
 xcuserdata/
 .coverage/
 TestResults/
