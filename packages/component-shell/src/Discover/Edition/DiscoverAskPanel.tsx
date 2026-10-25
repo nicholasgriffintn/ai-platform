@@ -15,6 +15,7 @@ import {
   type DiscoverCard,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { ConversationArtifactOverlay } from "../../Conversations/ConversationArtifactOverlay.js";
 import { useSubjectConversationSync } from "../../Files/Viewer/useSubjectConversationSync.js";
 import { discoverCardSuggestions } from "./discover-card-drafts.js";
 
@@ -72,6 +73,7 @@ function DiscoverAskThread({
                 },
               }}
             />
+            <ConversationArtifactOverlay />
           </div>
         </ArtifactWorkbenchProvider>
       </ComposerDraftProvider>

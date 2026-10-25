@@ -11,6 +11,7 @@ import {
 import { DEFAULT_MODEL_TIER, type ConversationSubject } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
+import { ConversationArtifactOverlay } from "../../Conversations/ConversationArtifactOverlay.js";
 import type { FileItem } from "../Library/file-items.js";
 import { buildFileAskSuggestions } from "./ask-suggestions.js";
 import type { FileConversationState } from "./useFileViewerPanels.js";
@@ -67,6 +68,7 @@ export function FileAskPanel({
                 },
               }}
             />
+            <ConversationArtifactOverlay />
           </div>
         </ArtifactWorkbenchProvider>
       </ComposerDraftProvider>

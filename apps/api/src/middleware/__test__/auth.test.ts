@@ -236,6 +236,24 @@ describe("Auth Middleware", () => {
       expect(repositoryCtor).not.toHaveBeenCalled();
     });
 
+    it("lets the desktop updater check and download releases with its own user agent", async () => {
+      mockIsbot.mockReturnValue(true);
+
+      for (const path of [
+        "/desktop/releases/darwin/aarch64/0.6.0",
+        "/desktop/updates/macos-universal/polychat-desktop-0.6.0-macos-universal.app.tar.gz",
+      ]) {
+        const context = createMockContext();
+
+        context.req.path = path;
+
+        await authMiddleware(context, mockNext);
+      }
+
+      expect(mockNext).toHaveBeenCalledTimes(2);
+      expect(repositoryCtor).not.toHaveBeenCalled();
+    });
+
     it("should block unknown user agents", async () => {
       const context = createMockContext();
 

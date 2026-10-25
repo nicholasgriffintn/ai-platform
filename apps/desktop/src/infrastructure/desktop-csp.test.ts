@@ -25,6 +25,15 @@ describe("the desktop content security policy", () => {
     },
   );
 
+  it.each(["img-src", "media-src"])(
+    "lets %s load API media through the signed-in desktop host",
+    (directive) => {
+      expect(packaged.get(directive)).toEqual(
+        expect.arrayContaining(["polychat-media:", "http://polychat-media.localhost"]),
+      );
+    },
+  );
+
   it("lets the window show the avatars the API reports for accounts", () => {
     expect(packaged.get("img-src")).toContain("https://avatars.githubusercontent.com");
   });

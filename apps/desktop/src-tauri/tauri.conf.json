@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.polychat.app https://assets.polychat.app https://avatars.githubusercontent.com https://imagedelivery.net https://icons.duckduckgo.com https://logos.composio.dev https://openweathermap.org https://pashi.app; font-src 'self'; media-src 'self' blob: https://api.polychat.app https://assets.polychat.app; connect-src 'self' ipc: http://ipc.localhost https://api.polychat.app wss://api.polychat.app https://assets.polychat.app; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' polychat-media: http://polychat-media.localhost data: blob: https://api.polychat.app https://assets.polychat.app https://avatars.githubusercontent.com https://imagedelivery.net https://icons.duckduckgo.com https://logos.composio.dev https://openweathermap.org https://pashi.app; font-src 'self'; media-src 'self' polychat-media: http://polychat-media.localhost blob: https://api.polychat.app https://assets.polychat.app; connect-src 'self' ipc: http://ipc.localhost https://api.polychat.app wss://api.polychat.app https://assets.polychat.app; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
       "capabilities": ["default"]
     }
   },

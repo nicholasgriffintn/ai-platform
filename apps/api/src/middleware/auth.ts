@@ -29,6 +29,7 @@ const logger = getLogger({ prefix: "middleware/auth" });
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const DEVICE_CLIENT_PATHS = new Set(["/auth/device/code", "/auth/device/token"]);
+const DESKTOP_DISTRIBUTION_PREFIX = "/desktop/";
 
 function isBotUserAgent(userAgent: string): boolean {
   try {
@@ -54,6 +55,7 @@ export async function authMiddleware(context: Context, next: Next) {
     path === "/status" ||
     path === "/openapi" ||
     DEVICE_CLIENT_PATHS.has(path) ||
+    path.startsWith(DESKTOP_DISTRIBUTION_PREFIX) ||
     path.startsWith("/webhooks/") ||
     path.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`)
   ) {

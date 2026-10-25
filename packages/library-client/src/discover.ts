@@ -16,7 +16,7 @@ import type {
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { API_BASE_URL } from "./constants.js";
+import { apiMediaUrl } from "./media-url.js";
 import { requestBlob, requestJson, withQuery } from "./resource.js";
 
 export function getDiscover(): Promise<DiscoverResponse> {
@@ -80,7 +80,7 @@ export function requestDiscoverEpisode(editionId: string): Promise<{ queued: tru
 }
 
 export function getDiscoverEpisodeAudioUrl(episodeId: string, chapter: number): string {
-  return `${API_BASE_URL}${episodePath(episodeId, `/chapters/${chapter}/audio`)}`;
+  return apiMediaUrl(episodePath(episodeId, `/chapters/${chapter}/audio`));
 }
 
 export function recordDiscoverEpisodeProgress(
@@ -101,10 +101,12 @@ export function getDiscoverEpisodeShotUrl(
   episodeId: string,
   location: { chapter: number; scene: number; shot: number },
 ): string {
-  return `${API_BASE_URL}${episodePath(
-    episodeId,
-    `/chapters/${location.chapter}/scenes/${location.scene}/shots/${location.shot}`,
-  )}`;
+  return apiMediaUrl(
+    episodePath(
+      episodeId,
+      `/chapters/${location.chapter}/scenes/${location.scene}/shots/${location.shot}`,
+    ),
+  );
 }
 
 export function startDiscoverWindDown(input: CreateDiscoverWindDown): Promise<DiscoverWindDown> {
@@ -116,11 +118,11 @@ export function getDiscoverWindDown(windDownId: string): Promise<DiscoverWindDow
 }
 
 export function getDiscoverWindDownAmbientUrl(windDownId: string): string {
-  return `${API_BASE_URL}/discover/wind-down/${encodeURIComponent(windDownId)}/ambient`;
+  return apiMediaUrl(`/discover/wind-down/${encodeURIComponent(windDownId)}/ambient`);
 }
 
 export function getDiscoverWindDownStepUrl(windDownId: string, step: number): string {
-  return `${API_BASE_URL}/discover/wind-down/${encodeURIComponent(windDownId)}/steps/${step}/audio`;
+  return apiMediaUrl(`/discover/wind-down/${encodeURIComponent(windDownId)}/steps/${step}/audio`);
 }
 
 export function queueDiscoverSeasonListen(seasonId: string): Promise<{ queued: true }> {

@@ -20,13 +20,13 @@ import type {
   StartBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { API_BASE_URL } from "./constants.js";
 import { fetchApiData } from "./fetch-wrapper.js";
+import { apiMediaUrl } from "./media-url.js";
 
 const BENCHMARKS_PATH = "/benchmarks";
 
 export function benchmarkAssetUrl(path: string): string {
-  return `${API_BASE_URL}${path}`;
+  return apiMediaUrl(path);
 }
 
 export const benchmarksService = {

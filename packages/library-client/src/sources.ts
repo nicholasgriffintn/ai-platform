@@ -17,8 +17,8 @@ import type {
   UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { API_BASE_URL } from "./constants.js";
 import { fetchApiData as request } from "./fetch-wrapper.js";
+import { apiMediaUrl } from "./media-url.js";
 
 export interface SourceListFilters {
   projectId?: string;
@@ -31,11 +31,11 @@ function sourcePath(sourceId: string, suffix = ""): string {
 }
 
 export function getSourceContentUrl(sourceId: string): string {
-  return `${API_BASE_URL}${sourcePath(sourceId, "/content")}`;
+  return apiMediaUrl(sourcePath(sourceId, "/content"));
 }
 
 export function getSourceCoverUrl(sourceId: string): string {
-  return `${API_BASE_URL}${sourcePath(sourceId, "/cover")}`;
+  return apiMediaUrl(sourcePath(sourceId, "/cover"));
 }
 
 export async function listSources(filters: SourceListFilters = {}): Promise<SourceSummary[]> {

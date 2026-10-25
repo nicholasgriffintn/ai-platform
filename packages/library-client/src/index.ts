@@ -24,6 +24,7 @@ export * from "./benchmarks.js";
 export * from "./decisions.js";
 export * from "./extractions.js";
 export * from "./fetch-wrapper.js";
+export * from "./media-url.js";
 export * from "./global-search.js";
 export * from "./governance.js";
 export * from "./model-platform/index.js";

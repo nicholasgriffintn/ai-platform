@@ -13,6 +13,7 @@ mod lines;
 mod link;
 mod links;
 mod local_tools;
+mod media;
 mod model_runner;
 mod poly;
 mod programs;
@@ -861,6 +862,7 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .register_asynchronous_uri_scheme_protocol(media::SCHEME, media::handle)
         .setup(move |app| {
             poly::install_tray(app.handle())?;
 
