@@ -1,5 +1,67 @@
 # @ngriffin_uk/polychat-component-experiences
 
+## 0.6.0
+
+### Minor Changes
+
+- 06c02dd: Discover is your morning edition from Poly. Open Discover in the Chat sidebar, turn it on, and each morning Poly leaves a brief, painted topic tiles, reading, automations worth setting up and the odd check-in, built from what you've been talking about.
+
+  - Pick any card to open it beside the feed with its own conversation, then tell Discover more, less or never. Follow a topic and it gets a notebook that collects each day's best links.
+  - The Perch is a short two-host round-up of each edition, in your podcast show and its private feed.
+  - Today's episode is a narrated, illustrated part of a five-day season on your top topic, with chapters, camera moves and a listen-only mode. Save a season as one long listen for your podcast app.
+  - Wind down makes a five, ten or twenty minute breathing, body-scan or unwind session for the evening. It starts speaking within seconds, over quiet music made for the session that you can turn off.
+  - Today's episode, The Perch and Wind down share one player beside the feed, and keep playing while you read other cards.
+  - Connect Readwise, Last.fm, Trakt, Hardcover or Podcast Index, and Discover reads what you're reading, listening to and watching. Notebooks can now keep connected sources up to date.
+  - From before cards bring back flashcards you missed, links you saved a while ago and what you were doing a year ago.
+  - On Sundays, Your week is a short private recap of what you made, learned and finished.
+  - Turn on Tell me when it's ready and Poly lets you know on your phone and connected channels when the edition lands.
+  - Settings lists your connected services, each with its own switch for Discover. Oura and Audiobookshelf can now be connected too, and on iPhone Discover can use yesterday's Apple Health summary for the brief.
+  - Health, sexuality, religion, politics and money only appear when you follow them or ask. Episodes and their quizzes and flashcards land in a followed topic's notebook, and episodes open in Files with the same player.
+  - Audio and video across chat, Files and notebooks now use one player.
+  - The product tour now lives at /tour. On iOS, Discover is in the menu and there is a Today widget.
+  - Long structured generations no longer give up after 100 seconds, so episodes and other background work finish instead of failing part way.
+  - Podcasts and episodes now show their real length and jump to the right place when you scrub or resume.
+  - Background work interrupted part way, by a deploy or a crash, now picks up again instead of sitting unfinished.
+
+- 7b36da1: Sources is now where your media lives. Files' Given tab is renamed Sources and gains Podcasts, Image Studio and Replicate alongside the library.
+
+  - Upload images, audio and video straight into Sources. Open any audio or video source to play it, transcribe it, write notes with decisions and action items, and make cover art. The transcript becomes searchable, so recordings work as grounding like any other source. This replaces the Recording Processor app.
+  - Image Studio, sketch-to-painting and Replicate runs now save what they make into Sources, where it can be reused as material. They have moved out of Apps and the Canvas sidebar item into Files › Sources.
+  - Make podcasts from your sources: pick sources, a format (deep dive, brief, debate or critique) and a length, and two hosts talk it through. Each episode lands in Sources with its audio, transcript, show notes and cover.
+  - Group episodes into shows and create a private RSS feed link to subscribe in any podcast app. Making a new link turns off the old one.
+  - Ask Poly or a teammate to make an episode with the new podcast tool, or install the Podcast Briefing recipe to get a fresh episode on your topics or Sources on a schedule.
+
+### Patch Changes
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [911642e]
+- Updated dependencies [a9f7c20]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [1fe4222]
+- Updated dependencies [06c02dd]
+- Updated dependencies [f4841cd]
+- Updated dependencies [abf8eb7]
+- Updated dependencies [7b5038c]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [6efa93c]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+- Updated dependencies [d7716ff]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-component-ui@0.5.0
+  - @ngriffin_uk/polychat-component-content@1.3.0
+
 ## 0.5.0
 
 ### Minor Changes

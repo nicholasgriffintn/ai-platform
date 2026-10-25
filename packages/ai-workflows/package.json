@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-workflows",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Workflow primitives for Polychat hosts: declare queued tasks with on(), self-rescheduling pollers with poll(), cron jobs with every(), and let the host wire the queue and the cron trigger once",
   "license": "Apache-2.0",
   "files": [

@@ -1,5 +1,127 @@
 # @assistant/desktop
 
+## 0.4.0
+
+### Minor Changes
+
+- 8b2929f: Confirm your date of birth before your first message.
+
+  - **Asked once, at the right moment.** The first time you send a message, signed in or not, on the web, desktop or iPhone, Polychat asks for your date of birth. It keeps only whether you meet the minimum age of 18, never the date, and the answer can't be changed later.
+  - **Skip if you're just looking.** Skip the question and you can keep browsing, but you can't send messages until you answer it. Polychat asks again the next time you try to send one.
+  - **Why we ask.** A new page at `/age-check` explains why we ask, what we keep and your rights in the UK and EU. The Terms of Service and Privacy Policy now say plainly that Polychat is for people aged 18 or over.
+  - **Same rule on the API.** Creating a response, sending input to one and calling chat completions all return 403 until the age check is done, for API keys and anonymous sessions alike. Read or record it with `GET` and `POST /auth/age`.
+  - **Self-hosting.** Set `AGE_GATE_ENABLED` to `false` in your Worker vars to turn the check off completely.
+
+- b3e3ea2: Poly can now work inside folders you grant on Polychat Desktop. Grant a folder in the desktop app and any chat or teammate can list, search, read and write files there with the new desktop tools, as long as the desktop is online. Reads happen without ceremony; writes go through the usual approval and autonomy rules, and nothing outside a granted folder is reachable.
+- 06c02dd: Discover is your morning edition from Poly. Open Discover in the Chat sidebar, turn it on, and each morning Poly leaves a brief, painted topic tiles, reading, automations worth setting up and the odd check-in, built from what you've been talking about.
+
+  - Pick any card to open it beside the feed with its own conversation, then tell Discover more, less or never. Follow a topic and it gets a notebook that collects each day's best links.
+  - The Perch is a short two-host round-up of each edition, in your podcast show and its private feed.
+  - Today's episode is a narrated, illustrated part of a five-day season on your top topic, with chapters, camera moves and a listen-only mode. Save a season as one long listen for your podcast app.
+  - Wind down makes a five, ten or twenty minute breathing, body-scan or unwind session for the evening. It starts speaking within seconds, over quiet music made for the session that you can turn off.
+  - Today's episode, The Perch and Wind down share one player beside the feed, and keep playing while you read other cards.
+  - Connect Readwise, Last.fm, Trakt, Hardcover or Podcast Index, and Discover reads what you're reading, listening to and watching. Notebooks can now keep connected sources up to date.
+  - From before cards bring back flashcards you missed, links you saved a while ago and what you were doing a year ago.
+  - On Sundays, Your week is a short private recap of what you made, learned and finished.
+  - Turn on Tell me when it's ready and Poly lets you know on your phone and connected channels when the edition lands.
+  - Settings lists your connected services, each with its own switch for Discover. Oura and Audiobookshelf can now be connected too, and on iPhone Discover can use yesterday's Apple Health summary for the brief.
+  - Health, sexuality, religion, politics and money only appear when you follow them or ask. Episodes and their quizzes and flashcards land in a followed topic's notebook, and episodes open in Files with the same player.
+  - Audio and video across chat, Files and notebooks now use one player.
+  - The product tour now lives at /tour. On iOS, Discover is in the menu and there is a Today widget.
+  - Long structured generations no longer give up after 100 seconds, so episodes and other background work finish instead of failing part way.
+  - Podcasts and episodes now show their real length and jump to the right place when you scrub or resume.
+  - Background work interrupted part way, by a deploy or a crash, now picks up again instead of sitting unfinished.
+
+- abf8eb7: A rebuilt iPhone app, and approvals that go back together.
+
+  - **Four tabs on iPhone.** Home shows your Discover edition, morning or evening, with the brief, topics, links and the episode, The Perch, your week and wind down, each with its real status and artwork. Chats has a Chat and Work toggle for your own conversations and your projects. Attention gathers approvals, questions, reviews, your inbox and background tasks, with a badge on the app icon. Settings covers your account, default model, Discover, Apple Health and notifications.
+  - **Replies stream properly on iPhone.** Text arrives as it is written, each step of a reply that uses tools shows in order, chats open at the latest message, and headings, lists, quotes, code and tables render the way they do on the web.
+  - **iPhone keeps up with your other devices.** Conversations, running work and Attention update live when something changes on the web or desktop.
+  - **Widgets show what's happening.** The Today, Attention and Poly widgets come in small, medium and large sizes and on the Lock Screen, with the latest edition, what's waiting on you and what Poly is working on.
+  - **Approvals arrive as one set.** When Poly asks for several approvals at once, decide each one (or approve or reject the rest in one go) and Polychat sends every decision together once the set is complete, so Poly carries on with all of them rather than one at a time. This works on the web, desktop and iPhone.
+  - **Voice and Apple Health from iPhone.** Dictation and the Apple Health switch work again from the app.
+
+- 7b5038c: The desktop app can share what you do on your Mac with Discover and Poly.
+
+  - **Choose what to share.** Open Profile, then Mac activity, in the desktop app and switch on any of: browsing in Helium, Chrome, Brave, Arc, Edge, Vivaldi or Chromium; Claude Code and Codex sessions; time in the apps you use; and what Apple Music or Spotify played. Everything starts off.
+  - **Lines leave, files don't.** The Mac reads history and transcripts itself and sends only short summary lines, such as a site with your visit count and time spent, or a project with its session title and prompt count. Page titles, searches, window titles and first prompts each have their own switch.
+  - **Pause from the menu bar.** The Poly menu says what's being shared and lets you pause for an hour, until tomorrow or until you resume. Anything you did while paused is never sent, even after you resume.
+  - **See exactly what was sent.** The settings tab shows the last send line by line. Mark any site, app or project as never shared, or forget everything this Mac sent.
+  - **Discover and Poly use it straight away.** Each source appears in the Discover notebook as a document for your Mac, so morning editions and Poly's sense of your week include it. Switch a Mac source off in Discover settings to stop using it there.
+
+- 0a57f73: Open any file and ask about it.
+
+  - **One viewer for every file.** Documents, sources, recordings, images and memories all open in the same viewer. The title menu holds file info, version history, share links and every conversation about the file. Files opened from a chat, a run or a task open on top of where you were.
+  - **Ask about this file.** The viewer has its own conversation. Polychat reads the file fresh on every turn, can revise a document as a new revision you can restore, and keeps the conversation with the file so you can pick it up later.
+  - **Poly knows the page you are on.** Each place has a guide Poly reads whenever you ask it something there, and a fresh Poly conversation opens with that guide and a few starters. Your first chat opens with the guide to conversations.
+  - **API.** Pass `conversation.subject` with `{ type, id }` when creating a response to start a conversation about a source, output or memory, and list them with `GET /conversations?subject_type=&subject_id=`. `GET /skills/guides` returns each place's guide.
+
+- 11381a9: Teammates are now people you message, not settings you edit.
+
+  - **Teammate threads.** Opening a teammate opens its own conversation, which carries on between visits. The sidebar lists the teammates you are talking to and your groups, newest activity first, with anyone who needs you at the top. Those conversations no longer also appear in the chat list. The conversation uses the same workspace as any other chat, and its side panel sums up the teammate: what it is doing, its autonomy, and how many routines and connections it has, each a click from Working context.
+  - **Groups.** Use "Add a teammate" on a teammate's page to put two to six teammates in one conversation. Use @name, or tap a name in the header, to choose who answers. Every reply shows which teammate wrote it, and messages teammates send back while they work collapse into one "Messages from…" line you can open.
+  - **Reactions.** React to a reply from the smiley button, or long-press on iOS. 👍 and 👎 also tell the teammate how it did, and teammates react 👀 to your message when they pick it up instead of replying "On it". A reaction never approves anything.
+  - **Receipts.** When a tool sends, books, pays, deletes or changes something, the conversation shows a short receipt such as "Created routine · Friday inbox tidy · every Friday at 09:00", with the full output one click away.
+  - **Live with teammates.** Live now works in teammate and group conversations. Start it from the Live button and stop it from the same place; each spoken turn goes to the teammate with its tools, and anything it wants to do still waits for your approval.
+  - **Slack and Telegram signals.** Connected channels react 👀 when a message is picked up, show a working status in Slack threads and swap to ⚠️ if the run fails. Choose "Also ✅ when it is done" or "No reactions" when you connect a channel.
+  - **More teammates to hire.** New jobs for personal admin, productivity, sales and marketing, operations and engineering, including Inbox tidy, Trip watcher, Morning brief, Meeting prep, Bug reproduction and Expense manager. Each arrives with its own character and offers to set up its routine.
+  - **Dry runs.** Run any set-up routine as a dry run. Anything that would send, write, spend or delete returns a draft instead, so you can check a routine before it goes live.
+  - **Batch review.** When three or more approvals are waiting, tick the ones you want and approve them together. Each is still approved on its own, exactly as listed.
+
+- 7b36da1: Sources is now where your media lives. Files' Given tab is renamed Sources and gains Podcasts, Image Studio and Replicate alongside the library.
+
+  - Upload images, audio and video straight into Sources. Open any audio or video source to play it, transcribe it, write notes with decisions and action items, and make cover art. The transcript becomes searchable, so recordings work as grounding like any other source. This replaces the Recording Processor app.
+  - Image Studio, sketch-to-painting and Replicate runs now save what they make into Sources, where it can be reused as material. They have moved out of Apps and the Canvas sidebar item into Files › Sources.
+  - Make podcasts from your sources: pick sources, a format (deep dive, brief, debate or critique) and a length, and two hosts talk it through. Each episode lands in Sources with its audio, transcript, show notes and cover.
+  - Group episodes into shows and create a private RSS feed link to subscribe in any podcast app. Making a new link turns off the old one.
+  - Ask Poly or a teammate to make an episode with the new podcast tool, or install the Podcast Briefing recipe to get a fresh episode on your topics or Sources on a schedule.
+
+### Patch Changes
+
+- abf8eb7: Polychat keeps you signed in while you use it.
+
+  - **Sessions renew as you go.** Signing in used to last seven days from the moment you signed in, however much you used Polychat in between. A session now extends itself each day you use it on the web or the desktop app, and only lapses after a week away.
+  - **The desktop app no longer signs you out in the background.** Waking the Mac with no connection, or a brief network drop, used to leave the app looking signed out. It now waits for the connection and carries on, and only shows the sign-in screen when your session has actually ended. Signing in again reuses the session the app already holds before asking you to go through the browser.
+
+- Updated dependencies [8b2929f]
+- Updated dependencies [8b965f6]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7accf45]
+- Updated dependencies [911642e]
+- Updated dependencies [a9f7c20]
+- Updated dependencies [bf39c94]
+- Updated dependencies [b3e3ea2]
+- Updated dependencies [1fe4222]
+- Updated dependencies [06c02dd]
+- Updated dependencies [f4841cd]
+- Updated dependencies [abf8eb7]
+- Updated dependencies [7b5038c]
+- Updated dependencies [80fee8e]
+- Updated dependencies [8b965f6]
+- Updated dependencies [0a57f73]
+- Updated dependencies [6efa93c]
+- Updated dependencies [11381a9]
+- Updated dependencies [91c7d3d]
+- Updated dependencies [7b36da1]
+- Updated dependencies [abf8eb7]
+- Updated dependencies [80fee8e]
+- Updated dependencies [7a9f872]
+- Updated dependencies [7accf45]
+- Updated dependencies [d7716ff]
+  - @ngriffin_uk/polychat-schemas@1.5.0
+  - @ngriffin_uk/polychat-utility-core@0.5.0
+  - @ngriffin_uk/polychat-library-client@0.5.0
+  - @ngriffin_uk/polychat-library-react@0.6.0
+  - @ngriffin_uk/polychat-component-shell@2.0.0
+  - @ngriffin_uk/polychat-component-account@1.0.0
+  - @ngriffin_uk/polychat-component-models@1.2.1
+  - @ngriffin_uk/polychat-component-ui@0.5.0
+  - @ngriffin_uk/polychat-component-content@1.3.0
+  - @ngriffin_uk/polychat-component-conversation@2.1.0
+  - @ngriffin_uk/polychat-library-chat@1.2.0
+  - @ngriffin_uk/polychat-component-experiences@0.6.0
+  - @ngriffin_uk/polychat-component-navigation@0.5.0
+
 ## 0.3.1
 
 ### Patch Changes
