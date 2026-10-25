@@ -1,5 +1,36 @@
 # @assistant/api
 
+## 1.5.1
+
+### Patch Changes
+
+- 7c43bd8: The desktop app now shows Discover covers and episode artwork, plays episode and wind-down audio, and opens files in the viewer. Check for updates now finds new releases instead of saying it couldn't fetch them.
+- 6db0566: Discover's Reading links stay recent and local, and the evening edition keeps the morning's media.
+
+  - **Reading is news only.** Topics with no news today no longer fill up with encyclopaedia pages, band homepages or streaming links. Discover looks back a week before giving up, and leaves out anything older than that or without a date.
+  - **A short list of top reads.** Reading holds up to six links, at most two per topic, newest first, with the same story only once even when it turns up on another site or with tracking on the link.
+  - **Nothing you've already opened.** Pages from your browser shape what Discover looks for but never appear as reads, and the evening edition doesn't repeat the morning's links.
+  - **Closer to home.** Searches use your country and English, picked up the next time you save Discover settings.
+  - **Evening keeps the morning.** Today's episode, The Perch and Your week carry over to the evening edition instead of showing as not made yet.
+  - **No more "a year ago" cards.** From before now brings back flashcards you missed and links you saved, and never resurfaces archived chats.
+
+- e69d886: Fewer needless approval prompts, and Discover chats that survive a reload.
+
+  - **Reads and drafts no longer ask.** Reading a page you linked, saving a note or anything else that stays in your own space now just runs. The second check on whether a call matches what you asked is kept for calls that change shared state, send, spend or delete.
+  - **Discover chats stay with their item.** Each item in For you or Reading keeps its own conversation, so reloading, switching items or opening it on your phone brings the chat back, and Poly sees the item you asked about rather than the whole edition.
+
+- 6db0566: Routine runs no longer crowd your recent chats.
+
+  - **Teammate routines report home.** Scheduled runs a teammate does for you, Discover editions included, stay out of Recent. Catch up from the teammate's home, where each run leaves a summary and an Open result link, or find a run through search.
+  - **Runs you touch come back.** Reply in a run, or have one wait on your approval or input, and it shows in Recent like any other chat.
+
+- Updated dependencies [6db0566]
+- Updated dependencies [e69d886]
+  - @ngriffin_uk/polychat-utility-core@0.6.1
+  - @ngriffin_uk/polychat-library-skills-catalogue@0.4.2
+  - @ngriffin_uk/polychat-library-chat@1.3.0
+  - @ngriffin_uk/polychat-schemas@1.7.0
+
 ## 1.5.0
 
 ### Minor Changes

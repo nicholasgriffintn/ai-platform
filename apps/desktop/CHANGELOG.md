@@ -1,5 +1,19 @@
 # @assistant/desktop
 
+## 0.6.1
+
+### Patch Changes
+
+- 7c43bd8: The desktop app now shows Discover covers and episode artwork, plays episode and wind-down audio, and opens files in the viewer. Check for updates now finds new releases instead of saying it couldn't fetch them.
+- Updated dependencies [7c43bd8]
+- Updated dependencies [6db0566]
+- Updated dependencies [e69d886]
+  - @ngriffin_uk/polychat-library-client@0.6.1
+  - @ngriffin_uk/polychat-utility-core@0.6.1
+  - @ngriffin_uk/polychat-component-shell@2.1.1
+  - @ngriffin_uk/polychat-library-chat@1.3.0
+  - @ngriffin_uk/polychat-schemas@1.7.0
+
 ## 0.6.0
 
 ### Minor Changes
