@@ -33,6 +33,7 @@ import {
   type InfraUsageQueueMessage,
 } from "~/modules/usage/application/infra-usage-queue";
 import { registerUsageQueue } from "~/modules/usage/application/queue/register";
+import { registerUserQueue } from "~/modules/user/application/queue/register";
 import { registerWebhookEndpointsQueue } from "~/modules/webhook-endpoints/application/queue/register";
 import type { IEnv } from "~/types";
 
@@ -63,6 +64,7 @@ registerRealtimeQueue(workflows);
 registerSandboxQueue(workflows);
 registerTeammatesQueue(workflows);
 registerUsageQueue(workflows);
+registerUserQueue(workflows);
 registerWebhookEndpointsQueue(workflows);
 
 function isTaskQueueMessage(

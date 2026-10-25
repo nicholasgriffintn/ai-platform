@@ -14,8 +14,7 @@ export type DiscoverSignalGroup =
   | "places"
   | "pictures"
   | "models"
-  | "social"
-  | "news";
+  | "social";
 
 export interface DiscoverSignalRead {
   date: string;
@@ -55,28 +54,7 @@ export const DISCOVER_SIGNAL_GROUPS: Record<
   pictures: { label: "Pictures", oneOf: false },
   models: { label: "Models", oneOf: false },
   social: { label: "Social", oneOf: false },
-  news: { label: "News", oneOf: false },
 };
-
-export interface DiscoverPublicFeed {
-  id: string;
-  group: DiscoverSignalGroup;
-  title: string;
-  description: string;
-}
-
-export const DISCOVER_PUBLIC_FEEDS: readonly DiscoverPublicFeed[] = [
-  {
-    id: "hackernews-front",
-    group: "news",
-    title: "Hacker News",
-    description: "Reads the front page, no account needed.",
-  },
-];
-
-export function findDiscoverPublicFeed(id: string): DiscoverPublicFeed | undefined {
-  return DISCOVER_PUBLIC_FEEDS.find((feed) => feed.id === id);
-}
 
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : typeof value === "number" ? String(value) : "";

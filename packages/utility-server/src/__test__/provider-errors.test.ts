@@ -5,6 +5,7 @@ import {
   buildProviderResponseErrorDetails,
   classifyProviderRetryError,
   getProviderResponseErrorMessage,
+  isProviderQuotaExhaustedError,
   isProviderRateLimitError,
   parseProviderRetryAfterMs,
 } from "../provider-errors.js";
@@ -93,5 +94,37 @@ describe("provider retry classification", () => {
     expect(parseProviderRetryAfterMs("2.5", now)).toBe(2500);
     expect(parseProviderRetryAfterMs("Sat, 05 Sep 2026 12:00:03 GMT", now)).toBe(3000);
     expect(parseProviderRetryAfterMs("invalid", now)).toBeUndefined();
+  });
+});
+
+describe("provider quota exhaustion", () => {
+  const providerError = (status: number, responseText: string) =>
+    new AssistantError("failed", ErrorType.PROVIDER_ERROR, status, {
+      ...buildProviderResponseErrorDetails({
+        provider: "elevenlabs",
+        endpoint: "v1/text-to-speech/voice",
+        status,
+        responseText,
+      }),
+    });
+
+  it.each([
+    providerError(
+      401,
+      '{"detail":{"type":"invalid_request","code":"quota_exceeded","message":"92 credits remaining"}}',
+    ),
+    providerError(401, '{"detail":{"status":"quota_exceeded","message":"quota"}}'),
+    providerError(429, '{"error":{"type":"insufficient_quota","code":"insufficient_quota"}}'),
+    providerError(402, '{"error":"Insufficient credits"}'),
+  ])("recognises an out-of-credits response", (error) => {
+    expect(isProviderQuotaExhaustedError(error)).toBe(true);
+  });
+
+  it.each([
+    providerError(429, '{"error":{"type":"rate_limited"}}'),
+    providerError(401, '{"detail":{"status":"invalid_api_key"}}'),
+    new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429),
+  ])("leaves rate limits and auth failures alone", (error) => {
+    expect(isProviderQuotaExhaustedError(error)).toBe(false);
   });
 });

@@ -73,6 +73,32 @@ describe("UserSettingsRepository", () => {
     expect(batch.mock.calls[0][0].length).toBeGreaterThan(1);
   });
 
+  it("reads each provider's out-of-credit state with its settings", async () => {
+    const quota = {
+      exhaustedAt: "2026-10-25T10:20:40.320Z",
+      remaining: null,
+      retryAt: "2026-10-25T10:35:40.320Z",
+    };
+    const { prepare, repository } = createProvisioningRepository([]);
+    const all = vi.fn().mockResolvedValue({
+      results: [
+        {
+          id: "row-1",
+          provider_id: "google-ai-studio",
+          enabled: 0,
+          api_key: null,
+          payload: JSON.stringify({ quota }),
+        },
+      ],
+    });
+
+    prepare.mockReturnValue({ bind: () => ({ all }) });
+
+    await expect(repository.getUserProviderSettings(1)).resolves.toEqual([
+      expect.objectContaining({ provider_id: "google-ai-studio", quota }),
+    ]);
+  });
+
   it("skips providers the user already has", async () => {
     const { batch, repository } = createProvisioningRepository([]);
 

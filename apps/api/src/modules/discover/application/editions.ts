@@ -139,6 +139,17 @@ export async function saveDiscoverEdition(
   content: DiscoverEditionContent,
 ): Promise<StoredDiscoverEdition> {
   const outputs = context.repositories.get(OutputRepository);
+  const checked = discoverEditionContentSchema.safeParse(content);
+
+  if (!checked.success) {
+    const issue = checked.error.issues[0];
+
+    throw new AssistantError(
+      `Discover edition is not valid at ${issue?.path.join(".") || "root"}: ${issue?.message ?? "unknown"}`,
+      ErrorType.INTERNAL_ERROR,
+    );
+  }
+
   const groupId = discoverEditionGroupId(content.date, content.edition);
   const existing = await outputs.getPersonalOutputByGroup(userId, groupId, DISCOVER_EDITION_KIND);
   const previous = readStoredEdition(existing)?.content;

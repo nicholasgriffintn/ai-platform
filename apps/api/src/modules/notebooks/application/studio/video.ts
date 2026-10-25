@@ -11,6 +11,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { synthesiseSpeech } from "~/modules/audio/application/speech";
 import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
+import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
 import { VIDEO_STYLE_PROMPTS } from "~/modules/notebooks/domain/studio-guidance";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import {
@@ -94,22 +95,27 @@ async function narrate(
   language: string,
 ): Promise<VideoOverviewTiming[]> {
   const user = context.requireUser();
-  const narrator = await resolveSpeechVoice(context.env, user, {
-    role: "narrator",
-    settings: await new UserSettingsRepository(context.env).getUserSettings(user.id),
-  });
-  const segments: Uint8Array[] = [];
+  const settings = await new UserSettingsRepository(context.env).getUserSettings(user.id);
+  const segments = await renderWithSpeechVoices(
+    async () => ({
+      narrator: await resolveSpeechVoice(context.env, user, { role: "narrator", settings }),
+    }),
+    async ({ narrator }) => {
+      const rendered: Uint8Array[] = [];
 
-  for (const scene of scenes) {
-    const pieces: Uint8Array[] = [];
+      for (const scene of scenes) {
+        const pieces: Uint8Array[] = [];
 
-    for (const text of splitForSpeech(scene.narration)) {
-      pieces.push(await synthesiseSpeech(context, narrator, text, language));
-    }
+        for (const text of splitForSpeech(scene.narration)) {
+          pieces.push(await synthesiseSpeech(context, narrator, text, language));
+        }
 
-    segments.push(joinAudioSegments(pieces));
-  }
+        rendered.push(joinAudioSegments(pieces));
+      }
 
+      return rendered;
+    },
+  );
   const audio = joinAudioSegments(segments);
   const key = `outputs/${outputId}/narration.mp3`;
 

@@ -22,6 +22,7 @@ import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
 import { synthesiseSpeech } from "~/modules/audio/application/speech";
 import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
+import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
 import { generateMusic } from "~/modules/generate/application/music";
 import {
   OutputRepository,
@@ -197,10 +198,7 @@ export async function renderDiscoverWindDown(
       }),
       material: `Write a ${content.minutes}-minute ${humaniseIdentifier(content.kind).toLowerCase()} session.`,
     });
-    const narrator = await resolveSpeechVoice(context.env, user, {
-      role: "narrator",
-      settings: await new UserSettingsRepository(context.env).getUserSettings(user.id),
-    });
+    const settings = await new UserSettingsRepository(context.env).getUserSettings(user.id);
     const storage = StorageService.forPrivateAssets(context);
     let ambient = false;
     let savedAmbient = false;
@@ -229,24 +227,31 @@ export async function renderDiscoverWindDown(
       status: "speaking",
     });
 
-    for (const [index, step] of script.steps.entries()) {
-      const audio = await synthesiseSpeech(context, narrator, step.text, "en");
+    await renderWithSpeechVoices(
+      async () => ({
+        narrator: await resolveSpeechVoice(context.env, user, { role: "narrator", settings }),
+      }),
+      async ({ narrator }) => {
+        for (const [index, step] of script.steps.entries()) {
+          const audio = await synthesiseSpeech(context, narrator, step.text, "en");
 
-      await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
-        httpMetadata: { contentType: "audio/mpeg" },
-      });
-      steps = steps.map((entry, position) =>
-        position === index ? { ...entry, audio: true } : entry,
-      );
-      saved = await saveWindDown(context, saved, {
-        ...content,
-        title: script.title,
-        steps,
-        ambient,
-        status: index === script.steps.length - 1 ? "ready" : "speaking",
-      });
-      savedAmbient = ambient;
-    }
+          await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
+            httpMetadata: { contentType: "audio/mpeg" },
+          });
+          steps = steps.map((entry, position) =>
+            position === index ? { ...entry, audio: true } : entry,
+          );
+          saved = await saveWindDown(context, saved, {
+            ...content,
+            title: script.title,
+            steps,
+            ambient,
+            status: index === script.steps.length - 1 ? "ready" : "speaking",
+          });
+          savedAmbient = ambient;
+        }
+      },
+    );
 
     if ((await ambientReady) && !savedAmbient) {
       await saveWindDown(context, saved, {

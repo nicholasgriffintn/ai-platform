@@ -7,6 +7,7 @@ import {
 import { fromProviderError } from "~/infrastructure/errors";
 import { withAvailableFunctions } from "~/modules/responses/application/engine/tools/available-functions";
 import { withCapabilityMetering } from "~/modules/usage/application/capabilityMetering";
+import { withProviderQuotaTracking } from "~/modules/user/application/provider-quota-tracking";
 import type { ChatCompletionParameters } from "~/types";
 
 import { AgentHarnessChatProvider } from "./capabilities/agent-harness/AgentHarnessChatProvider";
@@ -86,6 +87,12 @@ export const providerLibrary = createProviderLibrary<CategoryProviderMap, Provid
   decorators: {
     chat: (_providerName, instance) => withPreparedChatRequests(instance),
   },
-  decorate: withCapabilityMetering,
+  decorate: (category, providerName, instance, context) =>
+    withProviderQuotaTracking(
+      providerHost,
+      providerName,
+      withCapabilityMetering(category, providerName, instance, context),
+      context,
+    ),
   mapError: fromProviderError,
 });

@@ -16,7 +16,12 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { parseJsonArrayColumn, safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import {
+  parseJsonArrayColumn,
+  parseJsonColumn,
+  parseJsonRecord,
+  safeParseJson,
+} from "@ngriffin_uk/polychat-utility-server/json";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -32,6 +37,10 @@ import {
   parseMessagingCredentialEnvelope,
 } from "~/infrastructure/providers/capabilities/messaging/credentials";
 import { isMessagingProviderId } from "~/infrastructure/providers/capabilities/messaging/metadata";
+import {
+  parseProviderQuotaState,
+  type ProviderQuotaState,
+} from "~/modules/user/domain/provider-quota";
 import type { IUserSettings } from "~/types";
 
 export class UserSettingsRepository extends BaseRepository {
@@ -653,7 +662,15 @@ export class UserSettingsRepository extends BaseRepository {
     const { query, values } = this.buildSelectQuery(
       "scoped_configuration",
       { kind: "provider", user_id: userId },
-      { columns: ["id", "target_id AS provider_id", "enabled", "encrypted_value AS api_key"] },
+      {
+        columns: [
+          "id",
+          "target_id AS provider_id",
+          "enabled",
+          "encrypted_value AS api_key",
+          "payload",
+        ],
+      },
     );
 
     const result = await this.runQuery<{
@@ -661,6 +678,7 @@ export class UserSettingsRepository extends BaseRepository {
       provider_id: string;
       enabled: number;
       api_key: string | null;
+      payload: string | null;
     }>(query, values);
 
     return Promise.all(
@@ -695,6 +713,7 @@ export class UserSettingsRepository extends BaseRepository {
               : undefined,
           enabled: provider.enabled === 1,
           hasApiKey: Boolean(provider.api_key),
+          quota: parseProviderQuotaState(parseJsonRecord(provider.payload).quota),
         };
       }),
     );
@@ -740,6 +759,56 @@ export class UserSettingsRepository extends BaseRepository {
       provider_id: string;
       enabled: number;
     }>(query, values, true);
+  }
+
+  public async setProviderQuota(
+    userId: number,
+    providerId: string,
+    quota: ProviderQuotaState | null,
+  ): Promise<void> {
+    const update = quota
+      ? {
+          expression: "json_set(payload, '$.quota', json(?))",
+          values: [JSON.stringify(quota)],
+        }
+      : { expression: "json_remove(payload, '$.quota')", values: [] };
+
+    await this.executeBatch([
+      this.env.DB.prepare(
+        `INSERT INTO scoped_configuration (kind, id, user_id, target_id, enabled)
+         SELECT 'provider', ?, ?, ?, ?
+         WHERE NOT EXISTS (
+           SELECT 1 FROM scoped_configuration WHERE kind = 'provider' AND user_id = ? AND target_id = ?
+         )`,
+      ).bind(
+        generateId(),
+        userId,
+        providerId,
+        isProviderPlatformEnabled(providerId, this.env) ? 1 : 0,
+        userId,
+        providerId,
+      ),
+      this.env.DB.prepare(
+        `UPDATE scoped_configuration SET payload = ${update.expression}, updated_at = CURRENT_TIMESTAMP
+         WHERE kind = 'provider' AND user_id = ? AND target_id = ?`,
+      ).bind(...update.values, userId, providerId),
+    ]);
+  }
+
+  public async listProviderQuotas(): Promise<
+    { userId: number; providerId: string; quota: ProviderQuotaState }[]
+  > {
+    const rows = await this.runQuery<{ user_id: number; provider_id: string; quota: string }>(
+      `SELECT user_id, target_id AS provider_id, json_extract(payload, '$.quota') AS quota
+       FROM scoped_configuration
+       WHERE kind = 'provider' AND user_id IS NOT NULL AND json_extract(payload, '$.quota') IS NOT NULL`,
+    );
+
+    return rows.flatMap((row) => {
+      const quota = parseProviderQuotaState(parseJsonColumn<unknown>(row.quota, null));
+
+      return quota ? [{ userId: row.user_id, providerId: row.provider_id, quota }] : [];
+    });
   }
 
   public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {

@@ -4,6 +4,8 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 const logger = getLogger({ prefix: "lib/cache" });
 
+const KV_PROPAGATION_SECONDS = 60;
+
 export interface CacheOptions {
   ttl?: number;
 }
@@ -45,7 +47,7 @@ export class KVCache {
   private static remember(key: string, value: unknown, ttlSeconds: number) {
     KVCache.memoryCache.set(key, {
       value,
-      expiresAt: Date.now() + ttlSeconds * 1000,
+      expiresAt: Date.now() + Math.min(ttlSeconds, KV_PROPAGATION_SECONDS) * 1000,
     });
   }
 

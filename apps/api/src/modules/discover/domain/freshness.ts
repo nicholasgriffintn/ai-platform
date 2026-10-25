@@ -1,11 +1,8 @@
 import { DISCOVER_FRESH_HOURS } from "@ngriffin_uk/polychat-schemas";
 
-import { discoverTopicKey } from "./edition";
-
 export interface DiscoverFreshnessInput {
   signals: ReadonlyArray<{ readAt: string | null; attemptedAt: string | null }>;
-  research: ReadonlyArray<{ topic: string; readAt: string | null }>;
-  topics: readonly string[];
+  research: ReadonlyArray<{ readAt: string | null }>;
   expectedSignals: number;
   now: number;
 }
@@ -19,7 +16,7 @@ export function isDiscoverTimestampFresh(value: string | null, now: number): boo
 }
 
 export function isDiscoverGatherFresh(input: DiscoverFreshnessInput): boolean {
-  const { signals, research, topics, expectedSignals, now } = input;
+  const { signals, research, expectedSignals, now } = input;
 
   if (signals.length === 0 && research.length === 0) {
     return false;
@@ -32,12 +29,9 @@ export function isDiscoverGatherFresh(input: DiscoverFreshnessInput): boolean {
         isDiscoverTimestampFresh(document.readAt, now) ||
         isDiscoverTimestampFresh(document.attemptedAt, now),
     );
-  const freshResearch = research.filter((document) =>
-    isDiscoverTimestampFresh(document.readAt, now),
-  );
-  const researched = new Set(freshResearch.map((document) => discoverTopicKey(document.topic)));
-  const topicsFresh = topics.every((topic) => researched.has(discoverTopicKey(topic)));
-  const researchFresh = research.length === 0 || freshResearch.length > 0;
+  const researchFresh =
+    research.length === 0 ||
+    research.some((document) => isDiscoverTimestampFresh(document.readAt, now));
 
-  return signalsFresh && topicsFresh && researchFresh;
+  return signalsFresh && researchFresh;
 }

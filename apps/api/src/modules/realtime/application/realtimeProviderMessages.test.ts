@@ -122,6 +122,18 @@ describe("ElevenLabs realtime proxy messages", () => {
     ]);
   });
 
+  it("reports an ElevenLabs quota failure once per session", () => {
+    const onQuotaExhausted = vi.fn();
+    const toClient = createElevenLabsClientMessageMapper(onQuotaExhausted);
+    const quota = JSON.stringify({ message_type: "quota_exceeded", error: "Out of credits" });
+
+    toClient(quota);
+    toClient(quota);
+    toClient(JSON.stringify({ message_type: "rate_limited", error: "Slow down" }));
+
+    expect(onQuotaExhausted).toHaveBeenCalledTimes(1);
+  });
+
   it("surfaces typed ElevenLabs failures as error events with their code", () => {
     const toClient = createElevenLabsClientMessageMapper();
 

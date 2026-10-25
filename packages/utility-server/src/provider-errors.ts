@@ -52,6 +52,8 @@ const nonRetryableErrorTypes = new Set([
 
 const retryableStatusCodes = new Set([408, 425]);
 
+const quotaExhaustedErrorCodes = new Set(["quota_exceeded", "insufficient_quota"]);
+
 export interface ProviderRetryClassification {
   retryable: boolean;
   classification?: ChatRetryClassification;
@@ -179,6 +181,44 @@ function getProviderErrorStatus(error: ProviderErrorLike): number | undefined {
   }
 
   return typeof error.statusCode === "number" ? error.statusCode : undefined;
+}
+
+function hasQuotaExhaustedCode(body: unknown): boolean {
+  if (!isPlainObject(body)) {
+    return false;
+  }
+
+  const codes = [body.code, body.status, body.type];
+
+  return (
+    codes.some((value) => typeof value === "string" && quotaExhaustedErrorCodes.has(value)) ||
+    hasQuotaExhaustedCode(body.detail) ||
+    hasQuotaExhaustedCode(body.error)
+  );
+}
+
+export function isProviderQuotaExhaustedError(error: unknown): boolean {
+  if (!isProviderErrorLike(error)) {
+    return false;
+  }
+
+  if (getProviderErrorStatus(error) === 402) {
+    return true;
+  }
+
+  const context = isPlainObject(error.context) ? error.context : undefined;
+
+  return hasQuotaExhaustedCode(context?.responseJson) || hasQuotaExhaustedCode(error.error);
+}
+
+export function isProviderAccessDeniedError(error: unknown): boolean {
+  if (!isProviderErrorLike(error)) {
+    return false;
+  }
+
+  const status = getProviderErrorStatus(error);
+
+  return status === 401 || status === 403;
 }
 
 export function classifyProviderRetryError(error: unknown): ProviderRetryClassification {

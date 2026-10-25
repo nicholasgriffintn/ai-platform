@@ -5,7 +5,7 @@ import { BasicInputValidator } from "~/modules/responses/application/engine/vali
 import { ContextLimitValidator } from "~/modules/responses/application/engine/validation/validators/ContextLimitValidator";
 import { GuardrailsValidator } from "~/modules/responses/application/engine/validation/validators/GuardrailsValidator";
 import { ModelConfigValidator } from "~/modules/responses/application/engine/validation/validators/ModelConfigValidator";
-import type { CoreChatOptions, Message } from "~/types";
+import type { Attachment, CoreChatOptions, Message } from "~/types";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -23,6 +23,7 @@ export interface ValidationContext {
   guardrails?: any;
   selectedModels?: string[];
   modelTier?: ModelTier;
+  attachments?: Attachment[];
   reasoningEffort?: ReasoningEffort;
   analyticsProperties?: Record<string, string>;
 }

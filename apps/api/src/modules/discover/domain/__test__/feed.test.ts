@@ -42,6 +42,20 @@ describe("fillDiscoverFeed", () => {
     ]);
   });
 
+  it("leaves out an item that would not make a valid card, such as a plain http link", () => {
+    const cards = fill([
+      {
+        topic: "Linkin Park",
+        lead: "What you have been into lately: Linkin Park",
+        items: [{ ...item("band"), url: "http://linkinpark.de/" }, item("tour")],
+      },
+    ]);
+
+    expect(cards.map((card) => (card.kind === "read" ? card.url : ""))).toEqual([
+      "https://example.com/tour",
+    ]);
+  });
+
   it("skips links already shown and topics that are hidden", () => {
     const cards = fill(
       [

@@ -195,13 +195,14 @@ export class McpHttpClient {
       });
     } catch (error) {
       const timedOut = error instanceof Error && error.name === "TimeoutError";
+      const cause = error instanceof Error ? error.message.slice(0, 160) : "";
 
       throw new McpRequestError({
         code: timedOut ? "timeout" : "network_error",
         operation,
         message: timedOut
           ? "The MCP server did not answer in time."
-          : "The MCP server could not be reached.",
+          : `The MCP server could not be reached${cause ? ` (${cause})` : ""}.`,
         requestSent: timedOut,
       });
     }

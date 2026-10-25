@@ -14,6 +14,7 @@ import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { prepareSpeechInput } from "./input";
 import { resolveSpeechVoice, type SpeechVoiceSelection } from "./speech-voice";
+import { renderWithSpeechVoices } from "./speech-voices";
 
 type TextToSpeechRequest = {
   env: IEnv;
@@ -72,34 +73,40 @@ export const handleTextToSpeech = async (
   const userSettings = user?.id
     ? await new UserSettingsRepository(env).getUserSettings(user.id)
     : null;
-  const selection = await resolveSpeechVoice(env, user, {
-    role: "narrator",
-    settings: userSettings,
-    provider: req.provider,
-    model: req.model,
-    voice: req.voice_id,
-  });
-
-  const preparedInput = prepareSpeechInput(input, selection.provider);
   const storage = store ? new StorageService(env.PRIVATE_ASSETS_BUCKET) : undefined;
   const slug = `tts/${generateId()}`;
 
-  const audioProvider = getAudioProvider(selection.provider, { env, user });
-  const synthesisResult = await audioProvider.synthesize({
-    input: preparedInput.input,
-    env,
-    user,
-    slug,
-    storage,
-    store,
-    model: selection.model,
-    voice: selection.voice,
-    locale: lang,
-    refAudio: req.ref_audio,
-    responseFormat: req.response_format,
-    expressiveness: req.expressiveness ?? userSettings?.speech_expressiveness ?? undefined,
-    metadata: preparedInput.metadata,
-  });
+  const { selection, preparedInput, synthesisResult } = await renderWithSpeechVoices(
+    async () => ({
+      selection: await resolveSpeechVoice(env, user, {
+        role: "narrator",
+        settings: userSettings,
+        provider: req.provider,
+        model: req.model,
+        voice: req.voice_id,
+      }),
+    }),
+    async ({ selection }) => {
+      const preparedInput = prepareSpeechInput(input, selection.provider);
+      const synthesisResult = await getAudioProvider(selection.provider, { env, user }).synthesize({
+        input: preparedInput.input,
+        env,
+        user,
+        slug,
+        storage,
+        store,
+        model: selection.model,
+        voice: selection.voice,
+        locale: lang,
+        refAudio: req.ref_audio,
+        responseFormat: req.response_format,
+        expressiveness: req.expressiveness ?? userSettings?.speech_expressiveness ?? undefined,
+        metadata: preparedInput.metadata,
+      });
+
+      return { selection, preparedInput, synthesisResult };
+    },
+  );
 
   if (!synthesisResult) {
     throw new AssistantError("No response from the text-to-speech service");

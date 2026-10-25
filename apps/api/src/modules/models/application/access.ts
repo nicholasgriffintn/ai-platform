@@ -162,6 +162,7 @@ export interface SelectModelsRequest {
   requestedModels?: string[];
   requestedProvider?: string;
   useMultiModel?: boolean;
+  shouldUseCache?: boolean;
 }
 
 export interface SelectedModels {
@@ -178,6 +179,7 @@ export async function selectModels({
   requestedModels,
   requestedProvider,
   useMultiModel,
+  shouldUseCache = true,
 }: SelectModelsRequest): Promise<SelectedModels> {
   const explicitModels = normaliseExplicitModels(requestedModels);
 
@@ -193,7 +195,7 @@ export async function selectModels({
     return { models: [requestedModel] };
   }
 
-  const availableModels = await getLineupModelsForUser(env, user);
+  const availableModels = await getLineupModelsForUser(env, user, { shouldUseCache });
   const required = requiredInputModalities(attachments);
   const options = {
     isEligible: (model: ModelConfigItem) =>

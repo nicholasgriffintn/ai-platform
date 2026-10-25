@@ -123,7 +123,7 @@ export class ModelConfigValidator implements Validator {
         context: {
           modelConfig: primaryModelConfig,
           selectedModels: governed.models,
-          ...(usesModelTier ? { modelTier: tier } : {}),
+          ...(usesModelTier ? { modelTier: tier, attachments: allAttachments } : {}),
           reasoningEffort: selection.reasoningEffort,
           ...(governed.analyticsProperties
             ? { analyticsProperties: governed.analyticsProperties }

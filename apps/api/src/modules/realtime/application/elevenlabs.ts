@@ -1,10 +1,13 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import type { Context } from "hono";
 
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
+import { providerHost } from "~/infrastructure/providers/host";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
+import { recordProviderQuotaExhausted } from "~/modules/user/application/provider-quota";
 import type { IEnv, IUser } from "~/types";
 
 import {
@@ -12,6 +15,8 @@ import {
   type NormalizedClientRealtimeMessage,
   type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
+
+const logger = getLogger({ prefix: "modules/realtime/elevenlabs" });
 
 const ELEVENLABS_SAMPLE_RATE = 16000;
 const PCM_S16LE_BYTES_PER_SAMPLE = 2;
@@ -86,9 +91,12 @@ function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
-export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMapper {
+export function createElevenLabsClientMessageMapper(
+  onQuotaExhausted?: () => void,
+): ElevenLabsClientMessageMapper {
   let currentSegmentId = createSegmentId();
   let committedSegment: { itemId: string; text: string } | undefined;
+  let quotaReported = false;
 
   const getActiveSegmentId = () => {
     if (committedSegment) {
@@ -155,6 +163,11 @@ export function createElevenLabsClientMessageMapper(): ElevenLabsClientMessageMa
     }
 
     if (messageType && ELEVENLABS_ERROR_MESSAGE_TYPES.has(messageType)) {
+      if (messageType === "quota_exceeded" && !quotaReported) {
+        quotaReported = true;
+        onQuotaExhausted?.();
+      }
+
       return JSON.stringify({
         type: "error",
         error: {
@@ -175,6 +188,7 @@ export async function createElevenLabsRealtimeProxyResponse({
   model,
   language,
   onSessionEnd,
+  waitUntil,
 }: {
   context: Context;
   env: IEnv;
@@ -182,6 +196,7 @@ export async function createElevenLabsRealtimeProxyResponse({
   model?: string;
   language?: string;
   onSessionEnd?: RealtimeProxySessionEndHandler;
+  waitUntil: (work: Promise<unknown>) => void;
 }): Promise<Response> {
   const provider = getRealtimeProvider("elevenlabs", { env, user });
   const apiKey = await provider.getApiKey?.({
@@ -211,6 +226,15 @@ export async function createElevenLabsRealtimeProxyResponse({
     headers: { "xi-api-key": apiKey },
     onSessionEnd,
     toUpstreamMessage: createElevenLabsUpstreamMessageMapper(),
-    toClientMessage: createElevenLabsClientMessageMapper(),
+    toClientMessage: createElevenLabsClientMessageMapper(() =>
+      waitUntil(
+        recordProviderQuotaExhausted(providerHost, env, {
+          provider: "elevenlabs",
+          userId: user.id,
+        }).catch((error: unknown) =>
+          logger.error("Failed to record ElevenLabs quota exhaustion", { error }),
+        ),
+      ),
+    ),
   });
 }

@@ -81,6 +81,11 @@ export {
 } from "./create-library.js";
 export { trackProviderMetrics, type TrackProviderMetricsOptions } from "./metrics.js";
 export {
+  canReadProviderCreditBalance,
+  readProviderCreditBalance,
+  type ProviderCreditBalance,
+} from "./credits/index.js";
+export {
   createProviderMetrics,
   type CreateProviderMetricsOptions,
   type TelemetryScope,

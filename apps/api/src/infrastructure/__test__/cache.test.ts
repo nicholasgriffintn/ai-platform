@@ -24,4 +24,25 @@ describe("KVCache user model invalidation", () => {
     await expect(cache.get(providerSettingsKey)).resolves.toBeNull();
     expect(get).toHaveBeenCalledWith(providerSettingsKey);
   });
+
+  it("rereads KV once another isolate's invalidation has propagated", async () => {
+    vi.useFakeTimers();
+
+    const get = vi.fn().mockResolvedValue(null);
+    const kv = {
+      delete: vi.fn().mockResolvedValue(undefined),
+      get,
+      put: vi.fn().mockResolvedValue(undefined),
+    } as unknown as KVNamespace;
+    const cache = new KVCache(kv, 14400);
+    const providerSettingsKey = KVCache.createKey("user-provider-settings", "42");
+
+    await cache.set(providerSettingsKey, [{ provider_id: "elevenlabs" }]);
+    vi.advanceTimersByTime(61_000);
+
+    await expect(cache.get(providerSettingsKey)).resolves.toBeNull();
+    expect(get).toHaveBeenCalledWith(providerSettingsKey);
+
+    vi.useRealTimers();
+  });
 });

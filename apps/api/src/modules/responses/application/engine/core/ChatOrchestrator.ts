@@ -45,6 +45,10 @@ import { buildChatCompactionMetadata } from "~/modules/responses/application/eng
 import { resolveAccountDefaultComputeSite } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { resolveTurnStepBudget } from "~/modules/responses/application/engine/policy/step-budget";
 import {
+  createTierModelFallback,
+  type TierModelSelection,
+} from "~/modules/responses/application/engine/policy/tier-model-fallback";
+import {
   RequestPreparer,
   type PreparedRequest,
 } from "~/modules/responses/application/engine/preparation/RequestPreparer";
@@ -259,7 +263,21 @@ export class ChatOrchestrator {
 
         await runLifecycle?.recordProvenance(runProvenance);
 
-        result = await this.executeRequest(options, prepared, release, runLifecycle, runProvenance);
+        const tierSelection = validationResult.context.modelTier
+          ? {
+              tier: validationResult.context.modelTier,
+              attachments: validationResult.context.attachments ?? [],
+            }
+          : undefined;
+
+        result = await this.executeRequest(
+          options,
+          prepared,
+          release,
+          runLifecycle,
+          runProvenance,
+          tierSelection,
+        );
       } catch (error) {
         if (runLifecycle && !runLifecycle.receipt.duplicate) {
           try {
@@ -309,6 +327,7 @@ export class ChatOrchestrator {
     onTurnEnd?: () => Promise<void>,
     runLifecycle?: ChatRunLifecycle | null,
     runProvenance?: RunProvenance,
+    tierSelection?: TierModelSelection,
   ) {
     const {
       platform = "api",
@@ -502,6 +521,18 @@ export class ChatOrchestrator {
         chatOptions.max_steps === undefined && (goalFinishGate?.hasActiveGoal() ?? false),
       executionCtx: chatOptions.executionCtx,
       contextWindow: primaryModelConfig?.contextWindow,
+      modelFallback:
+        tierSelection &&
+        modelConfigs.length === 1 &&
+        primaryModelConfig?.kind !== "agent" &&
+        runProvenance?.site === "hosted"
+          ? createTierModelFallback({
+              options: chatOptions,
+              selection: tierSelection,
+              runLifecycle: runLifecycle ?? null,
+              teammateId: runProvenance.teammateId,
+            })
+          : undefined,
       contextSkills: prepared.contextSkills,
       contextDocuments: prepared.contextDocuments,
       contextSystemSections: prepared.systemPromptSections,

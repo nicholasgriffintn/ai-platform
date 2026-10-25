@@ -32,14 +32,14 @@ export const DISCOVER_GATHER_HOUR = 5;
 export const DISCOVER_FRESH_HOURS = 20;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 
-function text(max: number) {
-  return z.string().trim().min(1).max(max);
+function text() {
+  return z.string().trim().min(1);
 }
 
-const reasonSchema = text(200).describe(
+const reasonSchema = text().describe(
   "Why this person would care, naming the signal: a chat, a followed topic, feedback or their request.",
 );
-const topicSchema = text(60).describe("The interest this belongs to, in two or three words.");
+const topicSchema = text().describe("The interest this belongs to, in two or three words.");
 const sensitiveSchema = z
   .boolean()
   .default(false)
@@ -71,8 +71,8 @@ export const discoverBriefLineSchema = z
     kind: discoverBriefKindSchema
       .default("note")
       .describe("What sort of line this is, which sets its icon."),
-    label: text(40).describe("A short label such as Waiting on you, Formula 1 or On this day."),
-    text: text(160).describe("One line, under twenty words."),
+    label: text().describe("A short label such as Waiting on you, Formula 1 or On this day."),
+    text: text().describe("One line, under twenty words."),
     href: discoverHrefSchema.optional().describe("Where the line leads, if anywhere."),
   })
   .strict();
@@ -81,9 +81,9 @@ const topicCardDraftSchema = z
   .object({
     kind: z.literal("topic"),
     topic: topicSchema,
-    title: text(80).describe("A headline for today's angle on the topic."),
-    angle: text(240).describe("Two sentences on what is new or worth exploring today."),
-    prompt: text(1000).describe("The first message of a chat that explores this angle."),
+    title: text().describe("A headline for today's angle on the topic."),
+    angle: text().describe("Two sentences on what is new or worth exploring today."),
+    prompt: text().describe("The first message of a chat that explores this angle."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
   })
@@ -93,10 +93,10 @@ const readCardDraftSchema = z
   .object({
     kind: z.literal("read"),
     topic: topicSchema,
-    title: text(160),
+    title: text(),
     url: externalHttpUrlSchema.describe("The page, exactly as web search returned it."),
-    source: text(80).describe("The publication or site name."),
-    summary: text(400).describe("What the page says, in one or two sentences."),
+    source: text().describe("The publication or site name."),
+    summary: text().describe("What the page says, in one or two sentences."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
   })
@@ -105,10 +105,10 @@ const readCardDraftSchema = z
 const actionCardDraftSchema = z
   .object({
     kind: z.literal("action"),
-    title: text(100).describe("The thing worth doing, as a short imperative."),
-    detail: text(300).describe("What prompted it and what would happen."),
-    when: text(60).optional().describe("For a repeat, when it would run, such as Sundays 09:00."),
-    prompt: text(1000).describe(
+    title: text().describe("The thing worth doing, as a short imperative."),
+    detail: text().describe("What prompted it and what would happen."),
+    when: text().optional().describe("For a repeat, when it would run, such as Sundays 09:00."),
+    prompt: text().describe(
       "The message that starts the work in a chat. Ask for confirmation before installing, sending or spending anything.",
     ),
     reason: reasonSchema,
@@ -119,8 +119,8 @@ const actionCardDraftSchema = z
 const resurfaceCardDraftSchema = z
   .object({
     kind: z.literal("resurface"),
-    title: text(120).describe("What to look at again, from the list worth resurfacing."),
-    detail: text(240).describe("One line on why it is worth a second look today."),
+    title: text().describe("What to look at again, from the list worth resurfacing."),
+    detail: text().describe("One line on why it is worth a second look today."),
     href: discoverHrefSchema.describe(
       "The link from the list worth resurfacing, exactly as given.",
     ),
@@ -132,7 +132,7 @@ const resurfaceCardDraftSchema = z
 const checkInCardDraftSchema = z
   .object({
     kind: z.literal("check_in"),
-    question: text(240).describe("A friendly follow-up question about something they mentioned."),
+    question: text().describe("A friendly follow-up question about something they mentioned."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
   })
@@ -142,10 +142,10 @@ const watchCardDraftSchema = z
   .object({
     kind: z.literal("watch"),
     topic: topicSchema,
-    title: text(160),
+    title: text(),
     url: externalHttpUrlSchema.describe("The video, exactly as the context gave it."),
-    source: text(80).describe("The channel or service it is on."),
-    summary: text(400).describe("What it is and why now, in one or two sentences."),
+    source: text().describe("The channel or service it is on."),
+    summary: text().describe("What it is and why now, in one or two sentences."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
   })
@@ -155,10 +155,10 @@ const listenCardDraftSchema = z
   .object({
     kind: z.literal("listen"),
     topic: topicSchema,
-    title: text(160),
+    title: text(),
     url: externalHttpUrlSchema.describe("The episode or album, exactly as the context gave it."),
-    source: text(80).describe("The show, artist or service."),
-    summary: text(400).describe("What it is and why now, in one or two sentences."),
+    source: text().describe("The show, artist or service."),
+    summary: text().describe("What it is and why now, in one or two sentences."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
   })
@@ -167,10 +167,10 @@ const listenCardDraftSchema = z
 const eventCardDraftSchema = z
   .object({
     kind: z.literal("event"),
-    title: text(120).describe("What is happening: an episode airing, a release, a gig, a meeting."),
-    when: text(80).describe("When, as a readable day and time."),
-    where: text(120).optional().describe("Where, when it has a place or a service."),
-    detail: text(300).describe("One or two sentences on what to expect."),
+    title: text().describe("What is happening: an episode airing, a release, a gig, a meeting."),
+    when: text().describe("When, as a readable day and time."),
+    where: text().optional().describe("Where, when it has a place or a service."),
+    detail: text().describe("One or two sentences on what to expect."),
     url: externalHttpUrlSchema.optional().describe("A link, only when the context gave one."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
@@ -180,9 +180,9 @@ const eventCardDraftSchema = z
 const inboxCardDraftSchema = z
   .object({
     kind: z.literal("inbox"),
-    title: text(160).describe("The subject, tidied."),
-    source: text(80).describe("Who sent it."),
-    summary: text(400).describe("The one thing worth knowing from it."),
+    title: text().describe("The subject, tidied."),
+    source: text().describe("Who sent it."),
+    summary: text().describe("The one thing worth knowing from it."),
     url: externalHttpUrlSchema.optional().describe("A link from the message, when there is one."),
     reason: reasonSchema,
     sensitive: sensitiveSchema,
@@ -245,7 +245,7 @@ export type DiscoverInterestInference = z.infer<typeof discoverInterestInference
 
 export const composeDiscoverEditionInputSchema = z
   .object({
-    greeting: text(80).describe("A short greeting for the top of the page, without their name."),
+    greeting: text().describe("A short greeting for the top of the page, without their name."),
     interests: z
       .array(discoverInterestSchema)
       .min(1)
@@ -270,7 +270,7 @@ export const discoverEditionContentSchema = z
     version: z.literal(DISCOVER_EDITION_VERSION),
     date: z.iso.date(),
     timezone: z.string().min(1),
-    greeting: text(80),
+    greeting: text(),
     interests: z.array(discoverInterestSchema).max(DISCOVER_MAX_INTERESTS),
     brief: z.array(discoverBriefLineSchema).max(DISCOVER_MAX_BRIEF_LINES),
     cards: z.array(discoverCardSchema).max(DISCOVER_MAX_EDITION_CARDS),
@@ -366,7 +366,9 @@ export const discoverFollowSchema = z.object({
   topic: z.string().min(1),
 });
 
-export const followDiscoverTopicSchema = z.object({ topic: text(60) }).strict();
+export const followDiscoverTopicSchema = z
+  .object({ topic: z.string().trim().min(1).max(60) })
+  .strict();
 
 export const discoverFollowParamsSchema = z.object({ notebook_id: z.string().min(1) });
 

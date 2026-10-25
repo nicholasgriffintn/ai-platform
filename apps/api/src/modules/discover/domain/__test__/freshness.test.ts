@@ -8,23 +8,16 @@ const OLD = "2026-10-22T05:10:00.000Z";
 
 describe("isDiscoverGatherFresh", () => {
   it("never treats an empty notebook as fresh", () => {
-    expect(
-      isDiscoverGatherFresh({
-        signals: [],
-        research: [],
-        topics: [],
-        expectedSignals: 0,
-        now: NOW,
-      }),
-    ).toBe(false);
+    expect(isDiscoverGatherFresh({ signals: [], research: [], expectedSignals: 0, now: NOW })).toBe(
+      false,
+    );
   });
 
   it("gathers when connected services have never been read", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [],
-        research: [{ topic: "Rye bread", readAt: RECENT }],
-        topics: [],
+        research: [{ readAt: RECENT }],
         expectedSignals: 3,
         now: NOW,
       }),
@@ -35,32 +28,29 @@ describe("isDiscoverGatherFresh", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [{ readAt: null, attemptedAt: RECENT }],
-        research: [{ topic: "Rye bread", readAt: RECENT }],
-        topics: [],
+        research: [{ readAt: RECENT }],
         expectedSignals: 1,
         now: NOW,
       }),
     ).toBe(true);
   });
 
-  it("gathers when a followed topic has no fresh research", () => {
+  it("gathers again once everything is a day old", () => {
     expect(
       isDiscoverGatherFresh({
-        signals: [{ readAt: RECENT, attemptedAt: RECENT }],
-        research: [{ topic: "Rye bread", readAt: OLD }],
-        topics: ["rye bread"],
+        signals: [{ readAt: OLD, attemptedAt: OLD }],
+        research: [{ readAt: OLD }],
         expectedSignals: 1,
         now: NOW,
       }),
     ).toBe(false);
   });
 
-  it("stays fresh when everything expected was read today", () => {
+  it("stays fresh after this morning's gather even when a topic was not researched", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [{ readAt: RECENT, attemptedAt: RECENT }],
-        research: [{ topic: "Rye bread", readAt: RECENT }],
-        topics: ["Rye bread"],
+        research: [{ readAt: OLD }, { readAt: RECENT }],
         expectedSignals: 1,
         now: NOW,
       }),

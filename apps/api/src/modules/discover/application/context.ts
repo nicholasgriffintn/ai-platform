@@ -17,10 +17,7 @@ import {
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
 import { latestResearchSection } from "~/modules/discover/domain/research";
-import {
-  findDiscoverPublicFeed,
-  findDiscoverSignal,
-} from "~/modules/discover/domain/signal-catalogue";
+import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
@@ -170,10 +167,7 @@ function describeDocuments(documents: DiscoverDocuments): {
   return {
     signals: documents.signals.map((document) => ({
       title: document.title,
-      group:
-        findDiscoverSignal(document.signalId)?.group ??
-        findDiscoverPublicFeed(document.signalId)?.group ??
-        "signal",
+      group: findDiscoverSignal(document.signalId)?.group ?? "signal",
       readAt: document.readAt,
       error: document.error,
       lines: document.lines,

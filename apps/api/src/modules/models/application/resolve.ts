@@ -39,6 +39,10 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { KVCache } from "~/infrastructure/cache";
+import {
+  isProviderQuotaBlocked,
+  parseProviderQuotaState,
+} from "~/modules/user/domain/provider-quota";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 
@@ -312,9 +316,20 @@ export async function filterModelsForUserAccess(
     const enabledProviders = new Map(
       userProviderSettings.filter((p) => p.enabled).map((p) => [p.provider_id, p]),
     );
+    const now = new Date();
+    const outOfCreditProviders = new Set(
+      userProviderSettings
+        .filter((p) => isProviderQuotaBlocked(parseProviderQuotaState(p.quota), now))
+        .map((p) => p.provider_id),
+    );
 
     for (const modelId in allModels) {
       const model = allModels[modelId];
+
+      if (outOfCreditProviders.has(model.provider)) {
+        continue;
+      }
+
       const isFree = freeModelIds.has(modelId);
       const userProvider = enabledProviders.get(model.provider);
       const isPlatformEnabled = isProviderPlatformEnabled(model.provider, env);
@@ -598,7 +613,7 @@ export async function rankSpeechModels(env: IEnv, user?: IUser): Promise<Resolve
     getModelsByOutputModality("speech"),
     env,
     user?.id,
-    { shouldUseCache: true },
+    { shouldUseCache: false },
   );
   const voices = Object.fromEntries(
     Object.entries(accessible).filter(

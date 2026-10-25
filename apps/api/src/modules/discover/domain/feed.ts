@@ -1,4 +1,4 @@
-import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import { discoverCardSchema, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import {
   comparableHttpUrl,
   readUrlHost,
@@ -109,13 +109,8 @@ export function fillDiscoverFeed(input: {
           continue;
         }
 
-        input.seenUrls.add(url);
-        queue.taken += 1;
-        added = true;
-
         const source = describeItemSource(item);
-
-        cards.push({
+        const card = discoverCardSchema.safeParse({
           id: input.createId(),
           kind: "read",
           topic: truncateSingleLine(queue.group.topic, 60),
@@ -129,6 +124,15 @@ export function fillDiscoverFeed(input: {
           ),
           sensitive: false,
         });
+
+        if (!card.success) {
+          continue;
+        }
+
+        input.seenUrls.add(url);
+        queue.taken += 1;
+        added = true;
+        cards.push(card.data);
 
         break;
       }

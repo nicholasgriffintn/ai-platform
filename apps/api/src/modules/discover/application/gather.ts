@@ -36,12 +36,7 @@ import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
 } from "~/modules/discover/domain/research";
-import {
-  DISCOVER_PUBLIC_FEEDS,
-  DISCOVER_SIGNALS,
-  type DiscoverPublicFeed,
-  type DiscoverSignal,
-} from "~/modules/discover/domain/signal-catalogue";
+import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
 import { findNewsResults, findWebResults } from "~/modules/notebooks/application/research";
@@ -55,7 +50,6 @@ import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
 import { generateDiscoverObject } from "./generate";
-import { describeHackerNewsStory, hackerNewsFeedItem, readHackerNewsFront } from "./hacker-news";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -227,50 +221,8 @@ async function readSignal(
   }
 }
 
-async function readPublicFeed(
-  context: ServiceContext,
-  notebookId: string,
-  feed: DiscoverPublicFeed,
-): Promise<void> {
-  const user = context.requireUser();
-  const sourceId = await discoverSignalSourceId(user.id, feed.id);
-  const readAt = new Date().toISOString();
-
-  try {
-    const stories = await readHackerNewsFront();
-    const lines = stories.map(describeHackerNewsStory);
-
-    await writeDiscoverDocument(context, notebookId, {
-      id: sourceId,
-      kind: "connector",
-      title: feed.title,
-      provider: "web",
-      content: renderSignalDocument({
-        title: feed.title,
-        readAt,
-        lines,
-        error: null,
-        raw: truncateForModel(JSON.stringify(stories, null, 1) ?? "", SIGNAL_CONTENT_LIMIT),
-      }),
-      metadata: {
-        [DISCOVER_SIGNAL_METADATA_KEY]: feed.id,
-        providerId: "web",
-        readAt,
-        error: null,
-        lines,
-        items: stories.map(hackerNewsFeedItem),
-      },
-    });
-  } catch (error) {
-    logger.warn("A Discover public feed could not be read", {
-      feed: feed.id,
-      error_message: getErrorMessage(error),
-    });
-  }
-}
-
-function headlinesQuery(location: string | null, date: string): string {
-  return `top news headlines ${date}${location ? ` ${location}` : ""}`;
+function headlinesQuery(location: string | null): string {
+  return location ? `${location} news` : "world news";
 }
 
 async function researchTopic(
@@ -403,16 +355,12 @@ export async function runDiscoverGather(
       (ok ? read : stale).push(signal.providerId);
     }
 
-    for (const feed of DISCOVER_PUBLIC_FEEDS) {
-      await readPublicFeed(context, notebook.id, feed);
-    }
-
     await researchTopic(
       context,
       notebook.id,
       DISCOVER_HEADLINES_TOPIC,
       zoned.date,
-      headlinesQuery(settings.location, zoned.date),
+      headlinesQuery(settings.location),
       HEADLINE_NEWS_DAYS,
     );
 
@@ -443,8 +391,7 @@ export async function ensureDiscoverGathered(
 ): Promise<DiscoverDocuments> {
   const user = context.requireUser();
   const settings = await readDiscoverRoutine(context);
-  const [topics, documents, { selected }] = await Promise.all([
-    listDiscoverTopics(context, settings.curate),
+  const [documents, { selected }] = await Promise.all([
     listDiscoverDocuments(context, user.id),
     resolveDiscoverSignals(context, settings),
   ]);
@@ -453,7 +400,6 @@ export async function ensureDiscoverGathered(
     isDiscoverGatherFresh({
       signals: documents.signals,
       research: documents.research,
-      topics,
       expectedSignals: selected.length,
       now: now.getTime(),
     })

@@ -76,6 +76,7 @@ export async function storeProviderApiKey(
   await repo.createUserProviderSettings(id, [providerId]);
 
   await repo.storeProviderApiKey(id, providerId, apiKey, secretKey, configuration);
+  await repo.setProviderQuota(id, providerId, null);
   await invalidateUserModelCache(context, id, "store-provider-api-key", providerId);
 
   return {

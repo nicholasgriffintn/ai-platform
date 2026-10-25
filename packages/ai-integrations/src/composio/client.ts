@@ -1,5 +1,6 @@
 import { isRecord, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ComposioAuthConfigDefinition, ConnectorProviderConfig } from "../providers.js";
 import { composioRequest, type ComposioEnvironment } from "./request.js";
@@ -868,16 +869,60 @@ export async function executeComposioSessionTool(params: {
     body: { tool_slug: params.toolSlug, arguments: params.arguments },
   });
 
-  if (!isRecord(result) || result.error) {
-    throw new AssistantError("Composio tool execution failed", ErrorType.EXTERNAL_API_ERROR, 502, {
-      requestId: isRecord(result) && typeof result.log_id === "string" ? result.log_id : undefined,
-    });
+  const failure = describeComposioExecutionFailure(result);
+
+  if (!isRecord(result) || failure !== null) {
+    throw new AssistantError(
+      failure ? `Composio tool execution failed: ${failure}` : "Composio tool execution failed",
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+      {
+        requestId:
+          isRecord(result) && typeof result.log_id === "string" ? result.log_id : undefined,
+      },
+    );
   }
 
   return {
     data: result.data,
     logId: typeof result.log_id === "string" ? result.log_id : undefined,
   };
+}
+
+function describeComposioExecutionFailure(result: unknown): string | null {
+  if (!isRecord(result)) {
+    return "no response";
+  }
+
+  const upstream = isRecord(result.data) ? result.data : null;
+  const upstreamStatus = typeof upstream?.status_code === "number" ? upstream.status_code : null;
+  const detail =
+    typeof result.error === "string"
+      ? result.error
+      : isRecord(result.error) && typeof result.error.message === "string"
+        ? result.error.message
+        : typeof upstream?.http_error === "string"
+          ? upstream.http_error
+          : typeof upstream?.message === "string" &&
+              upstreamStatus !== null &&
+              upstreamStatus >= 400
+            ? upstream.message
+            : null;
+
+  if (
+    (result.error === undefined || result.error === null) &&
+    result.successful !== false &&
+    detail === null &&
+    (upstreamStatus === null || upstreamStatus < 400)
+  ) {
+    return null;
+  }
+
+  return redactSensitiveTokens(
+    (
+      detail ?? (upstreamStatus !== null ? `upstream HTTP ${upstreamStatus}` : "unsuccessful")
+    ).slice(0, 200),
+  );
 }
 
 export async function deleteComposioToolSession(params: {

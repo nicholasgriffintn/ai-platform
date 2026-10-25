@@ -125,7 +125,11 @@ function transcriptionProxy(
           speakerLabels: query.speakers === "true",
         });
       case "elevenlabs":
-        return createElevenLabsRealtimeProxyResponse({ ...shared, language: query.language });
+        return createElevenLabsRealtimeProxyResponse({
+          ...shared,
+          language: query.language,
+          waitUntil: serviceContext.waitUntil,
+        });
       case "cartesia":
         return createCartesiaRealtimeProxyResponse({ ...shared, delay: query.delay });
       case "greenpt":

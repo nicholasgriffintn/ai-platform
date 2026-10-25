@@ -4,6 +4,7 @@ export const SCHEDULES = {
   MODEL_GOVERNANCE: "0 3 * * *",
   BENCHMARK_QUEUE: "0 3 * * *",
   MODEL_PLATFORM_RECONCILE: "*/15 * * * *",
+  PROVIDER_QUOTA_SYNC: "*/15 * * * *",
   INFRA_RECONCILIATION: "0 4 * * *", // Daily at 4 AM
   RECIPE_EXECUTION: "*/15 * * * *", // Poll recipe schedules every 15 minutes
 } as const;

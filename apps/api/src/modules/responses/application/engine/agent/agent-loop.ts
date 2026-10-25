@@ -33,6 +33,10 @@ import { isRetryCancelledError } from "@ngriffin_uk/polychat-utility-server/retr
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import {
+  runWithModelFallback,
+  type ModelFallback,
+} from "~/modules/models/application/model-fallback";
+import {
   finaliseAssistantTurn,
   type TurnOutput,
 } from "~/modules/responses/application/engine/agent/assistant-turn";
@@ -167,6 +171,12 @@ export interface ModelResponse {
   provenance?: RunProvenance;
 }
 
+export interface AgentModelSelection {
+  model: string;
+  provider: string;
+  provenance?: RunProvenance;
+}
+
 export interface AgentLoopExecutionParams {
   requestParams: ChatCompletionParameters;
   completionId: string;
@@ -206,6 +216,7 @@ export interface AgentLoopExecutionParams {
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
+  modelFallback?: ModelFallback<AgentModelSelection>;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
   onRetryState?: (state: ChatRetrySnapshot | null) => Promise<void> | void;
 }
@@ -276,6 +287,7 @@ export async function runAgentLoop(
   let guardrailsPassed = true;
   let guardrailViolations: unknown[] = [];
   const providerRetryBudget = createProviderRetryBudget(MAX_PROVIDER_RETRIES_PER_RUN);
+  let activeModel: AgentModelSelection = { model: params.model, provider: params.provider };
 
   const shouldStop = async () =>
     params.shouldStop?.() === true || (await params.isCancellationRequested?.()) === true;
@@ -283,8 +295,6 @@ export async function runAgentLoop(
   const transportContext = {
     env: params.env,
     completionId: params.completionId,
-    model: params.model,
-    provider: params.provider,
     userId: params.context?.user?.id,
     serviceContext: params.context,
     shouldStop: params.shouldStop,
@@ -305,8 +315,8 @@ export async function runAgentLoop(
     await sink.write(
       assistantMessageAddedEvent(openMessageId, {
         created: Date.now(),
-        model: params.model,
-        provider: params.provider,
+        model: activeModel.model,
+        provider: activeModel.provider,
         platform: params.platform,
       }),
     );
@@ -330,8 +340,8 @@ export async function runAgentLoop(
       conversationManager: params.conversationManager,
       completionId: params.completionId,
       env: params.env,
-      model: params.model,
-      provider: params.provider,
+      model: activeModel.model,
+      provider: activeModel.provider,
       platform: params.platform,
       mode: params.mode,
       context: params.context,
@@ -442,7 +452,7 @@ export async function runAgentLoop(
           tool_call_id: toolCall.id,
           tool_call_arguments: toolCall.arguments,
           timestamp: Date.now(),
-          model: params.model,
+          model: activeModel.model,
           platform: params.platform,
           parts: buildMessageParts({
             role: "tool",
@@ -529,8 +539,8 @@ export async function runAgentLoop(
         conversationId: params.completionId,
         attempt: params.runAttempt ?? 1,
         step,
-        model: params.model,
-        provider: params.provider,
+        model: activeModel.model,
+        provider: activeModel.provider,
         skills: params.contextSkills,
         documents: params.contextDocuments,
         systemSections: params.contextSystemSections,
@@ -553,20 +563,49 @@ export async function runAgentLoop(
         enabled_tools: [...state.enabledToolNames],
         ...(finalAnswerNotice && !goalFinalisationNotice ? { disable_functions: true } : {}),
       };
-      const requestModelTurn = (turnRequest: typeof request) =>
-        params.transport.runTurn({
-          request: turnRequest,
-          sink,
-          context: {
-            ...transportContext,
-            step,
-            messageId: stepMessageId,
-            retry: providerRetryBudget.forStep(step, {
-              shouldStop: params.shouldStop,
-              onStateChange: params.onRetryState,
+      const requestModelTurn = async (turnRequest: typeof request) => {
+        const { selection, result } = await runWithModelFallback(
+          activeModel,
+          params.modelFallback,
+          (model) =>
+            params.transport.runTurn({
+              request: { ...turnRequest, model: model.model, provider: model.provider },
+              sink,
+              context: {
+                ...transportContext,
+                model: model.model,
+                provider: model.provider,
+                step,
+                messageId: stepMessageId,
+                retry: providerRetryBudget.forStep(step, {
+                  shouldStop: params.shouldStop,
+                  onStateChange: params.onRetryState,
+                }),
+              },
             }),
-          },
-        });
+        );
+
+        if (selection !== activeModel) {
+          logger.warn("Switched model after the provider ran out of credits", {
+            completionId: params.completionId,
+            step,
+            from: activeModel.model,
+            to: selection.model,
+          });
+          activeModel = selection;
+
+          if (params.toolRequestContext.request) {
+            params.toolRequestContext.request.model = selection.model;
+            params.toolRequestContext.request.provider = selection.provider;
+          }
+
+          if (selection.provenance) {
+            params.toolRequestContext.provenance = selection.provenance;
+          }
+        }
+
+        return result;
+      };
 
       try {
         turn = await requestModelTurn(request);
@@ -578,8 +617,8 @@ export async function runAgentLoop(
           logger.warn("Model returned an empty reply", {
             failure: EMPTY_REPLY_FAILURE,
             completionId: params.completionId,
-            model: params.model,
-            provider: params.provider,
+            model: activeModel.model,
+            provider: activeModel.provider,
             step,
             recovery: next,
           });
@@ -917,7 +956,7 @@ export async function runAgentLoop(
         context: params.context,
         userSettings: params.userSettings,
         memoryScope: params.memoryScope,
-        model: params.model,
+        model: activeModel.model,
         platform: params.platform,
         toolCalls: allToolCalls,
         store: params.requestParams.store === true,
