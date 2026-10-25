@@ -1,5 +1,12 @@
 # @ngriffin_uk/polychat-library-flags
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [ed38a63]
+  - @ngriffin_uk/polychat-utility-core@0.7.0
+
 ## 0.2.3
 
 ### Patch Changes

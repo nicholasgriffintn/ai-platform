@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-utility-server",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Dependency-light server utilities shared by Polychat Workers and AI primitives: errors, logging, JSON, HTTP, streaming, redaction, and encoding helpers",
   "license": "Apache-2.0",
   "files": [

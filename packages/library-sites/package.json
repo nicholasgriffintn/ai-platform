@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-sites",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Framework-neutral generative UI primitives for Polychat: expressive site and app documents, streamed JSON patches, validation, design direction and deterministic React code generation",
   "license": "Apache-2.0",
   "files": [

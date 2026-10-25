@@ -1,5 +1,41 @@
 # @assistant/app
 
+## 0.7.0
+
+### Minor Changes
+
+- 11dabe3: See how the news is framed before you trust it.
+
+  - **How it's framed.** A Discover read has a How it's framed button. It shows the article's slant and tone, who it relies on, any loaded wording (quoted exactly as written) and what it leaves out, plus a writing grade. It is kept with the article, so opening it again costs nothing.
+  - **Compare the coverage.** A Discover topic with two or more articles that day can compare them: what every outlet agrees on, each outlet's angle, where they differ and what none of them mention. The comparison is filed in your Discover notebook.
+  - **Article analysis speaks the same language.** Article analysis in Apps now uses the same framing check, so its reports describe framing and omissions rather than labelling pieces left or right.
+  - Both count towards your monthly Discover budget and stop when it is spent.
+
+### Patch Changes
+
+- Updated dependencies [ce66ee9]
+- Updated dependencies [11dabe3]
+- Updated dependencies [ed38a63]
+- Updated dependencies [48eb3dc]
+- Updated dependencies [ed38a63]
+  - @ngriffin_uk/polychat-schemas@1.8.0
+  - @ngriffin_uk/polychat-component-shell@2.2.0
+  - @ngriffin_uk/polychat-library-client@0.7.0
+  - @ngriffin_uk/polychat-library-react@0.8.0
+  - @ngriffin_uk/polychat-utility-react@0.5.0
+  - @ngriffin_uk/polychat-utility-core@0.7.0
+  - @ngriffin_uk/polychat-component-ui@0.6.0
+  - @ngriffin_uk/polychat-component-account@1.0.2
+  - @ngriffin_uk/polychat-component-conversation@2.1.2
+  - @ngriffin_uk/polychat-component-content@1.3.2
+  - @ngriffin_uk/polychat-component-models@1.2.3
+  - @ngriffin_uk/polychat-component-navigation@0.5.2
+  - @ngriffin_uk/polychat-component-workspaces@1.0.2
+  - @ngriffin_uk/polychat-component-capabilities@1.0.2
+  - @ngriffin_uk/polychat-component-experiences@0.6.2
+  - @ngriffin_uk/polychat-library-chat@1.3.1
+  - @ngriffin_uk/polychat-library-realtime@0.3.2
+
 ## 0.6.0
 
 ### Minor Changes

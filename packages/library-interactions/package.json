@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-interactions",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Human interaction primitives for Polychat: approval request records, the waiting loop that resolves an approval, and SLA escalation/timeout evaluation shared by hosts and workers",
   "license": "Apache-2.0",
   "files": [

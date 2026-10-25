@@ -1,5 +1,23 @@
 # @ngriffin_uk/polychat-ai-agents
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [ce66ee9]
+- Updated dependencies [11dabe3]
+- Updated dependencies [ed38a63]
+- Updated dependencies [48eb3dc]
+- Updated dependencies [ed38a63]
+  - @ngriffin_uk/polychat-schemas@1.8.0
+  - @ngriffin_uk/polychat-ai-prompts@0.5.0
+  - @ngriffin_uk/polychat-utility-server@0.5.0
+  - @ngriffin_uk/polychat-utility-core@0.7.0
+  - @ngriffin_uk/polychat-ai-functions@0.3.2
+  - @ngriffin_uk/polychat-ai-providers@0.5.1
+  - @ngriffin_uk/polychat-library-agent-loop@0.3.4
+  - @ngriffin_uk/polychat-library-tools@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
