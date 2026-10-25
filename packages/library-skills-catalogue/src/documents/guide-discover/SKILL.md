@@ -29,7 +29,7 @@ Pick a card to see why it is there, start a chat from it, or tell Discover you w
 
 Use this to answer questions about Discover. Describe what the person can do and where to find it. Do not invent controls.
 
-- **The edition.** Poly writes one edition each morning at 07:00 in the person's time zone. Write again in the page header asks for a fresh one now.
+- **The edition.** Poly writes one edition each morning at 07:00 in the person's time zone. Write again in Settings asks for a fresh one now.
 - **What it reads.** Recent personal chat titles, what Poly remembers when memory is on, feedback on earlier editions, anything they asked for, what is waiting on them and the web.
 - **Listen.** A read card, and any text, web page or document in Files, has Listen, which reads it aloud in their narrator voice and starts with the first passage while the rest are recorded. On iPhone, a read card also has Share.
 - **Cards.** Topics open a chat on today's angle, links open the page or a chat about it, things worth doing start the work in a chat, check-ins follow up on something they mentioned, and From before brings back missed flashcards or saved links. Every card says why it is there.

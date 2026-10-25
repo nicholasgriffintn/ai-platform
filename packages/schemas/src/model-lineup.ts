@@ -99,18 +99,18 @@ type TierLineup = Record<ModelTier, Record<ModelTierRole, readonly ModelLineupCa
 const hostedFreeAgent = {
   ultra: [
     { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   high: [
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
     { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   medium: [
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
     { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
   ],
   low: [
     { model: "deepseek-flash", provider: "deepseek", effort: "low" },
@@ -136,8 +136,8 @@ const hostedFreeCoding = {
   ],
   medium: [
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
-    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
     { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
+    { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
   ],
   low: [
     { model: "deepseek-flash", provider: "deepseek", effort: "low" },
@@ -398,15 +398,15 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Titling",
     description: "Names conversations from their first exchange.",
     candidates: [
+      { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
+      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
       { model: "groq-openai-gpt-oss-20b", provider: "groq", effort: "low" },
       {
         model: "google-ai-studio/gemini-3.1-flash-lite",
         provider: "google-ai-studio",
         effort: "minimal",
       },
-      { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
     ],
   },
   {
@@ -415,10 +415,10 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Summarises older history when a conversation nears its context limit.",
     candidates: [
       { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
-      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-      { model: "deepseek-flash", provider: "deepseek", effort: "low" },
-      { model: "gpt-5.6-sol", provider: "openai", effort: "low" },
       { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
+      { model: "gpt-5.6-sol", provider: "openai", effort: "low" },
+      { model: "deepseek-flash", provider: "deepseek", effort: "low" },
+      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
     ],
   },
   {
@@ -432,9 +432,10 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Reading",
     description: "Article analysis, reports, summaries and content extraction.",
     candidates: [
-      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
+      { model: "gpt-6-luna", provider: "openai", effort: "low" },
       { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
       { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
+      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
     ],
   },
   {

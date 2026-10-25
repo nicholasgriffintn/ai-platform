@@ -23,7 +23,7 @@ export function DiscoverAskPanel({ editionId, card }: { editionId: string; card:
   const subject = discoverCardSubject(editionId, card);
   const conversations = useSubjectConversations(subject);
 
-  if (conversations.isPending) {
+  if (!conversations.isFetchedAfterMount) {
     return <div className="relative min-h-0 flex-1" />;
   }
 

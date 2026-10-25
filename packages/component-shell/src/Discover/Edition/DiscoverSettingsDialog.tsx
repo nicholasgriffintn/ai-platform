@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonLink,
+  cn,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,7 +28,7 @@ import {
   type UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import { X } from "lucide-react";
+import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -62,6 +63,9 @@ export interface DiscoverSettingsDialogProps {
   onOpenChange: (open: boolean) => void;
   settings: DiscoverSettings;
   isSaving: boolean;
+  canWriteAgain: boolean;
+  isWriting: boolean;
+  onWriteAgain: () => void;
   follows: readonly DiscoverFollow[];
   onUnfollow: (notebookId: string) => void;
   onToggle: (enabled: boolean) => void;
@@ -92,6 +96,9 @@ export function DiscoverSettingsDialog({
   onOpenChange,
   settings,
   isSaving,
+  canWriteAgain,
+  isWriting,
+  onWriteAgain,
   follows,
   onUnfollow,
   onToggle,
@@ -285,6 +292,29 @@ export function DiscoverSettingsDialog({
                 </Button>
               </div>
             </form>
+          )}
+          {settings.enabled && canWriteAgain && (
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <p className="text-sm font-medium text-foreground">Today's edition</p>
+                <p className="text-xs text-muted-foreground">
+                  Poly writes a fresh one now, with anything you asked for above.
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isWriting}
+                onClick={() => {
+                  onWriteAgain();
+                  onOpenChange(false);
+                }}
+              >
+                <RefreshCw size={14} aria-hidden className={cn(isWriting && "animate-spin")} />
+                {isWriting ? "Writing" : "Write again"}
+              </Button>
+            </div>
           )}
           {settings.enabled && (
             <p className="text-xs text-muted-foreground">

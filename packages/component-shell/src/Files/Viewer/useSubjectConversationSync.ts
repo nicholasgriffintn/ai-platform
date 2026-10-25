@@ -1,3 +1,4 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   OUTPUT_QUERY_KEYS,
   subjectConversationsQueryKey,
@@ -13,17 +14,20 @@ export function useSubjectConversationSync(
 ) {
   const queryClient = useQueryClient();
   const { data: conversation } = useChat(conversationId);
+  const isLocalOnly = useChatStore((state) =>
+    Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
+  );
   const seen = useRef<Set<string> | null>(null);
   const listedConversationId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!conversation?.id || listedConversationId.current === conversation.id) {
+    if (!conversation?.id || isLocalOnly || listedConversationId.current === conversation.id) {
       return;
     }
 
     listedConversationId.current = conversation.id;
     void queryClient.invalidateQueries({ queryKey: subjectConversationsQueryKey(subject) });
-  }, [conversation?.id, queryClient, subject]);
+  }, [conversation?.id, isLocalOnly, queryClient, subject]);
 
   useEffect(() => {
     if (subject.type !== "output" || !conversation) {

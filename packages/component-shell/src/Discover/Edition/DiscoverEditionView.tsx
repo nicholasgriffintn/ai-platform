@@ -1,7 +1,7 @@
 import { Button, cn, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { getErrorMessage, partOfDay } from "@ngriffin_uk/polychat-utility-core";
-import { AudioLines, RefreshCw, Settings2 } from "lucide-react";
+import { AudioLines, Settings2 } from "lucide-react";
 import { useState } from "react";
 
 import { PageShell } from "../../Shell/PageShell.js";
@@ -158,27 +158,10 @@ export function DiscoverEditionView() {
       ? REFRESH_MESSAGES[controller.refreshStatus]
       : null;
   const headerActions = (
-    <div className="flex items-center gap-2">
-      {settings.enabled && edition && (
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={controller.isRefreshing || controller.isAwaitingEdition}
-          onClick={() => void controller.writeEditionNow()}
-        >
-          <RefreshCw
-            size={14}
-            aria-hidden
-            className={cn(controller.isAwaitingEdition && "animate-spin")}
-          />
-          {controller.isAwaitingEdition ? "Writing" : "Write again"}
-        </Button>
-      )}
-      <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-        <Settings2 size={14} aria-hidden />
-        Settings
-      </Button>
-    </div>
+    <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
+      <Settings2 size={14} aria-hidden />
+      Settings
+    </Button>
   );
 
   return (
@@ -189,6 +172,9 @@ export function DiscoverEditionView() {
         onOpenChange={setShowSettings}
         settings={settings}
         isSaving={controller.isSavingSettings}
+        canWriteAgain={Boolean(edition)}
+        isWriting={controller.isRefreshing || controller.isAwaitingEdition}
+        onWriteAgain={() => void controller.writeEditionNow()}
         follows={controller.follows}
         onUnfollow={controller.unfollow}
         onToggle={controller.toggle}
