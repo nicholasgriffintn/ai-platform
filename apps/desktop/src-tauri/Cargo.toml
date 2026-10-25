@@ -28,6 +28,7 @@ tauri-plugin-notification = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 time = { version = "0.3", features = ["formatting", "parsing"] }
 url = "2"
+tauri-plugin-updater = "2"
 
 [features]
 default = ["custom-protocol"]

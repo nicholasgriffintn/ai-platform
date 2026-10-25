@@ -21,6 +21,7 @@ mod secrets;
 mod service;
 mod store;
 mod text;
+mod updater;
 
 use std::time::Duration;
 
@@ -838,7 +839,8 @@ fn main() {
         return;
     }
     let mut context = tauri::generate_context!();
-    if args.iter().any(|arg| arg == "--service") {
+    let service = args.iter().any(|arg| arg == "--service");
+    if service {
         for window in &mut context.config_mut().app.windows {
             window.visible = false;
         }
@@ -858,7 +860,8 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .setup(|app| {
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .setup(move |app| {
             poly::install_tray(app.handle())?;
 
             if let Err(error) = poly::register_quick_ask(app.handle()) {
@@ -888,6 +891,8 @@ fn main() {
             app.manage(DirectoryGrants::from_grants(directories));
             app.manage(activity::sampler::ActivityRuntime::default());
             activity::sampler::start(app.handle());
+
+            updater::start(app.handle(), !service);
 
             Ok(())
         })

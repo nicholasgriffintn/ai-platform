@@ -6,6 +6,7 @@ use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewUrl, WebviewWi
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use crate::activity::tray::{self as activity_tray, ActivityMenu};
+use crate::updater;
 
 pub const OPEN_POLY_EVENT: &str = "polychat://open-poly";
 pub const PERCH_LABEL: &str = "perch";
@@ -16,6 +17,7 @@ const PERCH_HEIGHT: f64 = 132.0;
 const PERCH_MARGIN: i32 = 24;
 const MENU_ASK: &str = "poly-ask";
 const MENU_PERCH: &str = "poly-perch";
+const MENU_UPDATES: &str = "poly-updates";
 const MENU_QUIT: &str = "poly-quit";
 
 pub struct PolyTray {
@@ -116,6 +118,7 @@ fn build_menu(
         app.get_webview_window(PERCH_LABEL).is_some(),
         None::<&str>,
     )?;
+    let updates = MenuItem::with_id(app, MENU_UPDATES, "Check for updates", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, MENU_QUIT, "Quit Polychat", true, None::<&str>)?;
     let first_separator = PredefinedMenuItem::separator(app)?;
     let last_separator = PredefinedMenuItem::separator(app)?;
@@ -128,6 +131,7 @@ fn build_menu(
             .map(|item| item as &dyn IsMenuItem<Wry>),
     );
     items.push(&last_separator);
+    items.push(&updates);
     items.push(&quit);
 
     Ok((Menu::with_items(app, &items)?, perch))
@@ -145,6 +149,7 @@ pub fn install_tray(app: &AppHandle) -> tauri::Result<()> {
                 let showing = app.get_webview_window(PERCH_LABEL).is_some();
                 let _ = set_perch(app, !showing);
             }
+            MENU_UPDATES => updater::check_now(app),
             MENU_QUIT => app.exit(0),
             other => activity_tray::handle_menu_event(app, other),
         });
