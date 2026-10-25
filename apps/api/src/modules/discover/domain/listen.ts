@@ -7,7 +7,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const DISCOVER_LISTEN_SHOW = "The Perch";
 
 export const DISCOVER_LISTEN_FOCUS =
-  "A warm, unhurried morning round-up for one listener. Open with the brief, spend most of the time on the two or three most interesting topics, mention the reading worth saving, and close by reminding them what is worth doing today. Say where claims come from.";
+  "A warm, unhurried morning round-up for one listener. Open with the brief, then spend most of the time on the stories themselves: the articles, newsletters and events, what they report and why they are interesting, as two people who have read them. Give the listener's own projects one line at most. Close by reminding them what is worth doing today.";
 
 export function buildDiscoverListenMaterial(edition: DiscoverEditionContent): string {
   const brief = edition.brief.map((line) => `- ${line.label}: ${line.text}`);
@@ -32,7 +32,19 @@ export function buildDiscoverListenMaterial(edition: DiscoverEditionContent): st
     }
   });
 
-  return [`# Discover edition for ${edition.date}`, "## Brief", ...brief, ...cards].join("\n\n");
+  const stories = edition.cards.filter((card) => card.kind !== "topic" && card.kind !== "action");
+  const projects = edition.cards.filter((card) => card.kind === "topic" || card.kind === "action");
+  const describe = (card: DiscoverEditionContent["cards"][number]) =>
+    cards[edition.cards.indexOf(card)] ?? "";
+
+  return [
+    `# Discover edition for ${edition.date}`,
+    "## Brief",
+    ...brief,
+    ...stories.map(describe),
+    ...(projects.length > 0 ? ["## Their own projects, for one passing line at most"] : []),
+    ...projects.map(describe),
+  ].join("\n\n");
 }
 
 export function isActiveDiscoverReader(

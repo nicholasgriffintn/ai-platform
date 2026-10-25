@@ -17,6 +17,8 @@ import { requireDiscoverEdition, withEditionRun } from "./editions";
 import { publishDiscoverChanged } from "./events";
 import { readDiscoverRoutine } from "./settings";
 
+const LISTEN_ARTICLE_LIMIT = 8;
+
 export async function produceDiscoverListen(
   context: ServiceContext,
   editionId: string,
@@ -50,7 +52,9 @@ export async function produceDiscoverListen(
     kind: "podcast",
   });
   const episode = await startPodcastGeneration(withEditionRun(context, edition), {
-    sourceIds: [],
+    sourceIds: edition.content.cards
+      .flatMap((card) => (card.kind === "read" && card.sourceId ? [card.sourceId] : []))
+      .slice(0, LISTEN_ARTICLE_LIMIT),
     material: buildDiscoverListenMaterial(edition.content),
     title: `${DISCOVER_LISTEN_SHOW}, ${edition.content.date}`,
     focus: DISCOVER_LISTEN_FOCUS,

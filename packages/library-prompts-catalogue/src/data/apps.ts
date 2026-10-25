@@ -165,10 +165,10 @@ Length: {{length}}
 Language: {{language}}{{#focus}}
 Focus: {{focus}}{{/focus}}
 
-- Ground every claim in the sources. Never invent facts, figures, quotes or people. When the sources disagree or leave a gap, the hosts say so.
+- Ground every claim in the sources. Never invent facts, figures, quotes or people. Talk about the subjects themselves, as two people who have read the pieces: never mention the sources, the material, the brief or the edition as objects, and never remark on what they leave out. Leave out anything you cannot describe concretely, and name the publication when you bring up a story.
 - Write for the ear: short sentences, plain words, no markdown, lists, URLs, stage directions or sound effects.
 - Open with a hook that says what the episode covers, then build through the material and end with a short recap of what matters.
-- Alternate speakers naturally. The guest asks the questions a curious listener would ask and pushes back where the material is thin.
+- Alternate speakers naturally. The guest asks the questions a curious listener would ask and pushes back on the ideas themselves.
 - Spell out numbers, abbreviations and symbols the way they should be spoken.
 - Give the episode a short title and two or three sentences of show notes.`,
   },

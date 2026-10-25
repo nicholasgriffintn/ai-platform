@@ -221,3 +221,46 @@ export function readStringField(value: unknown, fieldName: string): string | und
 
   return typeof field === "string" ? field : undefined;
 }
+
+const COLLECTED_STRING_MIN_WORDS = 3;
+
+export function collectStrings(value: unknown, maxCharacters: number): string {
+  const parts: string[] = [];
+  let length = 0;
+  const visit = (node: unknown): void => {
+    if (length >= maxCharacters || node === null || node === undefined) {
+      return;
+    }
+
+    if (typeof node === "string") {
+      const text = node.replace(/\s+/gu, " ").trim();
+
+      if (text.split(" ").length >= COLLECTED_STRING_MIN_WORDS && !/^https?:\/\//u.test(text)) {
+        parts.push(text);
+        length += text.length + 1;
+      }
+
+      return;
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        visit(item);
+      }
+
+      return;
+    }
+
+    if (typeof node === "object") {
+      for (const item of Object.values(node as Record<string, unknown>)) {
+        visit(item);
+      }
+    }
+  };
+
+  visit(value);
+
+  const joined = parts.join(" ");
+
+  return joined.length <= maxCharacters ? joined : `${joined.slice(0, maxCharacters - 3)}...`;
+}
