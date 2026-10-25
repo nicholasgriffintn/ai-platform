@@ -20,8 +20,8 @@ describe("WorkspaceRepository", () => {
 
     await repository.listProjectConversations("project-1", 123);
 
-    expect(calls[0]?.query).toContain("c.type IN ('chat', 'task')");
-    expect(calls[0]?.params).toEqual([123, "project-1", 123]);
+    expect(calls[0]?.query).toContain("c.type IN (?, ?)");
+    expect(calls[0]?.params).toEqual([123, "project-1", "chat", "task", 123]);
   });
 
   it("denies access when no row is found for the conversation", async () => {

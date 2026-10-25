@@ -46,7 +46,7 @@ import { generateTierObject } from "~/modules/models/application/tier-object";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
-import { findNewsResults, findWebResults } from "~/modules/search/application/results";
+import { findNewsResults } from "~/modules/search/application/results";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
@@ -67,6 +67,8 @@ const logger = getLogger({ prefix: "discover/gather" });
 const RESEARCH_RESULT_LIMIT = 8;
 const HEADLINE_NEWS_DAYS = 1;
 const TOPIC_NEWS_DAYS = 3;
+const WIDER_NEWS_DAYS = 7;
+const DISCOVER_NEWS_LANGUAGE = "en";
 const CURATE_TOPIC_LIMIT = 4;
 
 export interface DiscoverGatherSummary {
@@ -226,21 +228,29 @@ function headlinesQuery(location: string | null): string {
   return location ? `${location} news` : "world news";
 }
 
+interface ResearchRequest {
+  topic: string;
+  date: string;
+  country: string | null;
+  query?: string;
+  days?: number;
+}
+
 async function researchTopic(
   context: ServiceContext,
   notebookId: string,
-  topic: string,
-  date: string,
-  query = topic,
-  days = TOPIC_NEWS_DAYS,
+  { topic, date, country, query = topic, days = TOPIC_NEWS_DAYS }: ResearchRequest,
 ): Promise<boolean> {
   const user = context.requireUser();
   const sourceId = await researchSourceId(user.id, topic);
+  const search = { country, language: DISCOVER_NEWS_LANGUAGE };
 
   try {
-    const news = await findNewsResults(context, query, days);
+    const news = await findNewsResults(context, query, { ...search, days });
     const found = (
-      news.length > 0 ? news : await findWebResults(context, `${query} latest news`)
+      news.length > 0 || days >= WIDER_NEWS_DAYS
+        ? news
+        : await findNewsResults(context, query, { ...search, days: WIDER_NEWS_DAYS })
     ).slice(0, RESEARCH_RESULT_LIMIT);
     const results = await readDiscoverArticles(context, notebookId, {
       topic,
@@ -365,14 +375,13 @@ export async function runDiscoverGather(
       (ok ? read : stale).push(signal.providerId);
     }
 
-    await researchTopic(
-      context,
-      notebook.id,
-      DISCOVER_HEADLINES_TOPIC,
-      zoned.date,
-      headlinesQuery(settings.location),
-      HEADLINE_NEWS_DAYS,
-    );
+    await researchTopic(context, notebook.id, {
+      topic: DISCOVER_HEADLINES_TOPIC,
+      date: zoned.date,
+      country: settings.country,
+      query: headlinesQuery(settings.location),
+      days: HEADLINE_NEWS_DAYS,
+    });
 
     const follows = await listDiscoverFollows(context, context.requireUser().id);
     const interests = await inferDiscoverInterests(context, notebook.id, now);
@@ -386,7 +395,11 @@ export async function runDiscoverGather(
     });
 
     for (const topic of topics) {
-      await researchTopic(context, notebook.id, topic, zoned.date);
+      await researchTopic(context, notebook.id, {
+        topic,
+        date: zoned.date,
+        country: settings.country,
+      });
     }
   } finally {
     await closeComposioConnectorRun(context);

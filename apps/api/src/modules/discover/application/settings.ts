@@ -130,14 +130,14 @@ async function describeSources(
 export type DiscoverRoutineSettings = Omit<
   DiscoverSettings,
   "notify" | "sources" | "episodeCosts"
-> & { excludedProviders: string[] };
+> & { excludedProviders: string[]; country: string | null };
 
 function describeRoutine(
   installation: RecipeInstallation | null,
   location: string | null,
 ): DiscoverRoutineSettings {
   if (!installation) {
-    return { ...DISABLED, location, excludedProviders: [] };
+    return { ...DISABLED, location, excludedProviders: [], country: null };
   }
 
   const schedule = installation.triggers.find((trigger) => trigger.type === "schedule");
@@ -154,6 +154,7 @@ function describeRoutine(
     style: preferences.style,
     installationId: installation.id,
     excludedProviders: preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY],
+    country: preferences.country,
   };
 }
 
@@ -220,6 +221,7 @@ export async function readDiscoverSettings(context: ServiceContext): Promise<Dis
 export async function updateDiscoverSettings(
   context: ServiceContext,
   input: UpdateDiscoverSettings,
+  requestCountry: string | null,
 ): Promise<DiscoverSettings> {
   const user = context.requireUser();
   const polyContext = await requirePolyContext(context);
@@ -248,6 +250,7 @@ export async function updateDiscoverSettings(
       current[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY],
       input.source,
     ),
+    country: requestCountry ?? current.country,
   };
   const installed = await installAssistantRecipe(DISCOVER_RECIPE_ID, {
     context,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { haversineKm, invertEqualEarth, projectEqualEarth } from "./geo.js";
+import { haversineKm, invertEqualEarth, projectEqualEarth, readCountryCode } from "./geo.js";
 import { stripJpegMetadata } from "./jpeg.js";
 
 describe("geo", () => {
@@ -42,5 +42,18 @@ describe("stripJpegMetadata", () => {
   it("refuses files that are not JPEGs or have broken segments", () => {
     expect(() => stripJpegMetadata(new Uint8Array([0x89, 0x50, 0x4e, 0x47]))).toThrow();
     expect(() => stripJpegMetadata(new Uint8Array([0xff, 0xd8, 0xff, 0xe1, 0x40, 0x00]))).toThrow();
+  });
+});
+
+describe("readCountryCode", () => {
+  it("accepts two-letter country codes and rejects unknown or malformed ones", () => {
+    expect(["gb", " US ", "XX", "T1", "GBR", undefined].map(readCountryCode)).toEqual([
+      "GB",
+      "US",
+      null,
+      null,
+      null,
+      null,
+    ]);
   });
 });

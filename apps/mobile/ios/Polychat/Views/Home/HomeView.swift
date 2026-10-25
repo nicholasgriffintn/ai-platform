@@ -346,11 +346,7 @@ private struct DiscoverRow: View {
     var body: some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: card.systemImage)
-                    .font(.subheadline)
-                    .foregroundStyle(Color.polychat.primary)
-                    .frame(width: 28, height: 28)
-                    .background(Color.polychat.selection, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                FaviconView(url: card.kind == "read" ? card.url : nil, fallbackSystemImage: card.systemImage)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(card.headline)
                         .font(.subheadline.weight(.semibold))

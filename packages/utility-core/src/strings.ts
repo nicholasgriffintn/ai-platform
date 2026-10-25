@@ -102,6 +102,16 @@ export function normaliseComparableText(value: string): string {
     .trim();
 }
 
+const HEADLINE_SITE_SEPARATORS = [" | ", " - ", " – ", " — ", " · "];
+
+export function comparableHeadline(title: string): string {
+  const cut = Math.max(
+    ...HEADLINE_SITE_SEPARATORS.map((separator) => title.lastIndexOf(separator)),
+  );
+
+  return normaliseComparableText(cut > 0 ? title.slice(0, cut) : title);
+}
+
 export function normalizeStatus(status?: string): string {
   return status?.toLowerCase() ?? "";
 }

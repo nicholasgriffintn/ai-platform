@@ -57,6 +57,33 @@ struct StatusPill: View {
     }
 }
 
+struct FaviconView: View {
+    let url: String?
+    let fallbackSystemImage: String
+    var size: CGFloat = 28
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.polychat.selection)
+            AsyncImage(url: url.flatMap(URLDisplay.faviconURL)) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .padding(size * 0.2)
+                } else {
+                    Image(systemName: fallbackSystemImage)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.polychat.primary)
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
 struct InlineErrorBanner: View {
     let message: String
     var onRetry: (() -> Void)?

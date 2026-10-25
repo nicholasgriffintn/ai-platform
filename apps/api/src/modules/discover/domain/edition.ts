@@ -7,9 +7,10 @@ import {
   type DiscoverEditionContent,
   type DiscoverEditionTime,
 } from "@ngriffin_uk/polychat-schemas";
-import { comparableHttpUrl, normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
+import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
-import { fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
+import { DISCOVER_TOP_READS, fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
+import { claimUnseenLink, collectSeenLinks, type DiscoverLink } from "./links";
 
 export interface BuildDiscoverEditionInput {
   draft: ComposeDiscoverEditionInput;
@@ -20,7 +21,7 @@ export interface BuildDiscoverEditionInput {
   followedTopics: ReadonlySet<string>;
   curate: string;
   resurfaceHrefs: ReadonlySet<string>;
-  recentUrls: ReadonlySet<string>;
+  seenLinks: readonly DiscoverLink[];
   feed: readonly DiscoverFeedGroup[];
   createId: () => string;
 }
@@ -40,12 +41,33 @@ export function discoverEditionTimeAt(hour: number): DiscoverEditionTime {
   return hour >= 15 ? "evening" : "morning";
 }
 
+export function carriedDiscoverMedia(
+  previous: DiscoverEditionContent | undefined,
+  morning: DiscoverEditionContent | undefined,
+): Pick<DiscoverEditionContent, "episodeId" | "listenSourceId" | "weekSourceId"> {
+  return {
+    episodeId: previous?.episodeId ?? morning?.episodeId,
+    listenSourceId: morning ? (previous?.listenSourceId ?? morning.listenSourceId) : undefined,
+    weekSourceId: previous?.weekSourceId ?? morning?.weekSourceId,
+  };
+}
+
+function countReads(readsByTopic: ReadonlyMap<string, number>): number {
+  return [...readsByTopic.values()].reduce((total, count) => total + count, 0);
+}
+
 function cardTopic(card: DiscoverCardDraft): string | null {
   return "topic" in card ? card.topic : null;
 }
 
 export function discoverCardUrl(card: DiscoverCardDraft): string | null {
   return "url" in card && typeof card.url === "string" ? card.url : null;
+}
+
+function discoverCardLink(card: DiscoverCardDraft): DiscoverLink | null {
+  const url = discoverCardUrl(card);
+
+  return url ? { url, title: "title" in card ? card.title : "" } : null;
 }
 
 function isHidden(topic: string | null, hiddenTopics: ReadonlySet<string>): boolean {
@@ -71,7 +93,8 @@ function isWithheld(
 }
 
 export function buildDiscoverEdition(input: BuildDiscoverEditionInput): DiscoverEditionContent {
-  const seenUrls = new Set(input.recentUrls);
+  const seen = collectSeenLinks(input.seenLinks);
+  const readsByTopic = new Map<string, number>();
   const cards: DiscoverCard[] = [];
 
   for (const card of input.draft.cards) {
@@ -83,16 +106,20 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
       continue;
     }
 
-    const linked = discoverCardUrl(card);
+    if (card.kind === "read" && countReads(readsByTopic) >= DISCOVER_TOP_READS) {
+      continue;
+    }
 
-    if (linked) {
-      const url = comparableHttpUrl(linked);
+    const link = discoverCardLink(card);
 
-      if (!url || seenUrls.has(url)) {
-        continue;
-      }
+    if (link && !claimUnseenLink(seen, link)) {
+      continue;
+    }
 
-      seenUrls.add(url);
+    if (card.kind === "read") {
+      const key = discoverTopicKey(card.topic);
+
+      readsByTopic.set(key, (readsByTopic.get(key) ?? 0) + 1);
     }
 
     cards.push({ ...card, id: input.createId() });
@@ -107,9 +134,13 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
   cards.push(
     ...fillDiscoverFeed({
       groups: input.feed,
-      seenUrls,
+      seen,
       skipTopics: new Set([...input.hiddenTopics, ...withheldTopics]),
-      limit: DISCOVER_MAX_EDITION_CARDS - cards.length,
+      readsByTopic,
+      limit: Math.min(
+        DISCOVER_MAX_EDITION_CARDS - cards.length,
+        DISCOVER_TOP_READS - countReads(readsByTopic),
+      ),
       createId: input.createId,
     }),
   );
@@ -130,21 +161,14 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
   };
 }
 
-export function listEditionUrls(editions: readonly DiscoverEditionContent[]): Set<string> {
-  const urls = new Set<string>();
+export function listEditionLinks(editions: readonly DiscoverEditionContent[]): DiscoverLink[] {
+  return editions.flatMap((edition) =>
+    edition.cards.flatMap((card) => {
+      const link = discoverCardLink(card);
 
-  for (const edition of editions) {
-    for (const card of edition.cards) {
-      const linked = discoverCardUrl(card);
-      const url = linked ? comparableHttpUrl(linked) : null;
-
-      if (url) {
-        urls.add(url);
-      }
-    }
-  }
-
-  return urls;
+      return link ? [link] : [];
+    }),
+  );
 }
 
 export function describeDiscoverCard(card: DiscoverCard): string {

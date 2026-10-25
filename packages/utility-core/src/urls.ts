@@ -80,6 +80,26 @@ export function readUrlHost(value: string): string {
   }
 }
 
+const TRACKING_PARAMETERS = new Set([
+  "fbclid",
+  "gclid",
+  "dclid",
+  "msclkid",
+  "igshid",
+  "mc_cid",
+  "mc_eid",
+  "ocid",
+  "cmpid",
+  "ref_src",
+]);
+const MIRROR_HOST_PREFIX = /^(?:www|m|mobile|amp)\./u;
+
+function isTrackingParameter(name: string): boolean {
+  const key = name.toLowerCase();
+
+  return key.startsWith("utm_") || TRACKING_PARAMETERS.has(key);
+}
+
 export function comparableHttpUrl(value: string): string | null {
   const resolved = resolveHttpUrl(value);
 
@@ -90,7 +110,15 @@ export function comparableHttpUrl(value: string): string | null {
   const url = new URL(resolved);
   const path = url.pathname.replace(/\/+$/u, "");
 
-  return `${url.hostname.replace(/^www\./u, "")}${path}${url.search}`;
+  const kept = new URLSearchParams(
+    Array.from(url.searchParams).filter(([name]) => !isTrackingParameter(name)),
+  );
+
+  kept.sort();
+
+  const search = kept.toString();
+
+  return `${url.hostname.replace(MIRROR_HOST_PREFIX, "")}${path}${search ? `?${search}` : ""}`;
 }
 
 export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): boolean {

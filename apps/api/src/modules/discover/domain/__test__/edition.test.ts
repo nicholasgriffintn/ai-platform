@@ -1,7 +1,12 @@
 import { composeDiscoverEditionInputSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { buildDiscoverEdition, discoverTopicKey, listEditionUrls } from "../edition";
+import {
+  buildDiscoverEdition,
+  carriedDiscoverMedia,
+  discoverTopicKey,
+  listEditionLinks,
+} from "../edition";
 import type { DiscoverFeedGroup } from "../feed";
 
 function readCard(topic: string, url: string) {
@@ -86,7 +91,7 @@ function build(
     timezone: "Europe/London",
     generatedAt: "2026-10-24T06:00:00.000Z",
     hiddenTopics: new Set(hiddenTopics.map(discoverTopicKey)),
-    recentUrls: listEditionUrls([
+    seenLinks: listEditionLinks([
       {
         version: 1,
         date: "2026-10-23",
@@ -138,6 +143,23 @@ describe("buildDiscoverEdition", () => {
       "https://example.com/rye-starters",
       "https://example.com/crumb",
     ]);
+  });
+
+  it("caps Reading at six links, two per topic, counting Poly's own picks", () => {
+    const edition = build([], [], {
+      feed: ["Sourdough", "Formula 1", "Rust", "Cycling"].map((topic) => ({
+        topic,
+        lead: `You follow ${topic}`,
+        items: [1, 2, 3].map((index) => ({
+          title: `${topic} story number ${index}`,
+          url: `https://example.com/${encodeURIComponent(topic)}/${index}`,
+          snippet: "",
+        })),
+      })),
+    });
+    const reads = edition.cards.flatMap((card) => (card.kind === "read" ? [card.topic] : []));
+
+    expect(reads).toEqual(["Formula 1", "Sourdough", "Sourdough", "Formula 1", "Rust", "Cycling"]);
   });
 
   it("leaves out links shown recently or repeated within the edition", () => {
@@ -197,5 +219,28 @@ describe("buildDiscoverEdition", () => {
     const edition = build([], []);
 
     expect(edition.cards.map((card) => card.id)).toEqual(["card_1", "card_2", "card_3", "card_4"]);
+  });
+});
+
+describe("carriedDiscoverMedia", () => {
+  const withMedia = (media: {
+    episodeId?: string;
+    listenSourceId?: string;
+    weekSourceId?: string;
+  }) => ({ ...build([], []), ...media });
+
+  it("keeps the morning's episode, Perch and week in the evening edition", () => {
+    expect(
+      carriedDiscoverMedia(
+        undefined,
+        withMedia({ episodeId: "ep_1", listenSourceId: "perch_1", weekSourceId: "week_1" }),
+      ),
+    ).toEqual({ episodeId: "ep_1", listenSourceId: "perch_1", weekSourceId: "week_1" });
+  });
+
+  it("keeps an episode on rewrite but records a fresh Perch for a rewritten morning", () => {
+    expect(
+      carriedDiscoverMedia(withMedia({ episodeId: "ep_1", listenSourceId: "perch_1" }), undefined),
+    ).toEqual({ episodeId: "ep_1", listenSourceId: undefined, weekSourceId: undefined });
   });
 });

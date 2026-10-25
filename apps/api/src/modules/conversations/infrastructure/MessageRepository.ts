@@ -1,3 +1,4 @@
+import { SEARCHABLE_CONVERSATION_TYPES } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
@@ -7,7 +8,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { searchableConversationTypesSql } from "~/modules/conversations/infrastructure/conversation-type-sql";
 import { buildAppendRunEventStatements } from "~/modules/conversations/infrastructure/run-event-statements";
 import { publishMessageChanged } from "~/modules/sync/application/conversation-events";
 import type { Message } from "~/types";
@@ -939,7 +939,7 @@ export class MessageRepository extends BaseRepository {
        WHERE ${scopeClause}
          ${groupClause}
          AND c.is_archived = 0
-         AND c.type IN (${searchableConversationTypesSql})
+         AND c.type IN (${SEARCHABLE_CONVERSATION_TYPES.map(() => "?").join(", ")})
          AND c.id != ?
          AND m.role IN ('user', 'assistant')
          AND ${termClauses}
@@ -948,6 +948,7 @@ export class MessageRepository extends BaseRepository {
       [
         ...scopeValues,
         ...(params.groupId ? [params.groupId] : []),
+        ...SEARCHABLE_CONVERSATION_TYPES,
         params.excludeConversationId ?? "",
         ...params.terms.map((term) => `%${escapeSqlLikePattern(term)}%`),
         params.limit,

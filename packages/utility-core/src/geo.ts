@@ -8,6 +8,8 @@ export interface ProjectedPoint {
   y: number;
 }
 
+const COUNTRY_CODE = /^[A-Z]{2}$/u;
+const UNKNOWN_COUNTRY_CODE = "XX";
 const EARTH_RADIUS_KM = 6371.0088;
 const EQUAL_EARTH_A1 = 1.340264;
 const EQUAL_EARTH_A2 = -0.081106;
@@ -93,3 +95,13 @@ export const EQUAL_EARTH_EXTENT = {
   x: projectEqualEarth({ lat: 0, lng: 180 }).x,
   y: projectEqualEarth({ lat: 90, lng: 0 }).y,
 } as const;
+
+export function readCountryCode(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const code = value.trim().toUpperCase();
+
+  return COUNTRY_CODE.test(code) && code !== UNKNOWN_COUNTRY_CODE ? code : null;
+}

@@ -1,8 +1,8 @@
-import { comparableHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it } from "vitest";
 
 import { discoverTopicKey } from "../edition";
 import { buildDiscoverFeedGroups, fillDiscoverFeed, type DiscoverFeedGroup } from "../feed";
+import { collectSeenLinks } from "../links";
 
 function item(slug: string, source = "Example") {
   return {
@@ -19,15 +19,16 @@ function fill(groups: DiscoverFeedGroup[], options: { seen?: string[]; skip?: st
 
   return fillDiscoverFeed({
     groups,
-    seenUrls: new Set((options.seen ?? []).flatMap((url) => comparableHttpUrl(url) ?? [])),
+    seen: collectSeenLinks((options.seen ?? []).map((url) => ({ url, title: "" }))),
     skipTopics: new Set((options.skip ?? []).map(discoverTopicKey)),
+    readsByTopic: new Map(),
     limit: 30,
     createId: () => `feed_${(next += 1)}`,
   });
 }
 
 describe("fillDiscoverFeed", () => {
-  it("takes one item from each topic in turn and at most three per topic", () => {
+  it("takes one item from each topic in turn and at most two per topic", () => {
     const cards = fill([
       { topic: "Rust", lead: "You follow Rust", items: ["a", "b", "c", "d"].map((s) => item(s)) },
       { topic: "Formula 1", lead: "You follow Formula 1", items: [item("e"), item("f")] },
@@ -38,7 +39,30 @@ describe("fillDiscoverFeed", () => {
       "https://example.com/e",
       "https://example.com/b",
       "https://example.com/f",
-      "https://example.com/c",
+    ]);
+  });
+
+  it("puts the newest story first and drops tracked or syndicated copies", () => {
+    const cards = fill([
+      {
+        topic: "Rust",
+        lead: "You follow Rust",
+        items: [
+          { ...item("old"), date: "2026-10-20" },
+          { ...item("new"), title: "Rust 2.0 lands in nightly" },
+          { ...item("new"), url: "https://www.example.com/new/?utm_source=feed" },
+          {
+            ...item("copy"),
+            title: "Rust 2.0 lands in nightly | Other Site",
+            url: "https://other.example/rust",
+          },
+        ],
+      },
+    ]);
+
+    expect(cards.map((card) => (card.kind === "read" ? card.url : ""))).toEqual([
+      "https://example.com/new",
+      "https://example.com/old",
     ]);
   });
 

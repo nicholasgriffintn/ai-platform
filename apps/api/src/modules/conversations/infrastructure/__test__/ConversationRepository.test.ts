@@ -69,7 +69,7 @@ describe("ConversationRepository", () => {
     expect(calls[0]?.query).toContain(
       "datetime(COALESCE(c.updated_at, c.last_message_at, c.created_at)) >= datetime(?)",
     );
-    expect(calls[0]?.params).toEqual([123, 123, "2026-06-01T00:00:00.000Z"]);
+    expect(calls[0]?.params).toEqual([123, 123, "chat", "task", "2026-06-01T00:00:00.000Z"]);
     expect(calls[0]?.query).toContain("AS next_response_arrived");
     expect(result.data.map((conversation) => conversation.id)).toEqual(["one", "two"]);
     expect(result.has_more).toBe(true);
@@ -122,7 +122,7 @@ describe("ConversationRepository", () => {
 
     await repository.setPersonalConversationsArchived(123, { archived: false });
 
-    expect(calls[0]?.params).toEqual([0, 123, 1]);
+    expect(calls[0]?.params).toEqual([0, 123, "chat", "task", 1]);
   });
 
   it("bulk deletes every personal conversation without touching project conversations", async () => {
@@ -151,20 +151,21 @@ describe("ConversationRepository", () => {
     await repository.listConversationThreads("conversation-1", 123, null, 200);
     await repository.searchAccessibleConversations(123, "pricing", 8);
 
-    const queries = calls.map((call) => call.query);
-    const list = queries.find(
+    const paramsFor = (matches: (query: string) => boolean) =>
+      calls.find((call) => matches(call.query))?.params ?? [];
+    const list = paramsFor(
       (query) =>
         query.includes("FROM conversation c") &&
         !query.includes("WITH RECURSIVE") &&
         !query.includes("parent_title"),
     );
-    const threads = queries.find((query) => query.includes("WITH RECURSIVE"));
-    const search = queries.find((query) => query.includes("parent_title"));
+    const threads = paramsFor((query) => query.includes("WITH RECURSIVE"));
+    const search = paramsFor((query) => query.includes("parent_title"));
 
-    expect(list).toContain("'chat', 'task'");
-    expect(list).not.toContain("'delegate'");
-    expect(threads).toContain("'chat', 'task'");
-    expect(threads).not.toContain("'delegate'");
-    expect(search).toContain("'chat', 'task', 'delegate'");
+    expect(list).toEqual(expect.arrayContaining(["chat", "task"]));
+    expect(list).not.toContain("delegate");
+    expect(threads).toEqual(expect.arrayContaining(["chat", "task"]));
+    expect(threads).not.toContain("delegate");
+    expect(search).toEqual(expect.arrayContaining(["chat", "task", "delegate"]));
   });
 });

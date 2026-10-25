@@ -32,6 +32,7 @@ import {
   sourceSchema,
   updateDiscoverSettingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { readCountryCode } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
@@ -120,7 +121,8 @@ addRoute(app, "patch", "/settings", {
     200: { description: "Discover settings", schema: discoverSettingsSchema },
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
-  handler: async ({ serviceContext, body }) => updateDiscoverSettings(serviceContext, body),
+  handler: async ({ serviceContext, body, raw }) =>
+    updateDiscoverSettings(serviceContext, body, readCountryCode(raw.req.raw.cf?.country)),
 });
 
 addRoute(app, "post", "/refresh", {

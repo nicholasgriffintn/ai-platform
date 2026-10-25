@@ -5,16 +5,13 @@ import {
   type ComposeDiscoverEditionInput,
   type CreateDiscoverWindDown,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  describeZonedInstant,
-  generateId,
-  shiftCalendarDate,
-} from "@ngriffin_uk/polychat-utility-core";
+import { generateId, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { attachDiscoverArticles } from "~/modules/discover/domain/articles";
 import { describeDiscoverContext } from "~/modules/discover/domain/context";
-import { buildDiscoverEdition, discoverEditionTimeAt } from "~/modules/discover/domain/edition";
+import { readDeviceActivitySource } from "~/modules/discover/domain/device-activity";
+import { buildDiscoverEdition } from "~/modules/discover/domain/edition";
 import { buildDiscoverFeedGroups } from "~/modules/discover/domain/feed";
 import {
   DISCOVER_HEADLINES_TOPIC,
@@ -77,6 +74,13 @@ export const compose_discover_edition: ApiToolDefinition = {
       listDiscoverDocuments(context, user.id),
       listDiscoverArticleSources(context),
     ]);
+    const readable = documents.signals.filter((document) => !document.error);
+    const browsed = readable.filter(
+      (document) => readDeviceActivitySource(document.providerId) !== null,
+    );
+    const shared = readable.filter(
+      (document) => readDeviceActivitySource(document.providerId) === null,
+    );
     const edition = buildDiscoverEdition({
       draft: args,
       date: basis.date,
@@ -86,7 +90,7 @@ export const compose_discover_edition: ApiToolDefinition = {
       followedTopics: basis.followedTopics,
       curate: basis.curate,
       resurfaceHrefs: basis.resurfaceHrefs,
-      recentUrls: basis.recentUrls,
+      seenLinks: [...basis.seenLinks, ...browsed.flatMap((document) => document.items)],
       feed: buildDiscoverFeedGroups({
         research: documents.research.flatMap((document) => {
           const section = latestResearchSection(document.content);
@@ -95,9 +99,7 @@ export const compose_discover_edition: ApiToolDefinition = {
             ? [{ topic: document.topic, results: section.results }]
             : [];
         }),
-        signals: documents.signals
-          .filter((document) => !document.error)
-          .map((document) => ({ title: document.title, items: document.items })),
+        signals: shared.map((document) => ({ title: document.title, items: document.items })),
         headlinesTopic: DISCOVER_HEADLINES_TOPIC,
         followedTopics: basis.followedTopics,
         curate: basis.curate,
@@ -105,9 +107,7 @@ export const compose_discover_edition: ApiToolDefinition = {
       }),
       createId: generateId,
     });
-    const editionTime = discoverEditionTimeAt(
-      Number.parseInt(describeZonedInstant(new Date(), basis.timezone).time.slice(0, 2), 10),
-    );
+    const editionTime = basis.edition;
     const saved = await saveDiscoverEdition(context, user.id, {
       ...edition,
       cards: attachDiscoverArticles(edition.cards, articleSources),

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  comparableHttpUrl,
   hasUrlExtension,
   isCookieSameSite,
   normaliseSameOriginRoute,
@@ -100,5 +101,16 @@ describe("readYouTubeVideoId", () => {
     ["https://www.youtube.com/watch?v=short", null],
   ])("reads %s as %s", (url, expected) => {
     expect(readYouTubeVideoId(url)).toBe(expected);
+  });
+});
+
+describe("comparableHttpUrl", () => {
+  it("ignores tracking parameters and mirror hosts but keeps parameters that pick the page", () => {
+    expect(comparableHttpUrl("https://m.example.com/story/?utm_source=x&id=2&fbclid=y")).toBe(
+      comparableHttpUrl("https://www.example.com/story?id=2"),
+    );
+    expect(comparableHttpUrl("https://example.com/story?id=2")).not.toBe(
+      comparableHttpUrl("https://example.com/story?id=3"),
+    );
   });
 });

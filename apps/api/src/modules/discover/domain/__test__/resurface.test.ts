@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { aYearAgo, missedFlashcards, savedToRevisit } from "../resurface";
+import { missedFlashcards, savedToRevisit } from "../resurface";
 
 describe("resurface candidates", () => {
   it("brings back saved links after a week but not once they are stale", () => {
@@ -27,21 +27,12 @@ describe("resurface candidates", () => {
     ).toEqual(["https://example.com/ready"]);
   });
 
-  it("offers missed flashcards and chats from this week a year ago", () => {
+  it("offers only flashcard sets with missed cards", () => {
     expect(
       missedFlashcards([
         { outputId: "set_1", title: "Rye starters", missed: 3 },
         { outputId: "set_2", title: "All known", missed: 0 },
       ]).map((item) => item.title),
     ).toEqual(["3 cards to revisit"]);
-    expect(
-      aYearAgo(
-        [
-          { id: "c1", title: "Planning the allotment", createdAt: "2025-10-23T09:00:00Z" },
-          { id: "c2", title: "Too early", createdAt: "2025-10-10T09:00:00Z" },
-        ],
-        "2026-10-24",
-      ).map((item) => item.href),
-    ).toEqual(["/chat/c1"]);
   });
 });

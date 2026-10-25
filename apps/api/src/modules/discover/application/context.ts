@@ -1,4 +1,8 @@
-import type { DiscoverFollow, DiscoverSettings } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DiscoverEditionTime,
+  DiscoverFollow,
+  DiscoverSettings,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   describeZonedInstant,
   partOfDay,
@@ -20,11 +24,13 @@ import {
 } from "~/modules/discover/domain/device-activity";
 import {
   describeDiscoverCard,
+  discoverEditionTimeAt,
   discoverTopicKey,
-  listEditionUrls,
+  listEditionLinks,
 } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
+import type { DiscoverLink } from "~/modules/discover/domain/links";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
 import { latestResearchSection } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
@@ -103,7 +109,8 @@ export interface DiscoverEditionBasis {
   followedTopics: Set<string>;
   curate: string;
   resurfaceHrefs: Set<string>;
-  recentUrls: Set<string>;
+  edition: DiscoverEditionTime;
+  seenLinks: DiscoverLink[];
 }
 
 async function loadDiscoverBasis(context: ServiceContext, now: Date) {
@@ -116,15 +123,20 @@ async function loadDiscoverBasis(context: ServiceContext, now: Date) {
     listRecentDiscoverEditions(context, user.id, RECENT_EDITION_COUNT),
     listDiscoverFollows(context, user.id),
   ]);
+  const edition = discoverEditionTimeAt(Number.parseInt(zoned.time.slice(0, 2), 10));
   const recentEditions = editions
-    .filter((edition) => edition.content.date !== zoned.date)
-    .map((edition) => edition.content);
+    .filter(
+      (recent) =>
+        recent.content.date !== zoned.date || (recent.content.edition ?? "morning") !== edition,
+    )
+    .map((recent) => recent.content);
 
   return {
     user,
     settings,
     timezone,
     zoned,
+    edition,
     feedback: summariseDiscoverFeedback(feedback),
     feedbackEntries: feedback,
     recentEditions,
@@ -143,7 +155,6 @@ export async function readDiscoverEditionBasis(
       userId: basis.user.id,
       follows: basis.follows,
       feedback: basis.feedbackEntries,
-      today: basis.zoned.date,
       now: now.getTime(),
     }),
   ]);
@@ -164,7 +175,8 @@ export async function readDiscoverEditionBasis(
     followedTopics: new Set(basis.follows.map((follow) => discoverTopicKey(follow.topic))),
     curate: basis.settings.curate,
     resurfaceHrefs: new Set(resurface.map((item) => item.href)),
-    recentUrls: listEditionUrls(basis.recentEditions),
+    edition: basis.edition,
+    seenLinks: listEditionLinks(basis.recentEditions),
   };
 }
 
@@ -216,7 +228,6 @@ export async function buildDiscoverContextSnapshot(
       userId,
       follows: basis.follows,
       feedback: basis.feedbackEntries,
-      today: basis.zoned.date,
       now: now.getTime(),
     }),
     readDiscoverHealthSummary(context, userId, basis.zoned.date),

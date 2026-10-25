@@ -6,13 +6,14 @@ import {
   type DiscoverSettings,
   type RecipeConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+import { readCountryCode } from "@ngriffin_uk/polychat-utility-core";
 
 export const DISCOVER_MODEL_TIER: ModelTier = "medium";
 
 export type DiscoverPreferences = Pick<
   DiscoverSettings,
   "curate" | "listen" | "evening" | "episode" | "style"
-> & { [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: string[] };
+> & { [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: string[]; country: string | null };
 
 export const DEFAULT_DISCOVER_PREFERENCES: DiscoverPreferences = {
   curate: "",
@@ -21,6 +22,7 @@ export const DEFAULT_DISCOVER_PREFERENCES: DiscoverPreferences = {
   episode: "standard",
   style: "watercolour",
   [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: [],
+  country: null,
 };
 
 export function readDiscoverPreferences(configuration: RecipeConfiguration): DiscoverPreferences {
@@ -47,5 +49,6 @@ export function readDiscoverPreferences(configuration: RecipeConfiguration): Dis
     )
       ? configuration[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]
       : [],
+    country: readCountryCode(configuration.country),
   };
 }

@@ -31,7 +31,7 @@ Use this to answer questions about Discover. Describe what the person can do and
 
 - **The edition.** Poly writes one edition each morning at 07:00 in the person's time zone. Write again in the page header asks for a fresh one now.
 - **What it reads.** Recent personal chat titles, what Poly remembers when memory is on, feedback on earlier editions, anything they asked for, what is waiting on them and the web.
-- **Cards.** Topics open a chat on today's angle, links open the page or a chat about it, things worth doing start the work in a chat, check-ins follow up on something they mentioned, and From before brings back missed flashcards, saved links or what they were doing a year ago. Every card says why it is there.
+- **Cards.** Topics open a chat on today's angle, links open the page or a chat about it, things worth doing start the work in a chat, check-ins follow up on something they mentioned, and From before brings back missed flashcards or saved links. Every card says why it is there.
 - **Sensitive topics.** Health, sexuality, religion, politics and money only appear when the person follows the topic or asked for it.
 - **Watch and listen.** Today's episode, The Perch round-up, Wind down and, on Sundays, Your week all play in one player beside the feed. Tomorrow's episode is only made ahead when they watched past half of today's.
 - **Tidying.** Editions older than a fortnight are cleared unless a card was saved. Links Discover filed into a followed topic's notebook are removed after 30 days if they were never opened.

@@ -1,4 +1,6 @@
 import {
+  LISTED_CONVERSATION_TYPES,
+  SEARCHABLE_CONVERSATION_TYPES,
   type ConversationThread,
   type ConversationArchiveFilter,
   type ConversationSubject,
@@ -13,10 +15,6 @@ import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import {
-  listedConversationTypesSql,
-  searchableConversationTypesSql,
-} from "~/modules/conversations/infrastructure/conversation-type-sql";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
@@ -25,8 +23,6 @@ export interface PersonalConversationFilter {
   archiveFilter?: ConversationArchiveFilter;
   query?: string;
   updatedAfter?: string;
-  createdAfter?: string;
-  createdBefore?: string;
   teammateThreads?: "include" | "exclude";
 }
 
@@ -215,7 +211,7 @@ export class ConversationRepository extends BaseRepository {
       `WITH RECURSIVE scoped AS (
          SELECT id, parent_conversation_id FROM conversation
          WHERE +project_id IS ? AND (? IS NOT NULL OR user_id = ?)
-           AND type IN (${listedConversationTypesSql})
+           AND type IN (${LISTED_CONVERSATION_TYPES.map(() => "?").join(", ")})
            AND NOT EXISTS (
              SELECT 1 FROM teammate_context tc
              WHERE tc.home_conversation_id = conversation.id AND tc.actor_user_id != ?
@@ -231,7 +227,7 @@ export class ConversationRepository extends BaseRepository {
        SELECT c.id, c.title, c.parent_conversation_id, c.created_at, c.is_archived
        FROM conversation c JOIN family f ON c.id = f.id
        ORDER BY c.created_at ASC, c.id ASC`,
-      [projectId, projectId, userId, userId, conversationId, limit],
+      [projectId, projectId, userId, ...LISTED_CONVERSATION_TYPES, userId, conversationId, limit],
     );
   }
 
@@ -243,22 +239,37 @@ export class ConversationRepository extends BaseRepository {
     return this.runQuery<Record<string, unknown>>(query, values, true);
   }
 
+  private teammateThreadExclusions(alias: "c" | "conversation"): string[] {
+    return [
+      `NOT EXISTS (SELECT 1 FROM teammate_context tc WHERE tc.home_conversation_id = ${alias}.id)`,
+      `NOT EXISTS (SELECT 1 FROM teammate_group_member m WHERE m.conversation_id = ${alias}.id)`,
+      `NOT (
+        EXISTS (
+          SELECT 1 FROM conversation_run routine
+          WHERE routine.conversation_id = ${alias}.id
+            AND json_extract(routine.resolved_configuration_json, '$.invocation.source') = 'routine'
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM conversation_run engaged
+          WHERE engaged.conversation_id = ${alias}.id
+            AND (
+              engaged.trigger = 'user'
+              OR engaged.status IN ('awaiting_input', 'awaiting_approval', 'awaiting_takeover')
+            )
+        )
+      )`,
+    ];
+  }
+
   private personalListFilter(
     userId: number,
     options: PersonalConversationFilter,
   ): { whereClause: string; values: unknown[] } {
-    const {
-      archiveFilter = "active",
-      query,
-      updatedAfter,
-      createdAfter,
-      createdBefore,
-      teammateThreads = "include",
-    } = options;
+    const { archiveFilter = "active", query, updatedAfter, teammateThreads = "include" } = options;
     const whereClauses = [
       "c.user_id = ?",
       "c.project_id IS NULL",
-      `c.type IN (${listedConversationTypesSql})`,
+      `c.type IN (${LISTED_CONVERSATION_TYPES.map(() => "?").join(", ")})`,
       `NOT (
         COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
         OR (
@@ -272,29 +283,16 @@ export class ConversationRepository extends BaseRepository {
         )
       )`,
     ];
-    const values: unknown[] = [userId];
+    const values: unknown[] = [userId, ...LISTED_CONVERSATION_TYPES];
 
     if (teammateThreads === "exclude") {
-      whereClauses.push(
-        "NOT EXISTS (SELECT 1 FROM teammate_context tc WHERE tc.home_conversation_id = c.id)",
-        "NOT EXISTS (SELECT 1 FROM teammate_group_member m WHERE m.conversation_id = c.id)",
-      );
+      whereClauses.push(...this.teammateThreadExclusions("c"));
     }
 
     if (archiveFilter === "active") {
       whereClauses.push("c.is_archived = 0");
     } else if (archiveFilter === "archived") {
       whereClauses.push("c.is_archived = 1");
-    }
-
-    if (createdAfter) {
-      whereClauses.push("datetime(c.created_at) >= datetime(?)");
-      values.push(createdAfter);
-    }
-
-    if (createdBefore) {
-      whereClauses.push("datetime(c.created_at) < datetime(?)");
-      values.push(createdBefore);
     }
 
     if (updatedAfter) {
@@ -406,16 +404,18 @@ export class ConversationRepository extends BaseRepository {
     const whereClauses = [
       "user_id = ?",
       "project_id IS NULL",
-      `type IN (${listedConversationTypesSql})`,
+      `type IN (${LISTED_CONVERSATION_TYPES.map(() => "?").join(", ")})`,
       "is_archived = ?",
     ];
-    const values: unknown[] = [archived ? 1 : 0, userId, archived ? 0 : 1];
+    const values: unknown[] = [
+      archived ? 1 : 0,
+      userId,
+      ...LISTED_CONVERSATION_TYPES,
+      archived ? 0 : 1,
+    ];
 
     if (teammateThreads === "exclude") {
-      whereClauses.push(
-        "NOT EXISTS (SELECT 1 FROM teammate_context tc WHERE tc.home_conversation_id = conversation.id)",
-        "NOT EXISTS (SELECT 1 FROM teammate_group_member m WHERE m.conversation_id = conversation.id)",
-      );
+      whereClauses.push(...this.teammateThreadExclusions("conversation"));
     }
 
     const trimmedQuery = query?.trim();
@@ -576,7 +576,7 @@ export class ConversationRepository extends BaseRepository {
 			 LEFT JOIN user_resource_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.is_archived = 0
-			   AND c.type IN (${searchableConversationTypesSql})
+			   AND c.type IN (${SEARCHABLE_CONVERSATION_TYPES.map(() => "?").join(", ")})
 			   AND (
 			     (c.project_id IS NULL AND c.user_id = ?)
 			     OR (
@@ -606,7 +606,19 @@ export class ConversationRepository extends BaseRepository {
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
          COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT ?`,
-      [userId, userId, userId, userId, userId, trimmedQuery, searchTerm, userId, searchTerm, limit],
+      [
+        userId,
+        userId,
+        ...SEARCHABLE_CONVERSATION_TYPES,
+        userId,
+        userId,
+        userId,
+        trimmedQuery,
+        searchTerm,
+        userId,
+        searchTerm,
+        limit,
+      ],
     );
   }
 }

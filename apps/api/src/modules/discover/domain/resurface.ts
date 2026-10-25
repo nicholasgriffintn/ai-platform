@@ -1,10 +1,9 @@
-import { DAY_MS, parseTimestamp, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, parseTimestamp } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackEntry } from "./feedback";
 
 const SAVED_MIN_AGE_DAYS = 7;
 const SAVED_MAX_AGE_DAYS = 90;
-const YEAR_AGO_WINDOW_DAYS = 3;
 const RESURFACE_LIMIT = 6;
 
 export interface ResurfaceCandidate {
@@ -17,12 +16,6 @@ export interface StudySetProgress {
   outputId: string;
   title: string;
   missed: number;
-}
-
-export interface DatedConversation {
-  id: string;
-  title: string;
-  createdAt: string;
 }
 
 export function savedToRevisit(
@@ -53,28 +46,6 @@ export function missedFlashcards(sets: readonly StudySetProgress[]): ResurfaceCa
         ]
       : [],
   );
-}
-
-export function aYearAgo(
-  conversations: readonly DatedConversation[],
-  today: string,
-): ResurfaceCandidate[] {
-  const from = shiftCalendarDate(today, -365 - YEAR_AGO_WINDOW_DAYS);
-  const to = shiftCalendarDate(today, -365 + YEAR_AGO_WINDOW_DAYS);
-
-  return conversations.flatMap((conversation) => {
-    const day = conversation.createdAt.slice(0, 10);
-
-    return conversation.title && day >= from && day <= to
-      ? [
-          {
-            title: conversation.title,
-            detail: "What you were working on a year ago",
-            href: `/chat/${encodeURIComponent(conversation.id)}`,
-          },
-        ]
-      : [];
-  });
 }
 
 export function collectResurfacing(

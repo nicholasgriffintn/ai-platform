@@ -13,7 +13,7 @@ import {
   withExecutionRunContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
-import { discoverEditionGroupId } from "~/modules/discover/domain/edition";
+import { carriedDiscoverMedia, discoverEditionGroupId } from "~/modules/discover/domain/edition";
 import { collectCardSignals } from "~/modules/discover/domain/feedback";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import {
@@ -159,17 +159,26 @@ export async function saveDiscoverEdition(
 
   const groupId = discoverEditionGroupId(content.date, content.edition);
   const existing = await outputs.getPersonalOutputByGroup(userId, groupId, DISCOVER_EDITION_KIND);
-  const previous = readStoredEdition(existing)?.content;
+  const morning =
+    content.edition === "evening"
+      ? readStoredEdition(
+          await outputs.getPersonalOutputByGroup(
+            userId,
+            discoverEditionGroupId(content.date),
+            DISCOVER_EDITION_KIND,
+          ),
+        )?.content
+      : undefined;
+  const carried = {
+    ...content,
+    ...carriedDiscoverMedia(readStoredEdition(existing)?.content, morning),
+  };
   const title = `Discover, ${content.date}`;
   const record = existing
     ? await outputs.updateOutput(existing.id, {
         title,
         status: "ready",
-        content: {
-          ...content,
-          episodeId: previous?.episodeId,
-          weekSourceId: previous?.weekSourceId,
-        },
+        content: carried,
         expectedRevision: existing.revision,
         updatedByUserId: userId,
       })
@@ -181,7 +190,7 @@ export async function saveDiscoverEdition(
         title,
         status: "ready",
         sensitivity: "personal",
-        content,
+        content: carried,
       });
   const stored = readStoredEdition(record);
 

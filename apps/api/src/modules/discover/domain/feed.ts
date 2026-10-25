@@ -6,9 +6,11 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import { discoverTopicKey } from "./edition";
+import { claimUnseenLink, type SeenDiscoverLinks } from "./links";
 import type { DiscoverResearchResult } from "./research";
 
-export const DISCOVER_FEED_ITEMS_PER_GROUP = 3;
+export const DISCOVER_TOP_READS = 6;
+export const DISCOVER_READS_PER_TOPIC = 2;
 
 export interface DiscoverFeedGroup {
   topic: string;
@@ -81,23 +83,33 @@ function describeItemSource(item: DiscoverResearchResult): string {
   return [item.source ?? "", item.date ?? ""].filter(Boolean).join(", ");
 }
 
+function newestFirst(items: readonly DiscoverResearchResult[]): DiscoverResearchResult[] {
+  return [...items].sort((left, right) => (right.date ?? "").localeCompare(left.date ?? ""));
+}
+
 export function fillDiscoverFeed(input: {
   groups: readonly DiscoverFeedGroup[];
-  seenUrls: Set<string>;
+  seen: SeenDiscoverLinks;
   skipTopics: ReadonlySet<string>;
+  readsByTopic: ReadonlyMap<string, number>;
   limit: number;
   createId: () => string;
 }): DiscoverCard[] {
+  const taken = new Map(input.readsByTopic);
   const queues = input.groups
     .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
-    .map((group) => ({ group, remaining: [...group.items], taken: 0 }));
+    .map((group) => ({
+      group,
+      key: discoverTopicKey(group.topic),
+      remaining: newestFirst(group.items),
+    }));
   const cards: DiscoverCard[] = [];
 
   while (cards.length < input.limit) {
     let added = false;
 
     for (const queue of queues) {
-      if (cards.length >= input.limit || queue.taken >= DISCOVER_FEED_ITEMS_PER_GROUP) {
+      if (cards.length >= input.limit || (taken.get(queue.key) ?? 0) >= DISCOVER_READS_PER_TOPIC) {
         continue;
       }
 
@@ -105,7 +117,7 @@ export function fillDiscoverFeed(input: {
         const item = queue.remaining.shift();
         const url = item ? comparableHttpUrl(item.url) : null;
 
-        if (!item || !url || input.seenUrls.has(url)) {
+        if (!item || !url || !claimUnseenLink(input.seen, item)) {
           continue;
         }
 
@@ -129,8 +141,7 @@ export function fillDiscoverFeed(input: {
           continue;
         }
 
-        input.seenUrls.add(url);
-        queue.taken += 1;
+        taken.set(queue.key, (taken.get(queue.key) ?? 0) + 1);
         added = true;
         cards.push(card.data);
 

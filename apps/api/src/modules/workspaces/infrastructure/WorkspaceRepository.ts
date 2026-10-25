@@ -16,8 +16,6 @@ import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 import { WORKSPACE_INVITATION_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
-const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map((type) => `'${type}'`).join(", ");
-
 export interface WorkspaceRow {
   id: string;
   name: string;
@@ -906,7 +904,7 @@ export class WorkspaceRepository extends BaseRepository {
 			 LEFT JOIN user_resource_state state
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.project_id = ? AND c.is_archived = 0
-        AND c.type IN (${listedConversationTypesSql})
+        AND c.type IN (${LISTED_CONVERSATION_TYPES.map(() => "?").join(", ")})
         AND NOT EXISTS (
           SELECT 1 FROM teammate_context tc
           WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != ?
@@ -926,7 +924,7 @@ export class WorkspaceRepository extends BaseRepository {
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
         COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT 50`,
-      [userId, projectId, userId],
+      [userId, projectId, ...LISTED_CONVERSATION_TYPES, userId],
     );
   }
 

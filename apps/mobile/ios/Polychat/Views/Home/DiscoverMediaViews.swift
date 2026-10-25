@@ -29,42 +29,58 @@ private struct DiscoverMediaTile: View {
     let image: UIImage?
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
+        VStack(alignment: .leading, spacing: 0) {
             LinearGradient(colors: item.colours, startPoint: .topLeading, endPoint: .bottomTrailing)
-            if let image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
-            }
+                .overlay {
+                    if let image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    Image(systemName: item.systemImage)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(.black.opacity(0.35), in: Circle())
+                        .padding(10)
+                }
+                .frame(height: 104)
+                .clipped()
+
             VStack(alignment: .leading, spacing: 4) {
-                Image(systemName: item.systemImage)
-                    .font(.headline)
-                Spacer(minLength: 0)
                 Text(item.title.uppercased())
                     .font(.caption2.weight(.semibold))
-                    .opacity(0.85)
+                    .tracking(0.6)
+                    .foregroundStyle(Color.polychat.textMuted)
+                    .lineLimit(1)
                 Text(state?.title ?? item.subtitle)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.polychat.text)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
                 HStack(spacing: 4) {
                     if state?.isReady == true {
                         Image(systemName: "play.fill").font(.caption2)
                     } else if state?.isWorking == true {
-                        ProgressView().controlSize(.mini).tint(.white)
+                        ProgressView().controlSize(.mini)
                     }
                     Text(state?.status ?? item.subtitle)
                         .font(.caption)
                         .lineLimit(1)
                 }
-                .opacity(0.9)
+                .foregroundStyle(Color.polychat.textMuted)
             }
-            .foregroundStyle(.white)
-            .padding(14)
+            .padding(12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(width: 170, height: 150)
+        .frame(width: 220, height: 210)
+        .background(Color.polychat.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.polychat.border, lineWidth: 1))
     }
 }
 
