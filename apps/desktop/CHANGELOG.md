@@ -1,5 +1,11 @@
 # @assistant/desktop
 
+## 0.6.0
+
+### Minor Changes
+
+- 1212c26: The desktop app now updates itself. It looks for a newer release when it opens and every few hours while it stays open, downloads it quietly in the background, then asks whether to restart. Choose Later and it won't ask about that version again until you next open Polychat. To look straight away, choose Check for updates from the Poly menu.
+
 ## 0.5.0
 
 ### Minor Changes
