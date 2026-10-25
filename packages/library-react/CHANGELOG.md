@@ -1,5 +1,42 @@
 # @ngriffin_uk/polychat-library-react
 
+## 0.7.0
+
+### Minor Changes
+
+- d2905a6: Discover on the iPhone now does what it does on the web.
+
+  - **Episodes pick up where you left off, on any device.** Where you stopped in an episode is saved to your account, so the web and the phone both resume there. Watching on the phone now counts towards tomorrow's episode being made ahead of time.
+  - **Playback keeps going when you close the player.** The Perch, episodes, Your week and Wind down keep playing while you read other cards. A bar at the bottom of Home shows what is playing, with play, pause and stop.
+  - **Ask about a card without leaving Home.** Asking Poly about a card opens the chat over Home, grounded in the article Discover already read, or the edition when there is no article.
+  - **Save and follow from the phone.** Save a card to keep its edition past the two-week tidy, and follow a topic from its card.
+  - **Earlier editions.** Home lists the last fortnight of editions, morning and evening, so yesterday's reading and this morning's edition are a tap away after the evening one arrives.
+  - **What Poly is up to.** Home shows what needs you, what Poly is working on and what it has noted, and links from widgets and the Apple TV open the Perch, an episode or a card directly.
+  - **Usage.** Notebook guides, Studio drafts and podcast scripts now count towards your usage like every other model call.
+  - **Narration timing.** Video overviews and episodes time their pictures to the measured length of each narrated scene, so pictures change with the voice rather than drifting.
+
+- 0fe409a: Folders in Files can now hold things Polychat made, not just your files and notes. Use Add to folder on any result, episode or document.
+
+  - Discover files its episodes into a Discover episodes folder, and its research and service notes into a Discover research folder. Episodes you already have go into the folder when it is first made.
+  - Your week episodes get their own Your week podcast show, as The Perch already does.
+  - The research note behind a podcast episode is filed in the same show as the episode.
+
+### Patch Changes
+
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+- Updated dependencies [0fe409a]
+- Updated dependencies [0fe409a]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [e0ca7c6]
+  - @ngriffin_uk/polychat-schemas@1.6.0
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+  - @ngriffin_uk/polychat-library-client@0.6.0
+  - @ngriffin_uk/polychat-library-chat@1.2.1
+  - @ngriffin_uk/polychat-library-realtime@0.3.1
+  - @ngriffin_uk/polychat-library-sites@0.3.2
+  - @ngriffin_uk/polychat-utility-react@0.4.1
+
 ## 0.6.0
 
 ### Minor Changes

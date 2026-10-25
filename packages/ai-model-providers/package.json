@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-model-providers",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Model provider adapters for Polychat: capability manifests plus trainers, hosts and connection checks for Hugging Face, AWS, Together, Fireworks, Nebius, Google Vertex, Azure, RunPod, Cloudflare Workers AI and self-hosted OpenAI-compatible servers",
   "license": "Apache-2.0",
   "files": [

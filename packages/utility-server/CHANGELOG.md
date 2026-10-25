@@ -1,5 +1,35 @@
 # @ngriffin_uk/polychat-utility-server
 
+## 0.4.0
+
+### Minor Changes
+
+- 187afde: When a provider says your credits have run out, Polychat stops sending it work and moves on to the next model you have access to. Chats and scheduled routines that use an automatic model tier carry on with the next model in that tier mid-run. Speech renders switch to your next-best voice and finish, rather than failing until the month resets.
+
+  - A model you picked yourself is never swapped. If its provider is out of credit, the error is shown.
+  - Episodes, podcasts, video overviews and wind downs restart on the new voice, so one recording never mixes two voices.
+  - ElevenLabs, OpenRouter and DeepSeek balances are checked in the background. The provider comes back as soon as your credits reset or you top up.
+  - Keys that can't read their own balance, such as an ElevenLabs key limited to text to speech, get another try 15 minutes later. A refused request costs no credits, and if it is still empty your audio carries on with the next voice.
+  - Saving a new key for a provider clears its out-of-credits state straight away.
+
+### Patch Changes
+
+- e0ca7c6: Memories are kept as whole documents, and what Polychat gathers is summarised rather than pasted.
+
+  - **One document per subject.** When Polychat remembers something with document memory, it files it into the memory document for that subject, or starts a new one, instead of adding a line to a single list. The whole document is rewritten each time: what to remember, why, and how it should shape future answers, with links to related memories. A newer fact replaces the one it contradicts.
+  - **Memories say what they hold.** Each memory document has a one-line description and a kind: about you, how to work with you, ongoing work, or where to find things. Poly picks memories by those descriptions, and you can see them under File info.
+  - **Summaries for gathered reading.** Pages Discover reads and the browsing your Mac shares are recorded with a summary of what each page says and its key points, rather than its opening lines. Discover keeps the whole page in its notebook. Documents also get a summary when they are added or change, so when a notebook is too big to read in full, guides, Studio and episodes get a summary of every source instead of only the first few.
+  - **Service documents are easier to read.** Each service's document in the Discover notebook lists what was found without the raw response underneath.
+
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+- Updated dependencies [0fe409a]
+- Updated dependencies [0fe409a]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [e0ca7c6]
+  - @ngriffin_uk/polychat-schemas@1.6.0
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+
 ## 0.3.0
 
 ### Minor Changes

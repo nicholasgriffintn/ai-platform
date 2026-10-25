@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-agent-loop",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": false,
   "description": "The Polychat agent decision loop: bounded steps, plan recovery, control tools, approvals, and action handler contracts",
   "license": "Apache-2.0",

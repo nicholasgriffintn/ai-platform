@@ -1,5 +1,13 @@
 # @ngriffin_uk/polychat-library-tasks
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [187afde]
+  - @ngriffin_uk/polychat-utility-server@0.4.0
+
 ## 0.2.1
 
 ### Patch Changes

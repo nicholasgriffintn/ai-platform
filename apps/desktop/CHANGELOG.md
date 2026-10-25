@@ -1,5 +1,41 @@
 # @assistant/desktop
 
+## 0.5.0
+
+### Minor Changes
+
+- 0fe409a: The desktop app can share what you do on your Mac with Discover and Poly.
+
+  - **Choose what to share.** Open Profile, then Mac activity, in the desktop app and switch on any of: browsing in Helium, Chrome, Brave, Arc, Edge, Vivaldi or Chromium; Claude Code and Codex sessions; time in the apps you use; and what Apple Music or Spotify played. Everything starts off.
+  - **Summaries leave, files don't.** The Mac reads history and transcripts itself and sends summaries, never the files: short lines such as a site with your visit count and time spent, or a project with its session title and prompt count. Searches and window titles each have their own switch.
+  - **Discover knows what you read and worked on.** With "Include the pages you read" on, the Mac also sends the pages you spent longest on, and Discover reads the public ones so the edition can say what they were about rather than only naming them. With "Include what each session was about" on, each Claude Code or Codex session carries your first and latest prompt and the agent's last reply.
+  - **Pause from the menu bar.** The Poly menu says what's being shared and lets you pause for an hour, until tomorrow or until you resume. Anything you did while paused is never sent, even after you resume.
+  - **See exactly what was sent.** The settings tab shows the last send line by line. Mark any site, app or project as never shared, or forget everything this Mac sent.
+  - **Discover and Poly use it straight away.** Each source appears in the Discover notebook as a document for your Mac, so morning editions and Poly's sense of your week include it. Switch a Mac source off in Discover settings to stop using it there.
+
+### Patch Changes
+
+- 0fe409a: Activity shared from your Mac now keeps a week of days, so Poly can answer what you were doing on Tuesday. Your recent searches lead what Poly sees, Discover stops suggesting pages you have already opened, and activity from a Mac that has gone quiet stops counting after a few days. The desktop app now sends once an hour.
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+- Updated dependencies [0fe409a]
+- Updated dependencies [0fe409a]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [e0ca7c6]
+  - @ngriffin_uk/polychat-schemas@1.6.0
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+  - @ngriffin_uk/polychat-component-shell@2.1.0
+  - @ngriffin_uk/polychat-library-client@0.6.0
+  - @ngriffin_uk/polychat-library-react@0.7.0
+  - @ngriffin_uk/polychat-component-account@1.0.1
+  - @ngriffin_uk/polychat-component-content@1.3.1
+  - @ngriffin_uk/polychat-component-conversation@2.1.1
+  - @ngriffin_uk/polychat-component-experiences@0.6.1
+  - @ngriffin_uk/polychat-component-models@1.2.2
+  - @ngriffin_uk/polychat-component-navigation@0.5.1
+  - @ngriffin_uk/polychat-component-ui@0.5.1
+  - @ngriffin_uk/polychat-library-chat@1.2.1
+
 ## 0.4.0
 
 ### Minor Changes

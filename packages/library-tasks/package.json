@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-tasks",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Task engine primitives for Polychat: task outcomes and retry settlement, execution leases with renewal and ownership checks, handler registries, polling schedules, cron and interval schedules, and actor-aware status machines",
   "license": "Apache-2.0",
   "files": [
