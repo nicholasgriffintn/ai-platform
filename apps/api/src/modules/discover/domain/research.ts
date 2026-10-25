@@ -1,5 +1,10 @@
 import { DISCOVER_RESEARCH_DAYS_KEPT } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, leadParagraphs, markdownToPlainText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  isBoilerplate,
+  isRecord,
+  leadParagraphs,
+  markdownToPlainText,
+} from "@ngriffin_uk/polychat-utility-core";
 
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 
@@ -23,7 +28,7 @@ const RESULT_LINE =
 function cleanSnippet(value: string): string {
   const text = markdownToPlainText(value).replace(/\s+/gu, " ").trim();
 
-  return leadParagraphs(text, 1_000) || text;
+  return leadParagraphs(text, 1_000) || (isBoilerplate(text) ? "" : text);
 }
 
 function describeOrigin(result: DiscoverResearchResult): string {

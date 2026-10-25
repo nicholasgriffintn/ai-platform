@@ -3,7 +3,7 @@ import { truncateSingleLine } from "./strings.js";
 const BOILERPLATE =
   /\b(skip to (main )?content|content starts here|popular searches|sign in|sign up|log in|log on|subscribe|newsletter|cookie|privacy policy|terms of (use|service)|all rights reserved|advertisement|share this|follow us|read more|menu|navigation|accept all|manage preferences)\b/iu;
 const BYLINE =
-  /\b(is an? (staff |senior |freelance |contributing )?(writer|contributor|editor|journalist|reporter|critic|author) (for|at|with)|has been (writing|a (writer|journalist|contributor))|(he|she|they) (grew up|attended|graduated|lives?|loves?|enjoys?)|graduated from|can be reached at|follow (him|her|them) on|a contributor at|(he|she|they) (has|have) (self-)?published|(his|her|their) (instagram|twitter|blog|podcast)|lifelong fan|storyteller|fanatic who|writes and talks about)\b/iu;
+  /\b(is an? (\w+ ){0,2}(writer|contributor|editor|journalist|reporter|critic|author|producer) (for|at|with)|has been (writing|a (writer|journalist|contributor))|(he|she|they) (grew up|attended|graduated|lives?|loves?|enjoys?)|graduated from|can be reached at|follow (him|her|them) on|a contributor at|(he|she|they) (has|have) (self-)?published|(his|her|their) (instagram|twitter|blog|podcast)|lifelong fan|storyteller|fanatic who|writes and talks about)\b/iu;
 const MIN_PARAGRAPH_CHARACTERS = 80;
 const MIN_PARAGRAPH_WORDS = 12;
 
@@ -34,6 +34,10 @@ function isProse(paragraph: string): boolean {
     (paragraph.match(/[.!?](\s|$)/gu)?.length ?? 0) >= 1 &&
     (paragraph.match(/\s[·|•]\s/gu)?.length ?? 0) <= 2
   );
+}
+
+export function isBoilerplate(text: string): boolean {
+  return BOILERPLATE.test(text) || BYLINE.test(text);
 }
 
 export function leadParagraphs(text: string, maxCharacters: number): string {

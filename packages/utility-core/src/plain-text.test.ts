@@ -44,6 +44,12 @@ describe("leadParagraphs", () => {
     );
 
     expect(lead.startsWith("Action cinema has rarely been")).toBe(true);
+    expect(
+      leadParagraphs(
+        "Amanda is a Features Editor at MovieWeb covering all things television and film, and she specialises in fantasy topics and page-to-screen adaptations.\nNetflix's new fantasy series has already outgrown the show it replaced, with a second season ordered before the first had finished airing.",
+        400,
+      ).startsWith("Netflix's new fantasy series"),
+    ).toBe(true);
   });
 
   it("returns nothing when a page is only chrome", () => {
