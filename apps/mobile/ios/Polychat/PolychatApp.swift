@@ -12,7 +12,7 @@ struct PolychatApp: App {
     @StateObject private var polyStore = PolyStore()
     @StateObject private var teammatesStore = TeammatesStore()
     @StateObject private var ageGateStore = AgeGateStore()
-    @StateObject private var discoverStore = DiscoverStore()
+    @StateObject private var discoverStore = DiscoverStore(onEdition: WidgetPublisher.publish(edition:))
     @StateObject private var attentionStore = AttentionStore()
     @StateObject private var workStore = WorkStore()
     @StateObject private var healthSync = HealthSyncController.shared

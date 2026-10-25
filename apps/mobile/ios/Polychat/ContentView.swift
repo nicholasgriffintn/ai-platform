@@ -39,6 +39,7 @@ private struct RootTabView: View {
     @State private var chatsMode: ChatsMode = .chat
     @State private var workTarget: MobileWorkTarget?
     @State private var outputReviewTarget: OutputReviewTarget?
+    @State private var deviceApproval: DeviceApprovalTarget?
     @State private var companionSync: CompanionSync?
 
     var body: some View {
@@ -77,6 +78,10 @@ private struct RootTabView: View {
         }
         .sheet(item: $outputReviewTarget) { target in
             OutputRevisionReviewView(outputId: target.id)
+        }
+        .sheet(item: $deviceApproval) { target in
+            DeviceApprovalSheet(userCode: target.id)
+                .presentationDetents([.medium, .large])
         }
         .task {
             await start()
@@ -180,7 +185,7 @@ private struct RootTabView: View {
         await teammatesStore.refresh()
         conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
         if let polyConversationId = polyStore.agenda?.conversationId {
-            conversationManager.bindTeammates([polyConversationId: PolyStore.teammateId])
+            conversationManager.bindTeammates([polyConversationId: PolyThread.teammateId])
         }
     }
 
@@ -230,6 +235,8 @@ private struct RootTabView: View {
             selectedTab = tab
         case .conversation(let id):
             openConversation(id)
+        case .device(let userCode):
+            deviceApproval = DeviceApprovalTarget(id: userCode)
         case .poly:
             if let conversationId = polyStore.agenda?.conversationId {
                 openConversation(conversationId)
@@ -243,6 +250,10 @@ private struct RootTabView: View {
 }
 
 private struct OutputReviewTarget: Identifiable {
+    let id: String
+}
+
+private struct DeviceApprovalTarget: Identifiable {
     let id: String
 }
 

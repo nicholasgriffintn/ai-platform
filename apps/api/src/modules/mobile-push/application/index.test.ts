@@ -139,4 +139,41 @@ describe("mobile task notification preferences", () => {
     );
     expect(send).toHaveBeenCalledTimes(1);
   });
+
+  it("marks task approvals so the phone and watch can resolve them in place", async () => {
+    const subtle = {
+      importKey: vi.fn().mockResolvedValue({}),
+      sign: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
+      digest: vi.fn().mockResolvedValue(new Uint8Array(32).buffer),
+    };
+    const send = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+
+    vi.stubGlobal("crypto", { subtle });
+    vi.stubGlobal("fetch", send);
+
+    await notifyMobileProjectTask({
+      context: context(true),
+      task,
+      notificationId: "notification-approval",
+      kind: "approval",
+      interactionId: "interaction-1",
+    });
+    await notifyMobileProjectTask({
+      context: context(true),
+      task,
+      notificationId: "notification-approval-without-interaction",
+      kind: "approval",
+    });
+
+    const [withInteraction, withoutInteraction] = send.mock.calls.map(
+      ([, init]) => JSON.parse(String(init.body)).aps,
+    );
+
+    expect(withInteraction).toMatchObject({
+      category: "work.approval",
+      "thread-id": "project:project-1",
+      "interruption-level": "time-sensitive",
+    });
+    expect(withoutInteraction.category).toBe("work.update");
+  });
 });

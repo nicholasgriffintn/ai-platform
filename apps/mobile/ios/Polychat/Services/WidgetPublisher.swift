@@ -3,46 +3,21 @@ import WidgetKit
 
 enum WidgetPublisher {
     static func publish(edition: DiscoverEdition?) {
-        let today = edition.map { edition in
-            WidgetSnapshot.Today(
-                date: edition.date,
-                greeting: edition.greeting,
-                brief: edition.brief.prefix(4).map {
-                    WidgetSnapshot.Line(title: $0.text, detail: $0.label, systemImage: $0.systemImage)
-                },
-                cards: edition.cards.prefix(4).map {
-                    WidgetSnapshot.Line(title: $0.headline, detail: $0.topic ?? $0.source, systemImage: $0.systemImage)
-                }
-            )
-        }
-        write { $0.today = today }
+        write { $0.today = edition.map(WidgetSnapshot.Today.init(edition:)) }
     }
 
     static func publish(attention items: [WorkAttentionItem], needsYou: Int, running: Int) {
-        let lines = items.prefix(5).map {
-            WidgetSnapshot.Line(title: $0.title, detail: $0.projectName, systemImage: $0.needsAction ? "exclamationmark.circle" : "bolt.horizontal")
-        }
-        write { $0.attention = WidgetSnapshot.Attention(needsYou: needsYou, running: running, items: lines) }
+        write { $0.attention = WidgetSnapshot.Attention(items: items, needsYou: needsYou, running: running) }
     }
 
     static func publish(agenda: PolyAgenda?) {
-        let poly = agenda.map { agenda in
-            let presence = PolyPresence.derive(from: agenda)
-            return WidgetSnapshot.Poly(
-                status: presence.status,
-                needsYou: agenda.needsYou.count,
-                workingOn: agenda.workingOn.count,
-                items: (agenda.needsYou + agenda.workingOn).prefix(4).map {
-                    WidgetSnapshot.Line(title: $0.title, detail: $0.status, systemImage: "circle.fill")
-                }
-            )
-        }
-        write { $0.poly = poly }
+        write { $0.poly = agenda.map(WidgetSnapshot.Poly.init(agenda:)) }
     }
 
     static func clear() {
         WidgetSnapshotStore.clear()
         WidgetCenter.shared.reloadAllTimelines()
+        WatchBridge.shared.publish(.empty)
     }
 
     private static func write(_ change: (inout WidgetSnapshot) -> Void) {
@@ -54,5 +29,6 @@ enum WidgetPublisher {
         }
         WidgetSnapshotStore.update(change)
         WidgetCenter.shared.reloadAllTimelines()
+        WatchBridge.shared.publish(WidgetSnapshotStore.read())
     }
 }

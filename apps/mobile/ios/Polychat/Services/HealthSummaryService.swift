@@ -1,21 +1,6 @@
 import Foundation
 import HealthKit
 
-struct DiscoverHealthSummary: Codable, Equatable {
-    let date: String
-    let sleepMinutes: Int?
-    let mindfulMinutes: Int?
-    let exerciseMinutes: Int?
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(date, forKey: .date)
-        try container.encode(sleepMinutes, forKey: .sleepMinutes)
-        try container.encode(mindfulMinutes, forKey: .mindfulMinutes)
-        try container.encode(exerciseMinutes, forKey: .exerciseMinutes)
-    }
-}
-
 @MainActor
 final class HealthSummaryService {
     static let shared = HealthSummaryService()

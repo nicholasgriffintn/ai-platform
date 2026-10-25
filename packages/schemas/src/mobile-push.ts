@@ -26,6 +26,13 @@ export const mobileWorkNotificationKindSchema = z.enum([
   "failed",
 ]);
 
+export const mobileNotificationCategorySchema = z.enum([
+  "work.approval",
+  "work.input",
+  "work.update",
+  "poly.update",
+]);
+
 export const mobileWorkNotificationTargetSchema = z.object({
   workspaceId: z.string(),
   projectId: z.string(),
@@ -45,5 +52,6 @@ export const mobileWorkNotificationSchema = z.object({
 
 export type RegisterMobilePushDevice = z.infer<typeof registerMobilePushDeviceSchema>;
 export type MobileWorkNotificationKind = z.infer<typeof mobileWorkNotificationKindSchema>;
+export type MobileNotificationCategory = z.infer<typeof mobileNotificationCategorySchema>;
 export type MobileWorkNotificationTarget = z.infer<typeof mobileWorkNotificationTargetSchema>;
 export type MobileWorkNotification = z.infer<typeof mobileWorkNotificationSchema>;

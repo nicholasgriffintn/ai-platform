@@ -87,21 +87,9 @@ final class PushNotificationManager: ObservableObject {
             return
         }
 
-        guard let polychat = userInfo["polychat"] as? [String: Any],
-              let target = polychat["target"] as? [String: Any],
-              let workspaceId = target["workspaceId"] as? String,
-              let projectId = target["projectId"] as? String else {
-            return
+        if let target = MobileWorkTarget(notificationPayload: userInfo) {
+            targetToOpen = target
         }
-
-        targetToOpen = MobileWorkTarget(
-            workspaceId: workspaceId,
-            projectId: projectId,
-            conversationId: target["conversationId"] as? String,
-            taskId: target["taskId"] as? String,
-            runId: target["runId"] as? String,
-            interactionId: target["interactionId"] as? String
-        )
     }
 
     func handleOpenURL(_ url: URL) -> Bool {
@@ -169,7 +157,21 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        NotificationCategories.register()
+        WatchBridge.shared.activate()
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        if connectingSceneSession.role == .windowExternalDisplayNonInteractive {
+            configuration.delegateClass = ExternalDisplaySceneDelegate.self
+        }
+        return configuration
     }
 
     func application(
@@ -194,6 +196,11 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
+        if NotificationActionHandler.handles(response.actionIdentifier) {
+            await NotificationActionHandler.perform(response)
+            return
+        }
+
         NotificationCenter.default.post(
             name: .taskNotificationOpened,
             object: response.notification.request.content.userInfo

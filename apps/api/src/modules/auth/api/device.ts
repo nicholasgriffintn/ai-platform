@@ -34,7 +34,7 @@ addRoute(app, "post", "/code", {
   handler: async ({ body, raw, serviceContext }) => {
     raw.header("Cache-Control", "no-store");
 
-    return startDeviceAuthorisation(serviceContext, body.client_name);
+    return startDeviceAuthorisation(serviceContext, body.client_name, body.scope);
   },
 });
 

@@ -1,34 +1,5 @@
 import SwiftUI
 
-extension DiscoverMediaItem {
-    var subtitle: String {
-        switch self {
-        case .episode: return "Part of a five-day season"
-        case .perch: return "Two hosts on today's edition"
-        case .week: return "Your week, told back"
-        case .windDown: return "5, 10 or 20 minutes"
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .episode: return "play.rectangle.fill"
-        case .perch: return "headphones"
-        case .week: return "calendar"
-        case .windDown: return "moon.stars.fill"
-        }
-    }
-
-    var colours: [Color] {
-        switch self {
-        case .episode: return [Color(rgb: 46, 98, 201), Color(rgb: 119, 80, 177)]
-        case .perch: return [Color(rgb: 7, 108, 146), Color(rgb: 19, 119, 56)]
-        case .week: return [Color(rgb: 147, 105, 13), Color(rgb: 201, 47, 51)]
-        case .windDown: return [Color(rgb: 26, 42, 61), Color(rgb: 60, 87, 138)]
-        }
-    }
-}
-
 struct DiscoverMediaShelf: View {
     let items: [DiscoverMediaItem]
     let states: [DiscoverMediaItem: DiscoverMediaState]
@@ -246,8 +217,13 @@ private struct EpisodePlayerView: View {
                         }
                     }
 
-                    PlaybackBar(player: controller.player, isLoading: controller.isLoading) {
-                        Task { await controller.togglePlayback() }
+                    HStack(spacing: 12) {
+                        PlaybackBar(player: controller.player, isLoading: controller.isLoading) {
+                            Task { await controller.togglePlayback() }
+                        }
+                        AirPlayButton()
+                            .frame(width: 36, height: 36)
+                            .accessibilityLabel("Play on Apple TV or speakers")
                     }
 
                     VStack(spacing: 0) {
@@ -296,10 +272,14 @@ private struct EpisodePlayerView: View {
         }
         .task(id: edition.episodeId) {
             if let id = edition.episodeId {
-                await controller.load(id: id)
+                await controller.follow(id: id)
             }
         }
-        .onDisappear { controller.stop() }
+        .onAppear { ExternalDisplayStage.shared.present(controller) }
+        .onDisappear {
+            controller.stop()
+            ExternalDisplayStage.shared.dismiss(controller)
+        }
     }
 
     private func request() {
@@ -317,93 +297,60 @@ private struct EpisodePlayerView: View {
 }
 
 private struct SourceListenView: View {
-    @EnvironmentObject private var apiClient: APIClient
-    @StateObject private var player = AudioClipPlayer()
-    @State private var source: MediaSource?
-    @State private var recordingId: String?
-    @State private var isWorking = false
-    @State private var error: String?
-    let item: DiscoverMediaItem
+    @StateObject private var controller: ListenPlaybackController
     let sourceId: String?
-    let editionId: String
     let artwork: UIImage?
     let onRefresh: () async -> Void
 
-    private var activeSourceId: String? { recordingId ?? sourceId }
+    init(item: DiscoverMediaItem, sourceId: String?, editionId: String, artwork: UIImage?, onRefresh: @escaping () async -> Void) {
+        _controller = StateObject(wrappedValue: ListenPlaybackController(item: item, editionId: editionId))
+        self.sourceId = sourceId
+        self.artwork = artwork
+        self.onRefresh = onRefresh
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            MediaArtwork(item: item, image: artwork)
+            MediaArtwork(item: controller.item, image: artwork)
 
-            if let source, source.isPlayable {
+            if let source = controller.source, source.isPlayable {
                 Text(source.title).font(.polychatDisplay(.title3))
-                PlaybackBar(player: player, isLoading: isWorking) {
-                    if player.duration == 0 {
-                        Task { await loadAudio(source) }
-                    } else {
-                        player.toggle()
+                HStack(spacing: 12) {
+                    PlaybackBar(player: controller.player, isLoading: controller.isWorking) {
+                        Task { await controller.togglePlayback() }
                     }
+                    AirPlayButton()
+                        .frame(width: 36, height: 36)
+                        .accessibilityLabel("Play on Apple TV or speakers")
                 }
-            } else if activeSourceId == nil {
+            } else if sourceId == nil && !controller.requested {
                 MediaNotice(
-                    message: item == .week
+                    message: controller.item == .week
                         ? "A short private recap of what you made, learned and finished this week."
                         : "A short two-host round-up of today's edition.",
                     actionTitle: "Record it",
-                    isWorking: isWorking,
+                    isWorking: controller.isWorking,
                     action: record
                 )
-            } else if source?.status == "failed" {
-                MediaNotice(message: "That recording didn't take.", actionTitle: "Try again", isWorking: isWorking, action: record)
+            } else if controller.source?.status == "failed" {
+                MediaNotice(message: "That recording didn't take.", actionTitle: "Try again", isWorking: controller.isWorking, action: record)
             } else {
                 MediaNotice(message: "Recording. It plays here when it's ready, so carry on with the edition.")
             }
 
-            if let error {
+            if let error = controller.error {
                 InlineErrorBanner(message: error)
             }
         }
         .padding(16)
-        .task(id: activeSourceId) { await pollSource() }
-        .onDisappear { player.stop() }
-    }
-
-    private func pollSource() async {
-        while let id = activeSourceId, !Task.isCancelled {
-            source = try? await apiClient.fetchSource(id: id)
-            if source?.isPlayable == true || source?.status == "failed" {
-                return
-            }
-            try? await Task.sleep(for: .seconds(5))
+        .task(id: sourceId != nil || controller.requested) {
+            await controller.follow(hasRecording: sourceId != nil, artwork: artwork)
         }
-    }
-
-    private func loadAudio(_ source: MediaSource) async {
-        isWorking = true
-        defer { isWorking = false }
-        do {
-            try player.load(try await apiClient.fetchSourceContent(id: source.id), autoplay: true)
-        } catch {
-            self.error = "This recording could not be played: \(error.localizedDescription)"
-        }
+        .onDisappear { controller.stop() }
     }
 
     private func record() {
-        isWorking = true
-        Task {
-            do {
-                if item == .week {
-                    try await apiClient.requestDiscoverWeek(editionId: editionId)
-                    await onRefresh()
-                } else {
-                    recordingId = try await apiClient.requestDiscoverListen(editionId: editionId).sourceId
-                }
-                error = nil
-            } catch {
-                self.error = "The recording could not be started: \(error.localizedDescription)"
-            }
-            isWorking = false
-        }
+        Task { await controller.record(onRefresh: onRefresh) }
     }
 }
 
@@ -412,8 +359,6 @@ private struct WindDownView: View {
     @State private var kind = "breathing"
     @State private var minutes = 5
     let windDownId: String?
-
-    private let kinds = [("breathing", "Breathing"), ("body_scan", "Body scan"), ("unwind", "Unwind")]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -427,15 +372,20 @@ private struct WindDownView: View {
                         .foregroundStyle(Color.polychat.textMuted)
                         .transition(.opacity)
                 }
-                Button {
-                    controller.togglePlayback()
-                } label: {
-                    Label(controller.isPlaying ? "Pause" : "Begin", systemImage: controller.isPlaying ? "pause.fill" : "play.fill")
-                        .frame(maxWidth: .infinity)
+                HStack(spacing: 12) {
+                    Button {
+                        controller.togglePlayback()
+                    } label: {
+                        Label(controller.isPlaying ? "Pause" : "Begin", systemImage: controller.isPlaying ? "pause.fill" : "play.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(Color.polychat.primary)
+                    AirPlayButton()
+                        .frame(width: 36, height: 36)
+                        .accessibilityLabel("Play on Apple TV or speakers")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(Color.polychat.primary)
                 Button("Choose another") {
                     controller.stop()
                     Task { await controller.start(kind: kind, minutes: minutes) }
@@ -445,11 +395,11 @@ private struct WindDownView: View {
                 MediaNotice(message: "Settling in. Poly is recording your wind down.")
             } else {
                 Picker("Kind", selection: $kind) {
-                    ForEach(kinds, id: \.0) { Text($0.1).tag($0.0) }
+                    ForEach(DiscoverWindDown.kinds) { Text($0.title).tag($0.id) }
                 }
                 .pickerStyle(.segmented)
                 Picker("Length", selection: $minutes) {
-                    ForEach([5, 10, 20], id: \.self) { Text("\($0) min").tag($0) }
+                    ForEach(DiscoverWindDown.lengths, id: \.self) { Text("\($0) min").tag($0) }
                 }
                 .pickerStyle(.segmented)
                 Button {

@@ -41,6 +41,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Discover reads yesterday's sleep, mindful and exercise minutes for one line in your brief. It never uses them to choose topics.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Polychat never writes to Apple Health. It only reads yesterday's sleep, mindful and exercise minutes for your Discover brief.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to your microphone to record your voice for transcription.</string>
 	<key>NSSiriUsageDescription</key>

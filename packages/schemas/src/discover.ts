@@ -434,6 +434,15 @@ export const discoverQueuedResponseSchema = z.object({ queued: z.literal(true) }
 
 export const discoverEditionIdParamsSchema = z.object({ edition_id: z.string().min(1) });
 
+export const discoverEditionRecordingSchema = z.enum(["listen", "week"]);
+
+export const discoverEditionRecordingParamsSchema = z.object({
+  edition_id: z.string().min(1),
+  recording: discoverEditionRecordingSchema,
+});
+
+export type DiscoverEditionRecording = z.infer<typeof discoverEditionRecordingSchema>;
+
 export const discoverListenResponseSchema = z.object({ sourceId: z.string().min(1) });
 
 export const discoverRefreshResponseSchema = z.object({

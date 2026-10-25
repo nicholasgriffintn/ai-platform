@@ -1,5 +1,5 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { Check, Globe, SquareTerminal, X } from "lucide-react";
+import { Check, Globe, SquareTerminal, X, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 export type DevicePairingState = "waiting" | "linked" | "refused";
@@ -23,11 +23,11 @@ function PairingEnd({ children, state }: { children: ReactNode; state: DevicePai
   );
 }
 
-function PairingLink({ state }: { state: DevicePairingState }) {
+function PairingLink({ state, device: Device }: { state: DevicePairingState; device: LucideIcon }) {
   return (
     <div className="flex items-center justify-center" aria-hidden="true">
       <PairingEnd state={state}>
-        <SquareTerminal className="h-5 w-5" />
+        <Device className="h-5 w-5" />
       </PairingEnd>
       <div className="relative flex w-20 items-center sm:w-24">
         <span className={cn("polychat-motion-panel w-full border-t-2", LINE_STYLES[state])} />
@@ -57,6 +57,7 @@ interface DevicePairingCardProps {
   state: DevicePairingState;
   eyebrow: string;
   title: ReactNode;
+  device?: LucideIcon;
   description?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
@@ -66,6 +67,7 @@ export function DevicePairingCard({
   state,
   eyebrow,
   title,
+  device = SquareTerminal,
   description,
   children,
   footer,
@@ -73,7 +75,7 @@ export function DevicePairingCard({
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pt-6 pb-12 sm:pt-14">
       <section className="polychat-motion-enter flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-        <PairingLink state={state} />
+        <PairingLink state={state} device={device} />
         <header className="flex flex-col items-center gap-2 text-center">
           <p className="polychat-eyebrow">{eyebrow}</p>
           <h1 className="font-display text-2xl font-medium tracking-tight text-balance">{title}</h1>

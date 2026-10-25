@@ -4,10 +4,12 @@ import {
   DEVICE_CODE_POLL_INTERVAL_SECONDS,
   DEVICE_USER_CODE_ALPHABET,
   DEVICE_USER_CODE_LENGTH,
+  deviceCredentialScopeSchema,
   formatDeviceUserCode,
   normaliseDeviceUserCode,
   type DeviceAuthorisation,
   type DeviceCodeResponse,
+  type DeviceCredentialScope,
   type DeviceTokenError,
   type DeviceTokenResponse,
 } from "@ngriffin_uk/polychat-schemas";
@@ -41,6 +43,10 @@ export function evaluateDevicePoll(challenge: DeviceChallenge, now: Date): Devic
   const allowedPolls = Math.floor(elapsedMs / (DEVICE_CODE_POLL_INTERVAL_SECONDS * 1000)) + 1;
 
   return challenge.attempts >= allowedPolls ? "slow_down" : "check_decision";
+}
+
+function readScope(value: unknown): DeviceCredentialScope {
+  return deviceCredentialScopeSchema.catch("full").parse(value);
 }
 
 function codeKey(deviceCodeHash: string): Promise<string> {
@@ -111,6 +117,7 @@ async function createDeviceRequest(
 export async function startDeviceAuthorisation(
   context: ServiceContext,
   clientName: string,
+  scope: DeviceCredentialScope,
   now = new Date(),
 ): Promise<DeviceCodeResponse> {
   const verificationUri = `${requireAppBaseUrl(context)}/device`;
@@ -124,14 +131,14 @@ export async function startDeviceAuthorisation(
     tokenHash: await codeKey(deviceCodeHash),
     provider: DEVICE_CHALLENGE_PROVIDER,
     kind: "custom",
-    payload: { clientName },
+    payload: { clientName, scope },
     createdAt: now,
     expiresAt,
     attempts: 0,
   });
 
   const userCode = await createDeviceRequest(context, {
-    payload: { clientName, deviceCodeHash },
+    payload: { clientName, scope, deviceCodeHash },
     createdAt: now,
     expiresAt,
   });
@@ -188,7 +195,12 @@ export async function pollDeviceAuthorisation(
     return { error: "access_denied" };
   }
 
-  const { plaintextKey } = await createUserApiKey(context, clientName, userId);
+  const { plaintextKey } = await createUserApiKey(
+    context,
+    clientName,
+    userId,
+    readScope(challenge.payload.scope),
+  );
 
   return { access_token: plaintextKey, token_type: "Bearer" };
 }
@@ -212,6 +224,7 @@ export async function getDeviceAuthorisation(
   return {
     userCode: formatDeviceUserCode(userCode),
     clientName,
+    scope: readScope(request.payload.scope),
     createdAt: request.createdAt.toISOString(),
     expiresAt: request.expiresAt.toISOString(),
   };

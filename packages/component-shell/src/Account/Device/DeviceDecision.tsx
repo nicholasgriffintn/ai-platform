@@ -3,22 +3,33 @@ import {
   useDecideDeviceAuthorisation,
   useDeviceAuthorisation,
 } from "@ngriffin_uk/polychat-library-react";
-import type { DeviceAuthorisation } from "@ngriffin_uk/polychat-schemas";
+import type { DeviceAuthorisation, DeviceCredentialScope } from "@ngriffin_uk/polychat-schemas";
 import { readDeviceUserCodeCharacters } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { useSecondsUntil } from "@ngriffin_uk/polychat-utility-react";
 import { Clock3, Gauge, KeyRound, Loader2, Undo2, type LucideIcon } from "lucide-react";
 
 import { DeviceCodeCells } from "./DeviceCodeInput.js";
+import { deviceIcon } from "./deviceIcon.js";
 import { DevicePairingCard } from "./DevicePairingCard.js";
 
 const API_KEYS_HREF = "/profile?tab=api-keys";
 
-const GRANTS: Array<{ icon: LucideIcon; text: string }> = [
-  { icon: KeyRound, text: "Its own API key that can do anything you can." },
-  { icon: Gauge, text: "Usage counts against your plan, like your own chats." },
-  { icon: Undo2, text: "Revoke it from Profile whenever you like." },
-];
+const GRANTS: Record<DeviceCredentialScope, Array<{ icon: LucideIcon; text: string }>> = {
+  full: [
+    { icon: KeyRound, text: "Its own API key that can do anything you can." },
+    { icon: Gauge, text: "Usage counts against your plan, like your own chats." },
+    { icon: Undo2, text: "Revoke it from Profile whenever you like." },
+  ],
+  discover: [
+    {
+      icon: KeyRound,
+      text: "Its own API key for Discover only. Chats, projects and files stay out of reach.",
+    },
+    { icon: Gauge, text: "Episodes and wind downs it starts count against your plan." },
+    { icon: Undo2, text: "Revoke it from Profile whenever you like." },
+  ],
+};
 
 function ExpiredCard({ message, onReset }: { message: string; onReset: () => void }) {
   return (
@@ -44,11 +55,13 @@ function PendingRequest({
 }) {
   const decide = useDecideDeviceAuthorisation(authorisation.userCode);
   const secondsLeft = useSecondsUntil(authorisation.expiresAt);
-  const { clientName } = authorisation;
+  const { clientName, scope } = authorisation;
+  const device = deviceIcon(clientName);
 
   if (decide.data?.status === "approved") {
     return (
       <DevicePairingCard
+        device={device}
         state="linked"
         eyebrow="Connected"
         title={`${clientName} is signed in`}
@@ -69,6 +82,7 @@ function PendingRequest({
   if (decide.data?.status === "denied") {
     return (
       <DevicePairingCard
+        device={device}
         state="refused"
         eyebrow="Refused"
         title={`${clientName} was turned away`}
@@ -92,6 +106,7 @@ function PendingRequest({
 
   return (
     <DevicePairingCard
+      device={device}
       state="waiting"
       eyebrow="Sign-in request"
       title={
@@ -110,7 +125,7 @@ function PendingRequest({
       </div>
 
       <ul className="flex flex-col gap-2.5 rounded-xl bg-canvas px-4 py-3.5">
-        {GRANTS.map(({ icon: Icon, text }) => (
+        {GRANTS[scope].map(({ icon: Icon, text }) => (
           <li key={text} className="flex gap-2.5 text-sm text-muted-foreground">
             <Icon className="mt-0.5 h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
             <span>{text}</span>

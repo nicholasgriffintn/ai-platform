@@ -2,6 +2,7 @@ import { base64ToBuffer, stringToBase64Url } from "@ngriffin_uk/polychat-utility
 import { encodeBase64Url } from "@ngriffin_uk/polychat-utility-server/base64url";
 
 import { APNS_TOKEN_LIFETIME_MS } from "~/config/notifications";
+import type { MobileAlertPresentation } from "~/modules/mobile-push/domain/presentation";
 import type { MobilePushDeviceRecord } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import type { IEnv } from "~/types";
 
@@ -76,6 +77,7 @@ export interface MobileAlert {
   title: string;
   body: string;
   data: Record<string, unknown>;
+  presentation: MobileAlertPresentation;
 }
 
 export async function sendApnsAlert(params: {
@@ -103,6 +105,11 @@ export async function sendApnsAlert(params: {
         aps: {
           alert: { title: params.alert.title, body: params.alert.body },
           sound: "default",
+          category: params.alert.presentation.category,
+          "thread-id": params.alert.presentation.threadId,
+          "interruption-level": params.alert.presentation.timeSensitive
+            ? "time-sensitive"
+            : "active",
         },
         polychat: { id: params.alert.id, ...params.alert.data },
       }),

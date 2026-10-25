@@ -9,6 +9,10 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
+  POLY_ALERT_PRESENTATION,
+  workAlertPresentation,
+} from "~/modules/mobile-push/domain/presentation";
+import {
   getApnsProviderToken,
   isApnsConfigured,
   sendApnsAlert,
@@ -147,7 +151,13 @@ export async function sendMobileWorkNotification(params: {
   await sendMobileAlert({
     context: params.context,
     userId: params.userId,
-    alert: { id, title, body, data: { kind, target } },
+    alert: {
+      id,
+      title,
+      body,
+      data: { kind, target },
+      presentation: workAlertPresentation(kind, target),
+    },
   });
 }
 
@@ -171,6 +181,7 @@ export async function notifyMobilePoly(params: {
           kind: "poly",
           link: params.path ? `polychat:/${params.path}` : "polychat://poly",
         },
+        presentation: POLY_ALERT_PRESENTATION,
       },
     });
   } catch (error) {

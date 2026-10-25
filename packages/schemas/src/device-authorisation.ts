@@ -29,8 +29,13 @@ export function formatDeviceUserCode(userCode: string): string {
   return `${userCode.slice(0, 4)}-${userCode.slice(4)}`;
 }
 
+export const deviceCredentialScopeSchema = z.enum(["full", "discover"]);
+
+export type DeviceCredentialScope = z.infer<typeof deviceCredentialScopeSchema>;
+
 export const deviceCodeRequestSchema = z.object({
   client_name: z.string().trim().min(1).max(80),
+  scope: deviceCredentialScopeSchema.default("full"),
 });
 
 export type DeviceCodeRequest = z.infer<typeof deviceCodeRequestSchema>;
@@ -73,6 +78,7 @@ export type DeviceTokenResponse = z.infer<typeof deviceTokenResponseSchema>;
 export const deviceAuthorisationSchema = z.object({
   userCode: z.string().min(1),
   clientName: z.string().min(1),
+  scope: deviceCredentialScopeSchema,
   createdAt: z.string(),
   expiresAt: z.string(),
 });

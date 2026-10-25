@@ -18,6 +18,7 @@ import { verifyInternalServiceToken } from "~/modules/auth/application/internal-
 import { getUserByJwtToken } from "~/modules/auth/application/jwt";
 import { authenticateSession } from "~/modules/auth/application/session-renewal";
 import { createSessionCookie } from "~/modules/auth/application/sessions";
+import { credentialAuthenticates } from "~/modules/auth/domain/credential-scope";
 import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
@@ -145,7 +146,12 @@ export async function authMiddleware(context: Context, next: Next) {
     authPromises.push(
       (async () => {
         try {
-          return await new ApiKeyRepository(context.env).findUserByApiKey(authToken);
+          const principal = await new ApiKeyRepository(context.env).findApiKeyPrincipal(authToken);
+
+          return principal &&
+            credentialAuthenticates(principal.scope, context.req.method, context.req.path)
+            ? principal.user
+            : null;
         } catch (error) {
           logger.error("API Key authentication check failed:", { error });
 

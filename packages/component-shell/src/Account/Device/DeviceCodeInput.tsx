@@ -16,15 +16,15 @@ interface DeviceCodeCellsProps {
 
 export function DeviceCodeCells({ characters, activeIndex, invalid }: DeviceCodeCellsProps) {
   return (
-    <div className="flex items-center justify-center gap-1.5 sm:gap-2" aria-hidden="true">
+    <div className="flex w-full items-center justify-center gap-1.5" aria-hidden="true">
       {CELL_POSITIONS.map((index) => (
         <div key={`cell-${index}`} className="contents">
           {index === GROUP_SIZE ? (
-            <span className="h-0.5 w-3 shrink-0 rounded-full bg-border-strong sm:w-4" />
+            <span className="h-0.5 w-2.5 shrink-0 rounded-full bg-border-strong sm:w-3" />
           ) : null}
           <span
             className={cn(
-              "polychat-motion-micro flex h-12 w-9 items-center justify-center rounded-lg border bg-canvas font-mono text-xl font-medium text-foreground transition-colors sm:h-14 sm:w-11 sm:text-2xl",
+              "polychat-motion-micro flex aspect-[4/5] max-w-11 min-w-0 flex-1 items-center justify-center rounded-lg border bg-canvas font-mono text-xl font-medium text-foreground transition-colors sm:text-2xl",
               invalid
                 ? "border-failure/70"
                 : index === activeIndex

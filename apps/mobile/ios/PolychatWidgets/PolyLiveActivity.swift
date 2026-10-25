@@ -23,15 +23,31 @@ private struct PolyActivityCounts: View {
     }
 }
 
-struct PolyLiveActivity: Widget {
-    var body: some WidgetConfiguration {
-        ActivityConfiguration(for: PolyActivityAttributes.self) { context in
+private struct PolyActivityLockScreen: View {
+    @Environment(\.activityFamily) private var family
+    let state: PolyActivityAttributes.ContentState
+
+    var body: some View {
+        switch family {
+        case .small:
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    PolyMark(size: 20)
+                    PolyActivityCounts(state: state)
+                }
+                Text(state.headline ?? state.status)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(8)
+        default:
             HStack(spacing: 12) {
                 PolyMark(size: 40)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(context.state.status)
+                    Text(state.status)
                         .font(.headline)
-                    if let headline = context.state.headline {
+                    if let headline = state.headline {
                         Text(headline)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -39,10 +55,18 @@ struct PolyLiveActivity: Widget {
                     }
                 }
                 Spacer(minLength: 0)
-                PolyActivityCounts(state: context.state)
+                PolyActivityCounts(state: state)
             }
             .padding()
-            .widgetURL(polyURL)
+        }
+    }
+}
+
+struct PolyLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: PolyActivityAttributes.self) { context in
+            PolyActivityLockScreen(state: context.state)
+                .widgetURL(polyURL)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -73,5 +97,6 @@ struct PolyLiveActivity: Widget {
             }
             .widgetURL(polyURL)
         }
+        .supplementalActivityFamilies([.small, .medium])
     }
 }

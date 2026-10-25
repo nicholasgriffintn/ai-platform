@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { DeviceCredentialScope } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -13,6 +14,11 @@ export interface ApiKeyMetadata {
   id: string;
   name: string;
   created_at: string;
+}
+
+export interface ApiKeyPrincipal {
+  user: User;
+  scope: DeviceCredentialScope;
 }
 
 export class ApiKeyRepository extends BaseRepository {
@@ -94,6 +100,7 @@ export class ApiKeyRepository extends BaseRepository {
   public async createApiKey(
     userId: number,
     name: string,
+    scope: DeviceCredentialScope = "full",
   ): Promise<{ plaintextKey: string; metadata: ApiKeyMetadata }> {
     if (!userId) {
       throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
@@ -117,6 +124,7 @@ export class ApiKeyRepository extends BaseRepository {
           name: keyName,
           encrypted_value: encryptedKey,
           token_hash: hashedKey,
+          scope,
         },
         { returning: "public_id AS id, name, created_at" },
       );
@@ -203,21 +211,28 @@ export class ApiKeyRepository extends BaseRepository {
     }
   }
 
-  public async findUserByApiKey(apiKey: string): Promise<User | null> {
+  public async findApiKeyPrincipal(apiKey: string): Promise<ApiKeyPrincipal | null> {
     if (!apiKey) {
       return null;
     }
 
     try {
       const hashedKey = await this.hashApiKey(apiKey);
-
-      return await this.runQuery<User>(
-        `SELECT user.* FROM user_credential
+      const user = await this.runQuery<User & { credential_scope: DeviceCredentialScope | null }>(
+        `SELECT user.*, user_credential.scope AS credential_scope FROM user_credential
          JOIN user ON user.id = user_credential.user_id
          WHERE user_credential.kind = 'api_key' AND user_credential.token_hash = ?`,
         [hashedKey],
         true,
       );
+
+      if (!user) {
+        return null;
+      }
+
+      const { credential_scope, ...rest } = user;
+
+      return { user: rest, scope: credential_scope ?? "full" };
     } catch (error) {
       logger.error("Error finding user by API key hash:", { error });
 

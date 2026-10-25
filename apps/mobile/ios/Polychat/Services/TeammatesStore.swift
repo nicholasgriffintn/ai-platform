@@ -19,7 +19,7 @@ final class TeammatesStore: ObservableObject {
 
     var startable: [TeammateSummary] {
         TeammateRoster.teammatesWithoutConversations(entries: roster, teammates: teammates)
-            .filter { $0.id != PolyStore.teammateId }
+            .filter { $0.id != PolyThread.teammateId }
     }
 
     var teammatesByConversation: [String: String] {

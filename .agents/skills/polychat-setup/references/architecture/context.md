@@ -7,7 +7,7 @@ Use this map to find the owning app or package. Read only the relevant [architec
 - `apps/app` owns the web and PWA presentation.
 - `apps/api` owns request orchestration, persistence, provider adapters, webhooks and queue tasks. Product capabilities live in `apps/api/src/modules`; host infrastructure lives in `apps/api/src/infrastructure`.
 - `apps/desktop` owns the Tauri client shell, local storage and host-specific egress.
-- `apps/mobile/ios` owns the native iOS client.
+- `apps/mobile/ios` owns the native iPhone, Apple Watch and Apple TV clients.
 - `apps/sandbox-worker` runs coding tasks, workspaces for hosted agents and persistent graphical computers.
 - `apps/agent-worker` hosts agent harnesses (Pi, OpenCode and the Hermes container) behind Polychat's model, tool and approval ports.
 

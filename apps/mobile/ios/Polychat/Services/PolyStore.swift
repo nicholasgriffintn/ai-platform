@@ -2,8 +2,6 @@ import Foundation
 
 @MainActor
 final class PolyStore: ObservableObject {
-    nonisolated static let teammateId = "platform-poly"
-
     @Published private(set) var agenda: PolyAgenda?
 
     private let apiClient: APIClient

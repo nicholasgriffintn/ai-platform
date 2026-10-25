@@ -15,7 +15,7 @@ import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
 const mockRepositories = {
   apiKeys: {
-    findUserByApiKey: vi.fn(),
+    findApiKeyPrincipal: vi.fn(),
   },
   users: {
     getUserById: vi.fn(),
@@ -303,7 +303,7 @@ describe("Auth Middleware", () => {
 
       await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
 
-      expect(mockRepositories.apiKeys.findUserByApiKey).not.toHaveBeenCalled();
+      expect(mockRepositories.apiKeys.findApiKeyPrincipal).not.toHaveBeenCalled();
       expect(mockIsbot).toHaveBeenCalledWith("Googlebot");
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -327,7 +327,7 @@ describe("Auth Middleware", () => {
 
         return null;
       });
-      mockRepositories.apiKeys.findUserByApiKey.mockResolvedValue(null);
+      mockRepositories.apiKeys.findApiKeyPrincipal.mockResolvedValue(null);
       mockIsbot.mockReturnValue(true);
 
       await expect(authMiddleware(context, mockNext)).rejects.toThrow("Bot access is not allowed.");
@@ -517,14 +517,44 @@ describe("Auth Middleware", () => {
         return null;
       });
 
-      mockRepositories.apiKeys.findUserByApiKey.mockResolvedValue(mockUser);
+      mockRepositories.apiKeys.findApiKeyPrincipal.mockResolvedValue({
+        user: mockUser,
+        scope: "full",
+      });
 
       await authMiddleware(context, mockNext);
 
-      expect(mockRepositories.apiKeys.findUserByApiKey).toHaveBeenCalledWith("ak_test123");
+      expect(mockRepositories.apiKeys.findApiKeyPrincipal).toHaveBeenCalledWith("ak_test123");
       expect(context.set).toHaveBeenCalledWith("user", mockUser);
       expect(mockNext).toHaveBeenCalled();
       expect(mockIsbot).not.toHaveBeenCalled();
+    });
+
+    it("authenticates a Discover key only on Discover routes", async () => {
+      const mockUser = { id: "user-123", email: "test@example.com" };
+      const authenticate = async (method: string, path: string) => {
+        const context = createMockContext();
+
+        Object.assign(context.req, { method, path });
+        // @ts-expect-error - mock implementation
+        context.req.header.mockImplementation((name: string) =>
+          name === "user-agent" ? "Mozilla/5.0" : name === "Authorization" ? "Bearer ak_tv" : null,
+        );
+        mockRepositories.apiKeys.findApiKeyPrincipal.mockResolvedValue({
+          user: mockUser,
+          scope: "discover",
+        });
+        mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(null);
+
+        await authMiddleware(context, mockNext);
+
+        return context.get("user");
+      };
+
+      expect(await authenticate("POST", "/discover/wind-down")).toEqual(mockUser);
+      expect(await authenticate("GET", "/sources/source-1/cover")).toEqual(mockUser);
+      expect(await authenticate("GET", "/conversations")).toBeNull();
+      expect(await authenticate("GET", "/sources/source-1/content")).toBeNull();
     });
 
     it("should authenticate user with JWT token", async () => {
@@ -642,7 +672,7 @@ describe("Auth Middleware", () => {
         return null;
       });
 
-      mockRepositories.apiKeys.findUserByApiKey.mockRejectedValue(new Error("Database error"));
+      mockRepositories.apiKeys.findApiKeyPrincipal.mockRejectedValue(new Error("Database error"));
 
       await authMiddleware(context, mockNext);
 

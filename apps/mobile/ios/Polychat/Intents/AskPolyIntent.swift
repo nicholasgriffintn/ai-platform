@@ -21,17 +21,7 @@ struct AskPolyIntent: AppIntent {
             throw $message.needsValueError("What should Poly look at?")
         }
 
-        let apiClient = APIClient.shared
-        try await apiClient.initialize()
-        let agenda = try await apiClient.fetchPolyAgenda()
-        let response = try await apiClient.createResponse(
-            messages: [ChatMessage(role: "user", content: text)],
-            modelId: nil,
-            conversationId: agenda.conversationId,
-            agentTeammateId: PolyStore.teammateId
-        )
-        let answer = response.lastAssistantText ?? "Poly has it and will reply in its thread."
-
+        let answer = try await PolyThread.ask(text)
         return .result(value: answer, dialog: IntentDialog(stringLiteral: answer))
     }
 }

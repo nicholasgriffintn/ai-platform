@@ -84,11 +84,8 @@ struct HomeView: View {
     private var header: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                EyebrowLabel(
-                    (store.isEveningEdition ? "Evening edition · " : "")
-                        + Date().formatted(.dateTime.weekday(.wide).day().month(.wide))
-                )
-                Text(greeting)
+                EyebrowLabel(store.editionEyebrow)
+                Text(Greeting.text(name: authManager.user?.name))
                     .font(.polychatDisplay(.largeTitle))
                     .foregroundStyle(Color.polychat.text)
             }
@@ -112,15 +109,6 @@ struct HomeView: View {
             }
         }
         .padding(.top, 12)
-    }
-
-    private var greeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        let opener = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
-        guard let name = authManager.user?.name?.split(separator: " ").first else {
-            return opener
-        }
-        return "\(opener), \(name)"
     }
 
     @ViewBuilder

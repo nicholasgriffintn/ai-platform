@@ -13,6 +13,7 @@ import {
   discoverEpisodeShotParamsSchema,
   discoverQueuedResponseSchema,
   discoverEditionIdParamsSchema,
+  discoverEditionRecordingParamsSchema,
   discoverListenResponseSchema,
   discoverFollowParamsSchema,
   discoverFollowSchema,
@@ -27,6 +28,7 @@ import {
   discoverResponseSchema,
   discoverSettingsSchema,
   errorResponseSchema,
+  sourceSchema,
   updateDiscoverSettingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -51,6 +53,10 @@ import {
   saveDiscoverHealthSummary,
 } from "~/modules/discover/application/health";
 import { produceDiscoverListen } from "~/modules/discover/application/listen";
+import {
+  readEditionRecording,
+  readEditionRecordingAudio,
+} from "~/modules/discover/application/recordings";
 import { queueSeasonListen } from "~/modules/discover/application/season-listen";
 import {
   refreshDiscoverEdition,
@@ -189,6 +195,39 @@ addRoute(app, "post", "/editions/:edition_id/week", {
     404: { description: "Not one of your editions", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, params }) => queueYourWeek(serviceContext, params.edition_id),
+});
+
+addRoute(app, "get", "/editions/:edition_id/recordings/:recording", {
+  tags: ["discover"],
+  summary: "Read the edition's Perch or week recording",
+  description:
+    "The source behind the edition's listen or weekly recap, so a Discover-only device can play it.",
+  auth: true,
+  paramSchema: discoverEditionRecordingParamsSchema,
+  responses: {
+    200: { description: "The recording", schema: sourceSchema },
+    404: {
+      description: "Not one of your editions, or nothing recorded yet",
+      schema: errorResponseSchema,
+    },
+  },
+  handler: async ({ serviceContext, params }) =>
+    readEditionRecording(serviceContext, params.edition_id, params.recording),
+});
+
+addRoute(app, "get", "/editions/:edition_id/recordings/:recording/audio", {
+  tags: ["discover"],
+  summary: "Stream the edition's Perch or week recording",
+  auth: true,
+  paramSchema: discoverEditionRecordingParamsSchema,
+  responses: { 200: { description: "Recording audio" } },
+  handler: async ({ serviceContext, params, raw }) =>
+    readEditionRecordingAudio(
+      serviceContext,
+      params.edition_id,
+      params.recording,
+      raw.req.header("range"),
+    ),
 });
 
 addRoute(app, "post", "/editions/:edition_id/episode", {
