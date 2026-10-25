@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-integrations",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Integration provider primitives for Polychat: the connector provider registry, operation access and approval policy, API-key executors, and the Composio client, triggers and connection vocabulary",
   "license": "Apache-2.0",
   "files": [

@@ -1,5 +1,42 @@
 # @ngriffin_uk/polychat-ai-providers
 
+## 0.5.0
+
+### Minor Changes
+
+- e0ca7c6: Long work is no longer thrown away by arbitrary limits.
+
+  - **Runs finish.** Hosted agents (Pi, OpenCode, Hermes, OpenAI Agents, Bedrock) are no longer stopped after 15 or 60 minutes, and native agents on Polychat Desktop are no longer cut off after 10 minutes. Stopping a run still stops it.
+  - **Slow providers and tools get to answer.** Model, OCR, guardrail and reranking requests no longer give up after 30–120 seconds, Composio actions after 20 seconds, Composio file transfers after 15 seconds, or MCP tool calls after 15 seconds. Connecting to an MCP server still times out, so a dead server cannot hold up a chat.
+  - **Delegates hand back everything.** A delegate's final answer reaches the parent conversation in full instead of its first 2,000 characters, and delegation goals and progress messages are no longer capped.
+  - **Longer messages from other agents.** A2A and MCP callers can send teammates messages over 8,000 characters, and hosted agents receive your whole message and the full instructions rather than their last 100,000 and 12,000 characters.
+  - **Drafts are not rejected for being a little long.** Decks, tables, mind maps, flashcards, quizzes, video overviews, notebook guides and memory maintenance no longer fail when a title or line runs past a character limit. Web search answers and memory maintenance are no longer cut short by a fixed output limit.
+
+- 187afde: When a provider says your credits have run out, Polychat stops sending it work and moves on to the next model you have access to. Chats and scheduled routines that use an automatic model tier carry on with the next model in that tier mid-run. Speech renders switch to your next-best voice and finish, rather than failing until the month resets.
+
+  - A model you picked yourself is never swapped. If its provider is out of credit, the error is shown.
+  - Episodes, podcasts, video overviews and wind downs restart on the new voice, so one recording never mixes two voices.
+  - ElevenLabs, OpenRouter and DeepSeek balances are checked in the background. The provider comes back as soon as your credits reset or you top up.
+  - Keys that can't read their own balance, such as an ElevenLabs key limited to text to speech, get another try 15 minutes later. A refused request costs no credits, and if it is still empty your audio carries on with the next voice.
+  - Saving a new key for a provider clears its out-of-credits state straight away.
+
+### Patch Changes
+
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+- Updated dependencies [0fe409a]
+- Updated dependencies [0fe409a]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [187afde]
+  - @ngriffin_uk/polychat-schemas@1.6.0
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+  - @ngriffin_uk/polychat-utility-server@0.4.0
+  - @ngriffin_uk/polychat-ai-prompts@0.4.1
+  - @ngriffin_uk/polychat-ai-telemetry@0.2.3
+  - @ngriffin_uk/polychat-library-tools@0.4.1
+  - @ngriffin_uk/polychat-ai-models@0.3.1
+
 ## 0.4.0
 
 ### Minor Changes

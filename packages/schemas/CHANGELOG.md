@@ -1,5 +1,80 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.6.0
+
+### Minor Changes
+
+- 187afde: Discover gathers before it writes, and Poly reads your own services without asking.
+
+  - **A Discover notebook.** Before each morning Poly reads your connected services and researches every topic you follow into a notebook called Discover: one document per service and a dated research document per topic. The morning edition is written from those documents, so a slow or broken service never stops the edition. Open the notebook to see what Discover knows.
+  - **Every connected service counts.** Discover now picks from the whole connector catalogue by what you have connected: Last.fm, Readwise, Hardcover, Audiobookshelf, Trakt, Marquee, YouTube, Raindrop, DEV, Oura, Google Calendar or Outlook, Gmail or Outlook newsletters, Google Tasks, Todoist or TickTick, Linear, GitHub, Fathom, WakaTime, OpenWeather, Google Photos, NASA and Artificial Analysis. Where two services cover the same thing, the first connected one is used. Each service shows when it was last read, or why it could not be, in Discover settings, where you can also set where you are for weather.
+  - **Marquee.** Connect [Marquee](https://marquee.pashi.app) with an API token under Plugins. Poly can read your shelf, what is on tonight and the week ahead, search the catalogue, and, with your approval, save to your shelf or follow a name.
+  - **No more approvals for reading your own accounts.** Poly, in your personal space, reads your connected accounts without a separate grant or an approval. Scheduled runs never create approvals; an operation that would need one is left out with a note instead of stalling the run.
+  - **Last.fm and Trakt remember who you are.** Both connectors now take your username alongside the key, so Discover and Poly no longer have to ask.
+  - **Interests are researched overnight.** Discover works out three to five interests from what you have been doing, favouring what you do outside Polychat over chats about it, and researches each one before the morning, so every interest has fresh reading on day one.
+  - **More kinds of card.** Episodes airing, releases and gigs appear under Coming up; videos and podcast episodes under Watching and listening; newsletters worth a minute under Reading with the sender named. Each opens a chat with the right first step, such as adding an event to your calendar.
+  - **An evening edition.** Turn it on in Discover settings for a second, shorter edition at 19:00 that looks at tomorrow. It never makes an episode or a Perch.
+  - **Poly knows your week.** Poly's own thread and its daily look around read what Discover gathered, so Poly can be specific about what you have been listening to, reading and watching without re-reading your services.
+  - **File things in a notebook from anywhere.** Ask Poly to put a page, a note or some files in a notebook by name, and it will, creating the notebook only when you ask.
+  - **Send Studio work on.** A finished report, deck or table in a notebook's Studio has a Send menu for Google Docs, Google Slides, Google Sheets and DEV when they are connected. Each send runs through the notebook chat and asks before it writes.
+  - **Marquee records what you watch.** Tell Poly what you watched, are watching or want to see, with a rating and your thoughts, and it saves that to your Marquee shelf after you approve. Connectors without live discovery, such as Marquee, Last.fm and Trakt, now tell Poly their operations and fields instead of failing.
+  - **A real feed.** Discover now reads the day's headlines for where you are and, when Reddit is connected, the best posts from your communities. Every interest is researched from the news of the last three days, with the publisher and date kept. Poly's picks lead the edition, and up to three stories per interest and from Reddit fill the Reading section beneath them, never repeating a link you have already seen. Your recent chats only shape the edition when nothing else is known about you yet.
+  - **Discover reads the articles, not just the headlines.** Each page the overnight research finds is read in full and filed in the Discover notebook, and the edition is written from what the pages actually say, in plain prose rather than page markup. Opening a read card talks to the filed article, so Poly can give you the gist or the other side without fetching anything, and cards show the site's icon. Newsletters and Reddit posts carry their text too, so a card can tell you what happened rather than that something did.
+  - **The Perch and Your week talk about the things, not about their notes.** The round-up now has the full text of the articles behind the day's reading and spends its time on what they report; Your week is built from what your documents, notebooks and chats actually contain, so it can say what you worked out rather than what it was not told.
+  - **Episodes finish.** Chapters are now written and voiced one after another instead of all at once, so a later chapter no longer loses its save to an earlier one and sits on Queued. Your week shows its cover on the shelf and sits beside The Perch.
+  - **Episode chapters say what they are about.** The chapter list shows what each chapter covers rather than the illustrator's notes, and Your week leaves out generated files it cannot describe.
+  - **An edition is never lost to one bad link.** A page the feed cannot show as a card, such as a plain http address, is left out rather than making the whole edition unreadable, and an edition is checked before it is saved so a problem names the exact card.
+  - **Failures say why.** A service that answers with an error, including a rate limit, is recorded as a failed read with the reason, and a connector that cannot be reached says what went wrong.
+  - **Discover documents explain themselves.** Each service's document in the Discover notebook now reads as a page: when it was read and what was found. A service that could not be read says why. YouTube is read as your subscriptions and recent likes rather than your own uploads.
+  - **Fixes.** The first edition after enabling Discover now gathers from your services before it is written, instead of being composed from recent chat titles alone. The Perch's captions follow the audio instead of jumping to the end, and loading a skill with a leading slash in its path no longer fails.
+
+- d2905a6: Discover on the iPhone now does what it does on the web.
+
+  - **Episodes pick up where you left off, on any device.** Where you stopped in an episode is saved to your account, so the web and the phone both resume there. Watching on the phone now counts towards tomorrow's episode being made ahead of time.
+  - **Playback keeps going when you close the player.** The Perch, episodes, Your week and Wind down keep playing while you read other cards. A bar at the bottom of Home shows what is playing, with play, pause and stop.
+  - **Ask about a card without leaving Home.** Asking Poly about a card opens the chat over Home, grounded in the article Discover already read, or the edition when there is no article.
+  - **Save and follow from the phone.** Save a card to keep its edition past the two-week tidy, and follow a topic from its card.
+  - **Earlier editions.** Home lists the last fortnight of editions, morning and evening, so yesterday's reading and this morning's edition are a tap away after the evening one arrives.
+  - **What Poly is up to.** Home shows what needs you, what Poly is working on and what it has noted, and links from widgets and the Apple TV open the Perch, an episode or a card directly.
+  - **Usage.** Notebook guides, Studio drafts and podcast scripts now count towards your usage like every other model call.
+  - **Narration timing.** Video overviews and episodes time their pictures to the measured length of each narrated scene, so pictures change with the voice rather than drifting.
+
+- 0fe409a: Folders in Files can now hold things Polychat made, not just your files and notes. Use Add to folder on any result, episode or document.
+
+  - Discover files its episodes into a Discover episodes folder, and its research and service notes into a Discover research folder. Episodes you already have go into the folder when it is first made.
+  - Your week episodes get their own Your week podcast show, as The Perch already does.
+  - The research note behind a podcast episode is filed in the same show as the episode.
+
+- 0fe409a: The desktop app can share what you do on your Mac with Discover and Poly.
+
+  - **Choose what to share.** Open Profile, then Mac activity, in the desktop app and switch on any of: browsing in Helium, Chrome, Brave, Arc, Edge, Vivaldi or Chromium; Claude Code and Codex sessions; time in the apps you use; and what Apple Music or Spotify played. Everything starts off.
+  - **Summaries leave, files don't.** The Mac reads history and transcripts itself and sends summaries, never the files: short lines such as a site with your visit count and time spent, or a project with its session title and prompt count. Searches and window titles each have their own switch.
+  - **Discover knows what you read and worked on.** With "Include the pages you read" on, the Mac also sends the pages you spent longest on, and Discover reads the public ones so the edition can say what they were about rather than only naming them. With "Include what each session was about" on, each Claude Code or Codex session carries your first and latest prompt and the agent's last reply.
+  - **Pause from the menu bar.** The Poly menu says what's being shared and lets you pause for an hour, until tomorrow or until you resume. Anything you did while paused is never sent, even after you resume.
+  - **See exactly what was sent.** The settings tab shows the last send line by line. Mark any site, app or project as never shared, or forget everything this Mac sent.
+  - **Discover and Poly use it straight away.** Each source appears in the Discover notebook as a document for your Mac, so morning editions and Poly's sense of your week include it. Switch a Mac source off in Discover settings to stop using it there.
+
+- e0ca7c6: Memories are kept as whole documents, and what Polychat gathers is summarised rather than pasted.
+
+  - **One document per subject.** When Polychat remembers something with document memory, it files it into the memory document for that subject, or starts a new one, instead of adding a line to a single list. The whole document is rewritten each time: what to remember, why, and how it should shape future answers, with links to related memories. A newer fact replaces the one it contradicts.
+  - **Memories say what they hold.** Each memory document has a one-line description and a kind: about you, how to work with you, ongoing work, or where to find things. Poly picks memories by those descriptions, and you can see them under File info.
+  - **Summaries for gathered reading.** Pages Discover reads and the browsing your Mac shares are recorded with a summary of what each page says and its key points, rather than its opening lines. Discover keeps the whole page in its notebook. Documents also get a summary when they are added or change, so when a notebook is too big to read in full, guides, Studio and episodes get a summary of every source instead of only the first few.
+  - **Service documents are easier to read.** Each service's document in the Discover notebook lists what was found without the raw response underneath.
+
+- e0ca7c6: Long work is no longer thrown away by arbitrary limits.
+
+  - **Runs finish.** Hosted agents (Pi, OpenCode, Hermes, OpenAI Agents, Bedrock) are no longer stopped after 15 or 60 minutes, and native agents on Polychat Desktop are no longer cut off after 10 minutes. Stopping a run still stops it.
+  - **Slow providers and tools get to answer.** Model, OCR, guardrail and reranking requests no longer give up after 30–120 seconds, Composio actions after 20 seconds, Composio file transfers after 15 seconds, or MCP tool calls after 15 seconds. Connecting to an MCP server still times out, so a dead server cannot hold up a chat.
+  - **Delegates hand back everything.** A delegate's final answer reaches the parent conversation in full instead of its first 2,000 characters, and delegation goals and progress messages are no longer capped.
+  - **Longer messages from other agents.** A2A and MCP callers can send teammates messages over 8,000 characters, and hosted agents receive your whole message and the full instructions rather than their last 100,000 and 12,000 characters.
+  - **Drafts are not rejected for being a little long.** Decks, tables, mind maps, flashcards, quizzes, video overviews, notebook guides and memory maintenance no longer fail when a title or line runs past a character limit. Web search answers and memory maintenance are no longer cut short by a fixed output limit.
+
+### Patch Changes
+
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+
 ## 1.5.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # @ngriffin_uk/polychat-component-capabilities
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [187afde]
+- Updated dependencies [d2905a6]
+- Updated dependencies [0fe409a]
+- Updated dependencies [0fe409a]
+- Updated dependencies [e0ca7c6]
+- Updated dependencies [e0ca7c6]
+  - @ngriffin_uk/polychat-schemas@1.6.0
+  - @ngriffin_uk/polychat-utility-core@0.6.0
+  - @ngriffin_uk/polychat-component-ui@0.5.1
+
 ## 1.0.0
 
 ### Major Changes
