@@ -18,7 +18,7 @@ import type { DiscoverEpisode, DiscoverEpisodeChapter } from "@ngriffin_uk/polyc
 import { Headphones, Podcast, RotateCcw, Tv } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { chapterStatus } from "./episode-status.js";
+import { chapterStatus, describeChapterBeats } from "./episode-status.js";
 import { EpisodeVisual } from "./EpisodeVisual.js";
 import { useEpisodePlayback } from "./useEpisodePlayback.js";
 
@@ -172,7 +172,7 @@ export function EpisodePlayer({
             items={episode.chapters.map((entry, index) => ({
               key: `${index}:${entry.title}`,
               title: entry.title,
-              detail: entry.beats[0],
+              detail: describeChapterBeats(entry.beats),
               status: chapterStatus(entry),
               active: index === chapterIndex,
               onPlay: entry.status === "ready" ? () => playback.playChapter(index) : undefined,

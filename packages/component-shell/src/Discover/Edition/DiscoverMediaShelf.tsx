@@ -49,21 +49,11 @@ export function DiscoverMediaShelf({
   const week = useSource(edition.weekSourceId ?? null).data;
   const windDown = useDiscoverWindDown(windDownId).data;
   const perchReady = perch?.status === "available" && readSourceMedia(perch.metadata).cover;
+  const weekReady = week?.status === "available" && readSourceMedia(week.metadata).cover;
 
   return (
     <section className="flex flex-col gap-3">
       <h3 className="polychat-eyebrow px-1">Watch and listen</h3>
-      {edition.weekSourceId ? (
-        <MediaTile
-          wide
-          art={<Art background={WEEK_GRADIENT} />}
-          eyebrow="Your week"
-          title="Your week, told back"
-          status={listenStatus(edition.weekSourceId, week)}
-          selected={active === "week"}
-          onSelect={() => onOpen("week")}
-        />
-      ) : null}
       {showEpisode && (
         <MediaTile
           wide
@@ -87,6 +77,21 @@ export function DiscoverMediaShelf({
         />
       )}
       <div className="grid grid-cols-2 gap-3">
+        {edition.weekSourceId ? (
+          <MediaTile
+            art={
+              <Art
+                background={WEEK_GRADIENT}
+                image={week && weekReady ? getSourceCoverUrl(week.id) : null}
+              />
+            }
+            eyebrow="Your week"
+            title="Your week, told back"
+            status={listenStatus(edition.weekSourceId, week)}
+            selected={active === "week"}
+            onSelect={() => onOpen("week")}
+          />
+        ) : null}
         <MediaTile
           art={
             <Art

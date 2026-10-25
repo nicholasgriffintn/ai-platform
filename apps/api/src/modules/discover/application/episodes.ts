@@ -262,8 +262,12 @@ async function scriptDiscoverEpisode(
     updatedByUserId: user.id,
   });
 
-  for (const [chapter] of content.chapters.entries()) {
-    await enqueueDiscoverJob(context, { job: "episode_chapter", episodeId: episode.id, chapter });
+  if (content.chapters.length > 0) {
+    await enqueueDiscoverJob(context, {
+      job: "episode_chapter",
+      episodeId: episode.id,
+      chapter: 0,
+    });
   }
 
   const latest = await requireDiscoverEdition(context, user.id, editionId);

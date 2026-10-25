@@ -233,6 +233,21 @@ async function scriptChapter(
   }));
 }
 
+async function queueNextChapter(
+  context: ServiceContext,
+  episodeId: string,
+  chapterIndex: number,
+): Promise<void> {
+  const { content } = await requireDiscoverEpisode(context, episodeId);
+  const next = content.chapters.findIndex(
+    (chapter, index) => index > chapterIndex && chapter.status === "pending",
+  );
+
+  if (next !== -1) {
+    await enqueueDiscoverJob(context, { job: "episode_chapter", episodeId, chapter: next });
+  }
+}
+
 export async function renderEpisodeChapter(
   context: ServiceContext,
   episodeId: string,
@@ -242,6 +257,8 @@ export async function renderEpisodeChapter(
   const chapter = content.chapters[chapterIndex];
 
   if (!chapter || chapter.status === "ready") {
+    await queueNextChapter(context, episodeId, chapterIndex);
+
     return;
   }
 
@@ -312,6 +329,8 @@ export async function renderEpisodeChapter(
       current.status === "ready" ? current : { ...current, status: "failed" },
     );
   }
+
+  await queueNextChapter(context, episodeId, chapterIndex);
 }
 
 export async function retryEpisodeChapter(

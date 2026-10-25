@@ -6,6 +6,18 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRoundedMinutes } from "@ngriffin_uk/polychat-utility-core";
 
+const BEAT_TIMING_PREFIX = /^\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}\s*[—–-]\s*/u;
+
+export function describeChapterBeats(beats: readonly string[]): string | undefined {
+  const spoken = beats
+    .map((beat) => beat.replace(BEAT_TIMING_PREFIX, "").trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(" ");
+
+  return spoken || undefined;
+}
+
 export function chapterSeconds(chapter: DiscoverEpisodeChapter): number {
   return chapter.timings.at(-1)?.end ?? 0;
 }

@@ -105,7 +105,8 @@ async function gatherWeek(context: ServiceContext, userId: number, sinceMs: numb
         title: output.title,
         kind: humaniseIdentifier(output.kind),
         excerpt: collectStrings(safeParseJson(output.content), OUTPUT_EXCERPT_CHARACTERS),
-      })),
+      }))
+      .filter((item) => item.excerpt.length > 0),
     notebooks: notebooks
       .filter((notebook) => isRecent(notebook.updated_at ?? notebook.created_at))
       .map((notebook) => ({
