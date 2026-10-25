@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { forgetDeviceActivity } from "~/modules/discover/application/device-documents";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
@@ -84,6 +85,7 @@ export async function forgetMachine(
   const id = userId ?? context.requireUser().id;
 
   await context.repositories.get(MachineRepository).deleteForUser(id, machineId);
+  await forgetDeviceActivity(context, { machineId });
 
   return { forgotten: true };
 }

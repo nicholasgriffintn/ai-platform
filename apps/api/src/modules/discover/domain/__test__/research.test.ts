@@ -3,6 +3,33 @@ import { describe, expect, it } from "vitest";
 import { latestResearchSection, mergeResearchDocument } from "../research";
 
 describe("mergeResearchDocument", () => {
+  it("keeps each page's publisher and date through the document", () => {
+    const document = mergeResearchDocument("", {
+      date: "2026-10-25",
+      results: [
+        {
+          title: "Rust 2.0 ships",
+          url: "https://example.com/rust",
+          snippet: "It ships.",
+          source: "The Register",
+          date: "2026-10-24",
+        },
+        { title: "No source", url: "https://example.com/plain", snippet: "Plain." },
+      ],
+    });
+
+    expect(latestResearchSection(document)?.results).toEqual([
+      {
+        title: "Rust 2.0 ships",
+        url: "https://example.com/rust",
+        snippet: "It ships.",
+        source: "The Register",
+        date: "2026-10-24",
+      },
+      { title: "No source", url: "https://example.com/plain", snippet: "Plain." },
+    ]);
+  });
+
   it("adds a dated section and drops pages filed earlier in the week", () => {
     let document = "";
 

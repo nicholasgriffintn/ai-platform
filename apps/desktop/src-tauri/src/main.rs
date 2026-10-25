@@ -1,8 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod activity;
 mod agents;
 mod announcements;
 mod chat;
+mod clock;
 mod diagnostics;
 mod discovery;
 mod egress;
@@ -18,6 +20,7 @@ mod runs;
 mod secrets;
 mod service;
 mod store;
+mod text;
 
 use std::time::Duration;
 
@@ -883,6 +886,8 @@ fn main() {
             app.manage(RunRegistry::default());
             app.manage(AgentSessionRegistry::default());
             app.manage(DirectoryGrants::from_grants(directories));
+            app.manage(activity::sampler::ActivityRuntime::default());
+            activity::sampler::start(app.handle());
 
             Ok(())
         })
@@ -926,7 +931,20 @@ fn main() {
             set_attention_badge,
             set_poly_presence,
             set_poly_perch,
-            open_poly_window
+            open_poly_window,
+            activity::commands::read_activity_settings,
+            activity::commands::save_activity_settings,
+            activity::commands::read_activity_status,
+            activity::commands::pause_activity,
+            activity::commands::resume_activity,
+            activity::commands::detect_activity_browsers,
+            activity::commands::collect_activity,
+            activity::commands::record_activity_sent,
+            activity::commands::list_activity_sent,
+            activity::commands::forget_activity_sent,
+            activity::commands::never_share_activity,
+            activity::commands::read_activity_permissions,
+            activity::commands::open_activity_privacy_pane
         ])
         .build(context)
         .expect("Polychat desktop failed to start")

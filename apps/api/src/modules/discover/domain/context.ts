@@ -2,6 +2,7 @@ import type { DiscoverHealthSummary } from "@ngriffin_uk/polychat-schemas";
 import type { PartOfDay } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackSummary } from "./feedback";
+import type { DiscoverResearchResult } from "./research";
 import type { ResurfaceCandidate } from "./resurface";
 
 export interface DiscoverSignalContext {
@@ -15,7 +16,7 @@ export interface DiscoverSignalContext {
 export interface DiscoverResearchContext {
   topic: string;
   date: string;
-  results: ReadonlyArray<{ title: string; url: string; snippet: string }>;
+  results: readonly DiscoverResearchResult[];
 }
 
 export interface DiscoverContextSnapshot {
@@ -83,11 +84,15 @@ export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): stri
       ],
       "None yet.",
     ),
-    section(
-      "Recent chats, newest first",
-      bullets(snapshot.chatTitles),
-      "No recent chats. Lean on their request and broadly interesting news.",
-    ),
+    ...(snapshot.signals.some((signal) => signal.lines.length > 0) || snapshot.research.length > 0
+      ? []
+      : [
+          section(
+            "Recent chats, newest first, only because nothing else is known about them yet",
+            bullets(snapshot.chatTitles),
+            "No recent chats. Lean on their request and broadly interesting news.",
+          ),
+        ]),
     section(
       "What Poly remembers about them",
       snapshot.memorySummary ? [snapshot.memorySummary] : [],
@@ -120,11 +125,13 @@ export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): stri
       ),
     ...snapshot.research.map((research) =>
       section(
-        `Found on the web for ${research.topic} (${research.date}), so cite only these pages for read cards on it`,
+        `In the news for ${research.topic} (${research.date}), so cite only these pages for read cards on it. Pick the one or two best: the rest are added to the feed under your cards`,
         bullets(
           research.results.map(
             (result) =>
-              `${result.title} (${result.url})${result.snippet ? `: ${result.snippet}` : ""}`,
+              `${result.title} (${result.url})${
+                result.source ? ` [${result.source}${result.date ? `, ${result.date}` : ""}]` : ""
+              }${result.snippet ? `: ${result.snippet}` : ""}`,
           ),
         ),
         "Nothing fresh was found; use a topic card instead of a read card.",

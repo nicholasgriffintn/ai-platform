@@ -5,7 +5,11 @@ import type {
   NotebookResearchResponse,
   NotebookResearchResult,
 } from "@ngriffin_uk/polychat-schemas";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import {
+  publishedCalendarDate,
+  readUrlHost,
+  truncateForModel,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -41,6 +45,44 @@ export async function findWebResults(
       title: (source.title || source.url).slice(0, 200),
       url: source.url,
       snippet: source.content.slice(0, 1_000),
+    });
+  }
+
+  return results.slice(0, FAST_RESEARCH_LIMIT);
+}
+
+export interface NewsResult extends NotebookResearchResult {
+  source: string;
+  date: string;
+}
+
+export async function findNewsResults(
+  context: ServiceContext,
+  query: string,
+  days: number,
+  now = Date.now(),
+): Promise<NewsResult[]> {
+  const response = await handleWebSearch({
+    env: context.env,
+    user: context.requireUser(),
+    query,
+    options: { topic: "news", days, max_results: FAST_RESEARCH_LIMIT },
+  });
+  const seen = new Set<string>();
+  const results: NewsResult[] = [];
+
+  for (const source of response.data.sources) {
+    if (!source.url || seen.has(source.url)) {
+      continue;
+    }
+
+    seen.add(source.url);
+    results.push({
+      title: (source.title || source.url).slice(0, 200),
+      url: source.url,
+      snippet: source.content.slice(0, 1_000),
+      source: (source.publisher || readUrlHost(source.url)).slice(0, 80),
+      date: publishedCalendarDate(source.publishedDate, now),
     });
   }
 

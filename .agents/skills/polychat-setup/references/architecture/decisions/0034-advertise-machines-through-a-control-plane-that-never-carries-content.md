@@ -12,6 +12,8 @@ Store one account-scoped machine record per stable desktop machine ID. A heartbe
 
 Advertise on desktop launch, runtime changes and a two-minute interval. Derive `online` at read time from a five-minute `lastSeenAt` window rather than persisting presence. Sign-out and disabling the account setting forget the machine; an ungraceful exit becomes offline when the window expires.
 
+Shared activity is a separate, opt-in channel, not part of the heartbeat. When the person switches it on in the desktop app, the desktop core reads the local sources itself and sends only summary lines to `PATCH /machines/{machineId}/activity`. Raw history files, URLs, transcripts and window contents never leave the device. The API stores those lines as the person's own Discover documents, keyed by account, machine and source, replaces them on every send, and deletes them when the person turns sharing off, forgets the activity or forgets the machine. Advertising a machine and sharing its activity are independent settings.
+
 The desktop keeps its local discovery source authoritative for itself, including while offline. Other signed-in clients fetch the account machines and merge ready model metadata into the catalogue with `machineId`. This advertises availability only; the control plane does not route execution, and clients must not send a machine model's prompt to the hosted API when no local execution path exists.
 
 ## Consequences

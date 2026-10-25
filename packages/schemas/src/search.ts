@@ -17,6 +17,8 @@ export const searchProviderSchema = z.enum([
 export const cloudflareWebSearchProviderSchema = z.enum(["ceramic", "exa", "linkup"]);
 
 export const searchOptionsSchema = z.object({
+  topic: z.enum(["general", "news"]).optional(),
+  days: z.number().int().min(1).max(30).optional(),
   search_depth: z.enum(["basic", "advanced"]).optional(),
   include_answer: z.boolean().optional(),
   include_raw_content: z.boolean().optional(),

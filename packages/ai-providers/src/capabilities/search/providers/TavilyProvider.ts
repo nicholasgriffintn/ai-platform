@@ -27,6 +27,8 @@ export class TavilyProvider implements SearchProvider {
         include_raw_content: options?.include_raw_content || false,
         include_images: options?.include_images || false,
         max_results: options?.max_results || 9,
+        ...(options?.topic ? { topic: options.topic } : {}),
+        ...(options?.topic === "news" && options.days ? { days: options.days } : {}),
       }),
     });
 

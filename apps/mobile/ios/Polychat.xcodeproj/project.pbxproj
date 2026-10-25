@@ -1110,6 +1110,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PolychatWatch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Poly;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Poly on Apple Watch never reads Apple Health. It only saves time spent in a wind down as mindful minutes.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Poly saves each wind down as mindful minutes in Health.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.polychat-app.app";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
@@ -1142,6 +1143,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PolychatWatch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Poly;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Poly on Apple Watch never reads Apple Health. It only saves time spent in a wind down as mindful minutes.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Poly saves each wind down as mindful minutes in Health.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.polychat-app.app";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;

@@ -27,7 +27,8 @@ export class SerperProvider implements SearchProvider {
       throw new AssistantError("SERPER_API_KEY is not set", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const response = await fetch("https://google.serper.dev/search", {
+    const news = options?.topic === "news";
+    const response = await fetch(`https://google.serper.dev/${news ? "news" : "search"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,7 +39,7 @@ export class SerperProvider implements SearchProvider {
         gl: options?.country || "gb",
         location: options?.location,
         hl: options?.language || "en",
-        tbs: options?.timePeriod,
+        tbs: options?.timePeriod ?? (news && options?.days ? `qdr:d${options.days}` : undefined),
         autocorrect: options?.autocorrect ?? true,
         num: options?.num || 10,
         page: options?.page || 1,
@@ -54,10 +55,13 @@ export class SerperProvider implements SearchProvider {
       };
     }
 
-    const data = (await response.json()) as SerperSearchResult;
+    const data = (await response.json()) as SerperSearchResult & {
+      news?: SerperSearchResult["organic"];
+    };
 
     return {
       ...data,
+      organic: data.news ?? data.organic,
       provider: "serper",
     };
   }

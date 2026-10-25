@@ -131,6 +131,35 @@ export function wholeYearsSince(calendarDate: string, now = new Date()): number 
   return now.getUTCFullYear() - year - (hasReachedAnniversary ? 0 : 1);
 }
 
+const RELATIVE_AGE = /^(\d+)\s+(minute|hour|day|week)s?\s+ago$/iu;
+const RELATIVE_UNIT_MS = new Map([
+  ["minute", 60_000],
+  ["hour", 3_600_000],
+  ["day", 86_400_000],
+  ["week", 604_800_000],
+]);
+
+export function publishedCalendarDate(value: string | undefined, now = Date.now()): string {
+  if (!value) {
+    return "";
+  }
+
+  const parsed = Date.parse(value);
+
+  if (Number.isFinite(parsed)) {
+    return new Date(parsed).toISOString().slice(0, 10);
+  }
+
+  const relative = RELATIVE_AGE.exec(value.trim());
+  const unit = relative?.[2] ? RELATIVE_UNIT_MS.get(relative[2].toLowerCase()) : undefined;
+
+  if (!relative?.[1] || unit === undefined) {
+    return "";
+  }
+
+  return new Date(now - Number(relative[1]) * unit).toISOString().slice(0, 10);
+}
+
 export function hoursBetween(start: string, end: string): number {
   return Math.max(0, Date.parse(end) - Date.parse(start)) / 3_600_000;
 }

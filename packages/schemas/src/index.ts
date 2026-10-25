@@ -110,6 +110,7 @@ export * from "./council.js";
 export * from "./credit-bands.js";
 export * from "./cron.js";
 export * from "./desktop-runtimes.js";
+export * from "./device-activity.js";
 export * from "./machines.js";
 export * from "./mcp.js";
 export * from "./goals.js";

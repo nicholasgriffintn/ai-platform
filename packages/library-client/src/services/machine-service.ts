@@ -1,8 +1,12 @@
 import {
+  machineActivityResponseSchema,
+  machineActivitySchema,
   machineForgetResponseSchema,
   machineHeartbeatSchema,
   environmentListSchema,
   machineRecordSchema,
+  type MachineActivity,
+  type MachineActivityResponse,
   type MachineHeartbeat,
   type MachineRecord,
 } from "@ngriffin_uk/polychat-schemas";
@@ -53,6 +57,35 @@ export class MachineService {
 
     if (!response.ok) {
       throw new Error(`Failed to forget machine: ${response.statusText}`);
+    }
+
+    machineForgetResponseSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
+  async shareActivity(machineId: string, input: MachineActivity): Promise<MachineActivityResponse> {
+    const response = await fetchApi(`/machines/${encodeURIComponent(machineId)}/activity`, {
+      method: "PATCH",
+      headers: await this.getHeaders(),
+      body: machineActivitySchema.parse(input),
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to share activity: ${response.statusText}`);
+    }
+
+    return machineActivityResponseSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
+  async forgetActivity(machineId: string): Promise<void> {
+    const response = await fetchApi(`/machines/${encodeURIComponent(machineId)}/activity`, {
+      method: "DELETE",
+      headers: await this.getHeaders(),
+      timeoutMs: 10000,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to forget activity: ${response.statusText}`);
     }
 
     machineForgetResponseSchema.parse(await returnFetchedData<unknown>(response));

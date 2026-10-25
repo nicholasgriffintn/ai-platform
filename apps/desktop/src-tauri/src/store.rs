@@ -108,7 +108,7 @@ impl Store {
         Ok(store)
     }
 
-    fn with_connection<T>(
+    pub(crate) fn with_connection<T>(
         &self,
         action: impl FnOnce(&Connection) -> rusqlite::Result<T>,
     ) -> Result<T, String> {
@@ -208,7 +208,7 @@ impl Store {
                 [],
             )?;
 
-            Ok(())
+            crate::activity::storage::migrate(connection)
         })
     }
 

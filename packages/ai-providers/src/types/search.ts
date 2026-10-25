@@ -59,6 +59,7 @@ export interface TavilySearchResult {
     content: string;
     url: string;
     score: number;
+    published_date?: string;
   }>;
   answer?: string;
   images?: Array<{

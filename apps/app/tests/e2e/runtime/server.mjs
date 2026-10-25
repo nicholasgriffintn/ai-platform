@@ -1634,7 +1634,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 
 						const statements = [
 							env.DB.prepare(
-								"INSERT OR IGNORE INTO user (id, name, email, plan_id, setup_at, terms_accepted_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+								"INSERT OR IGNORE INTO user (id, name, email, plan_id, setup_at, terms_accepted_at, age_check, age_checked_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'adult', CURRENT_TIMESTAMP)"
 							).bind(userId, userName, email, persona),
 							env.DB.prepare(
 								"INSERT OR IGNORE INTO session (id, user_id, expires_at) VALUES (?, ?, ?)"
@@ -1976,7 +1976,7 @@ async function seedPersonas(database, seedMaterial) {
 
       await database
         .prepare(
-          "INSERT INTO user (id, name, email, plan_id, setup_at, terms_accepted_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+          "INSERT INTO user (id, name, email, plan_id, setup_at, terms_accepted_at, age_check, age_checked_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'adult', CURRENT_TIMESTAMP)",
         )
         .bind(userId, name, email, persona)
         .run();

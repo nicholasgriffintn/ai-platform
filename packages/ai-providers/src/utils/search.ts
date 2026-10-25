@@ -51,8 +51,10 @@ export function normaliseSearchSources(result: SearchResult) {
         chunkId: getStringProperty(entry, "chunkId"),
         image: getStringProperty(entry, "imageUrl") ?? getStringProperty(entry, "image"),
         favicon: getStringProperty(entry, "favicon"),
+        publisher: getStringProperty(entry, "source"),
         publishedDate:
           getStringProperty(entry, "publishedDate") ??
+          getStringProperty(entry, "published_date") ??
           getStringProperty(entry, "date") ??
           getStringProperty(entry, "last_updated"),
       },

@@ -19,6 +19,7 @@ export const DISCOVER_LINK_METADATA_KEY = "discoverLink";
 export const DISCOVER_CONTEXT_TOOL_NAME = "read_discover_context";
 export const DISCOVER_COMPOSE_TOOL_NAME = "compose_discover_edition";
 export const DISCOVER_MAX_CARDS = 12;
+export const DISCOVER_MAX_EDITION_CARDS = 36;
 export const DISCOVER_MAX_BRIEF_LINES = 5;
 export const DISCOVER_MAX_INTERESTS = 8;
 export const DISCOVER_CURATE_MAX_LENGTH = 500;
@@ -272,7 +273,7 @@ export const discoverEditionContentSchema = z
     greeting: text(80),
     interests: z.array(discoverInterestSchema).max(DISCOVER_MAX_INTERESTS),
     brief: z.array(discoverBriefLineSchema).max(DISCOVER_MAX_BRIEF_LINES),
-    cards: z.array(discoverCardSchema).max(DISCOVER_MAX_CARDS),
+    cards: z.array(discoverCardSchema).max(DISCOVER_MAX_EDITION_CARDS),
     listenSourceId: z.string().min(1).optional(),
     episodeId: z.string().min(1).optional(),
     episodeOverBudget: z.boolean().optional(),

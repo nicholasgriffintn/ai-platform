@@ -63,6 +63,16 @@ export class HomePage extends BasePage {
     return (await requestPromise).postDataJSON() as Record<string, unknown>;
   }
 
+  async confirmAdultAge() {
+    const dialog = this.page.getByRole("dialog", { name: "Add your date of birth" });
+
+    await dialog.getByLabel("Day").fill("1");
+    await dialog.getByLabel("Month").click();
+    await this.page.getByRole("menuitem", { name: "January" }).click();
+    await dialog.getByLabel("Year").fill("1990");
+    await dialog.getByRole("button", { name: "Continue" }).click();
+  }
+
   async sendMessageAndRequireCompletion(message: string) {
     const completionResponse = this.waitForCompletionRequest();
 

@@ -15,6 +15,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getUserSettings } from "~/modules/auth/application/user";
 import {
+  describeDeviceActivitySource,
+  deviceActivityProviderId,
+  listDeviceActivityProviders,
+  readDeviceActivitySource,
+} from "~/modules/discover/domain/device-activity";
+import {
   DEFAULT_DISCOVER_PREFERENCES,
   readDiscoverPreferences,
   type DiscoverPreferences,
@@ -34,6 +40,7 @@ import {
 
 import { estimateDiscoverCosts } from "./cost";
 import { enqueueDiscoverJob } from "./covers";
+import { forgetDeviceActivity } from "./device-documents";
 import { listDiscoverDocuments } from "./notebook";
 
 const DISABLED: DiscoverSettings = {
@@ -83,26 +90,41 @@ async function describeSources(
     listDiscoverDocuments(context, user.id),
   ]);
 
-  return (recipe?.integrations ?? []).map((integration) => {
-    const read = documents.signals.filter(
-      (document) => document.providerId === integration.providerId,
-    );
-    const latest = read
-      .map((document) => document.readAt)
-      .filter((value): value is string => value !== null)
-      .sort()
-      .at(-1);
+  const health = (providerId: string) => {
+    const read = documents.signals.filter((document) => document.providerId === providerId);
 
     return {
+      used: !excluded.includes(providerId),
+      lastReadAt:
+        read
+          .map((document) => document.readAt)
+          .filter((value): value is string => value !== null)
+          .sort()
+          .at(-1) ?? null,
+      lastError: read.find((document) => document.error)?.error ?? null,
+    };
+  };
+
+  const devices = listDeviceActivityProviders(
+    documents.signals.map((document) => document.providerId),
+    excluded,
+  );
+
+  return [
+    ...(recipe?.integrations ?? []).map((integration) => ({
       providerId: integration.providerId,
       name: integration.name,
       description: integration.description,
       connected: integration.connectionStatus === "connected",
-      used: !excluded.includes(integration.providerId),
-      lastReadAt: latest ?? null,
-      lastError: read.find((document) => document.error)?.error ?? null,
-    };
-  });
+      ...health(integration.providerId),
+    })),
+    ...devices.map((source) => ({
+      providerId: deviceActivityProviderId(source),
+      ...describeDeviceActivitySource(source),
+      connected: true,
+      ...health(deviceActivityProviderId(source)),
+    })),
+  ];
 }
 
 export type DiscoverRoutineSettings = Omit<
@@ -250,6 +272,10 @@ export async function updateDiscoverSettings(
 
   if (!installed) {
     throw new AssistantError("Discover is not available yet", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (input.source && !input.source.used && readDeviceActivitySource(input.source.providerId)) {
+    await forgetDeviceActivity(context, { providerId: input.source.providerId });
   }
 
   const reinstalled = await findDiscoverInstallation(context, polyContext);

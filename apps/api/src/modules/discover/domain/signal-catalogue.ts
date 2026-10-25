@@ -1,4 +1,6 @@
-import { isRecord, readPathValues } from "@ngriffin_uk/polychat-utility-core";
+import { epochSecondsToIso, isRecord, readPathValues } from "@ngriffin_uk/polychat-utility-core";
+
+import type { DiscoverResearchResult } from "./research";
 
 export type DiscoverSignalGroup =
   | "listening"
@@ -11,7 +13,9 @@ export type DiscoverSignalGroup =
   | "work"
   | "places"
   | "pictures"
-  | "models";
+  | "models"
+  | "social"
+  | "news";
 
 export interface DiscoverSignalRead {
   date: string;
@@ -29,6 +33,7 @@ export interface DiscoverSignal {
   operation: string;
   parameters: (read: DiscoverSignalRead) => Record<string, unknown>;
   digest: (result: unknown) => string[];
+  items?: (result: unknown) => DiscoverResearchResult[];
   needsLocation?: boolean;
 }
 
@@ -49,7 +54,29 @@ export const DISCOVER_SIGNAL_GROUPS: Record<
   places: { label: "Places", oneOf: true },
   pictures: { label: "Pictures", oneOf: false },
   models: { label: "Models", oneOf: false },
+  social: { label: "Social", oneOf: false },
+  news: { label: "News", oneOf: false },
 };
+
+export interface DiscoverPublicFeed {
+  id: string;
+  group: DiscoverSignalGroup;
+  title: string;
+  description: string;
+}
+
+export const DISCOVER_PUBLIC_FEEDS: readonly DiscoverPublicFeed[] = [
+  {
+    id: "hackernews-front",
+    group: "news",
+    title: "Hacker News",
+    description: "Reads the front page, no account needed.",
+  },
+];
+
+export function findDiscoverPublicFeed(id: string): DiscoverPublicFeed | undefined {
+  return DISCOVER_PUBLIC_FEEDS.find((feed) => feed.id === id);
+}
 
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : typeof value === "number" ? String(value) : "";
@@ -603,6 +630,62 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
           first(item, ["filename"]),
           first(item, ["productUrl"]),
         ),
+      ),
+  },
+  {
+    id: "reddit-front",
+    providerId: "reddit",
+    group: "social",
+    title: "Reddit",
+    description: "Reads the best posts from the communities you subscribe to.",
+    operation: "REDDIT_GET",
+    parameters: () => ({ sort: "best", limit: 25 }),
+    items: (result) =>
+      items(result, ["data", "data", "children"], ["data", "children"], ["children"]).flatMap(
+        (child) => {
+          const post = isRecord(child) && isRecord(child.data) ? child.data : child;
+
+          if (!isRecord(post) || post.over_18 === true || post.stickied === true) {
+            return [];
+          }
+
+          const title = first(post, ["title"]);
+          const permalink = first(post, ["permalink"]);
+          const subreddit = first(post, ["subreddit_name_prefixed"], ["subreddit"]);
+          const score = first(post, ["score"]);
+
+          if (!title || !permalink) {
+            return [];
+          }
+
+          return [
+            {
+              title,
+              url: `https://www.reddit.com${permalink.startsWith("/") ? "" : "/"}${permalink}`,
+              snippet: first(post, ["selftext"]).slice(0, 400),
+              source: [
+                subreddit.startsWith("r/") || !subreddit ? subreddit : `r/${subreddit}`,
+                score ? `${score} points` : "",
+              ]
+                .filter(Boolean)
+                .join(", "),
+              date: epochSecondsToIso(post.created_utc)?.slice(0, 10) ?? "",
+            },
+          ];
+        },
+      ),
+    digest: (result) =>
+      lines(
+        items(result, ["data", "data", "children"], ["data", "children"], ["children"]),
+        (post) =>
+          joinParts(
+            first(post, ["data", "title"], ["title"]),
+            first(post, ["data", "subreddit_name_prefixed"], ["data", "subreddit"], ["subreddit"]),
+            first(post, ["data", "permalink"], ["permalink"]).replace(
+              /^\//u,
+              "https://www.reddit.com/",
+            ),
+          ),
       ),
   },
   {

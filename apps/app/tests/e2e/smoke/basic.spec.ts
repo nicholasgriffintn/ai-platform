@@ -10,7 +10,12 @@ test.describe("Release smoke", { tag: "@release" }, () => {
     test("answers in Chat", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel(TEXT_MODEL);
-      await homePage.sendMessageAndRequireCompletion("Check the signed-out release path");
+      const completion = homePage.sendMessageAndRequireCompletion(
+        "Check the signed-out release path",
+      );
+
+      await homePage.confirmAdultAge();
+      await completion;
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
       await captureVisualSnapshots(
         page,

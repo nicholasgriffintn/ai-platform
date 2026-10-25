@@ -1,5 +1,8 @@
 import {
   errorResponseSchema,
+  machineActivityResponseSchema,
+  machineActivitySchema,
+  machineForgetResponseSchema,
   machineHeartbeatSchema,
   machineRecordSchema,
   machineRunUpdateSchema,
@@ -8,6 +11,8 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { recordDeviceActivity } from "~/modules/discover/application/device-activity";
+import { forgetDeviceActivity } from "~/modules/discover/application/device-documents";
 import { heartbeatMachine } from "~/modules/machines/application";
 import { callMachineRun } from "~/modules/machines/application/runs";
 
@@ -26,6 +31,36 @@ defineResource(app, { idParam: "machine_id", tags: ["machines"] }, (machines) =>
     },
     handler: ({ body, serviceContext, user }) => heartbeatMachine(serviceContext, body, user.id),
   });
+
+  machines
+    .singleton("activity")
+    .update({
+      auth: true,
+      summary: "Replace this machine's shared activity",
+      description:
+        "Stores the activity digests a desktop chose to share as Discover documents. Sources left out are removed.",
+      paramSchema: machineParamsSchema,
+      bodySchema: machineActivitySchema,
+      responses: {
+        200: { description: "Activity recorded", schema: machineActivityResponseSchema },
+        400: { description: "Invalid activity", schema: errorResponseSchema },
+      },
+      handler: ({ body, params, serviceContext }) =>
+        recordDeviceActivity(serviceContext, params.machine_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Forget this machine's shared activity",
+      paramSchema: machineParamsSchema,
+      responses: {
+        200: { description: "Activity forgotten", schema: machineForgetResponseSchema },
+      },
+      handler: async ({ params, serviceContext }) => {
+        await forgetDeviceActivity(serviceContext, { machineId: params.machine_id });
+
+        return { forgotten: true };
+      },
+    });
 
   const runs = machines.sub("runs", "run_id");
 

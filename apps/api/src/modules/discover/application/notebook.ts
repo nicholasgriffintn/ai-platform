@@ -7,6 +7,10 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
+import {
+  readResearchResults,
+  type DiscoverResearchResult,
+} from "~/modules/discover/domain/research";
 import { createNotebook, updateNotebook } from "~/modules/notebooks/application/notebooks";
 import { readNotebookSettings } from "~/modules/notebooks/domain/notebook";
 import {
@@ -27,6 +31,7 @@ export interface DiscoverSignalDocument {
   attemptedAt: string | null;
   error: string | null;
   lines: string[];
+  items: DiscoverResearchResult[];
 }
 
 export interface DiscoverResearchDocument {
@@ -111,6 +116,7 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
         lines: Array.isArray(metadata.lines)
           ? metadata.lines.filter((line): line is string => typeof line === "string")
           : [],
+        items: readResearchResults(metadata.items),
       });
     } else if (typeof topic === "string" && topic) {
       research.push({

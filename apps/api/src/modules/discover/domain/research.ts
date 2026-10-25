@@ -1,9 +1,14 @@
 import { DISCOVER_RESEARCH_DAYS_KEPT } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
+export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 
 export interface DiscoverResearchResult {
   title: string;
   url: string;
   snippet: string;
+  source?: string;
+  date?: string;
 }
 
 export interface DiscoverResearchSection {
@@ -12,14 +17,49 @@ export interface DiscoverResearchSection {
 }
 
 const SECTION_HEADING = /^## (\d{4}-\d{2}-\d{2})$/u;
-const RESULT_LINE = /^- \[(.+?)\]\((https?:\/\/\S+?)\)(?: — (.*))?$/u;
+const RESULT_LINE =
+  /^- \[(.+?)\]\((https?:\/\/\S+?)\)(?: _\((.+?)(?: · (\d{4}-\d{2}-\d{2}))?\)_)?(?: — (.*))?$/u;
+
+function describeOrigin(result: DiscoverResearchResult): string {
+  const source =
+    result.source
+      ?.replace(/[()_·]/gu, " ")
+      .replace(/\s+/gu, " ")
+      .trim() ?? "";
+
+  if (!source) {
+    return "";
+  }
+
+  return ` _(${source}${result.date ? ` · ${result.date}` : ""})_`;
+}
+
+export function readResearchResults(value: unknown): DiscoverResearchResult[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) =>
+    isRecord(entry) && typeof entry.title === "string" && typeof entry.url === "string"
+      ? [
+          {
+            title: entry.title,
+            url: entry.url,
+            snippet: typeof entry.snippet === "string" ? entry.snippet : "",
+            ...(typeof entry.source === "string" ? { source: entry.source } : {}),
+            ...(typeof entry.date === "string" ? { date: entry.date } : {}),
+          },
+        ]
+      : [],
+  );
+}
 
 export function renderResearchSection(section: DiscoverResearchSection): string {
   return [
     `## ${section.date}`,
     ...section.results.map(
       (result) =>
-        `- [${result.title.replace(/[[\]]/gu, "")}](${result.url})${
+        `- [${result.title.replace(/[[\]]/gu, "")}](${result.url})${describeOrigin(result)}${
           result.snippet ? ` — ${result.snippet.replace(/\s+/gu, " ").trim()}` : ""
         }`,
     ),
@@ -44,7 +84,9 @@ export function parseResearchDocument(content: string): DiscoverResearchSection[
       current.results.push({
         title: result[1] ?? "",
         url: result[2] ?? "",
-        snippet: result[3] ?? "",
+        snippet: result[5] ?? "",
+        ...(result[3] ? { source: result[3] } : {}),
+        ...(result[4] ? { date: result[4] } : {}),
       });
     }
   }

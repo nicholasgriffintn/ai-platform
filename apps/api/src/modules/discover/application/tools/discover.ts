@@ -5,11 +5,20 @@ import {
   type ComposeDiscoverEditionInput,
   type CreateDiscoverWindDown,
 } from "@ngriffin_uk/polychat-schemas";
-import { describeZonedInstant, generateId } from "@ngriffin_uk/polychat-utility-core";
+import {
+  describeZonedInstant,
+  generateId,
+  shiftCalendarDate,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { describeDiscoverContext } from "~/modules/discover/domain/context";
 import { buildDiscoverEdition, discoverEditionTimeAt } from "~/modules/discover/domain/edition";
+import { buildDiscoverFeedGroups } from "~/modules/discover/domain/feed";
+import {
+  DISCOVER_HEADLINES_TOPIC,
+  latestResearchSection,
+} from "~/modules/discover/domain/research";
 import { isSundayEdition } from "~/modules/discover/domain/week";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -75,6 +84,22 @@ export const compose_discover_edition: ApiToolDefinition = {
       curate: basis.curate,
       resurfaceHrefs: basis.resurfaceHrefs,
       recentUrls: basis.recentUrls,
+      feed: buildDiscoverFeedGroups({
+        research: documents.research.flatMap((document) => {
+          const section = latestResearchSection(document.content);
+
+          return section && section.date >= shiftCalendarDate(basis.date, -1)
+            ? [{ topic: document.topic, results: section.results }]
+            : [];
+        }),
+        signals: documents.signals
+          .filter((document) => !document.error)
+          .map((document) => ({ title: document.title, items: document.items })),
+        headlinesTopic: DISCOVER_HEADLINES_TOPIC,
+        followedTopics: basis.followedTopics,
+        curate: basis.curate,
+        interestOrder: args.interests.map((interest) => interest.topic),
+      }),
       createId: generateId,
     });
     const editionTime = discoverEditionTimeAt(

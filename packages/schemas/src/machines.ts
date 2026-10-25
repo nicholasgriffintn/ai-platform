@@ -114,3 +114,46 @@ export function isMachineOnline(
 
   return Number.isFinite(lastSeenAt) && now - lastSeenAt < MACHINE_ONLINE_WINDOW_MS;
 }
+
+export const DEVICE_ACTIVITY_SOURCES = ["browsing", "agents", "apps", "music", "games"] as const;
+export const deviceActivitySourceSchema = z.enum(DEVICE_ACTIVITY_SOURCES);
+export type DeviceActivitySource = z.infer<typeof deviceActivitySourceSchema>;
+export const DEVICE_ACTIVITY_PROVIDER_PREFIX = "device_";
+export const DEVICE_ACTIVITY_LINE_LIMIT = 40;
+export const DEVICE_ACTIVITY_LINE_LENGTH = 280;
+
+export const machineActivitySourceSchema = z
+  .object({
+    source: deviceActivitySourceSchema,
+    lines: z
+      .array(z.string().trim().min(1).max(DEVICE_ACTIVITY_LINE_LENGTH))
+      .max(DEVICE_ACTIVITY_LINE_LIMIT),
+  })
+  .strict();
+
+export type MachineActivitySource = z.infer<typeof machineActivitySourceSchema>;
+
+export const machineActivitySchema = z
+  .object({
+    label: z.string().trim().min(1).max(120),
+    periodStart: z.iso.datetime(),
+    periodEnd: z.iso.datetime(),
+    sources: z
+      .array(machineActivitySourceSchema)
+      .max(DEVICE_ACTIVITY_SOURCES.length)
+      .refine((sources) => new Set(sources.map((item) => item.source)).size === sources.length, {
+        error: "Send each source once",
+      }),
+  })
+  .strict();
+
+export type MachineActivity = z.infer<typeof machineActivitySchema>;
+
+export const machineActivityResponseSchema = z
+  .object({
+    recorded: z.array(deviceActivitySourceSchema),
+    excluded: z.array(deviceActivitySourceSchema),
+  })
+  .strict();
+
+export type MachineActivityResponse = z.infer<typeof machineActivityResponseSchema>;

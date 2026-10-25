@@ -2,6 +2,7 @@ import { composeDiscoverEditionInputSchema } from "@ngriffin_uk/polychat-schemas
 import { describe, expect, it } from "vitest";
 
 import { buildDiscoverEdition, discoverTopicKey, listEditionUrls } from "../edition";
+import type { DiscoverFeedGroup } from "../feed";
 
 function readCard(topic: string, url: string) {
   return {
@@ -71,6 +72,7 @@ function build(
     followed?: string[];
     curate?: string;
     resurface?: string[];
+    feed?: DiscoverFeedGroup[];
   } = {},
 ) {
   let next = 0;
@@ -100,6 +102,7 @@ function build(
         generatedAt: "2026-10-23T06:00:00.000Z",
       },
     ]),
+    feed: options.feed ?? [],
     createId: () => `card_${(next += 1)}`,
   });
 }
@@ -110,6 +113,31 @@ describe("buildDiscoverEdition", () => {
 
     expect(edition.interests.map((interest) => interest.topic)).toEqual(["Sourdough"]);
     expect(edition.cards.map((card) => card.kind)).toEqual(["read", "check_in"]);
+  });
+
+  it("fills the feed under the model's cards without repeating its links or hidden topics", () => {
+    const edition = build(["Formula 1"], [], {
+      feed: [
+        {
+          topic: "Sourdough",
+          lead: "You follow Sourdough",
+          items: [
+            { title: "Same", url: "https://example.com/rye-starters", snippet: "" },
+            { title: "Crumb", url: "https://example.com/crumb", snippet: "Open crumb." },
+          ],
+        },
+        {
+          topic: "Formula 1",
+          lead: "You follow Formula 1",
+          items: [{ title: "Grid", url: "https://example.com/grid", snippet: "" }],
+        },
+      ],
+    });
+
+    expect(edition.cards.flatMap((card) => (card.kind === "read" ? [card.url] : []))).toEqual([
+      "https://example.com/rye-starters",
+      "https://example.com/crumb",
+    ]);
   });
 
   it("leaves out links shown recently or repeated within the edition", () => {

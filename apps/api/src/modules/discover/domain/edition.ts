@@ -1,5 +1,6 @@
 import {
   DISCOVER_EDITION_VERSION,
+  DISCOVER_MAX_EDITION_CARDS,
   type ComposeDiscoverEditionInput,
   type DiscoverCard,
   type DiscoverCardDraft,
@@ -7,6 +8,8 @@ import {
   type DiscoverEditionTime,
 } from "@ngriffin_uk/polychat-schemas";
 import { comparableHttpUrl, normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
+
+import { fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
 
 export interface BuildDiscoverEditionInput {
   draft: ComposeDiscoverEditionInput;
@@ -18,6 +21,7 @@ export interface BuildDiscoverEditionInput {
   curate: string;
   resurfaceHrefs: ReadonlySet<string>;
   recentUrls: ReadonlySet<string>;
+  feed: readonly DiscoverFeedGroup[];
   createId: () => string;
 }
 
@@ -93,6 +97,22 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
 
     cards.push({ ...card, id: input.createId() });
   }
+
+  const withheldTopics = new Set(
+    input.draft.interests
+      .filter((interest) => isWithheld(interest, interest.topic, input))
+      .map((interest) => discoverTopicKey(interest.topic)),
+  );
+
+  cards.push(
+    ...fillDiscoverFeed({
+      groups: input.feed,
+      seenUrls,
+      skipTopics: new Set([...input.hiddenTopics, ...withheldTopics]),
+      limit: DISCOVER_MAX_EDITION_CARDS - cards.length,
+      createId: input.createId,
+    }),
+  );
 
   return {
     version: DISCOVER_EDITION_VERSION,

@@ -32,15 +32,22 @@ import {
   chooseResearchTopics,
   describeInterestMaterial,
 } from "~/modules/discover/domain/interests";
-import { mergeResearchDocument } from "~/modules/discover/domain/research";
-import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import {
+  DISCOVER_HEADLINES_TOPIC,
+  mergeResearchDocument,
+} from "~/modules/discover/domain/research";
+import {
+  DISCOVER_PUBLIC_FEEDS,
+  DISCOVER_SIGNALS,
+  type DiscoverPublicFeed,
+  type DiscoverSignal,
+} from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
-import { findWebResults } from "~/modules/notebooks/application/research";
+import { findNewsResults, findWebResults } from "~/modules/notebooks/application/research";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
-import { createSource, updateSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
@@ -48,6 +55,7 @@ import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
 import { generateDiscoverObject } from "./generate";
+import { describeHackerNewsStory, hackerNewsFeedItem, readHackerNewsFront } from "./hacker-news";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -55,10 +63,13 @@ import {
   type DiscoverDocuments,
 } from "./notebook";
 import { readDiscoverRoutine, type DiscoverRoutineSettings } from "./settings";
+import { discoverSignalSourceId, writeDiscoverDocument } from "./signal-documents";
 
 const logger = getLogger({ prefix: "discover/gather" });
 const SIGNAL_CONTENT_LIMIT = 120_000;
 const RESEARCH_RESULT_LIMIT = 8;
+const HEADLINE_NEWS_DAYS = 1;
+const TOPIC_NEWS_DAYS = 3;
 const CURATE_TOPIC_LIMIT = 4;
 
 export interface DiscoverGatherSummary {
@@ -119,55 +130,8 @@ export function curateTopics(curate: string): string[] {
     .slice(0, CURATE_TOPIC_LIMIT);
 }
 
-async function signalSourceId(userId: number, signalId: string): Promise<string> {
-  return `discover_signal_${(await sha256Hex(`${userId}:${signalId}`)).slice(0, 24)}`;
-}
-
 async function researchSourceId(userId: number, topic: string): Promise<string> {
   return `discover_research_${(await sha256Hex(`${userId}:${discoverTopicKey(topic)}`)).slice(0, 24)}`;
-}
-
-async function upsertDocument(
-  context: ServiceContext,
-  notebookId: string,
-  input: {
-    id: string;
-    kind: "connector" | "text";
-    title: string;
-    provider: string | null;
-    content: string | undefined;
-    metadata: Record<string, unknown>;
-  },
-): Promise<void> {
-  const user = context.requireUser();
-  const sources = context.repositories.get(SourceRepository);
-  const existing = await sources.getSource(input.id);
-
-  if (existing && existing.created_by_user_id === user.id) {
-    await updateSource(context, user.id, input.id, {
-      title: input.title,
-      status: "available",
-      metadata: input.metadata,
-      ...(input.content === undefined ? {} : { content: input.content }),
-    });
-  } else {
-    await createSource(
-      context,
-      user.id,
-      {
-        projectId: null,
-        kind: input.kind,
-        title: input.title,
-        status: "available",
-        content: input.content ?? "",
-        provider: input.provider,
-        metadata: input.metadata,
-      },
-      { id: input.id },
-    );
-  }
-
-  await sources.addCollectionSources(notebookId, [input.id]);
 }
 
 async function readSignal(
@@ -177,7 +141,7 @@ async function readSignal(
   read: Parameters<DiscoverSignal["parameters"]>[0],
 ): Promise<boolean> {
   const user = context.requireUser();
-  const sourceId = await signalSourceId(user.id, signal.id);
+  const sourceId = await discoverSignalSourceId(user.id, signal.id);
   const readAt = new Date().toISOString();
 
   try {
@@ -196,8 +160,9 @@ async function readSignal(
       },
     });
     const lines = signal.digest(result);
+    const feedItems = signal.items?.(result) ?? [];
 
-    await upsertDocument(context, notebookId, {
+    await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
       kind: "connector",
       title: signal.title,
@@ -215,6 +180,7 @@ async function readSignal(
         readAt,
         error: null,
         lines,
+        items: feedItems,
       },
     });
 
@@ -228,7 +194,7 @@ async function readSignal(
     });
     const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
 
-    await upsertDocument(context, notebookId, {
+    await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
       kind: "connector",
       title: signal.title,
@@ -261,23 +227,71 @@ async function readSignal(
   }
 }
 
+async function readPublicFeed(
+  context: ServiceContext,
+  notebookId: string,
+  feed: DiscoverPublicFeed,
+): Promise<void> {
+  const user = context.requireUser();
+  const sourceId = await discoverSignalSourceId(user.id, feed.id);
+  const readAt = new Date().toISOString();
+
+  try {
+    const stories = await readHackerNewsFront();
+    const lines = stories.map(describeHackerNewsStory);
+
+    await writeDiscoverDocument(context, notebookId, {
+      id: sourceId,
+      kind: "connector",
+      title: feed.title,
+      provider: "web",
+      content: renderSignalDocument({
+        title: feed.title,
+        readAt,
+        lines,
+        error: null,
+        raw: truncateForModel(JSON.stringify(stories, null, 1) ?? "", SIGNAL_CONTENT_LIMIT),
+      }),
+      metadata: {
+        [DISCOVER_SIGNAL_METADATA_KEY]: feed.id,
+        providerId: "web",
+        readAt,
+        error: null,
+        lines,
+        items: stories.map(hackerNewsFeedItem),
+      },
+    });
+  } catch (error) {
+    logger.warn("A Discover public feed could not be read", {
+      feed: feed.id,
+      error_message: getErrorMessage(error),
+    });
+  }
+}
+
+function headlinesQuery(location: string | null, date: string): string {
+  return `top news headlines ${date}${location ? ` ${location}` : ""}`;
+}
+
 async function researchTopic(
   context: ServiceContext,
   notebookId: string,
   topic: string,
   date: string,
+  query = topic,
+  days = TOPIC_NEWS_DAYS,
 ): Promise<boolean> {
   const user = context.requireUser();
   const sourceId = await researchSourceId(user.id, topic);
 
   try {
-    const results = (await findWebResults(context, `${topic} latest news`)).slice(
-      0,
-      RESEARCH_RESULT_LIMIT,
-    );
+    const news = await findNewsResults(context, query, days);
+    const results = (
+      news.length > 0 ? news : await findWebResults(context, `${query} latest news`)
+    ).slice(0, RESEARCH_RESULT_LIMIT);
     const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
 
-    await upsertDocument(context, notebookId, {
+    await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
       kind: "text",
       title: `Research: ${topic}`.slice(0, 200),
@@ -388,6 +402,19 @@ export async function runDiscoverGather(
 
       (ok ? read : stale).push(signal.providerId);
     }
+
+    for (const feed of DISCOVER_PUBLIC_FEEDS) {
+      await readPublicFeed(context, notebook.id, feed);
+    }
+
+    await researchTopic(
+      context,
+      notebook.id,
+      DISCOVER_HEADLINES_TOPIC,
+      zoned.date,
+      headlinesQuery(settings.location, zoned.date),
+      HEADLINE_NEWS_DAYS,
+    );
 
     const follows = await listDiscoverFollows(context, context.requireUser().id);
     const interests = await inferDiscoverInterests(context, notebook.id, now);

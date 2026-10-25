@@ -15,6 +15,8 @@ import type {
   EnqueueChatMessageRequest,
   HireTeammateInput,
   ItemReactionRequest,
+  MachineActivity,
+  MachineActivityResponse,
   MachineHeartbeat,
   MachineRecord,
   MemoryDocument,
@@ -463,6 +465,17 @@ class ApiService {
 
   forgetMachine = (machineId: string): Promise<void> => {
     return this.machineService.forget(machineId);
+  };
+
+  shareMachineActivity = (
+    machineId: string,
+    input: MachineActivity,
+  ): Promise<MachineActivityResponse> => {
+    return this.machineService.shareActivity(machineId, input);
+  };
+
+  forgetMachineActivity = (machineId: string): Promise<void> => {
+    return this.machineService.forgetActivity(machineId);
   };
 
   fetchTools = (projectId?: string, workspaceId?: string): Promise<Tool[]> => {

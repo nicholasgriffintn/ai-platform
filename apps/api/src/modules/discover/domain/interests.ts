@@ -54,7 +54,14 @@ export function describeInterestMaterial(input: {
 
   return [
     ...input.signals.map((signal) => section(`Lately on ${signal.title}`, signal.lines)),
-    section("Recent chat titles", input.chatTitles),
+    ...(input.signals.some((signal) => signal.lines.length > 0)
+      ? []
+      : [
+          section(
+            "Recent chat titles, only because no service has been read yet",
+            input.chatTitles,
+          ),
+        ]),
     section("What Poly remembers", input.memorySummary ? [input.memorySummary] : []),
     section("Asked for more of", input.more),
     section("Asked for less of, never choose", input.less),

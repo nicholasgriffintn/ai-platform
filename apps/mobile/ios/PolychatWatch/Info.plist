@@ -4,7 +4,7 @@
 <dict>
 	<key>APIBaseURL</key>
 	<string>https://api.polychat.app</string>
-	<key>WKBackgroundModes</key>
+	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
 	</array>
