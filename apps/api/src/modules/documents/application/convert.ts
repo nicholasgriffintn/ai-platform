@@ -1,3 +1,4 @@
+import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -38,9 +39,10 @@ export async function convertBlobToMarkdownViaCloudflare(
           blob,
         },
       ];
-      const result = conversionOptions
-        ? await markdownConverter.toMarkdown(files, { conversionOptions })
-        : await markdownConverter.toMarkdown(files);
+      const result = await markdownConverter.toMarkdown(files, {
+        gateway: { id: resolveAiGatewayId(), skipCache: true },
+        ...(conversionOptions ? { conversionOptions } : {}),
+      });
 
       if (!Array.isArray(result) || result.length === 0) {
         return {

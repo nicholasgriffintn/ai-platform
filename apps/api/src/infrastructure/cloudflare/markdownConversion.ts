@@ -28,6 +28,7 @@ export interface MarkdownConversionFile {
 }
 
 export interface MarkdownConversionRequestOptions {
+  gateway?: { id: string; skipCache?: boolean };
   conversionOptions?: MarkdownConversionOptions;
 }
 
@@ -50,8 +51,7 @@ export function getMarkdownConverter(value: unknown): MarkdownConverter | null {
   }
 
   return {
-    toMarkdown: async (files, options) =>
-      options ? toMarkdown(files, options) : toMarkdown(files),
+    toMarkdown: async (files, options) => toMarkdown(files, options),
   };
 }
 

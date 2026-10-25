@@ -53,6 +53,7 @@ describe("convertBlobToMarkdownViaCloudflare", () => {
 
     expect(result).toEqual({ result: "Converted document" });
     expect(toMarkdown).toHaveBeenCalledWith([{ name: "document.docx", blob }], {
+      gateway: { id: expect.any(String), skipCache: true },
       conversionOptions: { output: { format: "text" } },
     });
   });

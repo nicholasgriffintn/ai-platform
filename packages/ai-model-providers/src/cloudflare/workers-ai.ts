@@ -1,3 +1,4 @@
+import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import type {
   ConnectionCheck,
   HostManifest,
@@ -233,6 +234,7 @@ export class WorkersAiHost implements Host {
     const [model, finetuneId] = deployment.providerRef.split("|");
     const body = await this.http.record(`/ai/run/${model}`, {
       method: "POST",
+      headers: { "cf-aig-gateway-id": resolveAiGatewayId() },
       body: {
         messages: request.messages,
         max_tokens: request.maxTokens,
