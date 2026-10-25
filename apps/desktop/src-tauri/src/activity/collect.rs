@@ -1,7 +1,10 @@
 use super::agents::{digest_agents, read_claude_sessions, read_codex_sessions};
 use super::browsers::{find_browser, read_profile_history, BrowserHistory};
-use super::browsing::digest_browsing;
-use super::digest::{ActivityCollection, ActivityDigest, DigestItem, ReadingWindow, LINE_LIMIT};
+use super::browsing::{digest_browsing, pick_pages};
+use super::digest::{
+    ActivityCollection, ActivityDigest, DigestEntry, DigestItem, ReadingWindow, ENTRY_LIMIT,
+    LINE_LIMIT,
+};
 use super::mac::computer_name;
 use super::pause::active_pause;
 use super::samples::{digest_apps, digest_music, SampleKind};
@@ -13,12 +16,18 @@ use crate::text::clip;
 pub const WINDOW_SECONDS: i64 = 24 * 3600;
 const LABEL_LENGTH: usize = 120;
 
-fn digest(source: &str, mut items: Vec<DigestItem>) -> ActivityDigest {
+fn digest(
+    source: &str,
+    mut items: Vec<DigestItem>,
+    mut entries: Vec<DigestEntry>,
+) -> ActivityDigest {
     items.truncate(LINE_LIMIT);
+    entries.truncate(ENTRY_LIMIT);
 
     ActivityDigest {
         source: source.to_string(),
         items,
+        entries,
     }
 }
 
@@ -35,6 +44,7 @@ fn read_browsing(settings: &BrowsingSettings, since: i64) -> BrowserHistory {
                 Ok(read) => {
                     history.visits.extend(read.visits);
                     history.searches.extend(read.searches);
+                    history.search_pages.extend(read.search_pages);
                 }
                 Err(error) => eprintln!("{} history could not be read: {error}", browser.name),
             }
@@ -67,6 +77,16 @@ fn collect_sources(
                 &settings.browsing,
                 &settings.never_share.domains,
             ),
+            if settings.browsing.titles {
+                pick_pages(
+                    &history.visits,
+                    &history.search_pages,
+                    window,
+                    &settings.never_share.domains,
+                )
+            } else {
+                Vec::new()
+            },
         ));
     }
 
@@ -81,10 +101,9 @@ fn collect_sources(
             sessions.extend(read_codex_sessions(window));
         }
 
-        sources.push(digest(
-            "agents",
-            digest_agents(sessions, &settings.agents, &settings.never_share.projects),
-        ));
+        let agents = digest_agents(sessions, &settings.agents, &settings.never_share.projects);
+
+        sources.push(digest("agents", agents.items, agents.entries));
     }
 
     if sharing.contains(&"apps") {
@@ -95,6 +114,7 @@ fn collect_sources(
                 &settings.apps,
                 &settings.never_share.apps,
             ),
+            Vec::new(),
         ));
     }
 
@@ -105,6 +125,7 @@ fn collect_sources(
                 &store.list_activity_samples(SampleKind::Track, window.start)?,
                 &settings.music,
             ),
+            Vec::new(),
         ));
     }
 

@@ -45,6 +45,15 @@ export const deviceActivityCollectionSchema = z.object({
       items: z.array(
         z.object({ line: z.string(), neverShare: deviceActivityNeverShareKeySchema.nullable() }),
       ),
+      entries: z
+        .array(
+          z.object({
+            title: z.string(),
+            url: z.string().nullable(),
+            detail: z.string().nullable(),
+          }),
+        )
+        .default([]),
     }),
   ),
 });

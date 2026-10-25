@@ -1,4 +1,5 @@
 import {
+  useAddOutputToCollection,
   useMemoryDocuments,
   useOutputMutations,
   useSourceMutations,
@@ -24,6 +25,7 @@ export function useFileActions({
   const [pending, setPending] = useState<{ action: FileAction; item: FileItem } | null>(null);
   const outputs = useOutputMutations();
   const sources = useSourceMutations();
+  const addOutputToCollection = useAddOutputToCollection();
   const memory = useMemoryDocuments(projectId);
   const sharing = useOutputSharing();
 
@@ -90,7 +92,9 @@ export function useFileActions({
                 })
               ).id;
 
-        await sources.addToCollection.mutateAsync({ collectionId, sourceId: item.id });
+        await (item.origin === "output"
+          ? addOutputToCollection.mutateAsync({ collectionId, outputId: item.id })
+          : sources.addToCollection.mutateAsync({ collectionId, sourceId: item.id }));
       },
       `${item.title} added to the folder`,
       `Could not add ${item.title} to the folder`,
@@ -120,6 +124,7 @@ export function useFileActions({
       sources.deleteCollection.isPending ||
       sources.createCollection.isPending ||
       sources.addToCollection.isPending ||
+      addOutputToCollection.isPending ||
       memory.remove.isPending,
   };
 }

@@ -3,30 +3,47 @@ import {
   DEVICE_ACTIVITY_SOURCES,
   deviceActivitySourceSchema,
   type DeviceActivitySource,
+  type MachineActivityItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
+
+import type { DiscoverResearchResult } from "./research";
+import type { DiscoverSignalGroup } from "./signal-catalogue";
 
 export const DEVICE_ACTIVITY_MACHINE_METADATA_KEY = "deviceMachineId";
+export const DEVICE_ACTIVITY_DAYS_KEPT = 7;
+export const DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY = "attemptedPages";
 
-const DEVICE_SOURCE_DETAILS: Record<DeviceActivitySource, { name: string; description: string }> = {
+const DAY_HEADING = /^## (\d{4}-\d{2}-\d{2})$/u;
+
+const DEVICE_SOURCE_DETAILS: Record<
+  DeviceActivitySource,
+  { name: string; description: string; group: DiscoverSignalGroup }
+> = {
   browsing: {
     name: "Browsing on your Mac",
     description: "Sites and pages from the browsers you share on the desktop app.",
+    group: "reading",
   },
   agents: {
     name: "Coding agents on your Mac",
     description: "Claude Code and Codex sessions from the desktop app.",
+    group: "work",
   },
   apps: {
     name: "Apps on your Mac",
     description: "Time spent in the apps you use, from the desktop app.",
+    group: "work",
   },
   music: {
     name: "Music on your Mac",
     description: "What Apple Music and Spotify played, from the desktop app.",
+    group: "listening",
   },
   games: {
     name: "Games on your Mac",
     description: "What you played, from the desktop app.",
+    group: "playing",
   },
 };
 
@@ -66,7 +83,63 @@ export function describeDeviceActivitySource(source: DeviceActivitySource): {
   name: string;
   description: string;
 } {
-  return DEVICE_SOURCE_DETAILS[source];
+  const { name, description } = DEVICE_SOURCE_DETAILS[source];
+
+  return { name, description };
+}
+
+export function deviceActivityGroup(providerId: string): DiscoverSignalGroup | null {
+  const source = readDeviceActivitySource(providerId);
+
+  return source ? DEVICE_SOURCE_DETAILS[source].group : null;
+}
+
+export interface DeviceActivityDay {
+  date: string;
+  lines: readonly string[];
+}
+
+export function parseDeviceActivityHistory(content: string): DeviceActivityDay[] {
+  const days: { date: string; lines: string[] }[] = [];
+
+  for (const line of content.split("\n")) {
+    const heading = DAY_HEADING.exec(line.trim());
+    const current = days.at(-1);
+
+    if (heading?.[1]) {
+      days.push({ date: heading[1], lines: [] });
+    } else if (current && line.startsWith("- ")) {
+      current.lines.push(line.slice(2).trim());
+    }
+  }
+
+  return days;
+}
+
+export function renderDeviceActivityHistory(
+  title: string,
+  existing: string,
+  today: DeviceActivityDay,
+): string {
+  const days = [
+    ...(today.lines.length > 0 ? [today] : []),
+    ...parseDeviceActivityHistory(existing).filter(
+      (day) => today.lines.length === 0 || day.date !== today.date,
+    ),
+  ]
+    .sort((left, right) => (left.date < right.date ? 1 : -1))
+    .slice(0, DEVICE_ACTIVITY_DAYS_KEPT);
+
+  return [
+    `# ${title}`,
+    ...(days.length > 0
+      ? days.map((day) =>
+          [`## ${day.date}`, ...day.lines.map((line) => `- ${line.replace(/\s+/gu, " ")}`)].join(
+            "\n",
+          ),
+        )
+      : ["Nothing shared yet."]),
+  ].join("\n\n");
 }
 
 export function listDeviceActivityProviders(
@@ -76,4 +149,59 @@ export function listDeviceActivityProviders(
   const known = new Set<string>([...present, ...excluded]);
 
   return DEVICE_ACTIVITY_SOURCES.filter((source) => known.has(deviceActivityProviderId(source)));
+}
+
+export function readDeviceActivityPages(
+  items: readonly MachineActivityItem[],
+  previous: readonly DiscoverResearchResult[],
+  attempted: ReadonlySet<string>,
+  date: string,
+): { pages: DiscoverResearchResult[]; unread: DiscoverResearchResult[] } {
+  const known = new Map(previous.map((page) => [page.url, page.snippet]));
+  const pages = items.flatMap((item) =>
+    item.url
+      ? [
+          {
+            title: item.title,
+            url: item.url,
+            snippet: known.get(item.url) ?? "",
+            source: readUrlHost(item.url),
+            date,
+          },
+        ]
+      : [],
+  );
+
+  return {
+    pages,
+    unread: pages.filter((page) => !page.snippet && !attempted.has(page.url)),
+  };
+}
+
+export function mergeDeviceActivityPages(
+  pages: readonly DiscoverResearchResult[],
+  read: readonly DiscoverResearchResult[],
+): DiscoverResearchResult[] {
+  const excerpts = new Map(read.map((page) => [page.url, page.snippet]));
+
+  return pages.map((page) => ({ ...page, snippet: excerpts.get(page.url) || page.snippet }));
+}
+
+export function describeDeviceActivityItems(
+  items: readonly MachineActivityItem[],
+  pages: readonly DiscoverResearchResult[],
+): string[] {
+  const excerpts = new Map(pages.map((page) => [page.url, page.snippet]));
+
+  return items.map((item) => {
+    if (item.url) {
+      const excerpt = excerpts.get(item.url);
+
+      return excerpt
+        ? `Read “${item.title}” (${item.url}): ${excerpt}`
+        : `Read “${item.title}” (${item.url})`;
+    }
+
+    return item.detail ? `${item.title}: ${item.detail}` : item.title;
+  });
 }

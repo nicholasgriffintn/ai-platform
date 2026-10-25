@@ -2,6 +2,7 @@ import type {
   CreateSourceCollectionInput,
   CreateSourceInput,
   GeneratePodcastRequest,
+  OutputSummary,
   Source,
   SourceCollection,
   SourceGenerationType,
@@ -189,6 +190,24 @@ export async function addCollectionSources(
   await request(`/sources/collections/${encodeURIComponent(collectionId)}/sources`, {
     method: "POST",
     body: { sourceIds },
+  });
+}
+
+export async function listCollectionOutputs(collectionId: string): Promise<OutputSummary[]> {
+  return (
+    await request<ListPage<OutputSummary>>(
+      `/sources/collections/${encodeURIComponent(collectionId)}/outputs`,
+    )
+  ).data;
+}
+
+export async function addCollectionOutputs(
+  collectionId: string,
+  outputIds: string[],
+): Promise<void> {
+  await request(`/sources/collections/${encodeURIComponent(collectionId)}/outputs`, {
+    method: "POST",
+    body: { outputIds },
   });
 }
 

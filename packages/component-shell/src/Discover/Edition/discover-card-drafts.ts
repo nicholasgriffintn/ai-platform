@@ -63,27 +63,32 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
           `Set up an automation that keeps me posted on ${card.topic} each week. Show me the schedule before you create it.`,
         ),
       ];
-    case "read":
+    case "read": {
+      const piece = card.sourceId ? "this piece" : `${card.url}`;
+      const read = card.sourceId ? "" : "Read ";
+
       return [
         suggestion(
           card,
           "gist",
           "Give me the gist",
-          `Read ${card.url} and give me the gist in five bullet points.`,
+          `${read}${piece}${read ? " and" : ":"} give me the gist in five bullet points.`,
         ),
         suggestion(
           card,
           "why",
           "Why does this matter to me?",
-          `Read ${card.url}. Given what you know about me, why might it matter?`,
+          `${read}${piece}. Given what you know about me, why might it matter?`,
         ),
         suggestion(
           card,
           "counter",
           "What's the other side?",
-          `Read ${card.url} and give me the strongest counterargument to it.`,
+          `${read}${piece}${read ? " and" : ":"} give me the strongest counterargument to it.`,
         ),
       ];
+    }
+
     case "action":
       return [
         suggestion(card, "start", card.title, card.prompt),

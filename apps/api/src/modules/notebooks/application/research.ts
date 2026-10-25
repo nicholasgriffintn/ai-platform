@@ -6,9 +6,11 @@ import type {
   NotebookResearchResult,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  markdownToPlainText,
   publishedCalendarDate,
   readUrlHost,
   truncateForModel,
+  truncateSingleLine,
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -44,7 +46,7 @@ export async function findWebResults(
     results.push({
       title: (source.title || source.url).slice(0, 200),
       url: source.url,
-      snippet: source.content.slice(0, 1_000),
+      snippet: truncateSingleLine(markdownToPlainText(source.content), 1_000),
     });
   }
 
@@ -80,7 +82,7 @@ export async function findNewsResults(
     results.push({
       title: (source.title || source.url).slice(0, 200),
       url: source.url,
-      snippet: source.content.slice(0, 1_000),
+      snippet: truncateSingleLine(markdownToPlainText(source.content), 1_000),
       source: (source.publisher || readUrlHost(source.url)).slice(0, 80),
       date: publishedCalendarDate(source.publishedDate, now),
     });

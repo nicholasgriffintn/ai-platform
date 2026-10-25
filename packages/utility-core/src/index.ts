@@ -17,6 +17,7 @@ export * from "./image-dimensions.js";
 export * from "./jpeg.js";
 export * from "./json.js";
 export * from "./markdown.js";
+export * from "./plain-text.js";
 export * from "./modelGrouping.js";
 export * from "./numbers.js";
 export * from "./objects.js";

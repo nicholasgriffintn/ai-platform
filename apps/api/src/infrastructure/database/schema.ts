@@ -3476,7 +3476,9 @@ export interface ModelDatasetProfileData {
 export const resourceLink = sqliteTable(
   "resource_link",
   {
-    kind: text({ enum: ["output_source", "source_collection", "model_lineage"] }).notNull(),
+    kind: text({
+      enum: ["output_source", "source_collection", "output_collection", "model_lineage"],
+    }).notNull(),
     output_id: text().references(() => resource.output_id, { onDelete: "cascade" }),
     collection_id: text().references(() => resourceCollection.id, { onDelete: "cascade" }),
     source_id: text().references(() => resource.source_id, { onDelete: "cascade" }),
@@ -3494,6 +3496,9 @@ export const resourceLink = sqliteTable(
     collectionSourceIdx: uniqueIndex("resource_link_collection_source_idx")
       .on(table.collection_id, table.source_id)
       .where(sql`${table.kind} = 'source_collection'`),
+    collectionOutputIdx: uniqueIndex("resource_link_collection_output_idx")
+      .on(table.collection_id, table.output_id)
+      .where(sql`${table.kind} = 'output_collection'`),
     lineageIdx: uniqueIndex("resource_link_lineage_idx")
       .on(table.from_version_id, table.to_version_id, table.relation)
       .where(sql`${table.kind} = 'model_lineage'`),
@@ -3501,7 +3506,7 @@ export const resourceLink = sqliteTable(
     lineageTargetIdx: index("resource_link_lineage_target_idx").on(table.kind, table.to_version_id),
     shapeCheck: check(
       "resource_link_shape_check",
-      sql`(${table.kind} = 'output_source' AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.collection_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_collection' AND ${table.collection_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'model_lineage' AND ${table.from_version_id} IS NOT NULL AND ${table.to_version_id} IS NOT NULL AND ${table.relation} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.source_id} IS NULL)`,
+      sql`(${table.kind} = 'output_source' AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.collection_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_collection' AND ${table.collection_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'output_collection' AND ${table.collection_id} IS NOT NULL AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'model_lineage' AND ${table.from_version_id} IS NOT NULL AND ${table.to_version_id} IS NOT NULL AND ${table.relation} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.source_id} IS NULL)`,
     ),
   }),
 );

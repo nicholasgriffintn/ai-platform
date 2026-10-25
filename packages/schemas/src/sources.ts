@@ -150,6 +150,7 @@ export const sourceCollectionSchema = z
     description: z.string().max(500).nullable(),
     kind: sourceCollectionKindSchema,
     sourceCount: z.number().int().nonnegative(),
+    outputCount: z.number().int().nonnegative(),
     hasFeed: z.boolean(),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
@@ -169,6 +170,10 @@ export const sourceCollectionListResponseSchema = listSchema(sourceCollectionSch
 
 export const addCollectionSourcesSchema = z
   .object({ sourceIds: z.array(z.string().min(1)).min(1).max(100) })
+  .strict();
+
+export const addCollectionOutputsSchema = z
+  .object({ outputIds: z.array(z.string().min(1)).min(1).max(100) })
   .strict();
 
 export const setProjectContextSourcesSchema = z

@@ -2,8 +2,8 @@ import { generatePodcastSchema } from "@ngriffin_uk/polychat-schemas";
 import type z from "zod/v4";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
+import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
-import { ensurePodcastShow } from "~/modules/sources/application/podcasts/shows";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -20,7 +20,7 @@ export const generate_podcast: ApiToolDefinition = {
     const user = context.requireUser();
     const projectId = resolveRequestProjectId(toolContext.request);
     const showId = args.show
-      ? await ensurePodcastShow(context, user.id, projectId, args.show)
+      ? (await ensureFolder(context, user.id, { projectId, title: args.show, kind: "podcast" })).id
       : undefined;
     const episode = await startPodcastGeneration(
       context,

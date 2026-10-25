@@ -1,9 +1,18 @@
+import { Favicon } from "@ngriffin_uk/polychat-component-content";
 import { cn, Pet } from "@ngriffin_uk/polychat-component-ui";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 
 type RowCard = Exclude<DiscoverCard, { kind: "topic" }>;
+
+function describeReadSource(source: string, url: string): string {
+  const host = readUrlHost(url);
+  const sameHost =
+    source.toLowerCase().replace(/^www\./u, "") === host.toLowerCase().replace(/^www\./u, "");
+
+  return sameHost || !host ? source : `${source} · ${host}`;
+}
 
 function RowLead({ card }: { card: RowCard }) {
   switch (card.kind) {
@@ -21,8 +30,9 @@ function RowLead({ card }: { card: RowCard }) {
       );
     case "read":
       return (
-        <span className="flex size-9 items-center justify-center rounded-xl bg-selection font-display text-sm font-medium text-foreground uppercase">
+        <span className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl bg-selection font-display text-sm font-medium text-foreground uppercase">
           {card.source.slice(0, 1)}
+          <Favicon url={card.url} className="absolute inset-0 size-9 rounded-xl bg-selection p-2" />
         </span>
       );
     case "resurface":
@@ -70,7 +80,7 @@ function rowText(card: RowCard): { kicker: string; title: string; detail: string
       return { kicker: "Poly asks", title: card.question, detail: null };
     case "read":
       return {
-        kicker: `${card.source} · ${readUrlHost(card.url)}`,
+        kicker: describeReadSource(card.source, card.url),
         title: card.title,
         detail: card.summary,
       };

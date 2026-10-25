@@ -92,6 +92,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
     description: record.description,
     kind: record.kind,
     sourceCount: record.source_count ?? 0,
+    outputCount: record.output_count ?? 0,
     hasFeed: Boolean(record.feed_token_hash),
     createdAt: record.created_at,
     updatedAt: record.updated_at,

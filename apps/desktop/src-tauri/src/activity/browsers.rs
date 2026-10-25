@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -86,6 +87,7 @@ pub struct Search {
 pub struct BrowserHistory {
     pub visits: Vec<Visit>,
     pub searches: Vec<Search>,
+    pub search_pages: HashSet<String>,
 }
 
 struct HistoryCopy {
@@ -249,8 +251,23 @@ pub fn read_history(database: &Path, since: i64) -> Result<BrowserHistory, Strin
                 .collect::<rusqlite::Result<Vec<_>>>()
         })
         .unwrap_or_default();
+    let search_pages = connection
+        .prepare(
+            "SELECT DISTINCT urls.url
+             FROM keyword_search_terms terms JOIN urls ON urls.id = terms.url_id",
+        )
+        .and_then(|mut statement| {
+            statement
+                .query_map([], |row| row.get::<_, String>(0))?
+                .collect::<rusqlite::Result<HashSet<_>>>()
+        })
+        .unwrap_or_default();
 
-    Ok(BrowserHistory { visits, searches })
+    Ok(BrowserHistory {
+        visits,
+        searches,
+        search_pages,
+    })
 }
 
 pub fn read_profile_history(
@@ -351,5 +368,8 @@ mod tests {
         );
         assert_eq!(history.searches.len(), 1);
         assert_eq!(history.searches[0].term, "rust");
+        assert!(history
+            .search_pages
+            .contains("https://search.example/?q=rust"));
     }
 }

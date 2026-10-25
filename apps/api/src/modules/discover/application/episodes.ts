@@ -41,6 +41,7 @@ import { affordableEpisodeLength } from "./cost";
 import { enqueueDiscoverJob } from "./covers";
 import { requireDiscoverEdition, withEditionRun } from "./editions";
 import { publishDiscoverChanged } from "./events";
+import { fileDiscoverEpisode } from "./folders";
 import { listDiscoverFollows } from "./follows";
 import { generateDiscoverObject } from "./generate";
 import { readDiscoverRoutine } from "./settings";
@@ -250,6 +251,7 @@ async function scriptDiscoverEpisode(
     content,
   });
 
+  await fileDiscoverEpisode(context, episode.id);
   await outputs.updateOutput(season.id, {
     content: {
       ...season.season,

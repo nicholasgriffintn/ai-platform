@@ -92,6 +92,7 @@ export interface SourceCollectionRecord {
   created_at: string;
   updated_at: string | null;
   source_count?: number;
+  output_count?: number;
 }
 
 export interface SourceSummaryFilters {
@@ -619,7 +620,8 @@ export class SourceRepository extends BaseRepository {
     values: unknown[],
   ): Promise<SourceCollectionRecord[]> {
     return this.runQuery<SourceCollectionRecord>(
-      `SELECT sc.*, COUNT(s.id) AS source_count
+      `SELECT sc.*, COUNT(s.id) AS source_count,
+         (SELECT COUNT(*) FROM resource_link ol WHERE ol.kind = 'output_collection' AND ol.collection_id = sc.id) AS output_count
 			 FROM resource_collection sc
 			 LEFT JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.collection_id = sc.id
          LEFT JOIN ${sourceResourceSql} s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}

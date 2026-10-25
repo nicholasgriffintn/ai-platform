@@ -13,6 +13,7 @@ import {
 } from "~/modules/discover/domain/week";
 import { NotebookRepository } from "~/modules/notebooks/infrastructure/NotebookRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -92,6 +93,11 @@ export async function produceYourWeek(
     return null;
   }
 
+  const { id: showId } = await ensureFolder(context, user.id, {
+    projectId: null,
+    title: YOUR_WEEK_TITLE,
+    kind: "podcast",
+  });
   const episode = await startPodcastGeneration(context, {
     sourceIds: [],
     material,
@@ -100,6 +106,7 @@ export async function produceYourWeek(
     format: "brief",
     length: "short",
     language: "en",
+    showId,
   });
   const latest = await requireDiscoverEdition(context, user.id, editionId);
 

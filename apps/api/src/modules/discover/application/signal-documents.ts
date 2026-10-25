@@ -4,11 +4,14 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createSource, updateSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
+import { fileDiscoverDocument } from "./folders";
+
 export interface DiscoverDocumentInput {
   id: string;
-  kind: "connector" | "text";
+  kind: "connector" | "text" | "url";
   title: string;
   provider: string | null;
+  externalUri?: string;
   content: string | undefined;
   metadata: Record<string, unknown>;
 }
@@ -44,6 +47,7 @@ export async function writeDiscoverDocument(
         status: "available",
         content: input.content ?? "",
         provider: input.provider,
+        ...(input.externalUri ? { externalUri: input.externalUri } : {}),
         metadata: input.metadata,
       },
       { id: input.id },
@@ -51,4 +55,5 @@ export async function writeDiscoverDocument(
   }
 
   await sources.addCollectionSources(notebookId, [input.id]);
+  await fileDiscoverDocument(context, input.id);
 }

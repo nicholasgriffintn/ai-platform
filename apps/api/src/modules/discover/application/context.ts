@@ -10,11 +10,16 @@ import type {
   DiscoverSignalContext,
 } from "~/modules/discover/domain/context";
 import {
+  deviceActivityGroup,
+  readDeviceActivitySource,
+} from "~/modules/discover/domain/device-activity";
+import {
   describeDiscoverCard,
   discoverTopicKey,
   listEditionUrls,
 } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
+import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
 import { latestResearchSection } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
@@ -160,18 +165,27 @@ export async function readDiscoverEditionBasis(
   };
 }
 
-function describeDocuments(documents: DiscoverDocuments): {
+function describeDocuments(
+  documents: DiscoverDocuments,
+  now: number,
+): {
   signals: DiscoverSignalContext[];
   research: DiscoverResearchContext[];
 } {
   return {
-    signals: documents.signals.map((document) => ({
-      title: document.title,
-      group: findDiscoverSignal(document.signalId)?.group ?? "signal",
-      readAt: document.readAt,
-      error: document.error,
-      lines: document.lines,
-    })),
+    signals: documents.signals
+      .filter((document) => isDiscoverSignalCurrent(document.readAt, now))
+      .map((document) => ({
+        title: document.title,
+        group:
+          findDiscoverSignal(document.signalId)?.group ??
+          deviceActivityGroup(document.providerId) ??
+          "signal",
+        readAt: document.readAt,
+        error: document.error,
+        lines: document.lines,
+        openedPages: readDeviceActivitySource(document.providerId) === "browsing",
+      })),
     research: documents.research.flatMap((document) => {
       const section = latestResearchSection(document.content);
 
@@ -188,7 +202,7 @@ export async function buildDiscoverContextSnapshot(
 ): Promise<DiscoverContextSnapshot> {
   const basis = await loadDiscoverBasis(context, now);
   const userId = basis.user.id;
-  const documents = describeDocuments(await ensureDiscoverGathered(context, now));
+  const documents = describeDocuments(await ensureDiscoverGathered(context, now), now.getTime());
   const [conversations, memorySummary, agenda, resurface, health] = await Promise.all([
     context.repositories
       .get(ConversationRepository)

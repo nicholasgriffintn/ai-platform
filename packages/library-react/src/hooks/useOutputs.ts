@@ -1,4 +1,5 @@
 import {
+  addCollectionOutputs,
   createOutputShare,
   deleteOutput,
   describeOutputDocument,
@@ -6,6 +7,7 @@ import {
   formatOutputDocument,
   getOutput,
   getOutputHistory,
+  listCollectionOutputs,
   listOutputReviews,
   listOutputs,
   listOutputShares,
@@ -23,6 +25,7 @@ export const OUTPUT_QUERY_KEYS = {
   list: (projectId?: string, capabilityId?: string) =>
     ["outputs", "list", projectId, capabilityId] as const,
   detail: (outputId: string | null) => ["outputs", "detail", outputId] as const,
+  collection: (collectionId: string) => ["outputs", "collection", collectionId] as const,
   history: (outputId: string | null) => ["outputs", "history", outputId] as const,
   shares: (outputId: string | null) => ["outputs", "shares", outputId] as const,
   reviews: (outputId: string | null) => ["outputs", "reviews", outputId] as const,
@@ -37,6 +40,28 @@ export function useOutputs(
     queryKey: OUTPUT_QUERY_KEYS.list(projectId, capabilityId),
     queryFn: () => listOutputs({ projectId, capabilityId }),
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function useCollectionOutputs(collectionId: string | undefined) {
+  return useQuery({
+    queryKey: OUTPUT_QUERY_KEYS.collection(collectionId ?? ""),
+    queryFn: () => listCollectionOutputs(collectionId ?? ""),
+    enabled: Boolean(collectionId),
+  });
+}
+
+export function useAddOutputToCollection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ collectionId, outputId }: { collectionId: string; outputId: string }) =>
+      addCollectionOutputs(collectionId, [outputId]),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all }),
+        queryClient.invalidateQueries({ queryKey: ["sources", "collections"] }),
+      ]),
   });
 }
 

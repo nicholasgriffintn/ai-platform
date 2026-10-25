@@ -5,6 +5,9 @@ use super::settings::NeverShareKey;
 
 pub const LINE_LIMIT: usize = 40;
 pub const LINE_LENGTH: usize = 280;
+pub const ENTRY_LIMIT: usize = 20;
+pub const ENTRY_TITLE_LENGTH: usize = 300;
+pub const ENTRY_DETAIL_LENGTH: usize = 1_500;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -15,9 +18,19 @@ pub struct DigestItem {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub struct DigestEntry {
+    pub title: String,
+    pub url: Option<String>,
+    pub detail: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct ActivityDigest {
     pub source: String,
     pub items: Vec<DigestItem>,
+    #[serde(default)]
+    pub entries: Vec<DigestEntry>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -72,6 +85,11 @@ mod tests {
                         never_share: None,
                     },
                 ],
+                entries: vec![DigestEntry {
+                    title: "Rust release notes".to_string(),
+                    url: Some("https://blog.example/rust".to_string()),
+                    detail: None,
+                }],
             }],
         };
 
@@ -87,6 +105,9 @@ mod tests {
                     "items": [
                         { "line": "example.com · 2 visits", "neverShare": { "kind": "domain", "value": "example.com" } },
                         { "line": "Searched “rust”", "neverShare": null }
+                    ],
+                    "entries": [
+                        { "title": "Rust release notes", "url": "https://blog.example/rust", "detail": null }
                     ]
                 }]
             })

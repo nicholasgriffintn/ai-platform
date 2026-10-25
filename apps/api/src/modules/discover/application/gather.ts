@@ -27,7 +27,10 @@ import { closeComposioConnectorRun } from "~/modules/connectors/application/comp
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
-import { isDiscoverGatherFresh } from "~/modules/discover/domain/freshness";
+import {
+  isDiscoverGatherFresh,
+  isDiscoverSignalCurrent,
+} from "~/modules/discover/domain/freshness";
 import {
   chooseResearchTopics,
   describeInterestMaterial,
@@ -45,6 +48,7 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
+import { readDiscoverArticles } from "./articles";
 import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
 import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
@@ -238,9 +242,14 @@ async function researchTopic(
 
   try {
     const news = await findNewsResults(context, query, days);
-    const results = (
+    const found = (
       news.length > 0 ? news : await findWebResults(context, `${query} latest news`)
     ).slice(0, RESEARCH_RESULT_LIMIT);
+    const results = await readDiscoverArticles(context, notebookId, {
+      topic,
+      date,
+      results: found,
+    });
     const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
 
     await writeDiscoverDocument(context, notebookId, {
@@ -301,7 +310,10 @@ async function inferDiscoverInterests(
   ]);
   const summary = summariseDiscoverFeedback(feedback);
   const signals = readDiscoverDocuments(sources).signals.filter(
-    (document) => !document.error && document.lines.length > 0,
+    (document) =>
+      !document.error &&
+      document.lines.length > 0 &&
+      isDiscoverSignalCurrent(document.readAt, now.getTime()),
   );
   const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
 

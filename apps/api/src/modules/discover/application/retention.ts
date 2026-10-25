@@ -1,5 +1,9 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { DISCOVER_LINK_METADATA_KEY } from "@ngriffin_uk/polychat-schemas";
+import {
+  DISCOVER_ARTICLE_METADATA_KEY,
+  DISCOVER_LINK_METADATA_KEY,
+  DISCOVER_RESEARCH_DAYS_KEPT,
+} from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -17,6 +21,7 @@ import { SourceRepository } from "~/modules/sources/infrastructure/SourceReposit
 import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
+import { findDiscoverNotebook } from "./notebook";
 
 const logger = getLogger({ prefix: "discover/retention" });
 const EDITION_SCAN_LIMIT = 100;
@@ -67,6 +72,34 @@ export async function tidyDiscover(
       } catch (error) {
         logger.warn("A stale Discover link could not be removed", {
           sourceId,
+          error_message: getErrorMessage(error),
+        });
+      }
+    }
+  }
+
+  const notebook = await findDiscoverNotebook(context, user.id);
+
+  if (notebook) {
+    const cutoff = now - DISCOVER_RESEARCH_DAYS_KEPT * 24 * 60 * 60 * 1000;
+    const articles = (await sources.listCollectionSources(notebook.id)).filter((source) => {
+      const metadata = parseJsonRecord(source.metadata);
+      const readAt = typeof metadata.readAt === "string" ? Date.parse(metadata.readAt) : Number.NaN;
+
+      return (
+        metadata[DISCOVER_ARTICLE_METADATA_KEY] !== undefined &&
+        Number.isFinite(readAt) &&
+        readAt < cutoff
+      );
+    });
+
+    for (const article of articles) {
+      try {
+        await deleteSource(context, user.id, article.id);
+        links += 1;
+      } catch (error) {
+        logger.warn("An old Discover article could not be removed", {
+          sourceId: article.id,
           error_message: getErrorMessage(error),
         });
       }

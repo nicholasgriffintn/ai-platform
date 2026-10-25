@@ -8,8 +8,8 @@ import {
   DISCOVER_LISTEN_SHOW,
 } from "~/modules/discover/domain/listen";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
-import { ensurePodcastShow } from "~/modules/sources/application/podcasts/shows";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { canAffordDiscoverListen } from "./cost";
@@ -44,7 +44,11 @@ export async function produceDiscoverListen(
     );
   }
 
-  const showId = await ensurePodcastShow(context, user.id, null, DISCOVER_LISTEN_SHOW);
+  const { id: showId } = await ensureFolder(context, user.id, {
+    projectId: null,
+    title: DISCOVER_LISTEN_SHOW,
+    kind: "podcast",
+  });
   const episode = await startPodcastGeneration(withEditionRun(context, edition), {
     sourceIds: [],
     material: buildDiscoverListenMaterial(edition.content),

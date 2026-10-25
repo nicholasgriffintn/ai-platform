@@ -1,4 +1,5 @@
 import {
+  addCollectionOutputsSchema,
   addCollectionSourcesSchema,
   createSourceCoverSchema,
   drawingSchema,
@@ -15,6 +16,7 @@ import {
   knowledgeSyncListQuerySchema,
   knowledgeSyncListSchema,
   knowledgeSyncSchema,
+  outputListResponseSchema,
   projectKnowledgeSearchResponseSchema,
   setProjectContextSourcesSchema,
   sourceCollectionListResponseSchema,
@@ -31,6 +33,7 @@ import z from "zod/v4";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import { addCollectionOutputs, listCollectionOutputs } from "~/modules/outputs/application/folders";
 import { startSourceGeneration } from "~/modules/sources/application/generation";
 import { paintDrawing } from "~/modules/sources/application/generation/drawing/create";
 import { guessDrawingFromImage } from "~/modules/sources/application/generation/drawing/guess";
@@ -420,6 +423,31 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       },
       handler: ({ body, params, serviceContext, user }) =>
         addCollectionSources(serviceContext, user.id, params.collection_id, body.sourceIds),
+    });
+
+  collections
+    .sub("outputs", "output_id")
+    .list({
+      auth: true,
+      summary: "List a folder's made items",
+      paramSchema: collectionParamsSchema,
+      responses: { 200: { description: "Made items", schema: outputListResponseSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        listCollectionOutputs(serviceContext, user.id, params.collection_id),
+    })
+    .create({
+      auth: true,
+      summary: "Add made items to a folder",
+      paramSchema: collectionParamsSchema,
+      bodySchema: addCollectionOutputsSchema,
+      responses: {
+        200: {
+          description: "Made items added",
+          schema: z.object({ added: z.number().int().nonnegative() }),
+        },
+      },
+      handler: ({ body, params, serviceContext, user }) =>
+        addCollectionOutputs(serviceContext, user.id, params.collection_id, body.outputIds),
     });
 
   sources

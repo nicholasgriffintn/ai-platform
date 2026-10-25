@@ -1,5 +1,6 @@
 import {
   type FilesFilter,
+  useCollectionOutputs,
   useMemoryDocuments,
   useOutputs,
   useSourceCollections,
@@ -32,6 +33,7 @@ export function useFilesLibrary({
     { projectId, collectionId: folderId ?? null },
     { enabled: Boolean(folderId) || includes("sources") },
   );
+  const folderOutputs = useCollectionOutputs(folderId);
   const memory = useMemoryDocuments(projectId);
   const collections = useSourceCollections(projectId);
   const folders = (collections.data ?? []).filter((collection) => collection.kind !== "context");
@@ -40,6 +42,7 @@ export function useFilesLibrary({
     ...(includes("made")
       ? (outputs.data ?? []).map((item) => outputToFileItem(item, basePath))
       : []),
+    ...(folderOutputs.data ?? []).map((item) => outputToFileItem(item, basePath)),
     ...(folderId || includes("sources")
       ? (sources.data ?? []).map((item) => sourceToFileItem(item, basePath))
       : []),
@@ -57,10 +60,12 @@ export function useFilesLibrary({
     isLoading:
       (includes("made") && outputs.isLoading) ||
       ((Boolean(folderId) || includes("sources")) && sources.isLoading) ||
+      folderOutputs.isLoading ||
       (includes("memory") && memory.isLoading),
     error:
       (includes("made") ? outputs.error : null) ??
       (folderId || includes("sources") ? sources.error : null) ??
+      folderOutputs.error ??
       (includes("memory") ? memory.error : null),
   };
 }

@@ -27,7 +27,7 @@ describe("isDiscoverGatherFresh", () => {
   it("counts a recent failed read as an attempt", () => {
     expect(
       isDiscoverGatherFresh({
-        signals: [{ readAt: null, attemptedAt: RECENT }],
+        signals: [{ providerId: "lastfm", readAt: null, attemptedAt: RECENT }],
         research: [{ readAt: RECENT }],
         expectedSignals: 1,
         now: NOW,
@@ -38,7 +38,7 @@ describe("isDiscoverGatherFresh", () => {
   it("gathers again once everything is a day old", () => {
     expect(
       isDiscoverGatherFresh({
-        signals: [{ readAt: OLD, attemptedAt: OLD }],
+        signals: [{ providerId: "lastfm", readAt: OLD, attemptedAt: OLD }],
         research: [{ readAt: OLD }],
         expectedSignals: 1,
         now: NOW,
@@ -49,11 +49,22 @@ describe("isDiscoverGatherFresh", () => {
   it("stays fresh after this morning's gather even when a topic was not researched", () => {
     expect(
       isDiscoverGatherFresh({
-        signals: [{ readAt: RECENT, attemptedAt: RECENT }],
+        signals: [{ providerId: "lastfm", readAt: RECENT, attemptedAt: RECENT }],
         research: [{ readAt: OLD }, { readAt: RECENT }],
         expectedSignals: 1,
         now: NOW,
       }),
     ).toBe(true);
+  });
+
+  it("gathers when only a Mac has shared activity since this morning", () => {
+    expect(
+      isDiscoverGatherFresh({
+        signals: [{ providerId: "device_browsing", readAt: RECENT, attemptedAt: null }],
+        research: [],
+        expectedSignals: 2,
+        now: NOW,
+      }),
+    ).toBe(false);
   });
 });

@@ -175,7 +175,7 @@ export function outputToFileItem(output: OutputSummary, basePath: string): FileI
     revision: output.revision,
     canRename: true,
     canDelete: true,
-    canMoveToFolder: false,
+    canMoveToFolder: true,
   };
 }
 
@@ -197,7 +197,7 @@ export function memoryToFileItem(document: MemoryDocumentSummary, basePath: stri
 }
 
 export function folderToFileItem(collection: SourceCollection, basePath: string): FileItem {
-  const noun = collection.kind === "podcast" ? "episode" : "item";
+  const count = collection.sourceCount + collection.outputCount;
 
   return {
     key: `folder:${collection.id}`,
@@ -205,7 +205,7 @@ export function folderToFileItem(collection: SourceCollection, basePath: string)
     id: collection.id,
     title: collection.title,
     type: "folder",
-    detail: `${collection.sourceCount} ${collection.sourceCount === 1 ? noun : `${noun}s`}${collection.kind === "podcast" ? " · Podcast show" : ""}`,
+    detail: `${count} ${count === 1 ? "item" : "items"}${collection.kind === "podcast" ? " · Podcast show" : ""}`,
     updatedAt: collection.updatedAt ?? collection.createdAt,
     href: getFilesPath(basePath, "folders", encodeURIComponent(collection.id)),
     canRename: false,

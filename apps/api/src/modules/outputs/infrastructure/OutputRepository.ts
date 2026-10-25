@@ -400,6 +400,34 @@ export class OutputRepository extends BaseRepository {
     return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
+  async listLinkedOutputs(collectionId: string): Promise<OutputRecord[]> {
+    const outputs = await this.runQuery<OutputRecord>(
+      `SELECT output.* FROM ${outputResourceSql} output
+       JOIN resource_link link ON link.kind = 'output_collection' AND link.output_id = output.id
+       WHERE link.collection_id = ?
+       ORDER BY output.created_at DESC, output.id DESC`,
+      [collectionId],
+    );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
+  }
+
+  async linkOutputs(collectionId: string, outputIds: string[]): Promise<number> {
+    if (!this.env.DB || outputIds.length === 0) {
+      return 0;
+    }
+
+    const results = await this.env.DB.batch(
+      outputIds.map((outputId) =>
+        this.env.DB.prepare(
+          "INSERT OR IGNORE INTO resource_link (kind, collection_id, output_id) VALUES ('output_collection', ?, ?)",
+        ).bind(collectionId, outputId),
+      ),
+    );
+
+    return results.filter((result) => result.success && result.meta.changes > 0).length;
+  }
+
   private async listScopedOutputs(
     scopeField: "created_by_user_id" | "project_id",
     scopeValue: number | string,

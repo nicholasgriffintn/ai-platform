@@ -19,7 +19,7 @@ import { listen } from "@tauri-apps/api/event";
 
 import { tauriDesktopBackend } from "./desktop-backend";
 
-export const DEVICE_ACTIVITY_INTERVAL_MS = 15 * 60_000;
+export const DEVICE_ACTIVITY_INTERVAL_MS = 60 * 60_000;
 
 export const deviceActivityBackend = {
   readSettings: async () =>
@@ -49,9 +49,14 @@ export function toMachineActivity(collection: DeviceActivityCollection): Machine
     label: collection.label,
     periodStart: collection.periodStart,
     periodEnd: collection.periodEnd,
-    sources: collection.sources.map(({ source, items }) => ({
+    sources: collection.sources.map(({ source, items, entries }) => ({
       source,
       lines: items.map((item) => item.line),
+      items: entries.map((entry) => ({
+        title: entry.title,
+        url: entry.url,
+        detail: entry.detail,
+      })),
     })),
   });
 }

@@ -8,12 +8,17 @@ use serde_json::Value;
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 
-use super::digest::{DigestItem, ReadingWindow, LINE_LENGTH};
+use super::digest::{
+    DigestEntry, DigestItem, ReadingWindow, ENTRY_DETAIL_LENGTH, ENTRY_LIMIT, ENTRY_TITLE_LENGTH,
+    LINE_LENGTH,
+};
 use super::settings::{AgentSettings, NeverShareKey};
 use crate::text::{clip, plural};
 
 const SESSION_LIMIT: usize = 40;
-const PROMPT_LENGTH: usize = 100;
+const FIRST_PROMPT_LENGTH: usize = 400;
+const LATEST_PROMPT_LENGTH: usize = 300;
+const REPLY_LENGTH: usize = 600;
 const CODEX_DEPTH: usize = 3;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,7 +44,14 @@ pub struct AgentSession {
     pub title: Option<String>,
     pub prompts: usize,
     pub first_prompt: Option<String>,
+    pub latest_prompt: Option<String>,
+    pub last_reply: Option<String>,
     pub last_at: i64,
+}
+
+pub struct AgentDigest {
+    pub items: Vec<DigestItem>,
+    pub entries: Vec<DigestEntry>,
 }
 
 fn home() -> Option<PathBuf> {
@@ -106,14 +118,28 @@ struct SessionReading {
     title: Option<String>,
     prompts: usize,
     first_prompt: Option<String>,
+    latest_prompt: Option<String>,
+    last_reply: Option<String>,
     last_at: Option<i64>,
 }
 
 impl SessionReading {
     fn count_prompt(&mut self, prompt: String, at: i64) {
         self.prompts += 1;
-        self.first_prompt.get_or_insert(prompt);
+
+        if self.first_prompt.is_none() {
+            self.first_prompt = Some(prompt);
+        } else {
+            self.latest_prompt = Some(prompt);
+        }
+
         self.last_at = Some(self.last_at.map_or(at, |last| last.max(at)));
+    }
+
+    fn record_reply(&mut self, reply: String) {
+        if !reply.trim().is_empty() {
+            self.last_reply = Some(reply.trim().to_string());
+        }
     }
 
     fn finish(self, tool: AgentTool) -> Option<AgentSession> {
@@ -124,6 +150,8 @@ impl SessionReading {
             title: self.title,
             prompts: self.prompts,
             first_prompt: self.first_prompt,
+            latest_prompt: self.latest_prompt,
+            last_reply: self.last_reply,
             last_at: self.last_at.unwrap_or_default(),
         })
     }
@@ -138,7 +166,8 @@ pub fn parse_claude_session(
     for line in reader.lines().map_while(Result::ok) {
         let wanted = line.contains("\"type\":\"user\"")
             || line.contains("\"type\":\"custom-title\"")
-            || line.contains("\"type\":\"summary\"");
+            || line.contains("\"type\":\"summary\"")
+            || (line.contains("\"type\":\"assistant\"") && line.contains("\"type\":\"text\""));
 
         if !wanted {
             continue;
@@ -189,11 +218,37 @@ pub fn parse_claude_session(
                     reading.count_prompt(prompt, at);
                 }
             }
+            Some("assistant") => {
+                if entry.get("isSidechain").and_then(Value::as_bool) == Some(true)
+                    || !parse_time(entry.get("timestamp")).is_some_and(|at| window.admits(at))
+                {
+                    continue;
+                }
+
+                if let Some(reply) = entry
+                    .pointer("/message/content")
+                    .and_then(|content| message_text(content, "text"))
+                {
+                    reading.record_reply(reply);
+                }
+            }
             _ => {}
         }
     }
 
     reading.finish(AgentTool::ClaudeCode)
+}
+
+fn message_text(content: &Value, part_type: &str) -> Option<String> {
+    let text = content
+        .as_array()?
+        .iter()
+        .filter(|part| part.get("type").and_then(Value::as_str) == Some(part_type))
+        .filter_map(|part| part.get("text").and_then(Value::as_str))
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    (!text.trim().is_empty()).then_some(text)
 }
 
 fn codex_prompt(payload: &Value) -> Option<String> {
@@ -222,7 +277,8 @@ pub fn parse_codex_session(
 
     for line in reader.lines().map_while(Result::ok) {
         let wanted = line.contains("\"type\":\"session_meta\"")
-            || (line.contains("\"type\":\"response_item\"") && line.contains("\"role\":\"user\""));
+            || (line.contains("\"type\":\"response_item\"")
+                && (line.contains("\"role\":\"user\"") || line.contains("\"role\":\"assistant\"")));
 
         if !wanted {
             continue;
@@ -259,6 +315,13 @@ pub fn parse_codex_session(
 
                 if let Some(prompt) = codex_prompt(payload) {
                     reading.count_prompt(prompt, at);
+                } else if payload.get("role").and_then(Value::as_str) == Some("assistant") {
+                    if let Some(reply) = payload
+                        .get("content")
+                        .and_then(|content| message_text(content, "output_text"))
+                    {
+                        reading.record_reply(reply);
+                    }
                 }
             }
             _ => {}
@@ -359,45 +422,83 @@ pub fn read_codex_sessions(window: &ReadingWindow<'_>) -> Vec<AgentSession> {
     read_sessions(files, |reader| parse_codex_session(reader, &titles, window))
 }
 
+fn describe_place(session: &AgentSession) -> String {
+    let place = match &session.branch {
+        Some(branch) => format!("{} ({branch})", session.project),
+        None => session.project.clone(),
+    };
+    let title = session
+        .title
+        .clone()
+        .filter(|title| !title.is_empty())
+        .unwrap_or_else(|| "untitled session".to_string());
+
+    format!("{place} · {title}")
+}
+
+fn describe_substance(session: &AgentSession) -> Option<String> {
+    let mut parts = Vec::new();
+
+    if let Some(prompt) = &session.first_prompt {
+        parts.push(format!("Asked: {}", clip(prompt, FIRST_PROMPT_LENGTH)));
+    }
+
+    if let Some(prompt) = &session.latest_prompt {
+        parts.push(format!("Latest: {}", clip(prompt, LATEST_PROMPT_LENGTH)));
+    }
+
+    if let Some(reply) = &session.last_reply {
+        parts.push(format!(
+            "{} replied: {}",
+            session.tool.label(),
+            clip(reply, REPLY_LENGTH)
+        ));
+    }
+
+    (!parts.is_empty()).then(|| clip(&parts.join(" "), ENTRY_DETAIL_LENGTH))
+}
+
 pub fn digest_agents(
     mut sessions: Vec<AgentSession>,
     settings: &AgentSettings,
     never_shared: &[String],
-) -> Vec<DigestItem> {
+) -> AgentDigest {
     sessions.retain(|session| !never_shared.contains(&session.project.to_lowercase()));
     sessions.sort_by_key(|session| std::cmp::Reverse(session.last_at));
+    sessions.truncate(SESSION_LIMIT);
 
-    sessions
-        .into_iter()
-        .take(SESSION_LIMIT)
-        .map(|session| {
-            let place = match &session.branch {
-                Some(branch) => format!("{} ({branch})", session.project),
-                None => session.project.clone(),
-            };
-            let title = session
-                .title
-                .clone()
-                .filter(|title| !title.is_empty())
-                .unwrap_or_else(|| "untitled session".to_string());
-            let mut line = format!(
-                "{place} · {title} · {} in {}",
-                plural(session.prompts, "prompt", "prompts"),
-                session.tool.label()
-            );
-
-            if settings.prompts {
-                if let Some(prompt) = &session.first_prompt {
-                    line.push_str(&format!(" · “{}”", clip(prompt, PROMPT_LENGTH)));
-                }
-            }
-
-            DigestItem {
-                line: clip(&line, LINE_LENGTH),
-                never_share: Some(NeverShareKey::Project(session.project.to_lowercase())),
-            }
+    let items = sessions
+        .iter()
+        .map(|session| DigestItem {
+            line: clip(
+                &format!(
+                    "{} · {} in {}",
+                    describe_place(session),
+                    plural(session.prompts, "prompt", "prompts"),
+                    session.tool.label()
+                ),
+                LINE_LENGTH,
+            ),
+            never_share: Some(NeverShareKey::Project(session.project.to_lowercase())),
         })
-        .collect()
+        .collect();
+    let entries = if settings.prompts {
+        sessions
+            .iter()
+            .filter_map(|session| {
+                Some(DigestEntry {
+                    title: clip(&describe_place(session), ENTRY_TITLE_LENGTH),
+                    url: None,
+                    detail: Some(describe_substance(session)?),
+                })
+            })
+            .take(ENTRY_LIMIT)
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    AgentDigest { items, entries }
 }
 
 #[cfg(test)]
@@ -418,6 +519,8 @@ mod tests {
             r#"{"type":"user","timestamp":"2026-10-24T10:02:00Z","cwd":"/Users/me/assistant","message":{"role":"user","content":"<command-name>/clear</command-name>"}}"#,
             r#"{"type":"user","isSidechain":true,"timestamp":"2026-10-24T10:03:00Z","message":{"role":"user","content":"Subagent brief"}}"#,
             r#"{"type":"user","timestamp":"2026-10-24T10:04:00Z","cwd":"/Users/me/assistant","message":{"role":"user","content":"Now the settings tab"}}"#,
+            r#"{"type":"assistant","timestamp":"2026-10-24T10:05:00Z","message":{"role":"assistant","content":[{"type":"tool_use","name":"Edit"},{"type":"text","text":"The settings tab now has a pause row."}]}}"#,
+            r#"{"type":"assistant","isSidechain":true,"timestamp":"2026-10-24T10:06:00Z","message":{"role":"assistant","content":[{"type":"text","text":"Subagent report"}]}}"#,
             r#"{"type":"custom-title","customTitle":"Tray pause controls","sessionId":"s1"}"#,
             "{\"type\":\"user\",\"truncated",
         ]
@@ -429,6 +532,14 @@ mod tests {
         assert_eq!(session.title.as_deref(), Some("Tray pause controls"));
         assert_eq!(session.prompts, 2);
         assert_eq!(session.first_prompt.as_deref(), Some("Fix the tray menu"));
+        assert_eq!(
+            session.latest_prompt.as_deref(),
+            Some("Now the settings tab")
+        );
+        assert_eq!(
+            session.last_reply.as_deref(),
+            Some("The settings tab now has a pause row.")
+        );
     }
 
     #[test]
@@ -457,7 +568,7 @@ mod tests {
     }
 
     #[test]
-    fn sends_first_prompts_only_when_asked_and_drops_never_shared_projects() {
+    fn sends_what_a_session_was_about_only_when_asked_and_drops_never_shared_projects() {
         let session = AgentSession {
             tool: AgentTool::Codex,
             project: "site".to_string(),
@@ -465,19 +576,35 @@ mod tests {
             title: None,
             prompts: 1,
             first_prompt: Some("Add a sitemap".to_string()),
+            latest_prompt: Some("Now link it from robots.txt".to_string()),
+            last_reply: Some("Added sitemap.xml and linked it.".to_string()),
             last_at: 1,
         };
         let quiet = digest_agents(vec![session.clone()], &AgentSettings::default(), &[]);
 
-        assert_eq!(quiet[0].line, "site · untitled session · 1 prompt in Codex");
+        assert_eq!(
+            quiet.items[0].line,
+            "site · untitled session · 1 prompt in Codex"
+        );
+        assert!(quiet.entries.is_empty());
 
         let chatty = AgentSettings {
             prompts: true,
             ..AgentSettings::default()
         };
-        assert!(digest_agents(vec![session.clone()], &chatty, &[])[0]
-            .line
-            .ends_with("“Add a sitemap”"));
-        assert!(digest_agents(vec![session], &chatty, &["site".to_string()]).is_empty());
+        assert_eq!(
+            digest_agents(vec![session.clone()], &chatty, &[]).entries,
+            vec![DigestEntry {
+                title: "site · untitled session".to_string(),
+                url: None,
+                detail: Some(
+                    "Asked: Add a sitemap Latest: Now link it from robots.txt Codex replied: Added sitemap.xml and linked it."
+                        .to_string()
+                ),
+            }]
+        );
+        assert!(digest_agents(vec![session], &chatty, &["site".to_string()])
+            .items
+            .is_empty());
     }
 }

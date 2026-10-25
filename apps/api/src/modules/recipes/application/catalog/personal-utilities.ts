@@ -70,6 +70,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
       "Mix topic, read, watch, listen, event, inbox, action and check-in cards, and give every card a reason naming the signal behind it",
       "Use event cards for episodes airing, releases, gigs and meetings the context dates; watch and listen cards for videos, episodes and albums it names; inbox cards for newsletters worth a minute, naming the sender",
       "Give every followed topic one to three read cards citing only the pages the context listed for it; when none were listed, use a topic card instead",
+      "Write each read card's summary from the page's own text in the context: what it reports, argues or announces, with the specific names, numbers and claims it makes, never a restatement of its title",
       "Use calendar and task lines for the brief, and newsletters and new episodes as read cards with their source named",
       "When something is worth resurfacing, add one resurface card using its link exactly as given",
       "Action cards only start work in a chat, and never send, spend, install or delete anything",

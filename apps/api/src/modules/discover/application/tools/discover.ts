@@ -12,6 +12,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { attachDiscoverArticles } from "~/modules/discover/domain/articles";
 import { describeDiscoverContext } from "~/modules/discover/domain/context";
 import { buildDiscoverEdition, discoverEditionTimeAt } from "~/modules/discover/domain/edition";
 import { buildDiscoverFeedGroups } from "~/modules/discover/domain/feed";
@@ -23,6 +24,7 @@ import { isSundayEdition } from "~/modules/discover/domain/week";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
+import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
 import { canAffordDiscoverListen } from "../cost";
 import { enqueueDiscoverJob } from "../covers";
@@ -70,9 +72,10 @@ export const compose_discover_edition: ApiToolDefinition = {
   execute: async (args: ComposeDiscoverEditionInput, toolContext) => {
     const context = requireToolContext(toolContext);
     const user = context.requireUser();
-    const [basis, documents] = await Promise.all([
+    const [basis, documents, articleSources] = await Promise.all([
       readDiscoverEditionBasis(context),
       listDiscoverDocuments(context, user.id),
+      listDiscoverArticleSources(context),
     ]);
     const edition = buildDiscoverEdition({
       draft: args,
@@ -107,6 +110,7 @@ export const compose_discover_edition: ApiToolDefinition = {
     );
     const saved = await saveDiscoverEdition(context, user.id, {
       ...edition,
+      cards: attachDiscoverArticles(edition.cards, articleSources),
       edition: editionTime,
       runId: context.executionRunId,
       signals: {

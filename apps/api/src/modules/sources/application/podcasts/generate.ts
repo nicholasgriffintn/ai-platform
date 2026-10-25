@@ -87,20 +87,17 @@ export async function startPodcastGeneration(
     );
   }
 
-  const sourceIds = [...input.sourceIds];
-
-  if (input.material) {
-    const material = await createSource(context, user.id, {
-      projectId,
-      kind: "text",
-      title: `${input.title ?? "Episode"} research`,
-      status: "available",
-      content: input.material,
-      metadata: {},
-    });
-
-    sourceIds.push(material.id);
-  }
+  const material = input.material
+    ? await createSource(context, user.id, {
+        projectId,
+        kind: "text",
+        title: `${input.title ?? "Episode"} research`,
+        status: "available",
+        content: input.material,
+        metadata: {},
+      })
+    : null;
+  const sourceIds = material ? [...input.sourceIds, material.id] : [...input.sourceIds];
 
   const episode = await createSource(context, user.id, {
     projectId,
@@ -119,7 +116,12 @@ export async function startPodcastGeneration(
   });
 
   if (show) {
-    await addCollectionSources(context, user.id, show.id, [episode.id]);
+    await addCollectionSources(
+      context,
+      user.id,
+      show.id,
+      material ? [episode.id, material.id] : [episode.id],
+    );
   }
 
   await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({

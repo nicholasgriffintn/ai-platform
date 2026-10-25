@@ -33,7 +33,7 @@ export function ActivitySent({ activity }: { activity: DeviceActivityController 
         description={
           latest
             ? `Sent ${formatClockTime(latest.sentAt)} as ${latest.collection.label}. Each send replaces the last one, covering the past day.`
-            : "Nothing has been sent yet. The first send happens a moment after you choose a source, then every 15 minutes."
+            : "Nothing has been sent yet. The first send happens a moment after you choose a source, then every hour."
         }
         actions={
           <div className="flex flex-wrap gap-2">
@@ -101,6 +101,21 @@ export function ActivitySent({ activity }: { activity: DeviceActivityController 
                     })}
                   </ul>
                 )}
+                {source.entries.length > 0 ? (
+                  <ul className="space-y-2 text-sm">
+                    {source.entries.map((entry) => (
+                      <li key={entry.url ?? entry.title} className="space-y-0.5">
+                        <p className="font-medium break-words text-foreground">{entry.title}</p>
+                        {entry.url ? (
+                          <p className="text-xs break-all text-muted-foreground">{entry.url}</p>
+                        ) : null}
+                        {entry.detail ? (
+                          <p className="break-words text-muted-foreground">{entry.detail}</p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             ))}
           </div>

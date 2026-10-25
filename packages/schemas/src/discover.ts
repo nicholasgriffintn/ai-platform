@@ -28,6 +28,7 @@ export const DISCOVER_JOB_TASK_TYPE = "discover_job";
 export const DISCOVER_NOTEBOOK_NAME = "Discover";
 export const DISCOVER_SIGNAL_METADATA_KEY = "discoverSignal";
 export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
+export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
 export const DISCOVER_GATHER_HOUR = 5;
 export const DISCOVER_FRESH_HOURS = 20;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
@@ -209,7 +210,14 @@ export const discoverCoverIdSchema = z
 
 export const discoverCardSchema = z.discriminatedUnion("kind", [
   topicCardDraftSchema.extend({ ...cardIdentity, coverId: discoverCoverIdSchema.optional() }),
-  readCardDraftSchema.extend(cardIdentity),
+  readCardDraftSchema.extend({
+    ...cardIdentity,
+    sourceId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("The filed copy of the page in the Discover notebook, when it was read."),
+  }),
   watchCardDraftSchema.extend(cardIdentity),
   listenCardDraftSchema.extend(cardIdentity),
   eventCardDraftSchema.extend(cardIdentity),

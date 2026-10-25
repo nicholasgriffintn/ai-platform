@@ -1,4 +1,5 @@
 import { epochSecondsToIso, isRecord, readPathValues } from "@ngriffin_uk/polychat-utility-core";
+import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 
 import type { DiscoverResearchResult } from "./research";
 
@@ -14,7 +15,8 @@ export type DiscoverSignalGroup =
   | "places"
   | "pictures"
   | "models"
-  | "social";
+  | "social"
+  | "playing";
 
 export interface DiscoverSignalRead {
   date: string;
@@ -54,6 +56,7 @@ export const DISCOVER_SIGNAL_GROUPS: Record<
   pictures: { label: "Pictures", oneOf: false },
   models: { label: "Models", oneOf: false },
   social: { label: "Social", oneOf: false },
+  playing: { label: "Playing", oneOf: false },
 };
 
 function text(value: unknown): string {
@@ -423,14 +426,17 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
       query: "newer_than:1d (list:* OR unsubscribe) -category:personal",
       max_results: 15,
       include_payload: false,
-      verbose: false,
+      verbose: true,
     }),
     digest: (result) =>
       lines(items(result, ["data", "messages"], ["messages"]), (message) =>
         joinParts(
           first(message, ["sender"], ["from"]).slice(0, 60),
           first(message, ["subject"]),
-          first(message, ["preview", "body"], ["snippet"]).slice(0, 140),
+          htmlToPlainText(first(message, ["messageText"], ["preview", "body"], ["snippet"])).slice(
+            0,
+            700,
+          ),
         ),
       ),
   },
@@ -640,7 +646,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
             {
               title,
               url: `https://www.reddit.com${permalink.startsWith("/") ? "" : "/"}${permalink}`,
-              snippet: first(post, ["selftext"]).slice(0, 400),
+              snippet: first(post, ["selftext"]).slice(0, 1_200),
               source: [
                 subreddit.startsWith("r/") || !subreddit ? subreddit : `r/${subreddit}`,
                 score ? `${score} points` : "",

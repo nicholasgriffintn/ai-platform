@@ -4,8 +4,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { chapterAudioKey } from "~/modules/discover/domain/episodes";
 import { DISCOVER_LISTEN_SHOW } from "~/modules/discover/domain/listen";
+import { ensureFolder } from "~/modules/sources/application/folders";
 import { joinAudioSegments } from "~/modules/sources/application/podcasts/audio";
-import { ensurePodcastShow } from "~/modules/sources/application/podcasts/shows";
 import { addCollectionSources, createSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -52,7 +52,11 @@ export async function produceSeasonListen(context: ServiceContext, seasonId: str
   }
 
   const audio = joinAudioSegments(segments);
-  const showId = await ensurePodcastShow(context, user.id, null, DISCOVER_LISTEN_SHOW);
+  const { id: showId } = await ensureFolder(context, user.id, {
+    projectId: null,
+    title: DISCOVER_LISTEN_SHOW,
+    kind: "podcast",
+  });
   const source = await createSource(context, user.id, {
     projectId: null,
     kind: "podcast",

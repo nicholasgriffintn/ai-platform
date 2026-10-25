@@ -19,7 +19,10 @@ export function DiscoverAskPanel({ editionId, card }: { editionId: string; card:
   const scope = useLocalConversationScope(undefined);
   const modelTier = useChatStore((state) => state.modelTier);
   const draft = useLocalComposerDraft();
-  const subject: ConversationSubject = { type: "output", id: editionId };
+  const subject: ConversationSubject =
+    card.kind === "read" && card.sourceId
+      ? { type: "source", id: card.sourceId }
+      : { type: "output", id: editionId };
 
   return (
     <ConversationScopeProvider scope={scope}>
@@ -41,6 +44,9 @@ export function DiscoverAskPanel({ editionId, card }: { editionId: string; card:
                 requestOptions: {
                   conversation_subject: subject,
                   model_tier: modelTier ?? DEFAULT_MODEL_TIER,
+                  ...(card.kind === "read" && !card.sourceId
+                    ? { enabled_tools: ["web_search", "extract_content", "search_conversations"] }
+                    : {}),
                 },
               }}
             />

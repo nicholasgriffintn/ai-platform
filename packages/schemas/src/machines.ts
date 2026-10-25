@@ -121,6 +121,21 @@ export type DeviceActivitySource = z.infer<typeof deviceActivitySourceSchema>;
 export const DEVICE_ACTIVITY_PROVIDER_PREFIX = "device_";
 export const DEVICE_ACTIVITY_LINE_LIMIT = 40;
 export const DEVICE_ACTIVITY_LINE_LENGTH = 280;
+export const DEVICE_ACTIVITY_ITEM_LIMIT = 20;
+export const DEVICE_ACTIVITY_ITEM_DETAIL_LENGTH = 1_500;
+
+export const machineActivityItemSchema = z
+  .object({
+    title: z.string().trim().min(1).max(300),
+    url: z
+      .url({ protocol: /^https?$/u })
+      .max(2048)
+      .nullish(),
+    detail: z.string().trim().min(1).max(DEVICE_ACTIVITY_ITEM_DETAIL_LENGTH).nullish(),
+  })
+  .strict();
+
+export type MachineActivityItem = z.infer<typeof machineActivityItemSchema>;
 
 export const machineActivitySourceSchema = z
   .object({
@@ -128,6 +143,7 @@ export const machineActivitySourceSchema = z
     lines: z
       .array(z.string().trim().min(1).max(DEVICE_ACTIVITY_LINE_LENGTH))
       .max(DEVICE_ACTIVITY_LINE_LIMIT),
+    items: z.array(machineActivityItemSchema).max(DEVICE_ACTIVITY_ITEM_LIMIT).optional(),
   })
   .strict();
 

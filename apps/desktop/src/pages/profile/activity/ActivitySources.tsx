@@ -72,8 +72,8 @@ export function ActivitySources({
                 )
               )}
               <Switch
-                label="Include page titles"
-                description="Off sends site names and time only."
+                label="Include the pages you read"
+                description="Sends page titles and the addresses of the pages you spent longest on, so Discover can read public ones and know what they said. Off sends site names and time only."
                 checked={settings.browsing.titles}
                 disabled={save.isPending}
                 onChange={(event) =>
@@ -124,8 +124,8 @@ export function ActivitySources({
           {settings.agents.claudeCode || settings.agents.codex ? (
             <div className="border-l border-border pl-4">
               <Switch
-                label="Include each session's first prompt"
-                description="Prompts can carry pasted secrets, so this stays off unless you want it."
+                label="Include what each session was about"
+                description="Sends your first and latest prompt and the agent's last reply. Prompts can carry pasted secrets, so this stays off unless you want it."
                 checked={settings.agents.prompts}
                 disabled={save.isPending}
                 onChange={(event) =>

@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use url::{Host, Url};
 
 use super::browsers::{Search, Visit};
-use super::digest::{DigestItem, ReadingWindow, LINE_LENGTH};
+use super::digest::{DigestEntry, DigestItem, ReadingWindow, ENTRY_TITLE_LENGTH, LINE_LENGTH};
 use super::settings::{is_never_shared_domain, BrowsingSettings, NeverShareKey};
 use crate::text::{clip, describe_duration, plural};
 
@@ -11,6 +11,15 @@ const DOMAIN_LIMIT: usize = 30;
 const SEARCH_LIMIT: usize = 10;
 const TITLES_PER_DOMAIN: usize = 3;
 const TITLE_LENGTH: usize = 70;
+const PAGE_LIMIT: usize = 8;
+
+#[derive(Default)]
+struct PageVisits {
+    title: String,
+    visits: usize,
+    seconds: i64,
+    last_at: i64,
+}
 
 #[derive(Default)]
 struct DomainVisits {
@@ -93,43 +102,111 @@ pub fn digest_browsing(
             .then_with(|| left.0.cmp(&right.0))
     });
 
-    let mut items: Vec<DigestItem> = ranked
-        .into_iter()
-        .take(DOMAIN_LIMIT)
-        .map(|(host, visits)| {
-            let mut line = format!("{host} · {}", plural(visits.visits, "visit", "visits"));
-
-            if visits.seconds >= 60 {
-                line.push_str(&format!(", {}", describe_duration(visits.seconds)));
-            }
-
-            let titles = top_titles(&visits.titles);
-
-            if settings.titles && !titles.is_empty() {
-                line.push_str(&format!(" · {}", titles.join("; ")));
-            }
-
-            DigestItem {
-                line: clip(&line, LINE_LENGTH),
-                never_share: Some(NeverShareKey::Domain(host)),
-            }
-        })
-        .collect();
+    let mut items: Vec<DigestItem> = Vec::new();
 
     if settings.searches {
+        let mut seen = HashSet::new();
+
         items.extend(
             searches
                 .iter()
-                .filter(|search| window.admits(search.at) && !search.term.trim().is_empty())
+                .filter(|search| window.admits(search.at))
+                .map(|search| search.term.trim())
+                .filter(|term| !term.is_empty() && seen.insert(term.to_lowercase()))
                 .take(SEARCH_LIMIT)
-                .map(|search| DigestItem {
-                    line: clip(&format!("Searched “{}”", search.term.trim()), LINE_LENGTH),
+                .map(|term| DigestItem {
+                    line: clip(&format!("Searched “{term}”"), LINE_LENGTH),
                     never_share: None,
                 }),
         );
     }
 
+    items.extend(ranked.into_iter().take(DOMAIN_LIMIT).map(|(host, visits)| {
+        let mut line = format!("{host} · {}", plural(visits.visits, "visit", "visits"));
+
+        if visits.seconds >= 60 {
+            line.push_str(&format!(", {}", describe_duration(visits.seconds)));
+        }
+
+        let titles = top_titles(&visits.titles);
+
+        if settings.titles && !titles.is_empty() {
+            line.push_str(&format!(" · {}", titles.join("; ")));
+        }
+
+        DigestItem {
+            line: clip(&line, LINE_LENGTH),
+            never_share: Some(NeverShareKey::Domain(host)),
+        }
+    }));
+
     items
+}
+
+fn page_address(url: &str) -> Option<String> {
+    let mut parsed = Url::parse(url).ok()?;
+
+    parsed.set_fragment(None);
+
+    Some(parsed.to_string())
+}
+
+pub fn pick_pages(
+    visits: &[Visit],
+    search_pages: &HashSet<String>,
+    window: &ReadingWindow<'_>,
+    never_shared: &[String],
+) -> Vec<DigestEntry> {
+    let mut pages: HashMap<String, PageVisits> = HashMap::new();
+
+    for visit in visits.iter().filter(|visit| window.admits(visit.at)) {
+        let title = visit.title.trim();
+
+        if title.is_empty() || search_pages.contains(&visit.url) {
+            continue;
+        }
+
+        let Some(host) = shareable_host(&visit.url) else {
+            continue;
+        };
+
+        if is_never_shared_domain(&host, never_shared) {
+            continue;
+        }
+
+        let Some(address) = page_address(&visit.url) else {
+            continue;
+        };
+        let page = pages.entry(address).or_default();
+
+        if visit.at >= page.last_at {
+            page.title = title.to_string();
+            page.last_at = visit.at;
+        }
+
+        page.visits += 1;
+        page.seconds += visit.seconds.max(0);
+    }
+
+    let mut ranked: Vec<(String, PageVisits)> = pages.into_iter().collect();
+
+    ranked.sort_by(|left, right| {
+        right
+            .1
+            .seconds
+            .cmp(&left.1.seconds)
+            .then_with(|| right.1.visits.cmp(&left.1.visits))
+            .then_with(|| left.0.cmp(&right.0))
+    });
+    ranked
+        .into_iter()
+        .take(PAGE_LIMIT)
+        .map(|(url, page)| DigestEntry {
+            title: clip(&page.title, ENTRY_TITLE_LENGTH),
+            url: Some(url),
+            detail: None,
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -233,7 +310,64 @@ mod tests {
             searches: true,
             ..settings()
         };
-        let items = digest_browsing(&visits, &searches, &window, &with_searches, &[]);
-        assert_eq!(items[1].line, "Searched “flights to lisbon”");
+        let repeated = [
+            Search {
+                term: "flights to lisbon".to_string(),
+                at: 120,
+            },
+            Search {
+                term: "Flights to Lisbon ".to_string(),
+                at: 100,
+            },
+        ];
+        let items = digest_browsing(&visits, &repeated, &window, &with_searches, &[]);
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].line, "Searched “flights to lisbon”");
+        assert!(items[1].line.starts_with("example.com"));
+    }
+
+    #[test]
+    fn picks_the_pages_read_longest_and_leaves_out_searches_and_never_shared_sites() {
+        let visits = [
+            visit("https://example.com/long#intro", "Long read", 100, 600),
+            visit("https://example.com/long", "Long read", 120, 300),
+            visit("https://example.com/short", "Short read", 130, 30),
+            visit("https://search.example/?q=rust", "rust - Search", 140, 900),
+            visit(
+                "https://online.bank.example/statement",
+                "Statement",
+                150,
+                900,
+            ),
+            visit("https://example.com/untitled", "", 160, 900),
+        ];
+        let search_pages = HashSet::from(["https://search.example/?q=rust".to_string()]);
+        let window = ReadingWindow {
+            start: 0,
+            end: 1_000,
+            pauses: &[],
+        };
+        let pages = pick_pages(
+            &visits,
+            &search_pages,
+            &window,
+            &["bank.example".to_string()],
+        );
+
+        assert_eq!(
+            pages,
+            vec![
+                DigestEntry {
+                    title: "Long read".to_string(),
+                    url: Some("https://example.com/long".to_string()),
+                    detail: None,
+                },
+                DigestEntry {
+                    title: "Short read".to_string(),
+                    url: Some("https://example.com/short".to_string()),
+                    detail: None,
+                },
+            ]
+        );
     }
 }
