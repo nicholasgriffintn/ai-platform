@@ -3,8 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { StorageService } from "~/infrastructure/storage";
-import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
+import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
@@ -68,20 +67,10 @@ export async function readVideoSceneImage(
 ): Promise<Response> {
   await requireNotebookOutput(context, notebookId, outputId);
 
-  const object = await StorageService.forPrivateAssets(context).getObjectBody(
+  return getPrivateObjectResponse(
+    context,
     videoSceneImageKey(outputId, index),
-  );
-
-  if (!object) {
-    throw new AssistantError("Scene image not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  return getPrivateFileResponse(
-    {
-      mime_type: object.httpMetadata?.contentType ?? "image/png",
-      filename: `scene-${index + 1}`,
-    },
-    object,
+    { filename: `scene-${index + 1}`, mimeType: "image/png", notFound: "Scene image not found" },
     rangeHeader,
   );
 }

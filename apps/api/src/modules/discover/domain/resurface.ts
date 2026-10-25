@@ -1,8 +1,7 @@
-import { parseTimestamp, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, parseTimestamp, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackEntry } from "./feedback";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SAVED_MIN_AGE_DAYS = 7;
 const SAVED_MAX_AGE_DAYS = 90;
 const YEAR_AGO_WINDOW_DAYS = 3;

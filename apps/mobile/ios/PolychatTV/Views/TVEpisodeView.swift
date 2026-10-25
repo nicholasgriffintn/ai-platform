@@ -96,7 +96,7 @@ struct TVEpisodeView: View {
                 HStack(spacing: 24) {
                     ForEach(Array(episode.chapters.enumerated()), id: \.offset) { index, chapter in
                         Button {
-                            Task { await controller.play(chapter: index) }
+                            Task { await controller.play(chapter: index, fromStart: true) }
                         } label: {
                             Label(
                                 "\(index + 1). \(chapter.title)",

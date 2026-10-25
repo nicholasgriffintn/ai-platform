@@ -7,7 +7,7 @@ import {
   ComposerDraftProvider,
   ConversationScopeProvider,
   noteFromReply,
-  type useNotebookActions,
+  type NotebookActions,
   useLocalComposerDraft,
   useLocalConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
@@ -38,7 +38,7 @@ export function NotebookChatPanel({
   conversationId?: string;
   selectedSourceIds: readonly string[];
   pendingQuestion: { key: string; input: string } | null;
-  actions: ReturnType<typeof useNotebookActions>;
+  actions: NotebookActions;
   onConversationChange: (conversationId: string | undefined) => void;
 }) {
   const scope = useLocalConversationScope(conversationId, onConversationChange);

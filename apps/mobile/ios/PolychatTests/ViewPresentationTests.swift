@@ -145,4 +145,19 @@ struct ViewPresentationTests {
         #expect(!recording.isReady)
         #expect(finished.coverKey == "episode:ep1:0:0:0")
     }
+
+    @Test func episodeWatchedFractionCountsEarlierChapters() throws {
+        let episode = try JSONDecoder().decode(DiscoverEpisode.self, from: Data("""
+        {"id":"ep1","title":"Debate","recap":"","topic":"Debate","part":1,"parts":5,
+         "progress":{"furthest":0.25,"resume":{"chapter":1,"seconds":30}},
+         "chapters":[
+           {"title":"a","status":"ready","timings":[{"start":0,"end":60}],"scenes":[]},
+           {"title":"b","status":"ready","timings":[{"start":0,"end":60}],"scenes":[]}
+         ]}
+        """.utf8))
+
+        #expect(episode.progress?.resume == DiscoverEpisode.Resume(chapter: 1, seconds: 30))
+        #expect(episode.watchedFraction(chapter: 1, seconds: 30) == 0.75)
+        #expect(episode.watchedFraction(chapter: 1, seconds: 600) == 1)
+    }
 }

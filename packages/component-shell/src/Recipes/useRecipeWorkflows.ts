@@ -21,6 +21,7 @@ import {
   type RecipeInstallation,
   type RecipeInstallationTrigger,
 } from "@ngriffin_uk/polychat-schemas";
+import { readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -44,9 +45,7 @@ export function useRecipeWorkflows({
   const [scheduleRecipe, setScheduleRecipe] = useState<AssistantRecipe | null>(null);
   const [scheduleInstallation, setScheduleInstallation] = useState<RecipeInstallation | null>(null);
   const [scheduleCronExpression, setScheduleCronExpression] = useState("0 9 * * *");
-  const [scheduleTimezone, setScheduleTimezone] = useState(
-    () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-  );
+  const [scheduleTimezone, setScheduleTimezone] = useState(() => readLocalTimeZone() ?? "UTC");
   const [schedulePrompt, setSchedulePrompt] = useState("");
   const [scheduleNotifySms, setScheduleNotifySms] = useState(false);
   const [scheduleSmsTarget, setScheduleSmsTarget] = useState("");

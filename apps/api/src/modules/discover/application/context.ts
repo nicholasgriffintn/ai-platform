@@ -1,5 +1,10 @@
 import type { DiscoverFollow, DiscoverSettings } from "@ngriffin_uk/polychat-schemas";
-import { describeZonedInstant, partOfDay, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  describeZonedInstant,
+  partOfDay,
+  readStringField,
+  truncateText,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getUserSettings } from "~/modules/auth/application/user";
@@ -44,10 +49,15 @@ const CHAT_MAX_AGE_DAYS = 30;
 const MEMORY_SUMMARY_LIMIT = 2_000;
 const WAITING_LIMIT = 3;
 
-function stringField(row: Record<string, unknown>, key: string): string {
-  const value = row[key];
-
-  return typeof value === "string" ? value : "";
+function selectChatTitles(rows: readonly Record<string, unknown>[], now: number): string[] {
+  return selectRecentChatTitles(
+    rows.map((row) => ({
+      title: readStringField(row, "title") ?? "",
+      type: readStringField(row, "type") ?? "",
+      updatedAt: readStringField(row, "updated_at") || (readStringField(row, "created_at") ?? ""),
+    })),
+    { now, maxAgeDays: CHAT_MAX_AGE_DAYS, limit: CHAT_TITLE_LIMIT },
+  );
 }
 
 export async function readMemorySummary(
@@ -78,14 +88,7 @@ export async function listRecentDiscoverChatTitles(
     .get(ConversationRepository)
     .listUserConversations(userId, { limit: CHAT_SCAN_LIMIT, teammateThreads: "exclude" });
 
-  return selectRecentChatTitles(
-    conversations.data.map((row) => ({
-      title: stringField(row, "title"),
-      type: stringField(row, "type"),
-      updatedAt: stringField(row, "updated_at") || stringField(row, "created_at"),
-    })),
-    { now, maxAgeDays: CHAT_MAX_AGE_DAYS, limit: CHAT_TITLE_LIMIT },
-  );
+  return selectChatTitles(conversations.data, now);
 }
 
 export interface DiscoverEditionBasis {
@@ -226,14 +229,7 @@ export async function buildDiscoverContextSnapshot(
     timezone: basis.timezone,
     curate: basis.settings.curate,
     followedTopics: basis.follows.map((follow) => follow.topic),
-    chatTitles: selectRecentChatTitles(
-      conversations.data.map((row) => ({
-        title: stringField(row, "title"),
-        type: stringField(row, "type"),
-        updatedAt: stringField(row, "updated_at") || stringField(row, "created_at"),
-      })),
-      { now: now.getTime(), maxAgeDays: CHAT_MAX_AGE_DAYS, limit: CHAT_TITLE_LIMIT },
-    ),
+    chatTitles: selectChatTitles(conversations.data, now.getTime()),
     memorySummary,
     feedback: basis.feedback,
     recentCardTitles: basis.recentEditions.flatMap((edition) =>

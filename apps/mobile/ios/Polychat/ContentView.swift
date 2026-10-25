@@ -30,6 +30,7 @@ private struct RootTabView: View {
     @EnvironmentObject private var teammatesStore: TeammatesStore
     @EnvironmentObject private var ageGateStore: AgeGateStore
     @EnvironmentObject private var discoverStore: DiscoverStore
+    @EnvironmentObject private var discoverPlayback: DiscoverPlayback
     @EnvironmentObject private var attentionStore: AttentionStore
     @EnvironmentObject private var workStore: WorkStore
     @EnvironmentObject private var healthSync: HealthSyncController
@@ -40,12 +41,13 @@ private struct RootTabView: View {
     @State private var workTarget: MobileWorkTarget?
     @State private var outputReviewTarget: OutputReviewTarget?
     @State private var deviceApproval: DeviceApprovalTarget?
+    @State private var discoverLink: DiscoverLink?
     @State private var companionSync: CompanionSync?
 
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "sun.horizon", value: AppTab.home) {
-                HomeView(onAsk: startConversation)
+                HomeView(link: $discoverLink, onOpenConversation: openConversation)
             }
 
             Tab("Chats", systemImage: "bubble.left.and.bubble.right", value: AppTab.chats) {
@@ -164,6 +166,7 @@ private struct RootTabView: View {
         teammatesStore.reset()
         conversationManager.reset()
         discoverStore.reset()
+        discoverPlayback.reset()
         workStore.reset()
         healthSync.reset()
         WidgetPublisher.clear()
@@ -186,18 +189,6 @@ private struct RootTabView: View {
         conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
         if let polyConversationId = polyStore.agenda?.conversationId {
             conversationManager.bindTeammates([polyConversationId: PolyThread.teammateId])
-        }
-    }
-
-    private func startConversation(_ prompt: String) {
-        let conversation = conversationManager.startNewConversation()
-        chatsMode = .chat
-        chatsPath = [.conversation(conversation.id)]
-        selectedTab = .chats
-
-        Task {
-            guard await ageGateStore.ensureConfirmed() else { return }
-            try? await conversationManager.addMessage(ChatMessage(role: "user", content: prompt))
         }
     }
 
@@ -233,6 +224,9 @@ private struct RootTabView: View {
         switch AppRoute.parse(url) {
         case .tab(let tab):
             selectedTab = tab
+        case .discover(let link):
+            selectedTab = .home
+            discoverLink = link
         case .conversation(let id):
             openConversation(id)
         case .device(let userCode):

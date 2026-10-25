@@ -10,7 +10,7 @@ final class ListenPlaybackController: ObservableObject {
 
     let player = AudioClipPlayer()
     let item: DiscoverMediaItem
-    private let editionId: String
+    let editionId: String
     private let apiClient: APIClient
     private var artwork: UIImage?
 
@@ -75,6 +75,12 @@ final class ListenPlaybackController: ObservableObject {
         } catch {
             self.error = "The recording could not be started: \(error.localizedDescription)"
         }
+    }
+
+    func pause() {
+        guard player.isPlaying else { return }
+        player.pause()
+        publishNowPlaying()
     }
 
     func stop() {

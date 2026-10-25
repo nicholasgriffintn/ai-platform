@@ -5,7 +5,7 @@ import {
   FormTextarea,
   Switch,
 } from "@ngriffin_uk/polychat-component-ui";
-import type { useNotebookActions } from "@ngriffin_uk/polychat-library-react";
+import type { NotebookActions } from "@ngriffin_uk/polychat-library-react";
 import type {
   NotebookChatStyle,
   NotebookDetail,
@@ -44,7 +44,7 @@ export function NotebookSettingsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   notebook: NotebookDetail;
-  actions: ReturnType<typeof useNotebookActions>;
+  actions: NotebookActions;
 }) {
   const [name, setName] = useState(notebook.name);
   const [style, setStyle] = useState(notebook.settings.style);

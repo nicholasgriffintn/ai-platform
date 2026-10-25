@@ -1,5 +1,5 @@
 import { Button, Checkbox, cn } from "@ngriffin_uk/polychat-component-ui";
-import { type useNotebookActions, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import { type NotebookActions, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { NotebookDetail } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { ChevronRight, LoaderCircle, MessagesSquare, Plus, TriangleAlert, X } from "lucide-react";
@@ -20,7 +20,7 @@ export function NotebookSourcesPanel({
   onOpenConversation,
 }: {
   notebook: NotebookDetail;
-  actions: ReturnType<typeof useNotebookActions>;
+  actions: NotebookActions;
   selection: NotebookSourceSelection;
   onOpenConversation: (conversationId: string) => void;
 }) {

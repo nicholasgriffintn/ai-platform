@@ -8,6 +8,7 @@ import type {
   RequestDecisionInput,
   ResolveDecisionInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -28,7 +29,6 @@ import {
 } from "./scope";
 
 const DEFAULT_EXCEPTION_DAYS = 90;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function verdictFor(scope: RegistryScope, versionId: string, routeId: string | null) {
   const version = scope.versions.find((item) => item.id === versionId);

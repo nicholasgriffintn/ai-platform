@@ -89,7 +89,7 @@ export function EpisodePlayer({
   const retry = useRetryDiscoverEpisodeChapter(episodeId ?? "");
   const seasonListen = useQueueDiscoverSeasonListen();
   const progress = useRecordDiscoverEpisodeProgress(episodeId ?? "");
-  const playback = useEpisodePlayback(episode, (fraction) => progress.mutate(fraction));
+  const playback = useEpisodePlayback(episode, (update) => progress.mutate(update));
   const [listenOnly, setListenOnly] = useState(false);
   const { track, chapter, chapterIndex } = playback;
 

@@ -18,6 +18,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { assertPlanEntitlement } from "~/middleware/requirePlan";
+import { estimateSpokenSeconds } from "~/modules/audio/domain/speech-text";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
@@ -39,7 +40,7 @@ import {
 } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-import { estimateSpokenSeconds, PODCAST_HOSTS, synthesisePodcastAudio } from "./audio";
+import { PODCAST_HOSTS, synthesisePodcastAudio } from "./audio";
 import { writePodcastScript } from "./script";
 
 const logger = getLogger({ prefix: "sources/podcasts" });
@@ -178,7 +179,9 @@ async function produceEpisode(
       transcript,
       notes: { summary: script.description, decisions: [], actionItems: [] },
       durationSeconds:
-        durationSeconds > 0 ? Math.round(durationSeconds) : estimateSpokenSeconds(script.turns),
+        durationSeconds > 0
+          ? Math.round(durationSeconds)
+          : estimateSpokenSeconds(script.turns.map((turn) => turn.text)),
     },
   });
   const repository = context.repositories.get(SourceRepository);

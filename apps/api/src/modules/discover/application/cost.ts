@@ -16,6 +16,7 @@ import {
   type MediaUsagePlan,
   type PaidEpisodeLength,
 } from "~/modules/discover/domain/cost";
+import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import {
   findModelConfig,
   getImageModel,
@@ -23,8 +24,6 @@ import {
   getTierModel,
 } from "~/modules/models/application/resolve";
 import { getRecipeInstallationSpend } from "~/modules/recipes/application/installation-budget";
-
-const DISCOVER_MODEL_TIER = "medium";
 
 interface PricedModels {
   text: ModelConfigItem | null;

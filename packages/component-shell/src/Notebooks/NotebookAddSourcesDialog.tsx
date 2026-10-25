@@ -14,7 +14,7 @@ import {
   TabsTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-  type useNotebookActions,
+  type NotebookActions,
   useSourceMutations,
   useSources,
 } from "@ngriffin_uk/polychat-library-react";
@@ -28,8 +28,6 @@ import { sourceToFileItem } from "../Files/Library/file-items.js";
 import { FileTypeIcon } from "../Files/Library/FilePreview.js";
 import { UploadInput } from "../Files/Library/UploadInput.js";
 import { useFileCreation } from "../Files/Library/useFileCreation.js";
-
-type NotebookActions = ReturnType<typeof useNotebookActions>;
 
 function FromFiles({
   notebook,

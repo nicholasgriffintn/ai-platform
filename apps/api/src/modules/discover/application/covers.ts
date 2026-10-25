@@ -1,30 +1,15 @@
-import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  DISCOVER_JOB_TASK_TYPE,
-  type DiscoverCard,
-  type DiscoverEditionContent,
-  type DiscoverJobTaskData,
-} from "@ngriffin_uk/polychat-schemas";
+import type { DiscoverCard, DiscoverEditionContent } from "@ngriffin_uk/polychat-schemas";
 import { isoWeekKey, slugify } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
-import {
-  AssistantError,
-  ErrorType,
-  getErrorMessage,
-} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { StorageService } from "~/infrastructure/storage";
-import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
-import { generateStudioImage } from "~/modules/notebooks/application/studio/images";
+import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
+import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { TaskService } from "~/modules/queue/application/TaskService";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { requireDiscoverEdition } from "./editions";
 import { publishDiscoverChanged } from "./events";
 
-const logger = getLogger({ prefix: "discover/covers" });
 const COVER_CONCURRENCY = 2;
 const COVER_WIDTH = 768;
 const COVER_HEIGHT = 960;
@@ -39,56 +24,6 @@ function coverIdFor(topic: string, date: string): string {
   return `${slugify(topic, 60) || "topic"}-${isoWeekKey(date)}`;
 }
 
-export async function enqueueDiscoverJob(
-  context: ServiceContext,
-  job: DiscoverJobTaskData,
-): Promise<void> {
-  await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    task_type: DISCOVER_JOB_TASK_TYPE,
-    user_id: context.requireUser().id,
-    task_data: { ...job, runId: job.runId ?? context.executionRunId },
-    priority: 6,
-  });
-}
-
-async function drawCover(
-  context: ServiceContext,
-  userId: number,
-  card: Extract<DiscoverCard, { kind: "topic" }>,
-  coverId: string,
-): Promise<boolean> {
-  const storage = StorageService.forPrivateAssets(context);
-  const key = coverKey(userId, coverId);
-
-  if (await storage.headObject(key)) {
-    return true;
-  }
-
-  try {
-    const image = await generateStudioImage(context, {
-      completionId: `discover-cover-${coverId}`,
-      prompt: `${COVER_STYLE}. ${card.topic}: ${card.title}. ${card.angle} No text, letters, numbers or logos anywhere in the picture.`,
-      aspectRatio: "4:5",
-      width: COVER_WIDTH,
-      height: COVER_HEIGHT,
-    });
-
-    if (!image) {
-      return false;
-    }
-
-    await storage.uploadObject(key, await image.arrayBuffer(), {
-      httpMetadata: { contentType: image.type || "image/png" },
-    });
-
-    return true;
-  } catch (error) {
-    logger.warn("Discover cover failed", { coverId, error_message: getErrorMessage(error) });
-
-    return false;
-  }
-}
-
 export async function drawDiscoverCovers(context: ServiceContext, editionId: string) {
   const user = context.requireUser();
   const edition = await requireDiscoverEdition(context, user.id, editionId);
@@ -101,7 +36,15 @@ export async function drawDiscoverCovers(context: ServiceContext, editionId: str
   await mapWithConcurrency(pending, COVER_CONCURRENCY, async (card) => {
     const coverId = coverIdFor(card.topic, edition.content.date);
 
-    if (await drawCover(context, user.id, card, coverId)) {
+    const stored = await storeDrawnImage(context, coverKey(user.id, coverId), {
+      completionId: `discover-cover-${coverId}`,
+      prompt: `${COVER_STYLE}. ${card.topic}: ${card.title}. ${card.angle} ${TEXTLESS_PICTURE}`,
+      aspectRatio: "4:5",
+      width: COVER_WIDTH,
+      height: COVER_HEIGHT,
+    });
+
+    if (stored) {
       drawn.set(card.id, coverId);
     }
   });
@@ -133,18 +76,10 @@ export async function readDiscoverCover(
   coverId: string,
   rangeHeader?: string | null,
 ): Promise<Response> {
-  const user = context.requireUser();
-  const object = await StorageService.forPrivateAssets(context).getObjectBody(
-    coverKey(user.id, coverId),
-  );
-
-  if (!object) {
-    throw new AssistantError("Cover not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  return getPrivateFileResponse(
-    { mime_type: object.httpMetadata?.contentType ?? "image/png", filename: coverId },
-    object,
+  return getPrivateObjectResponse(
+    context,
+    coverKey(context.requireUser().id, coverId),
+    { filename: coverId, mimeType: "image/png", notFound: "Cover not found" },
     rangeHeader,
   );
 }

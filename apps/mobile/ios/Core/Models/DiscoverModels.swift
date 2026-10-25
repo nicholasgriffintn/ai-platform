@@ -53,6 +53,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     let href: String?
     let reason: String
     let coverId: String?
+    let sourceId: String?
 
     var headline: String { question ?? title ?? "" }
 
@@ -85,6 +86,13 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     }
 
     var body: String? { angle ?? summary ?? detail }
+
+    func subject(editionId: String) -> ConversationSubject {
+        if kind == "read", let sourceId {
+            return ConversationSubject(type: "source", id: sourceId)
+        }
+        return ConversationSubject(type: "output", id: editionId)
+    }
 
     var chatPrompt: String {
         if let prompt { return prompt }
@@ -137,9 +145,48 @@ struct DiscoverEdition: Decodable, Equatable {
     let episodeFailed: Bool?
 }
 
+struct DiscoverEditionSummary: Decodable, Equatable, Identifiable {
+    let id: String
+    let date: String
+    let edition: String
+
+    var isEvening: Bool { edition == "evening" }
+
+    var day: Date? {
+        DiscoverEditionSummary.dayFormatter.date(from: date)
+    }
+
+    var label: String {
+        guard let day else { return date }
+        let name = Calendar.current.isDateInToday(day)
+            ? "Today"
+            : Calendar.current.isDateInYesterday(day)
+                ? "Yesterday"
+                : day.formatted(.dateTime.weekday(.abbreviated).day())
+        return isEvening ? "\(name) evening" : name
+    }
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+}
+
+struct DiscoverFollowRequest: Encodable {
+    let topic: String
+}
+
+struct DiscoverUnfollowResponse: Decodable {
+    let notebookId: String
+}
+
 struct DiscoverResponse: Decodable, Equatable {
     let settings: DiscoverSettings
     let edition: DiscoverEdition?
+    let editions: [DiscoverEditionSummary]
     let follows: [DiscoverFollow]
     let windDownId: String?
 }
@@ -179,6 +226,15 @@ enum DiscoverMediaItem: String, Identifiable, CaseIterable {
     case windDown
 
     var id: String { rawValue }
+
+    init?(slug: String) {
+        guard let item = Self.allCases.first(where: { $0.slug == slug }) else { return nil }
+        self = item
+    }
+
+    var slug: String {
+        self == .windDown ? "wind-down" : rawValue
+    }
 
     var title: String {
         switch self {
@@ -236,6 +292,16 @@ struct DiscoverEpisode: Decodable, Equatable {
         }
     }
 
+    struct Resume: Codable, Equatable {
+        let chapter: Int
+        let seconds: Double
+    }
+
+    struct Progress: Decodable, Equatable {
+        let furthest: Double
+        let resume: Resume?
+    }
+
     let id: String
     let title: String
     let recap: String
@@ -243,6 +309,19 @@ struct DiscoverEpisode: Decodable, Equatable {
     let part: Int
     let parts: Int
     let chapters: [Chapter]
+    let progress: Progress?
+
+    func watchedFraction(chapter index: Int, seconds: Double) -> Double {
+        let lengths = chapters.map { $0.timings.last?.end ?? 0 }
+        let total = lengths.reduce(0, +)
+        let before = lengths.prefix(index).reduce(0, +)
+        return total > 0 ? min(1, (before + seconds) / total) : 0
+    }
+}
+
+struct DiscoverEpisodeProgressRequest: Encodable {
+    let fraction: Double
+    let resume: DiscoverEpisode.Resume
 }
 
 struct DiscoverWindDown: Decodable, Equatable {

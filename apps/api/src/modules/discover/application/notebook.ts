@@ -3,6 +3,7 @@ import {
   DISCOVER_RESEARCH_METADATA_KEY,
   DISCOVER_SIGNAL_METADATA_KEY,
 } from "@ngriffin_uk/polychat-schemas";
+import { readNonEmptyString, readStringArray } from "@ngriffin_uk/polychat-utility-core";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -44,10 +45,6 @@ export interface DiscoverResearchDocument {
 export interface DiscoverDocuments {
   signals: DiscoverSignalDocument[];
   research: DiscoverResearchDocument[];
-}
-
-function stringOrNull(value: unknown): string | null {
-  return typeof value === "string" && value ? value : null;
 }
 
 export async function findDiscoverNotebook(
@@ -110,19 +107,17 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
         signalId: signal,
         providerId: source.provider ?? "",
         title: source.title,
-        readAt: stringOrNull(metadata.readAt),
-        attemptedAt: stringOrNull(metadata.attemptedAt),
-        error: stringOrNull(metadata.error),
-        lines: Array.isArray(metadata.lines)
-          ? metadata.lines.filter((line): line is string => typeof line === "string")
-          : [],
+        readAt: readNonEmptyString(metadata.readAt) ?? null,
+        attemptedAt: readNonEmptyString(metadata.attemptedAt) ?? null,
+        error: readNonEmptyString(metadata.error) ?? null,
+        lines: readStringArray(metadata.lines),
         items: readResearchResults(metadata.items),
       });
     } else if (typeof topic === "string" && topic) {
       research.push({
         sourceId: source.id,
         topic,
-        readAt: stringOrNull(metadata.readAt),
+        readAt: readNonEmptyString(metadata.readAt) ?? null,
         content: source.content ?? "",
       });
     }

@@ -1,4 +1,5 @@
 import type { RouteHealth } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
@@ -9,7 +10,6 @@ import { findModelConfig } from "~/modules/models/application/resolve";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 
 const HEALTH_WINDOW_DAYS = 14;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function getRouteHealth(
   context: ServiceContext,

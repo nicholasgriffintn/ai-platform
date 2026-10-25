@@ -310,6 +310,7 @@ final class ConversationAPIClientStub: ConversationAPIClient {
     var streamedIdempotencyKey: String?
     var streamedAgentTeammateId: String?
     var streamedProjectId: String?
+    var streamedSubject: ConversationSubject?
     var submittedApprovalBatches: [(responseId: String, decisions: [ToolApprovalDecision])] = []
     var streamError: Error?
     var updatedConversationTitles: [(id: String, title: String)] = []
@@ -373,9 +374,11 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         modelTier: String?,
         computeSite: String,
         agentTeammateId: String?,
-        projectId: String?
+        projectId: String?,
+        subject: ConversationSubject?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         streamCallCount += 1
+        streamedSubject = subject
         streamedProjectId = projectId
         streamedAgentTeammateId = agentTeammateId
         streamedMessages = messages
@@ -482,7 +485,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
             modelTier: modelTier,
             computeSite: computeSite,
             agentTeammateId: nil,
-            projectId: projectId
+            projectId: projectId,
+            subject: nil
         )
     }
 
@@ -502,7 +506,8 @@ final class ConversationAPIClientStub: ConversationAPIClient {
             modelTier: nil,
             computeSite: "hosted",
             agentTeammateId: nil,
-            projectId: nil
+            projectId: nil,
+            subject: nil
         )
     }
 

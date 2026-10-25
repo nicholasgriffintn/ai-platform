@@ -5,7 +5,7 @@ import {
   type PolyHandoffDecision,
   type PolyHandoffUrgency,
 } from "@ngriffin_uk/polychat-schemas";
-import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -19,7 +19,6 @@ import type { IUser } from "~/types";
 
 import { judgeRoutineResult } from "./handoff-judgement";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const STORED_SUMMARY_CHARS = 1_600;
 const HANDOFFS_PER_DAY_SCAN = 200;
 

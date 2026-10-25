@@ -15,18 +15,31 @@ final class EpisodePlaybackController: ObservableObject {
     private let apiClient: APIClient
     private var shotCache: [String: UIImage] = [:]
     private var shotKey: String?
-    private var timeObserver: AnyCancellable?
+    private var pendingSeek: Double?
+    private var reportedMark: String?
+    private var observers: Set<AnyCancellable> = []
+    private static let resumeIntervalSeconds = 15.0
 
     init(apiClient: APIClient = .shared) {
         self.apiClient = apiClient
         player.onFinish = { [weak self] in
             Task { await self?.advance() }
         }
-        timeObserver = player.$currentTime
+        player.$currentTime
             .removeDuplicates { Int($0) == Int($1) }
             .sink { [weak self] _ in
-                Task { await self?.refreshShot() }
+                Task { @MainActor in
+                    await self?.refreshShot()
+                    self?.reportProgress()
+                }
             }
+            .store(in: &observers)
+        player.$isPlaying
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.reportProgress() }
+            }
+            .store(in: &observers)
     }
 
     var chapter: DiscoverEpisode.Chapter? {
@@ -43,7 +56,11 @@ final class EpisodePlaybackController: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            episode = try await apiClient.fetchDiscoverEpisode(id: id)
+            let loaded = try await apiClient.fetchDiscoverEpisode(id: id)
+            if episode?.id != loaded.id {
+                applyResume(loaded)
+            }
+            episode = loaded
             error = nil
             await refreshShot()
         } catch {
@@ -61,16 +78,22 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
-    func play(chapter index: Int) async {
+    private func playChapter(_ index: Int) async {
         guard let episode, episode.chapters.indices.contains(index), episode.chapters[index].isReady else {
             return
         }
-        chapterIndex = index
         isLoading = true
         defer { isLoading = false }
         do {
             let data = try await apiClient.fetchDiscoverEpisodeAudio(id: episode.id, chapter: index)
-            try await player.load(data, autoplay: true)
+            reportProgress()
+            try await player.load(data, autoplay: false)
+            chapterIndex = index
+            if let pendingSeek {
+                player.seek(to: pendingSeek)
+                self.pendingSeek = nil
+            }
+            player.play()
             bindNowPlaying()
             await refreshShot()
             publishNowPlaying()
@@ -79,9 +102,16 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
+    func play(chapter index: Int, fromStart: Bool) async {
+        if fromStart {
+            pendingSeek = nil
+        }
+        await playChapter(index)
+    }
+
     func togglePlayback() async {
         if player.duration == 0 {
-            await play(chapter: chapterIndex)
+            await playChapter(chapterIndex)
         } else {
             player.toggle()
             publishNowPlaying()
@@ -126,9 +156,42 @@ final class EpisodePlaybackController: ObservableObject {
         }
     }
 
+    func pause() {
+        guard player.isPlaying else { return }
+        player.pause()
+        publishNowPlaying()
+    }
+
     func stop() {
+        reportProgress()
         player.stop()
         NowPlayingCenter.shared.clear()
+    }
+
+    private func applyResume(_ episode: DiscoverEpisode) {
+        guard player.duration == 0,
+              let resume = episode.progress?.resume,
+              episode.chapters.indices.contains(resume.chapter) else {
+            return
+        }
+        chapterIndex = resume.chapter
+        pendingSeek = resume.seconds
+    }
+
+    private func reportProgress() {
+        guard let episode, player.currentTime > 0 else { return }
+        let mark = player.isPlaying
+            ? "\(chapterIndex):\(Int(player.currentTime / Self.resumeIntervalSeconds))"
+            : "\(chapterIndex):paused:\(Int(player.currentTime))"
+        guard mark != reportedMark else { return }
+        reportedMark = mark
+        let request = DiscoverEpisodeProgressRequest(
+            fraction: episode.watchedFraction(chapter: chapterIndex, seconds: player.currentTime),
+            resume: DiscoverEpisode.Resume(chapter: chapterIndex, seconds: player.currentTime)
+        )
+        Task { [apiClient] in
+            try? await apiClient.recordDiscoverEpisodeProgress(id: episode.id, request)
+        }
     }
 
     private var nextChapter: Int? {
@@ -139,7 +202,7 @@ final class EpisodePlaybackController: ObservableObject {
 
     private func advance() async {
         if let next = nextChapter {
-            await play(chapter: next)
+            await play(chapter: next, fromStart: true)
         } else {
             publishNowPlaying()
         }
@@ -152,7 +215,7 @@ final class EpisodePlaybackController: ObservableObject {
             onNext: { [weak self] in
                 Task {
                     guard let self, let next = self.nextChapter else { return }
-                    await self.play(chapter: next)
+                    await self.play(chapter: next, fromStart: true)
                 }
             }
         )

@@ -144,3 +144,5 @@ export function useVideoOverviewMedia(params: {
     isLoading: query.isLoading,
   };
 }
+
+export type NotebookActions = ReturnType<typeof useNotebookActions>;

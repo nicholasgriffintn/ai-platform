@@ -382,9 +382,16 @@ export const discoverFollowParamsSchema = z.object({ notebook_id: z.string().min
 
 export const discoverUnfollowResponseSchema = z.object({ notebookId: z.string().min(1) });
 
+export const discoverEditionSummarySchema = z.object({
+  id: z.string().min(1),
+  date: z.iso.date(),
+  edition: discoverEditionTimeSchema,
+});
+
 export const discoverResponseSchema = z.object({
   settings: discoverSettingsSchema,
   edition: discoverEditionSchema.nullable(),
+  editions: z.array(discoverEditionSummarySchema),
   follows: z.array(discoverFollowSchema),
   windDownId: z.string().nullable(),
 });
@@ -392,6 +399,10 @@ export const discoverResponseSchema = z.object({
 export const discoverSeasonParamsSchema = z.object({ season_id: z.string().min(1) });
 
 export const discoverEditionParamsSchema = z.object({ date: z.iso.date() });
+
+export const discoverEditionQuerySchema = z.object({
+  edition: discoverEditionTimeSchema.default("morning"),
+});
 
 export const discoverFeedbackRequestSchema = z
   .object({
@@ -475,6 +486,7 @@ export type DiscoverEdition = z.infer<typeof discoverEditionSchema>;
 export type DiscoverSettings = z.infer<typeof discoverSettingsSchema>;
 export type UpdateDiscoverSettings = z.infer<typeof updateDiscoverSettingsSchema>;
 export type DiscoverResponse = z.infer<typeof discoverResponseSchema>;
+export type DiscoverEditionSummary = z.infer<typeof discoverEditionSummarySchema>;
 export type DiscoverFeedbackRequest = z.infer<typeof discoverFeedbackRequestSchema>;
 export type DiscoverFeedbackResponse = z.infer<typeof discoverFeedbackResponseSchema>;
 export type DiscoverRefreshResponse = z.infer<typeof discoverRefreshResponseSchema>;

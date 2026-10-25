@@ -9,9 +9,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getTierModel } from "~/modules/models/application/resolve";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -45,19 +44,8 @@ export async function writePodcastScript(
     );
   }
 
-  const user = context.requireUser();
-  const { model, provider, effort } = await getTierModel(
-    context.env,
-    user,
-    PODCAST_SCRIPT_MODEL_TIER,
-  );
-  const { object } = await ai.generateObject({
-    env: context.env,
-    user,
-    model,
-    provider,
-    reasoning_effort: effort,
-    disable_functions: true,
+  return generateTierObject(context, {
+    tier: PODCAST_SCRIPT_MODEL_TIER,
     name: "podcast_script",
     schema: podcastScriptSchema,
     system: renderPrompt("sources/podcast/script", {
@@ -68,8 +56,6 @@ export async function writePodcastScript(
       language: options.language,
       focus: options.focus,
     }),
-    prompt: material,
+    material,
   });
-
-  return object;
 }

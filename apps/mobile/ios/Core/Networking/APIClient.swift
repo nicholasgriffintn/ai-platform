@@ -124,6 +124,22 @@ final class APIClient: ObservableObject {
         try await send(path: "/discover", method: "GET")
     }
 
+    func fetchDiscoverEdition(date: String, edition: String) async throws -> DiscoverEdition {
+        try await send(
+            path: "/discover/editions/\(date)",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "edition", value: edition)]
+        )
+    }
+
+    func followDiscoverTopic(_ topic: String) async throws -> DiscoverFollow {
+        try await send(path: "/discover/follows", method: "POST", body: DiscoverFollowRequest(topic: topic))
+    }
+
+    func unfollowDiscoverTopic(notebookId: String) async throws {
+        let _: DiscoverUnfollowResponse = try await send(path: "/discover/follows/\(notebookId)", method: "DELETE")
+    }
+
     func refreshDiscover() async throws -> DiscoverRefreshResponse {
         try await send(path: "/discover/refresh", method: "POST", emptyBody: true)
     }
@@ -170,6 +186,10 @@ final class APIClient: ObservableObject {
 
     func fetchDiscoverEpisode(id: String) async throws -> DiscoverEpisode {
         try await send(path: "/discover/episodes/\(id)", method: "GET")
+    }
+
+    func recordDiscoverEpisodeProgress(id: String, _ request: DiscoverEpisodeProgressRequest) async throws {
+        let _: EmptyResponse = try await send(path: "/discover/episodes/\(id)/progress", method: "POST", body: request)
     }
 
     func requestDiscoverEpisode(editionId: String) async throws {
@@ -307,7 +327,8 @@ final class APIClient: ObservableObject {
         modelTier: String? = nil,
         computeSite: String = "hosted",
         agentTeammateId: String? = nil,
-        projectId: String? = nil
+        projectId: String? = nil,
+        subject: ConversationSubject? = nil
     ) -> AsyncThrowingStream<ChatStreamEvent, Error> {
         let requestBody = CreateResponseRequest(
             messages: messages,
@@ -321,7 +342,8 @@ final class APIClient: ObservableObject {
             computeSite: computeSite,
             idempotencyKey: idempotencyKey,
             agentTeammateId: agentTeammateId,
-            projectId: projectId
+            projectId: projectId,
+            subject: subject
         )
         guard requestBody.hasMessages else {
             return AsyncThrowingStream { continuation in

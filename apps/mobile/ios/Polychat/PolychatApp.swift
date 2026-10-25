@@ -13,6 +13,7 @@ struct PolychatApp: App {
     @StateObject private var teammatesStore = TeammatesStore()
     @StateObject private var ageGateStore = AgeGateStore()
     @StateObject private var discoverStore = DiscoverStore(onEdition: WidgetPublisher.publish(edition:))
+    @StateObject private var discoverPlayback = DiscoverPlayback()
     @StateObject private var attentionStore = AttentionStore()
     @StateObject private var workStore = WorkStore()
     @StateObject private var healthSync = HealthSyncController.shared
@@ -31,6 +32,7 @@ struct PolychatApp: App {
                 .environmentObject(teammatesStore)
                 .environmentObject(ageGateStore)
                 .environmentObject(discoverStore)
+                .environmentObject(discoverPlayback)
                 .environmentObject(attentionStore)
                 .environmentObject(workStore)
                 .environmentObject(healthSync)

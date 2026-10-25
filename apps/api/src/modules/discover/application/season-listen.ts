@@ -2,15 +2,15 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
+import { joinAudioSegments } from "~/modules/audio/domain/mp3";
 import { chapterAudioKey } from "~/modules/discover/domain/episodes";
 import { DISCOVER_LISTEN_SHOW } from "~/modules/discover/domain/listen";
 import { ensureFolder } from "~/modules/sources/application/folders";
-import { joinAudioSegments } from "~/modules/sources/application/podcasts/audio";
 import { addCollectionSources, createSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
-import { enqueueDiscoverJob } from "./covers";
 import { requireDiscoverEpisode, requireDiscoverSeason } from "./episodes";
+import { enqueueDiscoverJob } from "./jobs";
 
 export async function queueSeasonListen(
   context: ServiceContext,

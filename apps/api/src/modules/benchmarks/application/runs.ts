@@ -12,7 +12,7 @@ import type {
   StartBenchmarkRunsRequest,
   StartWorkspaceBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
-import { randomHex } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, randomHex } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
@@ -33,7 +33,6 @@ import { modelEntrant, modelIneligibility } from "./entrants";
 import { toBenchmarkRun } from "./mappers";
 import { enqueueBenchmarkRunTask } from "./runner";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SHARE_TOKEN_LENGTH = 36;
 
 async function resolvePersonalModel(

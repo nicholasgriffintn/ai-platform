@@ -9,7 +9,7 @@ import {
   type DiscoverWindDown,
   type DiscoverWindDownContent,
 } from "@ngriffin_uk/polychat-schemas";
-import { humaniseIdentifier, isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
+import { humaniseIdentifier, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
@@ -19,20 +19,19 @@ import { fetchFollowingSafeRedirects } from "@ngriffin_uk/polychat-utility-serve
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
-import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
-import { synthesiseSpeech } from "~/modules/audio/application/speech";
-import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
-import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
+import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
+import { narratePassages } from "~/modules/audio/application/narration";
+import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { generateMusic } from "~/modules/generate/application/music";
+import { generateTierObject } from "~/modules/models/application/tier-object";
+import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
   type OutputRecord,
 } from "~/modules/outputs/infrastructure/OutputRepository";
-import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
-import { enqueueDiscoverJob } from "./covers";
 import { publishDiscoverChanged } from "./events";
-import { generateDiscoverObject } from "./generate";
+import { enqueueDiscoverJob } from "./jobs";
 
 const logger = getLogger({ prefix: "discover/wind-down" });
 
@@ -91,22 +90,12 @@ async function makeAmbientBed(
   return true;
 }
 
-function readWindDownRecord(record: OutputRecord | null): DiscoverWindDownContent | null {
-  if (!record || record.kind !== DISCOVER_WIND_DOWN_KIND) {
-    return null;
-  }
-
-  const parsed = discoverWindDownContentSchema.safeParse(safeParseJson(record.content));
-
-  return parsed.success ? parsed.data : null;
-}
-
 async function requireWindDown(context: ServiceContext, windDownId: string) {
   const user = context.requireUser();
   const record = await context.repositories
     .get(OutputRepository)
     .getPersonalOutput(user.id, windDownId);
-  const content = readWindDownRecord(record);
+  const content = readOutputContent(record, DISCOVER_WIND_DOWN_KIND, discoverWindDownContentSchema);
 
   if (!record || !content) {
     throw new AssistantError("Wind down not found", ErrorType.NOT_FOUND, 404);
@@ -181,7 +170,6 @@ export async function renderDiscoverWindDown(
   context: ServiceContext,
   windDownId: string,
 ): Promise<void> {
-  const user = context.requireUser();
   const { record, content } = await requireWindDown(context, windDownId);
 
   if (content.status !== "pending") {
@@ -189,7 +177,8 @@ export async function renderDiscoverWindDown(
   }
 
   try {
-    const script = await generateDiscoverObject(context, {
+    const script = await generateTierObject(context, {
+      tier: DISCOVER_MODEL_TIER,
       name: "discover_wind_down",
       schema: discoverWindDownDraftSchema,
       system: renderPrompt("discover/wind-down/script", {
@@ -198,7 +187,6 @@ export async function renderDiscoverWindDown(
       }),
       material: `Write a ${content.minutes}-minute ${humaniseIdentifier(content.kind).toLowerCase()} session.`,
     });
-    const settings = await new UserSettingsRepository(context.env).getUserSettings(user.id);
     const storage = StorageService.forPrivateAssets(context);
     let ambient = false;
     let savedAmbient = false;
@@ -227,14 +215,12 @@ export async function renderDiscoverWindDown(
       status: "speaking",
     });
 
-    await renderWithSpeechVoices(
-      async () => ({
-        narrator: await resolveSpeechVoice(context.env, user, { role: "narrator", settings }),
-      }),
-      async ({ narrator }) => {
-        for (const [index, step] of script.steps.entries()) {
-          const audio = await synthesiseSpeech(context, narrator, step.text, "en");
-
+    await narratePassages(
+      context,
+      script.steps.map((step) => step.text),
+      {
+        language: "en",
+        onPassage: async (index, audio) => {
           await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
             httpMetadata: { contentType: "audio/mpeg" },
           });
@@ -249,7 +235,7 @@ export async function renderDiscoverWindDown(
             status: index === script.steps.length - 1 ? "ready" : "speaking",
           });
           savedAmbient = ambient;
-        }
+        },
       },
     );
 
@@ -285,17 +271,11 @@ export async function readWindDownAmbient(
   rangeHeader?: string | null,
 ): Promise<Response> {
   await requireWindDown(context, windDownId);
-  const object = await StorageService.forPrivateAssets(context).getObjectBody(
+
+  return getPrivateObjectResponse(
+    context,
     ambientKey(windDownId),
-  );
-
-  if (!object) {
-    throw new AssistantError("Not ready yet", ErrorType.NOT_FOUND, 404);
-  }
-
-  return getPrivateFileResponse(
-    { mime_type: object.httpMetadata?.contentType ?? "audio/mpeg", filename: "ambient" },
-    object,
+    { filename: "ambient", mimeType: "audio/mpeg" },
     rangeHeader,
   );
 }
@@ -307,17 +287,11 @@ export async function readWindDownStepAudio(
   rangeHeader?: string | null,
 ): Promise<Response> {
   await requireWindDown(context, windDownId);
-  const object = await StorageService.forPrivateAssets(context).getObjectBody(
+
+  return getPrivateObjectResponse(
+    context,
     stepAudioKey(windDownId, step),
-  );
-
-  if (!object) {
-    throw new AssistantError("Not ready yet", ErrorType.NOT_FOUND, 404);
-  }
-
-  return getPrivateFileResponse(
-    { mime_type: "audio/mpeg", filename: `step-${step + 1}.mp3` },
-    object,
+    { filename: `step-${step + 1}.mp3`, mimeType: "audio/mpeg" },
     rangeHeader,
   );
 }

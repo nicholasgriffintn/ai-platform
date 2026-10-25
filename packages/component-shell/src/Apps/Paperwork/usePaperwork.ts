@@ -1,7 +1,11 @@
 import { extractionsService } from "@ngriffin_uk/polychat-library-client";
 import { encodeImageAsJpegDataUrl } from "@ngriffin_uk/polychat-library-realtime/media-encoding";
 import type { ExtractionResponse } from "@ngriffin_uk/polychat-schemas";
-import { createConcurrencyLimiter, describeZonedInstant } from "@ngriffin_uk/polychat-utility-core";
+import {
+  createConcurrencyLimiter,
+  describeZonedInstant,
+  readLocalTimeZone,
+} from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PAPERWORK_FORMS, type PaperworkForm } from "./forms.js";
@@ -80,7 +84,7 @@ export function usePaperwork() {
           const request = buildExtractionRequest(
             readForm,
             await toSource(input),
-            describeZonedInstant(new Date(), Intl.DateTimeFormat().resolvedOptions().timeZone).date,
+            describeZonedInstant(new Date(), readLocalTimeZone()).date,
           );
           const response = await extractionsService.extract(request);
 

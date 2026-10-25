@@ -13,9 +13,7 @@ import type {
   UpdateNotebookInput,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { requestJson, resource } from "./resource.js";
-import { getHeaders } from "./utils/headers.js";
+import { requestBlob, requestJson, resource } from "./resource.js";
 
 const notebooks = resource<Notebook, CreateNotebookInput, UpdateNotebookInput>("/notebooks");
 
@@ -105,15 +103,12 @@ export function saveStudyProgress(
   return requestJson(progressPath(notebookId, outputId), "PATCH", progress);
 }
 
-export async function getNotebookSceneImage(
+export function getNotebookSceneImage(
   notebookId: string,
   outputId: string,
   index: number,
 ): Promise<Blob> {
-  const response = await fetchApiOrThrow(
+  return requestBlob(
     notebookPath(notebookId, `/outputs/${encodeURIComponent(outputId)}/scenes/${index}`),
-    { method: "GET", headers: await getHeaders() },
   );
-
-  return response.blob();
 }

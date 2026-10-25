@@ -4,6 +4,7 @@ import {
   comparableHttpUrl,
   leadParagraphs,
   markdownToPlainText,
+  resolveHttpUrl,
   sha256Hex,
   truncateForModel,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -13,7 +14,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { DiscoverResearchResult } from "~/modules/discover/domain/research";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
-import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
+import { readPageContents } from "~/modules/tools/application/retrieval/page-contents";
 
 import { findDiscoverNotebook } from "./notebook";
 import { writeDiscoverDocument } from "./signal-documents";
@@ -25,14 +26,6 @@ const ARTICLE_CONTENT_CHARACTERS = 60_000;
 
 async function articleSourceId(userId: number, url: string): Promise<string> {
   return `discover_article_${(await sha256Hex(`${userId}:${url}`)).slice(0, 24)}`;
-}
-
-function normaliseUrl(url: string): string | null {
-  try {
-    return new URL(url).toString();
-  } catch {
-    return null;
-  }
 }
 
 export function excerptArticle(content: string, title: string): string {
@@ -79,27 +72,13 @@ export async function readDiscoverArticles(
   input: { topic: string; date: string; results: readonly DiscoverResearchResult[] },
 ): Promise<DiscoverResearchResult[]> {
   const user = context.requireUser();
-  const urls = input.results
-    .slice(0, ARTICLE_READ_LIMIT)
-    .map((result) => normaliseUrl(result.url))
-    .filter((url): url is string => url !== null);
-
-  if (urls.length === 0) {
-    return [...input.results];
-  }
-
-  let contentByUrl = new Map<string, string>();
+  let contentByUrl: Map<string, string>;
 
   try {
-    const extracted = await extractContent({ urls }, { env: context.env, user, context });
-
-    if (extracted.status !== "error" && extracted.data) {
-      contentByUrl = new Map(
-        extracted.data.extracted.results.flatMap((page) =>
-          page.raw_content?.trim() ? [[page.url, page.raw_content] as const] : [],
-        ),
-      );
-    }
+    contentByUrl = await readPageContents(
+      context,
+      input.results.slice(0, ARTICLE_READ_LIMIT).map((result) => result.url),
+    );
   } catch (error) {
     logger.warn("Discover could not read the pages for a topic", {
       topic: input.topic,
@@ -113,7 +92,7 @@ export async function readDiscoverArticles(
   const read: DiscoverResearchResult[] = [];
 
   for (const result of input.results) {
-    const url = normaliseUrl(result.url);
+    const url = resolveHttpUrl(result.url);
     const content = url ? contentByUrl.get(url) : undefined;
 
     if (!url || !content) {

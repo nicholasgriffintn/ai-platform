@@ -2,8 +2,11 @@ import type {
   CreateDiscoverWindDown,
   DiscoverWindDown,
   DiscoverEpisode,
+  DiscoverEpisodeProgress,
+  DiscoverEpisodeViewerProgress,
   DiscoverFollow,
   DiscoverEdition,
+  DiscoverEditionTime,
   DiscoverFeedbackRequest,
   DiscoverFeedbackResponse,
   DiscoverListenResponse,
@@ -14,16 +17,20 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { API_BASE_URL } from "./constants.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { requestJson } from "./resource.js";
-import { getHeaders } from "./utils/headers.js";
+import { requestBlob, requestJson, withQuery } from "./resource.js";
 
 export function getDiscover(): Promise<DiscoverResponse> {
   return requestJson("/discover", "GET");
 }
 
-export function getDiscoverEdition(date: string): Promise<DiscoverEdition> {
-  return requestJson(`/discover/editions/${encodeURIComponent(date)}`, "GET");
+export function getDiscoverEdition(
+  date: string,
+  edition: DiscoverEditionTime = "morning",
+): Promise<DiscoverEdition> {
+  return requestJson(
+    withQuery(`/discover/editions/${encodeURIComponent(date)}`, { edition }),
+    "GET",
+  );
 }
 
 export function updateDiscoverSettings(input: UpdateDiscoverSettings): Promise<DiscoverSettings> {
@@ -40,13 +47,8 @@ export function sendDiscoverFeedback(
   return requestJson("/discover/feedback", "POST", input);
 }
 
-export async function getDiscoverCover(coverId: string): Promise<Blob> {
-  const response = await fetchApiOrThrow(`/discover/covers/${encodeURIComponent(coverId)}`, {
-    method: "GET",
-    headers: await getHeaders(),
-  });
-
-  return response.blob();
+export function getDiscoverCover(coverId: string): Promise<Blob> {
+  return requestBlob(`/discover/covers/${encodeURIComponent(coverId)}`);
 }
 
 export function followDiscoverTopic(topic: string): Promise<DiscoverFollow> {
@@ -83,9 +85,9 @@ export function getDiscoverEpisodeAudioUrl(episodeId: string, chapter: number): 
 
 export function recordDiscoverEpisodeProgress(
   episodeId: string,
-  fraction: number,
-): Promise<{ furthest: number }> {
-  return requestJson(episodePath(episodeId, "/progress"), "POST", { fraction });
+  progress: DiscoverEpisodeProgress,
+): Promise<DiscoverEpisodeViewerProgress> {
+  return requestJson(episodePath(episodeId, "/progress"), "POST", progress);
 }
 
 export function retryDiscoverEpisodeChapter(

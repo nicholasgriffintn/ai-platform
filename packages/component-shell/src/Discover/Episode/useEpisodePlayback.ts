@@ -1,23 +1,12 @@
-import type { DiscoverEpisode } from "@ngriffin_uk/polychat-schemas";
+import type { DiscoverEpisode, DiscoverEpisodeProgress } from "@ngriffin_uk/polychat-schemas";
 import { useMediaTrack } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect, useRef, useState } from "react";
 
-import { readEpisodeResume, writeEpisodeResume } from "./episode-resume.js";
-import { chapterSeconds } from "./episode-status.js";
-
-const PROGRESS_STEPS = 4;
-
-function watchedFraction(episode: DiscoverEpisode, chapterIndex: number, seconds: number): number {
-  const lengths = episode.chapters.map(chapterSeconds);
-  const total = lengths.reduce((sum, length) => sum + length, 0);
-  const before = lengths.slice(0, chapterIndex).reduce((sum, length) => sum + length, 0);
-
-  return total > 0 ? Math.min(1, (before + seconds) / total) : 0;
-}
+import { progressMark, watchedFraction } from "./episode-progress.js";
 
 export function useEpisodePlayback(
   episode: DiscoverEpisode | undefined,
-  onProgress?: (fraction: number) => void,
+  onProgress?: (progress: DiscoverEpisodeProgress) => void,
 ) {
   const [chapterIndex, setChapterIndex] = useState(0);
   const [wantsPlay, setWantsPlay] = useState(false);
@@ -41,7 +30,7 @@ export function useEpisodePlayback(
 
     resumedFor.current = episode.id;
 
-    const resume = readEpisodeResume(episode.id);
+    const resume = episode.progress.resume;
 
     if (resume && episode.chapters[resume.chapter]) {
       setChapterIndex(resume.chapter);
@@ -49,24 +38,23 @@ export function useEpisodePlayback(
     }
   }, [episode]);
 
-  useEffect(() => {
-    if (episode && track.currentTime > 0) {
-      writeEpisodeResume(episode.id, { chapter: chapterIndex, seconds: track.currentTime });
-    }
-  }, [chapterIndex, episode, track.currentTime]);
-
-  const progressStep =
-    episode && track.playing
-      ? Math.floor(watchedFraction(episode, chapterIndex, track.currentTime) * PROGRESS_STEPS)
-      : 0;
-  const reportedStep = useRef(0);
+  const mark =
+    episode && track.currentTime > 0
+      ? progressMark(chapterIndex, track.currentTime, track.playing)
+      : null;
+  const reportedMark = useRef<string | null>(null);
 
   useEffect(() => {
-    if (progressStep > reportedStep.current) {
-      reportedStep.current = progressStep;
-      onProgress?.(progressStep / PROGRESS_STEPS);
+    if (!episode || mark === null || mark === reportedMark.current) {
+      return;
     }
-  }, [onProgress, progressStep]);
+
+    reportedMark.current = mark;
+    onProgress?.({
+      fraction: watchedFraction(episode, chapterIndex, track.currentTime),
+      resume: { chapter: chapterIndex, seconds: track.currentTime },
+    });
+  }, [chapterIndex, episode, mark, onProgress, track.currentTime]);
 
   return {
     track,

@@ -11,10 +11,11 @@ import {
   discoverSeasonPlanDraftSchema,
   type DiscoverEpisode,
   type DiscoverEpisodeContent,
+  type DiscoverEpisodeProgress,
+  type DiscoverEpisodeViewerProgress,
   type DiscoverEpisodeResponse,
   type DiscoverSeasonContent,
 } from "@ngriffin_uk/polychat-schemas";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -25,12 +26,15 @@ import {
   discoverSeasonGroupId,
   episodeTarget,
   pickEpisodeTopic,
-  readEpisodeFurthest,
+  readEpisodeProgress,
   seasonNeedsReplacing,
 } from "~/modules/discover/domain/episodes";
 import { buildDiscoverListenMaterial } from "~/modules/discover/domain/listen";
+import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 import { requireNotebookAccess } from "~/modules/notebooks/application/access";
 import { resolveNotebookSources } from "~/modules/notebooks/application/notebooks";
+import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
   type OutputRecord,
@@ -38,33 +42,14 @@ import {
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 
 import { affordableEpisodeLength } from "./cost";
-import { enqueueDiscoverJob } from "./covers";
 import { requireDiscoverEdition, withEditionRun } from "./editions";
 import { publishDiscoverChanged } from "./events";
 import { fileDiscoverEpisode } from "./folders";
 import { listDiscoverFollows } from "./follows";
-import { generateDiscoverObject } from "./generate";
+import { enqueueDiscoverJob } from "./jobs";
 import { readDiscoverRoutine } from "./settings";
 
 const MATERIAL_LIMIT = 60_000;
-
-function readSeason(record: OutputRecord | null): DiscoverSeasonContent | null {
-  const parsed = discoverSeasonContentSchema.safeParse(
-    record ? safeParseJson(record.content) : null,
-  );
-
-  return parsed.success ? parsed.data : null;
-}
-
-export function readEpisodeRecord(record: OutputRecord | null): DiscoverEpisodeContent | null {
-  if (!record || record.kind !== DISCOVER_EPISODE_KIND) {
-    return null;
-  }
-
-  const parsed = discoverEpisodeContentSchema.safeParse(safeParseJson(record.content));
-
-  return parsed.success ? parsed.data : null;
-}
 
 async function gatherMaterial(
   context: ServiceContext,
@@ -96,13 +81,14 @@ async function ensureSeason(
   const outputs = context.repositories.get(OutputRepository);
   const groupId = discoverSeasonGroupId(topic);
   const existing = await outputs.getPersonalOutputByGroup(user.id, groupId, DISCOVER_SEASON_KIND);
-  const current = readSeason(existing);
+  const current = readOutputContent(existing, DISCOVER_SEASON_KIND, discoverSeasonContentSchema);
 
   if (existing && current && !seasonNeedsReplacing(current)) {
     return { id: existing.id, revision: existing.revision, season: current };
   }
 
-  const plan = await generateDiscoverObject(context, {
+  const plan = await generateTierObject(context, {
+    tier: DISCOVER_MODEL_TIER,
     name: "discover_season_plan",
     schema: discoverSeasonPlanDraftSchema,
     system: renderPrompt("discover/season/plan", {
@@ -214,7 +200,8 @@ async function scriptDiscoverEpisode(
   const season = await ensureSeason(context, topic, settings.style, material);
   const target = episodeTarget(length);
   const part = season.season.nextPart;
-  const script = await generateDiscoverObject(context, {
+  const script = await generateTierObject(context, {
+    tier: DISCOVER_MODEL_TIER,
     name: "discover_episode_outline",
     schema: discoverEpisodeOutlineDraftSchema,
     system: renderPrompt("discover/episode/outline", {
@@ -330,7 +317,7 @@ export async function requireDiscoverSeason(context: ServiceContext, seasonId: s
   const record = await context.repositories
     .get(OutputRepository)
     .getPersonalOutput(context.requireUser().id, seasonId);
-  const season = record?.kind === DISCOVER_SEASON_KIND ? readSeason(record) : null;
+  const season = readOutputContent(record, DISCOVER_SEASON_KIND, discoverSeasonContentSchema);
 
   if (!season) {
     throw new AssistantError("Season not found", ErrorType.NOT_FOUND, 404);
@@ -347,7 +334,7 @@ export async function requireDiscoverEpisode(
   const record = await context.repositories
     .get(OutputRepository)
     .getPersonalOutput(user.id, episodeId);
-  const content = readEpisodeRecord(record);
+  const content = readOutputContent(record, DISCOVER_EPISODE_KIND, discoverEpisodeContentSchema);
 
   if (!record || !content) {
     throw new AssistantError("Episode not found", ErrorType.NOT_FOUND, 404);
@@ -359,19 +346,20 @@ export async function requireDiscoverEpisode(
 export async function recordDiscoverEpisodeProgress(
   context: ServiceContext,
   episodeId: string,
-  fraction: number,
-): Promise<{ furthest: number }> {
+  progress: DiscoverEpisodeProgress,
+): Promise<DiscoverEpisodeViewerProgress> {
   const user = context.requireUser();
   const { record } = await requireDiscoverEpisode(context, episodeId);
   const outputs = context.repositories.get(OutputRepository);
-  const furthest = Math.max(
-    fraction,
-    readEpisodeFurthest(await outputs.readViewerState(record.id, user.id)),
-  );
+  const previous = readEpisodeProgress(await outputs.readViewerState(record.id, user.id));
+  const next: DiscoverEpisodeViewerProgress = {
+    furthest: Math.max(progress.fraction, previous.furthest),
+    resume: progress.resume ?? previous.resume,
+  };
 
-  await outputs.writeViewerState(record.id, user.id, { furthest });
+  await outputs.writeViewerState(record.id, user.id, next);
 
-  return { furthest };
+  return next;
 }
 
 export async function wasLatestEpisodeWatched(
@@ -385,7 +373,7 @@ export async function wasLatestEpisodeWatched(
   });
 
   return latest
-    ? readEpisodeFurthest(await outputs.readViewerState(latest.id, userId)) >=
+    ? readEpisodeProgress(await outputs.readViewerState(latest.id, userId)).furthest >=
         DISCOVER_EPISODE_WATCHED_FRACTION
     : false;
 }
@@ -394,7 +382,11 @@ export async function readDiscoverEpisode(
   context: ServiceContext,
   episodeId: string,
 ): Promise<DiscoverEpisode> {
+  const user = context.requireUser();
   const { record, content } = await requireDiscoverEpisode(context, episodeId);
+  const progress = readEpisodeProgress(
+    await context.repositories.get(OutputRepository).readViewerState(record.id, user.id),
+  );
 
-  return { ...content, id: record.id, createdAt: record.created_at };
+  return { ...content, id: record.id, createdAt: record.created_at, progress };
 }

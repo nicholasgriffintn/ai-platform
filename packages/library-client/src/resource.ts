@@ -78,6 +78,12 @@ export async function requestJson<TResult>(
   return JSON.parse(text || "null");
 }
 
+export async function requestBlob(path: string): Promise<Blob> {
+  const response = await fetchApiOrThrow(path, { method: "GET", headers: await getHeaders() });
+
+  return response.blob();
+}
+
 function itemPath(path: string, id: string): string {
   return `${path}/${encodeURIComponent(id)}`;
 }

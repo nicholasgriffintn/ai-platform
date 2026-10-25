@@ -23,9 +23,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getTierModel } from "~/modules/models/application/resolve";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 import { NOTEBOOK_MODEL_TIER } from "~/modules/notebooks/domain/notebook";
 import {
   DECK_LENGTH_GUIDANCE,
@@ -93,28 +92,6 @@ export const STUDIO_OUTPUT_SHAPES: Record<OutputStudioRequest["kind"], StudioOut
   },
 };
 
-async function generateStudioObject<TObject>(
-  context: ServiceContext,
-  params: { name: string; schema: z.ZodType<TObject>; system: string; material: string },
-): Promise<TObject> {
-  const user = context.requireUser();
-  const { model, provider, effort } = await getTierModel(context.env, user, NOTEBOOK_MODEL_TIER);
-  const { object } = await ai.generateObject({
-    env: context.env,
-    user,
-    model,
-    provider,
-    reasoning_effort: effort,
-    disable_functions: true,
-    name: params.name,
-    schema: params.schema,
-    system: params.system,
-    prompt: params.material,
-  });
-
-  return object;
-}
-
 export async function writeStudioDraft(
   context: ServiceContext,
   request: OutputStudioRequest,
@@ -124,7 +101,8 @@ export async function writeStudioDraft(
 
   switch (request.kind) {
     case "deck": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_deck",
         schema: z.object({ title: titleField, slides: deckOutputContentSchema.shape.slides }),
         system: renderPrompt("notebooks/studio/deck", {
@@ -139,7 +117,8 @@ export async function writeStudioDraft(
     }
 
     case "sheet": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_sheet",
         schema: z.object({ title: titleField, tables: sheetOutputContentSchema.shape.tables }),
         system: renderPrompt("notebooks/studio/sheet", shared),
@@ -150,7 +129,8 @@ export async function writeStudioDraft(
     }
 
     case "report": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_report",
         schema: z.object({
           title: titleField,
@@ -167,7 +147,8 @@ export async function writeStudioDraft(
     }
 
     case "mind_map": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_mind_map",
         schema: z.object({ title: titleField, root: mindMapOutputContentSchema.shape.root }),
         system: renderPrompt("notebooks/studio/mind-map", shared),
@@ -178,7 +159,8 @@ export async function writeStudioDraft(
     }
 
     case "flashcards": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_flashcards",
         schema: z.object({ title: titleField, cards: flashcardsOutputContentSchema.shape.cards }),
         system: renderPrompt("notebooks/studio/flashcards", {
@@ -193,7 +175,8 @@ export async function writeStudioDraft(
     }
 
     case "quiz": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_quiz",
         schema: z.object({ title: titleField, questions: quizOutputContentSchema.shape.questions }),
         system: renderPrompt("notebooks/studio/quiz", {
@@ -208,7 +191,8 @@ export async function writeStudioDraft(
     }
 
     case "video": {
-      const draft = await generateStudioObject(context, {
+      const draft = await generateTierObject(context, {
+        tier: NOTEBOOK_MODEL_TIER,
         name: "notebook_video",
         schema: z.object({
           title: titleField,
@@ -238,7 +222,8 @@ export async function writeInfographicPrompt(
   context: ServiceContext,
   params: { language: string; focus?: string; orientation: string; material: string },
 ): Promise<{ title: string; prompt: string }> {
-  return generateStudioObject(context, {
+  return generateTierObject(context, {
+    tier: NOTEBOOK_MODEL_TIER,
     name: "notebook_infographic",
     schema: z.object({
       title: titleField,

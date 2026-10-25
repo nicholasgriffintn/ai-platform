@@ -21,6 +21,7 @@ import {
   followDiscoverTopicSchema,
   discoverCoverParamsSchema,
   discoverEditionParamsSchema,
+  discoverEditionQuerySchema,
   discoverEditionSchema,
   discoverFeedbackRequestSchema,
   discoverFeedbackResponseSchema,
@@ -89,12 +90,13 @@ addRoute(app, "get", "/editions/:date", {
   summary: "Read a day's Discover edition",
   auth: true,
   paramSchema: discoverEditionParamsSchema,
+  querySchema: discoverEditionQuerySchema,
   responses: {
     200: { description: "The edition", schema: discoverEditionSchema },
     404: { description: "No edition that day", schema: errorResponseSchema },
   },
-  handler: async ({ serviceContext, params }) =>
-    readDiscoverEditionByDate(serviceContext, params.date),
+  handler: async ({ serviceContext, params, query }) =>
+    readDiscoverEditionByDate(serviceContext, params.date, query.edition),
 });
 
 addRoute(app, "get", "/covers/:cover_id", {
@@ -271,7 +273,7 @@ addRoute(app, "post", "/episodes/:episode_id/progress", {
     404: { description: "Not one of your episodes", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, params, body }) =>
-    recordDiscoverEpisodeProgress(serviceContext, params.episode_id, body.fraction),
+    recordDiscoverEpisodeProgress(serviceContext, params.episode_id, body),
 });
 
 addRoute(app, "get", "/episodes/:episode_id/chapters/:chapter/audio", {

@@ -7,8 +7,14 @@ enum AppTab: Hashable {
     case settings
 }
 
+enum DiscoverLink: Equatable {
+    case media(DiscoverMediaItem)
+    case card(String)
+}
+
 enum AppRoute: Equatable {
     case tab(AppTab)
+    case discover(DiscoverLink)
     case conversation(String)
     case poly
     case device(String)
@@ -36,6 +42,12 @@ enum AppRoute: Equatable {
                 .queryItems?.first { $0.name == "user_code" }?.value
             return code.map(AppRoute.device)
         case "discover", "home":
+            if segments.count == 3, segments[1] == "cards" {
+                return .discover(.card(segments[2]))
+            }
+            if segments.count == 2, let item = DiscoverMediaItem(slug: segments[1]) {
+                return .discover(.media(item))
+            }
             return .tab(.home)
         case "settings":
             return .tab(.settings)

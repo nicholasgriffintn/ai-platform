@@ -1,9 +1,9 @@
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it } from "vitest";
 
 import { approvalsInARow, recordApprovalOutcome } from "../earned-trust";
 
 const NOW = Date.parse("2026-10-10T12:00:00.000Z");
-const DAY_MS = 24 * 60 * 60 * 1000;
 const call = { toolName: "call_api", destination: "https://api.example.com" };
 
 function approve(streaks: ReturnType<typeof recordApprovalOutcome>, id: string, now = NOW) {

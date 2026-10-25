@@ -1,4 +1,5 @@
 import { DISCOVER_FRESH_HOURS } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 
 import { readDeviceActivitySource } from "./device-activity";
 
@@ -27,7 +28,7 @@ export function isDiscoverSignalCurrent(readAt: string | null, now: number): boo
   return (
     readAt !== null &&
     Number.isFinite(Date.parse(readAt)) &&
-    now - Date.parse(readAt) < DISCOVER_SIGNAL_CURRENT_DAYS * 24 * 60 * 60 * 1000
+    now - Date.parse(readAt) < DISCOVER_SIGNAL_CURRENT_DAYS * DAY_MS
   );
 }
 

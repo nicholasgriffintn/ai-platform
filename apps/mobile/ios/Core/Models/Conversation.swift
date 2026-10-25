@@ -15,6 +15,17 @@ struct Conversation: Identifiable, Equatable {
     var oldestMessageId: String? = nil
     var isTemporary: Bool = false
     var projectId: String? = nil
+    var subject: ConversationSubject? = nil
     var isPinned = false
     var isUnread = false
+}
+
+public struct ConversationSubject: Encodable, Equatable {
+    public let type: String
+    public let id: String
+
+    public init(type: String, id: String) {
+        self.type = type
+        self.id = id
+    }
 }

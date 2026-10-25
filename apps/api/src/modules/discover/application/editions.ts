@@ -4,9 +4,9 @@ import {
   discoverEditionContentSchema,
   type DiscoverEdition,
   type DiscoverEditionContent,
+  type DiscoverEditionTime,
   type DiscoverResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
@@ -15,6 +15,7 @@ import {
 } from "~/infrastructure/context/serviceContext";
 import { discoverEditionGroupId } from "~/modules/discover/domain/edition";
 import { collectCardSignals } from "~/modules/discover/domain/feedback";
+import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
   type OutputRecord,
@@ -33,13 +34,11 @@ export interface StoredDiscoverEdition {
 }
 
 function readStoredEdition(record: OutputRecord | null): StoredDiscoverEdition | null {
-  if (!record || record.kind !== DISCOVER_EDITION_KIND || record.project_id !== null) {
-    return null;
-  }
+  const content = readOutputContent(record, DISCOVER_EDITION_KIND, discoverEditionContentSchema);
 
-  const parsed = discoverEditionContentSchema.safeParse(safeParseJson(record.content));
-
-  return parsed.success ? { id: record.id, revision: record.revision, content: parsed.data } : null;
+  return record && content && record.project_id === null
+    ? { id: record.id, revision: record.revision, content }
+    : null;
 }
 
 export async function listRecentDiscoverEditions(
@@ -97,11 +96,13 @@ async function presentEdition(
   return { ...edition.content, id: edition.id, feedback };
 }
 
+const EDITION_HISTORY_LIMIT = 14;
+
 export async function readDiscover(context: ServiceContext): Promise<DiscoverResponse> {
   const user = context.requireUser();
-  const [settings, [latest], follows, windDownId] = await Promise.all([
+  const [settings, recent, follows, windDownId] = await Promise.all([
     readDiscoverSettings(context),
-    listRecentDiscoverEditions(context, user.id, 1),
+    listRecentDiscoverEditions(context, user.id, EDITION_HISTORY_LIMIT),
     listDiscoverFollows(context, user.id),
     latestDiscoverWindDownId(context, user.id),
   ]);
@@ -110,19 +111,25 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
     settings,
     follows,
     windDownId,
-    edition: await presentEdition(context, user.id, latest ?? null),
+    edition: await presentEdition(context, user.id, recent[0] ?? null),
+    editions: recent.map((edition) => ({
+      id: edition.id,
+      date: edition.content.date,
+      edition: edition.content.edition ?? "morning",
+    })),
   };
 }
 
 export async function readDiscoverEditionByDate(
   context: ServiceContext,
   date: string,
+  time: DiscoverEditionTime,
 ): Promise<DiscoverEdition> {
   const user = context.requireUser();
   const edition = readStoredEdition(
     await context.repositories
       .get(OutputRepository)
-      .getPersonalOutputByGroup(user.id, discoverEditionGroupId(date), DISCOVER_EDITION_KIND),
+      .getPersonalOutputByGroup(user.id, discoverEditionGroupId(date, time), DISCOVER_EDITION_KIND),
   );
   const presented = await presentEdition(context, user.id, edition);
 

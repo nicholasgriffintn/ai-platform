@@ -1,4 +1,5 @@
 import type { DiscoverFeedbackSignal } from "@ngriffin_uk/polychat-schemas";
+import { sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { discoverTopicKey } from "./edition";
 
@@ -21,8 +22,8 @@ export interface DiscoverFeedbackSummary {
 
 const PREFERENCE_SIGNALS = new Set<DiscoverFeedbackSignal>(["more", "less", "hide"]);
 
-function oldestFirst(entries: readonly DiscoverFeedbackEntry[]): DiscoverFeedbackEntry[] {
-  return [...entries].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+function byCreatedAt(left: DiscoverFeedbackEntry, right: DiscoverFeedbackEntry): number {
+  return left.createdAt.localeCompare(right.createdAt);
 }
 
 export function summariseDiscoverFeedback(
@@ -31,7 +32,7 @@ export function summariseDiscoverFeedback(
   const preferences = new Map<string, { topic: string; signal: DiscoverFeedbackSignal }>();
   const saved = new Map<string, { title: string; url: string | null }>();
 
-  for (const entry of oldestFirst(entries)) {
+  for (const entry of sortCopy(entries, byCreatedAt)) {
     if (entry.signal === "saved") {
       saved.set(`${entry.editionId}:${entry.cardId}`, { title: entry.title, url: entry.url });
       continue;
@@ -61,7 +62,7 @@ export function collectCardSignals(
 ): Record<string, DiscoverFeedbackSignal[]> {
   const signals: Record<string, DiscoverFeedbackSignal[]> = {};
 
-  for (const entry of oldestFirst(entries)) {
+  for (const entry of sortCopy(entries, byCreatedAt)) {
     if (entry.editionId !== editionId) {
       continue;
     }

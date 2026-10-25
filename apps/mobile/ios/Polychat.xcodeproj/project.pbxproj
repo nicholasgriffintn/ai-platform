@@ -235,14 +235,14 @@
 			path = PolychatTopShelf;
 			sourceTree = "<group>";
 		};
-		7A2FFFFF2F00000000000001 /* WidgetShared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = WidgetShared;
-			sourceTree = "<group>";
-		};
 		7A2FFFFE2F00000000000001 /* Companion */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Companion;
+			sourceTree = "<group>";
+		};
+		7A2FFFFF2F00000000000001 /* WidgetShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = WidgetShared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -462,9 +462,9 @@
 			fileSystemSynchronizedGroups = (
 				7A1100032F00000000000001 /* Shared */,
 				7A2000012F00000000000001 /* Core */,
+				7A2000022F00000000000001 /* Media */,
 				7A2000032F00000000000001 /* PolychatWatch */,
 				7A2FFFFE2F00000000000001 /* Companion */,
-				7A2000022F00000000000001 /* Media */,
 			);
 			name = PolychatWatch;
 			packageProductDependencies = (

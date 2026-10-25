@@ -4,6 +4,7 @@ import {
   DISCOVER_LINK_METADATA_KEY,
   DISCOVER_RESEARCH_DAYS_KEPT,
 } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -81,7 +82,7 @@ export async function tidyDiscover(
   const notebook = await findDiscoverNotebook(context, user.id);
 
   if (notebook) {
-    const cutoff = now - DISCOVER_RESEARCH_DAYS_KEPT * 24 * 60 * 60 * 1000;
+    const cutoff = now - DISCOVER_RESEARCH_DAYS_KEPT * DAY_MS;
     const articles = (await sources.listCollectionSources(notebook.id)).filter((source) => {
       const metadata = parseJsonRecord(source.metadata);
       const readAt = typeof metadata.readAt === "string" ? Date.parse(metadata.readAt) : Number.NaN;

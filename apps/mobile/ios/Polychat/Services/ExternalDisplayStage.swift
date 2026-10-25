@@ -9,10 +9,4 @@ final class ExternalDisplayStage: ObservableObject {
     func present(_ controller: EpisodePlaybackController) {
         episode = controller
     }
-
-    func dismiss(_ controller: EpisodePlaybackController) {
-        if episode === controller {
-            episode = nil
-        }
-    }
 }

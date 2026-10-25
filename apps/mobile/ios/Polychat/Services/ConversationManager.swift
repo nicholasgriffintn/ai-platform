@@ -539,7 +539,7 @@ class ConversationManager: ObservableObject {
         }
     }
 
-    func startNewConversation(projectId: String? = nil) -> Conversation {
+    func startNewConversation(projectId: String? = nil, subject: ConversationSubject? = nil) -> Conversation {
         var newConversation = Conversation(
             id: UUID().uuidString,
             title: "New Conversation",
@@ -550,6 +550,7 @@ class ConversationManager: ObservableObject {
             messageCount: 0
         )
         newConversation.projectId = projectId
+        newConversation.subject = subject
         currentTaskInteraction = nil
         currentTaskActivity = nil
         currentConnectorApproval = nil
@@ -748,7 +749,8 @@ class ConversationManager: ObservableObject {
                     modelTier: requestedModelTier,
                     computeSite: computeSite,
                     agentTeammateId: teammateIdsByConversation[conversationId],
-                    projectId: conversation.projectId
+                    projectId: conversation.projectId,
+                    subject: conversation.subject
                 )
             case .connectorApproval(let approvalId):
                 stream = apiClient.streamApprovedConnectorOperation(

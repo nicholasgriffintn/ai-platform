@@ -39,13 +39,15 @@ import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
 } from "~/modules/discover/domain/research";
+import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
-import { findNewsResults, findWebResults } from "~/modules/notebooks/application/research";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
+import { findNewsResults, findWebResults } from "~/modules/search/application/results";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
@@ -53,7 +55,6 @@ import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
 import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
-import { generateDiscoverObject } from "./generate";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -318,7 +319,8 @@ async function inferDiscoverInterests(
   const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
 
   try {
-    const { interests } = await generateDiscoverObject(context, {
+    const { interests } = await generateTierObject(context, {
+      tier: DISCOVER_MODEL_TIER,
       name: "discover_interests",
       schema: discoverInterestInferenceSchema,
       system: renderPrompt("discover/interests"),

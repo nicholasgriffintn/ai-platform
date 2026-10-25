@@ -1,5 +1,5 @@
 import { Button, Checkbox, FormSelect } from "@ngriffin_uk/polychat-component-ui";
-import type { useNotebookActions } from "@ngriffin_uk/polychat-library-react";
+import type { NotebookActions } from "@ngriffin_uk/polychat-library-react";
 import type { NotebookResearchDepth, NotebookResearchResult } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, toggleSetMember } from "@ngriffin_uk/polychat-utility-core";
 import { Globe, LoaderCircle, Send, X } from "lucide-react";
@@ -11,11 +11,7 @@ const DEPTH_OPTIONS = [
   { value: "deep", label: "Deep research" },
 ] as const;
 
-export function NotebookResearchBox({
-  actions,
-}: {
-  actions: ReturnType<typeof useNotebookActions>;
-}) {
+export function NotebookResearchBox({ actions }: { actions: NotebookActions }) {
   const [query, setQuery] = useState("");
   const [depth, setDepth] = useState<NotebookResearchDepth>("fast");
   const [results, setResults] = useState<NotebookResearchResult[] | null>(null);

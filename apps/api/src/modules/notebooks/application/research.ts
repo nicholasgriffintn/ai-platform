@@ -3,93 +3,23 @@ import type {
   ImportNotebookResearchInput,
   NotebookDetail,
   NotebookResearchResponse,
-  NotebookResearchResult,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  markdownToPlainText,
-  publishedCalendarDate,
-  readUrlHost,
-  truncateForModel,
-  truncateSingleLine,
-} from "@ngriffin_uk/polychat-utility-core";
+import { resolveHttpUrl, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { runResearchReport } from "~/modules/research/application/report";
-import { handleWebSearch } from "~/modules/search/application/web";
+import { findWebResults } from "~/modules/search/application/results";
 import { createSource, toSourceSummary, updateSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
-import { extractContent } from "~/modules/tools/application/retrieval/content-extract";
+import { readPageContents } from "~/modules/tools/application/retrieval/page-contents";
 
 import { requireNotebookAccess } from "./access";
 import { enqueueNotebookJob } from "./jobs";
 import { getNotebookDetail } from "./notebooks";
 
 const logger = getLogger({ prefix: "notebooks/research" });
-const FAST_RESEARCH_LIMIT = 10;
 const MAX_SOURCE_CHARACTERS = 400_000;
-
-export async function findWebResults(
-  context: ServiceContext,
-  query: string,
-): Promise<NotebookResearchResult[]> {
-  const response = await handleWebSearch({ env: context.env, user: context.requireUser(), query });
-  const seen = new Set<string>();
-  const results: NotebookResearchResult[] = [];
-
-  for (const source of response.data.sources) {
-    if (!source.url || seen.has(source.url)) {
-      continue;
-    }
-
-    seen.add(source.url);
-    results.push({
-      title: (source.title || source.url).slice(0, 200),
-      url: source.url,
-      snippet: truncateSingleLine(markdownToPlainText(source.content), 1_000),
-    });
-  }
-
-  return results.slice(0, FAST_RESEARCH_LIMIT);
-}
-
-export interface NewsResult extends NotebookResearchResult {
-  source: string;
-  date: string;
-}
-
-export async function findNewsResults(
-  context: ServiceContext,
-  query: string,
-  days: number,
-  now = Date.now(),
-): Promise<NewsResult[]> {
-  const response = await handleWebSearch({
-    env: context.env,
-    user: context.requireUser(),
-    query,
-    options: { topic: "news", days, max_results: FAST_RESEARCH_LIMIT },
-  });
-  const seen = new Set<string>();
-  const results: NewsResult[] = [];
-
-  for (const source of response.data.sources) {
-    if (!source.url || seen.has(source.url)) {
-      continue;
-    }
-
-    seen.add(source.url);
-    results.push({
-      title: (source.title || source.url).slice(0, 200),
-      url: source.url,
-      snippet: truncateSingleLine(markdownToPlainText(source.content), 1_000),
-      source: (source.publisher || readUrlHost(source.url)).slice(0, 80),
-      date: publishedCalendarDate(source.publishedDate, now),
-    });
-  }
-
-  return results.slice(0, FAST_RESEARCH_LIMIT);
-}
 
 export async function researchForNotebook(
   context: ServiceContext,
@@ -129,26 +59,15 @@ async function createWebSources(
   metadata: Record<string, unknown>,
 ): Promise<string[]> {
   const user = context.requireUser();
-  const extracted = await extractContent(
-    { urls: results.map((result) => result.url) },
-    { env: context.env, user, context },
-  );
-
-  if (extracted.status === "error" || !extracted.data) {
-    throw new AssistantError(
-      extracted.error ?? "Those pages could not be read",
-      ErrorType.PROVIDER_ERROR,
-      502,
-    );
-  }
-
-  const contentByUrl = new Map(
-    extracted.data.extracted.results.map((page) => [page.url, page.raw_content]),
+  const contentByUrl = await readPageContents(
+    context,
+    results.map((result) => result.url),
   );
   const sourceIds: string[] = [];
 
   for (const result of results) {
-    const content = contentByUrl.get(new URL(result.url).toString());
+    const url = resolveHttpUrl(result.url);
+    const content = url ? contentByUrl.get(url) : undefined;
 
     if (!content?.trim()) {
       continue;

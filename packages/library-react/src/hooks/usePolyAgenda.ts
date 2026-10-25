@@ -4,6 +4,7 @@ import type {
   TeammateAutonomyLevel,
   TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { liveOrPoll } from "../sync/live-or-poll.js";
@@ -94,7 +95,7 @@ export function useSetPolyLookAround() {
     mutationFn: (enabled: boolean) =>
       apiService.setPolyLookAround({
         enabled,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: readLocalTimeZone(),
       }),
     onSuccess: (lookAround) => {
       queryClient.setQueryData<PolyAgenda>(POLY_AGENDA_QUERY_KEY, (current) =>

@@ -1,5 +1,11 @@
 import { readOptionalString } from "./objects.js";
 
+export const DAY_MS = 86_400_000;
+
+export function isoDaysBefore(now: Date, days: number): string {
+  return new Date(now.getTime() - days * DAY_MS).toISOString();
+}
+
 export function formatDate(dateString: string): string {
   if (!dateString) {
     return "N/A";
@@ -135,8 +141,8 @@ const RELATIVE_AGE = /^(\d+)\s+(minute|hour|day|week)s?\s+ago$/iu;
 const RELATIVE_UNIT_MS = new Map([
   ["minute", 60_000],
   ["hour", 3_600_000],
-  ["day", 86_400_000],
-  ["week", 604_800_000],
+  ["day", DAY_MS],
+  ["week", 7 * DAY_MS],
 ]);
 
 export function publishedCalendarDate(value: string | undefined, now = Date.now()): string {
@@ -172,6 +178,14 @@ export interface ZonedInstant {
   time: string;
   weekday: string;
   utcOffset: string;
+}
+
+export function readLocalTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function isValidTimeZone(timeZone: string): boolean {
@@ -252,7 +266,7 @@ export function isoWeekKey(calendarDate: string): string {
   date.setUTCDate(date.getUTCDate() + 4 - day);
 
   const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
-  const week = Math.ceil(((date.getTime() - yearStart) / 86_400_000 + 1) / 7);
+  const week = Math.ceil(((date.getTime() - yearStart) / DAY_MS + 1) / 7);
 
   return `${date.getUTCFullYear()}-w${String(week).padStart(2, "0")}`;
 }

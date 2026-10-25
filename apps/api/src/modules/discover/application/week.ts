@@ -1,10 +1,11 @@
-import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
+import { MessageFormatter } from "@ngriffin_uk/polychat-ai-providers";
 import {
   DISCOVER_CAPABILITY_ID,
   DISCOVER_EPISODES_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   collectStrings,
+  DAY_MS,
   humaniseIdentifier,
   parseTimestamp,
   truncateSingleLine,
@@ -12,6 +13,7 @@ import {
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import {
@@ -27,11 +29,10 @@ import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
-import { enqueueDiscoverJob } from "./covers";
 import { requireDiscoverEdition, withEditionRun } from "./editions";
 import { publishDiscoverChanged } from "./events";
+import { enqueueDiscoverJob } from "./jobs";
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const OUTPUT_SCAN_LIMIT = 100;
 const CHAT_SCAN_LIMIT = 40;
 const HIDDEN_CAPABILITIES = new Set([DISCOVER_CAPABILITY_ID, DISCOVER_EPISODES_CAPABILITY_ID]);
@@ -43,13 +44,7 @@ const CHAT_ASK_CHARACTERS = 200;
 const CHAT_ANSWER_CHARACTERS = 500;
 
 function messageText(row: Record<string, unknown>): string {
-  const content = row.content;
-  const parts = row.parts;
-
-  return getMessageTextContent({
-    content: typeof content === "string" ? content : (safeParseJson(String(content ?? "")) ?? ""),
-    parts: Array.isArray(parts) ? parts : (safeParseJson(String(parts ?? "")) ?? undefined),
-  } as Parameters<typeof getMessageTextContent>[0]);
+  return MessageFormatter.stringifyMessageContent(formatStoredMessage(row).content).trim();
 }
 
 async function describeChat(
@@ -151,7 +146,7 @@ export async function produceYourWeek(
     }
   }
 
-  const material = await gatherWeek(context, user.id, now - WEEK_MS);
+  const material = await gatherWeek(context, user.id, now - 7 * DAY_MS);
 
   if (!material) {
     return null;

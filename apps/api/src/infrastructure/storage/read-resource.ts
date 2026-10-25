@@ -144,3 +144,28 @@ export async function getPrivateFileResponse(
     },
   });
 }
+
+export interface PrivateObjectFile {
+  filename: string;
+  mimeType: string;
+  notFound?: string;
+}
+
+export async function getPrivateObjectResponse(
+  context: ServiceContext,
+  key: string,
+  file: PrivateObjectFile,
+  rangeHeader?: string | null,
+): Promise<Response> {
+  const object = await StorageService.forPrivateAssets(context).getObjectBody(key);
+
+  if (!object) {
+    throw new AssistantError(file.notFound ?? "Not ready yet", ErrorType.NOT_FOUND, 404);
+  }
+
+  return getPrivateFileResponse(
+    { mime_type: object.httpMetadata?.contentType ?? file.mimeType, filename: file.filename },
+    object,
+    rangeHeader,
+  );
+}

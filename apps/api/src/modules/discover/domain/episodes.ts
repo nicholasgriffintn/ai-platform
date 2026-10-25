@@ -1,11 +1,13 @@
 import {
   DISCOVER_EPISODE_MINUTES,
   DISCOVER_SEASON_PARTS,
+  discoverEpisodeViewerProgressSchema,
   type DiscoverEditionContent,
   type DiscoverEpisodeChapter,
   type DiscoverEpisodeContent,
   type DiscoverEpisodeLength,
   type DiscoverEpisodeOutlineDraft,
+  type DiscoverEpisodeViewerProgress,
   type DiscoverFollow,
   type DiscoverSeasonContent,
 } from "@ngriffin_uk/polychat-schemas";
@@ -102,10 +104,10 @@ export function episodeStudyGroupId(episodeId: string, kind: string): string {
   return `discover-episode-study:${episodeId}:${kind}`;
 }
 
-export function readEpisodeFurthest(viewerState: string | null): number {
-  const parsed = safeParseJson<{ furthest?: unknown }>(viewerState);
-
-  return typeof parsed?.furthest === "number" ? parsed.furthest : 0;
+export function readEpisodeProgress(viewerState: string | null): DiscoverEpisodeViewerProgress {
+  return discoverEpisodeViewerProgressSchema
+    .catch({ furthest: 0, resume: null })
+    .parse(safeParseJson(viewerState) ?? {});
 }
 
 export function chapterAudioKey(episodeId: string, chapter: number): string {

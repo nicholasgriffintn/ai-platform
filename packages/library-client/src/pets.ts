@@ -6,8 +6,7 @@ import type {
   UserPetsPage,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { requestJson, resource } from "./resource.js";
+import { requestBlob, requestJson, resource } from "./resource.js";
 
 const pets = resource<UserPet>("/pets");
 
@@ -52,10 +51,8 @@ export function importUserPet(url: string): Promise<UserPet> {
   return pets.collectionAction<UserPet>("import", { url });
 }
 
-export async function fetchUserPetSheet(petId: string): Promise<Blob> {
-  const response = await fetchApiOrThrow(`${pets.path}/${encodeURIComponent(petId)}/sheet`);
-
-  return response.blob();
+export function fetchUserPetSheet(petId: string): Promise<Blob> {
+  return requestBlob(`${pets.path}/${encodeURIComponent(petId)}/sheet`);
 }
 
 export function deleteUserPet(petId: string): Promise<void> {

@@ -19,6 +19,7 @@ import {
 import type {
   CreateDiscoverWindDown,
   DiscoverEpisode,
+  DiscoverEpisodeProgress,
   DiscoverFeedbackRequest,
   DiscoverResponse,
   DiscoverWindDown,
@@ -201,7 +202,8 @@ export function useDiscoverEpisode(episodeId: string | undefined) {
 
 export function useRecordDiscoverEpisodeProgress(episodeId: string) {
   return useMutation({
-    mutationFn: (fraction: number) => recordDiscoverEpisodeProgress(episodeId, fraction),
+    mutationFn: (progress: DiscoverEpisodeProgress) =>
+      recordDiscoverEpisodeProgress(episodeId, progress),
   });
 }
 

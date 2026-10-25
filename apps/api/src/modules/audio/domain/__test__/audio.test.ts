@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { joinAudioSegments, mp3DurationSeconds, splitForSpeech, stripId3Tag } from "../audio";
+import { joinAudioSegments, mp3DurationSeconds, stripId3Tag } from "../mp3";
+import { splitForSpeech } from "../speech-text";
 
 function mp3Frames(count: number): Uint8Array {
   const bytes = new Uint8Array(417 * count);

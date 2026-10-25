@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 final class DiscoverStore: ObservableObject {
     @Published private(set) var discover: DiscoverResponse?
+    @Published private(set) var viewedEdition: DiscoverEdition?
     @Published private(set) var covers: [String: UIImage] = [:]
     @Published private(set) var isLoading = false
     @Published private(set) var isWriting = false
@@ -32,6 +33,11 @@ final class DiscoverStore: ObservableObject {
             if discover?.edition != nil {
                 isWriting = false
             }
+            if let viewed = viewedEdition, let summary = discover?.editions.first(where: { $0.id == viewed.id }) {
+                viewedEdition = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+            } else {
+                viewedEdition = nil
+            }
             error = nil
             await loadCovers()
             await loadMedia()
@@ -44,8 +50,49 @@ final class DiscoverStore: ObservableObject {
         }
     }
 
+    var edition: DiscoverEdition? {
+        viewedEdition ?? discover?.edition
+    }
+
+    var isViewingLatest: Bool {
+        viewedEdition == nil
+    }
+
+    func view(_ summary: DiscoverEditionSummary) async {
+        guard summary.id != edition?.id else { return }
+        if summary.id == discover?.edition?.id {
+            viewedEdition = nil
+        } else {
+            do {
+                viewedEdition = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+            } catch {
+                self.error = "That edition could not be opened: \(error.localizedDescription)"
+                return
+            }
+        }
+        await loadCovers()
+        await loadMedia()
+    }
+
+    func follows(_ topic: String) -> DiscoverFollow? {
+        discover?.follows.first { $0.topic.caseInsensitiveCompare(topic) == .orderedSame }
+    }
+
+    func toggleFollow(_ topic: String) async {
+        do {
+            if let follow = follows(topic) {
+                try await apiClient.unfollowDiscoverTopic(notebookId: follow.notebookId)
+            } else {
+                _ = try await apiClient.followDiscoverTopic(topic)
+            }
+            await refresh()
+        } catch {
+            self.error = "That follow did not save: \(error.localizedDescription)"
+        }
+    }
+
     var visibleMedia: [DiscoverMediaItem] {
-        guard let discover, let edition = discover.edition else { return [] }
+        guard let discover, let edition else { return [] }
         return DiscoverMediaItem.allCases.filter { item in
             switch item {
             case .episode: return discover.settings.episode != "off" || edition.episodeId != nil
@@ -56,11 +103,13 @@ final class DiscoverStore: ObservableObject {
     }
 
     var isEveningEdition: Bool {
-        discover?.edition?.edition == "evening"
+        edition?.edition == "evening"
     }
 
     var editionEyebrow: String {
-        (isEveningEdition ? "Evening edition · " : "") + Date().formatted(.dateTime.weekday(.wide).day().month(.wide))
+        let summary = edition.flatMap { current in discover?.editions.first { $0.id == current.id } }
+        let day = summary?.day ?? Date()
+        return (isEveningEdition ? "Evening edition · " : "") + day.formatted(.dateTime.weekday(.wide).day().month(.wide))
     }
 
     func setPreference(_ request: DiscoverSettingsRequest) async {
@@ -73,7 +122,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     func loadMedia() async {
-        guard let discover, let edition = discover.edition else {
+        guard let discover, let edition else {
             media = [:]
             mediaArt = [:]
             return
@@ -140,6 +189,7 @@ final class DiscoverStore: ObservableObject {
 
     func reset() {
         discover = nil
+        viewedEdition = nil
         media = [:]
         mediaArt = [:]
         covers = [:]
@@ -179,7 +229,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     func send(_ signal: String, for card: DiscoverCard) async {
-        guard let edition = discover?.edition else { return }
+        guard let edition else { return }
 
         do {
             _ = try await apiClient.sendDiscoverFeedback(
@@ -192,11 +242,11 @@ final class DiscoverStore: ObservableObject {
     }
 
     func signals(for card: DiscoverCard) -> [String] {
-        discover?.edition?.feedback[card.id] ?? []
+        edition?.feedback[card.id] ?? []
     }
 
     func cards(in section: DiscoverSection) -> [DiscoverCard] {
-        (discover?.edition?.cards ?? []).filter { $0.section == section && !signals(for: $0).contains("hide") }
+        (edition?.cards ?? []).filter { $0.section == section && !signals(for: $0).contains("hide") }
     }
 
     private static let refreshMessages = [
@@ -206,7 +256,7 @@ final class DiscoverStore: ObservableObject {
     ]
 
     private func loadCovers() async {
-        let coverIds = (discover?.edition?.cards ?? []).compactMap(\.coverId)
+        let coverIds = (edition?.cards ?? []).compactMap(\.coverId)
 
         for coverId in coverIds where covers[coverId] == nil {
             if let data = try? await apiClient.fetchDiscoverCover(coverId: coverId),

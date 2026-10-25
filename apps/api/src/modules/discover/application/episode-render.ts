@@ -15,10 +15,8 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
-import { getPrivateFileResponse } from "~/infrastructure/storage/read-resource";
-import { synthesiseSpeech } from "~/modules/audio/application/speech";
-import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
-import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
+import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
+import { narratePassages } from "~/modules/audio/application/narration";
 import {
   chapterAudioKey,
   chapterWordTarget,
@@ -27,22 +25,16 @@ import {
   shotImageKey,
   wordsForMinutes,
 } from "~/modules/discover/domain/episodes";
-import { generateStudioImage } from "~/modules/notebooks/application/studio/images";
-import { timeScenes } from "~/modules/notebooks/application/studio/video";
+import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
+import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 import { VIDEO_STYLE_PROMPTS } from "~/modules/notebooks/domain/studio-guidance";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import {
-  estimateSpokenSeconds,
-  joinAudioSegments,
-  splitForSpeech,
-} from "~/modules/sources/application/podcasts/audio";
-import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
-import { enqueueDiscoverJob } from "./covers";
 import { requireDiscoverEdition, withEditionRun } from "./editions";
 import { loadEpisodeMaterial, requireDiscoverEpisode, requireDiscoverSeason } from "./episodes";
 import { publishDiscoverChanged } from "./events";
-import { generateDiscoverObject } from "./generate";
+import { enqueueDiscoverJob } from "./jobs";
 
 const logger = getLogger({ prefix: "discover/episodes" });
 const SHOT_CONCURRENCY = 3;
@@ -59,67 +51,17 @@ interface ShotJob {
   shot: number;
 }
 
-async function illustrate(context: ServiceContext, style: string, job: ShotJob): Promise<boolean> {
-  const storage = StorageService.forPrivateAssets(context);
-
-  if (await storage.headObject(job.key)) {
-    return true;
-  }
-
-  try {
-    const image = await generateStudioImage(context, {
-      completionId: job.key.replaceAll("/", "-"),
-      prompt: `${style}. ${job.visual}. No text, letters, numbers or logos anywhere in the picture.`,
-      aspectRatio: "16:9",
-      width: SHOT_WIDTH,
-      height: SHOT_HEIGHT,
-    });
-
-    if (!image) {
-      return false;
-    }
-
-    await storage.uploadObject(job.key, await image.arrayBuffer(), {
-      httpMetadata: { contentType: image.type || "image/png" },
-    });
-
-    return true;
-  } catch (error) {
-    logger.warn("Episode shot failed", { key: job.key, error_message: getErrorMessage(error) });
-
-    return false;
-  }
-}
-
 async function narrateChapter(
   context: ServiceContext,
   episodeId: string,
   chapterIndex: number,
   chapter: DiscoverEpisodeChapter,
 ) {
-  const user = context.requireUser();
-  const settings = await new UserSettingsRepository(context.env).getUserSettings(user.id);
-  const segments = await renderWithSpeechVoices(
-    async () => ({
-      narrator: await resolveSpeechVoice(context.env, user, { role: "narrator", settings }),
-    }),
-    async ({ narrator }) => {
-      const rendered: Uint8Array[] = [];
-
-      for (const scene of chapter.scenes) {
-        const pieces: Uint8Array[] = [];
-
-        for (const text of splitForSpeech(scene.narration)) {
-          pieces.push(await synthesiseSpeech(context, narrator, text, "en"));
-        }
-
-        rendered.push(joinAudioSegments(pieces));
-      }
-
-      return rendered;
-    },
+  const { audio, timings } = await narratePassages(
+    context,
+    chapter.scenes.map((scene) => scene.narration),
+    { language: "en" },
   );
-  const audio = joinAudioSegments(segments);
 
   await StorageService.forPrivateAssets(context).uploadObject(
     chapterAudioKey(episodeId, chapterIndex),
@@ -127,12 +69,7 @@ async function narrateChapter(
     { httpMetadata: { contentType: "audio/mpeg" } },
   );
 
-  return timeScenes(
-    segments.map((segment) => segment.byteLength),
-    estimateSpokenSeconds(
-      chapter.scenes.map((scene) => ({ speaker: "host" as const, text: scene.narration })),
-    ),
-  );
+  return timings;
 }
 
 async function saveChapter(
@@ -196,7 +133,8 @@ async function scriptChapter(
     words: String(chapterWordTarget(wordsForMinutes(content.minutes), content.chapters.length)),
     plan: describeSeasonPlan(season),
   });
-  let draft = await generateDiscoverObject(context, {
+  let draft = await generateTierObject(context, {
+    tier: DISCOVER_MODEL_TIER,
     name: "discover_episode_chapter",
     schema: discoverChapterScriptDraftSchema,
     system,
@@ -204,7 +142,8 @@ async function scriptChapter(
   });
 
   for (let attempt = 0; attempt < GROUNDING_REWRITES; attempt += 1) {
-    const check = await generateDiscoverObject(context, {
+    const check = await generateTierObject(context, {
+      tier: DISCOVER_MODEL_TIER,
       name: "discover_episode_check",
       schema: discoverChapterCheckSchema,
       system: renderPrompt("discover/episode/check"),
@@ -217,7 +156,8 @@ async function scriptChapter(
       break;
     }
 
-    draft = await generateDiscoverObject(context, {
+    draft = await generateTierObject(context, {
+      tier: DISCOVER_MODEL_TIER,
       name: "discover_episode_chapter",
       schema: discoverChapterScriptDraftSchema,
       system: `${system}\n\nAn earlier draft made claims the material does not support. Leave these out or say plainly that the material does not cover them:\n${check.unsupported
@@ -302,7 +242,15 @@ export async function renderEpisodeChapter(
     for (let start = 0; start < jobs.length; start += SHOT_BATCH) {
       const batch = jobs.slice(start, start + SHOT_BATCH);
       const drawn = await mapWithConcurrency(batch, SHOT_CONCURRENCY, async (job) =>
-        (await illustrate(context, style, job)) ? `${job.scene}:${job.shot}` : null,
+        (await storeDrawnImage(context, job.key, {
+          completionId: job.key.replaceAll("/", "-"),
+          prompt: `${style}. ${job.visual}. ${TEXTLESS_PICTURE}`,
+          aspectRatio: "16:9",
+          width: SHOT_WIDTH,
+          height: SHOT_HEIGHT,
+        }))
+          ? `${job.scene}:${job.shot}`
+          : null,
       );
       const ready = new Set(drawn.filter((key): key is string => key !== null));
 
@@ -363,26 +311,6 @@ export async function retryEpisodeChapter(
   return { queued: true };
 }
 
-async function readEpisodeFile(
-  context: ServiceContext,
-  key: string,
-  filename: string,
-  fallbackType: string,
-  rangeHeader?: string | null,
-): Promise<Response> {
-  const object = await StorageService.forPrivateAssets(context).getObjectBody(key);
-
-  if (!object) {
-    throw new AssistantError("Not ready yet", ErrorType.NOT_FOUND, 404);
-  }
-
-  return getPrivateFileResponse(
-    { mime_type: object.httpMetadata?.contentType ?? fallbackType, filename },
-    object,
-    rangeHeader,
-  );
-}
-
 export async function readEpisodeChapterAudio(
   context: ServiceContext,
   episodeId: string,
@@ -391,11 +319,10 @@ export async function readEpisodeChapterAudio(
 ) {
   await requireDiscoverEpisode(context, episodeId);
 
-  return readEpisodeFile(
+  return getPrivateObjectResponse(
     context,
     chapterAudioKey(episodeId, chapterIndex),
-    `chapter-${chapterIndex + 1}.mp3`,
-    "audio/mpeg",
+    { filename: `chapter-${chapterIndex + 1}.mp3`, mimeType: "audio/mpeg" },
     rangeHeader,
   );
 }
@@ -412,10 +339,9 @@ export async function readEpisodeShot(
     throw new AssistantError("Shot not found", ErrorType.NOT_FOUND, 404);
   }
 
-  return readEpisodeFile(
+  return getPrivateObjectResponse(
     context,
     shotImageKey(episodeId, content.seasonId, { ...location, plate: shot.plate }),
-    "shot",
-    "image/png",
+    { filename: "shot", mimeType: "image/png" },
   );
 }

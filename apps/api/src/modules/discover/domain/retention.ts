@@ -4,13 +4,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   comparableHttpUrl,
+  DAY_MS,
   parseTimestamp,
   shiftCalendarDate,
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackEntry } from "./feedback";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface RetainedLink {
   id: string;

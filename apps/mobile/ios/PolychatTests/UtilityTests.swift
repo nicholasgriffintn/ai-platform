@@ -958,6 +958,14 @@ extension UtilityTests {
         #expect(OutputReviewDeepLink.outputId(from: URL(string: "polychat://chat/new")!) == nil)
     }
 
+    @Test func discoverDeepLinksOpenMediaAndCards() throws {
+        #expect(AppRoute.parse(try #require(URL(string: "polychat://discover/perch"))) == .discover(.media(.perch)))
+        #expect(AppRoute.parse(try #require(URL(string: "polychat://discover/wind-down"))) == .discover(.media(.windDown)))
+        #expect(AppRoute.parse(try #require(URL(string: "polychat://discover/cards/card-1"))) == .discover(.card("card-1")))
+        #expect(AppRoute.parse(try #require(URL(string: "polychat://discover"))) == .tab(.home))
+        #expect(AppRoute.parse(try #require(URL(string: "polychat://discover/unknown"))) == .tab(.home))
+    }
+
     @Test func outputRevisionPresentationSummarisesChangesAndEffectiveOrigin() throws {
         let data = Data("""
         {

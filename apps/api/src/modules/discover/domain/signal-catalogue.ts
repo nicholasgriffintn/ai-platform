@@ -1,4 +1,10 @@
-import { epochSecondsToIso, isRecord, readPathValues } from "@ngriffin_uk/polychat-utility-core";
+import {
+  epochSecondsToIso,
+  isoDaysBefore,
+  isRecord,
+  readPathValues,
+  shiftCalendarDate,
+} from "@ngriffin_uk/polychat-utility-core";
 import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 
 import type { DiscoverResearchResult } from "./research";
@@ -121,18 +127,6 @@ function joinParts(...parts: readonly string[]): string {
   return parts.filter(Boolean).join(" · ");
 }
 
-function isoDaysAgo(now: Date, days: number): string {
-  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
-}
-
-function dateDaysAgo(date: string, days: number): string {
-  const [year, month, day] = date.split("-").map(Number);
-
-  return new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, (day ?? 1) - days))
-    .toISOString()
-    .slice(0, 10);
-}
-
 export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
   {
     id: "lastfm-recent",
@@ -186,7 +180,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     title: "Readwise",
     description: "Reads your recent highlights and Reader queue.",
     operation: "list_highlights",
-    parameters: ({ now }) => ({ updatedAfter: isoDaysAgo(now, 7) }),
+    parameters: ({ now }) => ({ updatedAfter: isoDaysBefore(now, 7) }),
     digest: (result) =>
       lines(items(result, ["results"]), (book) =>
         joinParts(
@@ -203,7 +197,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     title: "Readwise Reader",
     description: "Reads what is waiting in your Reader queue.",
     operation: "list_reader_documents",
-    parameters: ({ now }) => ({ location: "later", updatedAfter: isoDaysAgo(now, 14) }),
+    parameters: ({ now }) => ({ location: "later", updatedAfter: isoDaysBefore(now, 14) }),
     digest: (result) =>
       lines(items(result, ["results"]), (document) =>
         joinParts(first(document, ["title"]), first(document, ["site_name"], ["author"])),
@@ -357,7 +351,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     title: "Oura",
     description: "Reads readiness and sleep for the brief only, never as an interest.",
     operation: "get_daily_readiness",
-    parameters: ({ date }) => ({ startDate: dateDaysAgo(date, 1), endDate: date }),
+    parameters: ({ date }) => ({ startDate: shiftCalendarDate(date, -1), endDate: date }),
     digest: (result) =>
       lines(items(result, ["data"]), (day) =>
         joinParts(
@@ -449,7 +443,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     operation: "OUTLOOK_SEARCH_MESSAGES",
     parameters: ({ now }) => ({
       user_id: "me",
-      query: `unsubscribe received>=${isoDaysAgo(now, 1).slice(0, 10)}`,
+      query: `unsubscribe received>=${isoDaysBefore(now, 1).slice(0, 10)}`,
       size: 15,
     }),
     digest: (result) =>
@@ -530,7 +524,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     title: "GitHub",
     description: "Reads the notifications waiting for you.",
     operation: "GITHUB_LIST_NOTIFICATIONS",
-    parameters: ({ now }) => ({ since: isoDaysAgo(now, 2), per_page: 20, participating: true }),
+    parameters: ({ now }) => ({ since: isoDaysBefore(now, 2), per_page: 20, participating: true }),
     digest: (result) =>
       lines(items(result, ["data", "details"], ["data", "items"], ["data"]), (notification) =>
         joinParts(
@@ -547,7 +541,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     title: "Fathom",
     description: "Reads yesterday's meeting summaries and action items.",
     operation: "FATHOM_LIST_MEETINGS",
-    parameters: ({ now }) => ({ created_after: isoDaysAgo(now, 2), include_action_items: true }),
+    parameters: ({ now }) => ({ created_after: isoDaysBefore(now, 2), include_action_items: true }),
     digest: (result) =>
       lines(items(result, ["data", "items"], ["items"], ["data", "meetings"]), (meeting) =>
         joinParts(

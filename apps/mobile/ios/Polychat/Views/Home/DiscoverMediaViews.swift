@@ -70,6 +70,7 @@ private struct DiscoverMediaTile: View {
 
 struct DiscoverMediaSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var playback: DiscoverPlayback
     let item: DiscoverMediaItem
     let edition: DiscoverEdition
     let windDownId: String?
@@ -81,13 +82,23 @@ struct DiscoverMediaSheet: View {
             Group {
                 switch item {
                 case .episode:
-                    EpisodePlayerView(edition: edition, artwork: artwork, onRefresh: onRefresh)
+                    EpisodePlayerView(controller: playback.episode, edition: edition, artwork: artwork, onRefresh: onRefresh)
                 case .perch:
-                    SourceListenView(item: item, sourceId: edition.listenSourceId, editionId: edition.id, artwork: artwork, onRefresh: onRefresh)
+                    SourceListenView(
+                        controller: playback.listen(.perch, editionId: edition.id),
+                        sourceId: edition.listenSourceId,
+                        artwork: artwork,
+                        onRefresh: onRefresh
+                    )
                 case .week:
-                    SourceListenView(item: item, sourceId: edition.weekSourceId, editionId: edition.id, artwork: artwork, onRefresh: onRefresh)
+                    SourceListenView(
+                        controller: playback.listen(.week, editionId: edition.id),
+                        sourceId: edition.weekSourceId,
+                        artwork: artwork,
+                        onRefresh: onRefresh
+                    )
                 case .windDown:
-                    WindDownView(windDownId: windDownId)
+                    WindDownView(controller: playback.windDown, windDownId: windDownId)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -197,7 +208,7 @@ private struct MediaNotice: View {
 
 private struct EpisodePlayerView: View {
     @EnvironmentObject private var apiClient: APIClient
-    @StateObject private var controller = EpisodePlaybackController()
+    @ObservedObject var controller: EpisodePlaybackController
     @State private var isRequesting = false
     let edition: DiscoverEdition
     let artwork: UIImage?
@@ -229,7 +240,7 @@ private struct EpisodePlayerView: View {
                     VStack(spacing: 0) {
                         ForEach(Array(episode.chapters.enumerated()), id: \.offset) { index, chapter in
                             Button {
-                                Task { await controller.play(chapter: index) }
+                                Task { await controller.play(chapter: index, fromStart: true) }
                             } label: {
                                 HStack {
                                     Text("\(index + 1). \(chapter.title)")
@@ -275,11 +286,6 @@ private struct EpisodePlayerView: View {
                 await controller.follow(id: id)
             }
         }
-        .onAppear { ExternalDisplayStage.shared.present(controller) }
-        .onDisappear {
-            controller.stop()
-            ExternalDisplayStage.shared.dismiss(controller)
-        }
     }
 
     private func request() {
@@ -297,17 +303,10 @@ private struct EpisodePlayerView: View {
 }
 
 private struct SourceListenView: View {
-    @StateObject private var controller: ListenPlaybackController
+    @ObservedObject var controller: ListenPlaybackController
     let sourceId: String?
     let artwork: UIImage?
     let onRefresh: () async -> Void
-
-    init(item: DiscoverMediaItem, sourceId: String?, editionId: String, artwork: UIImage?, onRefresh: @escaping () async -> Void) {
-        _controller = StateObject(wrappedValue: ListenPlaybackController(item: item, editionId: editionId))
-        self.sourceId = sourceId
-        self.artwork = artwork
-        self.onRefresh = onRefresh
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -346,7 +345,6 @@ private struct SourceListenView: View {
         .task(id: sourceId != nil || controller.requested) {
             await controller.follow(hasRecording: sourceId != nil, artwork: artwork)
         }
-        .onDisappear { controller.stop() }
     }
 
     private func record() {
@@ -355,7 +353,7 @@ private struct SourceListenView: View {
 }
 
 private struct WindDownView: View {
-    @StateObject private var controller = WindDownPlaybackController()
+    @ObservedObject var controller: WindDownPlaybackController
     @State private var kind = "breathing"
     @State private var minutes = 5
     let windDownId: String?
@@ -423,11 +421,10 @@ private struct WindDownView: View {
         .padding(16)
         .animation(.easeInOut, value: controller.stepIndex)
         .task(id: windDownId) {
-            if let windDownId {
+            if let windDownId, controller.windDown?.id != windDownId {
                 await controller.load(id: windDownId)
-                await controller.waitUntilReady()
             }
+            await controller.waitUntilReady()
         }
-        .onDisappear { controller.stop() }
     }
 }

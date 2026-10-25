@@ -1,10 +1,13 @@
 import {
+  type ModelTier,
   RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
   discoverEpisodeLengthSchema,
   videoOverviewStyleSchema,
   type DiscoverSettings,
   type RecipeConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+
+export const DISCOVER_MODEL_TIER: ModelTier = "medium";
 
 export type DiscoverPreferences = Pick<
   DiscoverSettings,

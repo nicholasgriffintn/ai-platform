@@ -1,4 +1,5 @@
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
+
 const UNTITLED = new Set(["", "new conversation", "new chat", "untitled"]);
 
 export interface DiscoverConversationSignal {

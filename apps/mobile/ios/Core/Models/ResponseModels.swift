@@ -271,9 +271,10 @@ public struct CreateResponseRequest: Encodable {
     struct ConversationReference: Encodable {
         let id: String
         let projectId: String?
+        let subject: ConversationSubject?
 
         enum CodingKeys: String, CodingKey {
-            case id
+            case id, subject
             case projectId = "project_id"
         }
     }
@@ -388,9 +389,12 @@ public struct CreateResponseRequest: Encodable {
         responseId: String? = nil,
         connectorApprovalId: String? = nil,
         agentTeammateId: String? = nil,
-        projectId: String? = nil
+        projectId: String? = nil,
+        subject: ConversationSubject? = nil
     ) {
-        self.conversation = conversationId.map { ConversationReference(id: $0, projectId: projectId) }
+        self.conversation = conversationId.map {
+            ConversationReference(id: $0, projectId: projectId, subject: subject)
+        }
         self.input = ConversationItem.inputItems(from: messages).map(ResponseInputItem.item)
             + (connectorApprovalId.map { [ResponseInputItem.approval(approvalId: $0)] } ?? [])
         self.model = model

@@ -162,18 +162,29 @@ export const discoverEpisodeContentSchema = z
   })
   .strict();
 
+export const discoverEpisodeResumeSchema = z.object({
+  chapter: z.number().int().min(0).max(3),
+  seconds: z.number().min(0),
+});
+
+export const discoverEpisodeViewerProgressSchema = z.object({
+  furthest: z.number().min(0).max(1).catch(0),
+  resume: discoverEpisodeResumeSchema.nullable().catch(null),
+});
+
 export const discoverEpisodeSchema = discoverEpisodeContentSchema.extend({
   id: z.string().min(1),
   createdAt: z.string(),
+  progress: discoverEpisodeViewerProgressSchema,
 });
 
 export const discoverEpisodeParamsSchema = z.object({ episode_id: z.string().min(1) });
 
 export const discoverEpisodeProgressSchema = z
-  .object({ fraction: z.number().min(0).max(1) })
+  .object({ fraction: z.number().min(0).max(1), resume: discoverEpisodeResumeSchema.optional() })
   .strict();
 
-export const discoverEpisodeProgressResponseSchema = z.object({ furthest: z.number() });
+export const discoverEpisodeProgressResponseSchema = discoverEpisodeViewerProgressSchema;
 
 export const discoverEpisodeChapterParamsSchema = discoverEpisodeParamsSchema.extend({
   chapter: z.coerce.number().int().min(0).max(3),
@@ -194,3 +205,5 @@ export type DiscoverEpisodeChapter = z.infer<typeof discoverEpisodeChapterSchema
 export type DiscoverEpisodeContent = z.infer<typeof discoverEpisodeContentSchema>;
 export type DiscoverEpisode = z.infer<typeof discoverEpisodeSchema>;
 export type DiscoverEpisodeProgress = z.infer<typeof discoverEpisodeProgressSchema>;
+export type DiscoverEpisodeResume = z.infer<typeof discoverEpisodeResumeSchema>;
+export type DiscoverEpisodeViewerProgress = z.infer<typeof discoverEpisodeViewerProgressSchema>;

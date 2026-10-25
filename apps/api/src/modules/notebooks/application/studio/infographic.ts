@@ -9,6 +9,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { drawImage } from "~/modules/generate/application/stored-image";
 import { INFOGRAPHIC_SIZES } from "~/modules/notebooks/domain/studio-guidance";
 import {
   failSourceGeneration,
@@ -26,7 +27,6 @@ import { requireNotebookAccess, type NotebookAccess } from "../access";
 import { enqueueNotebookJob } from "../jobs";
 import { resolveNotebookSources } from "../notebooks";
 import { writeInfographicPrompt } from "./drafts";
-import { drawStudioImage } from "./images";
 
 const logger = getLogger({ prefix: "notebooks/infographic" });
 
@@ -94,7 +94,7 @@ export async function runInfographic(
       orientation: input.orientation,
       material: buildSourceMaterial(sources),
     });
-    const image = await drawStudioImage(context, {
+    const image = await drawImage(context, {
       completionId: `${infographic.id}-infographic`,
       prompt: brief.prompt,
       ...INFOGRAPHIC_SIZES[input.orientation],

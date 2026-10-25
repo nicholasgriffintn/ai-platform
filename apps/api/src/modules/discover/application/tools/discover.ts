@@ -27,9 +27,9 @@ import type { ApiToolDefinition } from "~/types/functions";
 import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
 import { canAffordDiscoverListen } from "../cost";
-import { enqueueDiscoverJob } from "../covers";
 import { saveDiscoverEdition } from "../editions";
 import { scheduleNextDiscoverGather } from "../gather";
+import { enqueueDiscoverJob } from "../jobs";
 import { listDiscoverDocuments } from "../notebook";
 import { startDiscoverWindDown } from "../wind-down";
 import {

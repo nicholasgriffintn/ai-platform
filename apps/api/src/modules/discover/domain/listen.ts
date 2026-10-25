@@ -1,8 +1,7 @@
 import type { DiscoverEditionContent } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackEntry } from "./feedback";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const DISCOVER_LISTEN_SHOW = "The Perch";
 

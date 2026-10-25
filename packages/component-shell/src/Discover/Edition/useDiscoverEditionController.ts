@@ -13,19 +13,11 @@ import type {
   DiscoverFeedbackSignal,
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
-import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
+import { normaliseComparableText, readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
 import type { DiscoverMedia } from "./media/media-status.js";
-
-function browserTimeZone(): string | undefined {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  } catch {
-    return undefined;
-  }
-}
 
 export function useDiscoverEditionController() {
   const [requestedAt, setRequestedAt] = useState<number | null>(null);
@@ -160,12 +152,12 @@ export function useDiscoverEditionController() {
     sendFeedback,
     writeEditionNow,
     turnOn: async () => {
-      await updateSettings.mutateAsync({ enabled: true, timezone: browserTimeZone() });
+      await updateSettings.mutateAsync({ enabled: true, timezone: readLocalTimeZone() });
       await writeEditionNow();
     },
     toggle: (enabled: boolean) =>
       updateSettings.mutate(
-        enabled ? { enabled: true, timezone: browserTimeZone() } : { enabled: false },
+        enabled ? { enabled: true, timezone: readLocalTimeZone() } : { enabled: false },
       ),
     useSource: (providerId: string, used: boolean) =>
       settings &&

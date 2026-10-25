@@ -27,7 +27,8 @@ protocol ConversationAPIClient {
         modelTier: String?,
         computeSite: String,
         agentTeammateId: String?,
-        projectId: String?
+        projectId: String?,
+        subject: ConversationSubject?
     ) -> AsyncThrowingStream<ChatStreamEvent, Error>
     func fetchResponseSnapshot(id: String) async throws -> ResponseSnapshot
     func fetchResponseEvents(id: String, after: Int, limit: Int) async throws -> ResponseReplayResponse

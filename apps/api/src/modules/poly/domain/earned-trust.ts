@@ -5,8 +5,8 @@ import {
   type TeammateAutonomyLevel,
   type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const STREAK_WINDOW_MS = 14 * DAY_MS;
 const MAX_TRACKED_STREAKS = 50;
 

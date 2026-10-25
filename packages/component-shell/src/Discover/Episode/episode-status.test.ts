@@ -29,6 +29,7 @@ function episode(chapters: DiscoverEpisodeChapter[]): DiscoverEpisode {
     title: "Wild yeast",
     recap: "",
     chapters,
+    progress: { furthest: 0, resume: null },
   };
 }
 

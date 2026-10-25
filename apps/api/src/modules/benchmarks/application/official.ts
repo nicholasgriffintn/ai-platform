@@ -20,6 +20,7 @@ import {
   type ModelConfigItem,
   type QueueOfficialBenchmarkRunsRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
 import type { Repositories } from "~/infrastructure/database/repositories";
@@ -56,8 +57,6 @@ export interface OfficialQueueOptions {
 function startOfMonth(now: Date): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 }
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function releasedSince(config: ModelConfigItem, since: number): boolean {
   const released = config.releaseDate ? Date.parse(config.releaseDate) : Number.NaN;

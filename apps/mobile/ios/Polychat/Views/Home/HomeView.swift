@@ -3,10 +3,14 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthenticationManager
     @EnvironmentObject private var store: DiscoverStore
+    @EnvironmentObject private var playback: DiscoverPlayback
+    @EnvironmentObject private var polyStore: PolyStore
     @Environment(\.openURL) private var openURL
     @State private var mediaItem: DiscoverMediaItem?
     @State private var selectedCard: DiscoverCard?
-    let onAsk: (String) -> Void
+    @State private var askRequest: DiscoverAskRequest?
+    @Binding var link: DiscoverLink?
+    let onOpenConversation: (String) -> Void
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -16,6 +20,10 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     header
 
+                    if let agenda = polyStore.agenda {
+                        HomePolyCard(agenda: agenda, onOpen: onOpenConversation)
+                    }
+
                     if let error = store.error {
                         InlineErrorBanner(message: error) {
                             Task { await store.refresh() }
@@ -23,7 +31,12 @@ struct HomeView: View {
                     }
 
                     if let discover = store.discover {
-                        if let edition = discover.edition {
+                        if discover.editions.count > 1 {
+                            DiscoverEditionPicker(editions: discover.editions, selectedId: store.edition?.id) { summary in
+                                Task { await store.view(summary) }
+                            }
+                        }
+                        if let edition = store.edition {
                             editionContent(edition)
                         } else if discover.settings.enabled {
                             DiscoverPlaceholder(isWriting: store.isWriting) {
@@ -48,26 +61,43 @@ struct HomeView: View {
             .background(Color.polychat.background)
             .navigationTitle("Home")
             .toolbar(.hidden, for: .navigationBar)
-            .refreshable { await store.refresh() }
+            .safeAreaInset(edge: .bottom) {
+                DiscoverNowPlayingBar(playback: playback) { mediaItem = $0 }
+            }
+            .refreshable {
+                await store.refresh()
+                await polyStore.refresh()
+            }
             .task { await store.refresh() }
+            .task(id: link) { follow(link) }
             .sheet(item: $selectedCard) { card in
                 DiscoverCardSheet(
                     card: card,
                     cover: card.coverId.flatMap { store.covers[$0] },
+                    signals: store.signals(for: card),
+                    isFollowing: card.topic.flatMap { store.follows($0) } != nil,
                     onAsk: {
                         selectedCard = nil
-                        onAsk(card.chatPrompt)
+                        ask(card)
                     },
                     onOpenLink: { openLink(card) },
                     onFeedback: { signal in
-                        selectedCard = nil
+                        if signal != "saved" {
+                            selectedCard = nil
+                        }
                         Task { await store.send(signal, for: card) }
+                    },
+                    onToggleFollow: { topic in
+                        Task { await store.toggleFollow(topic) }
                     }
                 )
                 .presentationDetents([.medium, .large])
             }
+            .sheet(item: $askRequest) { request in
+                DiscoverAskSheet(request: request)
+            }
             .sheet(item: $mediaItem) { item in
-                if let edition = store.discover?.edition {
+                if let edition = store.edition {
                     DiscoverMediaSheet(
                         item: item,
                         edition: edition,
@@ -166,10 +196,16 @@ struct HomeView: View {
     @ViewBuilder
     private func feedbackMenu(_ card: DiscoverCard) -> some View {
         Button {
-            onAsk(card.chatPrompt)
+            ask(card)
         } label: {
             Label("Ask Poly about this", systemImage: "bubble.left")
         }
+        Button {
+            Task { await store.send("saved", for: card) }
+        } label: {
+            Label("Save", systemImage: "bookmark")
+        }
+        .disabled(store.signals(for: card).contains("saved"))
         Button {
             Task { await store.send("more", for: card) }
         } label: {
@@ -184,6 +220,22 @@ struct HomeView: View {
             Task { await store.send("hide", for: card) }
         } label: {
             Label("Hide", systemImage: "eye.slash")
+        }
+    }
+
+    private func ask(_ card: DiscoverCard) {
+        guard let edition = store.edition else { return }
+        askRequest = DiscoverAskRequest(card: card, editionId: edition.id)
+    }
+
+    private func follow(_ link: DiscoverLink?) {
+        guard let link else { return }
+        self.link = nil
+        switch link {
+        case .media(let item):
+            mediaItem = item
+        case .card(let id):
+            selectedCard = store.edition?.cards.first { $0.id == id }
         }
     }
 
@@ -372,71 +424,5 @@ private struct DiscoverPlaceholder: View {
             }
         }
         .polychatCard(padding: 20)
-    }
-}
-
-private struct DiscoverCardSheet: View {
-    let card: DiscoverCard
-    let cover: UIImage?
-    let onAsk: () -> Void
-    let onOpenLink: () -> Void
-    let onFeedback: (String) -> Void
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                if let cover {
-                    Image(uiImage: cover)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 160)
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                if let label = card.topic ?? card.source {
-                    EyebrowLabel(label)
-                }
-                Text(card.headline)
-                    .font(.polychatDisplay(.title3))
-                    .foregroundStyle(Color.polychat.text)
-                if let body = card.body {
-                    Text(body)
-                        .font(.body)
-                        .foregroundStyle(Color.polychat.text)
-                }
-                Text(card.reason)
-                    .font(.footnote)
-                    .foregroundStyle(Color.polychat.textMuted)
-
-                VStack(spacing: 10) {
-                    Button(action: onAsk) {
-                        Label("Start a chat about this", systemImage: "bubble.left.and.text.bubble.right")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .tint(Color.polychat.primary)
-
-                    if card.externalURL != nil {
-                        Button(action: onOpenLink) {
-                            Label("Open \(card.source ?? "link")", systemImage: "arrow.up.right")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                    }
-                }
-
-                HStack(spacing: 16) {
-                    Button("More like this") { onFeedback("more") }
-                    Button("Less like this") { onFeedback("less") }
-                    Spacer()
-                    Button("Hide", role: .destructive) { onFeedback("hide") }
-                }
-                .font(.footnote.weight(.medium))
-            }
-            .padding(20)
-        }
-        .background(Color.polychat.background)
     }
 }

@@ -39,8 +39,8 @@ import {
 } from "~/modules/recipes/application";
 
 import { estimateDiscoverCosts } from "./cost";
-import { enqueueDiscoverJob } from "./covers";
 import { forgetDeviceActivity } from "./device-documents";
+import { enqueueDiscoverJob } from "./jobs";
 import { listDiscoverDocuments } from "./notebook";
 
 const DISABLED: DiscoverSettings = {

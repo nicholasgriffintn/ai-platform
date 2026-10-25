@@ -1,4 +1,9 @@
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -8,9 +13,12 @@ import { generateImage } from "~/modules/generate/application/image";
 import { getImageModel } from "~/modules/models/application/resolve";
 import { deleteOutput } from "~/modules/outputs/application";
 
+const logger = getLogger({ prefix: "generate/stored-image" });
 const generatedImageSchema = z.object({ url: z.string() });
 
-export interface StudioImageRequest {
+export const TEXTLESS_PICTURE = "No text, letters, numbers or logos anywhere in the picture.";
+
+export interface ImageDrawRequest {
   completionId: string;
   prompt: string;
   aspectRatio: string;
@@ -18,9 +26,9 @@ export interface StudioImageRequest {
   height: number;
 }
 
-export async function drawStudioImage(
+export async function drawImage(
   context: ServiceContext,
-  params: StudioImageRequest,
+  params: ImageDrawRequest,
 ): Promise<{ url: string }> {
   const user = context.requireUser();
   const model = await getImageModel(context.env, user);
@@ -58,12 +66,12 @@ export async function drawStudioImage(
   return image.data;
 }
 
-export async function generateStudioImage(
+async function drawImageBlob(
   context: ServiceContext,
-  params: StudioImageRequest,
+  params: ImageDrawRequest,
 ): Promise<Blob | null> {
   const user = context.requireUser();
-  const { url } = await drawStudioImage(context, params);
+  const { url } = await drawImage(context, params);
   const image = await StorageService.forPrivateAssets(context).getPrivateAssetImageBlob(
     url,
     user.id,
@@ -75,4 +83,34 @@ export async function generateStudioImage(
   }
 
   return image;
+}
+
+export async function storeDrawnImage(
+  context: ServiceContext,
+  key: string,
+  params: ImageDrawRequest,
+): Promise<boolean> {
+  const storage = StorageService.forPrivateAssets(context);
+
+  if (await storage.headObject(key)) {
+    return true;
+  }
+
+  try {
+    const image = await drawImageBlob(context, params);
+
+    if (!image) {
+      return false;
+    }
+
+    await storage.uploadObject(key, await image.arrayBuffer(), {
+      httpMetadata: { contentType: image.type || "image/png" },
+    });
+
+    return true;
+  } catch (error) {
+    logger.warn("Image could not be drawn", { key, error_message: getErrorMessage(error) });
+
+    return false;
+  }
 }

@@ -8,6 +8,7 @@ import {
   type StandingApproval,
   type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
+import { DAY_MS } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -15,8 +16,6 @@ import { readPendingPolyCall } from "~/modules/poly/application/pending-call";
 import { requirePolyContext } from "~/modules/poly/application/poly-context";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { isStandingApprovalEligible } from "~/modules/tools/application/effects";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function isLive(approval: TeammateStandingApproval, now: number): boolean {
   return Date.parse(approval.expiresAt) > now;
